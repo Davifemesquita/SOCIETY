@@ -1,9 +1,38 @@
 keys,pt_BR,en
 GAME_TITLE,Society,Society
 BOOT_SUBTITLE,Um arquipélago industrial do século XIX,A nineteenth-century industrial archipelago
-BOOT_PHASE,Fase 0 — fundação,Phase 0 — foundation
+BOOT_PHASE,Fase 1 — protótipo cinza,Phase 1 — grey prototype
 BOOT_CONFIG_OK,Configuração válida,Configuration valid
 BOOT_CONFIG_ERRORS,Configuração com %d problema(s),Configuration with %d problem(s)
 BOOT_CLOCK,"Dia %d, %02d:%02d — %s","Day %d, %02d:%02d — %s"
 SPEED_PAUSED,pausado,paused
 SPEED_MULTIPLIER,%sx,%sx
+BUILDING_PLACEHOLDER_HOUSE,Casa (provisória),House (placeholder)
+BUILDING_PLACEHOLDER_WORKSHOP,Oficina (provisória),Workshop (placeholder)
+BUILDING_PLACEHOLDER_FACTORY,Fábrica (provisória),Factory (placeholder)
+REASON_OUT_OF_ISLAND,Fora da ilha,Outside the island
+REASON_OCCUPIED,Lugar ocupado,Space occupied
+REASON_ON_ROAD,Há estrada no caminho,A road is in the way
+REASON_UNKNOWN_BUILDING,Prédio desconhecido,Unknown building
+REASON_INVALID_ROTATION,Rotação inválida,Invalid rotation
+REASON_EMPTY_ROAD,Estrada vazia,Empty road
+REASON_NOTHING_TO_DEMOLISH,Nada para demolir aqui,Nothing to demolish here
+REASON_NOT_IMPLEMENTED,Ação ainda não disponível,Action not available yet
+HUD_CLOCK,"Dia %d, %02d:%02d","Day %d, %02d:%02d"
+HUD_SAVE,Salvar (F5),Save (F5)
+HUD_LOAD,Carregar (F9),Load (F9)
+HUD_ROAD,Estrada (T),Road (T)
+HUD_DEMOLISH,Demolir (Del),Demolish (Del)
+HUD_HINT_BUILDING,Clique constrói · R gira · Esc cancela,Click builds · R rotates · Esc cancels
+HUD_HINT_ROAD,Arraste para traçar · Esc cancela,Drag to lay out · Esc cancels
+HUD_HINT_DEMOLISH,Clique ou arraste para demolir · Esc cancela,Click or drag to demolish · Esc cancels
+PREVIEW_ROAD_LENGTH,%d células,%d cells
+INFO_ROAD_OK,Com acesso à estrada,Has road access
+INFO_ROAD_MISSING,Sem acesso à estrada,No road access
+INFO_CENTER_HINT,F centraliza a câmera,F centers the camera
+MSG_SAVED,Jogo salvo,Game saved
+MSG_LOADED,Jogo carregado,Game loaded
+MSG_LOAD_FAILED,Não foi possível carregar o jogo,Could not load the game
+MSG_SAVE_FAILED,Não foi possível salvar o jogo,Could not save the game
+BOOT_NEW_GAME,Novo jogo,New game
+BOOT_LOAD_GAME,Carregar jogo,Load game

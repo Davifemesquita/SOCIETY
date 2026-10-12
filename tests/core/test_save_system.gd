@@ -43,12 +43,18 @@ func test_save_then_load_returns_identical_state() -> void:
 	assert_int(typeof(loaded["good"])).is_equal(TYPE_STRING_NAME)
 
 
+func test_floats_survive_with_full_precision() -> void:
+	var state := {"yaw": TAU, "sum": 0.1 + 0.2, "third": 1.0 / 3.0, "big": 123456789.123456789}
+	_saves.save_game("slot_1", state)
+	assert_bool(_saves.load_game("slot_1") == state).is_true()
+
+
 func test_file_is_compressed_versioned_json() -> void:
 	_saves.save_game("slot_1", _sample_state())
 	var file := FileAccess.open_compressed(_saves.slot_path("slot_1"), FileAccess.READ, FileAccess.COMPRESSION_ZSTD)
 	var envelope: Variant = JSON.to_native(JSON.parse_string(file.get_as_text()))
 	assert_bool(envelope is Dictionary).is_true()
-	var data: Dictionary = envelope
+	var data: Dictionary = SaveSystemScript.unpack_floats(envelope)
 	assert_int(data["save_version"]).is_equal(SaveSystemScript.SAVE_VERSION)
 	var raw := FileAccess.get_file_as_bytes(_saves.slot_path("slot_1"))
 	assert_bool(raw.get_string_from_utf8().begins_with("{")).is_false()

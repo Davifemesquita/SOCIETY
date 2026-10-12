@@ -37,7 +37,7 @@ func test_keys_are_unique_and_upper_snake_case() -> void:
 func test_server_translates_in_both_locales() -> void:
 	var previous := TranslationServer.get_locale()
 	TranslationServer.set_locale("pt_BR")
-	assert_str(TranslationServer.translate("BOOT_PHASE")).is_equal("Fase 0 — fundação")
+	assert_str(TranslationServer.translate("BOOT_PHASE")).is_equal("Fase 1 — protótipo cinza")
 	TranslationServer.set_locale("en")
-	assert_str(TranslationServer.translate("BOOT_PHASE")).is_equal("Phase 0 — foundation")
+	assert_str(TranslationServer.translate("BOOT_PHASE")).is_equal("Phase 1 — grey prototype")
 	TranslationServer.set_locale(previous)

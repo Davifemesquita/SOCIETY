@@ -1,8 +1,9 @@
 extends Node
 ## Salvar e carregar em JSON versionado e compactado, com miniatura opcional em PNG.
 ## Nunca em .tres/.res: Resource vindo de arquivo do usuário pode executar script.
-## O JSON usa JSON.from_native sem objetos, o que preserva int, vetores e StringName
-## e recusa qualquer Object na volta.
+## O JSON usa JSON.from_native sem objetos, que preserva int, vetores e StringName e recusa
+## qualquer Object na volta. Float vai como os 8 bytes em hexadecimal: o from_native grava só
+## 15 dígitos e o estado não voltaria idêntico.
 
 ## Versão do formato. Ao mudar o formato, some 1 e acrescente a migração em migrations.
 const SAVE_VERSION := 1
@@ -10,6 +11,7 @@ const SAVE_EXTENSION := ".save"
 const THUMBNAIL_EXTENSION := ".png"
 const DEFAULT_DIR := "user://saves"
 const _SLOT_PATTERN := "^[a-z0-9_-]{1,64}$"
+const _FLOAT_TAG := "$f64"
 
 ## migrations[i] leva os dados da versão i + 1 para a i + 2.
 var migrations: Array[Callable] = []
@@ -46,7 +48,7 @@ func save_game(slot: String, state: Dictionary, thumbnail: Image = null) -> Erro
 	var file := FileAccess.open_compressed(slot_path(slot), FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
 	if file == null:
 		return _fail(slot, "não foi possível abrir o arquivo", FileAccess.get_open_error())
-	file.store_string(JSON.stringify(JSON.from_native(envelope)))
+	file.store_string(JSON.stringify(JSON.from_native(pack_floats(envelope))))
 	file.close()
 	if thumbnail != null:
 		var png_error := thumbnail.save_png(thumbnail_path(slot))
@@ -71,7 +73,7 @@ func load_game(slot: String) -> Dictionary:
 	if json.parse(text) != OK:
 		_fail(slot, "save corrompido", ERR_PARSE_ERROR)
 		return {}
-	var envelope: Variant = JSON.to_native(json.data)
+	var envelope: Variant = unpack_floats(JSON.to_native(json.data))
 	if not envelope is Dictionary:
 		_fail(slot, "save sem estado", ERR_INVALID_DATA)
 		return {}
@@ -97,6 +99,47 @@ static func migrate(state: Dictionary, from_version: int, steps: Array[Callable]
 	for i: int in range(from_version - 1, steps.size()):
 		current = steps[i].call(current)
 	return current
+
+
+## Troca cada float por {"$f64": bytes em hexadecimal}, para a volta ser exata.
+static func pack_floats(value: Variant) -> Variant:
+	if value is float:
+		var number: float = value
+		return {_FLOAT_TAG: PackedFloat64Array([number]).to_byte_array().hex_encode()}
+	if value is Dictionary:
+		var source: Dictionary = value
+		var packed := {}
+		for key: Variant in source:
+			packed[key] = pack_floats(source[key])
+		return packed
+	if value is Array:
+		var items: Array = value
+		var packed_items := []
+		for item: Variant in items:
+			packed_items.append(pack_floats(item))
+		return packed_items
+	return value
+
+
+static func unpack_floats(value: Variant) -> Variant:
+	if value is Dictionary:
+		var source: Dictionary = value
+		var tagged: Variant = source.get(_FLOAT_TAG)
+		if source.size() == 1 and tagged is String:
+			var hex: String = tagged
+			var bytes := hex.hex_decode()
+			return bytes.to_float64_array()[0] if bytes.size() == 8 else null
+		var unpacked := {}
+		for key: Variant in source:
+			unpacked[key] = unpack_floats(source[key])
+		return unpacked
+	if value is Array:
+		var items: Array = value
+		var unpacked_items := []
+		for item: Variant in items:
+			unpacked_items.append(unpack_floats(item))
+		return unpacked_items
+	return value
 
 
 ## Slots existentes, do mais recente para o mais antigo.

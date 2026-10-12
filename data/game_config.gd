@@ -49,6 +49,10 @@ static var _default: GameConfig
 @export var ship_cargo_slots: int = 4
 @export var ship_slot_capacity_t: int = 50
 
+@export_group("Ilhas")
+## Área útil da ilha principal, em células.
+@export var main_island_size_cells: Vector2i = Vector2i(250, 250)
+
 @export_group("Construção")
 @export var cell_size_m: float = 2.0
 ## Diferença de altura máxima dentro da área de um prédio.
@@ -57,6 +61,27 @@ static var _default: GameConfig
 @export var demolish_refund: float = 0.5
 ## Ganho de velocidade da estrada de paralelepípedo sobre a de terra.
 @export var paved_road_speed_bonus: float = 0.5
+
+@export_group("Câmera")
+@export var camera_min_distance_m: float = 12.0
+@export var camera_max_distance_m: float = 420.0
+@export var camera_start_distance_m: float = 110.0
+## Inclinação, em graus abaixo do horizonte, com o zoom mais perto e mais longe.
+@export var camera_pitch_near_deg: float = 28.0
+@export var camera_pitch_far_deg: float = 70.0
+## Velocidade do pan em frações da distância da câmera por segundo.
+@export var camera_pan_speed: float = 1.2
+## Quanto cada passo da roda aproxima ou afasta (0,15 = 15%).
+@export var camera_zoom_step: float = 0.15
+## Duração do giro de 90° do Q/E.
+@export var camera_rotate_seconds: float = 0.25
+@export var camera_free_rotate_deg_per_px: float = 0.3
+## Constante de tempo da câmera indo até o prédio selecionado.
+@export var camera_center_seconds: float = 0.15
+@export var camera_edge_margin_px: int = 12
+## Folga além da borda da ilha que a câmera ainda alcança.
+@export var camera_bounds_margin_m: float = 60.0
+@export var camera_min_height_m: float = 3.0
 
 @export_group("Mundo vivo")
 @export var max_visible_pedestrians: int = 2000
@@ -113,6 +138,14 @@ func validate() -> PackedStringArray:
 		problems.append("ui_scale_min deve ser positivo e não passar de ui_scale_max")
 	if supported_locales.is_empty():
 		problems.append("supported_locales precisa de pelo menos um idioma")
+	if main_island_size_cells.x <= 0 or main_island_size_cells.y <= 0:
+		problems.append("main_island_size_cells deve ser positivo")
+	if cell_size_m <= 0.0:
+		problems.append("cell_size_m deve ser maior que zero")
+	if camera_min_distance_m <= 0.0 or camera_min_distance_m >= camera_max_distance_m:
+		problems.append("camera_min_distance_m deve ser positivo e menor que camera_max_distance_m")
+	if camera_rotate_seconds <= 0.0 or camera_center_seconds <= 0.0:
+		problems.append("as durações da câmera devem ser maiores que zero")
 	if autosave_slots <= 0:
 		problems.append("autosave_slots deve ser maior que zero")
 	for fraction: float in [demolish_refund, paused_upkeep_factor, trader_price_variation]:

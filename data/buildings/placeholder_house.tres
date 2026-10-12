@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"placeholder_house"
+name_key = "BUILDING_PLACEHOLDER_HOUSE"
+size = Vector2i(3, 3)
+height_m = 4.5
+color = Color(0.72, 0.7, 0.66, 1)

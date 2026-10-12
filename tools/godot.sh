@@ -3,7 +3,7 @@
 # Vulkan por software: serve para testar, capturar e exportar, não para medir FPS.
 #
 #   tools/godot.sh importar            importa os recursos (necessário num clone novo)
-#   tools/godot.sh testes [caminho]    suíte gdUnit4 headless (padrão: res://tests)
+#   tools/godot.sh testes [caminho]    suíte gdUnit4 no xvfb (padrão: res://tests)
 #   tools/godot.sh rodar               abre o jogo
 #   tools/godot.sh editor              abre o editor
 #   tools/godot.sh captura [arq] [n]   grava o quadro n do jogo em PNG (padrão: 120)
@@ -38,8 +38,13 @@ case "$comando" in
 		"$GODOT_BIN" --headless --path . --import
 		;;
 	testes)
+		# Com tela (xvfb sem DISPLAY): os testes de entrada simulam clique e precisam dela.
 		alvo="${1:-res://tests}"
-		addons/gdUnit4/runtest.sh --headless --ignoreHeadlessMode -a "$alvo"
+		if [ -n "${DISPLAY:-}" ]; then
+			addons/gdUnit4/runtest.sh -a "$alvo"
+		else
+			xvfb-run -a -s "-screen 0 1920x1080x24" addons/gdUnit4/runtest.sh -a "$alvo"
+		fi
 		;;
 	rodar)
 		com_tela --path .
