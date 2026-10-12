@@ -2,6 +2,7 @@ class_name DebugOverlay
 extends MeshInstance3D
 ## Grade de construção e camadas de depuração sobre a ilha (seção 15):
 ## F1 grade e ocupação, F2 rede de estradas colorida por trecho conectado.
+## Também mostra um destaque pedido pela partida (raio de serviço, área dos campos).
 
 enum Layer { NONE, OCCUPANCY, ROADS }
 
@@ -19,6 +20,7 @@ var layer: Layer = Layer.NONE:
 		_update()
 
 var _simulation: Simulation
+var _custom: Image = null
 var _material := ShaderMaterial.new()
 var _xray_material := ShaderMaterial.new()
 
@@ -49,13 +51,30 @@ func toggle(target: Layer) -> void:
 	layer = Layer.NONE if layer == target else target
 
 
+## Destaque por célula (imagem do tamanho da grade); as camadas F1/F2 têm prioridade.
+func show_custom(image: Image) -> void:
+	_custom = image
+	_update()
+
+
+func clear_custom() -> void:
+	if _custom != null:
+		_custom = null
+		_update()
+
+
+func has_custom() -> bool:
+	return _custom != null
+
+
 func _update() -> void:
 	if _simulation == null:
 		return
-	visible = grid_visible or layer != Layer.NONE
-	material_override = _material if layer == Layer.NONE else _xray_material
-	if visible and layer != Layer.NONE:
-		_xray_material.set_shader_parameter(&"cell_data", ImageTexture.create_from_image(_layer_image()))
+	visible = grid_visible or layer != Layer.NONE or _custom != null
+	var cells: Image = _layer_image() if layer != Layer.NONE else _custom
+	material_override = _material if cells == null else _xray_material
+	if visible and cells != null:
+		_xray_material.set_shader_parameter(&"cell_data", ImageTexture.create_from_image(cells))
 
 
 func _layer_image() -> Image:

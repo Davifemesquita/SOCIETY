@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"school"
+name_key = "BUILDING_SCHOOL"
+kind = 2
+size = Vector2i(4, 4)
+height_m = 6.0
+color = Color(0.55, 0.5, 0.65, 1)
+cost_money = 1000
+cost_materials = Dictionary[StringName, int]({&"planks": 8})
+upkeep_per_min = 50
+unlock_tier = &"workers"
+unlock_residents = 50

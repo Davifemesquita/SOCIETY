@@ -115,17 +115,31 @@ func demolish_rect() -> Rect2i:
 	return GridSpace.rect_between(drag_start, hover_cell) if dragging else Rect2i(hover_cell, Vector2i.ONE)
 
 
-## Motivo pelo qual a prévia atual seria recusada, ou &"" se ela pode ser feita.
+## Motivo pelo qual a prévia atual seria recusada, ou &"" se ela pode ser feita: lugar,
+## terreno, desbloqueio e custo, igual ao que o comando vai conferir.
 func preview_reason() -> StringName:
 	match mode:
 		Mode.BUILDING:
-			return PlacementRules.check_building(_grid(), building_def, building_origin(), rotation)
+			return _simulation.placement_reason(building_def, building_origin(), rotation)
 		Mode.ROAD:
 			for cell: Vector2i in road_cells():
 				var reason := PlacementRules.check_road_cell(_grid(), cell)
 				if reason != PlacementRules.OK:
 					return reason
+			if not _simulation.free_build:
+				var empty: Dictionary[StringName, int] = {}
+				var world := _simulation.world
+				return PlacementRules.check_cost(world, world.economy(Simulation.MAIN_ISLAND), _simulation.config, road_cost(), empty)
 	return PlacementRules.OK
+
+
+## Custo do traçado atual: só as células que ainda não são estrada.
+func road_cost() -> int:
+	var new_cells := 0
+	for cell: Vector2i in road_cells():
+		if _grid().in_bounds(cell) and not _grid().has_road(cell):
+			new_cells += 1
+	return new_cells * _simulation.config.road_cost_per_cell
 
 
 func _enter(new_mode: Mode) -> void:

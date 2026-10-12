@@ -8,6 +8,7 @@
 #   tools/godot.sh editor              abre o editor
 #   tools/godot.sh captura [arq] [n]   grava o quadro n do jogo em PNG (padrão: 120)
 #   tools/godot.sh exportar [alvo]     windows (padrão) ou linux, em exportado/<alvo>/
+#   tools/godot.sh planilha            CSV de balanceamento em exportado/balanceamento/
 #   tools/godot.sh godot [args...]     repassa os argumentos ao binário
 set -euo pipefail
 
@@ -74,11 +75,14 @@ case "$comando" in
 		"$GODOT_BIN" --headless --path . --export-release "$preset" "$arquivo"
 		ls -la "$arquivo"
 		;;
+	planilha)
+		"$GODOT_BIN" --headless --path . -s res://tools/planilha.gd 2>&1 | grep -v '^Godot Engine'
+		;;
 	godot)
 		com_tela "$@"
 		;;
 	*)
-		sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+		sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
 		exit 2
 		;;
 esac

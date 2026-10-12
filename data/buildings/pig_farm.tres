@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"pig_farm"
+name_key = "BUILDING_PIG_FARM"
+kind = 1
+size = Vector2i(3, 3)
+height_m = 3.5
+color = Color(0.85, 0.62, 0.6, 1)
+cost_money = 250
+cost_materials = Dictionary[StringName, int]({&"planks": 2})
+upkeep_per_min = 30
+unlock_tier = &"workers"
+unlock_residents = 40
+workforce_tier = &"peasants"
+workers = 25
+inputs = Array[StringName]([])
+output = &"pigs"
+cycle_s = 60.0
+module_id = &"pasture"
+modules_required = 4
+terrain = 0

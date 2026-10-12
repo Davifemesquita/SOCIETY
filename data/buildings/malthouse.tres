@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"malthouse"
+name_key = "BUILDING_MALTHOUSE"
+kind = 1
+size = Vector2i(4, 4)
+height_m = 7.0
+color = Color(0.72, 0.55, 0.32, 1)
+cost_money = 500
+cost_materials = Dictionary[StringName, int]({&"planks": 5})
+upkeep_per_min = 40
+unlock_tier = &"workers"
+unlock_residents = 200
+workforce_tier = &"workers"
+workers = 25
+inputs = Array[StringName]([&"wheat"])
+output = &"malt"
+cycle_s = 30.0
+terrain = 0

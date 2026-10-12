@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"bakery"
+name_key = "BUILDING_BAKERY"
+kind = 1
+size = Vector2i(4, 4)
+height_m = 6.0
+color = Color(0.75, 0.5, 0.28, 1)
+cost_money = 600
+cost_materials = Dictionary[StringName, int]({&"planks": 6})
+upkeep_per_min = 60
+unlock_tier = &"workers"
+unlock_residents = 10
+workforce_tier = &"workers"
+workers = 50
+inputs = Array[StringName]([&"flour"])
+output = &"bread"
+cycle_s = 60.0
+terrain = 0

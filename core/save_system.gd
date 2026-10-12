@@ -6,7 +6,7 @@ extends Node
 ## 15 dígitos e o estado não voltaria idêntico.
 
 ## Versão do formato. Ao mudar o formato, some 1 e acrescente a migração em migrations.
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_EXTENSION := ".save"
 const THUMBNAIL_EXTENSION := ".png"
 const DEFAULT_DIR := "user://saves"
@@ -14,7 +14,7 @@ const _SLOT_PATTERN := "^[a-z0-9_-]{1,64}$"
 const _FLOAT_TAG := "$f64"
 
 ## migrations[i] leva os dados da versão i + 1 para a i + 2.
-var migrations: Array[Callable] = []
+var migrations: Array[Callable] = SaveMigrations.all()
 var save_dir: String = DEFAULT_DIR
 
 var _slot_regex := RegEx.create_from_string(_SLOT_PATTERN)

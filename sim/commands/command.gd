@@ -4,5 +4,5 @@ extends RefCounted
 ## comando recusado deixa o mundo intacto.
 
 
-func execute(_world: WorldState, _catalog: BuildingCatalog) -> CommandResult:
+func execute(_context: CommandContext) -> CommandResult:
 	return CommandResult.refused(&"REASON_NOT_IMPLEMENTED")

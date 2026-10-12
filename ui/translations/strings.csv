@@ -7,9 +7,6 @@ BOOT_CONFIG_ERRORS,Configuração com %d problema(s),Configuration with %d probl
 BOOT_CLOCK,"Dia %d, %02d:%02d — %s","Day %d, %02d:%02d — %s"
 SPEED_PAUSED,pausado,paused
 SPEED_MULTIPLIER,%sx,%sx
-BUILDING_PLACEHOLDER_HOUSE,Casa (provisória),House (placeholder)
-BUILDING_PLACEHOLDER_WORKSHOP,Oficina (provisória),Workshop (placeholder)
-BUILDING_PLACEHOLDER_FACTORY,Fábrica (provisória),Factory (placeholder)
 REASON_OUT_OF_ISLAND,Fora da ilha,Outside the island
 REASON_OCCUPIED,Lugar ocupado,Space occupied
 REASON_ON_ROAD,Há estrada no caminho,A road is in the way
@@ -36,3 +33,136 @@ MSG_LOAD_FAILED,Não foi possível carregar o jogo,Could not load the game
 MSG_SAVE_FAILED,Não foi possível salvar o jogo,Could not save the game
 BOOT_NEW_GAME,Novo jogo,New game
 BOOT_LOAD_GAME,Carregar jogo,Load game
+GOOD_WOOD,Madeira,Timber
+GOOD_PLANKS,Tábuas,Planks
+GOOD_FISH,Peixe,Fish
+GOOD_WOOL,Lã,Wool
+GOOD_WOOLEN_CLOTHES,Roupas de lã,Woolen clothes
+GOOD_POTATOES,Batatas,Potatoes
+GOOD_SPIRITS,Aguardente,Spirits
+GOOD_WHEAT,Trigo,Wheat
+GOOD_FLOUR,Farinha,Flour
+GOOD_BREAD,Pão,Bread
+GOOD_PIGS,Porcos,Pigs
+GOOD_SAUSAGES,Salsichas,Sausages
+GOOD_TALLOW,Sebo,Tallow
+GOOD_SOAP,Sabão,Soap
+GOOD_HOPS,Lúpulo,Hops
+GOOD_MALT,Malte,Malt
+GOOD_BEER,Cerveja,Beer
+GOOD_CLAY,Argila,Clay
+GOOD_BRICKS,Tijolos,Bricks
+GOOD_COAL,Carvão,Coal
+GOOD_IRON_ORE,Minério de ferro,Iron ore
+GOOD_STEEL,Aço,Steel
+GOOD_STEEL_BEAMS,Vigas de aço,Steel beams
+BUILDING_HOUSE,Casa,House
+BUILDING_LUMBERJACK,Lenhador,Lumberjack's hut
+BUILDING_SAWMILL,Serraria,Sawmill
+BUILDING_FISHERY,Cabana de pesca,Fishing hut
+BUILDING_MARKET,Mercado,Market
+BUILDING_SHEEP_FARM,Fazenda de ovelhas,Sheep farm
+BUILDING_PASTURE,Pasto,Pasture
+BUILDING_WEAVERY,Tecelagem,Weavery
+BUILDING_TAVERN,Taverna,Tavern
+BUILDING_POTATO_FARM,Fazenda de batatas,Potato farm
+BUILDING_FIELD,Campo,Field
+BUILDING_DISTILLERY,Destilaria,Distillery
+BUILDING_WHEAT_FARM,Fazenda de trigo,Wheat farm
+BUILDING_MILL,Moinho,Mill
+BUILDING_BAKERY,Padaria,Bakery
+BUILDING_SCHOOL,Escola,School
+BUILDING_PIG_FARM,Criação de porcos,Pig farm
+BUILDING_BUTCHER,Açougue,Butcher's
+BUILDING_RENDERING_WORKS,Graxaria,Rendering works
+BUILDING_SOAP_FACTORY,Saboaria,Soap factory
+BUILDING_CHURCH,Igreja,Church
+BUILDING_CLAY_PIT,Poço de argila,Clay pit
+BUILDING_BRICKWORKS,Olaria,Brickworks
+BUILDING_HOP_FARM,Fazenda de lúpulo,Hop farm
+BUILDING_MALTHOUSE,Maltaria,Malthouse
+BUILDING_BREWERY,Cervejaria,Brewery
+BUILDING_COAL_MINE,Mina de carvão,Coal mine
+BUILDING_IRON_MINE,Mina de ferro,Iron mine
+BUILDING_FURNACE,Fundição,Furnace
+BUILDING_STEEL_BEAM_WORKS,Oficina de vigas,Steel beam works
+TIER_PEASANTS,Camponeses,Peasants
+NEED_FOOD,Alimento,Food
+NEED_CLOTHING,Vestuário,Clothing
+NEED_COMMERCE,Comércio,Commerce
+NEED_DRINK,Bebida,Drink
+NEED_SOCIAL,Convívio,Social life
+TIER_WORKERS,Operários,Workers
+NEED_HYGIENE,Higiene,Hygiene
+NEED_EDUCATION,Educação,Education
+STATE_PRODUCING,Produzindo,Producing
+STATE_NO_INPUT,Sem entrada,No input
+STATE_NO_WORKERS,Sem trabalhadores,No workers
+STATE_OUTPUT_FULL,Saída cheia,Output full
+STATE_NO_ROAD,Sem estrada,No road
+STATE_NO_MODULES,Faltam campos ou pastos,Missing fields or pastures
+STATE_PAUSED,Pausado,Paused
+STATE_IDLE,Parado,Idle
+STATE_PROTEST,Protesto,Protest
+REASON_NEEDS_COAST,Precisa ficar no litoral,Must be on the coast
+REASON_NO_FERTILITY,A ilha não aceita esta cultura,The island cannot grow this crop
+REASON_LOCKED,Ainda bloqueado,Still locked
+REASON_NO_MONEY,Dinheiro insuficiente,Not enough money
+REASON_NO_MATERIALS,Faltam materiais,Missing materials
+REASON_NOT_PRODUCTION,Só prédio de produção,Production buildings only
+REASON_NOT_HOUSE,Só casa,Houses only
+REASON_INVALID_TAX_LEVEL,Nível de imposto inválido,Invalid tax level
+HUD_MONEY,Moedas %s (%s/min),Coins %s (%s/min)
+HUD_MONEY_TIP,Impostos %s/min · Manutenção %s/min,Taxes %s/min · Upkeep %s/min
+HUD_STATS,Estatísticas (Tab),Statistics (Tab)
+HUD_CATEGORY_RESIDENCES,Residências,Residences
+HUD_CATEGORY_SERVICES,Serviços,Services
+HUD_CATEGORY_INFRASTRUCTURE,Infraestrutura,Infrastructure
+HUD_CATEGORY_PRODUCTION,Produção: %s,Production: %s
+TIP_COST,Custo: %s,Cost: %s
+TIP_COINS,%s moedas,%s coins
+TIP_UPKEEP,Manutenção: %s/min,Upkeep: %s/min
+TIP_WORKERS,Trabalhadores: %s %s,Workers: %s %s
+TIP_UNLOCK,Libera com %s %s,Unlocks at %s %s
+TIP_PRODUCES,Produz %s t/min de %s,Makes %s t/min of %s
+TIP_NEEDS,Usa %s,Uses %s
+TIP_MODULES,Precisa de %s %s no raio,Needs %s %s in range
+TIP_COAST,Só no litoral,Coast only
+PANEL_PRODUCTIVITY,Produtividade %s,Productivity %s
+PANEL_CYCLE,Ciclo de %s s,%s s cycle
+PANEL_BUFFER,%s: %s / %s t,%s: %s / %s t
+PANEL_WORKERS,Trabalhadores: %s %s (%s),Workers: %s %s (%s)
+PANEL_UPKEEP,Manutenção %s/min,Upkeep %s/min
+PANEL_PAUSE,Pausar,Pause
+PANEL_RESUME,Retomar,Resume
+PANEL_COPY,Copiar,Copy
+PANEL_DEMOLISH,Demolir,Demolish
+HOUSE_TITLE,Casa · %s,House · %s
+HOUSE_RESIDENTS,Moradores %s / %s,Residents %s / %s
+HOUSE_HAPPINESS,Felicidade %s,Happiness %s
+HOUSE_TAX,Imposto %s/min,Tax %s/min
+HOUSE_BLOCK_UPGRADE,Bloquear upgrade,Block upgrade
+HOUSE_BASIC,Básicas,Basic
+HOUSE_LUXURY,Luxo,Luxury
+SERVICE_HOUSES,Atende %s casas,Serves %s houses
+MODULE_OF,Serve: %s,Serves: %s
+MODULE_LOOSE,Nenhuma fazenda no raio,No farm in range
+STATS_TITLE,Estatísticas,Statistics
+STATS_GOOD,Bem,Good
+STATS_PRODUCED,Produção,Production
+STATS_POTENTIAL,Potencial,Potential
+STATS_CONSUMED,Consumo,Consumption
+STATS_STOCK,Estoque,Stock
+STATS_RATES,"t/min, estoque em t","t/min, stock in t"
+STATS_POPULATION,População,Population
+STATS_INCOME,Impostos,Taxes
+STATS_UPKEEP,Manutenção,Upkeep
+STATS_BALANCE,Saldo,Balance
+STATS_FINANCES,Finanças (moedas/min),Finances (coins/min)
+STATS_TAX_LEVEL,Imposto,Tax
+TAX_LOW,Baixo,Low
+TAX_NORMAL,Normal,Normal
+TAX_HIGH,Alto,High
+STATS_CLOSE,Fechar,Close
+MSG_SHORTAGE,Falta %s,Running out of %s
+PREVIEW_ROAD_COST,%s células · %s moedas,%s cells · %s coins

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GoodDef" format=3]
+
+[ext_resource type="Script" path="res://data/good_def.gd" id="1_good"]
+
+[resource]
+script = ExtResource("1_good")
+id = &"soap"
+name_key = "GOOD_SOAP"
+base_price = 100
+consumption_per_resident_t_min = 0.002
+color = Color(0.7, 0.85, 0.85, 1)

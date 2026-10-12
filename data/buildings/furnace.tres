@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"furnace"
+name_key = "BUILDING_FURNACE"
+kind = 1
+size = Vector2i(6, 6)
+height_m = 10.0
+color = Color(0.35, 0.33, 0.35, 1)
+cost_money = 1500
+cost_materials = Dictionary[StringName, int]({&"planks": 10, &"bricks": 10})
+upkeep_per_min = 100
+unlock_tier = &"workers"
+unlock_residents = 300
+workforce_tier = &"workers"
+workers = 100
+inputs = Array[StringName]([&"iron_ore", &"coal"])
+output = &"steel"
+cycle_s = 60.0
+terrain = 0
+pollution_radius_cells = 16
+pollution_strength = 1.0

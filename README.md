@@ -11,4 +11,7 @@ tools/godot.sh importar      # uma vez, num clone novo
 tools/godot.sh testes        # suíte gdUnit4 headless
 tools/godot.sh rodar         # abre o jogo
 tools/godot.sh exportar      # exportado/windows/Society.exe
+tools/godot.sh planilha      # CSV de balanceamento a partir dos dados
 ```
+
+No executável: `Society.exe -- --benchmark` mede o desempenho no PC.

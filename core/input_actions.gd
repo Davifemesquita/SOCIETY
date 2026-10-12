@@ -23,6 +23,8 @@ const KEYS: Dictionary[StringName, Array] = {
 	&"game_quickload": [KEY_F9],
 	&"debug_grid": [KEY_F1],
 	&"debug_roads": [KEY_F2],
+	&"game_statistics": [KEY_TAB],
+	&"debug_cheat_resources": [KEY_F8],
 }
 
 

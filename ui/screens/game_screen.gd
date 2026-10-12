@@ -22,7 +22,7 @@ var _config: GameConfig
 
 func _ready() -> void:
 	_config = GameConfig.get_default()
-	simulation = Simulation.new(_config, BuildingCatalog.get_default())
+	simulation = Simulation.new(_config, GameData.get_default())
 	var grid := simulation.world.island(Simulation.MAIN_ISLAND)
 	var size_m := Vector2(grid.size) * _config.cell_size_m
 	var island := FlatIsland.new()
@@ -53,8 +53,14 @@ func _ready() -> void:
 	hud.setup(tool, simulation)
 	hud.save_requested.connect(quicksave)
 	hud.load_requested.connect(quickload)
-	tool.changed.connect(func() -> void: overlay.grid_visible = tool.mode != BuildTool.Mode.NONE)
-	tool.selection_changed.connect(building_view.select)
+	tool.changed.connect(func() -> void:
+		overlay.grid_visible = tool.mode != BuildTool.Mode.NONE
+		update_highlight())
+	tool.selection_changed.connect(func(building_id: int) -> void:
+		building_view.select(building_id)
+		update_highlight())
+	EventBus.roads_changed.connect(func(_island_id: int) -> void: update_highlight())
+	EventBus.building_placed.connect(func(_id: int) -> void: update_highlight())
 	var shortcuts := GameShortcuts.new()
 	shortcuts.setup(self)
 	add_child(shortcuts)
@@ -94,7 +100,7 @@ func load_game(slot: String) -> bool:
 	var world: WorldState = null
 	if raw_world is Dictionary:
 		var world_data: Dictionary = raw_world
-		world = WorldState.from_dict(world_data, simulation.catalog)
+		world = WorldState.from_dict(world_data, simulation.data)
 	if world == null:
 		hud.show_message(tr("MSG_LOAD_FAILED"))
 		return false
@@ -120,6 +126,46 @@ func center_on_selected() -> void:
 		return
 	var def := simulation.def_of(record)
 	camera.rig.center_on(GridSpace.rect_center(Footprint.rect(record.origin, def.size, record.rotation), _config.cell_size_m))
+
+
+## Destaque no chão: o alcance do serviço (o que vai ser construído ou o selecionado) e a
+## área de campos e pastos da fazenda.
+func update_highlight() -> void:
+	var world := simulation.world
+	var grid := world.island(Simulation.MAIN_ISLAND)
+	if tool.mode == BuildTool.Mode.BUILDING and tool.building_def != null:
+		var def := tool.building_def
+		if def.kind == BuildingDef.Kind.SERVICE:
+			var front := Footprint.front_cells(tool.building_origin(), def.size, tool.rotation)
+			var reach := ServiceReach.road_cells(grid, front, ServiceReach.radius_of(def, _config))
+			var houses := ServiceReach.houses(world, simulation.data, Simulation.MAIN_ISLAND, reach, simulation.derived_state().houses)
+			overlay.show_custom(Highlight.service(world, simulation.data, Simulation.MAIN_ISLAND, reach, houses))
+			return
+		if def.modules_required > 0:
+			overlay.show_custom(Highlight.area(grid, tool.building_rect().grow(def.module_radius_cells)))
+			return
+	var selected := world.building(tool.selected_id)
+	if tool.mode == BuildTool.Mode.NONE and selected != null:
+		var def := simulation.def_of(selected)
+		var derived := simulation.derived_state()
+		if def.kind == BuildingDef.Kind.SERVICE:
+			var reach: PackedInt32Array = derived.service_reach.get(selected.id, PackedInt32Array())
+			var houses: Array = derived.service_houses.get(selected.id, [])
+			overlay.show_custom(Highlight.service(world, simulation.data, selected.island_id, reach, houses))
+			return
+		if def.modules_required > 0:
+			overlay.show_custom(Highlight.area(grid, Footprint.rect(selected.origin, def.size, selected.rotation).grow(def.module_radius_cells)))
+			return
+	overlay.clear_custom()
+
+
+## Trapaça de desenvolvimento (só em build de depuração): dinheiro e 20 t de cada bem.
+func cheat_resources() -> void:
+	if not OS.is_debug_build():
+		return
+	simulation.world.money += 10000.0
+	for good: GoodDef in simulation.data.goods:
+		simulation.world.economy(Simulation.MAIN_ISLAND).add(good.id, 20.0, _config.island_storage_capacity_t)
 
 
 func _thumbnail() -> Image:

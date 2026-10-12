@@ -29,6 +29,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_game.overlay.toggle(DebugOverlay.Layer.ROADS)
 	elif event.is_action_pressed(&"camera_center_selected"):
 		_game.center_on_selected()
+	elif event.is_action_pressed(&"game_statistics"):
+		_game.hud.toggle_statistics()
+	elif event.is_action_pressed(&"debug_cheat_resources"):
+		_game.cheat_resources()
 	else:
 		return
 	get_viewport().set_input_as_handled()

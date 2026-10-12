@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"clay_pit"
+name_key = "BUILDING_CLAY_PIT"
+kind = 1
+size = Vector2i(4, 4)
+height_m = 2.5
+color = Color(0.68, 0.45, 0.3, 1)
+cost_money = 300
+cost_materials = Dictionary[StringName, int]({&"planks": 3})
+upkeep_per_min = 30
+unlock_tier = &"workers"
+unlock_residents = 150
+workforce_tier = &"workers"
+workers = 50
+inputs = Array[StringName]([])
+output = &"clay"
+cycle_s = 30.0
+terrain = 4

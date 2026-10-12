@@ -31,6 +31,33 @@ static var _default: GameConfig
 ## Fração da manutenção cobrada com o prédio pausado.
 @export var paused_upkeep_factor: float = 0.5
 @export var trader_price_variation: float = 0.10
+## Materiais no estoque da ilha no começo (no lugar do navio da Fase 6).
+@export var starting_materials: Dictionary[StringName, int] = {&"planks": 40}
+@export var road_cost_per_cell: int = 5
+## Nível de imposto por classe (baixo, normal, alto): multiplicador e efeito na felicidade.
+@export var tax_level_multipliers: PackedFloat32Array = PackedFloat32Array([0.75, 1.0, 1.4])
+@export var tax_level_happiness: PackedFloat32Array = PackedFloat32Array([10.0, 0.0, -20.0])
+
+@export_group("População")
+## Fração da casa ocupada mesmo sem nenhuma necessidade atendida (dá partida à economia).
+@export var house_base_residents_fraction: float = 0.2
+@export var residents_arrival_per_minute: float = 4.0
+## Atendimento a partir do qual a categoria conta como coberta (verde) e como parcial (amarela).
+@export var need_met_threshold: float = 0.9
+@export var need_partial_threshold: float = 0.5
+## Constante de tempo da média do atendimento das necessidades.
+@export var supply_smoothing_seconds: float = 30.0
+@export var happiness_base: float = 50.0
+@export var happiness_per_luxury: float = 25.0
+@export var happiness_shortage_penalty: float = 40.0
+@export var happiness_pollution_penalty: float = 30.0
+@export var happiness_change_per_minute: float = 20.0
+## Constante de tempo da produtividade mostrada no painel do prédio.
+@export var productivity_smoothing_seconds: float = 20.0
+## As casas são avaliadas em grupos alternados, um grupo por tick (10 = cada casa uma vez a
+## cada 2 s, com o tempo de 10 ticks). Moradores e felicidade mudam por minuto: não precisam de
+## todo tick, e assim o custo da população cabe no orçamento do tick.
+@export var house_update_groups: int = 10
 ## Patamares de população total que liberam ilhas, navios e regras.
 @export var population_milestones: PackedInt32Array = PackedInt32Array([100, 500, 1000, 2500, 5000, 10000])
 
@@ -146,6 +173,12 @@ func validate() -> PackedStringArray:
 		problems.append("camera_min_distance_m deve ser positivo e menor que camera_max_distance_m")
 	if camera_rotate_seconds <= 0.0 or camera_center_seconds <= 0.0:
 		problems.append("as durações da câmera devem ser maiores que zero")
+	if tax_level_multipliers.size() != 3 or tax_level_happiness.size() != 3:
+		problems.append("os níveis de imposto são três: baixo, normal e alto")
+	if need_partial_threshold > need_met_threshold:
+		problems.append("need_partial_threshold passa de need_met_threshold")
+	if supply_smoothing_seconds <= 0.0 or productivity_smoothing_seconds <= 0.0:
+		problems.append("as constantes de tempo das médias devem ser maiores que zero")
 	if autosave_slots <= 0:
 		problems.append("autosave_slots deve ser maior que zero")
 	for fraction: float in [demolish_refund, paused_upkeep_factor, trader_price_variation]:

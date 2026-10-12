@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 ## Ferramenta de construção por células: construir, traçar estrada, demolir e selecionar.
 
-const HOUSE := &"placeholder_house"
+const HOUSE := &"house"
 
 var _sim: Simulation
 var _tool: BuildTool
@@ -10,13 +10,14 @@ var _tool: BuildTool
 func before_test() -> void:
 	var config := GameConfig.new()
 	config.main_island_size_cells = Vector2i(60, 60)
-	_sim = Simulation.new(config, BuildingCatalog.get_default())
+	_sim = Simulation.new(config, GameData.get_default())
+	_sim.free_build = true
 	_tool = auto_free(BuildTool.new())
 	_tool.setup(_sim, null, config.cell_size_m)
 
 
 func _house() -> BuildingDef:
-	return _sim.catalog.find(HOUSE)
+	return _sim.data.building(HOUSE)
 
 
 func test_click_builds_centered_on_cursor_and_stays_in_mode() -> void:

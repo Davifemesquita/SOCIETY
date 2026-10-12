@@ -1,6 +1,7 @@
 class_name PlaceBuildingCommand
 extends Command
-## Constrói um prédio. Estrada na entrada não é exigida: sem ela o prédio fica com alerta.
+## Constrói um prédio: confere lugar, terreno, desbloqueio e custo, e cobra.
+## Estrada na entrada não é exigida: sem ela o prédio fica com alerta.
 
 var island_id: int
 var def_id: StringName
@@ -15,19 +16,38 @@ func _init(island: int, def: StringName, at: Vector2i, rot: int) -> void:
 	rotation = rot
 
 
-func execute(world: WorldState, catalog: BuildingCatalog) -> CommandResult:
+func execute(context: CommandContext) -> CommandResult:
+	var world := context.world
 	var grid := world.island(island_id)
 	if grid == null:
 		return CommandResult.refused(PlacementRules.OUT_OF_ISLAND)
-	var def := catalog.find(def_id)
+	var def := context.data.building(def_id)
 	var reason := PlacementRules.check_building(grid, def, origin, rotation)
+	if reason == PlacementRules.OK:
+		var profile := context.data.profile(world.economy(island_id).profile_id)
+		reason = PlacementRules.check_terrain(grid, profile, def, origin, rotation)
+	if reason == PlacementRules.OK and not context.free_build:
+		reason = PlacementRules.check_unlock(world, def)
+	if reason == PlacementRules.OK and not context.free_build:
+		reason = PlacementRules.check_cost(world, world.economy(island_id), context.config, def.cost_money, def.cost_materials)
 	if reason != PlacementRules.OK:
 		return CommandResult.refused(reason)
+	if not context.free_build:
+		_pay(world, world.economy(island_id), def)
 	var record := BuildingRecord.new(world.next_building_id, def_id, island_id, origin, rotation)
 	world.next_building_id += 1
+	if def.kind == BuildingDef.Kind.RESIDENCE:
+		record.tier = context.data.tiers[0].id
+		record.happiness = context.config.happiness_base
 	world.buildings[record.id] = record
 	grid.fill_building(Footprint.rect(origin, def.size, rotation), record.id)
 	var result := CommandResult.new()
 	result.island_id = island_id
 	result.placed.append(record.id)
 	return result
+
+
+static func _pay(world: WorldState, economy: IslandEconomy, def: BuildingDef) -> void:
+	world.money -= def.cost_money
+	for material: StringName in def.cost_materials:
+		economy.take(material, def.cost_materials[material])

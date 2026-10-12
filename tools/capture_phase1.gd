@@ -4,7 +4,7 @@ extends Node
 ## Monta uma vila de 50 casas, captura as 4 direções da câmera, a prévia de construção,
 ## as camadas F1/F2, e confere que salvar e carregar devolve a mesma imagem.
 
-const HOUSE := &"placeholder_house"
+const HOUSE := &"house"
 const SLOT := "verificacao_fase1"
 
 var _out_dir: String
@@ -24,12 +24,13 @@ func _ready() -> void:
 
 func _run() -> void:
 	var sim := _game.simulation
+	sim.free_build = true
 	var ids := TownLayout.build(sim, 50, HOUSE, Vector2i(100, 100))
 	print("casas construídas: %d" % ids.size())
 	var island := Simulation.MAIN_ISLAND
-	sim.execute(PlaceBuildingCommand.new(island, &"placeholder_workshop", Vector2i(130, 92), 0))
+	sim.execute(PlaceBuildingCommand.new(island, &"sawmill", Vector2i(130, 92), 0))
 	sim.execute(BuildRoadCommand.new(island, RoadPath.l_path(Vector2i(100, 100), Vector2i(100, 120))))
-	sim.execute(PlaceBuildingCommand.new(island, &"placeholder_factory", Vector2i(94, 112), 1))
+	sim.execute(PlaceBuildingCommand.new(island, &"furnace", Vector2i(94, 112), 1))
 	var rig := _game.camera.rig
 	rig.focus = Vector3(220, 0, 222)
 	rig.distance = 150.0
@@ -48,7 +49,7 @@ func _run() -> void:
 	tool.select(ids[0])
 	await _settle()
 	await _capture("06_selecionado.png")
-	tool.start_building(sim.catalog.find(&"placeholder_workshop"))
+	tool.start_building(sim.data.building(&"sawmill"))
 	tool.hover(Vector2i(120, 113))
 	await _settle()
 	await _capture("07_previa_valida.png")

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"lumberjack"
+name_key = "BUILDING_LUMBERJACK"
+kind = 1
+size = Vector2i(3, 3)
+height_m = 4.0
+color = Color(0.45, 0.33, 0.2, 1)
+cost_money = 100
+cost_materials = Dictionary[StringName, int]({&"planks": 2})
+upkeep_per_min = 10
+workforce_tier = &"peasants"
+workers = 5
+inputs = Array[StringName]([])
+output = &"wood"
+cycle_s = 15.0
+terrain = 2

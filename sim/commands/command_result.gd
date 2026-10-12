@@ -6,6 +6,8 @@ var reason: StringName = &""
 var island_id: int = 0
 var placed: Array[int] = []
 var removed: Array[int] = []
+## Prédios que mudaram de estado sem sair do lugar (pausa, bloqueio de upgrade).
+var changed: Array[int] = []
 var roads_changed: bool = false
 
 

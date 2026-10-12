@@ -28,3 +28,33 @@ existem (entram nas Fases 2 a 4).
 | salvar | 24.3 ms (7.0 KB) |
 | carregar (inclui refazer as vistas) | 100.2 ms |
 | quadro com tudo visível | 219.7 ms (5 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+
+## Fase 2 — núcleo econômico
+
+Carga: 10.000 moradores (500 casas de operário cheias), 250 lenhadores, 250 serrarias e 20
+mercados, com todos os sistemas rodando. Medido nesta VM (Xeon de 2016 a 2,2 GHz, dividido
+com os outros serviços da máquina); no PC alvo, rode `Society.exe -- --benchmark`.
+
+Antes da otimização o tick médio era 42 ms. O que trouxe para 3,2 ms: busca das definições
+por dicionário; necessidades da classe calculadas uma vez por tick em vez de por casa; casas
+avaliadas em 10 grupos alternados (cada casa a cada 2 s); totais (manutenção, demanda de
+trabalhadores, consumidores de cada bem) guardados no DerivedState; e, na escassez, só os
+consumidores mais urgentes recebem entrada, sem ordenar a lista inteira.
+"Montar tudo" é lento porque cada prédio novo refaz o DerivedState inteiro (~30 ms); no
+jogo isso acontece uma vez por clique, abaixo do limite de 50 ms.
+
+### 2026-10-12 13:01:52 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| carga | 10000 moradores em 500 casas; 520 prédios de produção e serviço |
+| montar tudo (comandos + eventos + vistas) | 12736 ms |
+| tick de simulação (média / 95% / pior) | 3.18 / 3.49 / 10.33 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.01 · produção 1.54 · estoque 0.46 · necessidades 0.09 · população 0.98 · economia 0.00 |
+| construir um prédio com a ilha cheia | 32.8 ms (limite 50 ms) |
+| salvar | 101 ms (40 KB) |
+| carregar (inclui refazer as vistas) | 294 ms |
+| quadro com tudo visível | 313 ms (3 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+
+No executável Linux exportado (build de release, mesma VM), pelo `-- --benchmark`: tick médio
+2,45 ms, 95% até 2,67 ms, pior 8,18 ms; construir com a ilha cheia 24,3 ms.

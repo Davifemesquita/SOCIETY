@@ -1,7 +1,7 @@
 class_name DemolishCommand
 extends Command
-## Demole todo prédio que encosta na área e toda estrada dentro dela.
-## A devolução de materiais (50%) entra com a economia, na Fase 2.
+## Demole todo prédio que encosta na área e toda estrada dentro dela, devolvendo ao estoque
+## a fração configurada dos materiais (50%, arredondado para baixo).
 
 var island_id: int
 var area: Rect2i
@@ -12,7 +12,8 @@ func _init(island: int, region: Rect2i) -> void:
 	area = region
 
 
-func execute(world: WorldState, catalog: BuildingCatalog) -> CommandResult:
+func execute(context: CommandContext) -> CommandResult:
+	var world := context.world
 	var grid := world.island(island_id)
 	if grid == null:
 		return CommandResult.refused(PlacementRules.OUT_OF_ISLAND)
@@ -28,11 +29,15 @@ func execute(world: WorldState, catalog: BuildingCatalog) -> CommandResult:
 			if grid.has_road(cell):
 				grid.set_road(cell, IslandGrid.Road.NONE)
 				result.roads_changed = true
+	var economy := world.economy(island_id)
 	for building_id: int in result.removed:
 		var record := world.building(building_id)
-		var def := catalog.find(record.def_id)
+		var def := context.data.building(record.def_id)
 		grid.fill_building(Footprint.rect(record.origin, def.size, record.rotation), 0)
 		world.buildings.erase(building_id)
+		if not context.free_build:
+			for material: StringName in def.cost_materials:
+				economy.add(material, floorf(def.cost_materials[material] * context.config.demolish_refund), context.config.island_storage_capacity_t)
 	if result.removed.is_empty() and not result.roads_changed:
 		return CommandResult.refused(&"REASON_NOTHING_TO_DEMOLISH")
 	return result

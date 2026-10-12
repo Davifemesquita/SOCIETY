@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="TierDef" format=3]
+
+[ext_resource type="Script" path="res://data/tier_def.gd" id="1_tier"]
+[ext_resource type="Script" path="res://data/need_category_def.gd" id="2_need"]
+
+[sub_resource type="Resource" id="basic_food"]
+script = ExtResource("2_need")
+id = &"food"
+name_key = "NEED_FOOD"
+goods = Array[StringName]([&"fish"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="basic_clothing"]
+script = ExtResource("2_need")
+id = &"clothing"
+name_key = "NEED_CLOTHING"
+goods = Array[StringName]([&"woolen_clothes"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="basic_commerce"]
+script = ExtResource("2_need")
+id = &"commerce"
+name_key = "NEED_COMMERCE"
+goods = Array[StringName]([])
+services = Array[StringName]([&"market"])
+
+[sub_resource type="Resource" id="luxury_drink"]
+script = ExtResource("2_need")
+id = &"drink"
+name_key = "NEED_DRINK"
+goods = Array[StringName]([&"spirits"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="luxury_social"]
+script = ExtResource("2_need")
+id = &"social"
+name_key = "NEED_SOCIAL"
+goods = Array[StringName]([])
+services = Array[StringName]([&"tavern"])
+
+[resource]
+script = ExtResource("1_tier")
+id = &"peasants"
+name_key = "TIER_PEASANTS"
+residents_per_house = 10
+tax_per_resident_min = 0.6
+upgrade_materials = Dictionary[StringName, int]({})
+basic_needs = Array[ExtResource("2_need")]([SubResource("basic_food"), SubResource("basic_clothing"), SubResource("basic_commerce")])
+luxury_needs = Array[ExtResource("2_need")]([SubResource("luxury_drink"), SubResource("luxury_social")])
+house_color = Color(0.74, 0.62, 0.42, 1)
+house_height_m = 4.0

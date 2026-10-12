@@ -4,8 +4,12 @@
 
 [resource]
 script = ExtResource("1_def")
-id = &"placeholder_house"
-name_key = "BUILDING_PLACEHOLDER_HOUSE"
+id = &"house"
+name_key = "BUILDING_HOUSE"
+kind = 0
 size = Vector2i(3, 3)
-height_m = 4.5
-color = Color(0.72, 0.7, 0.66, 1)
+height_m = 4.0
+color = Color(0.72, 0.62, 0.45, 1)
+cost_money = 50
+cost_materials = Dictionary[StringName, int]({&"planks": 1})
+upkeep_per_min = 0

@@ -1,8 +1,8 @@
 extends GdUnitTestSuite
 ## Construir, estrada e demolir: regras, motivos de recusa e mundo intacto na recusa.
 
-const HOUSE := &"placeholder_house"
-const FACTORY := &"placeholder_factory"
+const HOUSE := &"house"
+const FACTORY := &"furnace"
 const ISLAND := Simulation.MAIN_ISLAND
 
 var _sim: Simulation
@@ -11,7 +11,9 @@ var _sim: Simulation
 func before_test() -> void:
 	var config := GameConfig.new()
 	config.main_island_size_cells = Vector2i(40, 30)
-	_sim = Simulation.new(config, BuildingCatalog.get_default())
+	_sim = Simulation.new(config, GameData.get_default())
+	# geometria e regras de lugar; custo e desbloqueio têm suíte própria (test_economy_commands)
+	_sim.free_build = true
 
 
 func _place(def: StringName, origin: Vector2i, rotation: int = 0) -> CommandResult:

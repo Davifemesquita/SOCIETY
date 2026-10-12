@@ -37,9 +37,11 @@ tools/godot.sh rodar               # abre o jogo
 tools/godot.sh editor              # abre o editor
 tools/godot.sh captura saida.png 180   # grava o quadro 180 do jogo em PNG
 tools/godot.sh exportar windows    # exportado/windows/Society.exe (ou: linux)
+tools/godot.sh planilha            # CSV de balanceamento a partir dos dados (exportado/balanceamento/)
 
-# verificação visual (vila de 50 casas, 4 direções, prévias, F1/F2, salvar/carregar)
-tools/godot.sh godot --path . --resolution 1920x1080 res://tools/capture_phase1.tscn -- /pasta/de/saida
+# verificação visual: Fase 1 (vila de 50 casas, 4 direções, prévias, F1/F2, salvar/carregar)
+# e Fase 2 (vila com economia rodando 30 min, painéis, estatísticas, raios de serviço)
+tools/godot.sh godot --path . --resolution 1920x1080 res://tools/capture_phase2.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
@@ -67,6 +69,10 @@ do runner de cena do gdUnit4 (6.2.2), que não são defeito do jogo:
   do caminho normal). Por isso a raiz da partida não trata entrada: os atalhos ficam em
   `GameShortcuts`, filho dela. Atalho que alterna (pausa) na raiz alternaria duas vezes.
 
+No executável: `Society.exe -- --novo-jogo` abre direto uma partida, `-- --carregar` abre o
+save rápido e `-- --benchmark` roda o benchmark e mostra o resultado na tela (é assim que se
+mede no PC alvo). F8 dá dinheiro e 20 t de cada bem, só em build de depuração.
+
 **Godot MCP** (`@coding-solo/godot-mcp`, MIT) está em `.mcp.json` e passa a valer na
 próxima sessão do Claude Code aberta nesta pasta. Ele chama o Godot por
 `tools/godot-mcp.sh`, que usa o xvfb quando não há tela.
@@ -85,18 +91,24 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: idioma e escala da interface em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão registrados no InputMap (tecla física) |
-| `data/building_def.gd`, `building_catalog.tres` | definição de prédio e o catálogo (3 caixas provisórias na Fase 1) |
+| `data/game_data.tres` | todas as definições: 23 bens (`goods/`), 2 classes (`tiers/`), 30 prédios (`buildings/`), ilha de teste (`islands/`) |
+| `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada e demolir: validam tudo antes de mudar o mundo |
-| `sim/simulation.gd` | dona do `WorldState`; executa comandos e emite os eventos do mundo |
+| `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
+| `sim/systems/` | força de trabalho → produção → estoque (provisório) → necessidades → população → economia |
+| `sim/derived_state.gd` | o que sai da geometria (acesso, cobertura, módulos, poluição) e os totais por tick; refeito na mudança |
+| `sim/island_economy.gd` | estoque da ilha e atendimento das necessidades por classe |
+| `sim/house_needs.gd` | avaliação de uma casa (necessidades, bônus, imposto), usada pela população e pelo painel |
+| `sim/statistics.gd` | t/min produzido, potencial e consumido por bem; população e finanças |
 | `sim/road_network.gd`, `road_path.gd` | acesso do prédio à estrada, trechos conectados, traçado em L |
 | `world/camera/` | `CameraRig` (contas, testadas) e `StrategyCamera` (entrada e `Camera3D`) |
 | `world/flat_island.gd` | ilha plana, mar, sol e céu (Terrain3D na Fase 5) |
 | `presentation/` | caixas dos prédios, estradas em MultiMesh, prévia, grade e camadas F1/F2 |
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
-| `ui/hud/hud.gd` | barra superior, barra de construção, painel do prédio, avisos |
+| `ui/hud/` | barra superior, menu por categoria, painel do selecionado, estatísticas (Tab) |
 | `ui/screens/` | abertura (novo jogo, carregar) e a partida (`GameScreen` monta tudo) |
 | `tools/town_layout.gd` | vila de teste por comandos (benchmark, testes, captura) |
 | `audio/` | vazia até a fase que a usa |
@@ -123,6 +135,32 @@ Regras que já custaram investigação:
   entrada. Estrada atrás ou do lado não conta.
 - **Câmera própria, sem addon** (decisão do dono do produto, 12/10/2026): o único addon de
   câmera RTS para Godot 4 não tinha zoom no cursor, Q/E de 90° nem limites.
+
+### Economia (Fase 2)
+
+- **Os números que o PDF não traz são propostos por nós** (decisão do dono do produto,
+  12/10/2026): custos, manutenção dos serviços, desbloqueios (só a olaria = 150 operários vem
+  do PDF), preços, raio dos módulos (5 células), ritmo de chegada de moradores, felicidade e
+  níveis de imposto. **Nunca dados dos jogos Anno.** Ajuste nos `.tres`, conferindo pela
+  planilha (`tools/godot.sh planilha`).
+- **Terreno até a Fase 5** (decisão do dono do produto, 12/10/2026): árvores, jazida e margem
+  de rio valem como presentes; o litoral é a borda da ilha (cabana de pesca); a ilha de teste
+  é fértil para batata, trigo e lúpulo.
+- **`DirectTransferSystem` é provisório**: a produção entra direto no estoque da ilha. A
+  Fase 3 o troca por carroças e armazéns. Entrada escassa vai primeiro a quem precisa antes
+  (senão o primeiro consumidor enche o buffer e os outros param).
+- **Fazenda sem todos os campos/pastos no raio fica parada** ("faltam campos ou pastos"); cada
+  módulo serve a uma fazenda só.
+- **Ponto flutuante de novo**: o fim do ciclo tem folga de 1e-6 (75 ticks de 0,2/15 somam
+  0,99999… e o ciclo atrasava um tick por volta).
+- **Estado e estatística "atuais" usam médias**, não o instante: entre um ciclo e outro o
+  prédio passa um tick "sem entrada" sem perder tempo. A etiqueta de parado só aparece com a
+  produtividade média abaixo de 90%.
+- **Casas em 10 grupos alternados** (`house_update_groups`): cada casa é avaliada a cada 2 s
+  com o tempo de 10 ticks. As somas por grupo e o imposto de cada casa (salvo no save) mantêm
+  o carregar determinístico: depois de carregar, a simulação segue idêntica à original (há
+  teste disso).
+- **Aviso de falta só para bem de necessidade básica**; luxo não é exigido.
 - Nenhum número de regra no código: vai para `GameConfig` ou para os Resources de
   `data/`.
 
@@ -137,15 +175,14 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Fase | Estado |
 |---|---|
 | 0 — Fundação | **concluída em 12/10/2026**, exceto o CI (sem repositório remoto) |
-| 1 — Protótipo cinza | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto; benchmark em `docs/benchmark.md` |
-| 2 — Núcleo econômico | — |
-| 3 a 11 | — |
+| 1 — Protótipo cinza | **concluída em 12/10/2026** |
+| 2 — Núcleo econômico | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto; benchmark em `docs/benchmark.md` |
+| 3 — Logística | — |
+| 4 a 11 | — |
 
 Pendências já vistas para fases futuras:
 
-- A Fase 2 pede estoque e a cadeia do pão antes das carroças (Fase 3) e da fertilidade
-  (Fase 5). Na Fase 2 a produção entra direto no estoque da ilha, numa ilha de teste fértil
-  para tudo, e a Fase 3 troca isso pelas carroças.
-- Custo de construção e a devolução de 50% ao demolir entram na Fase 2, com a economia; na
-  Fase 1 a prévia mostra só o tamanho e o comprimento da estrada.
-- As três caixas provisórias (`placeholder_*`) saem quando os prédios reais entrarem.
+- Fase 3: trocar o `DirectTransferSystem` por carroças e armazéns, e o entreposto entra (hoje
+  o começo dá 40 tábuas direto no estoque, no lugar do navio).
+- Fase 5: árvores, jazidas, rios e a poluição da água; os requisitos de terreno passam a valer.
+- Fase 7: gráficos históricos nas estatísticas e o Theme (os painéis usam `UiStyle` provisório).

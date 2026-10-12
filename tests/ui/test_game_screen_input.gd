@@ -16,6 +16,7 @@ func before_test() -> void:
 	GameScreen.load_slot_on_start = ""
 	_runner = scene_runner(GAME)
 	_game = _runner.scene()
+	_game.simulation.free_build = true
 	GameClock.set_speed(0)
 	_runner.simulate_mouse_move(_center())
 	await _runner.await_input_processed()
@@ -39,7 +40,7 @@ func _cell_under(screen_position: Vector2) -> Vector2i:
 
 
 func test_left_click_builds_under_the_mouse() -> void:
-	_game.tool.start_building(_game.simulation.catalog.find(&"placeholder_house"))
+	_game.tool.start_building(_game.simulation.data.building(&"house"))
 	_runner.simulate_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	await _runner.await_input_processed()
 	var building_id := _game.simulation.world.island(0).building_at(_cell_under(_center()))
@@ -134,7 +135,7 @@ func test_space_pauses_and_number_keys_set_speed() -> void:
 
 
 func test_f5_then_f9_restores_the_world() -> void:
-	_game.tool.start_building(_game.simulation.catalog.find(&"placeholder_house"))
+	_game.tool.start_building(_game.simulation.data.building(&"house"))
 	_runner.simulate_mouse_button_pressed(MOUSE_BUTTON_LEFT)
 	await _runner.await_input_processed()
 	var saved := _game.game_state()
@@ -151,10 +152,10 @@ func test_f5_then_f9_restores_the_world() -> void:
 func test_click_selects_and_f_centers_the_camera() -> void:
 	var sim := _game.simulation
 	var target := Vector2i(60, 60)
-	sim.execute(PlaceBuildingCommand.new(0, &"placeholder_house", target, 0))
+	sim.execute(PlaceBuildingCommand.new(0, &"house", target, 0))
 	_game.tool.select(sim.world.island(0).building_at(target))
-	assert_bool(_game.hud.find_children("*", "Label", true, false).any(
-			func(label: Node) -> bool: return (label as Label).text == tr("INFO_ROAD_MISSING"))).is_true()
+	await _runner.simulate_frames(2)
+	assert_bool(_game.hud.selection_panel.shows_missing_road()).is_true()
 	_runner.simulate_key_pressed(KEY_F)
 	await _runner.simulate_frames(90, 16)
 	var expected := GridSpace.rect_center(Rect2i(target, Vector2i(3, 3)), GameConfig.get_default().cell_size_m)
