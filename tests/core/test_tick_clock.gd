@@ -69,6 +69,7 @@ func test_long_frame_is_capped_and_excess_dropped() -> void:
 
 
 func test_day_lasts_twenty_four_real_minutes_at_1x() -> void:
+	_config.day_start_hour = 0.0
 	var clock := TickClock.new(_config)
 	clock.tick_count = 3600
 	assert_float(clock.time_of_day()).is_equal_approx(0.5, 0.0001)

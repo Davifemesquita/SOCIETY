@@ -5,6 +5,9 @@ extends Node
 
 ## Slot a carregar ao abrir a tela (vazio = jogo novo). Definido pela tela de abertura.
 static var load_slot_on_start: String = ""
+## Céu do Sky3D (padrão) ou o céu simples. Os testes de interface que não testam o céu desligam:
+## o Sky3D renderizado por software (xvfb) leva segundos por quadro.
+static var use_sky3d: bool = true
 
 const QUICK_SLOT := "rapido"
 const THUMBNAIL_SIZE := Vector2i(320, 180)
@@ -17,6 +20,11 @@ var building_view: BuildingView
 var road_view: RoadView
 var cart_view: CartView
 var overlay: DebugOverlay
+var sky: SkyAdapter
+var pedestrian_view: PedestrianView
+var window_view: WindowLightsView
+## Quanto é noite agora (0 a 1), o mesmo valor do uniforme global night_light.
+var night_light: float = 0.0
 
 var _config: GameConfig
 
@@ -29,15 +37,24 @@ func _ready() -> void:
 	var island := FlatIsland.new()
 	island.setup(size_m)
 	add_child(island)
+	sky = SkyAdapter.new()
+	add_child(sky)
+	sky.setup(_config, use_sky3d)
 	road_view = RoadView.new()
 	road_view.setup(simulation, _config.cell_size_m)
 	add_child(road_view)
 	building_view = BuildingView.new()
 	building_view.setup(simulation, _config.cell_size_m)
 	add_child(building_view)
+	window_view = WindowLightsView.new()
+	window_view.setup(simulation, _config)
+	add_child(window_view)
 	cart_view = CartView.new()
 	cart_view.setup(simulation, _config.cell_size_m)
 	add_child(cart_view)
+	pedestrian_view = PedestrianView.new()
+	pedestrian_view.setup(simulation, _config)
+	add_child(pedestrian_view)
 	overlay = DebugOverlay.new()
 	overlay.setup(simulation, _config.cell_size_m)
 	add_child(overlay)
@@ -72,9 +89,20 @@ func _ready() -> void:
 	shortcuts.setup(self)
 	add_child(shortcuts)
 	GameClock.ticked.connect(simulation.tick)
+	# a hora do dia sai dos ticks da partida: jogo novo começa no dia 1, em day_start_hour
+	GameClock.clock.tick_count = simulation.world.tick
+	GameClock.clock.extra_hours = 0.0
 	if not load_slot_on_start.is_empty():
 		load_game(load_slot_on_start)
 		load_slot_on_start = ""
+
+
+## Céu e luzes seguem a hora do GameClock, lisa entre os ticks.
+func _process(_delta: float) -> void:
+	var hour := GameClock.clock.hour()
+	sky.set_hour(hour)
+	night_light = DayClock.night_factor(_config, hour)
+	RenderingServer.global_shader_parameter_set(&"night_light", night_light)
 
 
 func _exit_tree() -> void:
@@ -116,6 +144,8 @@ func load_game(slot: String) -> bool:
 	if raw_clock is Dictionary:
 		var clock_data: Dictionary = raw_clock
 		GameClock.clock.load_dict(clock_data)
+	# saves antigos podiam ter o relógio adiantado pela tela de abertura; vale o tick da partida
+	GameClock.clock.tick_count = world.tick
 	var raw_camera: Variant = state.get("camera")
 	if raw_camera is Dictionary:
 		var camera_data: Dictionary = raw_camera
@@ -178,6 +208,13 @@ func update_highlight() -> void:
 					ServiceReach.road_cells(grid, front, _config.logistics_range_cells), served))
 			return
 	overlay.clear_custom()
+
+
+## Desenvolvimento (só em build de depuração): adianta o relógio do dia em 3 horas. Só a vista
+## anda; a economia não.
+func advance_day_hours() -> void:
+	if OS.is_debug_build():
+		GameClock.clock.extra_hours = fposmod(GameClock.clock.extra_hours + 3.0, 24.0)
 
 
 ## Trapaça de desenvolvimento (só em build de depuração): dinheiro e 20 t de cada bem.

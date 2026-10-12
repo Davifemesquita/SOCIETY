@@ -3,7 +3,8 @@ extends Node
 ## 400 de operários, cheias), 200 prédios de produção com 200 carroças rodando entre eles, o entreposto e os
 ## armazéns, e 20 mercados, com todos os sistemas. Mede o tick (orçamento de 4 ms), construir
 ## um prédio com a ilha cheia (sem travamento acima de 50 ms), salvar, carregar e o quadro.
-## Pedestres entram na Fase 4.
+## Fase 4: 2.000 pedestres na rua e um dia inteiro em 60 s (céu, janelas, luzes de área), com a
+## partida rodando a 1x, em três distâncias de câmera: FPS médio, 1% pior e pior quadro.
 ##   tools/godot.sh godot --path . res://tools/benchmark.tscn -- [arquivo.md]
 ## No executável: Society.exe -- --benchmark (mostra o resultado na tela e grava em
 ## user://benchmark.md). Sem GPU (esta VM), o tempo de quadro não vale como meta.
@@ -18,6 +19,9 @@ const SEGMENT := 36
 const WARM_UP_TICKS := 600
 const TICKS := 300
 const FRAMES := 120
+## O dia inteiro passa em DAY_SECONDS segundos reais, um terço em cada distância da câmera.
+const DAY_SECONDS := 60.0
+const DAY_DISTANCES: Array[float] = [40.0, 120.0, 300.0]
 const SLOT := "benchmark"
 const RESULT_PATH := "user://benchmark.md"
 
@@ -119,11 +123,67 @@ func _run() -> void:
 		await get_tree().process_frame
 	var frame_ms := (Time.get_ticks_usec() - started) / 1000.0 / FRAMES
 	_report("quadro com tudo visível", "%.0f ms (%.0f FPS) — %s" % [frame_ms, 1000.0 / frame_ms, RenderingServer.get_video_adapter_name()])
+	await _day_cycle(game, config)
 	_write()
 	if _from_game:
 		_show_results()
 	else:
 		get_tree().quit()
+
+
+## Fase 4: todos os pedestres na rua (o teto de 2.000), o custo da multidão na CPU e um dia inteiro
+## renderizado com a partida rodando a 1x.
+func _day_cycle(game: GameScreen, config: GameConfig) -> void:
+	var view := game.pedestrian_view
+	var crowd := view.crowd
+	# a população do benchmark cai sem comida durante os minutos de simulação: volta aos 10 mil
+	for house_id: int in game.simulation.derived_state().houses:
+		var house := game.simulation.world.building(house_id)
+		house.residents = 10.0 if house.tier == &"peasants" else 20.0
+	crowd.activity_override = 1.0
+	config.pedestrian_door_seconds = Vector2.ZERO
+	var started := Time.get_ticks_usec()
+	var warm_frames := 0
+	crowd.update(1.0 / 60.0, 12.0)
+	while crowd.visible_count() < crowd.agent_count() * 0.95 and warm_frames < 5000:
+		crowd.update(1.0 / 60.0, 12.0)
+		view.apply()
+		warm_frames += 1
+	_report("pedestres", "%d na multidão, %d na rua (teto %d); %d janelas" % [crowd.agent_count(),
+			crowd.visible_count(), config.max_visible_pedestrians, game.window_view.window_count()])
+	_report("multidão saindo de casa (rotas novas)", "%d quadros, %.0f ms; %d rotas, %.2f ms cada" % [warm_frames,
+			(Time.get_ticks_usec() - started) / 1000.0, crowd.routes_computed, crowd.routes_usec / 1000.0 / maxi(1, crowd.routes_computed)])
+	started = Time.get_ticks_usec()
+	for i: int in 300:
+		crowd.update(1.0 / 60.0, 12.0)
+		view.apply()
+	_report("multidão na CPU depois de sair (rotina + instâncias)", "%.2f ms por quadro" % [(Time.get_ticks_usec() - started) / 1000.0 / 300])
+	GameClock.set_speed(0)
+	var frames := PackedFloat64Array()
+	var start := Time.get_ticks_usec()
+	var last := start
+	var start_hour := GameClock.clock.hour()
+	var progress := 0.0
+	while progress < 1.0:
+		game.camera.rig.distance = DAY_DISTANCES[mini(floori(progress * DAY_DISTANCES.size()), DAY_DISTANCES.size() - 1)]
+		game.camera.apply()
+		GameClock.clock.extra_hours = 24.0 * progress
+		await get_tree().process_frame
+		var now := Time.get_ticks_usec()
+		frames.append((now - last) / 1000.0)
+		last = now
+		progress = (now - start) / 1000000.0 / DAY_SECONDS
+	GameClock.set_speed(TickClock.PAUSED)
+	GameClock.clock.extra_hours = 0.0
+	var total := 0.0
+	for ms: float in frames:
+		total += ms
+	frames.sort()
+	var average := total / frames.size()
+	var worst_percent := frames[int(frames.size() * 0.99)]
+	_report("dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro)",
+			"%.1f / %.1f FPS / %.0f ms em %d quadros (meta 60 FPS), a partir das %s" % [1000.0 / average,
+			1000.0 / worst_percent, frames[frames.size() - 1], frames.size(), DayClock.clock_text(start_hour)])
 
 
 ## Duas ruas de produção a partir de y: em cada trecho de 36 células, um armazém na ponta e

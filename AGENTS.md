@@ -31,7 +31,7 @@ Texto de interface só por chave de tradução, em `ui/translations/strings.csv`
 
 ```bash
 tools/godot.sh importar            # importa os recursos; obrigatório num clone novo
-tools/godot.sh testes              # suíte gdUnit4 no xvfb (res://tests), ~1 min
+tools/godot.sh testes              # suíte gdUnit4 no xvfb (res://tests), ~3 min
 tools/godot.sh testes res://tests/core/test_tick_clock.gd   # um arquivo
 tools/godot.sh rodar               # abre o jogo
 tools/godot.sh editor              # abre o editor
@@ -42,6 +42,11 @@ tools/godot.sh planilha            # CSV de balanceamento a partir dos dados (ex
 # verificação visual: Fase 2 (vila com economia rodando 30 min, painéis, estatísticas) e
 # Fase 3 (carroças, armazém, corte de estrada); --quit-after evita travar se o script falhar
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://tools/capture_phase3.tscn -- /pasta/de/saida
+# Fase 4: céu em seis horas do dia, multidão de perto e de longe, janelas à noite
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
+# refaz os pedestres (VAT) a partir de assets/source/quaternius; com a pasta dos pacotes
+# baixados (UAL1_Standard.glb, UAL2_Standard.glb) como argumento, refaz antes as animações
+tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.gd
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
@@ -71,7 +76,9 @@ do runner de cena do gdUnit4 (6.2.2), que não são defeito do jogo:
 
 No executável: `Society.exe -- --novo-jogo` abre direto uma partida, `-- --carregar` abre o
 save rápido e `-- --benchmark` roda o benchmark e mostra o resultado na tela (é assim que se
-mede no PC alvo). F8 dá dinheiro e 20 t de cada bem, só em build de depuração.
+mede no PC alvo; desde a Fase 4 inclui um dia inteiro renderizado com 2.000 pedestres). F7
+adianta 3 horas no relógio do dia e F8 dá dinheiro e 20 t de cada bem, os dois só em build de
+depuração.
 
 **Godot MCP** (`@coding-solo/godot-mcp`, MIT) está em `.mcp.json` e passa a valer na
 próxima sessão do Claude Code aberta nesta pasta. Ele chama o Godot por
@@ -84,7 +91,8 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 
 | Caminho | O que é |
 |---|---|
-| `core/tick_clock.gd` | `TickClock` (RefCounted): passo fixo de 5 ticks/s, velocidades 1x/2x/4x, pausa, teto de ticks por quadro, hora do dia (só visual) |
+| `core/tick_clock.gd` | `TickClock` (RefCounted): passo fixo de 5 ticks/s, velocidades 1x/2x/4x, pausa, teto de ticks por quadro, hora do dia (só visual, começa às 7h) |
+| `core/day_clock.gd` | `DayClock`: o que sai da hora — quanto é noite (janelas, luzes) e quanta gente na rua |
 | `core/game_clock.gd` | autoload `GameClock`: fonte da verdade do tempo; emite `ticked(tick_index)` |
 | `core/event_bus.gd` | autoload `EventBus`: sinais tipados; interface e áudio só escutam |
 | `core/save_system.gd` | autoload `SaveSystem`: JSON versionado + zstd + miniatura PNG; migrações por versão |
@@ -106,11 +114,16 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `sim/statistics.gd` | t/min produzido, potencial e consumido por bem; população e finanças |
 | `sim/road_network.gd`, `road_path.gd` | acesso do prédio à estrada, trechos conectados, traçado em L |
 | `world/camera/` | `CameraRig` (contas, testadas) e `StrategyCamera` (entrada e `Camera3D`) |
-| `world/flat_island.gd` | ilha plana, mar, sol e céu (Terrain3D na Fase 5) |
+| `world/flat_island.gd` | ilha plana e mar (Terrain3D na Fase 5) |
+| `world/sky/sky_adapter.gd` | `SkyAdapter`: a única peça que conhece o Sky3D; recebe a hora do GameClock. Sem o addon, céu simples |
 | `presentation/` | caixas dos prédios, estradas em MultiMesh, prévia, grade e camadas F1/F2 |
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
 | `ui/hud/` | barra superior, menu por categoria, painel do selecionado, estatísticas (Tab) |
 | `presentation/cart_view.gd` | carroças num MultiMesh, posição interpolada entre ticks |
+| `presentation/pedestrians/` | `Crowd` (rotina dos pedestres, sem nós), `PedestrianView` (MultiMesh por classe e corpo), `SidewalkPath`, `VatModel` |
+| `presentation/window_lights_view.gd` | janelas nas fachadas (um MultiMesh) e as luzes de área perto da câmera |
+| `shaders/pedestrian_vat.gdshader` | boneco animado pela textura VAT, andando sozinho pelo trecho reto |
+| `tools/vat/vat_baker.gd`, `tools/bake_pedestrians.gd` | gerador próprio de VAT a partir dos personagens da Quaternius (`assets/source/`) |
 | `tools/demo_village.gd` | vila de demonstração com entreposto e armazéns (capturas) |
 | `ui/screens/` | abertura (novo jogo, carregar) e a partida (`GameScreen` monta tudo) |
 | `tools/town_layout.gd` | vila de teste por comandos (benchmark, testes, captura) |
@@ -188,6 +201,46 @@ Regras que já custaram investigação:
 - Nenhum número de regra no código: vai para `GameConfig` ou para os Resources de
   `data/`.
 
+### Vida e tempo (Fase 4)
+
+- **A hora sai dos ticks da partida**: `TickClock.hour()` = início (`day_start_hour`, 7h) + segundos
+  de jogo, liso entre ticks. A `GameScreen` iguala o relógio ao `world.tick` no jogo novo e ao
+  carregar (saves antigos tinham o relógio adiantado pela tela de abertura). F7 (só em build de
+  depuração) soma 3 horas só na vista (`extra_hours`, salvo junto do relógio).
+- **Céu: Sky3D 2.1.0**, atrás do `SkyAdapter`, carregado pelo caminho e usado só por `set`/`get`/
+  `call`. O relógio próprio dele fica desligado; a hora só é repassada quando anda 15 s de jogo
+  (cada repasse refaz as contas do sol e da lua em GDScript). Lua sem sombra (duas sombras
+  direcionais custam caro). **Latitude 45° e 14/04/1840, dia de lua cheia** (escolhido no
+  próprio Sky3D): sem lua, a noite era um breu. O nascer e o pôr do sol do `GameConfig` (5h25 e
+  18h40) têm teste contra o sol do Sky3D: mudou a data, refaça os dois.
+- **Pedestres são só visuais e não vão para o save** (a `Crowd` refaz tudo ao carregar). Um para
+  cada 5 moradores, teto de 2.000; rotina casa → trabalho → serviço → casa pela calçada
+  (`SidewalkPath`, deslocada para a direita de quem anda). Sem trabalho da classe, vão a qualquer
+  prédio de trabalho da rede; sem serviço que atenda a casa, ao mais perto.
+- **O pedestre anda na placa de vídeo**: a instância guarda o começo do trecho reto, o
+  comprimento, a velocidade e a animação; o shader calcula a posição com o tempo visual
+  (`visual_time`, que para na pausa). A CPU só mexe no pedestre que troca de trecho — eventos num
+  calendário de baldes de 0,25 s. Evento marcado para o balde em leitura é lido de novo; evento
+  que ainda não venceu vai para o quadro seguinte (os dois já custaram um teste travado).
+- **Mudança de instância é por lista**, não por buffer: escrever num `PackedFloat32Array` guardado
+  em outro objeto copia o array inteiro a cada escrita (copy-on-write).
+- **VAT gerado aqui, sem Blender e sem OpenVAT** (GPL): `tools/bake_pedestrians.gd` reduz o
+  personagem com o gerador de LOD do Godot (~12.600 → ~1.600 triângulos), calcula cada quadro
+  (skinning na CPU) e grava em `.res` (posição RGBAH exata, sem mipmap). O boneco é virado para
+  −Z pela direção em que o pé apoiado anda; o passo (m por ciclo) também sai dos pés.
+- **Roupa por região do corpo** (UV.x): pele, cabelo, roupa de cima (cor sorteada da paleta da
+  classe em `TierDef.clothing_colors`), calça e sapato. A cor da instância chega ao shader em
+  sRGB e é convertida lá.
+- **Janelas** em todas as fachadas, num MultiMesh só, acesas pela noite (`night_light`) se o
+  prédio está aceso; o térreo da frente desvia da porta de verdade (em prédio de largura par ela
+  fica meia célula fora do meio). `AreaLight3D` ilumina para −Z.
+- **O reflexo do céu é incremental** (`Sky.PROCESS_MODE_INCREMENTAL`, cubo de 128): o céu muda com
+  a hora, e refazer o reflexo inteiro a cada mudança custava ~150 ms por quadro no xvfb (na
+  placa de vídeo também pesa, só que menos).
+- **Testes de interface usam o céu simples** (`GameScreen.use_sky3d = false`): o Sky3D por
+  software leva segundos por quadro e a suíte passava de 5 minutos. O Sky3D na partida tem o
+  teste dele (`tests/ui/test_sky_in_game.gd`).
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -201,8 +254,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 0 — Fundação | **concluída em 12/10/2026**, exceto o CI (sem repositório remoto) |
 | 1 — Protótipo cinza | **concluída em 12/10/2026** |
 | 2 — Núcleo econômico | **concluída em 12/10/2026** |
-| 3 — Logística | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto; benchmark em `docs/benchmark.md` |
-| 4 — Vida e tempo | — |
+| 3 — Logística | **concluída em 12/10/2026** |
+| 4 — Vida e tempo | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto e a medição de FPS na RTX 3060 (`Society.exe -- --benchmark`) |
 | 5 a 11 | — |
 
 Pendências já vistas para fases futuras:

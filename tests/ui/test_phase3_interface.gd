@@ -11,12 +11,17 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	GameScreen.use_sky3d = false
 	GameScreen.load_slot_on_start = ""
 	_runner = scene_runner(GAME)
 	_game = _runner.scene()
 	_sim = _game.simulation
 	GameClock.set_speed(TickClock.PAUSED)
 	await _runner.simulate_frames(2)
+
+
+func after_test() -> void:
+	GameScreen.use_sky3d = true
 
 
 ## Entreposto no litoral norte, estrada na frente dele e casas de camponeses.

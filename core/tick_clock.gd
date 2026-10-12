@@ -17,6 +17,8 @@ var _config: GameConfig
 var _accumulator: float = 0.0
 ## Índice da velocidade ativa antes da pausa, para retomar nela.
 var _resume_speed_index: int = 0
+## Horas somadas só ao relógio do dia (F7, em desenvolvimento). A economia não anda com elas.
+var extra_hours: float = 0.0
 
 
 func _init(config: GameConfig) -> void:
@@ -75,22 +77,35 @@ func game_seconds() -> float:
 	return tick_count * _config.tick_interval()
 
 
-## Hora do dia de 0 (meia-noite) a 1, só para céu e luzes.
+## Hora do dia de 0 (meia-noite) a 1, só para céu e luzes. O jogo novo começa em day_start_hour.
 func time_of_day() -> float:
-	var day := _config.day_length_game_seconds()
-	return fmod(game_seconds(), day) / day
+	return _day_position(game_seconds()) - day_number() + 1
 
 
 func day_number() -> int:
-	return floori(game_seconds() / _config.day_length_game_seconds()) + 1
+	return floori(_day_position(game_seconds())) + 1
+
+
+## Hora de 0 a 24 que anda lisa entre os ticks (céu, luzes e pedestres a 60 quadros por segundo).
+func hour() -> float:
+	var position := _day_position((tick_count + interpolation_alpha()) * _config.tick_interval())
+	return (position - floorf(position)) * 24.0
+
+
+## Dias decorridos desde a meia-noite do dia 1, com a hora de início e as horas extras.
+func _day_position(seconds: float) -> float:
+	return seconds / _config.day_length_game_seconds() + (_config.day_start_hour + extra_hours) / 24.0
 
 
 func to_dict() -> Dictionary:
-	return {"tick_count": tick_count, "speed_index": speed_index, "resume_speed_index": _resume_speed_index}
+	return {"tick_count": tick_count, "speed_index": speed_index, "resume_speed_index": _resume_speed_index,
+			"extra_hours": extra_hours}
 
 
 func load_dict(data: Dictionary) -> void:
 	tick_count = maxi(_int_or(data.get("tick_count"), 0), 0)
+	var raw_extra: Variant = data.get("extra_hours")
+	extra_hours = raw_extra if raw_extra is float else 0.0
 	_resume_speed_index = clampi(_int_or(data.get("resume_speed_index"), 0), 0, _config.game_speeds.size() - 1)
 	if not set_speed(_int_or(data.get("speed_index"), 0)):
 		set_speed(0)

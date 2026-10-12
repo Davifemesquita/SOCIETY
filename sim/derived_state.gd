@@ -317,6 +317,23 @@ func residents_by_tier(island_id: int) -> Dictionary[StringName, float]:
 	return totals
 
 
+## Ids dos serviços (a multidão procura o mais perto).
+func services_list() -> Array[int]:
+	var ids: Array[int] = []
+	for service_id: int in service_houses:
+		ids.append(service_id)
+	return ids
+
+
+## Ids dos armazéns e entrepostos de todas as ilhas.
+func warehouses_list() -> Array[int]:
+	var ids: Array[int] = []
+	for list: Array in warehouses.values():
+		for building_id: Variant in list:
+			ids.append(building_id)
+	return ids
+
+
 func has_road(building_id: int) -> bool:
 	return road_access.get(building_id, false)
 

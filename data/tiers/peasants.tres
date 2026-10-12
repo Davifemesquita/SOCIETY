@@ -49,3 +49,5 @@ basic_needs = Array[ExtResource("2_need")]([SubResource("basic_food"), SubResour
 luxury_needs = Array[ExtResource("2_need")]([SubResource("luxury_drink"), SubResource("luxury_social")])
 house_color = Color(0.74, 0.62, 0.42, 1)
 house_height_m = 4.0
+clothing_colors = PackedColorArray(0.55, 0.42, 0.28, 1, 0.62, 0.56, 0.4, 1, 0.42, 0.45, 0.3, 1, 0.78, 0.74, 0.64, 1, 0.5, 0.3, 0.22, 1)
+trousers_color = Color(0.33, 0.27, 0.2, 1)

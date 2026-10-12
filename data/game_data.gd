@@ -94,6 +94,8 @@ func validate() -> PackedStringArray:
 			if def.modules_required > 0 and building(def.module_id) == null:
 				problems.append("%s: módulo desconhecido %s" % [def.id, def.module_id])
 	for tier_def: TierDef in tiers:
+		if tier_def.clothing_colors.is_empty():
+			problems.append("%s: sem cores de roupa para os pedestres" % tier_def.id)
 		for material: StringName in tier_def.upgrade_materials:
 			if good(material) == null:
 				problems.append("%s: material de upgrade desconhecido %s" % [tier_def.id, material])

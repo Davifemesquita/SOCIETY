@@ -16,6 +16,34 @@ static var _default: GameConfig
 @export var game_speeds: PackedFloat32Array = PackedFloat32Array([1.0, 2.0, 4.0])
 ## Duração de um dia (só visual) em minutos reais a 1x.
 @export var day_length_real_minutes: float = 24.0
+## Hora em que o jogo novo começa.
+@export var day_start_hour: float = 7.0
+
+@export_group("Céu")
+## Onde e quando o céu do Sky3D é calculado: latitude da Europa industrial fictícia e um dia de
+## lua cheia em abril (sem estações no jogo base): o sol nasce às 5h25 e se põe às 18h40, e a lua
+## fica no céu das 19h às 4h, para a noite não ser um breu.
+@export var sky_latitude_deg: float = 45.0
+@export var sky_month: int = 4
+@export var sky_day: int = 14
+@export var sky_year: int = 1840
+## Nascer e pôr do sol nesse dia e lugar (conferidos no Sky3D): as luzes acendem em volta deles.
+@export var sunrise_hour: float = 5.42
+@export var sunset_hour: float = 18.67
+## Meia duração da transição das luzes (janelas, luzes de área) em volta do nascer e do pôr do sol.
+@export var twilight_hours: float = 0.6
+## Distância máxima da sombra do sol, em metros.
+@export var sun_shadow_distance_m: float = 400.0
+## Luz ambiente que não vem do céu: impede a cidade de sumir no escuro à noite e no fim de tarde.
+@export var ambient_fill_color: Color = Color(0.55, 0.6, 0.72)
+@export var ambient_fill_energy: float = 1.0
+## Parte da luz ambiente que vem do céu, de dia e de noite (o resto é ambient_fill).
+@export var sky_ambient_share_day: float = 0.6
+@export var sky_ambient_share_night: float = 0.25
+@export var moon_light_energy: float = 0.7
+## Neblina da atmosfera do Sky3D: densidade e distância onde começa.
+@export var sky_fog_density: float = 0.00035
+@export var sky_fog_start_m: float = 60.0
 
 @export_group("Economia")
 @export var starting_money: int = 50000
@@ -118,7 +146,32 @@ static var _default: GameConfig
 @export var camera_min_height_m: float = 3.0
 
 @export_group("Mundo vivo")
+## Teto de pedestres visíveis (seção 9).
 @export var max_visible_pedestrians: int = 2000
+## Um pedestre na rua para cada tantos moradores (10 mil moradores → 2.000 pedestres).
+@export var residents_per_pedestrian: float = 5.0
+## Fração dos pedestres na rua a cada hora (0h a 23h); entre as horas, interpolado.
+@export var pedestrian_activity_by_hour: PackedFloat32Array = PackedFloat32Array([
+	0.08, 0.05, 0.05, 0.05, 0.08, 0.2, 0.5, 0.85, 0.95, 0.85, 0.8, 0.85,
+	0.95, 0.9, 0.85, 0.85, 0.9, 1.0, 0.95, 0.75, 0.5, 0.3, 0.18, 0.12])
+## Velocidade de caminhada, em metros por segundo de jogo.
+@export var pedestrian_speed_m_s: float = 1.3
+## Distância do meio da estrada até a calçada de cada lado.
+@export var pedestrian_sidewalk_offset_m: float = 0.62
+## Quanto tempo o pedestre fica conversando na porta do serviço (mínimo e máximo, s de jogo).
+@export var pedestrian_service_seconds: Vector2 = Vector2(20.0, 60.0)
+## Pausa na porta do trabalho e de casa antes da próxima perna (s de jogo).
+@export var pedestrian_door_seconds: Vector2 = Vector2(2.0, 8.0)
+## Quantos prédios de trabalho mais perto da casa entram no sorteio do pedestre.
+@export var pedestrian_work_choices: int = 4
+## Tempo de CPU por quadro para calcular rotas novas de pedestres; o resto fica para o próximo.
+@export var pedestrian_route_budget_ms: float = 1.0
+@export var pedestrian_shadows: bool = true
+## Luzes de área (AreaLight3D) nas janelas dos prédios mais perto da câmera, à noite.
+@export var night_area_lights: int = 12
+## Acima desta distância da câmera, as luzes de área se apagam (as janelas continuam acesas).
+@export var night_area_light_camera_distance_m: float = 160.0
+@export var window_light_color: Color = Color(1.0, 0.72, 0.38)
 
 @export_group("Salvar")
 @export var autosave_interval_minutes: float = 10.0
@@ -166,6 +219,16 @@ func validate() -> PackedStringArray:
 			break
 	if day_length_real_minutes <= 0.0:
 		problems.append("day_length_real_minutes deve ser maior que zero")
+	if day_start_hour < 0.0 or day_start_hour >= 24.0:
+		problems.append("day_start_hour fica entre 0 e 24")
+	if sunrise_hour < 0.0 or sunrise_hour >= sunset_hour or sunset_hour >= 24.0:
+		problems.append("sunrise_hour vem antes de sunset_hour, os dois entre 0 e 24")
+	if pedestrian_activity_by_hour.size() != 24:
+		problems.append("pedestrian_activity_by_hour tem um valor por hora (24)")
+	if residents_per_pedestrian <= 0.0 or pedestrian_speed_m_s <= 0.0:
+		problems.append("residents_per_pedestrian e pedestrian_speed_m_s devem ser maiores que zero")
+	if max_visible_pedestrians < 0 or night_area_lights < 0:
+		problems.append("max_visible_pedestrians e night_area_lights não podem ser negativos")
 	if happiness_tax_multiplier_min > happiness_tax_multiplier_max:
 		problems.append("happiness_tax_multiplier_min passa do máximo")
 	if ui_scale_min <= 0.0 or ui_scale_min > ui_scale_max:

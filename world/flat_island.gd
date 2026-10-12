@@ -1,7 +1,7 @@
 class_name FlatIsland
 extends Node3D
-## Ilha plana da Fase 1: chão, bloco da ilha, mar, sol e céu. O terreno de verdade
-## (Terrain3D, arquipélago por semente) entra na Fase 5.
+## Ilha plana da Fase 1: chão, bloco da ilha e mar. O sol e o céu ficam no SkyAdapter (Fase 4); o
+## terreno de verdade (Terrain3D, arquipélago por semente) entra na Fase 5.
 
 const GROUND_COLOR := Color(0.4, 0.5, 0.32)
 const CLIFF_COLOR := Color(0.42, 0.38, 0.32)
@@ -27,8 +27,6 @@ func setup(size_m: Vector2) -> void:
 	water_material.roughness = 0.15
 	water.material = water_material
 	_add_mesh(water, Vector3(center.x, WATER_LEVEL_M, center.z))
-	_add_sun()
-	_add_environment()
 
 
 func _add_mesh(mesh: Mesh, at: Vector3) -> MeshInstance3D:
@@ -45,32 +43,3 @@ func _material(color: Color) -> StandardMaterial3D:
 	material.roughness = 0.95
 	return material
 
-
-func _add_sun() -> void:
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-52.0, -35.0, 0.0)
-	sun.light_color = Color(1.0, 0.95, 0.86)
-	sun.light_energy = 1.1
-	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 600.0
-	add_child(sun)
-
-
-func _add_environment() -> void:
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.42, 0.58, 0.78)
-	sky_material.sky_horizon_color = Color(0.8, 0.82, 0.8)
-	sky_material.ground_horizon_color = Color(0.8, 0.82, 0.8)
-	var sky := Sky.new()
-	sky.sky_material = sky_material
-	var environment := Environment.new()
-	environment.background_mode = Environment.BG_SKY
-	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
-	environment.fog_enabled = true
-	environment.fog_light_color = Color(0.78, 0.8, 0.82)
-	environment.fog_density = 0.00015
-	var world_environment := WorldEnvironment.new()
-	world_environment.environment = environment
-	add_child(world_environment)

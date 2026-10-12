@@ -24,6 +24,7 @@ const KEYS: Dictionary[StringName, Array] = {
 	&"debug_grid": [KEY_F1],
 	&"debug_roads": [KEY_F2],
 	&"game_statistics": [KEY_TAB],
+	&"debug_advance_hours": [KEY_F7],
 	&"debug_cheat_resources": [KEY_F8],
 }
 

@@ -15,3 +15,7 @@ extends Resource
 ## Cor e altura da casa enquanto não há modelo.
 @export var house_color: Color = Color(0.7, 0.6, 0.45)
 @export var house_height_m: float = 4.0
+## Roupa dos pedestres desta classe (seção 9): cada um sorteia a cor de cima desta lista; a calça
+## (ou saia) é a mesma para a classe.
+@export var clothing_colors: PackedColorArray = PackedColorArray([Color(0.45, 0.4, 0.35)])
+@export var trousers_color: Color = Color(0.25, 0.22, 0.2)

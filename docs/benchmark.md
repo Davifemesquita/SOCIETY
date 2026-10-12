@@ -84,3 +84,40 @@ coordenadas) trouxeram para ~42 ms.
 
 No executável Linux exportado (mesma VM), pelo `-- --benchmark`: tick médio 2,79 ms, 95% até
 3,18 ms, pior 3,52 ms; construir com a ilha cheia 26,9 ms; 198 de 200 carroças na rua.
+
+## Fase 4 — vida e tempo
+
+Carga da Fase 3 mais 2.000 pedestres na rua (o teto; a população do benchmark volta aos 10 mil
+antes de medir), ~9.800 janelas, céu do Sky3D e um dia inteiro em 60 s com a partida rodando a
+1x e a câmera a 40, 120 e 300 m. **O FPS desta VM não vale** (Vulkan por software, segundos por
+quadro): a meta de 60 FPS em 1080p se mede na RTX 3060 com `Society.exe -- --benchmark`. Aqui
+valem o tick e o custo da multidão na CPU. (O tempo de processo do Godot por quadro não vale
+nesta VM: numa partida vazia e pausada ele dá 233 ms, o quadro inteiro, porque inclui a espera
+pela renderização por software. Saiu do benchmark.)
+
+### 2026-10-12 18:04:48 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 15604 ms |
+| carroças na rua depois de 2 min | 198 de 200 |
+| tick de simulação (média / 95% / pior) | 3.32 / 3.67 / 4.18 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.02 · produção 0.61 · logística 1.40 · necessidades 0.10 · população 1.06 · economia 0.00 |
+| construir um prédio com a ilha cheia | 35.1 ms (limite 50 ms) |
+| recálculo por etapa (ms) | prédios 8.6 · serviços 9.5 · módulos e poluição 0.0 · armazéns 11.3 · produção 3.6 · grupos de casas 1.2 |
+| salvar | 101 ms (49 KB) |
+| carregar (inclui refazer as vistas) | 360 ms |
+| quadro com tudo visível | 509 ms (2 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1902 na rua (teto 2000); 9769 janelas |
+| multidão saindo de casa (rotas novas) | 201 quadros, 1628 ms; 1384 rotas, 0.42 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.27 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.3 / 0.2 FPS / 4750 ms em 20 quadros (meta 60 FPS), a partir das 10:00 |
+
+O arranque da multidão (todos saindo de casa de uma vez, como ao carregar) calcula ~1.400 rotas
+com A*, 0,42 ms cada nesta VM; o teto de 1 ms de rotas por quadro (4 ms na partida em massa)
+espalha isso por ~200 quadros. Depois, a multidão custa 0,27 ms por quadro na CPU.
+
+No executável Linux exportado (build de release, mesma VM), pelo `-- --benchmark`: tick médio
+2,82 ms, 95% até 3,14 ms, pior 3,28 ms; construir com a ilha cheia 30,1 ms; 2.000 pedestres,
+1.905 na rua; arranque com 1.376 rotas a 0,32 ms cada; multidão assentada a 0,22 ms por quadro.

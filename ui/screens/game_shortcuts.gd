@@ -31,6 +31,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_game.center_on_selected()
 	elif event.is_action_pressed(&"game_statistics"):
 		_game.hud.toggle_statistics()
+	elif event.is_action_pressed(&"debug_advance_hours"):
+		_game.advance_day_hours()
 	elif event.is_action_pressed(&"debug_cheat_resources"):
 		_game.cheat_resources()
 	else:
