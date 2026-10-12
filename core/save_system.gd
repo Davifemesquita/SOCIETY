@@ -1,0 +1,125 @@
+extends Node
+## Salvar e carregar em JSON versionado e compactado, com miniatura opcional em PNG.
+## Nunca em .tres/.res: Resource vindo de arquivo do usuário pode executar script.
+## O JSON usa JSON.from_native sem objetos, o que preserva int, vetores e StringName
+## e recusa qualquer Object na volta.
+
+## Versão do formato. Ao mudar o formato, some 1 e acrescente a migração em migrations.
+const SAVE_VERSION := 1
+const SAVE_EXTENSION := ".save"
+const THUMBNAIL_EXTENSION := ".png"
+const DEFAULT_DIR := "user://saves"
+const _SLOT_PATTERN := "^[a-z0-9_-]{1,64}$"
+
+## migrations[i] leva os dados da versão i + 1 para a i + 2.
+var migrations: Array[Callable] = []
+var save_dir: String = DEFAULT_DIR
+
+var _slot_regex := RegEx.create_from_string(_SLOT_PATTERN)
+
+
+func is_valid_slot(slot: String) -> bool:
+	return _slot_regex.search(slot) != null
+
+
+func slot_path(slot: String) -> String:
+	return save_dir.path_join(slot + SAVE_EXTENSION)
+
+
+func thumbnail_path(slot: String) -> String:
+	return save_dir.path_join(slot + THUMBNAIL_EXTENSION)
+
+
+## Grava o estado no slot. A miniatura é opcional.
+func save_game(slot: String, state: Dictionary, thumbnail: Image = null) -> Error:
+	if not is_valid_slot(slot):
+		return _fail(slot, "nome de slot inválido", ERR_INVALID_PARAMETER)
+	var dir_error := DirAccess.make_dir_recursive_absolute(save_dir)
+	if dir_error != OK:
+		return _fail(slot, "não foi possível criar a pasta de saves", dir_error)
+	var envelope := {
+		"save_version": SAVE_VERSION,
+		"game_version": str(ProjectSettings.get_setting("application/config/version", "")),
+		"saved_at_unix": int(Time.get_unix_time_from_system()),
+		"state": state,
+	}
+	var file := FileAccess.open_compressed(slot_path(slot), FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
+	if file == null:
+		return _fail(slot, "não foi possível abrir o arquivo", FileAccess.get_open_error())
+	file.store_string(JSON.stringify(JSON.from_native(envelope)))
+	file.close()
+	if thumbnail != null:
+		var png_error := thumbnail.save_png(thumbnail_path(slot))
+		if png_error != OK:
+			return _fail(slot, "não foi possível gravar a miniatura", png_error)
+	EventBus.game_saved.emit(slot)
+	return OK
+
+
+## Lê o slot e devolve o estado já migrado para a versão atual, ou {} se falhar.
+func load_game(slot: String) -> Dictionary:
+	if not is_valid_slot(slot):
+		_fail(slot, "nome de slot inválido", ERR_INVALID_PARAMETER)
+		return {}
+	var file := FileAccess.open_compressed(slot_path(slot), FileAccess.READ, FileAccess.COMPRESSION_ZSTD)
+	if file == null:
+		_fail(slot, "save não encontrado", FileAccess.get_open_error())
+		return {}
+	var text := file.get_as_text()
+	file.close()
+	var json := JSON.new()
+	if json.parse(text) != OK:
+		_fail(slot, "save corrompido", ERR_PARSE_ERROR)
+		return {}
+	var envelope: Variant = JSON.to_native(json.data)
+	if not envelope is Dictionary:
+		_fail(slot, "save sem estado", ERR_INVALID_DATA)
+		return {}
+	var data: Dictionary = envelope
+	var raw_state: Variant = data.get("state")
+	var raw_version: Variant = data.get("save_version")
+	if not raw_state is Dictionary or not raw_version is int:
+		_fail(slot, "save sem estado", ERR_INVALID_DATA)
+		return {}
+	var version: int = raw_version
+	var saved_state: Dictionary = raw_state
+	if version < 1 or version > SAVE_VERSION:
+		_fail(slot, "versão de save não suportada: %d" % version, ERR_INVALID_DATA)
+		return {}
+	var state := migrate(saved_state, version, migrations)
+	EventBus.game_loaded.emit(slot)
+	return state
+
+
+## Aplica, em ordem, as migrações da versão from_version até a atual.
+static func migrate(state: Dictionary, from_version: int, steps: Array[Callable]) -> Dictionary:
+	var current := state
+	for i: int in range(from_version - 1, steps.size()):
+		current = steps[i].call(current)
+	return current
+
+
+## Slots existentes, do mais recente para o mais antigo.
+func list_slots() -> PackedStringArray:
+	var entries: Array[Dictionary] = []
+	for file_name: String in DirAccess.get_files_at(save_dir):
+		if file_name.ends_with(SAVE_EXTENSION):
+			var path := save_dir.path_join(file_name)
+			entries.append({"slot": file_name.get_basename(), "mtime": FileAccess.get_modified_time(path)})
+	entries.sort_custom(_newer_first)
+	var slots := PackedStringArray()
+	for entry: Dictionary in entries:
+		slots.append(str(entry["slot"]))
+	return slots
+
+
+static func _newer_first(a: Dictionary, b: Dictionary) -> bool:
+	var a_time: int = a["mtime"]
+	var b_time: int = b["mtime"]
+	return a_time > b_time
+
+
+func _fail(slot: String, reason: String, code: Error) -> Error:
+	push_warning("SaveSystem [%s]: %s (%s)" % [slot, reason, error_string(code)])
+	EventBus.save_failed.emit(slot, reason)
+	return code

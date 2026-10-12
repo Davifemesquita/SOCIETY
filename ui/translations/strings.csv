@@ -1,0 +1,9 @@
+keys,pt_BR,en
+GAME_TITLE,Society,Society
+BOOT_SUBTITLE,Um arquipélago industrial do século XIX,A nineteenth-century industrial archipelago
+BOOT_PHASE,Fase 0 — fundação,Phase 0 — foundation
+BOOT_CONFIG_OK,Configuração válida,Configuration valid
+BOOT_CONFIG_ERRORS,Configuração com %d problema(s),Configuration with %d problem(s)
+BOOT_CLOCK,"Dia %d, %02d:%02d — %s","Day %d, %02d:%02d — %s"
+SPEED_PAUSED,pausado,paused
+SPEED_MULTIPLIER,%sx,%sx

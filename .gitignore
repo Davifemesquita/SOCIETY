@@ -1,0 +1,11 @@
+# Godot
+.godot/
+*.translation
+# gdUnit4
+reports/
+GdUnitRunner.cfg
+# builds
+exportado/
+captura.png
+# estado local do oh-my-claudecode
+.omc/
