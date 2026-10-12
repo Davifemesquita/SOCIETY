@@ -54,14 +54,17 @@ func execute(command: Command) -> CommandResult:
 	return result
 
 
-## Um tick de simulação: força de trabalho → produção → logística → necessidades →
+## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
 ## população e upgrades → economia. As estatísticas são calculadas sob pedido.
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
 	var derived := derived_state()
 	WorkforceSystem.run(world, derived)
 	ProductionSystem.run(config, derived, dt)
-	DirectTransferSystem.run(world, config, derived)
+	if config.instant_logistics:
+		DirectTransferSystem.run(world, config, derived)
+	else:
+		LogisticsSystem.run(world, config, derived, dt)
 	NeedsSystem.run(world, data, config, derived, dt)
 	PopulationSystem.run(world, data, config, derived, dt)
 	EconomySystem.run(world, derived, dt)
@@ -109,6 +112,13 @@ func placement_reason(def: BuildingDef, origin: Vector2i, rotation: int, island_
 	var reason := PlacementRules.check_building(grid, def, origin, rotation)
 	if reason == PlacementRules.OK:
 		reason = PlacementRules.check_terrain(grid, data.profile(world.economy(island_id).profile_id), def, origin, rotation)
-	if reason == PlacementRules.OK:
+	if reason == PlacementRules.OK and not free_build and not config.instant_logistics:
+		reason = PlacementRules.check_trading_post(world, data, island_id, def)
+	if reason == PlacementRules.OK and not (def.is_trading_post and not world.any_trading_post(data)):
 		reason = affordability(def, island_id)
 	return reason
+
+
+## Estoque por bem da ilha agora (o maior nível de entreposto dela).
+func storage_capacity(island_id: int = MAIN_ISLAND) -> float:
+	return derived_state().capacity.get(island_id, float(config.island_storage_capacity_t))

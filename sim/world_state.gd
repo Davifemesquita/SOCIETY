@@ -7,6 +7,8 @@ enum TaxLevel { LOW, NORMAL, HIGH }
 var islands: Array[IslandGrid] = []
 var economies: Array[IslandEconomy] = []
 var buildings: Dictionary[int, BuildingRecord] = {}
+## Carroça de cada prédio de produção, pelo id do prédio.
+var carts: Dictionary[int, Cart] = {}
 var next_building_id: int = 1
 var money: float = 0.0
 ## Ticks de simulação desde o começo da partida (escolhe o grupo de casas da vez).
@@ -39,6 +41,25 @@ func building_ids() -> Array[int]:
 	return ids
 
 
+func cart(building_id: int) -> Cart:
+	return carts.get(building_id)
+
+
+## Há entreposto nesta ilha (sem ele não se constrói nada nela).
+func has_trading_post(island_id: int, data: GameData) -> bool:
+	for record: BuildingRecord in buildings.values():
+		if record.island_id == island_id and data.building(record.def_id).is_trading_post:
+			return true
+	return false
+
+
+func any_trading_post(data: GameData) -> bool:
+	for record: BuildingRecord in buildings.values():
+		if data.building(record.def_id).is_trading_post:
+			return true
+	return false
+
+
 func tax_level(tier: StringName) -> int:
 	return tax_levels.get(tier, TaxLevel.NORMAL)
 
@@ -63,10 +84,13 @@ func to_dict() -> Dictionary:
 				road_indices.append(i)
 		island_list.append({"size": grid.size, "roads": road_indices, "economy": economies[index].to_dict()})
 	var building_list: Array[Dictionary] = []
+	var cart_list: Array[Dictionary] = []
 	for building_id: int in building_ids():
 		building_list.append(buildings[building_id].to_dict())
+		if carts.has(building_id):
+			cart_list.append(carts[building_id].to_dict())
 	return {"islands": island_list, "buildings": building_list, "next_building_id": next_building_id,
-			"money": money, "tax_levels": tax_levels.duplicate(), "tick": tick}
+			"money": money, "tax_levels": tax_levels.duplicate(), "tick": tick, "carts": cart_list}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente.
@@ -78,8 +102,9 @@ static func from_dict(data: Dictionary, game_data: GameData) -> WorldState:
 	var raw_money: Variant = data.get("money")
 	var raw_tax: Variant = data.get("tax_levels")
 	var raw_tick: Variant = data.get("tick")
+	var raw_carts: Variant = data.get("carts")
 	if not (raw_islands is Array and raw_buildings is Array and raw_next is int and raw_money is float \
-			and raw_tax is Dictionary and raw_tick is int):
+			and raw_tax is Dictionary and raw_tick is int and raw_carts is Array):
 		return null
 	var island_list: Array = raw_islands
 	for raw_island: Variant in island_list:
@@ -110,6 +135,21 @@ static func from_dict(data: Dictionary, game_data: GameData) -> WorldState:
 		world.tax_levels[tier_id] = level_value
 	if not world.buildings.is_empty() and world.next_building_id <= world.building_ids().back():
 		return null
+	var cart_list: Array = raw_carts
+	for raw_cart: Variant in cart_list:
+		if not raw_cart is Dictionary:
+			return null
+		var cart_data: Dictionary = raw_cart
+		var cart := Cart.from_dict(cart_data)
+		if cart == null or world.carts.has(cart.home_id):
+			return null
+		var home := world.building(cart.home_id)
+		if home == null or not game_data.building(home.def_id).is_production():
+			return null
+		world.carts[cart.home_id] = cart
+	for building_id: int in world.building_ids():
+		if game_data.building(world.buildings[building_id].def_id).is_production() and not world.carts.has(building_id):
+			return null
 	return world
 
 

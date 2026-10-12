@@ -27,6 +27,8 @@ func execute(context: CommandContext) -> CommandResult:
 		if not grid.has_road(cell):
 			new_cells += 1
 	var cost := new_cells * context.config.road_cost_per_cell
+	if not context.free_build and not context.config.instant_logistics and not world.has_trading_post(island_id, context.data):
+		return CommandResult.refused(PlacementRules.NEEDS_TRADING_POST)
 	if not context.free_build:
 		var empty: Dictionary[StringName, int] = {}
 		var reason := PlacementRules.check_cost(world, world.economy(island_id), context.config, cost, empty)

@@ -15,6 +15,7 @@ const NO_FERTILITY := &"REASON_NO_FERTILITY"
 const LOCKED := &"REASON_LOCKED"
 const NO_MONEY := &"REASON_NO_MONEY"
 const NO_MATERIALS := &"REASON_NO_MATERIALS"
+const NEEDS_TRADING_POST := &"REASON_NEEDS_TRADING_POST"
 
 
 static func check_area(grid: IslandGrid, area: Rect2i) -> StringName:
@@ -58,6 +59,13 @@ static func check_terrain(grid: IslandGrid, profile: IslandProfileDef, def: Buil
 
 static func touches_coast(grid: IslandGrid, area: Rect2i) -> bool:
 	return area.position.x == 0 or area.position.y == 0 or area.end.x == grid.size.x or area.end.y == grid.size.y
+
+
+## Sem entreposto na ilha, só o entreposto pode ser construído.
+static func check_trading_post(world: WorldState, data: GameData, island_id: int, def: BuildingDef) -> StringName:
+	if def != null and not def.is_trading_post and not world.has_trading_post(island_id, data):
+		return NEEDS_TRADING_POST
+	return OK
 
 
 static func check_unlock(world: WorldState, def: BuildingDef) -> StringName:

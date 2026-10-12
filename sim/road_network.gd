@@ -15,25 +15,31 @@ static func has_access(grid: IslandGrid, record: BuildingRecord, def: BuildingDe
 
 
 ## Rótulo de componente por célula: 0 sem estrada, 1..n para cada trecho conectado.
+## Anda por índice da grade: roda sobre a ilha inteira a cada estrada nova.
 static func components(grid: IslandGrid) -> PackedInt32Array:
+	var roads := grid.roads
+	var width := grid.size.x
+	var count := roads.size()
 	var labels := PackedInt32Array()
-	labels.resize(grid.roads.size())
+	labels.resize(count)
 	var next_label := 0
-	for start: int in grid.roads.size():
-		if grid.roads[start] == IslandGrid.Road.NONE or labels[start] != 0:
+	var queue := PackedInt32Array()
+	for start: int in count:
+		if roads[start] == 0 or labels[start] != 0:
 			continue
 		next_label += 1
 		labels[start] = next_label
-		var queue: Array[Vector2i] = [grid.cell_at(start)]
+		queue.clear()
+		queue.append(start)
 		var head := 0
 		while head < queue.size():
-			var cell := queue[head]
+			var index := queue[head]
 			head += 1
-			for offset: Vector2i in NEIGHBORS:
-				var neighbor := cell + offset
-				if grid.has_road(neighbor) and labels[grid.index(neighbor)] == 0:
-					labels[grid.index(neighbor)] = next_label
-					queue.append(neighbor)
+			var x := index % width
+			for next: int in [index - 1 if x > 0 else -1, index + 1 if x < width - 1 else -1, index - width, index + width]:
+				if next >= 0 and next < count and roads[next] != 0 and labels[next] == 0:
+					labels[next] = next_label
+					queue.append(next)
 	return labels
 
 

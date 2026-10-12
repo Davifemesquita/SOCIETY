@@ -2,7 +2,7 @@ class_name BuildingDef
 extends Resource
 ## Definição de um tipo de prédio: forma, função, custo e desbloqueio.
 
-enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE }
+enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE }
 ## Requisitos de terreno. Até a Fase 5 a ilha de teste cumpre todos, menos o litoral,
 ## que já é a borda da ilha.
 enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
@@ -44,6 +44,12 @@ enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
 ## Cultura que precisa constar nas fertilidades da ilha.
 @export var fertility: StringName
 
+@export_group("Armazém")
+## O entreposto: primeiro prédio da ilha, no litoral; funciona como armazém e porto.
+@export var is_trading_post: bool = false
+## Níveis do armazém ou entreposto (rampas, estoque, custo do upgrade). Vazio = não melhora.
+@export var levels: Array[BuildingLevelDef] = []
+
 @export_group("Serviço")
 ## Raio do serviço medido por estrada; 0 usa GameConfig.service_radius_cells.
 @export var service_radius_cells: int = 0
@@ -56,6 +62,14 @@ enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
 
 func is_production() -> bool:
 	return kind == Kind.PRODUCTION
+
+
+func is_warehouse() -> bool:
+	return kind == Kind.WAREHOUSE
+
+
+func level(index: int) -> BuildingLevelDef:
+	return levels[clampi(index, 0, levels.size() - 1)] if not levels.is_empty() else null
 
 
 ## t/min gerado a 100% de produtividade.

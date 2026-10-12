@@ -58,3 +58,29 @@ jogo isso acontece uma vez por clique, abaixo do limite de 50 ms.
 
 No executável Linux exportado (build de release, mesma VM), pelo `-- --benchmark`: tick médio
 2,45 ms, 95% até 2,67 ms, pior 8,18 ms; construir com a ilha cheia 24,3 ms.
+
+## Fase 3 — logística
+
+Carga: 10.000 moradores (200 casas de camponeses e 400 de operários), 200 prédios de produção
+com 200 carroças rodando entre eles, 14 armazéns e o entreposto, e 20 mercados.
+A logística custa ~1,5 ms por tick nesta VM. Construir com a ilha cheia passou de 50 ms
+quando entrou o cálculo dos armazéns; as buscas em largura por índice da grade (em vez de
+coordenadas) trouxeram para ~42 ms.
+
+### 2026-10-12 13:59:00 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 15363 ms |
+| carroças na rua depois de 2 min | 198 de 200 |
+| tick de simulação (média / 95% / pior) | 3.36 / 3.70 / 3.98 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.02 · produção 0.62 · logística 1.40 · necessidades 0.10 · população 1.15 · economia 0.00 |
+| construir um prédio com a ilha cheia | 37.2 ms (limite 50 ms) |
+| recálculo por etapa (ms) | prédios 8.7 · serviços 9.4 · módulos e poluição 0.0 · armazéns 12.5 · produção 4.4 · grupos de casas 1.4 |
+| salvar | 108 ms (49 KB) |
+| carregar (inclui refazer as vistas) | 281 ms |
+| quadro com tudo visível | 394 ms (3 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+
+No executável Linux exportado (mesma VM), pelo `-- --benchmark`: tick médio 2,79 ms, 95% até
+3,18 ms, pior 3,52 ms; construir com a ilha cheia 26,9 ms; 198 de 200 carroças na rua.

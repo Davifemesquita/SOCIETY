@@ -15,6 +15,7 @@ var tool: BuildTool
 var hud: Hud
 var building_view: BuildingView
 var road_view: RoadView
+var cart_view: CartView
 var overlay: DebugOverlay
 
 var _config: GameConfig
@@ -34,12 +35,18 @@ func _ready() -> void:
 	building_view = BuildingView.new()
 	building_view.setup(simulation, _config.cell_size_m)
 	add_child(building_view)
+	cart_view = CartView.new()
+	cart_view.setup(simulation, _config.cell_size_m)
+	add_child(cart_view)
 	overlay = DebugOverlay.new()
 	overlay.setup(simulation, _config.cell_size_m)
 	add_child(overlay)
 	camera = StrategyCamera.new()
 	add_child(camera)
 	camera.setup(_config, Rect2(Vector2.ZERO, size_m))
+	# jogo novo começa olhando o litoral norte, onde vai o entreposto
+	camera.rig.focus = Vector3(size_m.x * 0.5, 0.0, 70.0)
+	camera.apply()
 	tool = BuildTool.new()
 	tool.setup(simulation, camera, _config.cell_size_m)
 	add_child(tool)
@@ -135,11 +142,13 @@ func update_highlight() -> void:
 	var grid := world.island(Simulation.MAIN_ISLAND)
 	if tool.mode == BuildTool.Mode.BUILDING and tool.building_def != null:
 		var def := tool.building_def
-		if def.kind == BuildingDef.Kind.SERVICE:
+		if def.kind == BuildingDef.Kind.SERVICE or def.is_warehouse():
 			var front := Footprint.front_cells(tool.building_origin(), def.size, tool.rotation)
-			var reach := ServiceReach.road_cells(grid, front, ServiceReach.radius_of(def, _config))
-			var houses := ServiceReach.houses(world, simulation.data, Simulation.MAIN_ISLAND, reach, simulation.derived_state().houses)
-			overlay.show_custom(Highlight.service(world, simulation.data, Simulation.MAIN_ISLAND, reach, houses))
+			var radius := _config.logistics_range_cells if def.is_warehouse() else ServiceReach.radius_of(def, _config)
+			var reach := ServiceReach.road_cells(grid, front, radius)
+			var targets: Array[int] = simulation.derived_state().houses if def.kind == BuildingDef.Kind.SERVICE else simulation.derived_state().production
+			var covered := ServiceReach.houses(world, simulation.data, Simulation.MAIN_ISLAND, reach, targets)
+			overlay.show_custom(Highlight.service(world, simulation.data, Simulation.MAIN_ISLAND, reach, covered))
 			return
 		if def.modules_required > 0:
 			overlay.show_custom(Highlight.area(grid, tool.building_rect().grow(def.module_radius_cells)))
@@ -156,6 +165,18 @@ func update_highlight() -> void:
 		if def.modules_required > 0:
 			overlay.show_custom(Highlight.area(grid, Footprint.rect(selected.origin, def.size, selected.rotation).grow(def.module_radius_cells)))
 			return
+		if def.is_warehouse():
+			var cells: PackedInt32Array = derived.warehouse_cells.get(selected.id, PackedInt32Array())
+			var front: Array[Vector2i] = []
+			for index: int in cells:
+				front.append(grid.cell_at(index))
+			var served: Array[int] = []
+			for entry: DerivedState.ProductionEntry in derived.production_entries:
+				if entry.warehouse_id == selected.id:
+					served.append(entry.record.id)
+			overlay.show_custom(Highlight.service(world, simulation.data, selected.island_id,
+					ServiceReach.road_cells(grid, front, _config.logistics_range_cells), served))
+			return
 	overlay.clear_custom()
 
 
@@ -165,7 +186,7 @@ func cheat_resources() -> void:
 		return
 	simulation.world.money += 10000.0
 	for good: GoodDef in simulation.data.goods:
-		simulation.world.economy(Simulation.MAIN_ISLAND).add(good.id, 20.0, _config.island_storage_capacity_t)
+		simulation.world.economy(Simulation.MAIN_ISLAND).add(good.id, 20.0, simulation.storage_capacity())
 
 
 func _thumbnail() -> Image:

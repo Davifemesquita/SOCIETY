@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+[ext_resource type="Script" path="res://data/building_level_def.gd" id="2_level"]
+
+[sub_resource type="Resource" id="level_0"]
+script = ExtResource("2_level")
+cost_money = 0
+cost_materials = Dictionary[StringName, int]({})
+ramps = 2
+storage_capacity_t = 50
+
+[sub_resource type="Resource" id="level_1"]
+script = ExtResource("2_level")
+cost_money = 2000
+cost_materials = Dictionary[StringName, int]({&"planks": 10, &"bricks": 6})
+ramps = 4
+storage_capacity_t = 100
+
+[sub_resource type="Resource" id="level_2"]
+script = ExtResource("2_level")
+cost_money = 5000
+cost_materials = Dictionary[StringName, int]({&"planks": 10, &"bricks": 15})
+ramps = 6
+storage_capacity_t = 150
+
+[resource]
+script = ExtResource("1_def")
+id = &"trading_post"
+name_key = "BUILDING_TRADING_POST"
+kind = 4
+size = Vector2i(6, 6)
+height_m = 7.0
+color = Color(0.55, 0.42, 0.3, 1)
+cost_money = 1000
+cost_materials = Dictionary[StringName, int]({&"planks": 10})
+upkeep_per_min = 20
+terrain = 1
+is_trading_post = true
+levels = Array[ExtResource("2_level")]([SubResource("level_0"), SubResource("level_1"), SubResource("level_2")])

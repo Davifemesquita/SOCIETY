@@ -118,13 +118,14 @@ func _add(building_id: int) -> void:
 	if def.kind != BuildingDef.Kind.MODULE:
 		root.add_child(_door(record, def, area))
 		var label := Label3D.new()
-		label.font_size = 40
+		label.font_size = 34
 		label.outline_size = 10
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.fixed_size = true
 		label.pixel_size = 0.0005
 		label.no_depth_test = true
-		label.position.y = height + 2.0
+		# alterna a altura entre vizinhos para as etiquetas não encostarem umas nas outras
+		label.position.y = height + 2.0 + (building_id % 2) * 2.5
 		label.visible = false
 		root.add_child(label)
 		_labels[building_id] = label
@@ -169,6 +170,26 @@ func refresh_labels() -> void:
 
 
 ## Produção mostra o estado quando parada; casa e serviço mostram só a falta de estrada.
+## Texto curto da etiqueta sobre o prédio (o painel mostra o texto completo). Vira ícone na Fase 7.
+static func label_key(state: BuildingRecord.State) -> String:
+	match state:
+		BuildingRecord.State.NO_INPUT:
+			return "LABEL_NO_INPUT"
+		BuildingRecord.State.NO_WORKERS:
+			return "LABEL_NO_WORKERS"
+		BuildingRecord.State.OUTPUT_FULL:
+			return "LABEL_OUTPUT_FULL"
+		BuildingRecord.State.NO_ROAD:
+			return "LABEL_NO_ROAD"
+		BuildingRecord.State.NO_MODULES:
+			return "LABEL_NO_MODULES"
+		BuildingRecord.State.PAUSED:
+			return "LABEL_PAUSED"
+		BuildingRecord.State.NO_WAREHOUSE:
+			return "LABEL_NO_WAREHOUSE"
+	return ""
+
+
 func _refresh_label(building_id: int) -> void:
 	if not _labels.has(building_id):
 		return
@@ -177,14 +198,16 @@ func _refresh_label(building_id: int) -> void:
 	var text := ""
 	var color := ALERT_COLOR
 	if record.is_house() and record.happiness < _simulation.config.protest_happiness_threshold and record.residents > 0.0:
-		text = tr("STATE_PROTEST")
+		text = tr("LABEL_PROTEST")
 		color = PROTEST_COLOR
 	elif not _simulation.has_road_access(building_id):
-		text = tr("STATE_NO_ROAD")
+		text = tr("LABEL_NO_ROAD")
+	elif _simulation.def_of(record).is_warehouse() and not _simulation.derived_state().warehouse_connected.get(building_id, false):
+		text = tr("LABEL_DISCONNECTED")
 	elif _simulation.def_of(record).is_production():
 		var state := SelectionPanel.shown_state(record)
 		if state not in [BuildingRecord.State.PRODUCING, BuildingRecord.State.IDLE]:
-			text = tr(SelectionPanel.state_key(state))
+			text = tr(label_key(state))
 			color = PAUSED_COLOR if record.paused else ALERT_COLOR
 	label.text = text
 	label.modulate = color

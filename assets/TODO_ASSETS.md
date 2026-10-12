@@ -11,3 +11,5 @@ a descrição, o orçamento de polígonos e o prompt de imagem de referência.
 | casas por classe | camponês e operário são caixas da cor da classe (`data/tiers/*.tres`); 3 a 5 modelos por classe | 3.000–8.000 | "casa de <classe> do século XIX, Europa industrial, <material da classe>" | 8 |
 | campo e pasto | ladrilho plano colorido; plantação e cerca com animais | até 1.000 | "campo de trigo cercado, século XIX, vista de cima" | 9 |
 | ícones de estado do prédio | hoje texto em Label3D ("Sem entrada", "Saída cheia"…); viram ícones do sistema central | — | "ícone de <estado>, gravura do século XIX, moldura dourada" | 7 |
+| carroça | caixa marrom com a carga na cor do bem (`presentation/cart_view.gd`); carroça de madeira com cavalo e carga visível (sacos, barris, tábuas, carvão) | 1.000–2.000 | "carroça de carga do século XIX puxada a cavalo, madeira, vista isométrica" | 9 |
+| entreposto e armazém | caixas; galpão de porto com guindaste e armazém de tijolo com rampas | 8.000–20.000 | "entreposto portuário do século XIX com guindaste de madeira" | 9 |

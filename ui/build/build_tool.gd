@@ -127,8 +127,10 @@ func preview_reason() -> StringName:
 				if reason != PlacementRules.OK:
 					return reason
 			if not _simulation.free_build:
-				var empty: Dictionary[StringName, int] = {}
 				var world := _simulation.world
+				if not _simulation.config.instant_logistics and not world.has_trading_post(Simulation.MAIN_ISLAND, _simulation.data):
+					return PlacementRules.NEEDS_TRADING_POST
+				var empty: Dictionary[StringName, int] = {}
 				return PlacementRules.check_cost(world, world.economy(Simulation.MAIN_ISLAND), _simulation.config, road_cost(), empty)
 	return PlacementRules.OK
 

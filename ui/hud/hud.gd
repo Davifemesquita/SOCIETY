@@ -51,7 +51,7 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	EventBus.time_speed_changed.connect(func(_speed_index: int, _paused: bool) -> void: _refresh_speed())
 	EventBus.good_shortage.connect(func(_island: int, good: StringName) -> void:
 		show_message(tr("MSG_SHORTAGE") % tr(simulation.data.good(good).name_key)))
-	_select_category(0)
+	_select_category(_categories().size() - 1 if _needs_trading_post() else 0)
 	_refresh_speed()
 	_refresh_tool()
 	_refresh()
@@ -89,6 +89,8 @@ func _refresh() -> void:
 	for tier: TierDef in _simulation.data.tiers:
 		parts.append("%s %s" % [tr(tier.name_key), Fmt.integer(world.population(tier.id))])
 	_population_label.text = " · ".join(parts)
+	if _tool.mode == BuildTool.Mode.NONE:
+		_refresh_tool()
 	for def_id: StringName in _item_buttons:
 		var def := _simulation.data.building(def_id)
 		_item_buttons[def_id].disabled = not _simulation.free_build and PlacementRules.check_unlock(world, def) != PlacementRules.OK
@@ -164,7 +166,7 @@ func _categories() -> Array[Array]:
 			return (def.is_production() and def.workforce_tier == tier.id) \
 					or (def.kind == BuildingDef.Kind.MODULE and def.unlock_tier == tier.id)))
 	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.kind == BuildingDef.Kind.SERVICE))
-	groups.append([])
+	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_warehouse()))
 	return groups
 
 
@@ -191,7 +193,7 @@ func _select_category(index: int) -> void:
 		button.pressed.connect(func() -> void: _tool.start_building(def))
 		_items.add_child(button)
 		_item_buttons[def.id] = button
-	if defs.is_empty():
+	if index == _categories().size() - 1:
 		var road := _button("HUD_ROAD")
 		road.pressed.connect(_tool.start_road)
 		_items.add_child(road)
@@ -221,6 +223,12 @@ func _tooltip(def: BuildingDef) -> String:
 			lines.append(tr("TIP_COAST"))
 	if def.unlock_tier != &"":
 		lines.append(tr("TIP_UNLOCK") % [Fmt.integer(def.unlock_residents), tr(data.tier(def.unlock_tier).name_key)])
+	if def.is_warehouse():
+		lines.append(tr("TIP_RAMPS") % def.level(0).ramps)
+		if def.is_trading_post:
+			lines.append(tr("TIP_STORAGE") % def.level(0).storage_capacity_t)
+			lines.append(tr("TIP_COAST"))
+			lines.append(tr("TIP_FIRST_FREE"))
 	return "\n".join(lines)
 
 
@@ -276,6 +284,11 @@ func _refresh_speed() -> void:
 		_speed_buttons[index].set_pressed_no_signal(clock.speed_index == speed_index)
 
 
+func _needs_trading_post() -> bool:
+	return not _simulation.free_build and not _simulation.config.instant_logistics \
+			and not _simulation.world.has_trading_post(Simulation.MAIN_ISLAND, _simulation.data)
+
+
 func _refresh_tool() -> void:
 	match _tool.mode:
 		BuildTool.Mode.BUILDING:
@@ -285,7 +298,7 @@ func _refresh_tool() -> void:
 		BuildTool.Mode.DEMOLISH:
 			_hint.text = tr("HUD_HINT_DEMOLISH")
 		_:
-			_hint.text = ""
+			_hint.text = tr("HINT_BUILD_TRADING_POST") if _needs_trading_post() else ""
 
 
 func _update_cursor_label() -> void:

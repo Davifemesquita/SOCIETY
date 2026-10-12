@@ -33,6 +33,9 @@ static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: f
 	if not entry.modules_ok:
 		record.state = BuildingRecord.State.NO_MODULES
 		return 0.0
+	if entry.warehouse_id == 0 and not config.instant_logistics:
+		record.state = BuildingRecord.State.NO_WAREHOUSE
+		return 0.0
 	if not record.in_cycle and not _start_cycle(record, def, config):
 		return 0.0
 	var speed := entry.economy.workforce(def.workforce_tier)

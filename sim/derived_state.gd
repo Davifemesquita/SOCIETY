@@ -13,6 +13,11 @@ class ProductionEntry:
 	var economy: IslandEconomy
 	var has_road: bool
 	var modules_ok: bool
+	## Armazém que atende o prédio (0 = nenhum a até o alcance logístico).
+	var warehouse_id: int = 0
+	## Célula de estrada da frente por onde a carroça sai (-1 = nenhuma).
+	var access_cell: int = -1
+	var warehouse_distance: int = -1
 
 var road_access: Dictionary[int, bool] = {}
 ## Casa → serviços (id do tipo) que a cobrem.
@@ -29,6 +34,23 @@ var service_houses: Dictionary[int, Array] = {}
 var service_reach: Dictionary[int, PackedInt32Array] = {}
 var houses: Array[int] = []
 var production: Array[int] = []
+## Muda a cada recálculo: a logística confere as rotas das carroças quando ele muda.
+var version: int = 0
+var carts_checked: bool = false
+## Armazéns e entrepostos ligados por estrada a um entreposto, por ilha.
+var warehouses: Dictionary[int, Array] = {}
+var warehouse_connected: Dictionary[int, bool] = {}
+var ramps: Dictionary[int, int] = {}
+## Células de estrada na frente de cada armazém.
+var warehouse_cells: Dictionary[int, PackedInt32Array] = {}
+var fields: Dictionary[int, WarehouseField] = {}
+## Estoque por bem de cada ilha (o maior nível de entreposto dela).
+var capacity: Dictionary[int, float] = {}
+var _routers: Dictionary[int, RoadRouter] = {}
+var _world: WorldState
+## Tempo de cada etapa do último recálculo, em ms (para o benchmark).
+var last_rebuild_ms: Dictionary[String, float] = {}
+var _mark: int = 0
 var production_entries: Array[ProductionEntry] = []
 ## ilha → bem → prédios com estrada que consomem o bem (ProductionEntry)
 var consumers: Dictionary[int, Dictionary] = {}
@@ -43,6 +65,18 @@ var group_residents: Array[Dictionary] = []
 
 
 func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
+	last_rebuild_ms.clear()
+	_mark = Time.get_ticks_usec()
+	version += 1
+	carts_checked = false
+	_world = world
+	_routers.clear()
+	warehouses.clear()
+	warehouse_connected.clear()
+	ramps.clear()
+	warehouse_cells.clear()
+	fields.clear()
+	capacity.clear()
 	road_access.clear()
 	coverage.clear()
 	module_count.clear()
@@ -59,6 +93,8 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	var services: Array[int] = []
 	var farms: Array[int] = []
 	var polluters: Array[int] = []
+	var depots: Array[int] = []
+	var modules: Dictionary[StringName, Array] = {}
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := data.building(record.def_id)
@@ -74,16 +110,138 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 					farms.append(building_id)
 			BuildingDef.Kind.SERVICE:
 				services.append(building_id)
+			BuildingDef.Kind.WAREHOUSE:
+				depots.append(building_id)
+			BuildingDef.Kind.MODULE:
+				if not modules.has(def.id):
+					modules[def.id] = []
+				var same: Array = modules[def.id]
+				same.append(building_id)
 		if def.pollution_radius_cells > 0:
 			polluters.append(building_id)
 		upkeep_per_min += def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0)
+	_lap("prédios")
 	var houses_at_road := _houses_by_front_cell(world, data)
 	for service_id: int in services:
 		_cover(world, data, config, service_id, houses_at_road)
-	_assign_modules(world, data, farms)
+	_lap("serviços")
+	_assign_modules(world, data, farms, modules)
 	_spread_pollution(world, data, polluters)
+	_lap("módulos e poluição")
+	_index_warehouses(world, data, config, depots)
+	_lap("armazéns")
 	_index_production(world, data)
+	_assign_warehouses(world, config)
+	_lap("produção")
 	_group_houses(world, config)
+	_lap("grupos de casas")
+
+
+func _lap(step: String) -> void:
+	var now := Time.get_ticks_usec()
+	last_rebuild_ms[step] = (now - _mark) / 1000.0
+	_mark = now
+
+
+## Armazéns ligados a um entreposto (mesma rede de estrada), rampas, estoque da ilha e o campo
+## de distância de cada ilha.
+func _index_warehouses(world: WorldState, data: GameData, config: GameConfig, candidates: Array[int]) -> void:
+	var labels_by_island: Dictionary[int, PackedInt32Array] = {}
+	var posts_by_island: Dictionary[int, Dictionary] = {}
+	for building_id: int in candidates:
+		var record := world.building(building_id)
+		var def := data.building(record.def_id)
+		var grid := world.island(record.island_id)
+		var cells := PackedInt32Array()
+		for cell: Vector2i in Footprint.front_cells(record.origin, def.size, record.rotation):
+			if grid.has_road(cell):
+				cells.append(grid.index(cell))
+		warehouse_cells[building_id] = cells
+		ramps[building_id] = def.level(record.level).ramps
+		if not labels_by_island.has(record.island_id):
+			labels_by_island[record.island_id] = RoadNetwork.components(grid)
+			posts_by_island[record.island_id] = {}
+		if def.is_trading_post:
+			var island_capacity: float = capacity.get(record.island_id, 0.0)
+			capacity[record.island_id] = maxf(island_capacity, def.level(record.level).storage_capacity_t)
+			var posts: Dictionary = posts_by_island[record.island_id]
+			var labels := labels_by_island[record.island_id]
+			for index: int in cells:
+				posts[labels[index]] = true
+	for building_id: int in candidates:
+		var record := world.building(building_id)
+		var posts: Dictionary = posts_by_island[record.island_id]
+		var labels := labels_by_island[record.island_id]
+		var connected := false
+		for index: int in warehouse_cells[building_id]:
+			if posts.has(labels[index]):
+				connected = true
+		warehouse_connected[building_id] = connected
+		if connected:
+			if not warehouses.has(record.island_id):
+				warehouses[record.island_id] = []
+			var list: Array = warehouses[record.island_id]
+			list.append(building_id)
+	for island_id: int in world.islands.size():
+		if not capacity.has(island_id):
+			capacity[island_id] = float(config.island_storage_capacity_t)
+		var sources: Array[Vector2i] = []
+		var list: Array = warehouses.get(island_id, [])
+		for warehouse_id: int in list:
+			for index: int in warehouse_cells[warehouse_id]:
+				sources.append(Vector2i(index, warehouse_id))
+		fields[island_id] = WarehouseField.new(world.island(island_id), sources)
+
+
+## Cada prédio de produção fica com o armazém mais próximo pela estrada, se estiver no alcance.
+func _assign_warehouses(world: WorldState, config: GameConfig) -> void:
+	for entry: ProductionEntry in production_entries:
+		var grid := world.island(entry.record.island_id)
+		var field := fields[entry.record.island_id]
+		var best := -1
+		for cell: Vector2i in Footprint.front_cells(entry.record.origin, entry.def.size, entry.record.rotation):
+			if not grid.has_road(cell):
+				continue
+			var index := grid.index(cell)
+			if field.distance[index] >= 0 and (best == -1 or field.distance[index] < field.distance[best]):
+				best = index
+		if best == -1:
+			for cell: Vector2i in Footprint.front_cells(entry.record.origin, entry.def.size, entry.record.rotation):
+				if grid.has_road(cell):
+					entry.access_cell = grid.index(cell)
+					break
+			continue
+		entry.access_cell = best
+		entry.warehouse_distance = field.distance[best]
+		if field.distance[best] <= config.logistics_range_cells:
+			entry.warehouse_id = field.owner[best]
+
+
+func router(island_id: int) -> RoadRouter:
+	if not _routers.has(island_id):
+		_routers[island_id] = RoadRouter.new(_world.island(island_id))
+	return _routers[island_id]
+
+
+func entry_of(building_id: int) -> ProductionEntry:
+	for entry: ProductionEntry in production_entries:
+		if entry.record.id == building_id:
+			return entry
+	return null
+
+
+## A célula de estrada do armazém mais perto (em linha reta) de uma célula, para destino da rota.
+func warehouse_target(warehouse_id: int, near: int, grid: IslandGrid) -> int:
+	var cells: PackedInt32Array = warehouse_cells.get(warehouse_id, PackedInt32Array())
+	var best := -1
+	var best_gap := 0
+	var origin := grid.cell_at(near)
+	for index: int in cells:
+		var gap := (grid.cell_at(index) - origin).abs()
+		if best == -1 or gap.x + gap.y < best_gap:
+			best = index
+			best_gap = gap.x + gap.y
+	return best
 
 
 func _index_production(world: WorldState, data: GameData) -> void:
@@ -168,15 +326,20 @@ func covered_by(house_id: int, service_def: StringName) -> bool:
 	return services.has(service_def)
 
 
-## Célula da frente de cada casa → casas que encostam nela, por ilha ("ilha:índice").
-func _houses_by_front_cell(world: WorldState, data: GameData) -> Dictionary[String, Array]:
-	var map: Dictionary[String, Array] = {}
+## Chave de uma célula de uma ilha nos mapas por célula.
+static func _cell_key(island_id: int, index: int) -> int:
+	return (island_id << 32) | index
+
+
+## Célula da frente de cada casa → casas que encostam nela.
+func _houses_by_front_cell(world: WorldState, data: GameData) -> Dictionary[int, Array]:
+	var map: Dictionary[int, Array] = {}
 	for house_id: int in houses:
 		var house := world.building(house_id)
 		var grid := world.island(house.island_id)
 		for cell: Vector2i in Footprint.front_cells(house.origin, data.building(house.def_id).size, house.rotation):
 			if grid.in_bounds(cell):
-				var key := "%d:%d" % [house.island_id, grid.index(cell)]
+				var key := _cell_key(house.island_id, grid.index(cell))
 				if not map.has(key):
 					map[key] = []
 				var list: Array = map[key]
@@ -186,7 +349,7 @@ func _houses_by_front_cell(world: WorldState, data: GameData) -> Dictionary[Stri
 
 
 ## Cobertura de um serviço: estrada alcançada dentro do raio e as casas que encostam nela.
-func _cover(world: WorldState, data: GameData, config: GameConfig, service_id: int, houses_at_road: Dictionary[String, Array]) -> void:
+func _cover(world: WorldState, data: GameData, config: GameConfig, service_id: int, houses_at_road: Dictionary[int, Array]) -> void:
 	var record := world.building(service_id)
 	var def := data.building(record.def_id)
 	var grid := world.island(record.island_id)
@@ -195,7 +358,7 @@ func _cover(world: WorldState, data: GameData, config: GameConfig, service_id: i
 	service_reach[service_id] = reach
 	var covered: Array[int] = []
 	for index: int in reach:
-		var touching: Array = houses_at_road.get("%d:%d" % [record.island_id, index], [])
+		var touching: Array = houses_at_road.get(_cell_key(record.island_id, index), [])
 		for house_id: int in touching:
 			if not covered.has(house_id):
 				covered.append(house_id)
@@ -207,13 +370,14 @@ func _cover(world: WorldState, data: GameData, config: GameConfig, service_id: i
 
 
 ## Cada módulo serve a uma fazenda só: a de menor id que o tem no raio e ainda precisa dele.
-func _assign_modules(world: WorldState, data: GameData, farms: Array[int]) -> void:
+func _assign_modules(world: WorldState, data: GameData, farms: Array[int], modules: Dictionary[StringName, Array]) -> void:
 	for farm_id: int in farms:
 		var farm := world.building(farm_id)
 		var def := data.building(farm.def_id)
 		var reach := Footprint.rect(farm.origin, def.size, farm.rotation).grow(def.module_radius_cells)
 		var count := 0
-		for building_id: int in world.building_ids():
+		var candidates: Array = modules.get(def.module_id, [])
+		for building_id: int in candidates:
 			if count >= def.modules_required:
 				break
 			var candidate := world.building(building_id)

@@ -2,15 +2,18 @@ class_name SimFixture
 extends RefCounted
 ## Montagem de cenários de teste da simulação: ilha pequena, estradas, prédios, casas com
 ## moradores e estoque. Constrói sem custo; os testes de custo desligam free_build.
+## Por padrão usa o transporte instantâneo (sem carroça nem entreposto): os testes da economia
+## medem a economia. Os de logística pedem logistics = true.
 
 const ISLAND := Simulation.MAIN_ISLAND
 
 
-static func simulation(size: Vector2i = Vector2i(120, 40), capacity: int = 50) -> Simulation:
+static func simulation(size: Vector2i = Vector2i(120, 40), capacity: int = 50, logistics: bool = false) -> Simulation:
 	var config := GameConfig.new()
 	config.main_island_size_cells = size
 	config.island_storage_capacity_t = capacity
 	config.starting_materials = {}
+	config.instant_logistics = not logistics
 	var sim := Simulation.new(config, GameData.get_default())
 	sim.free_build = true
 	return sim
@@ -72,6 +75,23 @@ static func residents(sim: Simulation) -> float:
 	return total
 
 
+## Ilha com logística: entreposto no litoral norte (x 0..5, frente para a estrada em y = 6) e
+## a estrada principal em y = 6 de ponta a ponta. Prédios ficam abaixo dela (origem y = 7).
+static func port(sim: Simulation) -> int:
+	var post := place(sim, &"trading_post", Vector2i(0, 0), 2)
+	road(sim, Vector2i(0, 6), Vector2i(sim.world.island(ISLAND).size.x - 1, 6))
+	return post
+
+
+## Casa acima da estrada principal (y = 6), fora da área do entreposto.
+static func house_on_main_road(sim: Simulation, x: int, tier: StringName, residents: float) -> int:
+	return house(sim, x, 6, tier, residents)
+
+
+static func cart(sim: Simulation, building_id: int) -> Cart:
+	return sim.world.cart(building_id)
+
+
 static func give(sim: Simulation, good: StringName, tons: float) -> void:
 	sim.world.economy(ISLAND).stock[good] = tons
 
@@ -87,7 +107,11 @@ static func run_production(sim: Simulation, seconds: float) -> void:
 		var derived := sim.derived_state()
 		WorkforceSystem.run(sim.world, derived)
 		ProductionSystem.run(sim.config, derived, dt)
-		DirectTransferSystem.run(sim.world, sim.config, derived)
+		if sim.config.instant_logistics:
+			DirectTransferSystem.run(sim.world, sim.config, derived)
+		else:
+			LogisticsSystem.run(sim.world, sim.config, derived, dt)
+		sim.world.tick += 1
 
 
 static func run(sim: Simulation, seconds: float) -> void:

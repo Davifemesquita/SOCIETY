@@ -68,6 +68,13 @@ static var _default: GameConfig
 @export var island_storage_capacity_t: int = 50
 @export var carts_per_building: int = 1
 @export var cart_capacity_t: int = 2
+## Velocidade da carroça na estrada de terra, em células por segundo de jogo.
+@export var cart_speed_cells_per_s: float = 2.0
+## Tempo na rampa por tonelada carregada ou descarregada.
+@export var cart_seconds_per_ton: float = 2.0
+## Só para testes e ferramentas: a produção vai e vem do estoque sem carroça e sem entreposto
+## (o transporte provisório da Fase 2). O jogo usa sempre as carroças.
+@export var instant_logistics: bool = false
 ## Distância máxima, por estrada, entre um prédio e um armazém.
 @export var logistics_range_cells: int = 40
 ## Raio dos serviços (mercado, taverna, igreja, escola), medido por estrada.

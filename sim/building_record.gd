@@ -3,7 +3,7 @@ extends RefCounted
 ## Um prédio no mundo. Não é nó: só o registro que a simulação guarda.
 ## Os campos de produção valem para prédios de produção; os de casa, para residências.
 
-enum State { IDLE, PRODUCING, NO_INPUT, NO_WORKERS, OUTPUT_FULL, NO_ROAD, NO_MODULES, PAUSED }
+enum State { IDLE, PRODUCING, NO_INPUT, NO_WORKERS, OUTPUT_FULL, NO_ROAD, NO_MODULES, PAUSED, NO_WAREHOUSE }
 
 var id: int
 var def_id: StringName
@@ -11,6 +11,8 @@ var island_id: int
 var origin: Vector2i
 var rotation: int
 var paused: bool = false
+## Nível do armazém ou entreposto (0 = como construído).
+var level: int = 0
 
 # produção
 var in_cycle: bool = false
@@ -48,7 +50,8 @@ func is_house() -> bool:
 
 
 func to_dict() -> Dictionary:
-	var data := {"id": id, "def": def_id, "island": island_id, "origin": origin, "rotation": rotation, "paused": paused}
+	var data := {"id": id, "def": def_id, "island": island_id, "origin": origin, "rotation": rotation, "paused": paused,
+			"level": level}
 	if is_house():
 		data["house"] = {"tier": tier, "residents": residents, "happiness": happiness, "upgrade_blocked": upgrade_blocked,
 				"tax_per_min": tax_per_min}
@@ -66,8 +69,9 @@ static func from_dict(data: Dictionary) -> BuildingRecord:
 	var raw_origin: Variant = data.get("origin")
 	var raw_rotation: Variant = data.get("rotation")
 	var raw_paused: Variant = data.get("paused")
+	var raw_level: Variant = data.get("level")
 	if not (raw_id is int and raw_def is StringName and raw_island is int and raw_origin is Vector2i \
-			and raw_rotation is int and raw_paused is bool):
+			and raw_rotation is int and raw_paused is bool and raw_level is int):
 		return null
 	var building_id: int = raw_id
 	var def: StringName = raw_def
@@ -78,6 +82,7 @@ static func from_dict(data: Dictionary) -> BuildingRecord:
 		return null
 	var record := BuildingRecord.new(building_id, def, island, at, rot)
 	record.paused = raw_paused
+	record.level = raw_level
 	var raw_house: Variant = data.get("house")
 	var raw_production: Variant = data.get("production")
 	if raw_house is Dictionary:

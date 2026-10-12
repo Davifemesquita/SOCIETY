@@ -39,9 +39,9 @@ tools/godot.sh captura saida.png 180   # grava o quadro 180 do jogo em PNG
 tools/godot.sh exportar windows    # exportado/windows/Society.exe (ou: linux)
 tools/godot.sh planilha            # CSV de balanceamento a partir dos dados (exportado/balanceamento/)
 
-# verificação visual: Fase 1 (vila de 50 casas, 4 direções, prévias, F1/F2, salvar/carregar)
-# e Fase 2 (vila com economia rodando 30 min, painéis, estatísticas, raios de serviço)
-tools/godot.sh godot --path . --resolution 1920x1080 res://tools/capture_phase2.tscn -- /pasta/de/saida
+# verificação visual: Fase 2 (vila com economia rodando 30 min, painéis, estatísticas) e
+# Fase 3 (carroças, armazém, corte de estrada); --quit-after evita travar se o script falhar
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://tools/capture_phase3.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
@@ -98,7 +98,8 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada e demolir: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → estoque (provisório) → necessidades → população → economia |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → economia |
+| `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
 | `sim/derived_state.gd` | o que sai da geometria (acesso, cobertura, módulos, poluição) e os totais por tick; refeito na mudança |
 | `sim/island_economy.gd` | estoque da ilha e atendimento das necessidades por classe |
 | `sim/house_needs.gd` | avaliação de uma casa (necessidades, bônus, imposto), usada pela população e pelo painel |
@@ -109,6 +110,8 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/` | caixas dos prédios, estradas em MultiMesh, prévia, grade e camadas F1/F2 |
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
 | `ui/hud/` | barra superior, menu por categoria, painel do selecionado, estatísticas (Tab) |
+| `presentation/cart_view.gd` | carroças num MultiMesh, posição interpolada entre ticks |
+| `tools/demo_village.gd` | vila de demonstração com entreposto e armazéns (capturas) |
 | `ui/screens/` | abertura (novo jogo, carregar) e a partida (`GameScreen` monta tudo) |
 | `tools/town_layout.gd` | vila de teste por comandos (benchmark, testes, captura) |
 | `audio/` | vazia até a fase que a usa |
@@ -146,9 +149,8 @@ Regras que já custaram investigação:
 - **Terreno até a Fase 5** (decisão do dono do produto, 12/10/2026): árvores, jazida e margem
   de rio valem como presentes; o litoral é a borda da ilha (cabana de pesca); a ilha de teste
   é fértil para batata, trigo e lúpulo.
-- **`DirectTransferSystem` é provisório**: a produção entra direto no estoque da ilha. A
-  Fase 3 o troca por carroças e armazéns. Entrada escassa vai primeiro a quem precisa antes
-  (senão o primeiro consumidor enche o buffer e os outros param).
+- **A produção vai e vem do estoque pela carroça** (Fase 3). O `DirectTransferSystem` (o
+  transporte instantâneo da Fase 2) ficou só para testes e ferramentas.
 - **Fazenda sem todos os campos/pastos no raio fica parada** ("faltam campos ou pastos"); cada
   módulo serve a uma fazenda só.
 - **Ponto flutuante de novo**: o fim do ciclo tem folga de 1e-6 (75 ticks de 0,2/15 somam
@@ -161,6 +163,28 @@ Regras que já custaram investigação:
   o carregar determinístico: depois de carregar, a simulação segue idêntica à original (há
   teste disso).
 - **Aviso de falta só para bem de necessidade básica**; luxo não é exigido.
+
+### Logística (Fase 3)
+
+- **Entreposto primeiro**: sem ele na ilha só ele pode ser construído (nem estrada). O
+  primeiro do jogo é gratuito; as 40 tábuas iniciais são a carga do navio.
+- **Carroça por prédio de produção**, 2 t: sai com a saída (≥ 1 t) e, na mesma viagem, traz a
+  entrada que o estoque tem. A carga só entra no estoque ao descarregar na rampa (2 s/t).
+  Estoque cheio: descarrega o que cabe e volta com o resto.
+- **Alcance de 40 células de estrada** até um armazém ligado (mesma rede de estrada que um
+  entreposto). Fora disso o prédio para com "sem acesso a armazém".
+- **Rotas**: o `WarehouseField` (busca em largura saindo de todos os armazéns) diz o armazém
+  mais próximo e a distância; o AStarGrid2D (`RoadRouter`) dá o caminho da carroça. Rodar o A*
+  por par prédio × armazém custaria segundos a cada estrada nova.
+- **Estrada cortada**: a carroça refaz a rota de onde está; sem caminho, espera parada
+  (`blocked`) até a rede mudar de novo.
+- **`GameConfig.instant_logistics`** é só para testes e ferramentas: volta ao transporte
+  instantâneo da Fase 2 (sem carroça e sem entreposto). Os testes da economia usam; os de
+  logística (`SimFixture.simulation(..., true)`) não. O jogo nunca usa.
+- **Busca em largura por índice da grade** (sem `Vector2i`) nas buscas que rodam sobre a ilha
+  inteira a cada estrada nova; com coordenadas, construir com a ilha cheia passava de 50 ms.
+- Saves da Fase 2 abrem: ganham as carroças e esperam o entreposto (decisão do dono do
+  produto, 12/10/2026).
 - Nenhum número de regra no código: vai para `GameConfig` ou para os Resources de
   `data/`.
 
@@ -176,13 +200,13 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 |---|---|
 | 0 — Fundação | **concluída em 12/10/2026**, exceto o CI (sem repositório remoto) |
 | 1 — Protótipo cinza | **concluída em 12/10/2026** |
-| 2 — Núcleo econômico | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto; benchmark em `docs/benchmark.md` |
-| 3 — Logística | — |
-| 4 a 11 | — |
+| 2 — Núcleo econômico | **concluída em 12/10/2026** |
+| 3 — Logística | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto; benchmark em `docs/benchmark.md` |
+| 4 — Vida e tempo | — |
+| 5 a 11 | — |
 
 Pendências já vistas para fases futuras:
 
-- Fase 3: trocar o `DirectTransferSystem` por carroças e armazéns, e o entreposto entra (hoje
-  o começo dá 40 tábuas direto no estoque, no lugar do navio).
+- Fase 6: o navio de verdade traz a carga inicial; hoje as 40 tábuas já estão no estoque.
 - Fase 5: árvores, jazidas, rios e a poluição da água; os requisitos de terreno passam a valer.
 - Fase 7: gráficos históricos nas estatísticas e o Theme (os painéis usam `UiStyle` provisório).

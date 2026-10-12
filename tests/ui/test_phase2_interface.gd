@@ -51,6 +51,7 @@ func test_production_panel_pauses_the_building() -> void:
 
 func test_house_panel_blocks_upgrade() -> void:
 	var sim := _game.simulation
+	sim.free_build = true
 	var house := sim.execute(PlaceBuildingCommand.new(0, &"house", Vector2i(100, 100), 0)).placed[0]
 	_game.tool.select(house)
 	await _runner.simulate_frames(2)

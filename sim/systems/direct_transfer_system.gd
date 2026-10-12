@@ -1,8 +1,8 @@
 class_name DirectTransferSystem
 extends RefCounted
-## PROVISÓRIO até a Fase 3: a saída dos prédios entra direto no estoque da ilha e as entradas
-## saem direto dele, sem carroça. A Fase 3 troca este sistema pelas carroças e armazéns.
-## Só prédios com estrada trocam com o estoque.
+## Transporte instantâneo, só para testes e ferramentas (GameConfig.instant_logistics): a
+## saída entra direto no estoque da ilha e as entradas saem direto dele, sem carroça. Era o
+## transporte da Fase 2; o jogo usa o LogisticsSystem. Só prédios com estrada trocam.
 ##
 ## Entrada escassa vai primeiro a quem precisa dela antes: cada consumidor recebe 1 t (o que
 ## basta para o próximo ciclo) em ordem de urgência — parado esperando, depois quem termina o
@@ -20,10 +20,10 @@ const URGENCY_CAP := 1 << 30
 
 
 static func run(world: WorldState, config: GameConfig, derived: DerivedState) -> void:
-	var capacity := float(config.island_storage_capacity_t)
 	var buffer := float(config.building_buffer_t)
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		if entry.has_road and entry.record.output_buffer > 0.0:
+			var capacity: float = derived.capacity.get(entry.record.island_id, float(config.island_storage_capacity_t))
 			entry.record.output_buffer -= entry.economy.add(entry.def.output, entry.record.output_buffer, capacity)
 	for island_id: int in derived.consumers:
 		var economy := world.economy(island_id)

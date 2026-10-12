@@ -35,9 +35,23 @@ func execute(context: CommandContext) -> CommandResult:
 		var def := context.data.building(record.def_id)
 		grid.fill_building(Footprint.rect(record.origin, def.size, record.rotation), 0)
 		world.buildings.erase(building_id)
+		world.carts.erase(building_id)
 		if not context.free_build:
 			for material: StringName in def.cost_materials:
-				economy.add(material, floorf(def.cost_materials[material] * context.config.demolish_refund), context.config.island_storage_capacity_t)
+				economy.add(material, floorf(def.cost_materials[material] * context.config.demolish_refund), _capacity(context, island_id))
 	if result.removed.is_empty() and not result.roads_changed:
 		return CommandResult.refused(&"REASON_NOTHING_TO_DEMOLISH")
 	return result
+
+
+## Estoque da ilha pelo maior entreposto que sobrou (sem entreposto, o padrão da configuração).
+static func _capacity(context: CommandContext, island_id: int) -> float:
+	var best := float(context.config.island_storage_capacity_t)
+	var found := false
+	for record: BuildingRecord in context.world.buildings.values():
+		var def := context.data.building(record.def_id)
+		if record.island_id == island_id and def.is_trading_post:
+			var level_capacity := float(def.level(record.level).storage_capacity_t)
+			best = level_capacity if not found else maxf(best, level_capacity)
+			found = true
+	return best

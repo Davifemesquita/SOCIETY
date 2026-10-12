@@ -71,6 +71,8 @@ func show_building(building_id: int) -> void:
 			_build_production(record, def)
 		BuildingDef.Kind.RESIDENCE:
 			_build_house(record)
+		BuildingDef.Kind.WAREHOUSE:
+			_build_warehouse(record, def)
 		_:
 			_add_lines(1)
 	if def.kind != BuildingDef.Kind.RESIDENCE:
@@ -88,8 +90,18 @@ func _process(delta: float) -> void:
 		_refresh()
 
 
+func _build_warehouse(record: BuildingRecord, _def: BuildingDef) -> void:
+	_add_lines(5)
+	var upgrade := _add_button("PANEL_UPGRADE", func() -> void:
+		var result := _simulation.execute(UpgradeBuildingCommand.new(record.id))
+		if not result.ok():
+			_tool.refused.emit(result.reason)
+		_refresh())
+	upgrade.name = "Upgrade"
+
+
 func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
-	_add_lines(6 + def.inputs.size())
+	_add_lines(8 + def.inputs.size())
 	_pause = _add_button("PANEL_PAUSE", func() -> void:
 		_simulation.execute(SetPausedCommand.new(record.id, not _simulation.world.building(record.id).paused))
 		_refresh())
@@ -134,6 +146,8 @@ func _refresh() -> void:
 			_refresh_production(record, def)
 		BuildingDef.Kind.RESIDENCE:
 			_refresh_house(record)
+		BuildingDef.Kind.WAREHOUSE:
+			_refresh_warehouse(record, def)
 		BuildingDef.Kind.SERVICE:
 			_title.text = tr(def.name_key)
 			var houses: Array = _simulation.derived_state().service_houses.get(record.id, [])
@@ -163,8 +177,94 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	var workforce := _simulation.world.economy(record.island_id).workforce(def.workforce_tier)
 	_lines[index + 1].text = tr("PANEL_WORKERS") % [def.workers, tr(data.tier(def.workforce_tier).name_key), Fmt.percent(workforce)]
 	_lines[index + 2].text = tr("PANEL_UPKEEP") % Fmt.integer(def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0))
+	_refresh_logistics(record, index + 3)
 	if _pause != null:
 		_pause.text = tr("PANEL_RESUME") if record.paused else tr("PANEL_PAUSE")
+
+
+## Armazém que atende o prédio e o que a carroça está fazendo.
+func _refresh_logistics(record: BuildingRecord, line: int) -> void:
+	var derived := _simulation.derived_state()
+	var entry := derived.entry_of(record.id)
+	if entry == null or _simulation.config.instant_logistics:
+		_lines[line].text = ""
+		_lines[line + 1].text = ""
+		return
+	var config := _simulation.config
+	if entry.warehouse_id != 0:
+		var warehouse := _simulation.world.building(entry.warehouse_id)
+		_lines[line].text = tr("PANEL_WAREHOUSE") % [tr(_simulation.def_of(warehouse).name_key), entry.warehouse_distance]
+		_lines[line].modulate = Color.WHITE
+	elif entry.warehouse_distance >= 0:
+		_lines[line].text = tr("PANEL_WAREHOUSE_FAR") % [entry.warehouse_distance, config.logistics_range_cells]
+		_lines[line].modulate = RED
+	else:
+		_lines[line].text = tr("STATE_NO_WAREHOUSE")
+		_lines[line].modulate = RED
+	_lines[line + 1].text = cart_text(_simulation.world.cart(record.id))
+
+
+func cart_text(cart: Cart) -> String:
+	if cart == null:
+		return ""
+	if cart.blocked:
+		return tr("PANEL_CART_BLOCKED")
+	var goods := ", ".join(cart.cargo.keys().map(func(good: StringName) -> String:
+		return "%s t %s" % [Fmt.decimal(cart.cargo[good]), tr(_simulation.data.good(good).name_key)]))
+	match cart.state:
+		Cart.State.OUTBOUND:
+			if not goods.is_empty():
+				return tr("PANEL_CART_OUT") % goods
+			return tr("PANEL_CART_OUT_EMPTY") % ", ".join(cart.wanted.keys().map(func(good: StringName) -> String:
+				return tr(_simulation.data.good(good).name_key)))
+		Cart.State.QUEUED:
+			return tr("PANEL_CART_QUEUED")
+		Cart.State.AT_RAMP:
+			return tr("PANEL_CART_RAMP")
+		Cart.State.INBOUND:
+			return tr("PANEL_CART_BACK") % goods if not goods.is_empty() else tr("PANEL_CART_BACK_EMPTY")
+	return tr("PANEL_CART_HOME")
+
+
+func _refresh_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
+	var derived := _simulation.derived_state()
+	_title.text = tr(def.name_key)
+	var busy := 0
+	var waiting := 0
+	for cart: Cart in _simulation.world.carts.values():
+		if cart.warehouse_id == record.id:
+			if cart.state == Cart.State.AT_RAMP:
+				busy += 1
+			elif cart.state == Cart.State.QUEUED:
+				waiting += 1
+	var ramps: int = derived.ramps.get(record.id, 0)
+	_lines[0].text = tr("WAREHOUSE_LEVEL") % [record.level + 1, def.levels.size()]
+	_lines[1].text = tr("WAREHOUSE_RAMPS") % [busy, ramps, waiting]
+	var connected: bool = derived.warehouse_connected.get(record.id, false)
+	_lines[2].text = tr("WAREHOUSE_CONNECTED") if connected else tr("WAREHOUSE_DISCONNECTED")
+	_lines[2].modulate = GREEN if connected else RED
+	var served := 0
+	for entry: DerivedState.ProductionEntry in derived.production_entries:
+		if entry.warehouse_id == record.id:
+			served += 1
+	_lines[3].text = tr("WAREHOUSE_SERVES") % served
+	_lines[4].text = tr("WAREHOUSE_CAPACITY") % Fmt.integer(_simulation.storage_capacity(record.island_id)) if def.is_trading_post else ""
+	var upgrade := _buttons.get_node_or_null("Upgrade") as Button
+	if upgrade != null:
+		var next := record.level + 1
+		upgrade.disabled = next >= def.levels.size()
+		upgrade.tooltip_text = "" if upgrade.disabled else tr("TIP_UPGRADE") % _level_text(def, next)
+
+
+func _level_text(def: BuildingDef, index: int) -> String:
+	var level := def.levels[index]
+	var parts: PackedStringArray = [tr("TIP_COINS") % Fmt.integer(level.cost_money)]
+	for material: StringName in level.cost_materials:
+		parts.append("%d %s" % [level.cost_materials[material], tr(_simulation.data.good(material).name_key)])
+	parts.append(tr("TIP_RAMPS") % level.ramps)
+	if def.is_trading_post:
+		parts.append(tr("TIP_STORAGE") % level.storage_capacity_t)
+	return ", ".join(parts)
 
 
 func _refresh_house(record: BuildingRecord) -> void:
@@ -193,7 +293,7 @@ func _refresh_house(record: BuildingRecord) -> void:
 ## Estado para mostrar: entre um ciclo e o próximo o prédio passa um tick "sem entrada" sem
 ## perder tempo; só vale como parado quando a produtividade média cai.
 static func shown_state(record: BuildingRecord) -> BuildingRecord.State:
-	if record.paused or record.state in [BuildingRecord.State.NO_ROAD, BuildingRecord.State.NO_MODULES]:
+	if record.paused or record.state in [BuildingRecord.State.NO_ROAD, BuildingRecord.State.NO_MODULES, BuildingRecord.State.NO_WAREHOUSE]:
 		return record.state
 	return BuildingRecord.State.PRODUCING if record.productivity >= SHOWN_PRODUCING else record.state
 
@@ -214,4 +314,6 @@ static func state_key(state: BuildingRecord.State) -> String:
 			return "STATE_NO_MODULES"
 		BuildingRecord.State.PAUSED:
 			return "STATE_PAUSED"
+		BuildingRecord.State.NO_WAREHOUSE:
+			return "STATE_NO_WAREHOUSE"
 	return "STATE_IDLE"

@@ -13,7 +13,7 @@ func test_data_loads_and_is_valid() -> void:
 	assert_array(Array(_data.validate())).is_empty()
 	assert_int(_data.goods.size()).is_equal(23)
 	assert_int(_data.tiers.size()).is_equal(2)
-	assert_int(_data.buildings.size()).is_equal(30)
+	assert_int(_data.buildings.size()).is_equal(32)
 
 
 func test_every_name_is_translated() -> void:

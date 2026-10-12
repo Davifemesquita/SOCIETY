@@ -166,3 +166,40 @@ TAX_HIGH,Alto,High
 STATS_CLOSE,Fechar,Close
 MSG_SHORTAGE,Falta %s,Running out of %s
 PREVIEW_ROAD_COST,%s células · %s moedas,%s cells · %s coins
+BUILDING_TRADING_POST,Entreposto,Trading post
+BUILDING_WAREHOUSE,Armazém,Warehouse
+REASON_NEEDS_TRADING_POST,Construa primeiro o entreposto no litoral,Build the trading post on the coast first
+REASON_MAX_LEVEL,Já está no nível máximo,Already at the top level
+REASON_NOT_UPGRADABLE,Este prédio não melhora,This building cannot be upgraded
+STATE_NO_WAREHOUSE,Sem acesso a armazém,No warehouse access
+PANEL_WAREHOUSE,Armazém: %s · %s células,Warehouse: %s · %s cells
+PANEL_WAREHOUSE_FAR,Armazém mais perto a %s células (alcance %s),Nearest warehouse %s cells away (range %s)
+PANEL_CART_HOME,Carroça em casa,Cart at home
+PANEL_CART_OUT,Carroça levando %s,Cart taking %s
+PANEL_CART_OUT_EMPTY,Carroça indo buscar %s,Cart going to fetch %s
+PANEL_CART_QUEUED,Carroça na fila da rampa,Cart waiting for a ramp
+PANEL_CART_RAMP,Carroça na rampa,Cart at the ramp
+PANEL_CART_BACK,Carroça voltando com %s,Cart returning with %s
+PANEL_CART_BACK_EMPTY,Carroça voltando vazia,Cart returning empty
+PANEL_CART_BLOCKED,Carroça esperando a estrada,Cart waiting for the road
+WAREHOUSE_RAMPS,Rampas %s de %s ocupadas · fila %s,Ramps %s of %s busy · queue %s
+WAREHOUSE_LEVEL,Nível %s de %s,Level %s of %s
+WAREHOUSE_CAPACITY,Estoque por bem: %s t,Storage per good: %s t
+WAREHOUSE_CONNECTED,Ligado ao entreposto,Connected to the trading post
+WAREHOUSE_DISCONNECTED,Sem estrada até o entreposto,No road to the trading post
+WAREHOUSE_SERVES,Atende %s prédios,Serves %s buildings
+PANEL_UPGRADE,Melhorar,Upgrade
+TIP_UPGRADE,Próximo nível: %s,Next level: %s
+TIP_FIRST_FREE,O primeiro é gratuito,The first one is free
+HINT_BUILD_TRADING_POST,Construa o entreposto no litoral para começar (Infraestrutura),Build the trading post on the coast to start (Infrastructure)
+TIP_RAMPS,Rampas: %s,Ramps: %s
+TIP_STORAGE,Estoque por bem: %s t,Storage per good: %s t
+LABEL_NO_INPUT,Sem entrada,No input
+LABEL_NO_WORKERS,Sem gente,No workers
+LABEL_OUTPUT_FULL,Cheio,Full
+LABEL_NO_ROAD,Sem estrada,No road
+LABEL_NO_MODULES,Sem campos,No fields
+LABEL_PAUSED,Pausado,Paused
+LABEL_NO_WAREHOUSE,Sem armazém,No warehouse
+LABEL_DISCONNECTED,Sem entreposto,No trading post
+LABEL_PROTEST,Protesto,Protest

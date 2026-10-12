@@ -4,25 +4,29 @@ extends RefCounted
 ## raio. Serve à cobertura real (DerivedState) e à prévia de um serviço ainda não construído.
 
 
-## Células de estrada alcançadas (índices da grade), em ordem crescente.
+## Células de estrada alcançadas (índices da grade), em ordem crescente. Anda por índice da
+## grade: roda para cada serviço a cada estrada nova.
 static func road_cells(grid: IslandGrid, front: Array[Vector2i], radius: int) -> PackedInt32Array:
+	var roads := grid.roads
+	var width := grid.size.x
+	var count := roads.size()
 	var distance: Dictionary[int, int] = {}
-	var queue: Array[Vector2i] = []
+	var queue := PackedInt32Array()
 	for cell: Vector2i in front:
 		if grid.has_road(cell) and not distance.has(grid.index(cell)):
 			distance[grid.index(cell)] = 0
-			queue.append(cell)
+			queue.append(grid.index(cell))
 	var head := 0
 	while head < queue.size():
-		var cell := queue[head]
+		var index := queue[head]
 		head += 1
-		var steps := distance[grid.index(cell)]
+		var steps: int = distance[index]
 		if steps >= radius:
 			continue
-		for offset: Vector2i in RoadNetwork.NEIGHBORS:
-			var next := cell + offset
-			if grid.has_road(next) and not distance.has(grid.index(next)):
-				distance[grid.index(next)] = steps + 1
+		var x := index % width
+		for next: int in [index - 1 if x > 0 else -1, index + 1 if x < width - 1 else -1, index - width, index + width]:
+			if next >= 0 and next < count and roads[next] != 0 and not distance.has(next):
+				distance[next] = steps + 1
 				queue.append(next)
 	var reach := PackedInt32Array(distance.keys())
 	reach.sort()
