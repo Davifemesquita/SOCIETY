@@ -168,6 +168,10 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_lines[0].modulate = GREEN if state == BuildingRecord.State.PRODUCING else (Color(0.8, 0.8, 0.8) if record.paused else RED)
 	_lines[1].text = tr("PANEL_PRODUCTIVITY") % Fmt.percent(record.productivity)
 	_lines[2].text = tr("PANEL_CYCLE") % Fmt.integer(def.cycle_s)
+	var entry := _simulation.derived_state().entry_of(record.id)
+	if entry != null and entry.trees >= 0:
+		# lenhador no terreno gerado: quantas árvores ele alcança
+		_lines[2].text += "  ·  " + tr("PANEL_TREES") % [entry.trees, config.lumberjack_min_trees]
 	var index := 3
 	for input: StringName in def.inputs:
 		var held: float = record.input_buffer.get(input, 0.0)
@@ -293,7 +297,8 @@ func _refresh_house(record: BuildingRecord) -> void:
 ## Estado para mostrar: entre um ciclo e o próximo o prédio passa um tick "sem entrada" sem
 ## perder tempo; só vale como parado quando a produtividade média cai.
 static func shown_state(record: BuildingRecord) -> BuildingRecord.State:
-	if record.paused or record.state in [BuildingRecord.State.NO_ROAD, BuildingRecord.State.NO_MODULES, BuildingRecord.State.NO_WAREHOUSE]:
+	if record.paused or record.state in [BuildingRecord.State.NO_ROAD, BuildingRecord.State.NO_MODULES, BuildingRecord.State.NO_WAREHOUSE,
+			BuildingRecord.State.NO_TREES]:
 		return record.state
 	return BuildingRecord.State.PRODUCING if record.productivity >= SHOWN_PRODUCING else record.state
 
@@ -316,4 +321,6 @@ static func state_key(state: BuildingRecord.State) -> String:
 			return "STATE_PAUSED"
 		BuildingRecord.State.NO_WAREHOUSE:
 			return "STATE_NO_WAREHOUSE"
+		BuildingRecord.State.NO_TREES:
+			return "STATE_NO_TREES"
 	return "STATE_IDLE"

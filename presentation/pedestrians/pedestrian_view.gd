@@ -35,8 +35,9 @@ func setup(simulation: Simulation, config: GameConfig, seed_value: int = 1) -> v
 		_models.append(model)
 		strides.append(model.clip_strides_m)
 	crowd = Crowd.new(simulation, config, strides, seed_value)
-	var grid := simulation.world.island(Simulation.MAIN_ISLAND)
-	var size := Vector3(grid.size.x * config.cell_size_m, BOUNDS_HEIGHT_M, grid.size.y * config.cell_size_m)
+	# a principal e as regiões vizinhas (onde o gerador põe as outras ilhas), para qualquer semente
+	var region := config.terrain_region_m
+	var bounds := AABB(Vector3(-region, -10.0, -region), Vector3(region * 3.0, 60.0, region * 3.0))
 	for group: Crowd.Group in crowd.groups:
 		var model := _models[group.body]
 		var material := ShaderMaterial.new()
@@ -53,7 +54,7 @@ func setup(simulation: Simulation, config: GameConfig, seed_value: int = 1) -> v
 		var instance := MultiMeshInstance3D.new()
 		instance.multimesh = multimesh
 		instance.material_override = material
-		instance.custom_aabb = AABB(Vector3(-2.0, -1.0, -2.0), size + Vector3(4.0, 1.0, 4.0))
+		instance.custom_aabb = bounds
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if config.pedestrian_shadows \
 				else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(instance)

@@ -3,7 +3,8 @@ extends RefCounted
 ## Um prédio no mundo. Não é nó: só o registro que a simulação guarda.
 ## Os campos de produção valem para prédios de produção; os de casa, para residências.
 
-enum State { IDLE, PRODUCING, NO_INPUT, NO_WORKERS, OUTPUT_FULL, NO_ROAD, NO_MODULES, PAUSED, NO_WAREHOUSE }
+## NO_TREES (Fase 5) entra no fim: o número de cada estado vai no save.
+enum State { IDLE, PRODUCING, NO_INPUT, NO_WORKERS, OUTPUT_FULL, NO_ROAD, NO_MODULES, PAUSED, NO_WAREHOUSE, NO_TREES }
 
 var id: int
 var def_id: StringName

@@ -63,10 +63,15 @@
 [ext_resource type="Resource" path="res://data/buildings/trading_post.tres" id="b_trading_post"]
 [ext_resource type="Resource" path="res://data/buildings/warehouse.tres" id="b_warehouse"]
 [ext_resource type="Resource" path="res://data/islands/test_island.tres" id="i_test"]
+[ext_resource type="Resource" path="res://data/islands/main_island.tres" id="i_main_island"]
+[ext_resource type="Resource" path="res://data/islands/farmland.tres" id="i_farmland"]
+[ext_resource type="Resource" path="res://data/islands/highlands.tres" id="i_highlands"]
+[ext_resource type="Resource" path="res://data/islands/woodland.tres" id="i_woodland"]
+[ext_resource type="Resource" path="res://data/islands/reef.tres" id="i_reef"]
 
 [resource]
 script = ExtResource("1_data")
 goods = Array[ExtResource("2_good")]([ExtResource("g_wood"), ExtResource("g_planks"), ExtResource("g_fish"), ExtResource("g_wool"), ExtResource("g_woolen_clothes"), ExtResource("g_potatoes"), ExtResource("g_spirits"), ExtResource("g_wheat"), ExtResource("g_flour"), ExtResource("g_bread"), ExtResource("g_pigs"), ExtResource("g_sausages"), ExtResource("g_tallow"), ExtResource("g_soap"), ExtResource("g_hops"), ExtResource("g_malt"), ExtResource("g_beer"), ExtResource("g_clay"), ExtResource("g_bricks"), ExtResource("g_coal"), ExtResource("g_iron_ore"), ExtResource("g_steel"), ExtResource("g_steel_beams")])
 tiers = Array[ExtResource("3_tier")]([ExtResource("t_peasants"), ExtResource("t_workers")])
 buildings = Array[ExtResource("4_building")]([ExtResource("b_house"), ExtResource("b_lumberjack"), ExtResource("b_sawmill"), ExtResource("b_fishery"), ExtResource("b_market"), ExtResource("b_sheep_farm"), ExtResource("b_pasture"), ExtResource("b_weavery"), ExtResource("b_tavern"), ExtResource("b_potato_farm"), ExtResource("b_field"), ExtResource("b_distillery"), ExtResource("b_wheat_farm"), ExtResource("b_mill"), ExtResource("b_bakery"), ExtResource("b_school"), ExtResource("b_pig_farm"), ExtResource("b_butcher"), ExtResource("b_rendering_works"), ExtResource("b_soap_factory"), ExtResource("b_church"), ExtResource("b_clay_pit"), ExtResource("b_brickworks"), ExtResource("b_hop_farm"), ExtResource("b_malthouse"), ExtResource("b_brewery"), ExtResource("b_coal_mine"), ExtResource("b_iron_mine"), ExtResource("b_furnace"), ExtResource("b_steel_beam_works"), ExtResource("b_trading_post"), ExtResource("b_warehouse")])
-island_profiles = Array[ExtResource("5_island")]([ExtResource("i_test")])
+island_profiles = Array[ExtResource("5_island")]([ExtResource("i_test"), ExtResource("i_main_island"), ExtResource("i_farmland"), ExtResource("i_highlands"), ExtResource("i_woodland"), ExtResource("i_reef")])

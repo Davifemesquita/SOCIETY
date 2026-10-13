@@ -9,6 +9,8 @@ var yaw: float = 0.0
 var target_yaw: float = 0.0
 var distance: float
 
+## Altura do chão sob o foco (o foco fica no plano y = 0; a câmera sobe com o relevo). Suavizada.
+var ground_height: float = 0.0
 var _config: GameConfig
 var _bounds: Rect2
 var _center_target: Vector3
@@ -29,17 +31,33 @@ func pitch() -> float:
 	return deg_to_rad(lerpf(_config.camera_pitch_near_deg, _config.camera_pitch_far_deg, clampf(t, 0.0, 1.0)))
 
 
+## Ponto para onde a câmera olha: o foco na altura do chão.
+func look_target() -> Vector3:
+	return focus + Vector3(0.0, ground_height, 0.0)
+
+
 func camera_position() -> Vector3:
 	var p := pitch()
 	var offset := Vector3(sin(yaw) * cos(p), sin(p), cos(yaw) * cos(p)) * distance
-	var position := focus + offset
-	position.y = maxf(position.y, _config.camera_min_height_m)
+	var position := look_target() + offset
+	position.y = maxf(position.y, ground_height + _config.camera_min_height_m)
 	return position
 
 
 func camera_transform() -> Transform3D:
 	var position := camera_position()
-	return Transform3D(Basis.IDENTITY, position).looking_at(focus, Vector3.UP)
+	return Transform3D(Basis.IDENTITY, position).looking_at(look_target(), Vector3.UP)
+
+
+## Acompanha a altura do chão sob o foco, sem pulo nas encostas.
+func follow_ground(height: float, delta: float) -> void:
+	ground_height = lerpf(ground_height, height, 1.0 - exp(-delta / 0.2))
+
+
+## Troca a área que a câmera alcança (o arquipélago inteiro, com folga).
+func set_bounds(bounds_m: Rect2) -> void:
+	_bounds = bounds_m.grow(_config.camera_bounds_margin_m)
+	focus = _clamped(focus)
 
 
 ## Frente e direita no chão, relativas ao giro atual.

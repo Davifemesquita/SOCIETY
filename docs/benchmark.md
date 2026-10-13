@@ -121,3 +121,48 @@ espalha isso por ~200 quadros. Depois, a multidão custa 0,27 ms por quadro na C
 No executável Linux exportado (build de release, mesma VM), pelo `-- --benchmark`: tick médio
 2,82 ms, 95% até 3,14 ms, pior 3,28 ms; construir com a ilha cheia 30,1 ms; 2.000 pedestres,
 1.905 na rua; arranque com 1.376 rotas a 0,32 ms cada; multidão assentada a 0,22 ms por quadro.
+
+## Fase 5 — mundo
+
+A carga da Fase 4 no arquipélago da semente 1840: terreno das 5 ilhas, água com ondas e espuma,
+~40 mil árvores desenhadas (as debaixo da cidade derrubadas), a cidade de teste montada sem olhar o relevo
+(chave só do benchmark). O FPS desta VM continua não valendo; a meta se mede na RTX 3060.
+
+### 2026-10-12 22:40:34 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| jogo novo: arquipélago, terreno, água e árvores | 4482 ms (semente 1840, 39763 árvores desenhadas) |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 20627 ms |
+| carroças na rua depois de 2 min | 150 de 200 |
+| tick de simulação (média / 95% / pior) | 3.51 / 3.81 / 4.27 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.04 · produção 0.60 · logística 1.23 · necessidades 0.37 · população 1.10 · economia 0.00 |
+| construir um prédio com a ilha cheia | 45.0 ms (limite 50 ms): comando e vistas 45.0 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.2 · serviços 9.8 · módulos e poluição 0.0 · armazéns 12.3 · produção 6.2 · grupos de casas 1.4 |
+| salvar | 140 ms (53 KB) |
+| carregar (inclui refazer as vistas) | 1971 ms |
+| quadro com tudo visível | 3313 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1902 na rua (teto 2000); 9769 janelas |
+| multidão saindo de casa (rotas novas) | 509 quadros, 3959 ms; 1423 rotas, 1.49 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.65 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.2 / 0.1 FPS / 11788 ms em 10 quadros (meta 60 FPS), a partir das 10:00 |
+
+- **Construir com a ilha cheia**: o recálculo agora acontece uma vez só, dentro do evento (a
+  etiqueta do prédio novo já consulta o estado); antes, as árvores derrubadas marcavam a
+  simulação depois dos eventos e o estado era refeito duas vezes (79 ms).
+- **Tick**: +0,3 ms em relação à Fase 4 porque necessidades e força de trabalho passam pelas 5
+  ilhas, não por uma. Média dentro do orçamento.
+- **Carroças**: 150 de 200 na rua (198 na Fase 4) porque parte dos lenhadores da cidade de teste
+  fica sem árvores em volta (a cidade derruba a floresta onde é montada) e para, como manda a
+  regra.
+- **Carregar** refaz o arquipélago pela semente e o terreno desenhado (a Fase 4 levava 360 ms).
+- **Rotas dos pedestres**: 1,49 ms cada aqui, 1,06 ms rodando sem tela (o renderizador por
+  software disputa a CPU). A diferença que sobra contra os 0,42 ms da Fase 4 deve vir da cidade
+  de teste montada sem olhar o relevo (cada mudança de inclinação vira um ponto a mais na rota);
+  não foi medida à parte. Na ilha de verdade a estrada fica nos patamares planos.
+
+No executável Linux exportado (build de release, mesma VM), pelo `-- --benchmark`: jogo novo
+3,5 s; tick médio 2,85 ms, 95% até 3,15 ms, pior 3,35 ms; construir com a ilha cheia 32,5 ms;
+carregar 1,7 s; 2.000 pedestres, 1.903 na rua; arranque com 1.449 rotas a 0,78 ms cada; multidão
+assentada a 0,41 ms por quadro.

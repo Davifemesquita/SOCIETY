@@ -61,23 +61,31 @@ func _show_building() -> void:
 	_show_box(_tool.building_rect(), def.height_m)
 	var origin := _tool.building_origin()
 	var front := Footprint.front_direction(_tool.rotation)
-	var entrance := GridSpace.cell_center(Footprint.entrance_cell(origin, def.size, _tool.rotation), _cell_size)
-	_door.position = entrance - Vector3(front.x, 0.0, front.y) * (_cell_size * 0.5) + Vector3(0.0, 1.2, 0.0)
+	var grid := _tool.grid()
+	var entrance := grid.cell_world(Footprint.entrance_cell(origin, def.size, _tool.rotation))
+	var base := grid.area_height(_tool.building_rect().intersection(Rect2i(Vector2i.ZERO, grid.size)))
+	_door.position = Vector3(entrance.x, base + 1.2, entrance.z) - Vector3(front.x, 0.0, front.y) * (_cell_size * 0.5)
 	_door.visible = true
 
 
+## Caixa da área, assentada na altura média do terreno dentro da ilha.
 func _show_box(area: Rect2i, height: float) -> void:
+	var grid := _tool.grid()
 	var box := BoxMesh.new()
 	box.size = Vector3(area.size.x * _cell_size, height, area.size.y * _cell_size)
 	_ghost.mesh = box
-	_ghost.position = GridSpace.rect_center(area, _cell_size) + Vector3(0.0, height * 0.5, 0.0)
+	var inside := area.intersection(Rect2i(Vector2i.ZERO, grid.size))
+	var base := grid.area_height(inside) if inside.has_area() else 0.0
+	var center := grid.rect_world(area)
+	_ghost.position = Vector3(center.x, base + height * 0.5, center.z)
 	_ghost.visible = true
 
 
 func _show_roads() -> void:
+	var grid := _tool.grid()
 	var cells := _tool.road_cells()
 	_roads.multimesh.instance_count = cells.size()
 	for i: int in cells.size():
-		var position := GridSpace.cell_center(cells[i], _cell_size) + Vector3(0.0, 0.15, 0.0)
-		_roads.multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY, position))
+		var position := grid.surface_world(cells[i]) if grid.in_bounds(cells[i]) else grid.cell_world(cells[i])
+		_roads.multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY, position + Vector3(0.0, 0.15, 0.0)))
 	_roads.visible = true

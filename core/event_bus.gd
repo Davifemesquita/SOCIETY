@@ -15,6 +15,8 @@ signal settings_changed()
 signal building_placed(building_id: int)
 signal building_removed(building_id: int)
 signal roads_changed(island_id: int)
+## A construção derrubou árvores na área (células da ilha).
+signal trees_changed(island_id: int, area: Rect2i)
 ## O mundo inteiro foi trocado (jogo novo ou carregado): a apresentação refaz tudo.
 signal world_replaced()
 

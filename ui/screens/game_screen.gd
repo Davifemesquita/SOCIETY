@@ -8,6 +8,11 @@ static var load_slot_on_start: String = ""
 ## Céu do Sky3D (padrão) ou o céu simples. Os testes de interface que não testam o céu desligam:
 ## o Sky3D renderizado por software (xvfb) leva segundos por quadro.
 static var use_sky3d: bool = true
+## Semente do arquipélago do jogo novo (−1 = sorteada). A tela de abertura lê `-- --semente N`.
+static var world_seed: int = -1
+## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
+## coordenadas dela.
+static var flat_world: bool = false
 
 const QUICK_SLOT := "rapido"
 const THUMBNAIL_SIZE := Vector2i(320, 180)
@@ -23,6 +28,13 @@ var overlay: DebugOverlay
 var sky: SkyAdapter
 var pedestrian_view: PedestrianView
 var window_view: WindowLightsView
+## Chão do mundo: a ilha plana (FlatIsland) ou terreno, água e árvores do arquipélago.
+var terrain_view: TerrainView
+var water_view: WaterView
+var tree_view: TreeView
+var _ground: Node3D
+## Destaque de terreno por ilha e prédio (percorre a ilha inteira: guardado até árvores caírem).
+var _terrain_highlights: Dictionary[String, Image] = {}
 ## Quanto é noite agora (0 a 1), o mesmo valor do uniforme global night_light.
 var night_light: float = 0.0
 
@@ -31,12 +43,13 @@ var _config: GameConfig
 
 func _ready() -> void:
 	_config = GameConfig.get_default()
-	simulation = Simulation.new(_config, GameData.get_default())
-	var grid := simulation.world.island(Simulation.MAIN_ISLAND)
-	var size_m := Vector2(grid.size) * _config.cell_size_m
-	var island := FlatIsland.new()
-	island.setup(size_m)
-	add_child(island)
+	var data := GameData.get_default()
+	if flat_world:
+		simulation = Simulation.new(_config, data)
+	else:
+		var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
+		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data))
+	_build_ground()
 	sky = SkyAdapter.new()
 	add_child(sky)
 	sky.setup(_config, use_sky3d)
@@ -60,10 +73,9 @@ func _ready() -> void:
 	add_child(overlay)
 	camera = StrategyCamera.new()
 	add_child(camera)
-	camera.setup(_config, Rect2(Vector2.ZERO, size_m))
-	# jogo novo começa olhando o litoral norte, onde vai o entreposto
-	camera.rig.focus = Vector3(size_m.x * 0.5, 0.0, 70.0)
-	camera.apply()
+	camera.setup(_config, world_bounds())
+	camera.height_at = simulation.world.surface_height
+	look_at_start()
 	tool = BuildTool.new()
 	tool.setup(simulation, camera, _config.cell_size_m)
 	add_child(tool)
@@ -79,11 +91,14 @@ func _ready() -> void:
 	hud.load_requested.connect(quickload)
 	tool.changed.connect(func() -> void:
 		overlay.grid_visible = tool.mode != BuildTool.Mode.NONE
+		overlay.set_island(tool.island_id)
 		update_highlight())
 	tool.selection_changed.connect(func(building_id: int) -> void:
 		building_view.select(building_id)
 		update_highlight())
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: update_highlight())
+	EventBus.trees_changed.connect(func(_island_id: int, _area: Rect2i) -> void: _terrain_highlights.clear())
+	EventBus.world_replaced.connect(func() -> void: _terrain_highlights.clear())
 	EventBus.building_placed.connect(func(_id: int) -> void: update_highlight())
 	var shortcuts := GameShortcuts.new()
 	shortcuts.setup(self)
@@ -108,6 +123,60 @@ func _process(_delta: float) -> void:
 func _exit_tree() -> void:
 	if GameClock.ticked.is_connected(simulation.tick):
 		GameClock.ticked.disconnect(simulation.tick)
+
+
+## O chão do mundo atual: a ilha plana de antes ou o terreno, a água e as árvores do arquipélago.
+## Refeito ao carregar um save de outro mundo.
+func _build_ground() -> void:
+	for node: Node in [_ground, terrain_view, water_view, tree_view]:
+		if node != null:
+			node.queue_free()
+	_ground = null
+	terrain_view = null
+	water_view = null
+	tree_view = null
+	var world := simulation.world
+	if world.terrain_version == 0:
+		var island := FlatIsland.new()
+		island.setup(Vector2(world.island(Simulation.MAIN_ISLAND).size) * _config.cell_size_m)
+		add_child(island)
+		_ground = island
+		return
+	terrain_view = TerrainView.new()
+	add_child(terrain_view)
+	terrain_view.setup(world, _config, simulation.data)
+	water_view = WaterView.new()
+	add_child(water_view)
+	water_view.setup(simulation)
+	tree_view = TreeView.new()
+	add_child(tree_view)
+	tree_view.setup(world)
+
+
+## Área que a câmera alcança: todas as ilhas.
+func world_bounds() -> Rect2:
+	var bounds := Rect2()
+	for grid: IslandGrid in simulation.world.islands:
+		bounds = grid.world_rect() if bounds.size == Vector2.ZERO else bounds.merge(grid.world_rect())
+	return bounds
+
+
+## Jogo novo começa olhando o litoral do entreposto: na ilha plana, a borda norte; no
+## arquipélago, o lugar de entreposto mais perto do norte da ilha principal.
+func look_at_start() -> void:
+	var grid := simulation.world.island(Simulation.MAIN_ISLAND)
+	var focus := Vector3(grid.size.x * _config.cell_size_m * 0.5, 0.0, 70.0)
+	if not grid.flat:
+		var site := SiteFinder.find(simulation, &"trading_post", Simulation.MAIN_ISLAND, Vector2i(grid.size.x / 2, 0))
+		if not site.is_empty():
+			var origin: Vector2i = site[0]
+			var rotation: int = site[1]
+			var def := simulation.data.building(&"trading_post")
+			focus = grid.rect_world(Footprint.rect(origin, def.size, rotation))
+			focus.y = 0.0
+	camera.rig.focus = focus
+	camera.rig.ground_height = simulation.world.surface_height(focus.x, focus.z)
+	camera.apply()
 
 
 func game_state() -> Dictionary:
@@ -139,7 +208,14 @@ func load_game(slot: String) -> bool:
 	if world == null:
 		hud.show_message(tr("MSG_LOAD_FAILED"))
 		return false
+	var other_world := world.seed != simulation.world.seed or world.terrain_version != simulation.world.terrain_version
 	simulation.world = world
+	if other_world:
+		_build_ground()
+		camera.rig.set_bounds(world_bounds())
+	camera.height_at = world.surface_height
+	if world.terrain_mismatch:
+		push_warning("GameScreen: o terreno deste save saiu diferente nesta plataforma")
 	var raw_clock: Variant = state.get("clock")
 	if raw_clock is Dictionary:
 		var clock_data: Dictionary = raw_clock
@@ -162,14 +238,16 @@ func center_on_selected() -> void:
 	if record == null:
 		return
 	var def := simulation.def_of(record)
-	camera.rig.center_on(GridSpace.rect_center(Footprint.rect(record.origin, def.size, record.rotation), _config.cell_size_m))
+	var center := simulation.world.island(record.island_id).rect_world(Footprint.rect(record.origin, def.size, record.rotation))
+	camera.rig.center_on(Vector3(center.x, 0.0, center.z))
 
 
 ## Destaque no chão: o alcance do serviço (o que vai ser construído ou o selecionado) e a
 ## área de campos e pastos da fazenda.
 func update_highlight() -> void:
 	var world := simulation.world
-	var grid := world.island(Simulation.MAIN_ISLAND)
+	var island := tool.island_id
+	var grid := world.island(island)
 	if tool.mode == BuildTool.Mode.BUILDING and tool.building_def != null:
 		var def := tool.building_def
 		if def.kind == BuildingDef.Kind.SERVICE or def.is_warehouse():
@@ -177,16 +255,26 @@ func update_highlight() -> void:
 			var radius := _config.logistics_range_cells if def.is_warehouse() else ServiceReach.radius_of(def, _config)
 			var reach := ServiceReach.road_cells(grid, front, radius)
 			var targets: Array[int] = simulation.derived_state().houses if def.kind == BuildingDef.Kind.SERVICE else simulation.derived_state().production
-			var covered := ServiceReach.houses(world, simulation.data, Simulation.MAIN_ISLAND, reach, targets)
-			overlay.show_custom(Highlight.service(world, simulation.data, Simulation.MAIN_ISLAND, reach, covered))
+			var covered := ServiceReach.houses(world, simulation.data, island, reach, targets)
+			overlay.show_custom(Highlight.service(world, simulation.data, island, reach, covered))
 			return
 		if def.modules_required > 0:
 			overlay.show_custom(Highlight.area(grid, tool.building_rect().grow(def.module_radius_cells)))
+			return
+		# terreno pedido pelo prédio: jazida, floresta, litoral ou rio
+		var key := "%d/%s" % [island, def.id]
+		if not _terrain_highlights.has(key):
+			_terrain_highlights[key] = Highlight.terrain(grid, def)
+		var terrain := _terrain_highlights[key]
+		if terrain != null:
+			overlay.show_custom(terrain)
 			return
 	var selected := world.building(tool.selected_id)
 	if tool.mode == BuildTool.Mode.NONE and selected != null:
 		var def := simulation.def_of(selected)
 		var derived := simulation.derived_state()
+		grid = world.island(selected.island_id)
+		overlay.set_island(selected.island_id)
 		if def.kind == BuildingDef.Kind.SERVICE:
 			var reach: PackedInt32Array = derived.service_reach.get(selected.id, PackedInt32Array())
 			var houses: Array = derived.service_houses.get(selected.id, [])

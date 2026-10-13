@@ -1,8 +1,9 @@
 extends Control
 ## Tela de abertura: nome, validação dos dados, jogo novo ou carregar o save rápido.
 ## O menu principal completo entra na Fase 7. Atalhos de linha de comando (também no .exe):
-## `-- --novo-jogo` abre direto uma partida nova, `-- --carregar` abre o save rápido e
-## `-- --benchmark` roda o benchmark da fase e mostra o resultado.
+## `-- --novo-jogo` abre direto uma partida nova, `-- --carregar` abre o save rápido,
+## `-- --benchmark` roda o benchmark da fase e mostra o resultado e `-- --semente 1234` escolhe
+## o arquipélago do jogo novo.
 
 const GAME_SCENE := "res://ui/screens/game_screen.tscn"
 
@@ -26,6 +27,9 @@ func _ready() -> void:
 	_load_game.pressed.connect(_start.bind(GameScreen.QUICK_SLOT))
 	_new_game.grab_focus()
 	var args := OS.get_cmdline_user_args()
+	var seed_at := args.find("--semente")
+	if seed_at >= 0 and seed_at + 1 < args.size() and args[seed_at + 1].is_valid_int():
+		GameScreen.world_seed = args[seed_at + 1].to_int()
 	if "--benchmark" in args:
 		get_tree().change_scene_to_file.call_deferred("res://tools/benchmark.tscn")
 	elif "--novo-jogo" in args:

@@ -21,7 +21,9 @@ func execute(context: CommandContext) -> CommandResult:
 		return CommandResult.refused(&"REASON_EMPTY_ROAD")
 	var new_cells := 0
 	for cell: Vector2i in cells:
-		var reason := PlacementRules.check_road_cell(grid, cell)
+		var reason := PlacementRules.check_road_cell(grid, cell, context.config)
+		if context.ignore_terrain and reason in [PlacementRules.ON_WATER, PlacementRules.TOO_STEEP]:
+			reason = PlacementRules.OK
 		if reason != PlacementRules.OK:
 			return CommandResult.refused(reason)
 		if not grid.has_road(cell):
@@ -41,4 +43,9 @@ func execute(context: CommandContext) -> CommandResult:
 		if not grid.has_road(cell):
 			grid.set_road(cell, IslandGrid.Road.DIRT)
 			result.roads_changed = true
+	if grid.clear_trees(cells):
+		var area := Rect2i(cells[0], Vector2i.ONE)
+		for cell: Vector2i in cells:
+			area = area.expand(cell).expand(cell + Vector2i.ONE)
+		result.trees_cleared = area
 	return result

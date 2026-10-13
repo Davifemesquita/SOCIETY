@@ -1,6 +1,8 @@
 // Corpo comum da grade de construção e das camadas de depuração (F1, F2).
 uniform float cell_size = 2.0;
 uniform vec2 grid_cells = vec2(250.0, 250.0);
+// Canto (0, 0) da ilha no mundo (x, z): cada ilha do arquipélago tem o seu.
+uniform vec2 grid_origin = vec2(0.0, 0.0);
 uniform vec4 line_color : source_color = vec4(1.0, 1.0, 1.0, 0.22);
 uniform bool show_lines = true;
 uniform bool show_cells = false;
@@ -13,7 +15,7 @@ void vertex() {
 }
 
 void fragment() {
-	vec2 cell = world_position.xz / cell_size;
+	vec2 cell = (world_position.xz - grid_origin) / cell_size;
 	vec4 color = vec4(0.0);
 	if (show_cells) {
 		color = texture(cell_data, cell / grid_cells);

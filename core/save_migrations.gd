@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3]
+	return [from_1_to_2, from_2_to_3, from_3_to_4]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -58,5 +58,20 @@ static func from_2_to_3(state: Dictionary) -> Dictionary:
 					var cart := Cart.new(home_id)
 					carts.append(cart.to_dict())
 	world["carts"] = carts
+	state["world"] = world
+	return state
+
+
+## Fase 4 → Fase 5: o save antigo segue na ilha plana de antes (terrain_version 0, decisão do dono
+## do produto): sem semente e sem árvore derrubada.
+static func from_3_to_4(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	world["seed"] = 0
+	world["terrain_version"] = 0
+	var islands: Array = world.get("islands", [])
+	for raw: Variant in islands:
+		if raw is Dictionary:
+			var island: Dictionary = raw
+			island["cleared_trees"] = PackedInt32Array()
 	state["world"] = world
 	return state

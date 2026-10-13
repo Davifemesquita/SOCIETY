@@ -2,7 +2,8 @@ class_name ProductionSystem
 extends RefCounted
 ## Produção por ciclo: cada ciclo consome 1 t de cada entrada (no começo) e gera 1 t da
 ## saída (no fim). A velocidade é a da força de trabalho da classe. O prédio para sem
-## estrada, sem os módulos, sem entrada, sem trabalhador, com a saída cheia ou pausado.
+## estrada, sem os módulos, sem árvores (lenhador), sem entrada, sem trabalhador, com a saída
+## cheia ou pausado.
 ## O fim do ciclo tem folga de 1e-6: 75 ticks de 0,2/15 somam 0,99999… e o ciclo atrasaria
 ## um tick inteiro a cada volta.
 
@@ -32,6 +33,9 @@ static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: f
 		return 0.0
 	if not entry.modules_ok:
 		record.state = BuildingRecord.State.NO_MODULES
+		return 0.0
+	if not entry.trees_ok:
+		record.state = BuildingRecord.State.NO_TREES
 		return 0.0
 	if entry.warehouse_id == 0 and not config.instant_logistics:
 		record.state = BuildingRecord.State.NO_WAREHOUSE

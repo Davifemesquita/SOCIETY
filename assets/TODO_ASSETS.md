@@ -18,3 +18,7 @@ a descrição, o orçamento de polígonos e o prompt de imagem de referência.
 | cestos e sacos | quem sai de fazenda ou mercado anda com a animação de carregar, mas sem o cesto na mão | até 300 | "cesto de vime com pão e legumes, século XIX" | 9 |
 | postes e fogueiras | a seção 9 pede postes e fogueiras acesos à noite; entram com os objetos de cenário | até 1.000 | "poste de lampião a gás, século XIX, ferro fundido" | 9 |
 | janelas | vidros planos com luz no lugar das janelas dos modelos dos prédios; somem quando os prédios ganharem modelo com janela própria (emissão na textura) | — | — | 9 |
+| árvores e pedras | modelos de estilo de desenho animado do Kenney Nature Kit com as cores trocadas no código (`presentation/tree_view.gd`); árvores europeias de 1840 (carvalho, faia, pinheiro-silvestre) com 2 LODs e balanço ao vento | árvore 300–800, pedra até 300 | "carvalho europeu isolado, baixo polígono estilizado, folhagem em massa, vista isométrica" | 9 |
+| terreno | shader próprio com 4 texturas da Poly Haven (grama, rocha, areia, chão de floresta); falta lama de margem de rio, campo arado e trilhas | — | — | 9 |
+| rio | braço de mar pela planície (fica no nível do mar); rio de verdade, com correnteza e altura própria, pede água em vários níveis | — | — | 9 |
+| ponte | ladrilho de tábuas sobre o rio (`presentation/road_view.gd`); ponte de madeira ou pedra com corrimão | até 1.000 | "ponte de madeira rústica, século XIX, vista isométrica" | 9 |

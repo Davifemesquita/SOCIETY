@@ -439,6 +439,7 @@ func _wait_at_service(agent: Agent) -> void:
 	var along := outward.cross(Vector3.UP)
 	var half_width := Footprint.rotated_size(def.size, service.rotation).x * _cell_size * 0.4
 	agent.spot = _door_point(service, def) + outward * _rng.randf_range(0.4, 1.4) + along * _rng.randf_range(-half_width, half_width)
+	agent.spot.y = _simulation.world.island(service.island_id).height_at(agent.spot.x, agent.spot.z)
 	agent.facing = (-outward).rotated(Vector3.UP, _rng.randf_range(-2.2, 2.2))
 	agent.clip = CLIP_TALK if _rng.randf() < 0.6 else CLIP_IDLE
 	agent.phase = _rng.randf()
@@ -488,8 +489,9 @@ func _carries_from(building_id: int) -> bool:
 	return def.modules_required > 0 or def.id == &"market"
 
 
+## Comprimento do trecho no chão (o passo e o tempo contam a distância horizontal).
 func _segment_length(agent: Agent) -> float:
-	return agent.points[agent.segment].distance_to(agent.points[agent.segment + 1])
+	return SidewalkPath.flat_distance(agent.points[agent.segment], agent.points[agent.segment + 1])
 
 
 func _set_state(agent: Agent, state: State) -> void:
@@ -571,7 +573,7 @@ func _route(from_id: int, to_id: int) -> Array:
 			var cells := _router(from.island_id).path(start, goal)
 			if not cells.is_empty():
 				var points := PackedVector3Array([_door_point(from, _simulation.def_of(from))])
-				points.append_array(SidewalkPath.from_cells(grid, cells, _cell_size, _config.pedestrian_sidewalk_offset_m))
+				points.append_array(SidewalkPath.from_cells(grid, cells, _config.pedestrian_sidewalk_offset_m))
 				points.append(_door_point(to, _simulation.def_of(to)))
 				result = [points, cells]
 	_legs[key] = result
@@ -582,18 +584,22 @@ func _route(from_id: int, to_id: int) -> Array:
 	return result
 
 
-## Meio da face de entrada do prédio, no chão.
+## Meio da face de entrada do prédio, no chão (a célula de entrada é a de fora, na frente: a porta
+## fica meia célula para trás).
 func _door_point(record: BuildingRecord, def: BuildingDef) -> Vector3:
-	var entrance := GridSpace.cell_center(Footprint.entrance_cell(record.origin, def.size, record.rotation), _cell_size)
+	var grid := _simulation.world.island(record.island_id)
+	var entrance := grid.cell_world(Footprint.entrance_cell(record.origin, def.size, record.rotation))
 	var front := Footprint.front_direction(record.rotation)
-	return Vector3(entrance.x, 0.0, entrance.z) + Vector3(front.x, 0.0, front.y) * (_cell_size * 0.5)
+	var point := Vector3(entrance.x, 0.0, entrance.z) - Vector3(front.x, 0.0, front.y) * (_cell_size * 0.5)
+	point.y = grid.height_at(point.x, point.z)
+	return point
 
 
 ## Primeira célula de estrada encostada na face de entrada, ou −1.
 func _access_cell(grid: IslandGrid, record: BuildingRecord) -> int:
 	var def := _simulation.def_of(record)
 	var cells := Footprint.front_cells(record.origin, def.size, record.rotation)
-	var middle := Footprint.entrance_cell(record.origin, def.size, record.rotation) + Footprint.front_direction(record.rotation)
+	var middle := Footprint.entrance_cell(record.origin, def.size, record.rotation)
 	if grid.in_bounds(middle) and grid.has_road(middle):
 		return grid.index(middle)
 	for cell: Vector2i in cells:
@@ -698,13 +704,17 @@ func is_hidden(agent: Agent) -> bool:
 func instance_transform(agent: Agent) -> Transform3D:
 	if is_hidden(agent):
 		return Transform3D(Basis.from_scale(Vector3.ZERO), Vector3.ZERO)
-	var origin := agent.spot
-	var direction := agent.facing
-	if agent.state == State.WALKING:
-		origin = agent.points[agent.segment]
-		direction = agent.points[agent.segment + 1] - origin
-	var forward := direction.normalized() if direction.length() > 0.001 else Vector3.FORWARD
-	return Transform3D(Basis.looking_at(forward, Vector3.UP), origin)
+	if agent.state != State.WALKING:
+		return Transform3D(Basis.looking_at(agent.facing.normalized(), Vector3.UP), agent.spot)
+	var origin := agent.points[agent.segment]
+	var step := agent.points[agent.segment + 1] - origin
+	var flat := Vector3(step.x, 0.0, step.z)
+	if flat.length() < 0.001:
+		return Transform3D(Basis.IDENTITY, origin)
+	# corpo de pé, base inclinada: andar o comprimento horizontal em −Z leva até o fim do trecho
+	var basis := Basis.looking_at(flat.normalized(), Vector3.UP)
+	basis.z = -step / flat.length()
+	return Transform3D(basis, origin)
 
 
 ## Dado próprio da instância para o shader: início do trecho (tempo visual), comprimento, velocidade
@@ -725,5 +735,8 @@ func position_of(agent: Agent) -> Vector3:
 		return Vector3.INF
 	var from := agent.points[agent.segment]
 	var to := agent.points[agent.segment + 1]
-	var distance := clampf((time - agent.segment_start) * _config.pedestrian_speed_m_s, 0.0, from.distance_to(to))
-	return from + (to - from).normalized() * distance
+	var length := SidewalkPath.flat_distance(from, to)
+	if length < 0.001:
+		return from
+	var distance := clampf((time - agent.segment_start) * _config.pedestrian_speed_m_s, 0.0, length)
+	return from + (to - from) * (distance / length)

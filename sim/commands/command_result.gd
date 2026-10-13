@@ -9,6 +9,8 @@ var removed: Array[int] = []
 ## Prédios que mudaram de estado sem sair do lugar (pausa, bloqueio de upgrade).
 var changed: Array[int] = []
 var roads_changed: bool = false
+## Área onde a construção derrubou árvores (vazia se nenhuma).
+var trees_cleared := Rect2i()
 
 
 static func refused(why: StringName) -> CommandResult:

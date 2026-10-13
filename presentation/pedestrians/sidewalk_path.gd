@@ -5,12 +5,12 @@ extends RefCounted
 ## outra calçada, e o meio da estrada fica para as carroças.
 
 
-## Pontos da rota no chão (y = 0), já na calçada. Uma célula só dá um ponto (não há o que andar).
-static func from_cells(grid: IslandGrid, cells: PackedInt32Array, cell_size: float, offset: float) -> PackedVector3Array:
+## Pontos da rota na altura da estrada (sobre a ponte, no rio), já na calçada. Uma célula só dá
+## um ponto (não há o que andar).
+static func from_cells(grid: IslandGrid, cells: PackedInt32Array, offset: float) -> PackedVector3Array:
 	var centers := PackedVector3Array()
 	for index: int in cells:
-		var center := GridSpace.cell_center(grid.cell_at(index), cell_size)
-		centers.append(Vector3(center.x, 0.0, center.z))
+		centers.append(grid.surface_world(grid.cell_at(index)))
 	return offset_polyline(simplify(centers), offset)
 
 
@@ -46,14 +46,18 @@ static func offset_polyline(points: PackedVector3Array, offset: float) -> Packed
 	return result
 
 
-## Direita de quem anda na direção dada, no plano do chão (y para cima).
+## Direita de quem anda na direção dada, no plano do chão (y para cima; a ladeira não conta).
 static func right_of(direction: Vector3) -> Vector3:
-	return direction.normalized().cross(Vector3.UP)
+	return Vector3(direction.x, 0.0, direction.z).normalized().cross(Vector3.UP)
 
 
-## Comprimento total da rota.
+## Comprimento total da rota, medido no chão (a ladeira não conta: o passo é horizontal).
 static func length(points: PackedVector3Array) -> float:
 	var total := 0.0
 	for i: int in range(1, points.size()):
-		total += points[i].distance_to(points[i - 1])
+		total += flat_distance(points[i - 1], points[i])
 	return total
+
+
+static func flat_distance(a: Vector3, b: Vector3) -> float:
+	return Vector2(b.x - a.x, b.z - a.z).length()

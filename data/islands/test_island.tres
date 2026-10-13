@@ -6,3 +6,4 @@
 script = ExtResource("1_island")
 id = &"test_island"
 fertilities = Array[StringName]([&"potatoes", &"wheat", &"hops"])
+flat = true

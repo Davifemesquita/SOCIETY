@@ -94,6 +94,8 @@ func refresh() -> void:
 	for tier: TierDef in _simulation.data.tiers:
 		parts.append("%s %s" % [tr(tier.name_key), Fmt.integer(report.population[tier.id])])
 	_population.text = "%s: %s" % [tr("STATS_POPULATION"), " · ".join(parts)]
+	if _simulation.world.terrain_version != 0:
+		_population.text += "    " + tr("PANEL_SEED") % _simulation.world.seed
 	_finances.text = "%s: %s %s · %s %s · %s %s" % [tr("STATS_FINANCES"), tr("STATS_INCOME"), Fmt.signed(report.income_per_min),
 			tr("STATS_UPKEEP"), Fmt.integer(-report.upkeep_per_min), tr("STATS_BALANCE"), Fmt.signed(report.balance_per_min())]
 	for tier_id: StringName in _tax_options:

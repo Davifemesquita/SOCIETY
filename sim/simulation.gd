@@ -13,6 +13,8 @@ var data: GameData
 var config: GameConfig
 ## Trapaça de desenvolvimento: construir sem custo e sem desbloqueio (testes, benchmark).
 var free_build: bool = false
+## Só para o benchmark: construir sem olhar o terreno.
+var ignore_terrain: bool = false
 
 var _derived := DerivedState.new()
 var _dirty: bool = true
@@ -38,10 +40,15 @@ func new_world() -> WorldState:
 
 
 func execute(command: Command) -> CommandResult:
-	var result := command.execute(CommandContext.new(world, data, config, free_build))
+	var context := CommandContext.new(world, data, config, free_build)
+	context.ignore_terrain = ignore_terrain
+	var result := command.execute(context)
 	if not result.ok():
 		return result
-	if not (result.removed.is_empty() and result.placed.is_empty() and result.changed.is_empty() and not result.roads_changed):
+	# tudo o que mudou marca a simulação antes de avisar as vistas: elas consultam o estado
+	# derivado, e marcar depois forçaria um segundo recálculo inteiro
+	if not (result.removed.is_empty() and result.placed.is_empty() and result.changed.is_empty() and not result.roads_changed) \
+			or result.trees_cleared.has_area():
 		_dirty = true
 	for building_id: int in result.removed:
 		EventBus.building_removed.emit(building_id)
@@ -51,6 +58,8 @@ func execute(command: Command) -> CommandResult:
 		EventBus.building_state_changed.emit(building_id)
 	if result.roads_changed:
 		EventBus.roads_changed.emit(result.island_id)
+	if result.trees_cleared.has_area():
+		EventBus.trees_changed.emit(result.island_id, result.trees_cleared)
 	return result
 
 
@@ -111,7 +120,7 @@ func placement_reason(def: BuildingDef, origin: Vector2i, rotation: int, island_
 	var grid := world.island(island_id)
 	var reason := PlacementRules.check_building(grid, def, origin, rotation)
 	if reason == PlacementRules.OK:
-		reason = PlacementRules.check_terrain(grid, data.profile(world.economy(island_id).profile_id), def, origin, rotation)
+		reason = PlacementRules.check_terrain(grid, data.profile(world.economy(island_id).profile_id), def, origin, rotation, config)
 	if reason == PlacementRules.OK and not free_build and not config.instant_logistics:
 		reason = PlacementRules.check_trading_post(world, data, island_id, def)
 	if reason == PlacementRules.OK and not (def.is_trading_post and not world.any_trading_post(data)):

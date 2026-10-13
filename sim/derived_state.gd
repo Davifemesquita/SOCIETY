@@ -13,6 +13,9 @@ class ProductionEntry:
 	var economy: IslandEconomy
 	var has_road: bool
 	var modules_ok: bool
+	## Lenhador: árvores no raio (as outras produções ficam com -1) e se bastam.
+	var trees: int = -1
+	var trees_ok: bool = true
 	## Armazém que atende o prédio (0 = nenhum a até o alcance logístico).
 	var warehouse_id: int = 0
 	## Célula de estrada da frente por onde a carroça sai (-1 = nenhuma).
@@ -48,6 +51,7 @@ var fields: Dictionary[int, WarehouseField] = {}
 var capacity: Dictionary[int, float] = {}
 var _routers: Dictionary[int, RoadRouter] = {}
 var _world: WorldState
+var _config: GameConfig
 ## Tempo de cada etapa do último recálculo, em ms (para o benchmark).
 var last_rebuild_ms: Dictionary[String, float] = {}
 var _mark: int = 0
@@ -70,6 +74,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	version += 1
 	carts_checked = false
 	_world = world
+	_config = config
 	_routers.clear()
 	warehouses.clear()
 	warehouse_connected.clear()
@@ -252,6 +257,11 @@ func _index_production(world: WorldState, data: GameData) -> void:
 		entry.economy = world.economy(entry.record.island_id)
 		entry.has_road = road_access[building_id]
 		entry.modules_ok = module_count.get(building_id, 0) >= entry.def.modules_required
+		var grid := world.island(entry.record.island_id)
+		if entry.def.terrain == BuildingDef.Terrain.TREES and not grid.flat:
+			var area := Footprint.rect(entry.record.origin, entry.def.size, entry.record.rotation)
+			entry.trees = grid.trees_in(area.grow(_config.lumberjack_radius_cells))
+			entry.trees_ok = entry.trees >= _config.lumberjack_min_trees
 		production_entries.append(entry)
 		var island := entry.record.island_id
 		if not entry.record.paused:

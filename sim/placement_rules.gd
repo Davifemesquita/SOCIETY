@@ -1,8 +1,9 @@
 class_name PlacementRules
 extends RefCounted
 ## Validação de construção. Devolve &"" quando pode, ou a chave de tradução do motivo.
-## O terreno ainda é plano: a altura entra na Fase 5. Árvores, jazidas e rios valem como
-## presentes até lá; o litoral já é a borda da ilha.
+## Terreno (Fase 5): área plana (até max_build_height_delta_m), toda em terra; litoral e rio
+## pelo chão da grade; mina sobre a jazida do bem dela. Na ilha plana de antes (testes e saves
+## antigos) árvores, jazidas e rios valem como presentes e o litoral é a borda.
 
 const OK := &""
 const OUT_OF_ISLAND := &"REASON_OUT_OF_ISLAND"
@@ -16,6 +17,13 @@ const LOCKED := &"REASON_LOCKED"
 const NO_MONEY := &"REASON_NO_MONEY"
 const NO_MATERIALS := &"REASON_NO_MATERIALS"
 const NEEDS_TRADING_POST := &"REASON_NEEDS_TRADING_POST"
+const ON_WATER := &"REASON_ON_WATER"
+const NOT_FLAT := &"REASON_NOT_FLAT"
+const NEEDS_DEPOSIT := &"REASON_NEEDS_DEPOSIT"
+const NEEDS_RIVER_OR_COAST := &"REASON_NEEDS_RIVER_OR_COAST"
+const TOO_STEEP := &"REASON_TOO_STEEP"
+## Folga do ponto flutuante na diferença de altura.
+const _HEIGHT_EPSILON := 0.0001
 
 
 static func check_area(grid: IslandGrid, area: Rect2i) -> StringName:
@@ -39,24 +47,54 @@ static func check_building(grid: IslandGrid, def: BuildingDef, origin: Vector2i,
 	return check_area(grid, Footprint.rect(origin, def.size, rotation))
 
 
-## Estrada só vai em célula da ilha sem prédio. Célula que já é estrada passa (não duplica).
-static func check_road_cell(grid: IslandGrid, cell: Vector2i) -> StringName:
+## Estrada só vai em célula da ilha sem prédio, fora do mar e sem barranco. Célula que já é
+## estrada passa (não duplica); sobre o rio, a estrada é ponte.
+static func check_road_cell(grid: IslandGrid, cell: Vector2i, config: GameConfig = null) -> StringName:
 	if not grid.in_bounds(cell):
 		return OUT_OF_ISLAND
 	if grid.building_at(cell) != 0:
 		return OCCUPIED
+	if grid.flat:
+		return OK
+	var ground := grid.ground_at(cell)
+	if ground == IslandGrid.Ground.SEA:
+		return ON_WATER
+	var max_relief := config.max_road_relief_m if config != null else GameConfig.get_default().max_road_relief_m
+	if ground == IslandGrid.Ground.LAND and grid.area_relief(Rect2i(cell, Vector2i.ONE)) > max_relief + _HEIGHT_EPSILON:
+		return TOO_STEEP
 	return OK
 
 
-## Litoral = encostar na borda da ilha; fertilidade = cultura no perfil da ilha.
-static func check_terrain(grid: IslandGrid, profile: IslandProfileDef, def: BuildingDef, origin: Vector2i, rotation: int) -> StringName:
-	if def.terrain == BuildingDef.Terrain.COAST and not touches_coast(grid, Footprint.rect(origin, def.size, rotation)):
-		return NEEDS_COAST
+## Terreno do prédio: plano e em terra, litoral, rio ou jazida quando pedidos, e a fertilidade
+## no perfil da ilha.
+static func check_terrain(grid: IslandGrid, profile: IslandProfileDef, def: BuildingDef, origin: Vector2i, rotation: int,
+		config: GameConfig = null) -> StringName:
+	var area := Footprint.rect(origin, def.size, rotation)
+	if grid.flat:
+		if def.terrain == BuildingDef.Terrain.COAST and not touches_coast(grid, area):
+			return NEEDS_COAST
+	else:
+		if not grid.area_is_land(area):
+			return ON_WATER
+		var max_delta := config.max_build_height_delta_m if config != null else GameConfig.get_default().max_build_height_delta_m
+		if grid.area_relief(area) > max_delta + _HEIGHT_EPSILON:
+			return NOT_FLAT
+		match def.terrain:
+			BuildingDef.Terrain.COAST:
+				if not grid.area_touches(area, IslandGrid.Ground.SEA):
+					return NEEDS_COAST
+			BuildingDef.Terrain.RIVER_OR_COAST:
+				if not (grid.area_touches(area, IslandGrid.Ground.SEA) or grid.area_touches(area, IslandGrid.Ground.RIVER)):
+					return NEEDS_RIVER_OR_COAST
+			BuildingDef.Terrain.DEPOSIT:
+				if def.deposit != &"" and not grid.area_on_deposit(area, def.deposit):
+					return NEEDS_DEPOSIT
 	if def.fertility != &"" and (profile == null or not profile.fertilities.has(def.fertility)):
 		return NO_FERTILITY
 	return OK
 
 
+## Ilha plana: litoral é encostar na borda.
 static func touches_coast(grid: IslandGrid, area: Rect2i) -> bool:
 	return area.position.x == 0 or area.position.y == 0 or area.end.x == grid.size.x or area.end.y == grid.size.y
 

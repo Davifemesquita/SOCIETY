@@ -203,3 +203,12 @@ LABEL_PAUSED,Pausado,Paused
 LABEL_NO_WAREHOUSE,Sem armazém,No warehouse
 LABEL_DISCONNECTED,Sem entreposto,No trading post
 LABEL_PROTEST,Protesto,Protest
+REASON_ON_WATER,Não dá para construir na água,Cannot build on water
+REASON_NOT_FLAT,Terreno inclinado demais,Ground is not flat enough
+REASON_NEEDS_DEPOSIT,Precisa ficar inteira sobre a jazida,Must sit entirely on the deposit
+REASON_NEEDS_RIVER_OR_COAST,Precisa encostar num rio ou no litoral,Must touch a river or the coast
+REASON_TOO_STEEP,Barranco íngreme demais para estrada,Too steep for a road
+STATE_NO_TREES,Poucas árvores por perto,Not enough trees nearby
+LABEL_NO_TREES,Sem árvores,No trees
+PANEL_TREES,"Árvores no raio: %d (mínimo %d)","Trees in range: %d (minimum %d)"
+PANEL_SEED,Semente do mundo: %d,World seed: %d

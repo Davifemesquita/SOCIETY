@@ -43,6 +43,8 @@ enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
 @export var terrain: Terrain = Terrain.NONE
 ## Cultura que precisa constar nas fertilidades da ilha.
 @export var fertility: StringName
+## Jazida exigida debaixo do prédio inteiro (minas: &"coal", &"iron_ore"); vazio = nenhuma.
+@export var deposit: StringName
 
 @export_group("Armazém")
 ## O entreposto: primeiro prédio da ilha, no litoral; funciona como armazém e porto.

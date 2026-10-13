@@ -44,6 +44,8 @@ tools/godot.sh planilha            # CSV de balanceamento a partir dos dados (ex
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://tools/capture_phase3.tscn -- /pasta/de/saida
 # Fase 4: céu em seis horas do dia, multidão de perto e de longe, janelas à noite
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
+# Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # refaz os pedestres (VAT) a partir de assets/source/quaternius; com a pasta dos pacotes
 # baixados (UAL1_Standard.glb, UAL2_Standard.glb) como argumento, refaz antes as animações
 tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.gd
@@ -76,7 +78,9 @@ do runner de cena do gdUnit4 (6.2.2), que não são defeito do jogo:
 
 No executável: `Society.exe -- --novo-jogo` abre direto uma partida, `-- --carregar` abre o
 save rápido e `-- --benchmark` roda o benchmark e mostra o resultado na tela (é assim que se
-mede no PC alvo; desde a Fase 4 inclui um dia inteiro renderizado com 2.000 pedestres). F7
+mede no PC alvo; desde a Fase 4 inclui um dia inteiro renderizado com 2.000 pedestres, e desde
+a Fase 5 é no arquipélago da semente 1840). `-- --semente 1234` escolhe o arquipélago do jogo
+novo. F7
 adianta 3 horas no relógio do dia e F8 dá dinheiro e 20 t de cada bem, os dois só em build de
 depuração.
 
@@ -114,7 +118,12 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `sim/statistics.gd` | t/min produzido, potencial e consumido por bem; população e finanças |
 | `sim/road_network.gd`, `road_path.gd` | acesso do prédio à estrada, trechos conectados, traçado em L |
 | `world/camera/` | `CameraRig` (contas, testadas) e `StrategyCamera` (entrada e `Camera3D`) |
-| `world/flat_island.gd` | ilha plana e mar (Terrain3D na Fase 5) |
+| `world/flat_island.gd` | ilha plana e mar dos testes e dos saves de antes da Fase 5 |
+| `sim/world/archipelago_generator.gd` | arquipélago por semente: relevo em patamares, litoral, rios, floresta e jazidas; as alturas que o terreno desenha |
+| `sim/world/site_finder.gd` | lugar mais perto onde um prédio cabe pelo terreno (câmera inicial, testes, capturas) |
+| `world/terrain/terrain_view.gd` | adaptador do terreno: malha por trecho no relevo da grade e `shaders/terrain.gdshader` |
+| `world/water/water_view.gd` | adaptador da água: Ocean do Boujie com a cópia editada do shader (poluição) |
+| `presentation/tree_view.gd` | árvores e pedras em MultiMesh por trecho de 64×64 células |
 | `world/sky/sky_adapter.gd` | `SkyAdapter`: a única peça que conhece o Sky3D; recebe a hora do GameClock. Sem o addon, céu simples |
 | `presentation/` | caixas dos prédios, estradas em MultiMesh, prévia, grade e camadas F1/F2 |
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
@@ -241,6 +250,52 @@ Regras que já custaram investigação:
   software leva segundos por quadro e a suíte passava de 5 minutos. O Sky3D na partida tem o
   teste dele (`tests/ui/test_sky_in_game.gd`).
 
+### Mundo (Fase 5)
+
+- **Arquipélago por semente** (`ArchipelagoGenerator`, simulação pura): a principal (250×250
+  células) na região (0, 0) e 4 menores (150, 150, 80, 80) em regiões vizinhas sorteadas, uma
+  ilha por região de 512 m. Relevo = ruído + máscara de quadrado arredondado, em **patamares
+  planos** (`terrace_levels_m`: é neles que se constrói) com encostas entre eles; litoral de praia
+  (planície a 1,2 m) ou de falésia; **rios** são braços de mar que entram pela planície (nível do
+  mar, sem água própria), e só os cantos de dentro afundam: a margem fica plana para a olaria;
+  floresta pelo ruído até cobrir `forest_coverage` da terra; jazidas em manchas planas de 6×6,
+  de preferência nos morros. Perfis em `data/islands/*.tres`.
+- **O save guarda a semente** (`terrain_version` = versão do gerador; 0 = ilha plana antiga) e as
+  árvores que a construção derrubou; o terreno é refeito ao carregar e conferido por uma
+  assinatura (diferença só avisa: `terrain_mismatch`). Mudou o gerador, some 1 em `VERSION`.
+- **A ilha plana continua** (`IslandGrid.flat`): testes, `SimFixture`, saves das Fases 1 a 4
+  (migração 3 → 4) e os testes de interface (`GameScreen.flat_world = true`, coordenadas
+  conhecidas). Nela árvores, jazidas e rios valem como presentes e o litoral é a borda.
+- **Regras** (`PlacementRules.check_terrain`): área em terra, plana até
+  `max_build_height_delta_m`; litoral = encostar no mar; olaria = rio ou mar; mina = a área toda
+  sobre a jazida do bem dela (`BuildingDef.deposit`); estrada fora do mar e sem barranco
+  (`max_road_relief_m`), ponte sobre o rio. Construir derruba as árvores (`trees_changed`);
+  lenhador com menos de `lumberjack_min_trees` no raio para (`NO_TREES`, no fim do enum: o
+  número vai no save). `Simulation.ignore_terrain` é só do benchmark.
+- **Terreno próprio no lugar do Terrain3D**: o 1.0.2 derruba o Godot 4.7.2 assim que recebe um
+  relevo de verdade (condição de corrida no material, issue #945 do Terrain3D; corrigida só na
+  versão noturna; com região de 256 vértices cai até com o terreno plano). `TerrainView`
+  desenha uma malha por trecho de 64 cantos e o shader escolhe grama/rocha pela inclinação,
+  areia na praia e chão de floresta por uma textura de 2 em 2 m. Voltar ao Terrain3D mexe só
+  ali, quando sair versão estável compatível com o 4.7.
+- **Tudo assenta no relevo**: a grade tem `origin_m` e altura por canto; prédio na altura média
+  da área (a caixa desce 0,6 m), estrada inclinada como o plano dos cantos (cisalhamento),
+  carroça e pedestre na altura da estrada, a grade de construção é uma malha no relevo da ilha
+  da ferramenta, a câmera mira a altura do chão e o clique anda pelo raio até tocar o terreno.
+- **Água**: Ocean do Boujie (malha em anéis que segue a câmera) com a cópia editada do shader;
+  ondas de porto, baixas; a poluição é um mapa do arquipélago (4 m por pixel) refeito quando um
+  prédio poluidor entra ou sai. A cor da água sai da profundidade até o fundo, e fora das regiões
+  não há fundo: o fundo **desenhado** desce da costa até `deep_sea_floor_m` e já chega lá na borda
+  da região (sem isso, cada região aparecia como um quadrado de água clara). A simulação continua
+  com `sea_floor_m`. A leitura da tela desviada pela refração é presa dentro dela (repetia a
+  profundidade do outro lado e manchava a borda de baixo).
+- **Árvores**: MultiMesh por trecho de 64×64 células e por modelo; no máximo 2 desenhadas por
+  célula (a regra conta todas); derrubar refaz só o trecho. As cores do Kenney (turquesa) são
+  trocadas no código. Array empacotado dentro de outro array pode ser alterado numa cópia: os
+  buffers são montados em variável local.
+- **Destaque de terreno** (jazida, floresta, litoral, rio) ao escolher o prédio: percorre a ilha
+  inteira, então fica em cache por ilha e prédio até árvores caírem.
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -255,11 +310,11 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 1 — Protótipo cinza | **concluída em 12/10/2026** |
 | 2 — Núcleo econômico | **concluída em 12/10/2026** |
 | 3 — Logística | **concluída em 12/10/2026** |
-| 4 — Vida e tempo | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto e a medição de FPS na RTX 3060 (`Society.exe -- --benchmark`) |
-| 5 a 11 | — |
+| 4 — Vida e tempo | **concluída em 12/10/2026** (a medição de FPS na RTX 3060 ainda não voltou) |
+| 5 — Mundo | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto |
+| 6 a 11 | — |
 
 Pendências já vistas para fases futuras:
 
 - Fase 6: o navio de verdade traz a carga inicial; hoje as 40 tábuas já estão no estoque.
-- Fase 5: árvores, jazidas, rios e a poluição da água; os requisitos de terreno passam a valer.
 - Fase 7: gráficos históricos nas estatísticas e o Theme (os painéis usam `UiStyle` provisório).

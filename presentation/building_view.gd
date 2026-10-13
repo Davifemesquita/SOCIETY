@@ -11,6 +11,8 @@ const PROTEST_COLOR := Color(1.0, 0.3, 0.25)
 const PAUSED_COLOR := Color(0.85, 0.85, 0.85)
 const SELECTED_COLOR := Color(1.0, 0.85, 0.35, 0.35)
 const REFRESH_SECONDS := 0.5
+## A caixa desce abaixo do chão: a área pode ter até max_build_height_delta_m de desnível.
+const FOUNDATION_M := 0.6
 
 var _simulation: Simulation
 var _cell_size: float
@@ -78,7 +80,7 @@ func select(building_id: int) -> void:
 	var box := BoxMesh.new()
 	box.size = Vector3(area.size.x * _cell_size + 0.4, height + 0.4, area.size.y * _cell_size + 0.4)
 	_selection.mesh = box
-	_selection.position = GridSpace.rect_center(area, _cell_size) + Vector3(0.0, height * 0.5, 0.0)
+	_selection.position = _grid(record).rect_world(area) + Vector3(0.0, height * 0.5, 0.0)
 
 
 func _process(delta: float) -> void:
@@ -86,6 +88,10 @@ func _process(delta: float) -> void:
 	if _refresh_left <= 0.0:
 		_refresh_left = REFRESH_SECONDS
 		refresh_labels()
+
+
+func _grid(record: BuildingRecord) -> IslandGrid:
+	return _simulation.world.island(record.island_id)
 
 
 func _area(record: BuildingRecord) -> Rect2i:
@@ -106,14 +112,14 @@ func _add(building_id: int) -> void:
 	var area := _area(record)
 	var height := _height(record)
 	var root := Node3D.new()
-	root.position = GridSpace.rect_center(area, _cell_size)
+	root.position = _grid(record).rect_world(area)
 	var body := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	var inset := 0.3 if def.kind != BuildingDef.Kind.MODULE else 0.15
-	box.size = Vector3(area.size.x * _cell_size - inset, height, area.size.y * _cell_size - inset)
+	box.size = Vector3(area.size.x * _cell_size - inset, height + FOUNDATION_M, area.size.y * _cell_size - inset)
 	body.mesh = box
 	body.material_override = _material_for(_color(record))
-	body.position.y = height * 0.5
+	body.position.y = (height - FOUNDATION_M) * 0.5
 	root.add_child(body)
 	if def.kind != BuildingDef.Kind.MODULE:
 		root.add_child(_door(record, def, area))
@@ -140,10 +146,11 @@ func _door(record: BuildingRecord, def: BuildingDef, area: Rect2i) -> MeshInstan
 	mesh.size = Vector3(1.4, 2.4, 1.4)
 	door.mesh = mesh
 	door.material_override = _door_material
-	var entrance := GridSpace.cell_center(Footprint.entrance_cell(record.origin, def.size, record.rotation), _cell_size)
+	var grid := _grid(record)
+	var entrance := grid.cell_world(Footprint.entrance_cell(record.origin, def.size, record.rotation))
 	var front := Footprint.front_direction(record.rotation)
-	var center := GridSpace.rect_center(area, _cell_size)
-	door.position = entrance - center - Vector3(front.x, 0.0, front.y) * (_cell_size * 0.5 + 0.3) + Vector3(0.0, 1.2, 0.0)
+	var center := grid.rect_world(area)
+	door.position = Vector3(entrance.x - center.x, 1.2, entrance.z - center.z) - Vector3(front.x, 0.0, front.y) * (_cell_size * 0.5 + 0.3)
 	return door
 
 
@@ -187,6 +194,8 @@ static func label_key(state: BuildingRecord.State) -> String:
 			return "LABEL_PAUSED"
 		BuildingRecord.State.NO_WAREHOUSE:
 			return "LABEL_NO_WAREHOUSE"
+		BuildingRecord.State.NO_TREES:
+			return "LABEL_NO_TREES"
 	return ""
 
 

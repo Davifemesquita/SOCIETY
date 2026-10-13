@@ -112,8 +112,37 @@ static var _default: GameConfig
 @export var ship_slot_capacity_t: int = 50
 
 @export_group("Ilhas")
-## Área útil da ilha principal, em células.
+## Área da ilha plana (testes e saves de antes da Fase 5), em células.
 @export var main_island_size_cells: Vector2i = Vector2i(250, 250)
+
+@export_group("Arquipélago")
+## Lado de cada ilha em células, a principal primeiro (seção 7: ~250, ~150 e ~80).
+@export var island_sizes_cells: PackedInt32Array = PackedInt32Array([250, 150, 150, 80, 80])
+@export var main_island_profile: StringName = &"main_island"
+## Perfis sorteados (pela semente) para as outras ilhas.
+@export var other_island_profiles: Array[StringName] = [&"farmland", &"highlands", &"woodland", &"reef"]
+## Lado da região do terreno de cada ilha, em metros (uma ilha por região).
+@export var terrain_region_m: float = 512.0
+## Patamares planos, em metros acima do mar: é neles que se constrói. Entre um e outro, encosta.
+@export var terrace_levels_m: PackedFloat32Array = PackedFloat32Array([1.2, 4.0, 7.5, 12.0, 17.0])
+## Fração de cada degrau que fica plana (o resto é a encosta até o patamar de cima).
+@export var terrace_flat_fraction: float = 0.7
+@export var sea_floor_m: float = -6.0
+@export var river_bed_m: float = -1.2
+## Fundo do mar desenhado (só visual; a simulação usa sea_floor_m): desce da costa até
+## deep_sea_floor_m nesta distância, e na borda da região já está lá, sem degrau contra o mar aberto.
+@export var sea_shelf_width_m: float = 60.0
+@export var deep_sea_floor_m: float = -40.0
+## Largura do rio em células e até onde ele entra na ilha (em células).
+@export var river_width_cells: int = 2
+@export var river_length_cells: int = 45
+## Diferença máxima de altura dentro de uma célula de estrada (acima disso é barranco).
+@export var max_road_relief_m: float = 2.0
+@export var max_trees_per_cell: int = 4
+## Raio (em células) em volta do lenhador onde as árvores contam.
+@export var lumberjack_radius_cells: int = 5
+## Lado da mancha de jazida, em células (cabe uma mina 4×4 com folga).
+@export var deposit_spot_cells: int = 6
 
 @export_group("Construção")
 @export var cell_size_m: float = 2.0
@@ -237,6 +266,16 @@ func validate() -> PackedStringArray:
 		problems.append("supported_locales precisa de pelo menos um idioma")
 	if main_island_size_cells.x <= 0 or main_island_size_cells.y <= 0:
 		problems.append("main_island_size_cells deve ser positivo")
+	if island_sizes_cells.is_empty() or island_sizes_cells.size() > other_island_profiles.size() + 1:
+		problems.append("island_sizes_cells: a principal e no máximo uma ilha por perfil de other_island_profiles")
+	for side: int in island_sizes_cells:
+		if side * cell_size_m > terrain_region_m:
+			problems.append("ilha de %d células não cabe numa região de %.0f m" % [side, terrain_region_m])
+			break
+	if terrace_levels_m.is_empty() or terrace_levels_m[0] <= 0.0:
+		problems.append("terrace_levels_m começa acima do mar (> 0)")
+	if sea_shelf_width_m <= 0.0 or deep_sea_floor_m >= sea_floor_m:
+		problems.append("sea_shelf_width_m deve ser positivo e deep_sea_floor_m ficar abaixo de sea_floor_m")
 	if cell_size_m <= 0.0:
 		problems.append("cell_size_m deve ser maior que zero")
 	if camera_min_distance_m <= 0.0 or camera_min_distance_m >= camera_max_distance_m:

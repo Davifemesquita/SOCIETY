@@ -2,7 +2,7 @@ class_name BuildTool
 extends Node
 ## Ferramenta de construção: transforma clique e arrasto em comandos para a simulação.
 ## A lógica trabalha em células (hover, press, release), o que a deixa testável sem mouse;
-## _unhandled_input só converte o mouse em célula.
+## _unhandled_input só converte o mouse em ilha e célula (a ilha sob o cursor, desde a Fase 5).
 
 enum Mode { NONE, BUILDING, ROAD, DEMOLISH }
 
@@ -17,6 +17,8 @@ var hover_cell: Vector2i = Vector2i.ZERO
 var dragging: bool = false
 var drag_start: Vector2i = Vector2i.ZERO
 var selected_id: int = 0
+## Ilha em que a ferramenta está (a que está sob o cursor; não troca no meio de um arrasto).
+var island_id: int = Simulation.MAIN_ISLAND
 
 var _simulation: Simulation
 var _camera: StrategyCamera
@@ -76,9 +78,9 @@ func press(cell: Vector2i) -> void:
 	hover(cell)
 	match mode:
 		Mode.NONE:
-			select(_grid().building_at(cell))
+			select(grid().building_at(cell))
 		Mode.BUILDING:
-			_run(PlaceBuildingCommand.new(Simulation.MAIN_ISLAND, building_def.id, building_origin(), rotation))
+			_run(PlaceBuildingCommand.new(island_id, building_def.id, building_origin(), rotation))
 		Mode.ROAD, Mode.DEMOLISH:
 			dragging = true
 			drag_start = cell
@@ -89,8 +91,8 @@ func release(cell: Vector2i) -> void:
 	hover(cell)
 	if not dragging:
 		return
-	var command: Command = BuildRoadCommand.new(Simulation.MAIN_ISLAND, road_cells()) if mode == Mode.ROAD \
-			else DemolishCommand.new(Simulation.MAIN_ISLAND, demolish_rect())
+	var command: Command = BuildRoadCommand.new(island_id, road_cells()) if mode == Mode.ROAD \
+			else DemolishCommand.new(island_id, demolish_rect())
 	dragging = false
 	_run(command)
 	changed.emit()
@@ -120,18 +122,18 @@ func demolish_rect() -> Rect2i:
 func preview_reason() -> StringName:
 	match mode:
 		Mode.BUILDING:
-			return _simulation.placement_reason(building_def, building_origin(), rotation)
+			return _simulation.placement_reason(building_def, building_origin(), rotation, island_id)
 		Mode.ROAD:
 			for cell: Vector2i in road_cells():
-				var reason := PlacementRules.check_road_cell(_grid(), cell)
+				var reason := PlacementRules.check_road_cell(grid(), cell, _simulation.config)
 				if reason != PlacementRules.OK:
 					return reason
 			if not _simulation.free_build:
 				var world := _simulation.world
-				if not _simulation.config.instant_logistics and not world.has_trading_post(Simulation.MAIN_ISLAND, _simulation.data):
+				if not _simulation.config.instant_logistics and not world.has_trading_post(island_id, _simulation.data):
 					return PlacementRules.NEEDS_TRADING_POST
 				var empty: Dictionary[StringName, int] = {}
-				return PlacementRules.check_cost(world, world.economy(Simulation.MAIN_ISLAND), _simulation.config, road_cost(), empty)
+				return PlacementRules.check_cost(world, world.economy(island_id), _simulation.config, road_cost(), empty)
 	return PlacementRules.OK
 
 
@@ -139,7 +141,7 @@ func preview_reason() -> StringName:
 func road_cost() -> int:
 	var new_cells := 0
 	for cell: Vector2i in road_cells():
-		if _grid().in_bounds(cell) and not _grid().has_road(cell):
+		if grid().in_bounds(cell) and not grid().has_road(cell):
 			new_cells += 1
 	return new_cells * _simulation.config.road_cost_per_cell
 
@@ -157,8 +159,8 @@ func _run(command: Command) -> void:
 		refused.emit(result.reason)
 
 
-func _grid() -> IslandGrid:
-	return _simulation.world.island(Simulation.MAIN_ISLAND)
+func grid() -> IslandGrid:
+	return _simulation.world.island(island_id)
 
 
 func _on_building_removed(building_id: int) -> void:
@@ -202,9 +204,24 @@ func _hover_screen(screen_position: Vector2) -> void:
 		hover(cell)
 
 
+## Célula sob o cursor, na ilha sob ele (a ilha só troca fora de um arrasto).
 func _screen_cell(screen_position: Vector2) -> Variant:
 	var point: Variant = _camera.ground_point(screen_position)
-	if point is Vector3:
-		var ground: Vector3 = point
-		return GridSpace.world_to_cell(ground, _cell_size)
-	return null
+	if not point is Vector3:
+		return null
+	var ground: Vector3 = point
+	if not dragging:
+		var under := island_at(ground)
+		if under >= 0 and under != island_id:
+			island_id = under
+			hover_cell = Vector2i(-1, -1)
+	return grid().world_to_cell(ground)
+
+
+## Ilha cuja área contém o ponto do mundo, ou -1.
+func island_at(point: Vector3) -> int:
+	var islands := _simulation.world.islands
+	for index: int in islands.size():
+		if islands[index].world_rect().has_point(Vector2(point.x, point.z)):
+			return index
+	return -1

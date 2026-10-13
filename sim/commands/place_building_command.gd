@@ -23,9 +23,9 @@ func execute(context: CommandContext) -> CommandResult:
 		return CommandResult.refused(PlacementRules.OUT_OF_ISLAND)
 	var def := context.data.building(def_id)
 	var reason := PlacementRules.check_building(grid, def, origin, rotation)
-	if reason == PlacementRules.OK:
+	if reason == PlacementRules.OK and not context.ignore_terrain:
 		var profile := context.data.profile(world.economy(island_id).profile_id)
-		reason = PlacementRules.check_terrain(grid, profile, def, origin, rotation)
+		reason = PlacementRules.check_terrain(grid, profile, def, origin, rotation, context.config)
 	var first_trading_post := def != null and def.is_trading_post and not world.any_trading_post(context.data)
 	var charge := not context.free_build and not first_trading_post
 	if reason == PlacementRules.OK and not context.free_build and not context.config.instant_logistics:
@@ -46,10 +46,18 @@ func execute(context: CommandContext) -> CommandResult:
 	world.buildings[record.id] = record
 	if def.is_production():
 		world.carts[record.id] = Cart.new(record.id)
-	grid.fill_building(Footprint.rect(origin, def.size, rotation), record.id)
+	var area := Footprint.rect(origin, def.size, rotation)
+	grid.fill_building(area, record.id)
 	var result := CommandResult.new()
 	result.island_id = island_id
 	result.placed.append(record.id)
+	# a construção derruba as árvores do terreno
+	var cells: Array[Vector2i] = []
+	for y: int in range(area.position.y, area.end.y):
+		for x: int in range(area.position.x, area.end.x):
+			cells.append(Vector2i(x, y))
+	if grid.clear_trees(cells):
+		result.trees_cleared = area
 	return result
 
 

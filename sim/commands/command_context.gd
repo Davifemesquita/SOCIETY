@@ -7,6 +7,8 @@ var world: WorldState
 var data: GameData
 var config: GameConfig
 var free_build: bool = false
+## Só para o benchmark: constrói sem olhar o terreno (a cidade de teste em cima do relevo).
+var ignore_terrain: bool = false
 
 
 func _init(state: WorldState, game_data: GameData, game_config: GameConfig, free: bool) -> void:

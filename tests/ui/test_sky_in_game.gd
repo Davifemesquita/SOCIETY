@@ -7,6 +7,7 @@ const GAME := "res://ui/screens/game_screen.tscn"
 
 func test_sky3d_follows_the_game_clock() -> void:
 	GameScreen.use_sky3d = true
+	GameScreen.flat_world = true
 	GameScreen.load_slot_on_start = ""
 	var runner := scene_runner(GAME)
 	var game: GameScreen = runner.scene()
@@ -19,3 +20,4 @@ func test_sky3d_follows_the_game_clock() -> void:
 	assert_float(game.sky.shown_hour()).is_equal_approx(22.0, 0.01)
 	assert_float(game.sky.sun().global_basis.z.y).is_less(0.0)
 	GameClock.clock.extra_hours = 0.0
+	GameScreen.flat_world = false

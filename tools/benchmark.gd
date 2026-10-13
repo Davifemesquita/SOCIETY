@@ -5,6 +5,8 @@ extends Node
 ## um prédio com a ilha cheia (sem travamento acima de 50 ms), salvar, carregar e o quadro.
 ## Fase 4: 2.000 pedestres na rua e um dia inteiro em 60 s (céu, janelas, luzes de área), com a
 ## partida rodando a 1x, em três distâncias de câmera: FPS médio, 1% pior e pior quadro.
+## Fase 5: tudo isso no arquipélago da semente 1840 (relevo, água, ~50 mil árvores); a cidade de
+## teste é montada sem olhar o terreno (chave só do benchmark), derrubando as árvores debaixo.
 ##   tools/godot.sh godot --path . res://tools/benchmark.tscn -- [arquivo.md]
 ## No executável: Society.exe -- --benchmark (mostra o resultado na tela e grava em
 ## user://benchmark.md). Sem GPU (esta VM), o tempo de quadro não vale como meta.
@@ -24,6 +26,7 @@ const DAY_SECONDS := 60.0
 const DAY_DISTANCES: Array[float] = [40.0, 120.0, 300.0]
 const SLOT := "benchmark"
 const RESULT_PATH := "user://benchmark.md"
+const SEED := 1840
 
 var _lines: PackedStringArray = []
 ## Aberto pelo executável (-- --benchmark): mostra o resultado em vez de fechar.
@@ -57,12 +60,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _run() -> void:
 	var config := GameConfig.get_default()
+	GameScreen.flat_world = false
+	GameScreen.world_seed = SEED
+	var started := Time.get_ticks_usec()
 	var game := (load("res://ui/screens/game_screen.tscn") as PackedScene).instantiate() as GameScreen
 	add_child(game)
+	_report("jogo novo: arquipélago, terreno, água e árvores", "%.0f ms (semente %d, %d árvores desenhadas)" % [
+			(Time.get_ticks_usec() - started) / 1000.0, SEED, game.tree_view.instance_count()])
 	GameClock.set_speed(TickClock.PAUSED)
 	var sim := game.simulation
-	var started := Time.get_ticks_usec()
+	started = Time.get_ticks_usec()
 	sim.free_build = true
+	sim.ignore_terrain = true
 	sim.execute(PlaceBuildingCommand.new(Simulation.MAIN_ISLAND, &"trading_post", Vector2i(10, 0), 2))
 	sim.execute(BuildRoadCommand.new(Simulation.MAIN_ISLAND, RoadPath.l_path(Vector2i(2, 6), Vector2i(247, 6))))
 	sim.execute(BuildRoadCommand.new(Simulation.MAIN_ISLAND, RoadPath.l_path(Vector2i(2, 6), Vector2i(2, 9))))
@@ -101,8 +110,10 @@ func _run() -> void:
 	started = Time.get_ticks_usec()
 	sim.free_build = true
 	sim.execute(PlaceBuildingCommand.new(Simulation.MAIN_ISLAND, &"market", Vector2i(200, 200), 0))
+	var executed := Time.get_ticks_usec()
 	sim.derived_state()
-	_report("construir um prédio com a ilha cheia", "%.1f ms (limite 50 ms)" % [(Time.get_ticks_usec() - started) / 1000.0])
+	_report("construir um prédio com a ilha cheia", "%.1f ms (limite 50 ms): comando e vistas %.1f · recálculo %.1f" % [
+			(Time.get_ticks_usec() - started) / 1000.0, (executed - started) / 1000.0, (Time.get_ticks_usec() - executed) / 1000.0])
 	var steps: PackedStringArray = []
 	for step: String in sim.derived_state().last_rebuild_ms:
 		steps.append("%s %.1f" % [step, sim.derived_state().last_rebuild_ms[step]])

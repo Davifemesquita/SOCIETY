@@ -14,6 +14,7 @@ var _previous_save_dir: String
 
 func before_test() -> void:
 	GameScreen.use_sky3d = false
+	GameScreen.flat_world = true
 	_previous_save_dir = SaveSystem.save_dir
 	SaveSystem.save_dir = TEST_SAVE_DIR
 	GameScreen.load_slot_on_start = ""
@@ -26,6 +27,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	GameScreen.use_sky3d = true
+	GameScreen.flat_world = false
 	GameClock.clock.extra_hours = 0.0
 	SaveSystem.save_dir = _previous_save_dir
 	if DirAccess.dir_exists_absolute(TEST_SAVE_DIR):

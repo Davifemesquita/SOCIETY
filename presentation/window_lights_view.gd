@@ -97,13 +97,15 @@ func lit_area_lights() -> int:
 
 ## Vidros de um prédio: em cada fachada, colunas a cada ~2,4 m e um andar a cada 2,8 m; no térreo
 ## da frente, nada no lugar da porta.
-static func windows_of(record: BuildingRecord, def: BuildingDef, height: float, cell_size: float) -> Array[Transform3D]:
+static func windows_of(grid: IslandGrid, record: BuildingRecord, def: BuildingDef, height: float) -> Array[Transform3D]:
 	var result: Array[Transform3D] = []
+	var cell_size := grid.cell_size
 	var area := Footprint.rect(record.origin, def.size, record.rotation)
-	var center := GridSpace.rect_center(area, cell_size)
+	var center := grid.rect_world(area)
 	var half := Vector2(area.size.x * cell_size - BUILDING_INSET_M, area.size.y * cell_size - BUILDING_INSET_M) * 0.5
 	var front := Footprint.front_direction(record.rotation)
-	var door := GridSpace.cell_center(Footprint.entrance_cell(record.origin, def.size, record.rotation), cell_size) - center
+	var entrance := grid.cell_world(Footprint.entrance_cell(record.origin, def.size, record.rotation))
+	var door := Vector3(entrance.x - center.x, 0.0, entrance.z - center.z)
 	var floors := maxi(1, floori((height - 0.5) / FLOOR_HEIGHT_M))
 	for side: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 		var normal := Vector3(side.x, 0.0, side.y)
@@ -120,7 +122,7 @@ static func windows_of(record: BuildingRecord, def: BuildingDef, height: float, 
 				# em prédio de largura par a porta fica meia célula fora do meio
 				if side == front and level == 0 and absf(t - door.dot(along)) < (WINDOW_SIZE.x + DOOR_WIDTH_M) * 0.5 + 0.1:
 					continue
-				var origin := Vector3(center.x, y, center.z) + normal * (depth + WALL_GAP_M) + along * t
+				var origin := Vector3(center.x, center.y + y, center.z) + normal * (depth + WALL_GAP_M) + along * t
 				result.append(Transform3D(Basis.looking_at(-normal, Vector3.UP), origin))
 	return result
 
@@ -163,7 +165,7 @@ func _add(building_id: int) -> void:
 	var def := _simulation.def_of(record)
 	if def.kind == BuildingDef.Kind.MODULE:
 		return
-	var windows := windows_of(record, def, _height(record), _config.cell_size_m)
+	var windows := windows_of(_simulation.world.island(record.island_id), record, def, _height(record))
 	var slots := PackedInt32Array()
 	var lit := is_lit(_simulation, record)
 	for window: Transform3D in windows:
@@ -241,7 +243,7 @@ func place_area_lights(camera_position: Vector3, camera_forward: Vector3, night:
 				continue
 			var record := _simulation.world.building(building_id)
 			var def := _simulation.def_of(record)
-			var center := GridSpace.rect_center(Footprint.rect(record.origin, def.size, record.rotation), _config.cell_size_m)
+			var center := _simulation.world.island(record.island_id).rect_world(Footprint.rect(record.origin, def.size, record.rotation))
 			var gap := Vector2(center.x - focus.x, center.z - focus.z).length_squared()
 			if gap <= AREA_LIGHT_RADIUS_M * AREA_LIGHT_RADIUS_M:
 				chosen.append(Vector2(gap, building_id))
@@ -257,12 +259,12 @@ func place_area_lights(camera_position: Vector3, camera_forward: Vector3, night:
 func _aim(light: AreaLight3D, record: BuildingRecord, night: float) -> void:
 	var def := _simulation.def_of(record)
 	var area := Footprint.rect(record.origin, def.size, record.rotation)
-	var center := GridSpace.rect_center(area, _config.cell_size_m)
+	var center := _simulation.world.island(record.island_id).rect_world(area)
 	var front := Footprint.front_direction(record.rotation)
 	var outward := Vector3(front.x, 0.0, front.y)
 	var depth := (area.size.x if front.x != 0 else area.size.y) * _config.cell_size_m * 0.5
 	var width := (area.size.y if front.x != 0 else area.size.x) * _config.cell_size_m
 	light.global_transform = Transform3D(Basis.looking_at(outward, Vector3.UP),
-			Vector3(center.x, FIRST_WINDOW_Y_M, center.z) + outward * (depth + 0.2))
+			Vector3(center.x, center.y + FIRST_WINDOW_Y_M, center.z) + outward * (depth + 0.2))
 	light.area_size = Vector2(minf(width * 0.6, 4.0), 1.2)
 	light.light_energy = AREA_LIGHT_ENERGY * night

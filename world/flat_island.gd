@@ -1,7 +1,7 @@
 class_name FlatIsland
 extends Node3D
-## Ilha plana da Fase 1: chão, bloco da ilha e mar. O sol e o céu ficam no SkyAdapter (Fase 4); o
-## terreno de verdade (Terrain3D, arquipélago por semente) entra na Fase 5.
+## Ilha plana da Fase 1: chão, bloco da ilha e mar. O sol e o céu ficam no SkyAdapter (Fase 4).
+## Desde a Fase 5 só a usam os testes e os saves de antes do arquipélago (TerrainView desenha o resto).
 
 const GROUND_COLOR := Color(0.4, 0.5, 0.32)
 const CLIFF_COLOR := Color(0.42, 0.38, 0.32)

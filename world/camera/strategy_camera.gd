@@ -7,8 +7,15 @@ extends Node3D
 ## Distância mínima do mouse (px) para o botão direito virar giro em vez de clique.
 const DRAG_THRESHOLD_PX := 4.0
 
+## Altura entre o mar e o chão sobre o chão: o raio do clique para no relevo e no mar.
+const RAY_TOP_M := 40.0
+const RAY_BOTTOM_M := -1.0
+const RAY_STEP_M := 1.5
+
 var rig: CameraRig
 var camera: Camera3D
+## Altura do chão num ponto (x, z) do mundo: Callable(float, float) -> float. Sem ela, chão plano.
+var height_at := Callable()
 
 var _middle_anchor: Vector3
 var _middle_dragging: bool = false
@@ -30,11 +37,40 @@ func apply() -> void:
 	camera.global_transform = rig.camera_transform()
 
 
-## Ponto do chão (y = 0) sob a posição de tela, ou null se o raio não toca o chão.
+## Ponto do chão sob a posição de tela, ou null se o raio não toca o chão. Com relevo, o raio anda
+## em passos até ficar abaixo do terreno e acha o ponto por bisseção.
 func ground_point(screen_position: Vector2) -> Variant:
 	var origin := camera.project_ray_origin(screen_position)
 	var normal := camera.project_ray_normal(screen_position)
-	return Plane(Vector3.UP, 0.0).intersects_ray(origin, normal)
+	if not height_at.is_valid():
+		return Plane(Vector3.UP, 0.0).intersects_ray(origin, normal)
+	return march(origin, normal, height_at)
+
+
+static func march(origin: Vector3, direction: Vector3, height: Callable) -> Variant:
+	if direction.y >= -0.0001:
+		return null
+	var t := maxf(0.0, (origin.y - RAY_TOP_M) / -direction.y)
+	var t_end := (origin.y - RAY_BOTTOM_M) / -direction.y
+	var previous := t
+	while t <= t_end:
+		var point := origin + direction * t
+		var ground: float = height.call(point.x, point.z)
+		if point.y <= ground:
+			var low := previous
+			var high := t
+			for i: int in 10:
+				var middle := (low + high) * 0.5
+				var probe := origin + direction * middle
+				var probe_ground: float = height.call(probe.x, probe.z)
+				if probe.y <= probe_ground:
+					high = middle
+				else:
+					low = middle
+			return origin + direction * high
+		previous = t
+		t += RAY_STEP_M
+	return origin + direction * t_end
 
 
 func _process(delta: float) -> void:
@@ -43,6 +79,9 @@ func _process(delta: float) -> void:
 		input = _edge_input()
 	rig.pan(input, delta)
 	rig.update(delta)
+	if height_at.is_valid():
+		var ground: float = height_at.call(rig.focus.x, rig.focus.z)
+		rig.follow_ground(ground, delta)
 	apply()
 
 

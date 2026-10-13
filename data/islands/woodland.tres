@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="IslandProfileDef" format=3]
+
+[ext_resource type="Script" path="res://data/island_profile_def.gd" id="1_island"]
+
+[resource]
+script = ExtResource("1_island")
+id = &"woodland"
+fertilities = Array[StringName]([&"potatoes", &"hops"])
+deposits = Array[StringName]([&"coal"])
+deposit_spots = 1
+forest_coverage = 0.55
+rivers = 1
+relief = 1.0

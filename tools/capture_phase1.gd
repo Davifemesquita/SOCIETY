@@ -16,6 +16,7 @@ func _ready() -> void:
 	_out_dir = args[0] if not args.is_empty() else OS.get_user_data_dir().path_join("capturas")
 	DirAccess.make_dir_recursive_absolute(_out_dir)
 	GameScreen.load_slot_on_start = ""
+	GameScreen.flat_world = true
 	_game = (load("res://ui/screens/game_screen.tscn") as PackedScene).instantiate() as GameScreen
 	add_child(_game)
 	GameClock.set_speed(TickClock.PAUSED)

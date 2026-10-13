@@ -79,8 +79,8 @@ func _point(grid: IslandGrid, path: PackedInt32Array, position: float) -> Vector
 	var clamped := clampf(position, 0.0, path.size() - 1)
 	var index := floori(clamped)
 	var next := mini(index + 1, path.size() - 1)
-	var from := GridSpace.cell_center(grid.cell_at(path[index]), _cell_size)
-	var to := GridSpace.cell_center(grid.cell_at(path[next]), _cell_size)
+	var from := grid.surface_world(grid.cell_at(path[index]))
+	var to := grid.surface_world(grid.cell_at(path[next]))
 	return from.lerp(to, clamped - index)
 
 
