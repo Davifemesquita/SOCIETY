@@ -106,7 +106,9 @@ func test_pause_upgrade_block_and_tax_level() -> void:
 	assert_bool(_sim.execute(SetTaxLevelCommand.new(&"peasants", 7)).ok()).is_false()
 
 
+## Desde a Fase 6 as tábuas vêm no navio inicial e descem no primeiro entreposto
+## (test_colonization.gd confere a descarga).
 func test_new_world_starts_with_money_and_planks() -> void:
 	var fresh := Simulation.new(GameConfig.get_default(), GameData.get_default())
 	assert_float(fresh.world.money).is_equal(50000.0)
-	assert_float(fresh.world.economy(0).amount(&"planks")).is_equal(40.0)
+	assert_float(fresh.world.player_ships()[0].tons_of(&"planks")).is_equal(40.0)

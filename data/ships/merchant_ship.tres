@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ShipDef" format=3]
+
+[ext_resource type="Script" path="res://data/ship_def.gd" id="1_ship"]
+
+[resource]
+script = ExtResource("1_ship")
+id = &"merchant_ship"
+name_key = "SHIP_MERCHANT"
+cargo_slots = 4
+slot_capacity_t = 50
+speed_m_s = 6.0
+upkeep_per_min = 40
+cost_money = 3000
+cost_materials = Dictionary[StringName, int]({&"planks": 20})
+hull_color = Color(0.36, 0.24, 0.16, 1)
+sail_color = Color(0.92, 0.9, 0.82, 1)
+length_m = 16.0

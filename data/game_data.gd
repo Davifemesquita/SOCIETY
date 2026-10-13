@@ -11,6 +11,9 @@ static var _default: GameData
 @export var tiers: Array[TierDef] = []
 @export var buildings: Array[BuildingDef] = []
 @export var island_profiles: Array[IslandProfileDef] = []
+## Navios (Fase 6): o primeiro é o que o jogador compra.
+@export var ships: Array[ShipDef] = []
+@export var traders: Array[TraderDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -62,6 +65,18 @@ func next_tier(id: StringName) -> TierDef:
 	return tiers[index + 1] if index >= 0 and index + 1 < tiers.size() else null
 
 
+func ship(id: StringName) -> ShipDef:
+	for def: ShipDef in ships:
+		if def.id == id:
+			return def
+	return null
+
+
+## O comerciante neutro (o único do jogo base), ou null.
+func trader() -> TraderDef:
+	return traders[0] if not traders.is_empty() else null
+
+
 func profile(id: StringName) -> IslandProfileDef:
 	for def: IslandProfileDef in island_profiles:
 		if def.id == id:
@@ -111,6 +126,21 @@ func validate() -> PackedStringArray:
 					problems.append("%s/%s: serviço desconhecido %s" % [tier_def.id, need.id, service_id])
 	if island_profiles.is_empty():
 		problems.append("nenhum perfil de ilha")
+	_check_ids(problems, "navio", ships.map(func(def: ShipDef) -> StringName: return def.id))
+	for ship_def: ShipDef in ships:
+		if ship_def.cargo_slots <= 0 or ship_def.slot_capacity_t <= 0 or ship_def.speed_m_s <= 0.0:
+			problems.append("%s: porão e velocidade devem ser positivos" % ship_def.id)
+		for material: StringName in ship_def.cost_materials:
+			if good(material) == null:
+				problems.append("%s: material desconhecido %s" % [ship_def.id, material])
+	for trader_def: TraderDef in traders:
+		if ship(trader_def.ship) == null:
+			problems.append("%s: navio desconhecido %s" % [trader_def.id, trader_def.ship])
+		for good_id: StringName in trader_def.sells + trader_def.buys:
+			if good(good_id) == null:
+				problems.append("%s: bem desconhecido %s" % [trader_def.id, good_id])
+		if trader_def.visit_interval_s <= 0.0 or trader_def.max_tons_per_visit <= 0:
+			problems.append("%s: intervalo e teto por visita devem ser positivos" % trader_def.id)
 	return problems
 
 

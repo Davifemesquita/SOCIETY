@@ -26,3 +26,15 @@ signal building_state_changed(building_id: int)
 signal house_upgraded(building_id: int)
 ## Um bem de consumo começou a faltar na ilha (avisado uma vez por queda).
 signal good_shortage(island_id: int, good: StringName)
+
+## Navios e comércio (Fase 6).
+## Navio comprado, mandado, posto em rota ou carga mexida à mão: a interface refaz o painel.
+signal ships_changed()
+## Rotas criadas, editadas ou apagadas.
+signal routes_changed()
+## Um marco de população foi atingido (o número de marcos atingidos até agora).
+signal milestone_reached(count: int)
+## O navio do comerciante negociou numa ilha (moedas que o jogador recebeu e pagou).
+signal trader_visited(island_id: int, earned: float, spent: float)
+## Um entreposto foi fundado numa ilha a partir de um navio (colonização).
+signal island_colonized(island_id: int)

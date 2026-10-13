@@ -70,6 +70,8 @@ func test_house_panel_blocks_upgrade() -> void:
 
 
 func test_tab_opens_statistics_with_the_stock() -> void:
+	# desde a Fase 6 as tábuas chegam no navio e descem no primeiro entreposto
+	_game.simulation.execute(PlaceBuildingCommand.new(0, &"trading_post", Vector2i(100, 0), 2))
 	_runner.simulate_key_pressed(KEY_TAB)
 	await _runner.simulate_frames(40, 16)
 	assert_bool(_game.hud.statistics_window.visible).is_true()

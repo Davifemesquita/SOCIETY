@@ -37,3 +37,14 @@ static func signed(value: float) -> String:
 
 static func percent(fraction: float) -> String:
 	return "%d%%" % roundi(fraction * 100.0)
+
+
+## Nome de um lugar dos navios: a ilha (a principal com marca) ou o posto do comerciante.
+static func place(target: int) -> String:
+	if target == Ship.TRADER_POST:
+		return TranslationServer.translate("PLACE_TRADER")
+	if target == 0:
+		return TranslationServer.translate("PLACE_MAIN_ISLAND")
+	if target < 0:
+		return TranslationServer.translate("PLACE_OPEN_SEA")
+	return TranslationServer.translate("PLACE_ISLAND") % (target + 1)

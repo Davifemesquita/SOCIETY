@@ -3,11 +3,14 @@ extends Node
 ## Ferramenta de construção: transforma clique e arrasto em comandos para a simulação.
 ## A lógica trabalha em células (hover, press, release), o que a deixa testável sem mouse;
 ## _unhandled_input só converte o mouse em ilha e célula (a ilha sob o cursor, desde a Fase 5).
+## Desde a Fase 6 também guarda o navio selecionado e o modo de escolher para onde ele vai (o
+## clique no mar e nos navios fica com o ShipPicker).
 
-enum Mode { NONE, BUILDING, ROAD, DEMOLISH }
+enum Mode { NONE, BUILDING, ROAD, DEMOLISH, SAIL_TO }
 
 signal changed()
 signal selection_changed(building_id: int)
+signal ship_selection_changed(ship_id: int)
 signal refused(reason: StringName)
 
 var mode: Mode = Mode.NONE
@@ -17,6 +20,8 @@ var hover_cell: Vector2i = Vector2i.ZERO
 var dragging: bool = false
 var drag_start: Vector2i = Vector2i.ZERO
 var selected_id: int = 0
+## Navio selecionado (0 = nenhum). Prédio e navio não ficam selecionados juntos.
+var selected_ship: int = 0
 ## Ilha em que a ferramenta está (a que está sob o cursor; não troca no meio de um arrasto).
 var island_id: int = Simulation.MAIN_ISLAND
 
@@ -30,7 +35,9 @@ func setup(simulation: Simulation, camera: StrategyCamera, cell_size: float) -> 
 	_camera = camera
 	_cell_size = cell_size
 	EventBus.building_removed.connect(_on_building_removed)
-	EventBus.world_replaced.connect(func() -> void: select(0))
+	EventBus.world_replaced.connect(func() -> void:
+		select(0)
+		select_ship(0))
 
 
 func start_building(def: BuildingDef) -> void:
@@ -46,6 +53,15 @@ func start_demolish() -> void:
 	_enter(Mode.DEMOLISH)
 
 
+## Escolher no mapa para onde vai o navio selecionado.
+func start_sail_to() -> void:
+	if selected_ship == 0:
+		return
+	mode = Mode.SAIL_TO
+	dragging = false
+	changed.emit()
+
+
 func cancel() -> void:
 	if dragging:
 		dragging = false
@@ -53,6 +69,7 @@ func cancel() -> void:
 		mode = Mode.NONE
 	else:
 		select(0)
+		select_ship(0)
 	changed.emit()
 
 
@@ -64,8 +81,21 @@ func rotate_building() -> void:
 func select(building_id: int) -> void:
 	if selected_id == building_id:
 		return
+	if building_id != 0:
+		select_ship(0)
 	selected_id = building_id
 	selection_changed.emit(building_id)
+
+
+func select_ship(ship_id: int) -> void:
+	if selected_ship == ship_id:
+		return
+	if ship_id != 0:
+		select(0)
+	elif mode == Mode.SAIL_TO:
+		mode = Mode.NONE
+	selected_ship = ship_id
+	ship_selection_changed.emit(ship_id)
 
 
 func hover(cell: Vector2i) -> void:
@@ -150,6 +180,7 @@ func _enter(new_mode: Mode) -> void:
 	mode = new_mode
 	dragging = false
 	select(0)
+	select_ship(0)
 	changed.emit()
 
 

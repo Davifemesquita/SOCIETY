@@ -100,7 +100,7 @@ func test_phase_two_save_opens_and_waits_for_the_trading_post() -> void:
 			"production": {"in_cycle": false, "progress": 0.0, "input_buffer": {}, "output_buffer": 0.0, "productivity": 0.0}}],
 		"next_building_id": 2, "money": 1000.0, "tax_levels": {}, "tick": 0,
 	}}
-	var world_data: Dictionary = SaveMigrations.from_3_to_4(SaveMigrations.from_2_to_3(phase_two))["world"]
+	var world_data: Dictionary = SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(SaveMigrations.from_2_to_3(phase_two)))["world"]
 	var world := WorldState.from_dict(world_data, GameData.get_default())
 	assert_object(world).is_not_null()
 	assert_object(world.cart(1)).is_not_null()

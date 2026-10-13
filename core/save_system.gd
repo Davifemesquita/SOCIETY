@@ -6,7 +6,7 @@ extends Node
 ## 15 dígitos e o estado não voltaria idêntico.
 
 ## Versão do formato. Ao mudar o formato, some 1 e acrescente a migração em migrations.
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 const SAVE_EXTENSION := ".save"
 const THUMBNAIL_EXTENSION := ".png"
 const DEFAULT_DIR := "user://saves"

@@ -12,6 +12,10 @@ var category_supply: Dictionary[StringName, Dictionary] = {}
 var good_supply: Dictionary[StringName, float] = {}
 ## Bens já anunciados em falta (para avisar uma vez por queda).
 var shortage_announced: Dictionary[StringName, bool] = {}
+## Comércio passivo com o comerciante (Fase 6), em toneladas por bem: vende o que passar de
+## sell_above e compra até ter buy_up_to. Bem ausente = não negocia.
+var sell_above: Dictionary[StringName, int] = {}
+var buy_up_to: Dictionary[StringName, int] = {}
 
 # runtime
 var workforce_available: Dictionary[StringName, float] = {}
@@ -66,6 +70,8 @@ func to_dict() -> Dictionary:
 		"category_supply": category_supply.duplicate(true),
 		"good_supply": good_supply.duplicate(),
 		"shortage_announced": shortage_announced.duplicate(),
+		"sell_above": sell_above.duplicate(),
+		"buy_up_to": buy_up_to.duplicate(),
 	}
 
 
@@ -115,4 +121,18 @@ static func from_dict(data: Dictionary) -> IslandEconomy:
 		if not (good is StringName and flag is bool):
 			return null
 		economy.shortage_announced[good] = flag
+	for pair: Array in [[data.get("sell_above"), economy.sell_above], [data.get("buy_up_to"), economy.buy_up_to]]:
+		var raw: Variant = pair[0]
+		if not raw is Dictionary:
+			return null
+		var source: Dictionary = raw
+		var into: Dictionary[StringName, int] = pair[1]
+		for good: Variant in source:
+			var tons: Variant = source[good]
+			if not (good is StringName and tons is int):
+				return null
+			var tons_value: int = tons
+			if tons_value < 0:
+				return null
+			into[good] = tons_value
 	return economy

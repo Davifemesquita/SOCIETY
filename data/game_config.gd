@@ -59,7 +59,8 @@ static var _default: GameConfig
 ## Fração da manutenção cobrada com o prédio pausado.
 @export var paused_upkeep_factor: float = 0.5
 @export var trader_price_variation: float = 0.10
-## Materiais no estoque da ilha no começo (no lugar do navio da Fase 6).
+## Carga do navio inicial (Fase 6): descarregada no estoque ao construir o primeiro entreposto.
+## Sem navio inicial (starting_ship vazio), vai direto para o estoque da ilha principal.
 @export var starting_materials: Dictionary[StringName, int] = {&"planks": 40}
 @export var road_cost_per_cell: int = 5
 ## Nível de imposto por classe (baixo, normal, alto): multiplicador e efeito na felicidade.
@@ -108,8 +109,28 @@ static var _default: GameConfig
 ## Raio dos serviços (mercado, taverna, igreja, escola), medido por estrada.
 @export var service_radius_cells: int = 25
 @export var lumberjack_min_trees: int = 20
-@export var ship_cargo_slots: int = 4
-@export var ship_slot_capacity_t: int = 50
+
+@export_group("Navios e comércio")
+## Navio com que o jogo começa, ancorado na ilha principal (vazio = nenhum: testes da economia).
+@export var starting_ship: StringName = &"merchant_ship"
+## Lado da célula da carta náutica (a grade em que os navios acham caminho), em metros.
+@export var sea_chart_cell_m: float = 8.0
+## Mar além das ilhas que entra na carta, em metros.
+@export var sea_margin_m: float = 200.0
+## Profundidade mínima para navegar: o fundo precisa estar abaixo disto (metros, negativo).
+@export var ship_min_depth_m: float = -1.5
+## Distância máxima entre o entreposto ou píer e o ponto de atracação na água navegável.
+@export var berth_search_m: float = 80.0
+## Tempo no cais por tonelada carregada ou descarregada.
+@export var ship_seconds_per_ton: float = 0.5
+## Tempo de içar velas antes de zarpar, em segundos de jogo. É nele que o caminho no mar é
+## calculado em outra thread; o navio sai sempre ao fim dele (com o caminho pronto, esperando se
+## preciso), então a simulação não depende de quanto a thread demorou.
+@export var ship_cast_off_seconds: float = 1.0
+## Navios e ilhas com entreposto permitidos por marco de população atingido: o índice é o
+## número de marcos (0 = nenhum; population_milestones tem os patamares).
+@export var ships_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 6, 8])
+@export var islands_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 5, 5])
 
 @export_group("Ilhas")
 ## Área da ilha plana (testes e saves de antes da Fase 5), em células.
@@ -290,6 +311,10 @@ func validate() -> PackedStringArray:
 		problems.append("as constantes de tempo das médias devem ser maiores que zero")
 	if autosave_slots <= 0:
 		problems.append("autosave_slots deve ser maior que zero")
+	if ships_by_milestone.size() != population_milestones.size() + 1 or islands_by_milestone.size() != population_milestones.size() + 1:
+		problems.append("ships_by_milestone e islands_by_milestone têm um valor a mais que population_milestones")
+	if sea_chart_cell_m <= 0.0 or ship_min_depth_m >= 0.0 or ship_seconds_per_ton < 0.0:
+		problems.append("sea_chart_cell_m positivo, ship_min_depth_m abaixo do mar e ship_seconds_per_ton não negativo")
 	for fraction: float in [demolish_refund, paused_upkeep_factor, trader_price_variation]:
 		if fraction < 0.0 or fraction > 1.0:
 			problems.append("frações (devolução, manutenção pausada, variação de preço) ficam entre 0 e 1")

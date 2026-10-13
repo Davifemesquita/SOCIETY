@@ -28,6 +28,8 @@ var overlay: DebugOverlay
 var sky: SkyAdapter
 var pedestrian_view: PedestrianView
 var window_view: WindowLightsView
+var ship_view: ShipView
+var ship_picker: ShipPicker
 ## Chão do mundo: a ilha plana (FlatIsland) ou terreno, água e árvores do arquipélago.
 var terrain_view: TerrainView
 var water_view: WaterView
@@ -65,6 +67,9 @@ func _ready() -> void:
 	cart_view = CartView.new()
 	cart_view.setup(simulation, _config.cell_size_m)
 	add_child(cart_view)
+	ship_view = ShipView.new()
+	add_child(ship_view)
+	ship_view.setup(simulation)
 	pedestrian_view = PedestrianView.new()
 	pedestrian_view.setup(simulation, _config)
 	add_child(pedestrian_view)
@@ -79,6 +84,10 @@ func _ready() -> void:
 	tool = BuildTool.new()
 	tool.setup(simulation, camera, _config.cell_size_m)
 	add_child(tool)
+	# depois da ferramenta: recebe o clique antes dela (navio e destino no mar)
+	ship_picker = ShipPicker.new()
+	ship_picker.setup(simulation, tool, camera, ship_view)
+	add_child(ship_picker)
 	var preview := BuildPreviewView.new()
 	preview.setup(tool, _config.cell_size_m)
 	add_child(preview)
@@ -234,6 +243,10 @@ func load_game(slot: String) -> bool:
 
 
 func center_on_selected() -> void:
+	var ship := simulation.world.ship(tool.selected_ship)
+	if ship != null and ship.is_placed():
+		camera.rig.center_on(Vector3(ship.position.x, 0.0, ship.position.y))
+		return
 	var record := simulation.world.building(tool.selected_id)
 	if record == null:
 		return
@@ -305,13 +318,14 @@ func advance_day_hours() -> void:
 		GameClock.clock.extra_hours = fposmod(GameClock.clock.extra_hours + 3.0, 24.0)
 
 
-## Trapaça de desenvolvimento (só em build de depuração): dinheiro e 20 t de cada bem.
+## Trapaça de desenvolvimento (só em build de depuração): dinheiro e 20 t de cada bem na ilha da
+## ferramenta (a que está sob o cursor).
 func cheat_resources() -> void:
 	if not OS.is_debug_build():
 		return
 	simulation.world.money += 10000.0
 	for good: GoodDef in simulation.data.goods:
-		simulation.world.economy(Simulation.MAIN_ISLAND).add(good.id, 20.0, simulation.storage_capacity())
+		simulation.world.economy(tool.island_id).add(good.id, 20.0, simulation.storage_capacity(tool.island_id))
 
 
 func _thumbnail() -> Image:

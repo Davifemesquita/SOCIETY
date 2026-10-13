@@ -12,6 +12,9 @@ const REFRESH_SECONDS := 0.5
 
 var selection_panel: SelectionPanel
 var statistics_window: StatisticsWindow
+var ship_panel: ShipPanel
+var route_window: RouteWindow
+var trade_window: TradeWindow
 
 var _tool: BuildTool
 var _simulation: Simulation
@@ -41,16 +44,34 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_pin(selection_panel, Vector2(0.0, 1.0), Vector2(16, -110), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_BEGIN)
 	add_child(selection_panel)
 	selection_panel.setup(tool, simulation)
+	ship_panel = ShipPanel.new()
+	_pin(ship_panel, Vector2(0.0, 1.0), Vector2(16, -110), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_BEGIN)
+	add_child(ship_panel)
+	ship_panel.setup(tool, simulation)
 	statistics_window = StatisticsWindow.new()
 	_pin(statistics_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
 	add_child(statistics_window)
 	statistics_window.setup(simulation)
+	route_window = RouteWindow.new()
+	_pin(route_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
+	add_child(route_window)
+	route_window.setup(simulation, tool)
+	trade_window = TradeWindow.new()
+	_pin(trade_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
+	add_child(trade_window)
+	trade_window.setup(simulation)
+	selection_panel.trade_requested.connect(trade_window.open)
 	_build_labels()
 	tool.changed.connect(_refresh_tool)
 	tool.refused.connect(func(reason: StringName) -> void: show_message(tr(reason)))
 	EventBus.time_speed_changed.connect(func(_speed_index: int, _paused: bool) -> void: _refresh_speed())
 	EventBus.good_shortage.connect(func(_island: int, good: StringName) -> void:
 		show_message(tr("MSG_SHORTAGE") % tr(simulation.data.good(good).name_key)))
+	EventBus.milestone_reached.connect(func(count: int) -> void:
+		show_message(tr("MSG_MILESTONE") % Fmt.integer(simulation.config.population_milestones[count - 1])))
+	EventBus.island_colonized.connect(func(island_id: int) -> void: show_message(tr("MSG_COLONIZED") % Fmt.place(island_id)))
+	EventBus.trader_visited.connect(func(island_id: int, earned: float, spent: float) -> void:
+		show_message(tr("MSG_TRADER_VISIT") % [Fmt.place(island_id), Fmt.integer(earned), Fmt.integer(spent)]))
 	_select_category(_categories().size() - 1 if _needs_trading_post() else 0)
 	_refresh_speed()
 	_refresh_tool()
@@ -65,6 +86,10 @@ func show_message(text: String) -> void:
 
 func toggle_statistics() -> void:
 	statistics_window.visible = not statistics_window.visible
+
+
+func toggle_routes() -> void:
+	route_window.toggle()
 
 
 func _process(delta: float) -> void:
@@ -126,6 +151,10 @@ func _build_top_bar() -> void:
 	var stats := _button("HUD_STATS")
 	stats.pressed.connect(toggle_statistics)
 	row.add_child(stats)
+	var routes := _button("HUD_ROUTES")
+	routes.name = "Routes"
+	routes.pressed.connect(toggle_routes)
+	row.add_child(routes)
 	var save := _button("HUD_SAVE")
 	save.pressed.connect(save_requested.emit)
 	row.add_child(save)
@@ -166,7 +195,7 @@ func _categories() -> Array[Array]:
 			return (def.is_production() and def.workforce_tier == tier.id) \
 					or (def.kind == BuildingDef.Kind.MODULE and def.unlock_tier == tier.id)))
 	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.kind == BuildingDef.Kind.SERVICE))
-	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_warehouse()))
+	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_warehouse() or def.is_pier()))
 	return groups
 
 
@@ -229,6 +258,10 @@ func _tooltip(def: BuildingDef) -> String:
 			lines.append(tr("TIP_STORAGE") % def.level(0).storage_capacity_t)
 			lines.append(tr("TIP_COAST"))
 			lines.append(tr("TIP_FIRST_FREE"))
+			lines.append(tr("TIP_COLONY"))
+	if def.is_pier():
+		lines.append(tr("TIP_COAST"))
+		lines.append(tr("TIP_PIER"))
 	return "\n".join(lines)
 
 
@@ -297,6 +330,8 @@ func _refresh_tool() -> void:
 			_hint.text = tr("HUD_HINT_ROAD")
 		BuildTool.Mode.DEMOLISH:
 			_hint.text = tr("HUD_HINT_DEMOLISH")
+		BuildTool.Mode.SAIL_TO:
+			_hint.text = tr("HUD_HINT_SAIL_TO")
 		_:
 			_hint.text = tr("HINT_BUILD_TRADING_POST") if _needs_trading_post() else ""
 

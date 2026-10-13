@@ -13,6 +13,7 @@ static func simulation(size: Vector2i = Vector2i(120, 40), capacity: int = 50, l
 	config.main_island_size_cells = size
 	config.island_storage_capacity_t = capacity
 	config.starting_materials = {}
+	config.starting_ship = &""
 	config.instant_logistics = not logistics
 	var sim := Simulation.new(config, GameData.get_default())
 	sim.free_build = true
@@ -116,3 +117,68 @@ static func run_production(sim: Simulation, seconds: float) -> void:
 
 static func run(sim: Simulation, seconds: float) -> void:
 	sim.run_ticks(roundi(seconds / sim.config.tick_interval()))
+
+
+## Duas ilhas planas no mar (Fase 6): a principal na origem e a segunda gap_m a leste, as duas do
+## mesmo tamanho, cada uma com entreposto no litoral norte (x 0..5) e a estrada principal em
+## y = 6. Com carroças, sem navio inicial; constrói sem custo.
+static func two_islands(size: Vector2i = Vector2i(60, 30), gap_m: float = 200.0) -> Simulation:
+	var config := GameConfig.new()
+	config.starting_materials = {}
+	config.starting_ship = &""
+	config.instant_logistics = false
+	var data := GameData.get_default()
+	var world := WorldState.new()
+	world.money = 50000.0
+	for index: int in 2:
+		var grid := IslandGrid.new(size)
+		grid.origin_m = Vector2(index * (size.x * config.cell_size_m + gap_m), 0.0)
+		world.islands.append(grid)
+		var economy := IslandEconomy.new()
+		economy.profile_id = &"test_island"
+		world.economies.append(economy)
+	var sim := Simulation.new(config, data, world)
+	sim.free_build = true
+	for index: int in 2:
+		var result := sim.execute(PlaceBuildingCommand.new(index, &"trading_post", Vector2i(0, 0), 2))
+		assert(result.ok(), "entreposto recusado: %s" % result.reason)
+		sim.execute(BuildRoadCommand.new(index, RoadPath.l_path(Vector2i(0, 6), Vector2i(size.x - 1, 6))))
+	return sim
+
+
+## Compra um navio (sem custo) ancorado na ilha e devolve o id.
+static func ship(sim: Simulation, island: int = ISLAND) -> int:
+	var result := sim.execute(BuyShipCommand.new(island))
+	assert(result.ok(), "navio recusado: %s" % result.reason)
+	return result.created_id
+
+
+## Rota com as paradas dadas: cada parada é [ilha, [[bem, carregar?, toneladas], ...]].
+static func route(sim: Simulation, stops: Array) -> int:
+	var route_id := sim.execute(CreateRouteCommand.new()).created_id
+	var list: Array[TradeRoute.Stop] = []
+	for raw: Array in stops:
+		var target: int = raw[0]
+		var stop := TradeRoute.Stop.new(target)
+		var orders: Array = raw[1]
+		for order: Array in orders:
+			var good: StringName = order[0]
+			var loading: bool = order[1]
+			var tons: int = order[2]
+			stop.orders.append(TradeRoute.Order.new(good, loading, tons))
+		list.append(stop)
+	var result := sim.execute(EditRouteCommand.new(route_id, list))
+	assert(result.ok(), "rota recusada: %s" % result.reason)
+	return route_id
+
+
+## Roda até a condição valer ou o tempo acabar; devolve os segundos de jogo que passaram.
+static func run_until(sim: Simulation, condition: Callable, max_seconds: float) -> float:
+	var dt := sim.config.tick_interval()
+	var elapsed := 0.0
+	while elapsed < max_seconds:
+		if condition.call():
+			return elapsed
+		sim.tick(0)
+		elapsed += dt
+	return elapsed

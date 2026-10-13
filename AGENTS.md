@@ -46,6 +46,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://too
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
 # Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
+# Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase6.tscn -- /pasta/de/saida
 # refaz os pedestres (VAT) a partir de assets/source/quaternius; com a pasta dos pacotes
 # baixados (UAL1_Standard.glb, UAL2_Standard.glb) como argumento, refaz antes as animações
 tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.gd
@@ -103,15 +105,16 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: idioma e escala da interface em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão registrados no InputMap (tecla física) |
-| `data/game_data.tres` | todas as definições: 23 bens (`goods/`), 2 classes (`tiers/`), 30 prédios (`buildings/`), ilha de teste (`islands/`) |
-| `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef` |
+| `data/game_data.tres` | todas as definições: 23 bens (`goods/`), 2 classes (`tiers/`), 33 prédios (`buildings/`), perfis de ilha (`islands/`), 2 navios (`ships/`) e o comerciante (`traders/`) |
+| `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada e demolir: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → economia |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → economia → navios |
 | `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
+| `sim/ships/` | `SeaChart` (carta náutica, AStarGrid2D no mar), `Ship`, `TradeRoute`, `Harbors` (cais, ancoradouros, posto do comerciante), `CargoTransfer`, `TraderState`/`TraderVisits`, `ShipRules` |
 | `sim/derived_state.gd` | o que sai da geometria (acesso, cobertura, módulos, poluição) e os totais por tick; refeito na mudança |
 | `sim/island_economy.gd` | estoque da ilha e atendimento das necessidades por classe |
 | `sim/house_needs.gd` | avaliação de uma casa (necessidades, bônus, imposto), usada pela população e pelo painel |
@@ -129,6 +132,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
 | `ui/hud/` | barra superior, menu por categoria, painel do selecionado, estatísticas (Tab) |
 | `presentation/cart_view.gd` | carroças num MultiMesh, posição interpolada entre ticks |
+| `presentation/ship_view.gd` | navios provisórios balançando no mar, o posto do comerciante e a marca do selecionado; acha o navio sob o cursor |
+| `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
+| `ui/hud/ship_panel.gd`, `route_window.gd`, `archipelago_map.gd`, `trade_window.gd` | painel do navio, janela de rotas com o mapa, comércio passivo da ilha |
 | `presentation/pedestrians/` | `Crowd` (rotina dos pedestres, sem nós), `PedestrianView` (MultiMesh por classe e corpo), `SidewalkPath`, `VatModel` |
 | `presentation/window_lights_view.gd` | janelas nas fachadas (um MultiMesh) e as luzes de área perto da câmera |
 | `shaders/pedestrian_vat.gdshader` | boneco animado pela textura VAT, andando sozinho pelo trecho reto |
@@ -136,6 +142,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `tools/demo_village.gd` | vila de demonstração com entreposto e armazéns (capturas) |
 | `ui/screens/` | abertura (novo jogo, carregar) e a partida (`GameScreen` monta tudo) |
 | `tools/town_layout.gd` | vila de teste por comandos (benchmark, testes, captura) |
+| `tools/trade_demo.gd` | duas ilhas com a rota de tijolos (critério da Fase 6, captura, benchmark) |
 | `audio/` | vazia até a fase que a usa |
 | `addons/` | terceiros, **nunca editados**; para mudar, copie para `shaders/` ou `sim/` |
 
@@ -296,6 +303,51 @@ Regras que já custaram investigação:
 - **Destaque de terreno** (jazida, floresta, litoral, rio) ao escolher o prédio: percorre a ilha
   inteira, então fica em cache por ilha e prédio até árvores caírem.
 
+### Navios e comércio (Fase 6)
+
+- **Carta náutica** (`SeaChart`): grade de 8 m (`sea_chart_cell_m`) sobre o arquipélago e 200 m de
+  mar em volta; célula navegável se todos os cantos do terreno nela ficam abaixo de
+  `ship_min_depth_m` (−1,5 m). Rio (−1,2 m) é raso demais; a ilha plana é toda terra. Feita uma vez
+  por mundo, fora do save; o caminho é AStarGrid2D com diagonal, encurtado por linha de visada e
+  guardado por par de células.
+- **Busca com distância infinita**: `ceili(INF)` não é número; `nearest_navigable` sem limite usa o
+  tamanho da carta (o bug parava todo navio sem caminho, em silêncio).
+- **Portos** (`Harbors`, fora do save, refeito com o `DerivedState`): cada entreposto é uma vaga, e
+  cada píer ligado por estrada à rede de um entreposto é mais uma. O cais é a água navegável mais
+  perto do prédio (até `berth_search_m`); o ancoradouro, onde se espera vaga, fica mais para o mar.
+  Ilha sem porto: o navio ancora no mar mais perto do meio da borda norte (é onde se coloniza).
+- **Caminho no mar em outra thread**: o caminho novo entre portos distantes passa de 20 ms na
+  semente 1840 (com ou sem o salto do AStarGrid2D). O navio iça velas por `ship_cast_off_seconds`
+  enquanto o `WorkerThreadPool` calcula (`SeaChart.request`), e ao fim desse tempo recolhe o
+  caminho, esperando a tarefa se ela ainda não acabou: sai sempre no mesmo tick, e a partida
+  carregada segue igual à original (o cache não vai para o save). O A* só é usado pelas tarefas,
+  com mutex; toda tarefa é esperada (`_reap`, `finish` ao trocar de mundo).
+- **Rota**: paradas (ilha ou posto do comerciante) com ordens de carregar e descarregar até X t;
+  primeiro desce tudo, depois sobe. O navio espera na fila do porto (ordem de chegada), encosta,
+  fica `ship_seconds_per_ton` por tonelada planejada e só então a carga passa. Parada em ilha sem
+  porto é pulada. Mudou a rota, os navios dela recomeçam da primeira parada.
+- **Navio inicial** (`starting_ship`) traz as 40 tábuas e fica ancorado na principal; o primeiro
+  entreposto continua grátis e o navio descarrega nele. Sem navio inicial (testes da economia,
+  `SimFixture`), a carga vai direto para o estoque, como antes.
+- **Colonização**: entreposto em ilha nova pede o marco que libera a ilha (`islands_by_milestone`),
+  um navio do jogador ancorado nela com os materiais (saem do porão) e o dinheiro; o resto do
+  porão desce no estoque novo.
+- **Marcos** (`population_milestones`): atingido, fica para sempre e libera navios
+  (`ships_by_milestone`) e ilhas. O jogo começa com 1 navio e 1 ilha; a segunda libera aos 100.
+- **Comerciante neutro**: o navio dele (sem manutenção) aparece com o primeiro entreposto, espera
+  `visit_interval_s` no posto (o canto da carta mais longe da principal), sorteia os preços da volta
+  (base ± `trader_price_variation`, pela semente e pelo número da volta: o save guarda só o número)
+  e passa por cada entreposto, negociando até `max_tons_per_visit` por bem pelos ajustes da ilha
+  ("vender acima de", "comprar até"). No posto, o jogador compra e vende com o navio dele; o posto
+  também pode ser parada de rota.
+- **Save versão 5**: navios, rotas, comerciante, marcos e os ajustes de comércio; a ilha plana
+  guarda `origin` (pode haver mais de uma). Saves da Fase 5 abrem sem navios e com o estoque que
+  tinham.
+- **Painéis que se refazem**: o filho antigo sai da árvore antes do `queue_free`; senão o novo de
+  mesmo nome ganha nome gerado e `find_child` não acha (os testes de interface procuram por nome).
+- **Testes de interface com clique**: o mouse começa no canto e a câmera anda sozinha (pan pela
+  borda); mova o mouse para o meio antes de calcular onde clicar.
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -311,10 +363,14 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 2 — Núcleo econômico | **concluída em 12/10/2026** |
 | 3 — Logística | **concluída em 12/10/2026** |
 | 4 — Vida e tempo | **concluída em 12/10/2026** (a medição de FPS na RTX 3060 ainda não voltou) |
-| 5 — Mundo | **entregue em 12/10/2026**, aguardando a confirmação do dono do produto |
-| 6 a 11 | — |
+| 5 — Mundo | **concluída em 13/10/2026** |
+| 6 — Navios e comércio | **entregue em 13/10/2026**, aguardando a confirmação do dono do produto |
+| 7 a 11 | — |
 
 Pendências já vistas para fases futuras:
 
-- Fase 6: o navio de verdade traz a carga inicial; hoje as 40 tábuas já estão no estoque.
-- Fase 7: gráficos históricos nas estatísticas e o Theme (os painéis usam `UiStyle` provisório).
+- Fase 7: gráficos históricos nas estatísticas e o Theme (os painéis usam `UiStyle` provisório);
+  notificações com clique para ir ao lugar ("navio chegou", marco), mapa ilustrado nas rotas e
+  estatísticas por ilha escolhida na janela.
+- Fase 8: metas guiadas ligadas aos marcos; estaleiro, se a compra de navio no entreposto não bastar.
+- Fase 9: modelos dos navios, rastro na água e gaivotas (`assets/TODO_ASSETS.md`).

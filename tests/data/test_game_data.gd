@@ -13,7 +13,9 @@ func test_data_loads_and_is_valid() -> void:
 	assert_array(Array(_data.validate())).is_empty()
 	assert_int(_data.goods.size()).is_equal(23)
 	assert_int(_data.tiers.size()).is_equal(2)
-	assert_int(_data.buildings.size()).is_equal(32)
+	assert_int(_data.buildings.size()).is_equal(33)
+	assert_int(_data.ships.size()).is_equal(2)
+	assert_object(_data.trader()).is_not_null()
 
 
 func test_every_name_is_translated() -> void:
@@ -22,6 +24,9 @@ func test_every_name_is_translated() -> void:
 		keys.append(def.name_key)
 	for def: GoodDef in _data.goods:
 		keys.append(def.name_key)
+	for def: ShipDef in _data.ships:
+		keys.append(def.name_key)
+	keys.append(_data.trader().name_key)
 	for tier: TierDef in _data.tiers:
 		keys.append(tier.name_key)
 		for need: NeedCategoryDef in tier.basic_needs + tier.luxury_needs:

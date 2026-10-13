@@ -3,7 +3,10 @@ extends PanelContainer
 ## Painel do prédio selecionado. Produção: estado, produtividade, ciclo, buffers,
 ## trabalhadores, manutenção, pausar, copiar e demolir. Casa: classe, moradores, necessidades
 ## em semáforo, felicidade, imposto e bloqueio de upgrade. Serviço: casas atendidas.
-## Campo e pasto: a fazenda que servem.
+## Campo e pasto: a fazenda que servem. Entreposto (Fase 6): vagas de navio, comprar navio e o
+## comércio com o comerciante; píer: se está em funcionamento.
+
+signal trade_requested(island_id: int)
 
 const REFRESH_SECONDS := 0.25
 const GREEN := Color(0.55, 0.9, 0.5)
@@ -59,6 +62,8 @@ func show_building(building_id: int) -> void:
 	var record := _simulation.world.building(building_id)
 	visible = record != null
 	for child: Node in _body.get_children() + _buttons.get_children():
+		# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
+		child.get_parent().remove_child(child)
 		child.queue_free()
 	_lines.clear()
 	_pause = null
@@ -90,14 +95,30 @@ func _process(delta: float) -> void:
 		_refresh()
 
 
-func _build_warehouse(record: BuildingRecord, _def: BuildingDef) -> void:
-	_add_lines(5)
+func _build_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
+	_add_lines(6)
 	var upgrade := _add_button("PANEL_UPGRADE", func() -> void:
 		var result := _simulation.execute(UpgradeBuildingCommand.new(record.id))
 		if not result.ok():
 			_tool.refused.emit(result.reason)
 		_refresh())
 	upgrade.name = "Upgrade"
+	if def.is_trading_post:
+		var buy := _add_button("PANEL_BUY_SHIP", func() -> void:
+			var result := _simulation.execute(BuyShipCommand.new(record.island_id))
+			if not result.ok():
+				_tool.refused.emit(result.reason)
+			else:
+				_tool.select_ship(result.created_id))
+		buy.name = "BuyShip"
+		var ship_def := _simulation.data.ship(&"merchant_ship")
+		if ship_def != null:
+			var cost: PackedStringArray = [tr("TIP_COINS") % Fmt.integer(ship_def.cost_money)]
+			for material: StringName in ship_def.cost_materials:
+				cost.append("%d %s" % [ship_def.cost_materials[material], tr(_simulation.data.good(material).name_key)])
+			buy.tooltip_text = tr("TIP_COST") % ", ".join(cost)
+		var trade := _add_button("PANEL_TRADE", func() -> void: trade_requested.emit(record.island_id))
+		trade.name = "Trade"
 
 
 func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
@@ -152,6 +173,12 @@ func _refresh() -> void:
 			_title.text = tr(def.name_key)
 			var houses: Array = _simulation.derived_state().service_houses.get(record.id, [])
 			_lines[0].text = tr("SERVICE_HOUSES") % Fmt.integer(houses.size())
+		BuildingDef.Kind.PIER:
+			_title.text = tr(def.name_key)
+			var berths: Array = _simulation.derived_state().berths.get(record.island_id, [])
+			var working := berths.has(record.id)
+			_lines[0].text = tr("PIER_WORKING") if working else tr("PIER_DISCONNECTED")
+			_lines[0].modulate = GREEN if working else RED
 		BuildingDef.Kind.MODULE:
 			_title.text = tr(def.name_key)
 			var owner: int = _simulation.derived_state().module_owner.get(record.id, 0)
@@ -253,6 +280,15 @@ func _refresh_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 			served += 1
 	_lines[3].text = tr("WAREHOUSE_SERVES") % served
 	_lines[4].text = tr("WAREHOUSE_CAPACITY") % Fmt.integer(_simulation.storage_capacity(record.island_id)) if def.is_trading_post else ""
+	if def.is_trading_post:
+		var berths: Array = derived.berths.get(record.island_id, [])
+		var docked := 0
+		for ship: Ship in _simulation.world.ships.values():
+			if ship.state == Ship.State.DOCKED and berths.has(ship.berth_id):
+				docked += 1
+		_lines[5].text = tr("WAREHOUSE_BERTHS") % [docked, berths.size()]
+	else:
+		_lines[5].text = ""
 	var upgrade := _buttons.get_node_or_null("Upgrade") as Button
 	if upgrade != null:
 		var next := record.level + 1

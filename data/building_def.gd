@@ -2,7 +2,8 @@ class_name BuildingDef
 extends Resource
 ## Definição de um tipo de prédio: forma, função, custo e desbloqueio.
 
-enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE }
+## PIER (Fase 6) entra no fim: o número do tipo fica nos .tres.
+enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE, PIER }
 ## Requisitos de terreno. Até a Fase 5 a ilha de teste cumpre todos, menos o litoral,
 ## que já é a borda da ilha.
 enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
@@ -68,6 +69,16 @@ func is_production() -> bool:
 
 func is_warehouse() -> bool:
 	return kind == Kind.WAREHOUSE
+
+
+## Píer (Fase 6): uma vaga a mais no porto da ilha, ligado por estrada ao entreposto.
+func is_pier() -> bool:
+	return kind == Kind.PIER
+
+
+## Onde atraca navio: o entreposto e os píeres.
+func is_berth() -> bool:
+	return is_trading_post or kind == Kind.PIER
 
 
 func level(index: int) -> BuildingLevelDef:

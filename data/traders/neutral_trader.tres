@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TraderDef" format=3]
+
+[ext_resource type="Script" path="res://data/trader_def.gd" id="1_trader"]
+
+[resource]
+script = ExtResource("1_trader")
+id = &"neutral_trader"
+name_key = "TRADER_NEUTRAL"
+sells = Array[StringName]([&"planks", &"fish", &"potatoes", &"woolen_clothes", &"spirits", &"bread", &"soap", &"coal"])
+buys = Array[StringName]([&"wood", &"planks", &"fish", &"wool", &"woolen_clothes", &"potatoes", &"spirits", &"bread", &"sausages", &"soap", &"beer", &"bricks", &"coal", &"iron_ore", &"steel", &"steel_beams"])
+ship = &"trader_ship"
+visit_interval_s = 300.0
+dwell_s = 20.0
+max_tons_per_visit = 20

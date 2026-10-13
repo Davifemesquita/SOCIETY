@@ -28,15 +28,25 @@ func execute(context: CommandContext) -> CommandResult:
 		reason = PlacementRules.check_terrain(grid, profile, def, origin, rotation, context.config)
 	var first_trading_post := def != null and def.is_trading_post and not world.any_trading_post(context.data)
 	var charge := not context.free_build and not first_trading_post
+	var colony := charge and PlacementRules.founds_colony(world, context.data, island_id, def)
+	var new_port := def != null and def.is_trading_post and not world.has_trading_post(island_id, context.data)
 	if reason == PlacementRules.OK and not context.free_build and not context.config.instant_logistics:
 		reason = PlacementRules.check_trading_post(world, context.data, island_id, def)
-	if reason == PlacementRules.OK and charge:
+	if reason == PlacementRules.OK and colony:
+		reason = PlacementRules.check_colony(world, context.data, context.config, island_id, def)
+	if reason == PlacementRules.OK and charge and not colony:
 		reason = PlacementRules.check_unlock(world, def)
-	if reason == PlacementRules.OK and charge:
+	if reason == PlacementRules.OK and charge and not colony:
 		reason = PlacementRules.check_cost(world, world.economy(island_id), context.config, def.cost_money, def.cost_materials)
 	if reason != PlacementRules.OK:
 		return CommandResult.refused(reason)
-	if charge:
+	if colony:
+		# os materiais do entreposto saem do porão do navio ancorado
+		var ship := PlacementRules.colony_ship(world, island_id, def.cost_materials)
+		world.money -= def.cost_money
+		for material: StringName in def.cost_materials:
+			ship.unload_good(material, def.cost_materials[material])
+	elif charge:
 		_pay(world, world.economy(island_id), def)
 	var record := BuildingRecord.new(world.next_building_id, def_id, island_id, origin, rotation)
 	world.next_building_id += 1
@@ -58,7 +68,26 @@ func execute(context: CommandContext) -> CommandResult:
 			cells.append(Vector2i(x, y))
 	if grid.clear_trees(cells):
 		result.trees_cleared = area
+	if new_port:
+		result.colonized = colony
+		result.ships_changed = _unload_anchored(world, island_id, def)
 	return result
+
+
+## Porto novo: os navios do jogador ancorados na ilha, sem rota, descarregam tudo no estoque dela
+## (o que couber no estoque do entreposto novo; o resto fica a bordo).
+static func _unload_anchored(world: WorldState, island: int, def: BuildingDef) -> bool:
+	var economy := world.economy(island)
+	var capacity := float(def.level(0).storage_capacity_t)
+	var unloaded := false
+	for ship: Ship in world.player_ships():
+		if ship.at != island or ship.state != Ship.State.IDLE or ship.route_id != 0:
+			continue
+		for good: StringName in ship.goods():
+			var accepted := economy.add(good, ship.tons_of(good), capacity)
+			ship.unload_good(good, accepted)
+			unloaded = unloaded or accepted > 0.0
+	return unloaded
 
 
 static func _pay(world: WorldState, economy: IslandEconomy, def: BuildingDef) -> void:

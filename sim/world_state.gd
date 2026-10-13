@@ -15,6 +15,14 @@ var money: float = 0.0
 var tick: int = 0
 ## Nível de imposto por classe; classe ausente = normal.
 var tax_levels: Dictionary[StringName, int] = {}
+## Navios (do jogador e o do comerciante) e rotas comerciais (Fase 6).
+var ships: Dictionary[int, Ship] = {}
+var next_ship_id: int = 1
+var routes: Dictionary[int, TradeRoute] = {}
+var next_route_id: int = 1
+var trader := TraderState.new()
+## Marcos de população já atingidos (seção 3).
+var milestones_reached: int = 0
 ## Semente do arquipélago e a versão do gerador (0 = a ilha plana de antes da Fase 5).
 var seed: int = 0
 var terrain_version: int = 0
@@ -49,6 +57,62 @@ func building_ids() -> Array[int]:
 
 func cart(building_id: int) -> Cart:
 	return carts.get(building_id)
+
+
+func ship(ship_id: int) -> Ship:
+	return ships.get(ship_id)
+
+
+## Ids dos navios em ordem crescente (o sistema dos navios anda nesta ordem).
+func ship_ids() -> Array[int]:
+	var ids: Array[int] = []
+	ids.assign(ships.keys())
+	ids.sort()
+	return ids
+
+
+## Navios do jogador (sem o do comerciante), em ordem de id.
+func player_ships() -> Array[Ship]:
+	var list: Array[Ship] = []
+	for ship_id: int in ship_ids():
+		if ships[ship_id].owner == Ship.Owner.PLAYER:
+			list.append(ships[ship_id])
+	return list
+
+
+func route_ids() -> Array[int]:
+	var ids: Array[int] = []
+	ids.assign(routes.keys())
+	ids.sort()
+	return ids
+
+
+## Ilhas que já têm entreposto.
+func colonized_islands(data: GameData) -> Array[int]:
+	var list: Array[int] = []
+	for island_id: int in islands.size():
+		if has_trading_post(island_id, data):
+			list.append(island_id)
+	return list
+
+
+## O navio inicial com a carga do começo, ancorado na ilha principal (posto no mar pela
+## simulação). Sem navio inicial na configuração, a carga vai direto para o estoque.
+func add_starting_fleet(config: GameConfig, data: GameData) -> void:
+	var def := data.ship(config.starting_ship)
+	if def == null:
+		for material: StringName in config.starting_materials:
+			economies[0].stock[material] = float(config.starting_materials[material])
+		return
+	var first := Ship.new(next_ship_id, def)
+	next_ship_id += 1
+	first.at = 0
+	for material: StringName in config.starting_materials:
+		var tons := float(config.starting_materials[material])
+		var loaded := first.load_good(material, tons, def.slot_capacity_t)
+		if loaded < tons:
+			economies[0].stock[material] = tons - loaded
+	ships[first.id] = first
 
 
 ## Há entreposto nesta ilha (sem ele não se constrói nada nela).
@@ -104,16 +168,24 @@ func to_dict() -> Dictionary:
 			if grid.cleared_trees[i] == 1:
 				cleared.append(i)
 		island_list.append({"size": grid.size, "roads": road_indices, "economy": economies[index].to_dict(),
-				"cleared_trees": cleared, "fingerprint": grid.fingerprint})
+				"cleared_trees": cleared, "fingerprint": grid.fingerprint, "origin": grid.origin_m})
 	var building_list: Array[Dictionary] = []
 	var cart_list: Array[Dictionary] = []
 	for building_id: int in building_ids():
 		building_list.append(buildings[building_id].to_dict())
 		if carts.has(building_id):
 			cart_list.append(carts[building_id].to_dict())
+	var ship_list: Array[Dictionary] = []
+	for ship_id: int in ship_ids():
+		ship_list.append(ships[ship_id].to_dict())
+	var route_list: Array[Dictionary] = []
+	for route_id: int in route_ids():
+		route_list.append(routes[route_id].to_dict())
 	return {"islands": island_list, "buildings": building_list, "next_building_id": next_building_id,
 			"money": money, "tax_levels": tax_levels.duplicate(), "tick": tick, "carts": cart_list,
-			"seed": seed, "terrain_version": terrain_version}
+			"seed": seed, "terrain_version": terrain_version, "ships": ship_list, "next_ship_id": next_ship_id,
+			"routes": route_list, "next_route_id": next_route_id, "trader": trader.to_dict(),
+			"milestones_reached": milestones_reached}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -189,7 +261,61 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	for building_id: int in world.building_ids():
 		if game_data.building(world.buildings[building_id].def_id).is_production() and not world.carts.has(building_id):
 			return null
+	if not world._restore_fleet(data, game_data):
+		return null
 	return world
+
+
+## Navios, rotas, comerciante e marcos (Fase 6). Navio que aponta para rota, ilha ou cais que não
+## existe recusa o save inteiro.
+func _restore_fleet(data: Dictionary, game_data: GameData) -> bool:
+	var raw_ships: Variant = data.get("ships")
+	var raw_next_ship: Variant = data.get("next_ship_id")
+	var raw_routes: Variant = data.get("routes")
+	var raw_next_route: Variant = data.get("next_route_id")
+	var raw_trader: Variant = data.get("trader")
+	var raw_milestones: Variant = data.get("milestones_reached")
+	if not (raw_ships is Array and raw_next_ship is int and raw_routes is Array and raw_next_route is int \
+			and raw_trader is Dictionary and raw_milestones is int):
+		return false
+	next_ship_id = raw_next_ship
+	next_route_id = raw_next_route
+	milestones_reached = raw_milestones
+	if milestones_reached < 0:
+		return false
+	var route_list: Array = raw_routes
+	for raw_route: Variant in route_list:
+		if not raw_route is Dictionary:
+			return false
+		var route_data: Dictionary = raw_route
+		var route := TradeRoute.from_dict(route_data, islands.size(), game_data)
+		if route == null or routes.has(route.id) or route.id >= next_route_id:
+			return false
+		routes[route.id] = route
+	var ship_list: Array = raw_ships
+	for raw_ship: Variant in ship_list:
+		if not raw_ship is Dictionary:
+			return false
+		var ship_data: Dictionary = raw_ship
+		var loaded := Ship.from_dict(ship_data, game_data)
+		if loaded == null or ships.has(loaded.id) or loaded.id >= next_ship_id:
+			return false
+		if loaded.route_id != 0 and not routes.has(loaded.route_id):
+			return false
+		for place: int in [loaded.at, loaded.destination]:
+			if place != Ship.NOWHERE and not TradeRoute.valid_target(place, islands.size()):
+				return false
+		if loaded.berth_id != 0 and building(loaded.berth_id) == null:
+			return false
+		ships[loaded.id] = loaded
+	var trader_data: Dictionary = raw_trader
+	var loaded_trader := TraderState.from_dict(trader_data, islands.size())
+	if loaded_trader == null:
+		return false
+	if loaded_trader.ship_id != 0 and (not ships.has(loaded_trader.ship_id) or ships[loaded_trader.ship_id].owner != Ship.Owner.TRADER):
+		return false
+	trader = loaded_trader
+	return true
 
 
 ## Ilha do save: a plana é criada do tamanho salvo; a gerada já vem pronta (da semente) e o save
@@ -210,6 +336,10 @@ func _restore_island(raw: Variant, game_data: GameData, generated: IslandGrid) -
 	if generated != null and generated.size != grid_size:
 		return false
 	var grid := generated if generated != null else IslandGrid.new(grid_size)
+	# a ilha plana guarda o lugar no mundo (desde a Fase 6 pode haver mais de uma; antes, era a origem)
+	var raw_origin: Variant = data.get("origin")
+	if generated == null and raw_origin is Vector2:
+		grid.origin_m = raw_origin
 	var road_indices: PackedInt32Array = raw_roads
 	for i: int in road_indices:
 		if i < 0 or i >= grid.roads.size():

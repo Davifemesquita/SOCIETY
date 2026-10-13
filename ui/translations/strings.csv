@@ -212,3 +212,71 @@ STATE_NO_TREES,Poucas árvores por perto,Not enough trees nearby
 LABEL_NO_TREES,Sem árvores,No trees
 PANEL_TREES,"Árvores no raio: %d (mínimo %d)","Trees in range: %d (minimum %d)"
 PANEL_SEED,Semente do mundo: %d,World seed: %d
+BUILDING_PIER,Píer,Pier
+SHIP_MERCHANT,Navio mercante,Merchant ship
+SHIP_TRADER,Navio do comerciante,Trader's ship
+TRADER_NEUTRAL,Comerciante,Trader
+PLACE_TRADER,Posto do comerciante,Trader's post
+PLACE_MAIN_ISLAND,Ilha 1 (principal),Island 1 (main)
+PLACE_ISLAND,Ilha %s,Island %s
+PLACE_OPEN_SEA,Mar aberto,Open sea
+SHIP_TITLE,%s %s,%s %s
+SHIP_HOLD,Porão,Hold
+SHIP_SLOT,%s. %s: %s / %s t,%s. %s: %s / %s t
+SHIP_SLOT_EMPTY,%s. vazio (%s t),%s. empty (%s t)
+SHIP_ROUTE,Rota:,Route:
+SHIP_NO_ROUTE,Sem rota,No route
+SHIP_SAIL_TO,Navegar para…,Sail to…
+SHIP_SAILING,Navegando para %s,Sailing to %s
+SHIP_WAITING,Esperando vaga em %s,Waiting for a berth at %s
+SHIP_DOCKED,No cais de %s · %s s,At the quay of %s · %s s
+SHIP_ANCHORED,Ancorado em %s,Anchored at %s
+SHIP_AT_SEA,Parado no mar,Stopped at sea
+SHIP_PORT_CARGO,Carga no porto,Cargo in port
+SHIP_UNLOAD_ALL,Descarregar tudo,Unload all
+SHIP_LOAD_STEP,Carregar 10 t,Load 10 t
+SHIP_TRADER_DEALS,Negociar com o comerciante,Deal with the trader
+TRADE_GOOD_PRICE,%s · %s/t,%s · %s/t
+TRADE_BUY_STEP,Comprar 10 t,Buy 10 t
+TRADE_SELL_STEP,Vender 10 t,Sell 10 t
+TRADE_TITLE,Comércio · %s,Trade · %s
+TRADE_HINT,O navio do comerciante passa pelo entreposto de tempos em tempos e negocia por estes ajustes.,The trader's ship calls at the trading post from time to time and deals by these settings.
+TRADE_COL_GOOD,Bem,Good
+TRADE_COL_PRICE,Preço/t,Price/t
+TRADE_COL_STOCK,Estoque,Stock
+TRADE_COL_SELL,Vender acima de (t),Sell above (t)
+TRADE_COL_BUY,Comprar até (t),Buy up to (t)
+ROUTES_TITLE,Rotas comerciais,Trade routes
+ROUTES_NEW,Nova rota,New route
+ROUTES_DELETE,Apagar rota,Delete route
+ROUTES_ADD_STOP,Acrescentar parada,Add stop
+ROUTES_STOP,Parada %s,Stop %s
+ROUTES_REMOVE,Tirar parada,Remove stop
+ROUTES_ADD_ORDER,Acrescentar carga,Add cargo order
+ROUTES_REMOVE_ORDER,Tirar,Remove
+ROUTES_LOAD,Carregar,Load
+ROUTES_UNLOAD,Descarregar,Unload
+ROUTES_SHIPS,Navios nesta rota,Ships on this route
+ROUTES_NO_PORT,sem entreposto,no trading post
+ROUTE_NAME,Rota %s,Route %s
+HUD_ROUTES,Rotas,Routes
+HUD_HINT_SAIL_TO,Clique na ilha ou no posto do comerciante · Esc cancela,Click an island or the trader's post · Esc cancels
+PANEL_BUY_SHIP,Comprar navio,Buy ship
+PANEL_TRADE,Comércio,Trade
+WAREHOUSE_BERTHS,Vagas de navio: %s de %s ocupadas,Ship berths: %s of %s busy
+PIER_WORKING,Recebendo navios,Receiving ships
+PIER_DISCONNECTED,Sem estrada até o entreposto,No road to the trading post
+TIP_COLONY,Em outra ilha: os materiais vêm de um navio ancorado nela,On another island: materials come from a ship anchored there
+TIP_PIER,Mais uma vaga de navio; precisa de estrada até o entreposto,One more ship berth; needs a road to the trading post
+MSG_MILESTONE,Marco atingido: %s moradores,Milestone reached: %s residents
+MSG_COLONIZED,%s colonizada,%s colonized
+MSG_TRADER_VISIT,"Comerciante em %s: vendemos %s, compramos %s","Trader at %s: we sold %s, bought %s"
+REASON_NEEDS_SHIP,Precisa de um navio ancorado nesta ilha com os materiais,Needs a ship anchored at this island with the materials
+REASON_ISLAND_LOCKED,Mais ilhas liberam com o próximo marco de população,More islands unlock at the next population milestone
+REASON_SHIP_LIMIT,Mais navios liberam com o próximo marco de população,More ships unlock at the next population milestone
+REASON_NO_SHIP,Navio desconhecido,Unknown ship
+REASON_NO_ROUTE,Rota desconhecida,Unknown route
+REASON_BAD_ORDER,Ordem de carga inválida,Invalid cargo order
+REASON_SHIP_NOT_IN_PORT,"O navio precisa estar parado num porto, fora de rota","The ship must be stopped in a port, off route"
+REASON_SHIP_NOT_AT_TRADER,O navio precisa estar no posto do comerciante,The ship must be at the trader's post
+REASON_NOT_TRADED,O comerciante não negocia este bem,The trader does not deal in this good

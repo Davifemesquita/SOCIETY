@@ -57,7 +57,8 @@ class Noises:
 			noise.fractal_octaves = item[3]
 
 
-## Mundo novo: o arquipélago da semente, com o dinheiro e os materiais iniciais na principal.
+## Mundo novo: o arquipélago da semente, com o dinheiro e o navio inicial (com os materiais) na
+## principal.
 static func new_world(seed_value: int, config: GameConfig, data: GameData) -> WorldState:
 	var world := WorldState.new()
 	world.seed = seed_value
@@ -68,8 +69,7 @@ static func new_world(seed_value: int, config: GameConfig, data: GameData) -> Wo
 		var economy := IslandEconomy.new()
 		economy.profile_id = spec.profile.id
 		world.economies.append(economy)
-	for material: StringName in config.starting_materials:
-		world.economies[0].stock[material] = float(config.starting_materials[material])
+	world.add_starting_fleet(config, data)
 	return world
 
 

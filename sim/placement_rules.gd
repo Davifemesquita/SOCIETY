@@ -22,6 +22,9 @@ const NOT_FLAT := &"REASON_NOT_FLAT"
 const NEEDS_DEPOSIT := &"REASON_NEEDS_DEPOSIT"
 const NEEDS_RIVER_OR_COAST := &"REASON_NEEDS_RIVER_OR_COAST"
 const TOO_STEEP := &"REASON_TOO_STEEP"
+const NEEDS_SHIP := &"REASON_NEEDS_SHIP"
+const ISLAND_LOCKED := &"REASON_ISLAND_LOCKED"
+const SHIP_LIMIT := &"REASON_SHIP_LIMIT"
 ## Folga do ponto flutuante na diferença de altura.
 const _HEIGHT_EPSILON := 0.0001
 
@@ -104,6 +107,51 @@ static func check_trading_post(world: WorldState, data: GameData, island_id: int
 	if def != null and not def.is_trading_post and not world.has_trading_post(island_id, data):
 		return NEEDS_TRADING_POST
 	return OK
+
+
+## Entreposto numa ilha ainda sem entreposto, que não é o primeiro do jogo: colonização (seção 7).
+static func founds_colony(world: WorldState, data: GameData, island_id: int, def: BuildingDef) -> bool:
+	return def != null and def.is_trading_post and world.any_trading_post(data) and not world.has_trading_post(island_id, data)
+
+
+## Colonizar: o marco de população libera a ilha, um navio do jogador ancorado nela traz os
+## materiais e o caixa paga o resto.
+static func check_colony(world: WorldState, data: GameData, config: GameConfig, island_id: int, def: BuildingDef) -> StringName:
+	if world.colonized_islands(data).size() >= MilestoneSystem.island_limit(world, config):
+		return ISLAND_LOCKED
+	if world.money - def.cost_money < config.min_balance_to_build:
+		return NO_MONEY
+	if colony_ship(world, island_id, def.cost_materials) != null:
+		return OK
+	for ship: Ship in world.player_ships():
+		if ship.at == island_id and ship.state != Ship.State.SAILING:
+			return NO_MATERIALS
+	return NEEDS_SHIP
+
+
+## O primeiro navio do jogador ancorado na ilha com os materiais a bordo, ou null.
+static func colony_ship(world: WorldState, island_id: int, materials: Dictionary[StringName, int]) -> Ship:
+	for ship: Ship in world.player_ships():
+		if ship.at != island_id or ship.state == Ship.State.SAILING:
+			continue
+		var enough := true
+		for material: StringName in materials:
+			if ship.tons_of(material) + 0.000001 < materials[material]:
+				enough = false
+		if enough:
+			return ship
+	return null
+
+
+## Comprar navio: o marco libera mais um, e o estoque da ilha e o caixa pagam.
+static func check_ship_purchase(world: WorldState, data: GameData, config: GameConfig, island_id: int, def: ShipDef) -> StringName:
+	if def == null:
+		return UNKNOWN_BUILDING
+	if not world.has_trading_post(island_id, data):
+		return NEEDS_TRADING_POST
+	if world.player_ships().size() >= MilestoneSystem.ship_limit(world, config):
+		return SHIP_LIMIT
+	return check_cost(world, world.economy(island_id), config, def.cost_money, def.cost_materials)
 
 
 static func check_unlock(world: WorldState, def: BuildingDef) -> StringName:

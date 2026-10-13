@@ -7,6 +7,8 @@ extends Node
 ## partida rodando a 1x, em três distâncias de câmera: FPS médio, 1% pior e pior quadro.
 ## Fase 5: tudo isso no arquipélago da semente 1840 (relevo, água, ~50 mil árvores); a cidade de
 ## teste é montada sem olhar o terreno (chave só do benchmark), derrubando as árvores debaixo.
+## Fase 6: entreposto no litoral das outras 4 ilhas e 10 navios em 4 rotas saindo da principal,
+## mais o navio do comerciante.
 ##   tools/godot.sh godot --path . res://tools/benchmark.tscn -- [arquivo.md]
 ## No executável: Society.exe -- --benchmark (mostra o resultado na tela e grava em
 ## user://benchmark.md). Sem GPU (esta VM), o tempo de quadro não vale como meta.
@@ -16,6 +18,8 @@ const HOUSES := 600
 const PEASANT_HOUSES := 200
 const PRODUCTION := 200
 const MARKETS := 20
+## Navios do jogador, repartidos entre as rotas da principal para cada colônia.
+const SHIPS := 10
 ## Trecho de rua servido por um armazém: ele na ponta e os prédios até 36 células adiante.
 const SEGMENT := 36
 const WARM_UP_TICKS := 600
@@ -80,6 +84,11 @@ func _run() -> void:
 	var markets := TownLayout.build(sim, MARKETS, &"market", Vector2i(2, 110))
 	sim.execute(BuildRoadCommand.new(Simulation.MAIN_ISLAND, RoadPath.l_path(Vector2i(2, 37), Vector2i(2, 110))))
 	var build_ms := (Time.get_ticks_usec() - started) / 1000.0
+	var fleet_started := Time.get_ticks_usec()
+	var routes := _fleet(sim)
+	var on_routes := sim.world.player_ships().filter(func(ship: Ship) -> bool: return ship.route_id != 0).size()
+	_report("frota", "%d navios em %d rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: %.0f ms" % [
+			on_routes, routes, (Time.get_ticks_usec() - fleet_started) / 1000.0])
 	for index: int in houses.size():
 		var house := sim.world.building(houses[index])
 		house.tier = &"peasants" if index < PEASANT_HOUSES else &"workers"
@@ -96,6 +105,8 @@ func _run() -> void:
 	sim.run_ticks(WARM_UP_TICKS)
 	var away := sim.world.carts.values().filter(func(cart: Cart) -> bool: return cart.is_away()).size()
 	_report("carroças na rua depois de 2 min", "%d de %d" % [away, sim.world.carts.size()])
+	var sailing := sim.world.player_ships().filter(func(ship: Ship) -> bool: return ship.state == Ship.State.SAILING).size()
+	_report("navios navegando depois de 2 min", "%d de %d em rota" % [sailing, on_routes])
 	var times := PackedFloat64Array()
 	started = Time.get_ticks_usec()
 	for tick: int in TICKS:
@@ -197,6 +208,30 @@ func _day_cycle(game: GameScreen, config: GameConfig) -> void:
 			1000.0 / worst_percent, frames[frames.size() - 1], frames.size(), DayClock.clock_text(start_hour)])
 
 
+## Fase 6: entreposto no litoral de verdade de cada outra ilha (SiteFinder) e uma rota da
+## principal para cada uma, levando tábuas; os navios repartidos entre as rotas. Devolve quantas
+## rotas.
+func _fleet(sim: Simulation) -> int:
+	sim.ignore_terrain = false
+	var routes: Array[int] = []
+	for island_id: int in range(1, sim.world.islands.size()):
+		TradeDemo.post(sim, island_id)
+		var route_id := sim.execute(CreateRouteCommand.new()).created_id
+		var out := TradeRoute.Stop.new(Simulation.MAIN_ISLAND)
+		out.orders.append(TradeRoute.Order.new(&"planks", true, 20))
+		var back := TradeRoute.Stop.new(island_id)
+		back.orders.append(TradeRoute.Order.new(&"planks", false, 20))
+		var stops: Array[TradeRoute.Stop] = [out, back]
+		sim.execute(EditRouteCommand.new(route_id, stops))
+		routes.append(route_id)
+	sim.ignore_terrain = true
+	sim.world.economy(Simulation.MAIN_ISLAND).stock[&"planks"] = 50.0
+	for index: int in SHIPS:
+		var ship_id := sim.execute(BuyShipCommand.new(Simulation.MAIN_ISLAND)).created_id
+		sim.execute(SetShipRouteCommand.new(ship_id, routes[index % routes.size()]))
+	return routes.size()
+
+
 ## Duas ruas de produção a partir de y: em cada trecho de 36 células, um armazém na ponta e
 ## lenhadores e serrarias dos dois lados da rua, todos no alcance dele. A avenida em x = 2
 ## liga tudo ao entreposto.
@@ -235,6 +270,7 @@ func _per_system(sim: Simulation) -> String:
 		"necessidades": func() -> void: NeedsSystem.run(sim.world, sim.data, sim.config, derived, dt),
 		"população": func() -> void: PopulationSystem.run(sim.world, sim.data, sim.config, derived, dt),
 		"economia": func() -> void: EconomySystem.run(sim.world, derived, dt),
+		"navios": func() -> void: ShipSystem.run(sim.world, sim.data, sim.config, derived, sim.harbors(), dt),
 	}
 	var parts: PackedStringArray = []
 	for name: String in steps:
