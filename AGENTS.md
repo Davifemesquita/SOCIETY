@@ -58,6 +58,12 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://to
 # quatro níveis e o navio com rastro e gaivotas; CAPTURA_NIVEL=0..3 escolhe o nível e
 # CAPTURA_SO=rapido tira só as duas primeiras (o nível alto por software leva ~30 s por captura)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 200000 res://tools/capture_phase9.tscn -- /pasta/de/saida
+# Fase 10: tutorial apontando o entreposto, aba Jogo das opções e o salvamento automático
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase10.tscn -- /pasta/de/saida
+# Fase 10: o jogador-robô joga 3 h e grava a linha do tempo do balanceamento
+tools/godot.sh godot --headless --path . res://tools/balance_report.tscn -- "$PWD/docs/balanceamento.md"
+# ícone do jogo (PNGs e o .ico do Windows)
+tools/godot.sh godot --headless --path . --script res://tools/build_app_icon.gd && python3 tools/build_app_icon.py
 # texturas dos prédios e estradas (Poly Haven, CC0) a partir da pasta baixada
 tools/godot.sh godot --headless --path . --script res://tools/pack_material_textures.gd -- /pasta/baixada
 # interface: refaz o atlas de ícones e os retratos (depois de mexer em tools/icons/icon_list.csv;
@@ -183,7 +189,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/screens/` | menu principal (`boot_screen`), `Modal`, jogo novo, salvar/carregar, opções, créditos, menu da partida e a partida (`GameScreen` monta tudo) |
 | `tools/town_layout.gd` | vila de teste por comandos (benchmark, testes, captura) |
 | `tools/trade_demo.gd` | duas ilhas com a rota de tijolos (critério da Fase 6, captura, benchmark) |
-| `audio/` | vazia até a fase que a usa |
+| `audio/` | `AudioMix` (contas do clima da música e do volume das zonas), `MusicDirector` (música adaptativa), `AmbiencePlayer` (ambiente por zona, vento e chuva gerados) e `SoundEffects` (efeitos, cliques e fábricas com som posicional) |
+| `ui/screens/autosave.gd` | salvamento automático em slots que se revezam |
+| `tools/auto_player.gd` | jogador-robô que joga de verdade (balanceamento e critério das 3 horas) |
 | `addons/` | terceiros, **nunca editados**; para mudar, copie para `shaders/` ou `sim/` |
 
 Regras que já custaram investigação:
@@ -510,6 +518,32 @@ Regras que já custaram investigação:
 - **Interface**: papel gerado por ruído com moldura e cantoneiras (`ThemeBuilder.paper_image`,
   gravado por `tools/build_theme.gd` em `ui/theme/paper_*.png`).
 
+### Polimento (Fase 10)
+
+- **Áudio** só lê o jogo e reage a eventos. Música: três climas (calma, progresso, alerta) num
+  `AudioStreamInteractive`, cada um uma `AudioStreamPlaylist` de gravações em domínio público ou CC0
+  (Satie, Chopin, Strauss), trocados com fade cruzado; alerta depois de falta de bem ou com saldo
+  negativo, progresso depois de marco ou meta. Os `.ogg`/`.mp3` de música e ambiente são importados
+  em laço com `bpm=60` (um tempo por segundo, para o fade medir em segundos). Ambiente por zona pelos
+  prédios em volta do ponto da câmera e pelo zoom; **vento e chuva são ruído gerado**
+  (`AudioStreamGenerator`, 22 kHz), sem arquivo. Efeitos com tempo mínimo entre repetições (construir
+  50 casas toca uma martelada); todo botão ganha o clique pelo `node_added` da árvore. Fábricas com
+  `BuildingDef.work_sound` ganham voz 3D, no máximo `work_voices`. **Sem tela (headless) nada toca**: os
+  testes conferem `SoundEffects.played`.
+- **Salvamento automático** a cada `Settings.autosave_minutes` de jogo (ticks: pausado não salva), no
+  mais antigo de `autosave_slots` slots `autosave_N`. O "Continuar" pega o mais recente.
+- **Opções**: aba Jogo (salvamento automático, conselheiro ligado ou não, velocidade da câmera). O
+  conselheiro desligado também apaga o destaque do tutorial.
+- **Tutorial pelas metas**: `GoalDef.hint` é o prédio do menu que a meta pede; a aba e o cartão dele
+  piscam em dourado enquanto ela é a da vez.
+- **Jogador-robô** (`AutoPlayer`): joga a partida inteira com custo, material, desbloqueio, carroças e
+  armazéns; põe o produtor na frente da fila quando um bem falta (necessidade básica, entrada parada ou
+  material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
+  cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
+  `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
+- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.10.0, nome e descrição no
+  `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -529,17 +563,18 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 6 — Navios e comércio | **concluída em 13/10/2026** |
 | 7 — Interface completa | **concluída em 13/10/2026** (confirmada em 14/10/2026) |
 | 8 — Conteúdo | **concluída em 14/10/2026** (confirmada em 14/10/2026) |
-| 9 — Gráficos finais | **entregue em 14/10/2026**, aguardando a confirmação do dono do produto e a medição na RTX 3060 |
-| 10 e 11 | — |
+| 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
+| 10 — Polimento | **entregue em 14/10/2026**, aguardando a confirmação do dono do produto e o teste do build em outro PC |
+| 11 | — |
 
 Pendências já vistas para fases futuras:
 
-- Balanceamento (Fase 10): na partida roteirizada o saldo cai a cerca de −60 mil antes de os
-  artesãos pagarem imposto; um jogador de verdade travaria em −10 mil. Revisar a manutenção das
-  fábricas e dos serviços contra o imposto das classes de baixo. Estaleiro, se a compra de navio no
-  entreposto não bastar.
+- Balanceamento: ver `docs/balanceamento.md`. Manutenção e imposto andam colados no meio da partida;
+  os números da tabela da especificação não foram mexidos (os candidatos estão anotados lá).
+  Estaleiro, se a compra de navio no entreposto não bastar. Riscos (incêndio e doença, opcionais na
+  seção 8) ficaram de fora.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
   volumétricas aparecem certas no ultra; modelos de verdade (prédios, casas, navios) seguem no
   `assets/TODO_ASSETS.md`.
-- Fase 10: áudio (os cinco barramentos já existem e têm volume nas opções) e o salvamento
-  automático (`autosave_interval_minutes` e `autosave_slots` já estão no `GameConfig`).
+- Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
+  PC" só se confere fora desta VM).

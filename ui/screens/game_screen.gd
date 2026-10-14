@@ -40,6 +40,11 @@ var graphics: GraphicsQuality
 var clouds: CloudsAdapter
 var weather: WeatherView
 var smoke_view: SmokeView
+## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
+var music: MusicDirector
+var ambience: AmbiencePlayer
+var sound: SoundEffects
+var autosave: Autosave
 ## Chão do mundo: a ilha plana (FlatIsland) ou terreno, água e árvores do arquipélago.
 var terrain_view: TerrainView
 var water_view: WaterView
@@ -119,9 +124,26 @@ func _ready() -> void:
 	smoke_view.setup(simulation, _config.cell_size_m)
 	graphics.add_effect(smoke_view)
 	graphics.add_effect(ship_view)
+	music = MusicDirector.new()
+	music.name = "Music"
+	add_child(music)
+	music.setup(_config, simulation)
+	ambience = AmbiencePlayer.new()
+	ambience.name = "Ambience"
+	add_child(ambience)
+	ambience.setup(_config, simulation, camera, weather)
+	sound = SoundEffects.new()
+	sound.name = "Sound"
+	add_child(sound)
+	sound.setup(_config, simulation, camera)
+	autosave = Autosave.new()
+	autosave.name = "Autosave"
+	add_child(autosave)
+	autosave.setup(self, _config)
 	tool = BuildTool.new()
 	tool.setup(simulation, camera, _config.cell_size_m)
 	add_child(tool)
+	tool.refused.connect(func(_reason: StringName) -> void: sound.play(&"error"))
 	# depois da ferramenta: recebe o clique antes dela (navio e destino no mar)
 	ship_picker = ShipPicker.new()
 	ship_picker.setup(simulation, tool, camera, ship_view)
@@ -245,7 +267,7 @@ func quickload() -> void:
 	load_game(QUICK_SLOT)
 
 
-func save_game(slot: String, display_name: String = "") -> bool:
+func save_game(slot: String, display_name: String = "", saved_key: String = "MSG_SAVED") -> bool:
 	var world := simulation.world
 	var population := 0
 	for tier: TierDef in simulation.data.tiers:
@@ -253,7 +275,7 @@ func save_game(slot: String, display_name: String = "") -> bool:
 	var info := {"name": display_name, "day": GameClock.clock.day_number(), "population": population,
 			"money": world.money, "seed": world.seed}
 	var ok := SaveSystem.save_game(slot, game_state(), _thumbnail(), info) == OK
-	hud.show_message(tr("MSG_SAVED") if ok else tr("MSG_SAVE_FAILED"))
+	hud.show_message(tr(saved_key) if ok else tr("MSG_SAVE_FAILED"))
 	return ok
 
 

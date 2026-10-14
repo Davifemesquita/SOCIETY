@@ -11,3 +11,4 @@ need = &"food"
 amount = 50
 reward_money = 1500
 after_milestone = 0
+hint = &"fishery"

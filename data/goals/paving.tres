@@ -11,3 +11,4 @@ need = &""
 amount = 20
 reward_money = 2000
 after_milestone = 0
+hint = &"paved_road"

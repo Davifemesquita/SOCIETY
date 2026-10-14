@@ -24,3 +24,4 @@ terrain = 0
 pollution_radius_cells = 12
 pollution_strength = 0.5
 smoke = 3
+work_sound = &"metal"

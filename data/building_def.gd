@@ -23,6 +23,8 @@ enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 ## Textura das paredes (Fase 9): camada de assets/materials/walls_* (BuildingMaterials.Wall).
 @export var wall_material: int = 0
 @export var smoke: Smoke = Smoke.NONE
+## Som de trabalho enquanto produz (Fase 10): &"wood", &"metal" ou vazio (sem som).
+@export var work_sound: StringName
 
 @export_group("Custo")
 @export var cost_money: int = 0

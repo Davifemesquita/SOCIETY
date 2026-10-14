@@ -27,6 +27,9 @@ enum Kind {
 @export var reward_money: int = 0
 ## A meta só começa a contar depois de tantos marcos de população (as ligadas aos marcos).
 @export var after_milestone: int = 0
+## Tutorial (Fase 10): o prédio do menu de construção que a meta pede (a aba e o cartão dele piscam
+## enquanto ela não se cumpre); &"paved_road" aponta o paralelepípedo. Vazio = nada a apontar.
+@export var hint: StringName
 
 
 func title_key() -> String:

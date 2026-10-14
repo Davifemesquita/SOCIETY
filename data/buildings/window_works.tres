@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"glass", &"planks"])
 output = &"windows"
 cycle_s = 60.0
 smoke = 2
+work_sound = &"wood"

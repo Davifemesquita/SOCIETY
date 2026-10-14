@@ -22,3 +22,4 @@ output = &"clocks"
 cycle_s = 90.0
 wall_material = 3
 smoke = 2
+work_sound = &"metal"

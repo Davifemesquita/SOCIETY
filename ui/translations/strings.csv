@@ -570,3 +570,14 @@ GRAPHICS_LOW,Baixa,Low
 GRAPHICS_MEDIUM,Média,Medium
 GRAPHICS_HIGH,Alta,High
 GRAPHICS_ULTRA,Ultra,Ultra
+SAVE_AUTOSAVE_NAME,Salvamento automático %s,Autosave %s
+MSG_AUTOSAVED,Jogo salvo automaticamente,Game saved automatically
+OPTIONS_GAME,Jogo,Game
+OPTIONS_AUTOSAVE,Salvamento automático,Autosave
+OPTIONS_AUTOSAVE_TIP,De quanto em quanto tempo de jogo a partida se salva sozinha (três slots que se revezam),How often (game time) the match saves itself (three rotating slots)
+OPTIONS_AUTOSAVE_OFF,Desligado,Off
+OPTIONS_AUTOSAVE_EVERY,A cada %s min,Every %s min
+OPTIONS_ADVISOR,Conselheiro,Advisor
+OPTIONS_ADVISOR_TIP,O conselheiro apresenta e comenta as metas guiadas,The advisor introduces and comments on the guided goals
+OPTIONS_CAMERA_SPEED,Velocidade da câmera,Camera speed
+OPTIONS_CAMERA_SPEED_TIP,Rapidez do movimento da câmera pelo teclado e pela borda da tela,How fast the camera moves with the keyboard and the screen edge

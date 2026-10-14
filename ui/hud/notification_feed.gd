@@ -66,6 +66,7 @@ func push(notice: NoticeWatcher.Notice) -> void:
 		_remove(notice.key))
 	add_child(button)
 	move_child(button, 0)
+	EventBus.notice_shown.emit(notice.icon)
 	_items[notice.key] = button
 	_ages[notice.key] = _config.notice_seconds
 	_notices[notice.key] = notice

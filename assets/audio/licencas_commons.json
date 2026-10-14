@@ -1,0 +1,62 @@
+{
+ "music_calm_satie.ogg": {
+  "title": "File:Erik Satie - gymnopedies - la 1 ere. lent et douloureux.ogg",
+  "license": "Public domain",
+  "artist": "Robin Alciatore",
+  "page": "https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg"
+ },
+ "music_calm_chopin.ogg": {
+  "title": "File:Chopin - Nocturne Op. 15 no. 1 in F major.ogg",
+  "license": "CC0",
+  "artist": "Frédéric Chopin",
+  "page": "https://commons.wikimedia.org/wiki/File:Chopin_-_Nocturne_Op._15_no._1_in_F_major.ogg"
+ },
+ "music_progress_kaiserwalzer.ogg": {
+  "title": "File:Strauss, Kaiserwalzer.ogg",
+  "license": "CC0",
+  "artist": "Unknown authorUnknown author",
+  "page": "https://commons.wikimedia.org/wiki/File:Strauss,_Kaiserwalzer.ogg"
+ },
+ "music_progress_kuenstlerleben.ogg": {
+  "title": "File:Strauss, Künstlerleben.ogg",
+  "license": "CC0",
+  "artist": "Unknown authorUnknown author",
+  "page": "https://commons.wikimedia.org/wiki/File:Strauss,_K%C3%BCnstlerleben.ogg"
+ },
+ "music_alert_chopin.ogg": {
+  "title": "File:Chopin Nocturne 21 in C minor Posthumous Diana Hughes.ogg",
+  "license": "CC0",
+  "artist": "Diana Hughes",
+  "page": "https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_21_in_C_minor_Posthumous_Diana_Hughes.ogg"
+ },
+ "ambience_port_gulls.mp3": {
+  "title": "File:XC707075 - European Herring Gull - Larus argentatus.mp3",
+  "license": "CC0",
+  "artist": "Sonothèque ADVL",
+  "page": "https://commons.wikimedia.org/wiki/File:XC707075_-_European_Herring_Gull_-_Larus_argentatus.mp3"
+ },
+ "ambience_port_waves.ogg": {
+  "title": "File:On a pebble beach.ogg",
+  "license": "Public domain",
+  "artist": "earthcalling",
+  "page": "https://commons.wikimedia.org/wiki/File:On_a_pebble_beach.ogg"
+ },
+ "ambience_city_market.ogg": {
+  "title": "File:Flea market in the rain.ogg",
+  "license": "Public domain",
+  "artist": "stephan",
+  "page": "https://commons.wikimedia.org/wiki/File:Flea_market_in_the_rain.ogg"
+ },
+ "ambience_factory_steam.ogg": {
+  "title": "File:Steam engine.ogg",
+  "license": "Public domain",
+  "artist": "aradlaw",
+  "page": "https://commons.wikimedia.org/wiki/File:Steam_engine.ogg"
+ },
+ "ambience_field_sheep.ogg": {
+  "title": "File:Corner of a sheep field in summer.ogg",
+  "license": "Public domain",
+  "artist": "earthcalling",
+  "page": "https://commons.wikimedia.org/wiki/File:Corner_of_a_sheep_field_in_summer.ogg"
+ }
+}

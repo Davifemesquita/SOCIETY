@@ -277,3 +277,40 @@ nuvens volumétricas ficam desligadas no llvmpipe (ver as notas).
   ultra, com as nuvens volumétricas).
 - Uma medição feita com outra sessão renderizando vídeo na VM (swap cheio) deu pior tick de 317 ms e
   construir em 390 ms; foi descartada. Medir com a máquina livre (`uptime`, `free -m`).
+
+## Fase 10 — polimento
+
+Mesma carga da Fase 9, no nível alto, agora com música, ambiente por zona (vento e chuva gerados),
+efeitos e fábricas com som posicional. Sem tela de verdade o áudio não toca, mas o ambiente conta
+os prédios em volta da câmera e gera o ruído do vento.
+
+### 2026-10-14 15:27:04 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| jogo novo: arquipélago, terreno, água e árvores | 5994 ms (semente 1840, 39763 árvores desenhadas) |
+| frota | 10 navios em 4 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1148 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 21122 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.56 / 3.94 / 4.60 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.04 · produção 0.62 · logística 1.24 · necessidades 0.21 · população 1.14 · economia 0.00 · navios 0.08 |
+| construir um prédio com a ilha cheia | 50.1 ms (limite 50 ms): comando e vistas 50.1 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.3 · serviços 9.7 · módulos e poluição 0.0 · armazéns 16.3 · produção 6.4 · grupos de casas 1.4 |
+| salvar | 148 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 1595 ms |
+| quadro com tudo visível | 4820 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1900 na rua (teto 2000); 6693 janelas |
+| multidão saindo de casa (rotas novas) | 556 quadros, 6665 ms; 1413 rotas, 2.59 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.63 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.1 / 0.0 FPS / 21324 ms em 6 quadros (meta 60 FPS), a partir das 07:00 |
+
+- **Tick**: média 3,56 ms, 95% em 3,94 ms, pior 4,60 ms: o áudio não mexe na simulação.
+- **Construir com a ilha cheia**: 50,1 ms, **no limite de 50 ms** (Fase 9: 48,5). Quase tudo é o
+  recálculo do estado derivado (armazéns ~16 ms, serviços ~10, prédios ~10, produção ~6), feito pela
+  primeira vista que consulta o estado; os efeitos e o áudio somam ~2 ms. A folga volta otimizando o
+  recálculo dos armazéns (busca em largura da ilha inteira a cada prédio novo). Uma segunda medição,
+  com outra sessão pesando na VM (carga 4,2), deu 162 ms e foi descartada.
+- Áudio sem tela não toca; o custo dele no PC alvo (geração do vento, 22 kHz) se vê no `--benchmark`.

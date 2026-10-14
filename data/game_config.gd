@@ -270,6 +270,30 @@ static var _default: GameConfig
 @export var rain_box_m: Vector3 = Vector3(140.0, 60.0, 140.0)
 @export var rain_fall_speed_m_s: float = 28.0
 
+@export_group("Áudio")
+## Música (seção 11): a cada tanto (s reais) o diretor decide o clima da música. Alerta depois de uma
+## falta de bem há menos de alert_after_shortage_s ou com o saldo abaixo de zero; progresso depois de
+## um marco ou meta há menos de progress_after_event_s; senão, calma. A troca leva fade_seconds.
+@export var music_check_seconds: float = 5.0
+@export var music_alert_after_shortage_s: float = 180.0
+@export var music_progress_after_event_s: float = 240.0
+@export var music_fade_seconds: float = 4.0
+## Ambiente por zona: prédios contados num raio em volta do ponto que a câmera olha; cada zona chega
+## ao volume cheio com estes prédios (porto, fábrica, campo, cidade).
+@export var ambience_radius_m: float = 90.0
+@export var ambience_full_counts: PackedFloat32Array = PackedFloat32Array([2.0, 4.0, 6.0, 14.0])
+## O ambiente acompanha o zoom: cheio até near_m, mudo a partir de far_m (sobra o vento, que cresce).
+@export var ambience_near_m: float = 40.0
+@export var ambience_far_m: float = 320.0
+@export var ambience_fade_per_second: float = 0.6
+## Fábricas trabalhando com som posicional: no máximo work_voices ao mesmo tempo, as mais perto do
+## ponto da câmera até work_sound_radius_m, cada uma batendo a cada work_sound_interval_s.
+@export var work_voices: int = 6
+@export var work_sound_radius_m: float = 70.0
+@export var work_sound_interval_s: Vector2 = Vector2(1.5, 4.0)
+## O mesmo efeito não toca de novo antes disto (s reais): construir 50 casas não faz 50 marteladas.
+@export var sfx_cooldown_s: float = 0.12
+
 @export_group("Salvar")
 @export var autosave_interval_minutes: float = 10.0
 @export var autosave_slots: int = 3

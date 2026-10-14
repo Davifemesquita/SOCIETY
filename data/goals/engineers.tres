@@ -11,3 +11,4 @@ need = &""
 amount = 80
 reward_money = 8000
 after_milestone = 0
+hint = &"university"

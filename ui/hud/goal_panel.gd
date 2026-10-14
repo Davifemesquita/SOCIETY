@@ -64,6 +64,8 @@ func speech_text() -> String:
 
 ## O conselheiro fala os blocos de advisor.dialogue, nesta ordem (acrescenta à fila).
 func speak(titles: Array[String]) -> void:
+	if not Settings.advisor:
+		return
 	for title: String in titles:
 		var lines := await AdvisorDialogue.lines(get_tree(), title)
 		_queue.append_array(lines)

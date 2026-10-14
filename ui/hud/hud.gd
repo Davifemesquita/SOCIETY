@@ -40,6 +40,7 @@ var _bottom := VBoxContainer.new()
 var _item_buttons: Dictionary[StringName, Button] = {}
 ## Cartão do paralelepípedo (Fase 8), travado até a classe que o libera (null fora da aba).
 var _paved_button: Button
+var _hint_phase: float = 0.0
 var _message_panel := PanelContainer.new()
 var _message := Label.new()
 var _hint_panel := PanelContainer.new()
@@ -144,6 +145,41 @@ func _process(delta: float) -> void:
 		_refresh_left = REFRESH_SECONDS
 		_refresh()
 	_update_cursor_label()
+	_pulse_hint(delta)
+
+
+## Tutorial pelas metas (Fase 10): a aba e o cartão do prédio que a meta da vez pede piscam.
+func hinted_building() -> StringName:
+	if not Settings.advisor:
+		return &""
+	var goal := GoalSystem.current(_simulation.world, _simulation.data)
+	return goal.hint if goal != null else &""
+
+
+## Índice da aba do menu que tem o prédio dado (o paralelepípedo fica na infraestrutura), ou -1.
+func category_of(building: StringName) -> int:
+	var groups := _categories()
+	if building == &"paved_road":
+		return groups.size() - 1
+	for index: int in groups.size():
+		for def: BuildingDef in groups[index]:
+			if def.id == building:
+				return index
+	return -1
+
+
+func _pulse_hint(delta: float) -> void:
+	_hint_phase += delta
+	var target := hinted_building()
+	# acima de 1 clareia o papel em dourado (multiplicar pelo dourado só escurecia)
+	var glow := Color.WHITE.lerp(Color(1.3, 1.05, 0.45), 0.5 + 0.5 * sin(_hint_phase * 5.0))
+	var tab := category_of(target) if target != &"" else -1
+	for index: int in _category_buttons.size():
+		_category_buttons[index].self_modulate = glow if index == tab and index != _category else Color.WHITE
+	for def_id: StringName in _item_buttons:
+		_item_buttons[def_id].self_modulate = glow if def_id == target else Color.WHITE
+	if _paved_button != null:
+		_paved_button.self_modulate = glow if target == &"paved_road" else Color.WHITE
 
 
 func _refresh() -> void:

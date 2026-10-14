@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"gold"])
 output = &"jewelry"
 cycle_s = 90.0
 wall_material = 3
+work_sound = &"metal"

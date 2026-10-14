@@ -11,3 +11,4 @@ need = &"clothing"
 amount = 100
 reward_money = 2000
 after_milestone = 0
+hint = &"sheep_farm"

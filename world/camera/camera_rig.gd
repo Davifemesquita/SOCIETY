@@ -4,6 +4,8 @@ extends RefCounted
 ## Yaw 0 põe a câmera em +Z do foco olhando para −Z. A inclinação sai do zoom: perto fica
 ## mais horizontal (ruas), longe mais vertical (visão geral).
 
+## Velocidade do pan escolhida nas opções (Fase 10), multiplicando a do GameConfig.
+var pan_speed_scale: float = 1.0
 var focus: Vector3 = Vector3.ZERO
 var yaw: float = 0.0
 var target_yaw: float = 0.0
@@ -74,7 +76,7 @@ func pan(input: Vector2, delta: float) -> void:
 	if input == Vector2.ZERO:
 		return
 	_centering = false
-	var step := (ground_right() * input.x + ground_forward() * input.y) * _config.camera_pan_speed * distance * delta
+	var step := (ground_right() * input.x + ground_forward() * input.y) * _config.camera_pan_speed * pan_speed_scale * distance * delta
 	shift_focus(step)
 
 

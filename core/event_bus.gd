@@ -41,3 +41,6 @@ signal island_colonized(island_id: int)
 
 ## Metas guiadas (Fase 8): a meta de índice index foi cumprida (e a seguinte, se houver, começou).
 signal goal_completed(index: int)
+
+## Interface (Fase 10): uma notificação apareceu (o ícone diz o tipo; o áudio toca o som dela).
+signal notice_shown(icon: String)

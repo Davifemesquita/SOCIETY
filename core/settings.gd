@@ -7,6 +7,9 @@ const SETTINGS_PATH := "user://settings.cfg"
 ## Barramentos de áudio (seção 11), criados ao iniciar se o projeto não os tiver.
 const AUDIO_BUSES: Array[StringName] = [&"Master", &"Music", &"Ambience", &"Effects", &"Interface"]
 const FPS_LIMITS: Array[int] = [0, 30, 60, 120, 144]
+## Intervalos do salvamento automático oferecidos (minutos de jogo; 0 = desligado).
+const AUTOSAVE_CHOICES: Array[float] = [0.0, 5.0, 10.0, 15.0, 30.0]
+const CAMERA_SPEED_RANGE := Vector2(0.5, 2.0)
 
 var locale: String = ""
 var ui_scale: float = 1.0
@@ -20,6 +23,11 @@ var vsync: bool = true
 var render_scale: float = 1.0
 ## Nível de qualidade gráfica (índice em GameConfig.graphics_presets).
 var graphics_preset: int = 2
+## Salvamento automático a cada tantos minutos de jogo (0 = desligado) e o conselheiro falando.
+var autosave_minutes: float = 10.0
+var advisor: bool = true
+## Velocidade do pan da câmera (multiplica GameConfig.camera_pan_speed).
+var camera_speed: float = 1.0
 ## Limite de quadros por segundo (0 = sem limite).
 var max_fps: int = 0
 ## Volume de cada barramento, de 0 a 1.
@@ -149,6 +157,9 @@ func save_to(path: String) -> Error:
 	file.set_value("graphics", "render_scale", render_scale)
 	file.set_value("graphics", "max_fps", max_fps)
 	file.set_value("graphics", "preset", graphics_preset)
+	file.set_value("game", "autosave_minutes", autosave_minutes)
+	file.set_value("game", "advisor", advisor)
+	file.set_value("controls", "camera_speed", camera_speed)
 	for bus: StringName in volumes:
 		file.set_value("audio", String(bus), volumes[bus])
 	for action: StringName in key_bindings:
@@ -164,6 +175,10 @@ func load_from(path: String) -> void:
 	set_ui_scale(_number(file.get_value("interface", "ui_scale", 1.0), 1.0))
 	colorblind = _flag(file.get_value("interface", "colorblind", false), false)
 	edge_pan = _flag(file.get_value("controls", "edge_pan", true), true)
+	camera_speed = clampf(_number(file.get_value("controls", "camera_speed", 1.0), 1.0), CAMERA_SPEED_RANGE.x, CAMERA_SPEED_RANGE.y)
+	var raw_autosave := _number(file.get_value("game", "autosave_minutes", _config.autosave_interval_minutes), _config.autosave_interval_minutes)
+	autosave_minutes = raw_autosave if AUTOSAVE_CHOICES.has(raw_autosave) else _config.autosave_interval_minutes
+	advisor = _flag(file.get_value("game", "advisor", true), true)
 	fullscreen = _flag(file.get_value("graphics", "fullscreen", false), false)
 	vsync = _flag(file.get_value("graphics", "vsync", true), true)
 	var raw_preset: Variant = file.get_value("graphics", "preset", _config.default_graphics_preset)

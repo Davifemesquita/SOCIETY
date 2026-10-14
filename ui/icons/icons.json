@@ -602,35 +602,35 @@
 			768
 		],
 		"notice_colonized": [
-			768,
+			896,
 			1408
 		],
 		"notice_info": [
-			1024,
+			1152,
 			1408
 		],
 		"notice_milestone": [
-			640,
+			768,
 			1408
 		],
 		"notice_ship_arrived": [
-			512,
+			640,
 			1408
 		],
 		"notice_shortage": [
-			128,
-			1408
-		],
-		"notice_stopped": [
 			256,
 			1408
 		],
-		"notice_storage_full": [
+		"notice_stopped": [
 			384,
 			1408
 		],
+		"notice_storage_full": [
+			512,
+			1408
+		],
 		"notice_trader": [
-			896,
+			1024,
 			1408
 		],
 		"option_audio": [
@@ -640,6 +640,10 @@
 		"option_controls": [
 			1920,
 			1152
+		],
+		"option_game": [
+			256,
+			1280
 		],
 		"option_graphics": [
 			1664,
@@ -654,23 +658,23 @@
 			1280
 		],
 		"overlay_fertility": [
-			512,
-			1280
-		],
-		"overlay_pollution": [
 			640,
 			1280
 		],
-		"overlay_roads": [
+		"overlay_pollution": [
 			768,
 			1280
 		],
+		"overlay_roads": [
+			896,
+			1280
+		],
 		"overlay_service": [
-			256,
+			384,
 			1280
 		],
 		"overlay_warehouse": [
-			384,
+			512,
 			1280
 		],
 		"ship_merchant_ship": [
@@ -682,59 +686,59 @@
 			768
 		],
 		"state_disconnected": [
-			0,
+			128,
 			1408
 		],
 		"state_no_input": [
-			896,
-			1280
-		],
-		"state_no_modules": [
-			1408,
-			1280
-		],
-		"state_no_road": [
-			1280,
-			1280
-		],
-		"state_no_trees": [
-			1792,
-			1280
-		],
-		"state_no_warehouse": [
-			1664,
-			1280
-		],
-		"state_no_workers": [
 			1024,
 			1280
 		],
-		"state_output_full": [
-			1152,
-			1280
-		],
-		"state_paused": [
+		"state_no_modules": [
 			1536,
 			1280
 		],
-		"state_protest": [
+		"state_no_road": [
+			1408,
+			1280
+		],
+		"state_no_trees": [
 			1920,
 			1280
 		],
-		"status_bad": [
-			1408,
-			1408
+		"state_no_warehouse": [
+			1792,
+			1280
 		],
-		"status_good": [
+		"state_no_workers": [
 			1152,
+			1280
+		],
+		"state_output_full": [
+			1280,
+			1280
+		],
+		"state_paused": [
+			1664,
+			1280
+		],
+		"state_protest": [
+			0,
 			1408
 		],
-		"status_missing": [
+		"status_bad": [
 			1536,
 			1408
 		],
-		"status_partial": [
+		"status_good": [
 			1280,
+			1408
+		],
+		"status_missing": [
+			1664,
+			1408
+		],
+		"status_partial": [
+			1408,
 			1408
 		],
 		"tier_artisans": [

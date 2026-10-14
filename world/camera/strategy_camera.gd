@@ -74,6 +74,7 @@ static func march(origin: Vector3, direction: Vector3, height: Callable) -> Vari
 
 
 func _process(delta: float) -> void:
+	rig.pan_speed_scale = Settings.camera_speed
 	var input := Input.get_vector(&"camera_pan_left", &"camera_pan_right", &"camera_pan_back", &"camera_pan_forward")
 	if Settings.edge_pan and input == Vector2.ZERO:
 		input = _edge_input()

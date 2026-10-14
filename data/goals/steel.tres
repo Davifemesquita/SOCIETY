@@ -11,3 +11,4 @@ need = &""
 amount = 1
 reward_money = 5000
 after_milestone = 0
+hint = &"steel_beam_works"

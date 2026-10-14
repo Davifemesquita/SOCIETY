@@ -20,6 +20,7 @@ func _ready() -> void:
 	for problem: String in _problems:
 		push_error("GameConfig: " + problem)
 	_build()
+	_play_menu_music()
 	EventBus.settings_changed.connect(_rebuild)
 	var args := OS.get_cmdline_user_args()
 	var seed_at := args.find("--semente")
@@ -36,7 +37,7 @@ func _ready() -> void:
 ## Refaz a tela (troca de idioma: os textos montados com tr() mudam).
 func _rebuild() -> void:
 	for child: Node in get_children():
-		if child != _layer:
+		if child != _layer and child.name != &"MenuMusic":
 			remove_child(child)
 			child.queue_free()
 	_build()
@@ -137,3 +138,15 @@ static func _latest_slot() -> String:
 func _start(slot: String) -> void:
 	GameScreen.load_slot_on_start = slot
 	get_tree().change_scene_to_file(GAME_SCENE)
+
+
+## Música calma no menu (Fase 10): a mesma da partida, no barramento Music.
+func _play_menu_music() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var player := AudioStreamPlayer.new()
+	player.name = "MenuMusic"
+	player.bus = &"Music"
+	player.stream = MusicDirector.build_stream(GameConfig.get_default().music_fade_seconds)
+	add_child(player)
+	player.play()

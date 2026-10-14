@@ -31,6 +31,7 @@ func _init() -> void:
 	_add_tab(_controls(), "OPTIONS_CONTROLS", "option_controls")
 	_add_tab(_language(), "OPTIONS_LANGUAGE", "option_language")
 	_add_tab(_interface(), "OPTIONS_INTERFACE", "option_interface")
+	_add_tab(_game(), "OPTIONS_GAME", "option_game")
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	column.add_child(buttons)
@@ -106,6 +107,29 @@ func _graphics() -> Control:
 	column.add_child(grid)
 	column.add_child(note)
 	return column
+
+
+## Jogo (Fase 10): salvamento automático, o conselheiro e a velocidade da câmera.
+func _game() -> Control:
+	var grid := _grid()
+	grid.add_child(UiKit.label("OPTIONS_AUTOSAVE"))
+	var autosave := OptionButton.new()
+	autosave.name = "Autosave"
+	autosave.tooltip_text = "OPTIONS_AUTOSAVE_TIP"
+	autosave.focus_mode = Control.FOCUS_NONE
+	for minutes: float in Settings.AUTOSAVE_CHOICES:
+		autosave.add_item(tr("OPTIONS_AUTOSAVE_OFF") if minutes <= 0.0 else tr("OPTIONS_AUTOSAVE_EVERY") % Fmt.integer(minutes))
+	autosave.select(maxi(0, Settings.AUTOSAVE_CHOICES.find(Settings.autosave_minutes)))
+	autosave.item_selected.connect(func(index: int) -> void:
+		Settings.autosave_minutes = Settings.AUTOSAVE_CHOICES[index]
+		Settings.apply())
+	grid.add_child(autosave)
+	grid.add_child(UiKit.label("OPTIONS_ADVISOR"))
+	grid.add_child(_check("OPTIONS_ADVISOR_TIP", Settings.advisor, func(on: bool) -> void: Settings.advisor = on))
+	grid.add_child(UiKit.label("OPTIONS_CAMERA_SPEED"))
+	grid.add_child(_slider("OPTIONS_CAMERA_SPEED_TIP", Settings.CAMERA_SPEED_RANGE.x, Settings.CAMERA_SPEED_RANGE.y, 0.1,
+			Settings.camera_speed, func(value: float) -> void: Settings.camera_speed = value))
+	return grid
 
 
 func _audio() -> Control:

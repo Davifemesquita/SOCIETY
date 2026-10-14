@@ -161,6 +161,7 @@ option_audio,delapouite/speaker,hud
 option_controls,delapouite/keyboard,hud
 option_language,lorc/globe,hud
 option_interface,delapouite/resize,hud
+option_game,lorc/hourglass,hud
 overlay_service,lorc/radar-sweep,hud
 overlay_warehouse,delapouite/hand-truck,hud
 overlay_fertility,lorc/sprout,hud

@@ -155,6 +155,8 @@ func validate() -> PackedStringArray:
 
 
 func _check_goal(problems: PackedStringArray, goal: GoalDef) -> void:
+	if goal.hint != &"" and goal.hint != &"paved_road" and building(goal.hint) == null:
+		problems.append("meta %s: dica aponta prédio desconhecido %s" % [goal.id, goal.hint])
 	if goal.amount <= 0 or goal.reward_money < 0 or goal.after_milestone < 0:
 		problems.append("meta %s: quantidade positiva, prêmio e marco não negativos" % goal.id)
 	match goal.kind:

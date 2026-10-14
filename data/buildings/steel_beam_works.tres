@@ -22,3 +22,4 @@ output = &"steel_beams"
 cycle_s = 45.0
 terrain = 0
 smoke = 3
+work_sound = &"metal"

@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"steel", &"planks"])
 output = &"sewing_machines"
 cycle_s = 60.0
 smoke = 1
+work_sound = &"metal"

@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"fish", &"steel"])
 output = &"canned_food"
 cycle_s = 60.0
 smoke = 1
+work_sound = &"metal"
