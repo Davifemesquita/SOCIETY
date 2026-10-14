@@ -29,6 +29,10 @@ var terrain_version: int = 0
 ## O terreno refeito da semente não bateu com a assinatura do save (outra plataforma, outro
 ## ponto flutuante). Só aviso: a partida segue.
 var terrain_mismatch: bool = false
+## Dificuldade escolhida no jogo novo (0 fácil, 1 normal, 2 difícil): o limite do saldo negativo.
+var difficulty: int = 1
+## Série histórica das estatísticas (gráficos).
+var history := StatisticsHistory.new()
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
@@ -185,7 +189,7 @@ func to_dict() -> Dictionary:
 			"money": money, "tax_levels": tax_levels.duplicate(), "tick": tick, "carts": cart_list,
 			"seed": seed, "terrain_version": terrain_version, "ships": ship_list, "next_ship_id": next_ship_id,
 			"routes": route_list, "next_route_id": next_route_id, "trader": trader.to_dict(),
-			"milestones_reached": milestones_reached}
+			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -200,12 +204,18 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	world.terrain_version = raw_version
 	if world.terrain_version != 0 and world.terrain_version != ArchipelagoGenerator.VERSION:
 		return null
+	var raw_islands: Variant = data.get("islands")
+	if not raw_islands is Array:
+		return null
+	var saved_islands: Array = raw_islands
 	var generated: Array[IslandGrid] = []
 	if world.terrain_version != 0:
+		# o tamanho do arquipélago é o número de ilhas do save
 		var game_config := config if config != null else GameConfig.get_default()
-		for spec: ArchipelagoGenerator.IslandSpec in ArchipelagoGenerator.layout(world.seed, game_config, game_data):
+		if saved_islands.is_empty() or saved_islands.size() > game_config.island_sizes_cells.size():
+			return null
+		for spec: ArchipelagoGenerator.IslandSpec in ArchipelagoGenerator.layout(world.seed, game_config, game_data, saved_islands.size()):
 			generated.append(ArchipelagoGenerator.build_island(spec, game_config))
-	var raw_islands: Variant = data.get("islands")
 	var raw_buildings: Variant = data.get("buildings")
 	var raw_next: Variant = data.get("next_building_id")
 	var raw_money: Variant = data.get("money")
@@ -263,6 +273,18 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 			return null
 	if not world._restore_fleet(data, game_data):
 		return null
+	var raw_difficulty: Variant = data.get("difficulty")
+	var raw_history: Variant = data.get("history")
+	if not (raw_difficulty is int and raw_history is Dictionary):
+		return null
+	world.difficulty = raw_difficulty
+	if world.difficulty < 0 or world.difficulty > 2:
+		return null
+	var history_data: Dictionary = raw_history
+	var loaded_history := StatisticsHistory.from_dict(history_data)
+	if loaded_history == null:
+		return null
+	world.history = loaded_history
 	return world
 
 

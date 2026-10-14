@@ -4,20 +4,23 @@ extends PanelContainer
 ## trabalhadores, manutenção, pausar, copiar e demolir. Casa: classe, moradores, necessidades
 ## em semáforo, felicidade, imposto e bloqueio de upgrade. Serviço: casas atendidas.
 ## Campo e pasto: a fazenda que servem. Entreposto (Fase 6): vagas de navio, comprar navio e o
-## comércio com o comerciante; píer: se está em funcionamento.
+## comércio com o comerciante; píer: se está em funcionamento. Desde a Fase 7: ícone do prédio no
+## título, retrato da classe na casa, semáforo com forma (modo para daltonismo) e a calculadora de
+## proporção na produção.
 
 signal trade_requested(island_id: int)
+## O jogador pediu para a câmera ir até o prédio (botão do olho, igual à tecla F).
+signal center_requested()
 
 const REFRESH_SECONDS := 0.25
-const GREEN := Color(0.55, 0.9, 0.5)
-const YELLOW := Color(1.0, 0.82, 0.3)
-const RED := Color(1.0, 0.45, 0.35)
 ## Produtividade média a partir da qual o prédio aparece como produzindo.
 const SHOWN_PRODUCING := 0.9
 
 var _tool: BuildTool
 var _simulation: Simulation
 var _title := Label.new()
+var _title_icon := TextureRect.new()
+var _portrait := TextureRect.new()
 var _body := VBoxContainer.new()
 var _buttons := HBoxContainer.new()
 var _road := Label.new()
@@ -31,21 +34,37 @@ var _building_id: int = 0
 func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_tool = tool
 	_simulation = simulation
-	custom_minimum_size.x = 300
-	add_theme_stylebox_override(&"panel", UiStyle.panel())
+	custom_minimum_size.x = 400
 	var column := VBoxContainer.new()
 	add_child(column)
-	_title.add_theme_font_size_override(&"font_size", 20)
-	column.add_child(_title)
-	column.add_child(_body)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override(&"separation", 8)
+	column.add_child(head)
+	_title_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_title_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_title_icon.custom_minimum_size = Vector2(44, 44)
+	head.add_child(_title_icon)
+	_title.theme_type_variation = &"HeaderLabel"
+	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	head.add_child(_title)
+	head.add_child(UiKit.icon_button("action_center", "INFO_CENTER_HINT", func() -> void: center_requested.emit()))
+	head.add_child(UiKit.icon_button("action_close", "UI_CLOSE", func() -> void: tool.select(0)))
+	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait.custom_minimum_size = Vector2(96, 120)
+	_portrait.visible = false
+	var body_row := HBoxContainer.new()
+	body_row.add_theme_constant_override(&"separation", 10)
+	column.add_child(body_row)
+	body_row.add_child(_portrait)
+	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body_row.add_child(_body)
 	_road.text = "INFO_ROAD_MISSING"
-	_road.modulate = RED
+	UiPalette.paint(_road, UiPalette.Status.BAD)
 	column.add_child(_road)
+	_buttons.add_theme_constant_override(&"separation", 6)
 	column.add_child(_buttons)
-	var hint := Label.new()
-	hint.text = "INFO_CENTER_HINT"
-	hint.modulate = Color(1, 1, 1, 0.6)
-	column.add_child(hint)
 	tool.selection_changed.connect(show_building)
 	EventBus.house_upgraded.connect(func(building_id: int) -> void:
 		if building_id == _building_id:
@@ -61,16 +80,17 @@ func show_building(building_id: int) -> void:
 	_building_id = building_id
 	var record := _simulation.world.building(building_id)
 	visible = record != null
-	for child: Node in _body.get_children() + _buttons.get_children():
-		# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
-		child.get_parent().remove_child(child)
-		child.queue_free()
+	# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
+	UiKit.clear(_body)
+	UiKit.clear(_buttons)
 	_lines.clear()
+	_portrait.visible = false
 	_pause = null
 	_block = null
 	if record == null:
 		return
 	var def := _simulation.def_of(record)
+	_title_icon.texture = Icons.building(def.id)
 	match def.kind:
 		BuildingDef.Kind.PRODUCTION:
 			_build_production(record, def)
@@ -81,7 +101,7 @@ func show_building(building_id: int) -> void:
 		_:
 			_add_lines(1)
 	if def.kind != BuildingDef.Kind.RESIDENCE:
-		_add_button("PANEL_DEMOLISH", func() -> void:
+		_add_button("PANEL_DEMOLISH", "action_demolish", func() -> void:
 			_simulation.execute(DemolishCommand.new(record.island_id, Rect2i(record.origin, Vector2i.ONE))))
 	_refresh()
 
@@ -97,14 +117,14 @@ func _process(delta: float) -> void:
 
 func _build_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 	_add_lines(6)
-	var upgrade := _add_button("PANEL_UPGRADE", func() -> void:
+	var upgrade := _add_button("PANEL_UPGRADE", "action_upgrade", func() -> void:
 		var result := _simulation.execute(UpgradeBuildingCommand.new(record.id))
 		if not result.ok():
 			_tool.refused.emit(result.reason)
 		_refresh())
 	upgrade.name = "Upgrade"
 	if def.is_trading_post:
-		var buy := _add_button("PANEL_BUY_SHIP", func() -> void:
+		var buy := _add_button("PANEL_BUY_SHIP", "action_buy_ship", func() -> void:
 			var result := _simulation.execute(BuyShipCommand.new(record.island_id))
 			if not result.ok():
 				_tool.refused.emit(result.reason)
@@ -117,23 +137,42 @@ func _build_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 			for material: StringName in ship_def.cost_materials:
 				cost.append("%d %s" % [ship_def.cost_materials[material], tr(_simulation.data.good(material).name_key)])
 			buy.tooltip_text = tr("TIP_COST") % ", ".join(cost)
-		var trade := _add_button("PANEL_TRADE", func() -> void: trade_requested.emit(record.island_id))
+		var trade := _add_button("PANEL_TRADE", "action_trade", func() -> void: trade_requested.emit(record.island_id))
 		trade.name = "Trade"
 
 
 func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_add_lines(8 + def.inputs.size())
-	_pause = _add_button("PANEL_PAUSE", func() -> void:
+	for text: String in RatioCalculator.lines(def, _simulation.data):
+		var ratio := UiKit.label(text, &"DimLabel")
+		ratio.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_body.add_child(ratio)
+	_pause = _add_button("PANEL_PAUSE", "action_pause", func() -> void:
 		_simulation.execute(SetPausedCommand.new(record.id, not _simulation.world.building(record.id).paused))
 		_refresh())
-	_add_button("PANEL_COPY", func() -> void: _tool.start_building(def))
+	_add_button("PANEL_COPY", "action_copy", func() -> void: _tool.start_building(def))
 
 
 func _build_house(record: BuildingRecord) -> void:
 	var tier := _simulation.data.tier(record.tier)
-	_add_lines(3 + tier.basic_needs.size() + tier.luxury_needs.size())
+	_title_icon.texture = Icons.tier(tier.id)
+	_portrait.texture = Icons.portrait("tier_" + tier.id)
+	_portrait.visible = _portrait.texture != null
+	_add_lines(3)
+	for need: NeedCategoryDef in tier.basic_needs + tier.luxury_needs:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override(&"separation", 6)
+		row.add_child(UiKit.icon_rect(Icons.need(need.id), 26))
+		var status := UiKit.icon_rect(Icons.status(UiPalette.Status.GOOD), 16)
+		status.name = "Status"
+		row.add_child(status)
+		var label := Label.new()
+		row.add_child(label)
+		_body.add_child(row)
+		_lines.append(label)
 	_block = CheckBox.new()
 	_block.text = "HOUSE_BLOCK_UPGRADE"
+	_block.tooltip_text = "HOUSE_BLOCK_UPGRADE_TIP"
 	_block.focus_mode = Control.FOCUS_NONE
 	_block.toggled.connect(func(on: bool) -> void: _simulation.execute(SetUpgradeBlockedCommand.new(record.id, on)))
 	_buttons.add_child(_block)
@@ -146,11 +185,8 @@ func _add_lines(count: int) -> void:
 		_lines.append(label)
 
 
-func _add_button(text_key: String, action: Callable) -> Button:
-	var button := Button.new()
-	button.text = text_key
-	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(action)
+func _add_button(text_key: String, icon_name: String, action: Callable) -> Button:
+	var button := UiKit.button(text_key, icon_name, action, text_key + "_TIP")
 	_buttons.add_child(button)
 	return button
 
@@ -178,7 +214,7 @@ func _refresh() -> void:
 			var berths: Array = _simulation.derived_state().berths.get(record.island_id, [])
 			var working := berths.has(record.id)
 			_lines[0].text = tr("PIER_WORKING") if working else tr("PIER_DISCONNECTED")
-			_lines[0].modulate = GREEN if working else RED
+			UiPalette.paint(_lines[0], UiPalette.Status.GOOD if working else UiPalette.Status.BAD)
 		BuildingDef.Kind.MODULE:
 			_title.text = tr(def.name_key)
 			var owner: int = _simulation.derived_state().module_owner.get(record.id, 0)
@@ -192,7 +228,8 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_title.text = tr(def.name_key)
 	var state := shown_state(record)
 	_lines[0].text = tr(state_key(state))
-	_lines[0].modulate = GREEN if state == BuildingRecord.State.PRODUCING else (Color(0.8, 0.8, 0.8) if record.paused else RED)
+	UiPalette.paint(_lines[0], UiPalette.Status.GOOD if state == BuildingRecord.State.PRODUCING \
+			else (UiPalette.Status.NEUTRAL if record.paused else UiPalette.Status.BAD))
 	_lines[1].text = tr("PANEL_PRODUCTIVITY") % Fmt.percent(record.productivity)
 	_lines[2].text = tr("PANEL_CYCLE") % Fmt.integer(def.cycle_s)
 	var entry := _simulation.derived_state().entry_of(record.id)
@@ -211,6 +248,7 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_refresh_logistics(record, index + 3)
 	if _pause != null:
 		_pause.text = tr("PANEL_RESUME") if record.paused else tr("PANEL_PAUSE")
+		_pause.icon = Icons.action("play" if record.paused else "pause")
 
 
 ## Armazém que atende o prédio e o que a carroça está fazendo.
@@ -225,13 +263,13 @@ func _refresh_logistics(record: BuildingRecord, line: int) -> void:
 	if entry.warehouse_id != 0:
 		var warehouse := _simulation.world.building(entry.warehouse_id)
 		_lines[line].text = tr("PANEL_WAREHOUSE") % [tr(_simulation.def_of(warehouse).name_key), entry.warehouse_distance]
-		_lines[line].modulate = Color.WHITE
+		UiPalette.unpaint(_lines[line])
 	elif entry.warehouse_distance >= 0:
 		_lines[line].text = tr("PANEL_WAREHOUSE_FAR") % [entry.warehouse_distance, config.logistics_range_cells]
-		_lines[line].modulate = RED
+		UiPalette.paint(_lines[line], UiPalette.Status.BAD)
 	else:
 		_lines[line].text = tr("STATE_NO_WAREHOUSE")
-		_lines[line].modulate = RED
+		UiPalette.paint(_lines[line], UiPalette.Status.BAD)
 	_lines[line + 1].text = cart_text(_simulation.world.cart(record.id))
 
 
@@ -273,7 +311,7 @@ func _refresh_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 	_lines[1].text = tr("WAREHOUSE_RAMPS") % [busy, ramps, waiting]
 	var connected: bool = derived.warehouse_connected.get(record.id, false)
 	_lines[2].text = tr("WAREHOUSE_CONNECTED") if connected else tr("WAREHOUSE_DISCONNECTED")
-	_lines[2].modulate = GREEN if connected else RED
+	UiPalette.paint(_lines[2], UiPalette.Status.GOOD if connected else UiPalette.Status.BAD)
 	var served := 0
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		if entry.warehouse_id == record.id:
@@ -317,14 +355,21 @@ func _refresh_house(record: BuildingRecord) -> void:
 	_lines[0].text = tr("HOUSE_RESIDENTS") % [floori(record.residents), tier.residents_per_house]
 	_lines[1].text = tr("HOUSE_HAPPINESS") % roundi(record.happiness) \
 			+ ("  ·  " + tr("STATE_PROTEST") if record.happiness < config.protest_happiness_threshold else "")
-	_lines[1].modulate = RED if record.happiness < config.protest_happiness_threshold else Color.WHITE
+	if record.happiness < config.protest_happiness_threshold:
+		UiPalette.paint(_lines[1], UiPalette.Status.BAD)
+	else:
+		UiPalette.unpaint(_lines[1])
 	_lines[2].text = tr("HOUSE_TAX") % Fmt.decimal(HouseNeeds.tax_per_min(world, data, config, derived, record))
 	var index := 3
 	for need: NeedCategoryDef in tier.basic_needs + tier.luxury_needs:
 		var value := HouseNeeds.satisfaction(world, derived, record, need)
 		var luxury := tier.luxury_needs.has(need)
-		_lines[index].text = "● %s%s  %s" % [tr(need.name_key), " (" + tr("HOUSE_LUXURY") + ")" if luxury else "", Fmt.percent(value)]
-		_lines[index].modulate = GREEN if value >= config.need_met_threshold else (YELLOW if value >= config.need_partial_threshold else RED)
+		_lines[index].text = "%s%s  %s" % [tr(need.name_key), " (" + tr("HOUSE_LUXURY") + ")" if luxury else "", Fmt.percent(value)]
+		var status := UiPalette.status_of(value, config.need_met_threshold, config.need_partial_threshold)
+		UiPalette.paint(_lines[index], status)
+		var marker := _lines[index].get_parent().get_node("Status") as TextureRect
+		marker.texture = Icons.status(status)
+		marker.modulate = UiPalette.status(status)
 		index += 1
 	if _block != null:
 		_block.set_pressed_no_signal(record.upgrade_blocked)

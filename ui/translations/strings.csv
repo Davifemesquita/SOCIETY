@@ -1,11 +1,7 @@
 keys,pt_BR,en
 GAME_TITLE,Society,Society
 BOOT_SUBTITLE,Um arquipélago industrial do século XIX,A nineteenth-century industrial archipelago
-BOOT_PHASE,Fase 1 — protótipo cinza,Phase 1 — grey prototype
-BOOT_CONFIG_OK,Configuração válida,Configuration valid
 BOOT_CONFIG_ERRORS,Configuração com %d problema(s),Configuration with %d problem(s)
-BOOT_CLOCK,"Dia %d, %02d:%02d — %s","Day %d, %02d:%02d — %s"
-SPEED_PAUSED,pausado,paused
 SPEED_MULTIPLIER,%sx,%sx
 REASON_OUT_OF_ISLAND,Fora da ilha,Outside the island
 REASON_OCCUPIED,Lugar ocupado,Space occupied
@@ -16,15 +12,12 @@ REASON_EMPTY_ROAD,Estrada vazia,Empty road
 REASON_NOTHING_TO_DEMOLISH,Nada para demolir aqui,Nothing to demolish here
 REASON_NOT_IMPLEMENTED,Ação ainda não disponível,Action not available yet
 HUD_CLOCK,"Dia %d, %02d:%02d","Day %d, %02d:%02d"
-HUD_SAVE,Salvar (F5),Save (F5)
-HUD_LOAD,Carregar (F9),Load (F9)
 HUD_ROAD,Estrada (T),Road (T)
 HUD_DEMOLISH,Demolir (Del),Demolish (Del)
 HUD_HINT_BUILDING,Clique constrói · R gira · Esc cancela,Click builds · R rotates · Esc cancels
 HUD_HINT_ROAD,Arraste para traçar · Esc cancela,Drag to lay out · Esc cancels
 HUD_HINT_DEMOLISH,Clique ou arraste para demolir · Esc cancela,Click or drag to demolish · Esc cancels
 PREVIEW_ROAD_LENGTH,%d células,%d cells
-INFO_ROAD_OK,Com acesso à estrada,Has road access
 INFO_ROAD_MISSING,Sem acesso à estrada,No road access
 INFO_CENTER_HINT,F centraliza a câmera,F centers the camera
 MSG_SAVED,Jogo salvo,Game saved
@@ -113,7 +106,7 @@ REASON_NOT_PRODUCTION,Só prédio de produção,Production buildings only
 REASON_NOT_HOUSE,Só casa,Houses only
 REASON_INVALID_TAX_LEVEL,Nível de imposto inválido,Invalid tax level
 HUD_MONEY,Moedas %s (%s/min),Coins %s (%s/min)
-HUD_MONEY_TIP,Impostos %s/min · Manutenção %s/min,Taxes %s/min · Upkeep %s/min
+HUD_MONEY_TIP,Impostos %s/min · Manutenção %s/min · construir para abaixo de %s moedas,Taxes %s/min · Upkeep %s/min · building stops below %s coins
 HUD_STATS,Estatísticas (Tab),Statistics (Tab)
 HUD_CATEGORY_RESIDENCES,Residências,Residences
 HUD_CATEGORY_SERVICES,Serviços,Services
@@ -154,17 +147,13 @@ STATS_POTENTIAL,Potencial,Potential
 STATS_CONSUMED,Consumo,Consumption
 STATS_STOCK,Estoque,Stock
 STATS_RATES,"t/min, estoque em t","t/min, stock in t"
-STATS_POPULATION,População,Population
 STATS_INCOME,Impostos,Taxes
 STATS_UPKEEP,Manutenção,Upkeep
 STATS_BALANCE,Saldo,Balance
-STATS_FINANCES,Finanças (moedas/min),Finances (coins/min)
 STATS_TAX_LEVEL,Imposto,Tax
 TAX_LOW,Baixo,Low
 TAX_NORMAL,Normal,Normal
 TAX_HIGH,Alto,High
-STATS_CLOSE,Fechar,Close
-MSG_SHORTAGE,Falta %s,Running out of %s
 PREVIEW_ROAD_COST,%s células · %s moedas,%s cells · %s coins
 BUILDING_TRADING_POST,Entreposto,Trading post
 BUILDING_WAREHOUSE,Armazém,Warehouse
@@ -210,7 +199,7 @@ REASON_NEEDS_RIVER_OR_COAST,Precisa encostar num rio ou no litoral,Must touch a 
 REASON_TOO_STEEP,Barranco íngreme demais para estrada,Too steep for a road
 STATE_NO_TREES,Poucas árvores por perto,Not enough trees nearby
 LABEL_NO_TREES,Sem árvores,No trees
-PANEL_TREES,"Árvores no raio: %d (mínimo %d)","Trees in range: %d (minimum %d)"
+PANEL_TREES,Árvores no raio: %d (mínimo %d),Trees in range: %d (minimum %d)
 PANEL_SEED,Semente do mundo: %d,World seed: %d
 BUILDING_PIER,Píer,Pier
 SHIP_MERCHANT,Navio mercante,Merchant ship
@@ -268,9 +257,6 @@ PIER_WORKING,Recebendo navios,Receiving ships
 PIER_DISCONNECTED,Sem estrada até o entreposto,No road to the trading post
 TIP_COLONY,Em outra ilha: os materiais vêm de um navio ancorado nela,On another island: materials come from a ship anchored there
 TIP_PIER,Mais uma vaga de navio; precisa de estrada até o entreposto,One more ship berth; needs a road to the trading post
-MSG_MILESTONE,Marco atingido: %s moradores,Milestone reached: %s residents
-MSG_COLONIZED,%s colonizada,%s colonized
-MSG_TRADER_VISIT,"Comerciante em %s: vendemos %s, compramos %s","Trader at %s: we sold %s, bought %s"
 REASON_NEEDS_SHIP,Precisa de um navio ancorado nesta ilha com os materiais,Needs a ship anchored at this island with the materials
 REASON_ISLAND_LOCKED,Mais ilhas liberam com o próximo marco de população,More islands unlock at the next population milestone
 REASON_SHIP_LIMIT,Mais navios liberam com o próximo marco de população,More ships unlock at the next population milestone
@@ -280,3 +266,192 @@ REASON_BAD_ORDER,Ordem de carga inválida,Invalid cargo order
 REASON_SHIP_NOT_IN_PORT,"O navio precisa estar parado num porto, fora de rota","The ship must be stopped in a port, off route"
 REASON_SHIP_NOT_AT_TRADER,O navio precisa estar no posto do comerciante,The ship must be at the trader's post
 REASON_NOT_TRADED,O comerciante não negocia este bem,The trader does not deal in this good
+UI_CLOSE,Fechar,Close
+UI_BACK,Voltar,Back
+UI_DONE,Concluir,Done
+BOOT_CONTINUE,Continuar,Continue
+BOOT_CONTINUE_TIP,Abre o jogo salvo mais recente,Opens the most recent saved game
+BOOT_NEW_GAME_TIP,"Escolha a semente, o tamanho do arquipélago e a dificuldade","Choose the seed, the size of the archipelago and the difficulty"
+BOOT_LOAD_GAME_TIP,Escolha um jogo salvo pela miniatura,Pick a saved game by its thumbnail
+BOOT_OPTIONS,Opções,Options
+BOOT_OPTIONS_TIP,"Gráficos, áudio, controles, idioma e interface","Graphics, audio, controls, language and interface"
+BOOT_CREDITS,Créditos,Credits
+BOOT_CREDITS_TIP,Quem fez e o que veio de fora,Who made it and what came from elsewhere
+BOOT_QUIT,Sair,Quit
+BOOT_QUIT_TIP,Fecha o jogo,Closes the game
+BOOT_VERSION,Versão %s,Version %s
+NEW_GAME_TITLE,Novo jogo,New game
+NEW_GAME_SEED,Semente,Seed
+NEW_GAME_SEED_TIP,A mesma semente gera sempre o mesmo arquipélago,The same seed always makes the same archipelago
+NEW_GAME_RANDOM_TIP,Sortear outra semente,Roll another seed
+NEW_GAME_SIZE,Arquipélago,Archipelago
+NEW_GAME_SIZE_TIP,Quantas ilhas além da principal,How many islands besides the main one
+NEW_GAME_SIZE_SMALL,Pequeno (%d ilhas menores),Small (%d smaller islands)
+NEW_GAME_SIZE_MEDIUM,Médio (%d ilhas menores),Medium (%d smaller islands)
+NEW_GAME_SIZE_LARGE,Grande (%d ilhas menores),Large (%d smaller islands)
+NEW_GAME_DIFFICULTY,Dificuldade,Difficulty
+NEW_GAME_DIFFICULTY_TIP,Dinheiro inicial e até onde o saldo pode ficar negativo,Starting money and how far the balance may go negative
+NEW_GAME_EASY,"Fácil · %s moedas, até %s","Easy · %s coins, down to %s"
+NEW_GAME_NORMAL,"Normal · %s moedas, até %s","Normal · %s coins, down to %s"
+NEW_GAME_HARD,"Difícil · %s moedas, até %s","Hard · %s coins, down to %s"
+NEW_GAME_START,Começar,Start
+NEW_GAME_START_TIP,Gera o arquipélago e começa a partida,Generates the archipelago and starts the game
+SAVE_TITLE,Salvar jogo,Save game
+LOAD_TITLE,Carregar jogo,Load game
+SAVE_NAME,Nome do jogo salvo,Saved game name
+SAVE_NAME_PLACEHOLDER,Digite um nome,Type a name
+SAVE_NAME_TIP,Um nome que já existe grava por cima,A name that already exists is overwritten
+SAVE_NAME_INVALID,Use letras ou números,Use letters or numbers
+SAVE_CONFIRM,Salvar,Save
+LOAD_CONFIRM,Carregar,Load
+SAVE_DELETE,Apagar,Delete
+SAVE_DELETE_TIP,Apaga o jogo salvo escolhido,Deletes the chosen saved game
+SAVE_QUICK,Salvamento rápido,Quick save
+SAVE_SUMMARY,Dia %d · %s moradores · %s moedas,Day %d · %s residents · %s coins
+LOAD_EMPTY,Nenhum jogo salvo ainda,No saved games yet
+MENU_TITLE,Menu,Menu
+MENU_CONTINUE,Continuar,Continue
+MENU_CONTINUE_TIP,Volta à partida,Back to the game
+MENU_SAVE,Salvar,Save
+MENU_SAVE_TIP,Grava a partida com um nome,Saves the game under a name
+MENU_LOAD,Carregar,Load
+MENU_LOAD_TIP,Troca a partida por um jogo salvo,Replaces the game with a saved one
+MENU_OPTIONS,Opções,Options
+MENU_OPTIONS_TIP,"Gráficos, áudio, controles, idioma e interface","Graphics, audio, controls, language and interface"
+MENU_MAIN_MENU,Menu principal,Main menu
+MENU_MAIN_MENU_TIP,Sai da partida sem salvar,Leaves the game without saving
+MENU_QUIT,Sair do jogo,Quit game
+MENU_QUIT_TIP,Fecha o jogo sem salvar,Closes the game without saving
+OPTIONS_TITLE,Opções,Options
+OPTIONS_GRAPHICS,Gráficos,Graphics
+OPTIONS_AUDIO,Áudio,Audio
+OPTIONS_CONTROLS,Controles,Controls
+OPTIONS_LANGUAGE,Idioma,Language
+OPTIONS_INTERFACE,Interface,Interface
+OPTIONS_FULLSCREEN,Tela cheia,Fullscreen
+OPTIONS_FULLSCREEN_TIP,Ocupa a tela inteira,Fills the whole screen
+OPTIONS_VSYNC,Sincronia vertical,Vertical sync
+OPTIONS_VSYNC_TIP,Acompanha a taxa do monitor (sem cortes na imagem),Follows the monitor's refresh rate (no tearing)
+OPTIONS_RENDER_SCALE,Escala da imagem 3D,3D image scale
+OPTIONS_RENDER_SCALE_TIP,Abaixo de 100% usa o FSR 2: mais leve para placas mais fracas,Below 100% uses FSR 2: lighter on weaker graphics cards
+OPTIONS_MAX_FPS,Limite de quadros,Frame limit
+OPTIONS_MAX_FPS_TIP,Quadros por segundo no máximo,Maximum frames per second
+OPTIONS_FPS_UNLIMITED,Sem limite,Unlimited
+OPTIONS_GRAPHICS_NOTE,"Os níveis de qualidade (baixo, médio, alto e ultra) chegam com os gráficos finais.","Quality presets (low, medium, high and ultra) arrive with the final graphics."
+OPTIONS_VOLUME_TIP,Volume deste canal,Volume of this channel
+AUDIO_BUS_MASTER,Geral,Master
+AUDIO_BUS_MUSIC,Música,Music
+AUDIO_BUS_AMBIENCE,Ambiente,Ambience
+AUDIO_BUS_EFFECTS,Efeitos,Effects
+AUDIO_BUS_INTERFACE,Interface,Interface
+OPTIONS_EDGE_PAN,Mover a câmera pela borda da tela,Move the camera at the screen edge
+OPTIONS_EDGE_PAN_TIP,Encostar o mouse na borda move a câmera,Touching the screen edge with the mouse moves the camera
+OPTIONS_KEYS_HINT,Clique numa tecla e aperte a nova (Esc cancela),Click a key and press the new one (Esc cancels)
+OPTIONS_KEYS_RESET,Teclas padrão,Default keys
+OPTIONS_KEYS_RESET_TIP,Volta todas as teclas ao padrão,Restores every key to its default
+OPTIONS_KEY_TIP,Clique para trocar a tecla,Click to change the key
+OPTIONS_KEY_WAITING,Aperte uma tecla…,Press a key…
+OPTIONS_KEY_NONE,Sem tecla,No key
+OPTIONS_LANGUAGE_TIP,Idioma de todos os textos,Language of every text
+LANGUAGE_PT_BR,Português (Brasil),Português (Brasil)
+LANGUAGE_EN,English,English
+OPTIONS_UI_SCALE,Tamanho da interface,Interface size
+OPTIONS_UI_SCALE_TIP,De 80% a 150%,From 80% to 150%
+OPTIONS_COLORBLIND,Modo para daltonismo,Colorblind mode
+OPTIONS_COLORBLIND_TIP,"Indicadores em azul, laranja e vermelhão no lugar do verde, amarelo e vermelho","Indicators in blue, orange and vermilion instead of green, yellow and red"
+OPTIONS_COLORBLIND_SAMPLE,"Atendido, parcial, em falta","Met, partial, missing"
+ACTION_CAMERA_PAN_LEFT,Câmera para a esquerda,Camera left
+ACTION_CAMERA_PAN_RIGHT,Câmera para a direita,Camera right
+ACTION_CAMERA_PAN_FORWARD,Câmera para a frente,Camera forward
+ACTION_CAMERA_PAN_BACK,Câmera para trás,Camera back
+ACTION_CAMERA_ROTATE_LEFT,Girar a câmera à esquerda,Rotate camera left
+ACTION_CAMERA_ROTATE_RIGHT,Girar a câmera à direita,Rotate camera right
+ACTION_CAMERA_CENTER_SELECTED,Centralizar no selecionado,Center on selection
+ACTION_BUILD_ROTATE,Girar o prédio,Rotate building
+ACTION_BUILD_ROAD,Estrada,Road
+ACTION_BUILD_DEMOLISH,Demolir,Demolish
+ACTION_TIME_PAUSE,Pausar e continuar,Pause and resume
+ACTION_TIME_SPEED_1,Velocidade 1x,Speed 1x
+ACTION_TIME_SPEED_2,Velocidade 2x,Speed 2x
+ACTION_TIME_SPEED_3,Velocidade 4x,Speed 4x
+ACTION_GAME_QUICKSAVE,Salvamento rápido,Quick save
+ACTION_GAME_QUICKLOAD,Carregar o salvamento rápido,Load quick save
+ACTION_GAME_STATISTICS,Estatísticas,Statistics
+ACTION_GAME_ROUTES,Rotas comerciais,Trade routes
+CREDITS_TITLE,Créditos,Credits
+CREDITS_INTRO,Um jogo de Davi Fernandes. Obrigado a quem fez as ferramentas e a arte abaixo.,A game by Davi Fernandes. Thanks to the makers of the tools and art below.
+HUD_CLOCK_TIP,Dia e hora da partida (o dia e a noite não mudam a economia),Game day and time (day and night do not change the economy)
+HUD_SPEED_PAUSE_TIP,Pausar (Espaço): dá para construir com o jogo parado,Pause (Space): you can build while paused
+HUD_SPEED_TIP,Velocidade %sx,Speed %sx
+HUD_POPULATION_TIP,Moradores por classe,Residents by class
+HUD_STATS_TIP,"Produção, consumo, população e finanças (Tab)","Production, consumption, population and finances (Tab)"
+HUD_ROUTES_TIP,Rotas comerciais e o mapa do arquipélago (B),Trade routes and the archipelago map (B)
+HUD_SAVE_TIP,Salvar o jogo (F5 salva rápido),Save the game (F5 quick saves)
+HUD_LOAD_TIP,Carregar um jogo (F9 carrega o rápido),Load a game (F9 loads the quick save)
+HUD_MENU_TIP,Menu (Esc),Menu (Esc)
+HUD_ROAD_TIP,Estrada de terra (T): %s moedas por célula,Dirt road (T): %s coins per cell
+HUD_DEMOLISH_TIP,Demolir (Del): devolve %s dos materiais,Demolish (Del): returns %s of the materials
+TIP_HOUSE,Enche quando as necessidades são atendidas e sobe de classe com materiais no estoque,Fills up when needs are met and moves up a class with materials in stock
+TIP_SERVICE_RADIUS,Atende casas a até %s células de estrada,Serves houses up to %s road cells away
+HOUSE_BLOCK_UPGRADE_TIP,A casa fica nesta classe mesmo com tudo atendido,The house stays in this class even with every need met
+PANEL_DEMOLISH_TIP,Demolir este prédio (devolve parte dos materiais),Demolish this building (returns part of the materials)
+PANEL_UPGRADE_TIP,Mais rampas e estoque,More ramps and storage
+PANEL_BUY_SHIP_TIP,Compra um navio neste entreposto,Buys a ship at this trading post
+PANEL_TRADE_TIP,O que esta ilha vende e compra do comerciante,What this island sells to and buys from the trader
+PANEL_PAUSE_TIP,Para o prédio (manutenção pela metade),Stops the building (half upkeep)
+PANEL_COPY_TIP,Construir outro igual,Build another one like it
+SHIP_SAIL_TO_TIP,Escolha no mapa para onde o navio vai,Pick on the map where the ship goes
+SHIP_ROUTE_TIP,Rota que o navio repete,Route the ship repeats
+SHIP_UNLOAD_ALL_TIP,Descarrega tudo deste bem no estoque da ilha,Unloads all of this good into the island's stock
+SHIP_LOAD_STEP_TIP,Carrega 10 t do bem escolhido,Loads 10 t of the chosen good
+TRADE_BUY_STEP_TIP,Compra 10 t do comerciante,Buys 10 t from the trader
+TRADE_SELL_STEP_TIP,Vende 10 t ao comerciante,Sells 10 t to the trader
+TRADE_SELL_TIP,Vender ao comerciante o que passar desta quantidade,Sell to the trader whatever is above this amount
+TRADE_BUY_TIP,Comprar do comerciante até ter esta quantidade,Buy from the trader up to this amount
+PORTRAIT_TRADER,O comerciante,The trader
+ROUTES_NEW_TIP,Cria uma rota vazia,Creates an empty route
+ROUTES_DELETE_TIP,Apaga a rota escolhida (os navios dela param),Deletes the chosen route (its ships stop)
+ROUTES_ADD_STOP_TIP,Acrescenta uma parada no fim da rota,Adds a stop at the end of the route
+ROUTES_ADD_ORDER_TIP,Acrescenta uma ordem de carga nesta parada,Adds a cargo order at this stop
+ROUTES_MAP_TIP,"Ilhas, portos, posto do comerciante, a rota escolhida e os navios","Islands, ports, the trader's post, the chosen route and the ships"
+STATS_TAB_PRODUCTION,Produção,Production
+STATS_TAB_POPULATION,População,Population
+STATS_TAB_FINANCES,Finanças,Finances
+STATS_ISLAND,Ilha,Island
+STATS_ISLAND_TIP,Ilha das estatísticas de produção,Island of the production statistics
+STATS_ALL_ISLANDS,Todas as ilhas,All islands
+STATS_CHART_TIP,Mostrar este bem no gráfico,Show this good in the chart
+STATS_TAX_TIP,Alto rende mais e reduz a felicidade,High yields more and lowers happiness
+STATS_POPULATION_TOTAL,Total: %s moradores,Total: %s residents
+CHART_PRODUCED,Produção de %s,%s produced
+CHART_CONSUMED,Consumo de %s,%s consumed
+CHART_MONEY,Moedas,Coins
+CHART_BALANCE,Saldo por minuto,Balance per minute
+CHART_SPAN,Últimos %s min,Last %s min
+CHART_NO_DATA,O gráfico começa no primeiro minuto de jogo,The chart starts after the first minute of play
+NOTICE_CLICK_TIP,Clique para ir até lá,Click to go there
+NOTICE_SHORTAGE,Falta %s em %s,Running out of %s on %s
+NOTICE_STOPPED,%s parado: %s,%s stopped: %s
+NOTICE_STORAGE_FULL,Estoque cheio de %s em %s,Storage full of %s on %s
+NOTICE_SHIP_ARRIVED,%s chegou a %s,%s arrived at %s
+NOTICE_MILESTONE,Marco atingido: %s moradores,Milestone reached: %s residents
+NOTICE_COLONIZED,%s colonizada,%s colonized
+NOTICE_TRADER,"Comerciante em %s: vendemos %s, compramos %s","Trader at %s: we sold %s, bought %s"
+RATIO_SUPPLIES,1 %s abastece %s %s,1 %s supplies %s %s
+RATIO_RESIDENTS,1 %s atende %s moradores,1 %s serves %s residents
+OVERLAY_SERVICE,Raio dos serviços,Service reach
+OVERLAY_SERVICE_TIP,Camada: raio dos serviços e casas atendidas,Layer: service reach and houses served
+OVERLAY_SERVICE_LEGEND,Azul: estrada ao alcance de um serviço · verde: casa com todos os serviços · vermelho: falta algum,Blue: road within a service's reach · green: house with every service · red: one is missing
+OVERLAY_WAREHOUSE,Alcance dos armazéns,Warehouse reach
+OVERLAY_WAREHOUSE_TIP,Camada: alcance dos armazéns,Layer: warehouse reach
+OVERLAY_WAREHOUSE_LEGEND,Azul: estrada ao alcance de um armazém · verde: prédio atendido · vermelho: sem armazém,Blue: road within a warehouse's reach · green: building served · red: no warehouse
+OVERLAY_FERTILITY,Fertilidade,Fertility
+OVERLAY_FERTILITY_TIP,Camada: fertilidade da ilha,Layer: island fertility
+OVERLAY_FERTILITY_LEGEND,Esta ilha é fértil para: %s,This island is fertile for: %s
+OVERLAY_FERTILITY_NONE,nenhuma cultura,no crop
+OVERLAY_POLLUTION,Poluição,Pollution
+OVERLAY_POLLUTION_TIP,Camada: poluição de olarias e minas,Layer: pollution from brickworks and mines
+OVERLAY_POLLUTION_LEGEND,"Quanto mais escuro, mais a poluição tira felicidade das casas","The darker, the more pollution takes happiness from houses"
+OVERLAY_ROADS,Estradas,Roads
+OVERLAY_ROADS_TIP,Camada: rede de estradas,Layer: road network
+OVERLAY_ROADS_LEGEND,Cada cor é um trecho ligado; cores diferentes não se encontram,Each color is a connected stretch; different colors do not meet

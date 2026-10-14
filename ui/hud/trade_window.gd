@@ -15,25 +15,23 @@ var _rows := GridContainer.new()
 func setup(simulation: Simulation) -> void:
 	_simulation = simulation
 	visible = false
-	add_theme_stylebox_override(&"panel", UiStyle.panel())
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override(&"separation", 8)
 	add_child(column)
-	var header := HBoxContainer.new()
-	column.add_child(header)
-	_title.add_theme_font_size_override(&"font_size", 20)
-	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(_title)
-	var close := Button.new()
-	close.text = "STATS_CLOSE"
-	close.focus_mode = Control.FOCUS_NONE
-	close.pressed.connect(func() -> void: visible = false)
-	header.add_child(close)
-	var hint := Label.new()
-	hint.text = "TRADE_HINT"
-	hint.modulate = Color(1, 1, 1, 0.6)
-	column.add_child(hint)
-	_rows.columns = 5
+	column.add_child(UiKit.header("", func() -> void: visible = false, _title))
+	var intro := HBoxContainer.new()
+	intro.add_theme_constant_override(&"separation", 12)
+	column.add_child(intro)
+	var portrait := UiKit.icon_rect(Icons.portrait("trader"), 96)
+	portrait.custom_minimum_size = Vector2(80, 100)
+	portrait.tooltip_text = "PORTRAIT_TRADER"
+	intro.add_child(portrait)
+	var hint := UiKit.label("TRADE_HINT", &"DimLabel")
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = 420
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	intro.add_child(hint)
+	_rows.columns = 6
 	_rows.add_theme_constant_override(&"h_separation", 14)
 	column.add_child(_rows)
 	EventBus.world_replaced.connect(func() -> void: visible = false)
@@ -47,19 +45,14 @@ func open(island_id: int) -> void:
 
 
 func _build() -> void:
-	for child: Node in _rows.get_children():
-		# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
-		child.get_parent().remove_child(child)
-		child.queue_free()
+	# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
+	UiKit.clear(_rows)
 	var trader := _simulation.data.trader()
 	if trader == null:
 		return
 	_title.text = tr("TRADE_TITLE") % Fmt.place(_island)
-	for key: String in ["TRADE_COL_GOOD", "TRADE_COL_PRICE", "TRADE_COL_STOCK", "TRADE_COL_SELL", "TRADE_COL_BUY"]:
-		var header := Label.new()
-		header.text = key
-		header.modulate = Color(1, 1, 1, 0.6)
-		_rows.add_child(header)
+	for key: String in ["", "TRADE_COL_GOOD", "TRADE_COL_PRICE", "TRADE_COL_STOCK", "TRADE_COL_SELL", "TRADE_COL_BUY"]:
+		_rows.add_child(UiKit.label(key, &"DimLabel"))
 	var economy := _simulation.world.economy(_island)
 	var goods: Array[StringName] = trader.buys.duplicate()
 	for good: StringName in trader.sells:
@@ -67,6 +60,7 @@ func _build() -> void:
 			goods.append(good)
 	for good: StringName in goods:
 		var def := _simulation.data.good(good)
+		_rows.add_child(UiKit.icon_rect(Icons.good(good), 26))
 		_rows.add_child(_label(tr(def.name_key)))
 		var price := TraderState.price(_simulation.world.seed, _simulation.world.trader.tour, def, _simulation.config.trader_price_variation)
 		_rows.add_child(_label(Fmt.integer(price)))
@@ -82,6 +76,7 @@ func _setting(good: StringName, selling: bool, offered: bool, current: Dictionar
 		return row
 	var check := CheckBox.new()
 	check.focus_mode = Control.FOCUS_NONE
+	check.tooltip_text = "TRADE_SELL_TIP" if selling else "TRADE_BUY_TIP"
 	check.button_pressed = current.has(good)
 	row.add_child(check)
 	var amount := SpinBox.new()

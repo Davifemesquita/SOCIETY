@@ -37,7 +37,46 @@ func test_keys_are_unique_and_upper_snake_case() -> void:
 func test_server_translates_in_both_locales() -> void:
 	var previous := TranslationServer.get_locale()
 	TranslationServer.set_locale("pt_BR")
-	assert_str(TranslationServer.translate("BOOT_PHASE")).is_equal("Fase 1 — protótipo cinza")
+	assert_str(TranslationServer.translate("BOOT_NEW_GAME")).is_equal("Novo jogo")
 	TranslationServer.set_locale("en")
-	assert_str(TranslationServer.translate("BOOT_PHASE")).is_equal("Phase 1 — grey prototype")
+	assert_str(TranslationServer.translate("BOOT_NEW_GAME")).is_equal("New game")
 	TranslationServer.set_locale(previous)
+
+
+## Toda chave escrita no código (texto entre aspas no formato CHAVE_DE_TRADUCAO) existe no CSV, e
+## as chaves montadas por partes também: teclas das opções, barramentos de áudio, camadas de mapa e
+## as dicas dos botões (<texto>_TIP).
+func test_every_key_used_in_the_code_exists() -> void:
+	var keys: Dictionary[String, bool] = {}
+	for row: PackedStringArray in _rows():
+		keys[row[0]] = true
+	var literal := RegEx.create_from_string("\"([A-Z][A-Z0-9]*_[A-Z0-9_]+)\"")
+	var missing: PackedStringArray = []
+	for path: String in _scripts("res://"):
+		for found: RegExMatch in literal.search_all(FileAccess.get_file_as_string(path)):
+			var key := found.get_string(1)
+			if not keys.has(key) and not key.ends_with("_") and not missing.has(key):
+				missing.append("%s (%s)" % [key, path.get_file()])
+	for action: StringName in InputActions.remappable():
+		if not keys.has("ACTION_" + String(action).to_upper()):
+			missing.append("ACTION_" + String(action).to_upper())
+	for bus: StringName in Settings.AUDIO_BUSES:
+		if not keys.has("AUDIO_BUS_" + String(bus).to_upper()):
+			missing.append("AUDIO_BUS_" + String(bus).to_upper())
+	for key: String in MapOverlays.KEYS.values():
+		for suffix: String in ["", "_TIP", "_LEGEND"]:
+			if not keys.has(key + suffix):
+				missing.append(key + suffix)
+	assert_array(Array(missing)).is_empty()
+
+
+func _scripts(dir: String) -> PackedStringArray:
+	var found := PackedStringArray()
+	for sub: String in DirAccess.get_directories_at(dir):
+		if sub in ["addons", ".godot", "tests", "exportado", "reports"]:
+			continue
+		found.append_array(_scripts(dir.path_join(sub)))
+	for file: String in DirAccess.get_files_at(dir):
+		if file.ends_with(".gd") or file.ends_with(".tscn") or file.ends_with(".tres"):
+			found.append(dir.path_join(file))
+	return found

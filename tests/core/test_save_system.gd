@@ -128,3 +128,35 @@ func test_list_slots_newest_first() -> void:
 	OS.delay_msec(1100)
 	_saves.save_game("novo", {})
 	assert_array(Array(_saves.list_slots())).is_equal(["novo", "antigo"])
+
+
+func test_slot_names_come_from_what_the_player_typed() -> void:
+	assert_str(SaveSystemScript.slot_from_name("Minha Ilha Ção 2")).is_equal("minha_ilha_cao_2")
+	assert_str(SaveSystemScript.slot_from_name("  ../../etc  ")).is_equal("etc")
+	assert_str(SaveSystemScript.slot_from_name("!!!")).is_empty()
+	assert_bool(_saves.is_valid_slot(SaveSystemScript.slot_from_name("Á".repeat(100)))).is_true()
+
+
+func test_save_writes_a_summary_and_delete_removes_everything() -> void:
+	var thumbnail := Image.create_empty(32, 18, false, Image.FORMAT_RGB8)
+	assert_int(_saves.save_game("nomeado", _sample_state(), thumbnail, {"name": "Nomeado", "day": 3, "population": 120})).is_equal(OK)
+	var info := _saves.read_info("nomeado")
+	assert_str(str(info["name"])).is_equal("Nomeado")
+	assert_float(info["day"]).is_equal(3.0)
+	assert_object(_saves.read_thumbnail("nomeado")).is_not_null()
+	assert_bool(_saves.has_slot("nomeado")).is_true()
+	assert_int(_saves.delete_slot("nomeado")).is_equal(OK)
+	assert_bool(_saves.has_slot("nomeado")).is_false()
+	assert_bool(FileAccess.file_exists(_saves.thumbnail_path("nomeado"))).is_false()
+	assert_bool(FileAccess.file_exists(_saves.info_path("nomeado"))).is_false()
+
+
+func test_a_tampered_summary_keeps_only_text_and_numbers() -> void:
+	_saves.save_game("estranho", _sample_state())
+	var file := FileAccess.open(_saves.info_path("estranho"), FileAccess.WRITE)
+	file.store_string('{"name": {"x": 1}, "day": 4, "lista": [1, 2]}')
+	file.close()
+	var info := _saves.read_info("estranho")
+	assert_bool(info.has("name")).is_false()
+	assert_bool(info.has("lista")).is_false()
+	assert_float(info["day"]).is_equal(4.0)

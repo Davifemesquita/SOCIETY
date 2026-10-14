@@ -72,6 +72,7 @@ func to_dict() -> Dictionary:
 		"shortage_announced": shortage_announced.duplicate(),
 		"sell_above": sell_above.duplicate(),
 		"buy_up_to": buy_up_to.duplicate(),
+		"needs_consumption": needs_consumption_per_min.duplicate(),
 	}
 
 
@@ -135,4 +136,15 @@ static func from_dict(data: Dictionary) -> IslandEconomy:
 			if tons_value < 0:
 				return null
 			into[good] = tons_value
+	# consumo das casas (média mostrada nas estatísticas): desde o save 6, para o histórico seguir
+	# igual depois de carregar; save antigo começa do zero
+	var raw_consumption: Variant = data.get("needs_consumption", {})
+	if not raw_consumption is Dictionary:
+		return null
+	var consumption_data: Dictionary = raw_consumption
+	for good: Variant in consumption_data:
+		var rate: Variant = consumption_data[good]
+		if not (good is StringName and rate is float):
+			return null
+		economy.needs_consumption_per_min[good] = rate
 	return economy

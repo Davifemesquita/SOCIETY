@@ -48,7 +48,7 @@ func _show_results() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override(&"panel", UiStyle.panel())
+	panel.theme_type_variation = &"MenuPanel"
 	panel.position = Vector2(40, 40)
 	layer.add_child(panel)
 	var text := Label.new()

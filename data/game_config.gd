@@ -49,6 +49,11 @@ static var _default: GameConfig
 @export var starting_money: int = 50000
 ## Abaixo deste saldo, construir fica bloqueado.
 @export var min_balance_to_build: int = -10000
+## Dificuldade do jogo novo (fácil, normal, difícil): multiplica o dinheiro inicial e o limite de
+## saldo negativo. A normal é a da especificação.
+@export var difficulty_money_factors: PackedFloat32Array = PackedFloat32Array([2.0, 1.0, 0.5])
+@export var difficulty_debt_factors: PackedFloat32Array = PackedFloat32Array([2.0, 1.0, 0.5])
+@export var default_difficulty: int = 1
 ## Bônus de imposto quando duas ou mais opções atendem a mesma categoria.
 @export var extra_need_option_tax_bonus: float = 0.10
 @export var happiness_tax_multiplier_min: float = 0.5
@@ -130,15 +135,21 @@ static var _default: GameConfig
 ## Navios e ilhas com entreposto permitidos por marco de população atingido: o índice é o
 ## número de marcos (0 = nenhum; population_milestones tem os patamares).
 @export var ships_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 6, 8])
-@export var islands_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 5, 5])
+@export var islands_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 7, 9])
 
 @export_group("Ilhas")
 ## Área da ilha plana (testes e saves de antes da Fase 5), em células.
 @export var main_island_size_cells: Vector2i = Vector2i(250, 250)
 
 @export_group("Arquipélago")
-## Lado de cada ilha em células, a principal primeiro (seção 7: ~250, ~150 e ~80).
-@export var island_sizes_cells: PackedInt32Array = PackedInt32Array([250, 150, 150, 80, 80])
+## Lado de cada ilha em células, a principal primeiro (seção 7: ~250, ~150 e ~80). O arquipélago
+## usa as primeiras da lista, quantas o tamanho escolhido pedir (archipelago_island_counts).
+@export var island_sizes_cells: PackedInt32Array = PackedInt32Array([250, 150, 150, 80, 80, 150, 80, 150, 80])
+## Ilhas no arquipélago (com a principal) por tamanho escolhido no jogo novo: pequeno, médio e
+## grande (seção 7: de 4 a 8 ilhas menores).
+@export var archipelago_island_counts: PackedInt32Array = PackedInt32Array([5, 7, 9])
+## Tamanho usado quando ninguém escolhe (testes, ferramentas, `-- --novo-jogo`).
+@export var default_archipelago_size: int = 0
 @export var main_island_profile: StringName = &"main_island"
 ## Perfis sorteados (pela semente) para as outras ilhas.
 @export var other_island_profiles: Array[StringName] = [&"farmland", &"highlands", &"woodland", &"reef"]
@@ -232,6 +243,24 @@ static var _default: GameConfig
 @export var ui_scale_max: float = 1.5
 ## Idiomas oferecidos, na ordem do menu. O primeiro é o padrão.
 @export var supported_locales: PackedStringArray = PackedStringArray(["pt_BR", "en"])
+## Gráficos históricos das estatísticas: uma amostra a cada tantos segundos de jogo, guardando as
+## últimas history_samples (180 amostras de 60 s = as últimas 3 horas de jogo).
+@export var history_interval_s: float = 60.0
+@export var history_samples: int = 180
+## Notificações: quanto tempo cada uma fica na tela (s reais) e quantas aparecem ao mesmo tempo.
+@export var notice_seconds: float = 12.0
+@export var notice_max_visible: int = 5
+## Prédio parado só vira notificação depois de tanto tempo parado (s de jogo), para não avisar o
+## intervalo normal entre um ciclo e outro.
+@export var stopped_notice_after_s: float = 60.0
+## Estoque cheio: avisa ao chegar nesta fração da capacidade e volta a avisar só depois de cair
+## abaixo de storage_full_reset_fraction.
+@export var storage_full_fraction: float = 0.98
+@export var storage_full_reset_fraction: float = 0.85
+## Cada quanto (s reais) a interface confere prédios parados, estoque e navios para notificar.
+@export var notice_check_seconds: float = 1.0
+## Escala da resolução 3D (FSR 2) oferecida nas opções.
+@export var render_scale_min: float = 0.5
 
 @export_group("Desempenho")
 ## Orçamento de um tick de simulação na carga do benchmark.
@@ -243,6 +272,20 @@ static func get_default() -> GameConfig:
 	if _default == null:
 		_default = load(DEFAULT_PATH) as GameConfig
 	return _default
+
+
+## Dinheiro inicial e limite de saldo para construir na dificuldade dada.
+func starting_money_for(difficulty: int) -> float:
+	return starting_money * difficulty_money_factors[clampi(difficulty, 0, difficulty_money_factors.size() - 1)]
+
+
+func min_balance_for(difficulty: int) -> float:
+	return min_balance_to_build * difficulty_debt_factors[clampi(difficulty, 0, difficulty_debt_factors.size() - 1)]
+
+
+## Número de ilhas (com a principal) do tamanho de arquipélago dado.
+func island_count_for(archipelago_size: int) -> int:
+	return mini(archipelago_island_counts[clampi(archipelago_size, 0, archipelago_island_counts.size() - 1)], island_sizes_cells.size())
 
 
 func tick_interval() -> float:
@@ -287,8 +330,22 @@ func validate() -> PackedStringArray:
 		problems.append("supported_locales precisa de pelo menos um idioma")
 	if main_island_size_cells.x <= 0 or main_island_size_cells.y <= 0:
 		problems.append("main_island_size_cells deve ser positivo")
-	if island_sizes_cells.is_empty() or island_sizes_cells.size() > other_island_profiles.size() + 1:
-		problems.append("island_sizes_cells: a principal e no máximo uma ilha por perfil de other_island_profiles")
+	if island_sizes_cells.is_empty() or island_sizes_cells.size() > ArchipelagoGenerator.REGION_SLOTS.size() + 1 or other_island_profiles.is_empty():
+		problems.append("island_sizes_cells: a principal e no máximo uma ilha por região vizinha (8); other_island_profiles não fica vazio")
+	if archipelago_island_counts.is_empty() or default_archipelago_size < 0 or default_archipelago_size >= archipelago_island_counts.size():
+		problems.append("archipelago_island_counts precisa de um valor por tamanho, e default_archipelago_size é um deles")
+	for count: int in archipelago_island_counts:
+		if count < 1 or count > island_sizes_cells.size():
+			problems.append("archipelago_island_counts: entre 1 e o número de ilhas de island_sizes_cells")
+			break
+	if difficulty_money_factors.size() != 3 or difficulty_debt_factors.size() != 3 or default_difficulty < 0 or default_difficulty > 2:
+		problems.append("as dificuldades são três: fácil, normal e difícil")
+	if history_interval_s <= 0.0 or history_samples < 2:
+		problems.append("history_interval_s positivo e history_samples de pelo menos 2")
+	if notice_seconds <= 0.0 or notice_max_visible <= 0 or notice_check_seconds <= 0.0:
+		problems.append("notice_seconds, notice_max_visible e notice_check_seconds devem ser maiores que zero")
+	if storage_full_reset_fraction >= storage_full_fraction or storage_full_fraction > 1.0:
+		problems.append("storage_full_reset_fraction fica abaixo de storage_full_fraction, que não passa de 1")
 	for side: int in island_sizes_cells:
 		if side * cell_size_m > terrain_region_m:
 			problems.append("ilha de %d células não cabe numa região de %.0f m" % [side, terrain_region_m])

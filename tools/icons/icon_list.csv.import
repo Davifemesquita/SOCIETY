@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bf0wuou3b5s34"
+
+[deps]
+
+files=["res://tools/icons/icon_list.source.translation", "res://tools/icons/icon_list.style.translation"]
+
+source_file="res://tools/icons/icon_list.csv"
+dest_files=["res://tools/icons/icon_list.source.translation", "res://tools/icons/icon_list.style.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

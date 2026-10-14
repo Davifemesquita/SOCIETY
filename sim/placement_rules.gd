@@ -119,7 +119,7 @@ static func founds_colony(world: WorldState, data: GameData, island_id: int, def
 static func check_colony(world: WorldState, data: GameData, config: GameConfig, island_id: int, def: BuildingDef) -> StringName:
 	if world.colonized_islands(data).size() >= MilestoneSystem.island_limit(world, config):
 		return ISLAND_LOCKED
-	if world.money - def.cost_money < config.min_balance_to_build:
+	if world.money - def.cost_money < config.min_balance_for(world.difficulty):
 		return NO_MONEY
 	if colony_ship(world, island_id, def.cost_materials) != null:
 		return OK
@@ -162,7 +162,7 @@ static func check_unlock(world: WorldState, def: BuildingDef) -> StringName:
 
 ## O saldo pode ficar negativo até o mínimo configurado; materiais precisam estar no estoque.
 static func check_cost(world: WorldState, economy: IslandEconomy, config: GameConfig, money: int, materials: Dictionary[StringName, int]) -> StringName:
-	if world.money - money < config.min_balance_to_build:
+	if world.money - money < config.min_balance_for(world.difficulty):
 		return NO_MONEY
 	if not economy.has_materials(materials):
 		return NO_MATERIALS

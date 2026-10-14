@@ -58,13 +58,15 @@ class Noises:
 
 
 ## Mundo novo: o arquipélago da semente, com o dinheiro e o navio inicial (com os materiais) na
-## principal.
-static func new_world(seed_value: int, config: GameConfig, data: GameData) -> WorldState:
+## principal. Tamanho do arquipélago e dificuldade negativos = os padrões do GameConfig.
+static func new_world(seed_value: int, config: GameConfig, data: GameData, archipelago_size: int = -1, difficulty: int = -1) -> WorldState:
 	var world := WorldState.new()
 	world.seed = seed_value
 	world.terrain_version = VERSION
-	world.money = config.starting_money
-	for spec: IslandSpec in layout(seed_value, config, data):
+	world.difficulty = difficulty if difficulty >= 0 else config.default_difficulty
+	world.money = config.starting_money_for(world.difficulty)
+	var size_index := archipelago_size if archipelago_size >= 0 else config.default_archipelago_size
+	for spec: IslandSpec in layout(seed_value, config, data, config.island_count_for(size_index)):
 		world.islands.append(build_island(spec, config))
 		var economy := IslandEconomy.new()
 		economy.profile_id = spec.profile.id
@@ -74,7 +76,9 @@ static func new_world(seed_value: int, config: GameConfig, data: GameData) -> Wo
 
 
 ## Onde fica cada ilha e com que perfil. A principal fica na região (0, 0), com o canto na origem.
-static func layout(seed_value: int, config: GameConfig, data: GameData) -> Array[IslandSpec]:
+## Com menos ilhas, as primeiras saem iguais às do arquipélago maior da mesma semente.
+static func layout(seed_value: int, config: GameConfig, data: GameData, island_count: int = -1) -> Array[IslandSpec]:
+	var count := island_count if island_count > 0 else config.island_count_for(config.default_archipelago_size)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([seed_value, "layout"])
 	var slots: Array[Vector2i] = REGION_SLOTS.duplicate()
@@ -82,7 +86,7 @@ static func layout(seed_value: int, config: GameConfig, data: GameData) -> Array
 	var profiles: Array[StringName] = config.other_island_profiles.duplicate()
 	_shuffle(profiles, rng)
 	var specs: Array[IslandSpec] = []
-	for index: int in config.island_sizes_cells.size():
+	for index: int in mini(count, config.island_sizes_cells.size()):
 		var spec := IslandSpec.new()
 		spec.index = index
 		spec.size = config.island_sizes_cells[index]

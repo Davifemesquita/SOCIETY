@@ -1,0 +1,335 @@
+class_name ThemeBuilder
+extends RefCounted
+## Monta o Theme único do jogo (seção 10): papel envelhecido, moldura de madeira, detalhe
+## dourado; Old Standard TT nos textos e números, Playfair Display nos títulos. O resultado é
+## gravado em ui/theme/society_theme.tres por tools/build_theme.gd e vale para o projeto todo
+## (gui/theme/custom). Mudou alguma coisa aqui, rode a ferramenta de novo (há teste que confere).
+##
+## Variações (theme_type_variation): TitleLabel, HeaderLabel, DimLabel, BigLabel, TopBar,
+## MenuPanel, NoticePanel, ToastPanel, IconButton, MenuButtonLarge, CardButton, NoticeButton.
+
+const FONT_REGULAR := "res://assets/fonts/OldStandard-Regular.ttf"
+const FONT_BOLD := "res://assets/fonts/OldStandard-Bold.ttf"
+const FONT_ITALIC := "res://assets/fonts/OldStandard-Italic.ttf"
+const FONT_TITLE := "res://assets/fonts/PlayfairDisplay.ttf"
+const FONT_SIZE := 18
+const ICON_SIZE := 26
+
+
+static func build() -> Theme:
+	var theme := Theme.new()
+	var regular: FontFile = load(FONT_REGULAR)
+	var bold: FontFile = load(FONT_BOLD)
+	var italic: FontFile = load(FONT_ITALIC)
+	var title := FontVariation.new()
+	title.base_font = load(FONT_TITLE)
+	title.variation_opentype = {"wght": 700}
+	theme.default_font = regular
+	theme.default_font_size = FONT_SIZE
+	_labels(theme, bold, italic, title)
+	_panels(theme)
+	_buttons(theme, title)
+	_inputs(theme)
+	_lists(theme)
+	_tooltip(theme)
+	return theme
+
+
+static func _labels(theme: Theme, bold: Font, italic: Font, title: Font) -> void:
+	for type: StringName in [&"Label", &"RichTextLabel"]:
+		theme.set_color(&"font_color" if type == &"Label" else &"default_color", type, UiPalette.INK)
+	theme.set_color(&"font_outline_color", &"Label", Color(UiPalette.PAPER, 0.0))
+	theme.set_font(&"bold_font", &"RichTextLabel", bold)
+	theme.set_font(&"italics_font", &"RichTextLabel", italic)
+	theme.set_font(&"normal_font", &"RichTextLabel", theme.default_font)
+	theme.set_font_size(&"normal_font_size", &"RichTextLabel", FONT_SIZE)
+	theme.set_font_size(&"bold_font_size", &"RichTextLabel", FONT_SIZE)
+	_variation(theme, &"TitleLabel", &"Label")
+	theme.set_font(&"font", &"TitleLabel", title)
+	theme.set_font_size(&"font_size", &"TitleLabel", 28)
+	theme.set_color(&"font_color", &"TitleLabel", UiPalette.WOOD)
+	_variation(theme, &"HeaderLabel", &"Label")
+	theme.set_font(&"font", &"HeaderLabel", title)
+	theme.set_font_size(&"font_size", &"HeaderLabel", 21)
+	theme.set_color(&"font_color", &"HeaderLabel", UiPalette.WOOD)
+	_variation(theme, &"BigLabel", &"Label")
+	theme.set_font(&"font", &"BigLabel", title)
+	theme.set_font_size(&"font_size", &"BigLabel", 72)
+	theme.set_color(&"font_color", &"BigLabel", UiPalette.WOOD)
+	theme.set_color(&"font_shadow_color", &"BigLabel", Color(UiPalette.GOLD, 0.45))
+	theme.set_constant(&"shadow_offset_x", &"BigLabel", 3)
+	theme.set_constant(&"shadow_offset_y", &"BigLabel", 3)
+	_variation(theme, &"DimLabel", &"Label")
+	theme.set_font(&"font", &"DimLabel", italic)
+	theme.set_font_size(&"font_size", &"DimLabel", 16)
+	theme.set_color(&"font_color", &"DimLabel", UiPalette.INK_SOFT)
+
+
+static func _panels(theme: Theme) -> void:
+	var paper := _box(UiPalette.PAPER, UiPalette.WOOD, 3, 4)
+	paper.shadow_color = Color(0, 0, 0, 0.35)
+	paper.shadow_size = 6
+	paper.shadow_offset = Vector2(0, 2)
+	paper.set_content_margin_all(12)
+	theme.set_stylebox(&"panel", &"PanelContainer", paper)
+	theme.set_stylebox(&"panel", &"Panel", paper)
+	_variation(theme, &"TopBar", &"PanelContainer")
+	var bar := _box(UiPalette.PAPER, UiPalette.WOOD, 0, 0)
+	bar.border_width_bottom = 4
+	bar.border_color = UiPalette.GOLD
+	bar.set_content_margin_all(6)
+	bar.content_margin_left = 12
+	bar.content_margin_right = 12
+	bar.shadow_color = Color(0, 0, 0, 0.3)
+	bar.shadow_size = 5
+	theme.set_stylebox(&"panel", &"TopBar", bar)
+	_variation(theme, &"MenuPanel", &"PanelContainer")
+	var menu := _box(UiPalette.PAPER, UiPalette.WOOD, 5, 6)
+	menu.shadow_color = Color(0, 0, 0, 0.5)
+	menu.shadow_size = 14
+	menu.set_content_margin_all(28)
+	theme.set_stylebox(&"panel", &"MenuPanel", menu)
+	_variation(theme, &"NoticePanel", &"PanelContainer")
+	var notice := _box(UiPalette.PAPER, UiPalette.GOLD, 2, 4)
+	notice.set_content_margin_all(6)
+	notice.shadow_color = Color(0, 0, 0, 0.3)
+	notice.shadow_size = 4
+	theme.set_stylebox(&"panel", &"NoticePanel", notice)
+	_variation(theme, &"ToastPanel", &"PanelContainer")
+	var toast := _box(UiPalette.WOOD, UiPalette.GOLD, 2, 4)
+	toast.set_content_margin_all(10)
+	theme.set_stylebox(&"panel", &"ToastPanel", toast)
+	var line := StyleBoxLine.new()
+	line.color = UiPalette.PAPER_SHADE
+	line.thickness = 2
+	theme.set_stylebox(&"separator", &"HSeparator", line)
+	var vline := StyleBoxLine.new()
+	vline.color = UiPalette.PAPER_SHADE
+	vline.thickness = 2
+	vline.vertical = true
+	theme.set_stylebox(&"separator", &"VSeparator", vline)
+
+
+static func _buttons(theme: Theme, title: Font) -> void:
+	var normal := _button_box(UiPalette.PAPER_DARK, UiPalette.INK_SOFT)
+	var hover := _button_box(Color("f6e7bb"), UiPalette.GOLD)
+	var pressed := _button_box(UiPalette.PAPER_SHADE, UiPalette.WOOD)
+	pressed.border_width_bottom = 1
+	pressed.border_width_top = 3
+	var disabled := _button_box(UiPalette.PAPER, UiPalette.PAPER_SHADE)
+	var focus := StyleBoxFlat.new()
+	focus.draw_center = false
+	focus.border_color = UiPalette.GOLD
+	focus.set_border_width_all(2)
+	focus.set_corner_radius_all(3)
+	for type: StringName in [&"Button", &"OptionButton", &"MenuButton"]:
+		theme.set_stylebox(&"normal", type, normal)
+		theme.set_stylebox(&"hover", type, hover)
+		theme.set_stylebox(&"pressed", type, pressed)
+		theme.set_stylebox(&"hover_pressed", type, pressed)
+		theme.set_stylebox(&"disabled", type, disabled)
+		theme.set_stylebox(&"focus", type, focus)
+		for color: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color", &"font_hover_pressed_color"]:
+			theme.set_color(color, type, UiPalette.INK)
+		theme.set_color(&"font_disabled_color", type, UiPalette.INK_FAINT)
+		theme.set_color(&"icon_normal_color", type, Color.WHITE)
+		theme.set_color(&"icon_disabled_color", type, Color(1, 1, 1, 0.4))
+		theme.set_constant(&"icon_max_width", type, ICON_SIZE)
+		theme.set_constant(&"h_separation", type, 6)
+	theme.set_icon(&"arrow", &"OptionButton", _arrow_icon(UiPalette.INK))
+	_variation(theme, &"IconButton", &"Button")
+	theme.set_constant(&"icon_max_width", &"IconButton", 30)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
+		var box: StyleBoxFlat = theme.get_stylebox(state, &"Button").duplicate()
+		box.set_content_margin_all(4)
+		theme.set_stylebox(state, &"IconButton", box)
+	_variation(theme, &"MenuButtonLarge", &"Button")
+	theme.set_font(&"font", &"MenuButtonLarge", title)
+	theme.set_font_size(&"font_size", &"MenuButtonLarge", 24)
+	theme.set_constant(&"icon_max_width", &"MenuButtonLarge", 36)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
+		var big: StyleBoxFlat = theme.get_stylebox(state, &"Button").duplicate()
+		big.content_margin_left = 18
+		big.content_margin_right = 18
+		big.content_margin_top = 10
+		big.content_margin_bottom = 10
+		theme.set_stylebox(state, &"MenuButtonLarge", big)
+	_variation(theme, &"CardButton", &"Button")
+	theme.set_constant(&"icon_max_width", &"CardButton", 48)
+	theme.set_font_size(&"font_size", &"CardButton", 15)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
+		var card: StyleBoxFlat = theme.get_stylebox(state, &"Button").duplicate()
+		card.set_content_margin_all(4)
+		theme.set_stylebox(state, &"CardButton", card)
+	_variation(theme, &"NoticeButton", &"Button")
+	theme.set_constant(&"icon_max_width", &"NoticeButton", 34)
+	theme.set_font_size(&"font_size", &"NoticeButton", 16)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
+		var notice := _box(UiPalette.PAPER if state == &"normal" else Color("f6e7bb"), UiPalette.GOLD, 2, 4)
+		notice.content_margin_left = 8
+		notice.content_margin_right = 10
+		notice.content_margin_top = 5
+		notice.content_margin_bottom = 5
+		notice.shadow_color = Color(0, 0, 0, 0.3)
+		notice.shadow_size = 4
+		theme.set_stylebox(state, &"NoticeButton", notice)
+	for type: StringName in [&"CheckBox", &"CheckButton"]:
+		var empty := StyleBoxEmpty.new()
+		empty.set_content_margin_all(3)
+		for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
+			theme.set_stylebox(state, type, empty)
+		theme.set_stylebox(&"focus", type, focus)
+		for color: StringName in [&"font_color", &"font_hover_color", &"font_pressed_color", &"font_focus_color", &"font_hover_pressed_color"]:
+			theme.set_color(color, type, UiPalette.INK)
+		theme.set_color(&"font_disabled_color", type, UiPalette.INK_FAINT)
+	theme.set_icon(&"checked", &"CheckBox", _check_icon(true))
+	theme.set_icon(&"unchecked", &"CheckBox", _check_icon(false))
+	theme.set_icon(&"checked_disabled", &"CheckBox", _check_icon(true))
+	theme.set_icon(&"unchecked_disabled", &"CheckBox", _check_icon(false))
+	theme.set_icon(&"checked", &"CheckButton", _check_icon(true))
+	theme.set_icon(&"unchecked", &"CheckButton", _check_icon(false))
+
+
+static func _inputs(theme: Theme) -> void:
+	var field := _box(Color("fbf4e2"), UiPalette.INK_SOFT, 1, 2)
+	field.set_content_margin_all(5)
+	var field_focus := _box(Color("fbf4e2"), UiPalette.GOLD, 2, 2)
+	field_focus.set_content_margin_all(5)
+	theme.set_stylebox(&"normal", &"LineEdit", field)
+	theme.set_stylebox(&"focus", &"LineEdit", field_focus)
+	theme.set_stylebox(&"read_only", &"LineEdit", _box(UiPalette.PAPER, UiPalette.PAPER_SHADE, 1, 2))
+	theme.set_color(&"font_color", &"LineEdit", UiPalette.INK)
+	theme.set_color(&"font_placeholder_color", &"LineEdit", UiPalette.INK_FAINT)
+	theme.set_color(&"caret_color", &"LineEdit", UiPalette.INK)
+	theme.set_color(&"selection_color", &"LineEdit", Color(UiPalette.GOLD, 0.4))
+	theme.set_color(&"font_uneditable_color", &"LineEdit", UiPalette.INK_FAINT)
+	theme.set_icon(&"updown", &"SpinBox", _updown_icon())
+	var track := _box(UiPalette.PAPER_SHADE, UiPalette.INK_SOFT, 1, 3)
+	track.content_margin_top = 3
+	track.content_margin_bottom = 3
+	var fill := _box(UiPalette.GOLD, UiPalette.WOOD, 1, 3)
+	for type: StringName in [&"HSlider", &"VSlider"]:
+		theme.set_stylebox(&"slider", type, track)
+		theme.set_stylebox(&"grabber_area", type, fill)
+		theme.set_stylebox(&"grabber_area_highlight", type, fill)
+		theme.set_icon(&"grabber", type, _knob_icon(UiPalette.WOOD))
+		theme.set_icon(&"grabber_highlight", type, _knob_icon(UiPalette.GOLD))
+	theme.set_stylebox(&"background", &"ProgressBar", track)
+	theme.set_stylebox(&"fill", &"ProgressBar", fill)
+	theme.set_color(&"font_color", &"ProgressBar", UiPalette.INK)
+	for type: StringName in [&"HScrollBar", &"VScrollBar"]:
+		theme.set_stylebox(&"scroll", type, _box(UiPalette.PAPER_DARK, UiPalette.PAPER_SHADE, 0, 4))
+		theme.set_stylebox(&"grabber", type, _box(UiPalette.INK_FAINT, UiPalette.INK_FAINT, 0, 4))
+		theme.set_stylebox(&"grabber_highlight", type, _box(UiPalette.INK_SOFT, UiPalette.INK_SOFT, 0, 4))
+		theme.set_stylebox(&"grabber_pressed", type, _box(UiPalette.WOOD, UiPalette.WOOD, 0, 4))
+
+
+static func _lists(theme: Theme) -> void:
+	var list := _box(Color("f7eed6"), UiPalette.INK_SOFT, 1, 2)
+	list.set_content_margin_all(4)
+	theme.set_stylebox(&"panel", &"ItemList", list)
+	theme.set_stylebox(&"focus", &"ItemList", StyleBoxEmpty.new())
+	var selected := _box(Color(UiPalette.GOLD, 0.35), UiPalette.GOLD, 1, 2)
+	theme.set_stylebox(&"selected", &"ItemList", selected)
+	theme.set_stylebox(&"selected_focus", &"ItemList", selected)
+	theme.set_stylebox(&"hovered", &"ItemList", _box(Color(UiPalette.GOLD, 0.15), Color(UiPalette.GOLD, 0.15), 0, 2))
+	for color: StringName in [&"font_color", &"font_selected_color", &"font_hovered_color"]:
+		theme.set_color(color, &"ItemList", UiPalette.INK)
+	var popup := _box(UiPalette.PAPER, UiPalette.WOOD, 2, 2)
+	popup.set_content_margin_all(4)
+	theme.set_stylebox(&"panel", &"PopupMenu", popup)
+	theme.set_stylebox(&"hover", &"PopupMenu", _box(Color(UiPalette.GOLD, 0.35), Color(UiPalette.GOLD, 0.35), 0, 2))
+	for color: StringName in [&"font_color", &"font_hover_color", &"font_accelerator_color"]:
+		theme.set_color(color, &"PopupMenu", UiPalette.INK)
+	theme.set_color(&"font_disabled_color", &"PopupMenu", UiPalette.INK_FAINT)
+	theme.set_icon(&"radio_checked", &"PopupMenu", _check_icon(true))
+	theme.set_icon(&"radio_unchecked", &"PopupMenu", _check_icon(false))
+	var tab := _box(UiPalette.PAPER_DARK, UiPalette.INK_SOFT, 1, 3)
+	tab.set_content_margin_all(8)
+	var tab_selected := _box(UiPalette.PAPER, UiPalette.WOOD, 2, 3)
+	tab_selected.border_width_bottom = 0
+	tab_selected.set_content_margin_all(8)
+	theme.set_stylebox(&"tab_unselected", &"TabContainer", tab)
+	theme.set_stylebox(&"tab_hovered", &"TabContainer", tab)
+	theme.set_stylebox(&"tab_selected", &"TabContainer", tab_selected)
+	var page := _box(UiPalette.PAPER, UiPalette.WOOD, 2, 2)
+	page.set_content_margin_all(14)
+	theme.set_stylebox(&"panel", &"TabContainer", page)
+	for color: StringName in [&"font_selected_color", &"font_unselected_color", &"font_hovered_color"]:
+		theme.set_color(color, &"TabContainer", UiPalette.INK)
+	theme.set_constant(&"icon_max_width", &"TabContainer", ICON_SIZE)
+
+
+static func _tooltip(theme: Theme) -> void:
+	var box := _box(Color("fbf4e2"), UiPalette.GOLD, 2, 3)
+	box.set_content_margin_all(8)
+	box.shadow_color = Color(0, 0, 0, 0.3)
+	box.shadow_size = 4
+	theme.set_stylebox(&"panel", &"TooltipPanel", box)
+	theme.set_color(&"font_color", &"TooltipLabel", UiPalette.INK)
+	theme.set_font_size(&"font_size", &"TooltipLabel", 16)
+
+
+static func _variation(theme: Theme, name: StringName, base: StringName) -> void:
+	theme.set_type_variation(name, base)
+
+
+static func _box(fill: Color, border: Color, width: int, radius: int) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.border_color = border
+	box.set_border_width_all(width)
+	box.set_corner_radius_all(radius)
+	box.anti_aliasing = true
+	return box
+
+
+static func _button_box(fill: Color, border: Color) -> StyleBoxFlat:
+	var box := _box(fill, border, 1, 3)
+	box.border_width_bottom = 3
+	box.content_margin_left = 10
+	box.content_margin_right = 10
+	box.content_margin_top = 4
+	box.content_margin_bottom = 4
+	return box
+
+
+## Desenhos pequenos do Theme (caixa de marcar, seta da lista, botões do número, alça do
+## controle deslizante), feitos aqui para combinar com o papel: os do Godot são para fundo escuro.
+static func _check_icon(checked: bool) -> ImageTexture:
+	var size := 22
+	var image := Image.create_empty(size, size, false, Image.FORMAT_RGBA8)
+	image.fill_rect(Rect2i(1, 1, size - 2, size - 2), UiPalette.INK_SOFT)
+	image.fill_rect(Rect2i(3, 3, size - 6, size - 6), Color("fbf4e2"))
+	if checked:
+		image.fill_rect(Rect2i(6, 6, size - 12, size - 12), UiPalette.WOOD)
+	return ImageTexture.create_from_image(image)
+
+
+static func _arrow_icon(color: Color) -> ImageTexture:
+	var image := Image.create_empty(14, 10, false, Image.FORMAT_RGBA8)
+	for y: int in 7:
+		for x: int in range(y, 14 - y):
+			image.set_pixel(x, y + 2, color)
+	return ImageTexture.create_from_image(image)
+
+
+static func _updown_icon() -> ImageTexture:
+	var image := Image.create_empty(14, 20, false, Image.FORMAT_RGBA8)
+	for y: int in 6:
+		for x: int in range(6 - y, 8 + y):
+			image.set_pixel(x, y + 2, UiPalette.INK)
+			image.set_pixel(x, 17 - y, UiPalette.INK)
+	return ImageTexture.create_from_image(image)
+
+
+static func _knob_icon(color: Color) -> ImageTexture:
+	var size := 18
+	var image := Image.create_empty(size, size, false, Image.FORMAT_RGBA8)
+	var center := Vector2(size, size) * 0.5
+	for y: int in size:
+		for x: int in size:
+			var d := (Vector2(x + 0.5, y + 0.5) - center).length()
+			if d < 8.5:
+				image.set_pixel(x, y, UiPalette.WOOD if d > 6.5 else color)
+	return ImageTexture.create_from_image(image)

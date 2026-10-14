@@ -10,11 +10,16 @@ static var load_slot_on_start: String = ""
 static var use_sky3d: bool = true
 ## Semente do arquipélago do jogo novo (−1 = sorteada). A tela de abertura lê `-- --semente N`.
 static var world_seed: int = -1
+## Tamanho do arquipélago e dificuldade do jogo novo (−1 = os padrões do GameConfig), escolhidos na
+## tela de jogo novo.
+static var archipelago_size: int = -1
+static var difficulty: int = -1
 ## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
 ## coordenadas dela.
 static var flat_world: bool = false
 
 const QUICK_SLOT := "rapido"
+const MAIN_MENU := "res://ui/screens/boot_screen.tscn"
 const THUMBNAIL_SIZE := Vector2i(320, 180)
 
 var simulation: Simulation
@@ -41,6 +46,10 @@ var _terrain_highlights: Dictionary[String, Image] = {}
 var night_light: float = 0.0
 
 var _config: GameConfig
+## Camada da interface (onde abrem as janelas dos menus).
+var _ui_layer: CanvasLayer
+## Velocidade de antes do menu da partida (o menu pausa).
+var _speed_before_menu: int = TickClock.PAUSED
 
 
 func _ready() -> void:
@@ -48,9 +57,12 @@ func _ready() -> void:
 	var data := GameData.get_default()
 	if flat_world:
 		simulation = Simulation.new(_config, data)
+		if difficulty >= 0:
+			simulation.world.difficulty = difficulty
+			simulation.world.money = _config.starting_money_for(difficulty)
 	else:
 		var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
-		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data))
+		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty))
 	_build_ground()
 	sky = SkyAdapter.new()
 	add_child(sky)
@@ -91,13 +103,19 @@ func _ready() -> void:
 	var preview := BuildPreviewView.new()
 	preview.setup(tool, _config.cell_size_m)
 	add_child(preview)
-	var layer := CanvasLayer.new()
-	add_child(layer)
+	_ui_layer = CanvasLayer.new()
+	_ui_layer.name = "Interface"
+	add_child(_ui_layer)
 	hud = Hud.new()
-	layer.add_child(hud)
+	_ui_layer.add_child(hud)
 	hud.setup(tool, simulation)
-	hud.save_requested.connect(quicksave)
-	hud.load_requested.connect(quickload)
+	hud.save_requested.connect(open_save_dialog)
+	hud.load_requested.connect(open_load_dialog)
+	hud.menu_requested.connect(open_menu)
+	hud.overlay_changed.connect(func(_layer: MapOverlays.Layer) -> void: update_highlight())
+	hud.notifications.go_to.connect(go_to)
+	hud.selection_panel.center_requested.connect(center_on_selected)
+	hud.ship_panel.center_requested.connect(center_on_selected)
 	tool.changed.connect(func() -> void:
 		overlay.grid_visible = tool.mode != BuildTool.Mode.NONE
 		overlay.set_island(tool.island_id)
@@ -109,6 +127,7 @@ func _ready() -> void:
 	EventBus.trees_changed.connect(func(_island_id: int, _area: Rect2i) -> void: _terrain_highlights.clear())
 	EventBus.world_replaced.connect(func() -> void: _terrain_highlights.clear())
 	EventBus.building_placed.connect(func(_id: int) -> void: update_highlight())
+	EventBus.building_removed.connect(func(_id: int) -> void: update_highlight())
 	var shortcuts := GameShortcuts.new()
 	shortcuts.setup(self)
 	add_child(shortcuts)
@@ -200,8 +219,14 @@ func quickload() -> void:
 	load_game(QUICK_SLOT)
 
 
-func save_game(slot: String) -> bool:
-	var ok := SaveSystem.save_game(slot, game_state(), _thumbnail()) == OK
+func save_game(slot: String, display_name: String = "") -> bool:
+	var world := simulation.world
+	var population := 0
+	for tier: TierDef in simulation.data.tiers:
+		population += world.population(tier.id)
+	var info := {"name": display_name, "day": GameClock.clock.day_number(), "population": population,
+			"money": world.money, "seed": world.seed}
+	var ok := SaveSystem.save_game(slot, game_state(), _thumbnail(), info) == OK
 	hud.show_message(tr("MSG_SAVED") if ok else tr("MSG_SAVE_FAILED"))
 	return ok
 
@@ -240,6 +265,80 @@ func load_game(slot: String) -> bool:
 	EventBus.time_speed_changed.emit(GameClock.clock.speed_index, GameClock.clock.is_paused())
 	hud.show_message(tr("MSG_LOADED"))
 	return true
+
+
+## Há uma janela de menu aberta (os atalhos da partida param).
+func modal_open() -> bool:
+	for child: Node in _ui_layer.get_children():
+		if child is Modal:
+			return true
+	return false
+
+
+## Menu da partida: pausa enquanto está aberto e volta à velocidade de antes ao fechar.
+func open_menu() -> GameMenu:
+	var menu := GameMenu.new()
+	_speed_before_menu = GameClock.clock.speed_index
+	GameClock.set_speed(TickClock.PAUSED)
+	var modal := Modal.open(_ui_layer, menu)
+	modal.closed.connect(func() -> void:
+		if not modal_open_except(modal):
+			GameClock.set_speed(_speed_before_menu))
+	menu.save_requested.connect(open_save_dialog)
+	menu.load_requested.connect(open_load_dialog)
+	menu.options_requested.connect(func() -> void: Modal.open(_ui_layer, OptionsDialog.new()))
+	menu.main_menu_requested.connect(func() -> void: get_tree().change_scene_to_file.call_deferred(MAIN_MENU))
+	menu.quit_requested.connect(func() -> void: get_tree().quit())
+	return menu
+
+
+func modal_open_except(modal: Modal) -> bool:
+	for child: Node in _ui_layer.get_children():
+		if child is Modal and child != modal and not child.is_queued_for_deletion():
+			return true
+	return false
+
+
+func open_save_dialog() -> SaveLoadDialog:
+	var dialog := SaveLoadDialog.new(SaveLoadDialog.Mode.SAVE)
+	var modal := Modal.open(_ui_layer, dialog)
+	dialog.save_chosen.connect(func(slot: String, display_name: String) -> void:
+		if save_game(slot, display_name):
+			modal.close())
+	return dialog
+
+
+func open_load_dialog() -> SaveLoadDialog:
+	var dialog := SaveLoadDialog.new(SaveLoadDialog.Mode.LOAD)
+	var modal := Modal.open(_ui_layer, dialog)
+	dialog.load_chosen.connect(func(slot: String) -> void:
+		if load_game(slot):
+			_close_all_modals())
+	return dialog
+
+
+func _close_all_modals() -> void:
+	for child: Node in _ui_layer.get_children():
+		if child is Modal:
+			var modal: Modal = child
+			modal.close()
+
+
+## Clique numa notificação: seleciona e leva a câmera ao prédio, ao navio ou à ilha dela.
+func go_to(notice: NoticeWatcher.Notice) -> void:
+	var ship := simulation.world.ship(notice.ship_id)
+	if ship != null:
+		tool.select_ship(ship.id)
+		center_on_selected()
+		return
+	if simulation.world.building(notice.building_id) != null:
+		tool.select(notice.building_id)
+		center_on_selected()
+		return
+	var grid := simulation.world.island(notice.island_id)
+	if grid != null:
+		var center := grid.world_rect().get_center()
+		camera.rig.center_on(Vector3(center.x, 0.0, center.y))
 
 
 func center_on_selected() -> void:
@@ -308,6 +407,11 @@ func update_highlight() -> void:
 			overlay.show_custom(Highlight.service(world, simulation.data, selected.island_id,
 					ServiceReach.road_cells(grid, front, _config.logistics_range_cells), served))
 			return
+	# camada de mapa escolhida pelo jogador, na ilha sob o cursor
+	if hud != null and hud.overlay_layer != MapOverlays.Layer.NONE:
+		overlay.set_island(island)
+		overlay.show_custom(MapOverlays.image(hud.overlay_layer, simulation, island))
+		return
 	overlay.clear_custom()
 
 

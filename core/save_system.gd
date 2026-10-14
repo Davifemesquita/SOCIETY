@@ -6,9 +6,12 @@ extends Node
 ## 15 dígitos e o estado não voltaria idêntico.
 
 ## Versão do formato. Ao mudar o formato, some 1 e acrescente a migração em migrations.
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 const SAVE_EXTENSION := ".save"
 const THUMBNAIL_EXTENSION := ".png"
+## Resumo do save para a tela de carregar (nome, data, dia, população, dinheiro), em JSON ao lado,
+## para listar os slots sem abrir cada save inteiro.
+const INFO_EXTENSION := ".info.json"
 const DEFAULT_DIR := "user://saves"
 const _SLOT_PATTERN := "^[a-z0-9_-]{1,64}$"
 const _FLOAT_TAG := "$f64"
@@ -32,8 +35,30 @@ func thumbnail_path(slot: String) -> String:
 	return save_dir.path_join(slot + THUMBNAIL_EXTENSION)
 
 
-## Grava o estado no slot. A miniatura é opcional.
-func save_game(slot: String, state: Dictionary, thumbnail: Image = null) -> Error:
+func info_path(slot: String) -> String:
+	return save_dir.path_join(slot + INFO_EXTENSION)
+
+
+## Nome de slot a partir do nome que o jogador digitou: minúsculas sem acento, espaço vira "_" e o
+## resto fora de [a-z0-9_-] some. Vazio se não sobrar nada.
+static func slot_from_name(display_name: String) -> String:
+	var plain := display_name.strip_edges().to_lower()
+	var from := "áàâãäéèêëíìîïóòôõöúùûüçñ"
+	var to := "aaaaaeeeeiiiiooooouuuucn"
+	var result := ""
+	for character: String in plain:
+		var at := from.find(character)
+		if at >= 0:
+			character = to[at]
+		if character == " ":
+			character = "_"
+		if (character >= "a" and character <= "z") or (character >= "0" and character <= "9") or character in ["_", "-"]:
+			result += character
+	return result.left(64)
+
+
+## Grava o estado no slot. A miniatura e o resumo (info) são opcionais.
+func save_game(slot: String, state: Dictionary, thumbnail: Image = null, info: Dictionary = {}) -> Error:
 	if not is_valid_slot(slot):
 		return _fail(slot, "nome de slot inválido", ERR_INVALID_PARAMETER)
 	var dir_error := DirAccess.make_dir_recursive_absolute(save_dir)
@@ -54,6 +79,13 @@ func save_game(slot: String, state: Dictionary, thumbnail: Image = null) -> Erro
 		var png_error := thumbnail.save_png(thumbnail_path(slot))
 		if png_error != OK:
 			return _fail(slot, "não foi possível gravar a miniatura", png_error)
+	var summary := info.duplicate()
+	summary["saved_at_unix"] = envelope["saved_at_unix"]
+	summary["save_version"] = SAVE_VERSION
+	var info_file := FileAccess.open(info_path(slot), FileAccess.WRITE)
+	if info_file != null:
+		info_file.store_string(JSON.stringify(summary))
+		info_file.close()
 	EventBus.game_saved.emit(slot)
 	return OK
 
@@ -142,9 +174,47 @@ static func unpack_floats(value: Variant) -> Variant:
 	return value
 
 
+## Resumo do slot (só texto e números; chave estranha é ignorada). Sem o arquivo, só a data do save.
+func read_info(slot: String) -> Dictionary:
+	var result := {"saved_at_unix": FileAccess.get_modified_time(slot_path(slot))}
+	if not is_valid_slot(slot) or not FileAccess.file_exists(info_path(slot)):
+		return result
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(info_path(slot)))
+	if parsed is Dictionary:
+		var data: Dictionary = parsed
+		for key: Variant in data:
+			var value: Variant = data[key]
+			if key is String and (value is String or value is float or value is int):
+				result[key] = value
+	return result
+
+
+## Miniatura do slot, ou null.
+func read_thumbnail(slot: String) -> Image:
+	if not is_valid_slot(slot) or not FileAccess.file_exists(thumbnail_path(slot)):
+		return null
+	return Image.load_from_file(thumbnail_path(slot))
+
+
+## Apaga o save, a miniatura e o resumo do slot.
+func delete_slot(slot: String) -> Error:
+	if not is_valid_slot(slot):
+		return ERR_INVALID_PARAMETER
+	for path: String in [slot_path(slot), thumbnail_path(slot), info_path(slot)]:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
+	return OK
+
+
+func has_slot(slot: String) -> bool:
+	return is_valid_slot(slot) and FileAccess.file_exists(slot_path(slot))
+
+
 ## Slots existentes, do mais recente para o mais antigo.
 func list_slots() -> PackedStringArray:
 	var entries: Array[Dictionary] = []
+	if not DirAccess.dir_exists_absolute(save_dir):
+		return PackedStringArray()
 	for file_name: String in DirAccess.get_files_at(save_dir):
 		if file_name.ends_with(SAVE_EXTENSION):
 			var path := save_dir.path_join(file_name)

@@ -1,0 +1,581 @@
+{
+	"cell": 128,
+	"icons": {
+		"action_add": [
+			1152,
+			640
+		],
+		"action_back": [
+			384,
+			768
+		],
+		"action_buy": [
+			1664,
+			640
+		],
+		"action_buy_ship": [
+			896,
+			640
+		],
+		"action_center": [
+			0,
+			768
+		],
+		"action_close": [
+			1920,
+			512
+		],
+		"action_confirm": [
+			512,
+			768
+		],
+		"action_continue": [
+			640,
+			640
+		],
+		"action_copy": [
+			1792,
+			512
+		],
+		"action_credits": [
+			384,
+			640
+		],
+		"action_delete": [
+			1920,
+			640
+		],
+		"action_demolish": [
+			1408,
+			512
+		],
+		"action_dice": [
+			256,
+			768
+		],
+		"action_exit": [
+			256,
+			640
+		],
+		"action_fast": [
+			640,
+			512
+		],
+		"action_info": [
+			640,
+			768
+		],
+		"action_load": [
+			896,
+			512
+		],
+		"action_load_cargo": [
+			1408,
+			640
+		],
+		"action_menu": [
+			128,
+			640
+		],
+		"action_new_game": [
+			512,
+			640
+		],
+		"action_options": [
+			0,
+			640
+		],
+		"action_pause": [
+			384,
+			512
+		],
+		"action_play": [
+			512,
+			512
+		],
+		"action_remove": [
+			1280,
+			640
+		],
+		"action_reset": [
+			128,
+			768
+		],
+		"action_road": [
+			1280,
+			512
+		],
+		"action_rotate": [
+			1536,
+			512
+		],
+		"action_routes": [
+			1152,
+			512
+		],
+		"action_sail_to": [
+			1024,
+			640
+		],
+		"action_save": [
+			768,
+			512
+		],
+		"action_sell": [
+			1792,
+			640
+		],
+		"action_statistics": [
+			1024,
+			512
+		],
+		"action_trade": [
+			768,
+			640
+		],
+		"action_unload_cargo": [
+			1536,
+			640
+		],
+		"action_upgrade": [
+			1664,
+			512
+		],
+		"building_bakery": [
+			384,
+			256
+		],
+		"building_brewery": [
+			1280,
+			256
+		],
+		"building_brickworks": [
+			1536,
+			256
+		],
+		"building_butcher": [
+			640,
+			256
+		],
+		"building_church": [
+			384,
+			384
+		],
+		"building_clay_pit": [
+			1408,
+			256
+		],
+		"building_coal_mine": [
+			1664,
+			256
+		],
+		"building_distillery": [
+			0,
+			256
+		],
+		"building_field": [
+			1024,
+			128
+		],
+		"building_fishery": [
+			1536,
+			128
+		],
+		"building_furnace": [
+			1920,
+			256
+		],
+		"building_hop_farm": [
+			1024,
+			256
+		],
+		"building_house": [
+			896,
+			128
+		],
+		"building_iron_mine": [
+			1792,
+			256
+		],
+		"building_lumberjack": [
+			1280,
+			128
+		],
+		"building_malthouse": [
+			1152,
+			256
+		],
+		"building_market": [
+			128,
+			384
+		],
+		"building_mill": [
+			256,
+			256
+		],
+		"building_pasture": [
+			1152,
+			128
+		],
+		"building_pier": [
+			896,
+			384
+		],
+		"building_pig_farm": [
+			512,
+			256
+		],
+		"building_potato_farm": [
+			1920,
+			128
+		],
+		"building_rendering_works": [
+			768,
+			256
+		],
+		"building_sawmill": [
+			1408,
+			128
+		],
+		"building_school": [
+			512,
+			384
+		],
+		"building_sheep_farm": [
+			1664,
+			128
+		],
+		"building_soap_factory": [
+			896,
+			256
+		],
+		"building_steel_beam_works": [
+			0,
+			384
+		],
+		"building_tavern": [
+			256,
+			384
+		],
+		"building_trading_post": [
+			640,
+			384
+		],
+		"building_warehouse": [
+			768,
+			384
+		],
+		"building_weavery": [
+			1792,
+			128
+		],
+		"building_wheat_farm": [
+			128,
+			256
+		],
+		"good_beer": [
+			0,
+			128
+		],
+		"good_bread": [
+			1152,
+			0
+		],
+		"good_bricks": [
+			256,
+			128
+		],
+		"good_clay": [
+			128,
+			128
+		],
+		"good_coal": [
+			384,
+			128
+		],
+		"good_fish": [
+			256,
+			0
+		],
+		"good_flour": [
+			1024,
+			0
+		],
+		"good_hops": [
+			1792,
+			0
+		],
+		"good_iron_ore": [
+			512,
+			128
+		],
+		"good_malt": [
+			1920,
+			0
+		],
+		"good_pigs": [
+			1280,
+			0
+		],
+		"good_planks": [
+			128,
+			0
+		],
+		"good_potatoes": [
+			640,
+			0
+		],
+		"good_sausages": [
+			1408,
+			0
+		],
+		"good_soap": [
+			1664,
+			0
+		],
+		"good_spirits": [
+			768,
+			0
+		],
+		"good_steel": [
+			640,
+			128
+		],
+		"good_steel_beams": [
+			768,
+			128
+		],
+		"good_tallow": [
+			1536,
+			0
+		],
+		"good_wheat": [
+			896,
+			0
+		],
+		"good_wood": [
+			0,
+			0
+		],
+		"good_wool": [
+			384,
+			0
+		],
+		"good_woolen_clothes": [
+			512,
+			0
+		],
+		"hud_cart": [
+			1536,
+			768
+		],
+		"hud_clock": [
+			1024,
+			768
+		],
+		"hud_happiness": [
+			1152,
+			768
+		],
+		"hud_island": [
+			1920,
+			768
+		],
+		"hud_money": [
+			768,
+			768
+		],
+		"hud_population": [
+			896,
+			768
+		],
+		"hud_seed": [
+			1792,
+			768
+		],
+		"hud_storage": [
+			1664,
+			768
+		],
+		"hud_tax": [
+			1280,
+			768
+		],
+		"hud_workers": [
+			1408,
+			768
+		],
+		"need_clothing": [
+			1408,
+			384
+		],
+		"need_commerce": [
+			1664,
+			384
+		],
+		"need_drink": [
+			1920,
+			384
+		],
+		"need_education": [
+			1792,
+			384
+		],
+		"need_food": [
+			1280,
+			384
+		],
+		"need_hygiene": [
+			1536,
+			384
+		],
+		"need_social": [
+			0,
+			512
+		],
+		"notice_colonized": [
+			1152,
+			1024
+		],
+		"notice_info": [
+			1408,
+			1024
+		],
+		"notice_milestone": [
+			1024,
+			1024
+		],
+		"notice_ship_arrived": [
+			896,
+			1024
+		],
+		"notice_shortage": [
+			512,
+			1024
+		],
+		"notice_stopped": [
+			640,
+			1024
+		],
+		"notice_storage_full": [
+			768,
+			1024
+		],
+		"notice_trader": [
+			1280,
+			1024
+		],
+		"option_audio": [
+			128,
+			896
+		],
+		"option_controls": [
+			256,
+			896
+		],
+		"option_graphics": [
+			0,
+			896
+		],
+		"option_interface": [
+			512,
+			896
+		],
+		"option_language": [
+			384,
+			896
+		],
+		"overlay_fertility": [
+			896,
+			896
+		],
+		"overlay_pollution": [
+			1024,
+			896
+		],
+		"overlay_roads": [
+			1152,
+			896
+		],
+		"overlay_service": [
+			640,
+			896
+		],
+		"overlay_warehouse": [
+			768,
+			896
+		],
+		"ship_merchant_ship": [
+			128,
+			512
+		],
+		"ship_trader_ship": [
+			256,
+			512
+		],
+		"state_disconnected": [
+			384,
+			1024
+		],
+		"state_no_input": [
+			1280,
+			896
+		],
+		"state_no_modules": [
+			1792,
+			896
+		],
+		"state_no_road": [
+			1664,
+			896
+		],
+		"state_no_trees": [
+			128,
+			1024
+		],
+		"state_no_warehouse": [
+			0,
+			1024
+		],
+		"state_no_workers": [
+			1408,
+			896
+		],
+		"state_output_full": [
+			1536,
+			896
+		],
+		"state_paused": [
+			1920,
+			896
+		],
+		"state_protest": [
+			256,
+			1024
+		],
+		"status_bad": [
+			1792,
+			1024
+		],
+		"status_good": [
+			1536,
+			1024
+		],
+		"status_missing": [
+			1920,
+			1024
+		],
+		"status_partial": [
+			1664,
+			1024
+		],
+		"tier_peasants": [
+			1024,
+			384
+		],
+		"tier_workers": [
+			1152,
+			384
+		]
+	}
+}

@@ -1,32 +1,47 @@
 class_name Hud
 extends Control
-## Interface da partida: barra superior (data, velocidade, dinheiro, população, estatísticas,
-## salvar e carregar), menu de construção por categoria, painel do selecionado, avisos e a dica
-## ao lado do cursor. Só lê o estado e chama a ferramenta; nenhuma regra de jogo aqui.
+## Interface da partida: barra superior (data e hora, velocidade, dinheiro com o saldo, população
+## por classe, estatísticas, rotas, salvar, carregar e o menu), menu de construção por categoria
+## com as camadas de mapa, painel do selecionado, notificações, avisos e a dica ao lado do cursor.
+## Só lê o estado e chama a ferramenta; nenhuma regra de jogo aqui.
 
 signal save_requested()
 signal load_requested()
+## O jogador pediu o menu da partida (botão da barra).
+signal menu_requested()
+## A camada de mapa escolhida mudou (NONE = nenhuma).
+signal overlay_changed(layer: MapOverlays.Layer)
 
 const MESSAGE_SECONDS := 3.0
 const REFRESH_SECONDS := 0.5
+const CARD_WIDTH := 112
 
 var selection_panel: SelectionPanel
 var statistics_window: StatisticsWindow
 var ship_panel: ShipPanel
 var route_window: RouteWindow
 var trade_window: TradeWindow
+var notifications: NotificationFeed
+var overlay_layer: MapOverlays.Layer = MapOverlays.Layer.NONE
 
 var _tool: BuildTool
 var _simulation: Simulation
 var _clock_label := Label.new()
 var _money_label := Label.new()
-var _population_label := Label.new()
+var _population := HBoxContainer.new()
+var _population_labels: Dictionary[StringName, Label] = {}
 var _speed_buttons: Array[Button] = []
 var _category_buttons: Array[Button] = []
+var _overlay_buttons: Dictionary[MapOverlays.Layer, Button] = {}
 var _items := HFlowContainer.new()
+## Coluna de baixo: a dica em cima do menu de construção (a dica nunca cobre o menu).
+var _bottom := VBoxContainer.new()
 var _item_buttons: Dictionary[StringName, Button] = {}
+var _message_panel := PanelContainer.new()
 var _message := Label.new()
+var _hint_panel := PanelContainer.new()
 var _hint := Label.new()
+var _cursor_panel := PanelContainer.new()
 var _cursor_label := Label.new()
 var _message_left: float = 0.0
 var _refresh_left: float = 0.0
@@ -41,13 +56,17 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_build_top_bar()
 	_build_build_menu()
 	selection_panel = SelectionPanel.new()
-	_pin(selection_panel, Vector2(0.0, 1.0), Vector2(16, -110), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_BEGIN)
+	_pin(selection_panel, Vector2(0.0, 1.0), Vector2(16, -150), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_BEGIN)
 	add_child(selection_panel)
 	selection_panel.setup(tool, simulation)
 	ship_panel = ShipPanel.new()
-	_pin(ship_panel, Vector2(0.0, 1.0), Vector2(16, -110), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_BEGIN)
+	_pin(ship_panel, Vector2(0.0, 1.0), Vector2(16, -150), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_BEGIN)
 	add_child(ship_panel)
 	ship_panel.setup(tool, simulation)
+	notifications = NotificationFeed.new()
+	_pin(notifications, Vector2(1.0, 0.0), Vector2(-16, 72), Control.GROW_DIRECTION_BEGIN, Control.GROW_DIRECTION_END)
+	add_child(notifications)
+	notifications.setup(simulation)
 	statistics_window = StatisticsWindow.new()
 	_pin(statistics_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
 	add_child(statistics_window)
@@ -65,13 +84,9 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	tool.changed.connect(_refresh_tool)
 	tool.refused.connect(func(reason: StringName) -> void: show_message(tr(reason)))
 	EventBus.time_speed_changed.connect(func(_speed_index: int, _paused: bool) -> void: _refresh_speed())
-	EventBus.good_shortage.connect(func(_island: int, good: StringName) -> void:
-		show_message(tr("MSG_SHORTAGE") % tr(simulation.data.good(good).name_key)))
-	EventBus.milestone_reached.connect(func(count: int) -> void:
-		show_message(tr("MSG_MILESTONE") % Fmt.integer(simulation.config.population_milestones[count - 1])))
-	EventBus.island_colonized.connect(func(island_id: int) -> void: show_message(tr("MSG_COLONIZED") % Fmt.place(island_id)))
-	EventBus.trader_visited.connect(func(island_id: int, earned: float, spent: float) -> void:
-		show_message(tr("MSG_TRADER_VISIT") % [Fmt.place(island_id), Fmt.integer(earned), Fmt.integer(spent)]))
+	EventBus.settings_changed.connect(func() -> void:
+		_select_category(_category)
+		_refresh())
 	_select_category(_categories().size() - 1 if _needs_trading_post() else 0)
 	_refresh_speed()
 	_refresh_tool()
@@ -80,16 +95,33 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 
 func show_message(text: String) -> void:
 	_message.text = text
-	_message.visible = not text.is_empty()
+	_message_panel.visible = not text.is_empty()
 	_message_left = MESSAGE_SECONDS
 
 
 func toggle_statistics() -> void:
-	statistics_window.visible = not statistics_window.visible
+	statistics_window.toggle()
 
 
 func toggle_routes() -> void:
 	route_window.toggle()
+
+
+## Fecha a janela aberta de cima (Esc); devolve se havia alguma.
+func close_top_window() -> bool:
+	for window: Control in [trade_window, route_window, statistics_window]:
+		if window.visible:
+			window.visible = false
+			return true
+	return false
+
+
+func set_overlay(layer: MapOverlays.Layer) -> void:
+	overlay_layer = layer
+	for key: MapOverlays.Layer in _overlay_buttons:
+		_overlay_buttons[key].set_pressed_no_signal(key == layer)
+	overlay_changed.emit(layer)
+	_refresh_tool()
 
 
 func _process(delta: float) -> void:
@@ -98,7 +130,7 @@ func _process(delta: float) -> void:
 	_clock_label.text = tr("HUD_CLOCK") % [clock.day_number(), minutes / 60, minutes % 60]
 	if _message_left > 0.0:
 		_message_left -= delta
-		_message.visible = _message_left > 0.0
+		_message_panel.visible = _message_left > 0.0
 	_refresh_left -= delta
 	if _refresh_left <= 0.0:
 		_refresh_left = REFRESH_SECONDS
@@ -108,12 +140,17 @@ func _process(delta: float) -> void:
 
 func _refresh() -> void:
 	var world := _simulation.world
-	_money_label.text = tr("HUD_MONEY") % [Fmt.integer(world.money), Fmt.signed(world.income_per_min - world.upkeep_per_min)]
-	_money_label.tooltip_text = tr("HUD_MONEY_TIP") % [Fmt.integer(world.income_per_min), Fmt.integer(world.upkeep_per_min)]
-	var parts: PackedStringArray = []
+	var balance := world.income_per_min - world.upkeep_per_min
+	_money_label.text = tr("HUD_MONEY") % [Fmt.integer(world.money), Fmt.signed(balance)]
+	if world.money < _simulation.config.min_balance_for(world.difficulty):
+		UiPalette.paint(_money_label, UiPalette.Status.BAD)
+	else:
+		UiPalette.unpaint(_money_label)
+	_money_label.tooltip_text = tr("HUD_MONEY_TIP") % [Fmt.integer(world.income_per_min), Fmt.integer(world.upkeep_per_min),
+			Fmt.integer(_simulation.config.min_balance_for(world.difficulty))]
 	for tier: TierDef in _simulation.data.tiers:
-		parts.append("%s %s" % [tr(tier.name_key), Fmt.integer(world.population(tier.id))])
-	_population_label.text = " · ".join(parts)
+		if _population_labels.has(tier.id):
+			_population_labels[tier.id].text = Fmt.integer(world.population(tier.id))
 	if _tool.mode == BuildTool.Mode.NONE:
 		_refresh_tool()
 	for def_id: StringName in _item_buttons:
@@ -123,66 +160,111 @@ func _refresh() -> void:
 
 func _build_top_bar() -> void:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override(&"panel", UiStyle.panel())
+	panel.name = "TopBar"
+	panel.theme_type_variation = &"TopBar"
 	panel.anchor_right = 1.0
 	add_child(panel)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override(&"separation", 12)
+	row.add_theme_constant_override(&"separation", 10)
 	panel.add_child(row)
+	row.add_child(UiKit.icon_rect(Icons.get_icon("hud_clock"), 28))
 	_clock_label.custom_minimum_size.x = 150
+	_clock_label.tooltip_text = "HUD_CLOCK_TIP"
+	_clock_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.add_child(_clock_label)
 	var speeds := GameConfig.get_default().game_speeds
 	for index: int in speeds.size() + 1:
-		var label := "SPEED_PAUSED" if index == 0 else tr("SPEED_MULTIPLIER") % _speed_text(speeds[index - 1])
-		var button := _button(label)
-		button.toggle_mode = true
 		var speed_index := TickClock.PAUSED if index == 0 else index - 1
+		var button: Button
+		if index == 0:
+			button = UiKit.icon_button("action_pause", "HUD_SPEED_PAUSE_TIP")
+		else:
+			button = UiKit.button(tr("SPEED_MULTIPLIER") % _speed_text(speeds[index - 1]), "action_play" if index == 1 else "action_fast")
+			button.tooltip_text = tr("HUD_SPEED_TIP") % _speed_text(speeds[index - 1])
+		button.toggle_mode = true
 		button.pressed.connect(func() -> void: GameClock.set_speed(speed_index))
 		row.add_child(button)
 		_speed_buttons.append(button)
 	row.add_child(VSeparator.new())
+	row.add_child(UiKit.icon_rect(Icons.get_icon("hud_money"), 28))
 	_money_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	row.add_child(_money_label)
 	row.add_child(VSeparator.new())
-	row.add_child(_population_label)
+	_population.add_theme_constant_override(&"separation", 6)
+	_population.tooltip_text = "HUD_POPULATION_TIP"
+	_population.mouse_filter = Control.MOUSE_FILTER_STOP
+	for tier: TierDef in _simulation.data.tiers:
+		var icon := UiKit.icon_rect(Icons.tier(tier.id), 28)
+		icon.tooltip_text = tier.name_key
+		_population.add_child(icon)
+		var count := Label.new()
+		count.tooltip_text = tier.name_key
+		count.mouse_filter = Control.MOUSE_FILTER_STOP
+		count.custom_minimum_size.x = 56
+		_population.add_child(count)
+		_population_labels[tier.id] = count
+	row.add_child(_population)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
-	var stats := _button("HUD_STATS")
-	stats.pressed.connect(toggle_statistics)
+	var stats := UiKit.button("HUD_STATS", "action_statistics", toggle_statistics, "HUD_STATS_TIP")
+	stats.name = "Statistics"
 	row.add_child(stats)
-	var routes := _button("HUD_ROUTES")
+	var routes := UiKit.button("HUD_ROUTES", "action_routes", toggle_routes, "HUD_ROUTES_TIP")
 	routes.name = "Routes"
-	routes.pressed.connect(toggle_routes)
 	row.add_child(routes)
-	var save := _button("HUD_SAVE")
-	save.pressed.connect(save_requested.emit)
-	row.add_child(save)
-	var load_button := _button("HUD_LOAD")
-	load_button.pressed.connect(load_requested.emit)
-	row.add_child(load_button)
+	row.add_child(UiKit.icon_button("action_save", "HUD_SAVE_TIP", save_requested.emit))
+	row.add_child(UiKit.icon_button("action_load", "HUD_LOAD_TIP", load_requested.emit))
+	var menu := UiKit.icon_button("action_menu", "HUD_MENU_TIP", menu_requested.emit)
+	menu.name = "Menu"
+	row.add_child(menu)
 
 
-## Duas linhas: as categorias e, abaixo, os prédios da categoria escolhida (quebrando a linha
-## quando não cabem).
+## Duas linhas: as categorias (com as camadas de mapa à direita) e, abaixo, os prédios da
+## categoria escolhida (quebrando a linha quando não cabem).
 func _build_build_menu() -> void:
+	_bottom.name = "Bottom"
+	_bottom.alignment = BoxContainer.ALIGNMENT_END
+	_bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pin(_bottom, Vector2(0.5, 1.0), Vector2(0, -8), Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BEGIN)
+	add_child(_bottom)
+	_hint_panel.name = "Hint"
+	_hint_panel.theme_type_variation = &"NoticePanel"
+	_hint_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_panel.add_child(_hint)
+	_bottom.add_child(_hint_panel)
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override(&"panel", UiStyle.panel())
-	_pin(panel, Vector2(0.5, 1.0), Vector2(0, -8), Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BEGIN)
-	add_child(panel)
+	panel.name = "BuildMenu"
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_bottom.add_child(panel)
 	var column := VBoxContainer.new()
 	panel.add_child(column)
-	var categories := HBoxContainer.new()
-	categories.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(categories)
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override(&"separation", 6)
+	column.add_child(top)
 	for index: int in _categories().size():
-		var button := _button(_category_label(index))
+		var button := UiKit.button(_category_label(index), _category_icon(index))
 		button.toggle_mode = true
 		button.pressed.connect(_select_category.bind(index))
-		categories.add_child(button)
+		top.add_child(button)
 		_category_buttons.append(button)
-	_items.custom_minimum_size.x = 900
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(spacer)
+	top.add_child(VSeparator.new())
+	for layer: MapOverlays.Layer in MapOverlays.ICONS:
+		var button := UiKit.icon_button(MapOverlays.ICONS[layer], MapOverlays.KEYS[layer] + "_TIP")
+		button.name = "Overlay_%d" % layer
+		button.toggle_mode = true
+		button.pressed.connect(func() -> void: set_overlay(MapOverlays.Layer.NONE if overlay_layer == layer else layer))
+		top.add_child(button)
+		_overlay_buttons[layer] = button
+	_items.custom_minimum_size.x = 1000
 	_items.alignment = FlowContainer.ALIGNMENT_CENTER
+	_items.add_theme_constant_override(&"h_separation", 6)
+	_items.add_theme_constant_override(&"v_separation", 6)
 	column.add_child(_items)
 
 
@@ -208,28 +290,53 @@ func _category_label(index: int) -> String:
 	return tr("HUD_CATEGORY_SERVICES") if index == tiers.size() + 1 else tr("HUD_CATEGORY_INFRASTRUCTURE")
 
 
+func _category_icon(index: int) -> String:
+	var tiers := _simulation.data.tiers
+	if index == 0:
+		return "building_house"
+	if index <= tiers.size():
+		return "tier_" + tiers[index - 1].id
+	return "building_market" if index == tiers.size() + 1 else "building_trading_post"
+
+
 func _select_category(index: int) -> void:
 	_category = index
 	for i: int in _category_buttons.size():
 		_category_buttons[i].set_pressed_no_signal(i == index)
-	for child: Node in _items.get_children():
-		child.queue_free()
+		_category_buttons[i].text = _category_label(i)
+	UiKit.clear(_items)
 	_item_buttons.clear()
 	var defs: Array = _categories()[index]
 	for def: BuildingDef in defs:
-		var button := _button(def.name_key)
+		var button := _card(def.name_key, Icons.building(def.id))
 		button.tooltip_text = _tooltip(def)
 		button.pressed.connect(func() -> void: _tool.start_building(def))
 		_items.add_child(button)
 		_item_buttons[def.id] = button
 	if index == _categories().size() - 1:
-		var road := _button("HUD_ROAD")
+		var road := _card("HUD_ROAD", Icons.action("road"))
+		road.tooltip_text = tr("HUD_ROAD_TIP") % Fmt.integer(_simulation.config.road_cost_per_cell)
 		road.pressed.connect(_tool.start_road)
 		_items.add_child(road)
-		var demolish := _button("HUD_DEMOLISH")
+		var demolish := _card("HUD_DEMOLISH", Icons.action("demolish"))
+		demolish.tooltip_text = tr("HUD_DEMOLISH_TIP") % Fmt.percent(_simulation.config.demolish_refund)
 		demolish.pressed.connect(_tool.start_demolish)
 		_items.add_child(demolish)
 	_refresh()
+
+
+## Cartão do menu de construção: o ícone em cima e o nome embaixo.
+func _card(text_key: String, icon: Texture2D) -> Button:
+	var button := Button.new()
+	button.theme_type_variation = &"CardButton"
+	button.text = text_key
+	button.icon = icon
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.custom_minimum_size = Vector2(CARD_WIDTH, 92)
+	button.focus_mode = Control.FOCUS_NONE
+	return button
 
 
 func _tooltip(def: BuildingDef) -> String:
@@ -250,6 +357,11 @@ func _tooltip(def: BuildingDef) -> String:
 			lines.append(tr("TIP_MODULES") % [def.modules_required, tr(data.building(def.module_id).name_key)])
 		if def.terrain == BuildingDef.Terrain.COAST:
 			lines.append(tr("TIP_COAST"))
+		lines.append_array(RatioCalculator.lines(def, data))
+	if def.kind == BuildingDef.Kind.SERVICE:
+		lines.append(tr("TIP_SERVICE_RADIUS") % ServiceReach.radius_of(def, _simulation.config))
+	if def.kind == BuildingDef.Kind.RESIDENCE:
+		lines.append(tr("TIP_HOUSE"))
 	if def.unlock_tier != &"":
 		lines.append(tr("TIP_UNLOCK") % [Fmt.integer(def.unlock_residents), tr(data.tier(def.unlock_tier).name_key)])
 	if def.is_warehouse():
@@ -266,22 +378,22 @@ func _tooltip(def: BuildingDef) -> String:
 
 
 func _build_labels() -> void:
-	_pin(_message, Vector2(0.5, 0.0), Vector2(0, 56), Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_END)
+	_message_panel.name = "Message"
+	_message_panel.theme_type_variation = &"ToastPanel"
+	_pin(_message_panel, Vector2(0.5, 0.0), Vector2(0, 64), Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_END)
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_message.add_theme_font_size_override(&"font_size", 22)
-	_message.add_theme_color_override(&"font_outline_color", Color.BLACK)
-	_message.add_theme_constant_override(&"outline_size", 6)
-	_message.visible = false
-	add_child(_message)
-	_pin(_hint, Vector2(0.5, 1.0), Vector2(0, -96), Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BEGIN)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.add_theme_color_override(&"font_outline_color", Color.BLACK)
-	_hint.add_theme_constant_override(&"outline_size", 5)
-	add_child(_hint)
-	_cursor_label.add_theme_color_override(&"font_outline_color", Color.BLACK)
-	_cursor_label.add_theme_constant_override(&"outline_size", 5)
+	_message.add_theme_font_size_override(&"font_size", 21)
+	_message.add_theme_color_override(&"font_color", UiPalette.PAPER)
+	_message_panel.add_child(_message)
+	_message_panel.visible = false
+	_message_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_message_panel)
+	_cursor_panel.theme_type_variation = &"NoticePanel"
+	_cursor_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cursor_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_cursor_label)
+	_cursor_panel.add_child(_cursor_label)
+	_cursor_panel.visible = false
+	add_child(_cursor_panel)
 
 
 ## Prende o controle num ponto relativo da tela (anchor) com deslocamento em pixels; o
@@ -301,13 +413,6 @@ static func _pin(control: Control, anchor: Vector2, offset: Vector2, grow_h: Con
 
 static func _speed_text(speed: float) -> String:
 	return String.num(speed, 0 if is_equal_approx(speed, roundf(speed)) else 1)
-
-
-static func _button(text_key: String) -> Button:
-	var button := Button.new()
-	button.text = text_key
-	button.focus_mode = Control.FOCUS_NONE
-	return button
 
 
 func _refresh_speed() -> void:
@@ -333,7 +438,20 @@ func _refresh_tool() -> void:
 		BuildTool.Mode.SAIL_TO:
 			_hint.text = tr("HUD_HINT_SAIL_TO")
 		_:
-			_hint.text = tr("HINT_BUILD_TRADING_POST") if _needs_trading_post() else ""
+			_hint.text = tr("HINT_BUILD_TRADING_POST") if _needs_trading_post() else _overlay_hint()
+	_hint_panel.visible = not _hint.text.is_empty()
+
+
+## Legenda da camada de mapa ligada (a fertilidade diz as culturas da ilha).
+func _overlay_hint() -> String:
+	if overlay_layer == MapOverlays.Layer.NONE:
+		return ""
+	var text := tr(MapOverlays.KEYS[overlay_layer] + "_LEGEND")
+	if overlay_layer == MapOverlays.Layer.FERTILITY:
+		var crops := MapOverlays.crops_of(_simulation, _tool.island_id)
+		var names := ", ".join(crops.map(func(crop: StringName) -> String: return tr(_simulation.data.good(crop).name_key)))
+		text = text % (names if not names.is_empty() else tr("OVERLAY_FERTILITY_NONE"))
+	return text
 
 
 func _update_cursor_label() -> void:
@@ -344,5 +462,6 @@ func _update_cursor_label() -> void:
 	elif _tool.mode == BuildTool.Mode.ROAD and _tool.dragging:
 		text = tr("PREVIEW_ROAD_COST") % [_tool.road_cells().size(), Fmt.integer(_tool.road_cost())]
 	_cursor_label.text = text
-	_cursor_label.visible = not text.is_empty()
-	_cursor_label.position = get_local_mouse_position() + Vector2(18, 18)
+	_cursor_panel.visible = not text.is_empty()
+	_cursor_panel.reset_size()
+	_cursor_panel.position = get_local_mouse_position() + Vector2(18, 18)

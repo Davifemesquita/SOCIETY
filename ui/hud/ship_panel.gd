@@ -8,9 +8,13 @@ const REFRESH_SECONDS := 0.25
 ## Toneladas de cada clique de carga, compra ou venda.
 const STEP_T := 10.0
 
+## O jogador pediu para a câmera ir até o navio.
+signal center_requested()
+
 var _tool: BuildTool
 var _simulation: Simulation
 var _title := Label.new()
+var _icon := TextureRect.new()
 var _state := Label.new()
 var _hold := VBoxContainer.new()
 var _route := OptionButton.new()
@@ -24,30 +28,36 @@ var _actions_key: String = ""
 func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_tool = tool
 	_simulation = simulation
-	custom_minimum_size.x = 340
-	add_theme_stylebox_override(&"panel", UiStyle.panel())
+	custom_minimum_size.x = 360
 	var column := VBoxContainer.new()
 	add_child(column)
-	_title.add_theme_font_size_override(&"font_size", 20)
-	column.add_child(_title)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override(&"separation", 8)
+	column.add_child(head)
+	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_icon.custom_minimum_size = Vector2(44, 44)
+	head.add_child(_icon)
+	_title.theme_type_variation = &"HeaderLabel"
+	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(_title)
+	head.add_child(UiKit.icon_button("action_center", "INFO_CENTER_HINT", func() -> void: center_requested.emit()))
+	head.add_child(UiKit.icon_button("action_close", "UI_CLOSE", func() -> void: tool.select_ship(0)))
 	column.add_child(_state)
-	var hold_title := Label.new()
-	hold_title.text = "SHIP_HOLD"
-	hold_title.modulate = Color(1, 1, 1, 0.6)
-	column.add_child(hold_title)
+	column.add_child(UiKit.label("SHIP_HOLD", &"DimLabel"))
 	column.add_child(_hold)
 	var route_row := HBoxContainer.new()
 	column.add_child(route_row)
-	var route_label := Label.new()
-	route_label.text = "SHIP_ROUTE"
-	route_row.add_child(route_label)
+	route_row.add_child(UiKit.icon_rect(Icons.action("routes"), 24))
+	route_row.add_child(UiKit.label("SHIP_ROUTE"))
+	_route.tooltip_text = "SHIP_ROUTE_TIP"
 	_route.focus_mode = Control.FOCUS_NONE
 	_route.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_route.item_selected.connect(_on_route_selected)
 	route_row.add_child(_route)
 	var buttons := HBoxContainer.new()
 	column.add_child(buttons)
-	var sail := _button("SHIP_SAIL_TO", func() -> void: tool.start_sail_to())
+	var sail := _button("SHIP_SAIL_TO", "action_sail_to", func() -> void: tool.start_sail_to())
 	sail.name = "SailTo"
 	buttons.add_child(sail)
 	column.add_child(_actions)
@@ -82,15 +92,19 @@ func _refresh() -> void:
 		return
 	var def := _simulation.data.ship(ship.def_id)
 	_title.text = tr("SHIP_TITLE") % [tr(def.name_key), ship.id]
+	_icon.texture = Icons.get_icon("ship_" + def.id)
 	_state.text = state_text(ship)
 	var lines := _hold.get_children()
 	while lines.size() < ship.slot_goods.size():
-		var label := Label.new()
-		_hold.add_child(label)
-		lines.append(label)
+		var row := UiKit.icon_line(Icons.get_icon("hud_storage"), "", 22)
+		_hold.add_child(row)
+		lines.append(row)
 	for slot: int in ship.slot_goods.size():
-		var label: Label = lines[slot]
+		var row: HBoxContainer = lines[slot]
+		var label: Label = row.get_child(1)
 		var good := ship.slot_goods[slot]
+		var slot_icon: TextureRect = row.get_child(0)
+		slot_icon.texture = Icons.get_icon("hud_storage") if good == &"" else Icons.good(good)
 		label.text = tr("SHIP_SLOT_EMPTY") % [slot + 1, def.slot_capacity_t] if good == &"" \
 				else tr("SHIP_SLOT") % [slot + 1, tr(_simulation.data.good(good).name_key), Fmt.decimal(ship.slot_tons[slot]), def.slot_capacity_t]
 	var key := "%d/%d/%d/%d" % [ship.state, ship.at, ship.route_id, ship.goods().size()]
@@ -129,10 +143,8 @@ func _on_route_selected(index: int) -> void:
 
 ## Ações do lugar: carga à mão no porto do jogador, compra e venda no comerciante.
 func _build_actions(ship: Ship) -> void:
-	for child: Node in _actions.get_children():
-		# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
-		child.get_parent().remove_child(child)
-		child.queue_free()
+	# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
+	UiKit.clear(_actions)
 	if ship.state != Ship.State.IDLE or ship.route_id != 0 or ship.at == Ship.NOWHERE:
 		return
 	if ship.at == Ship.TRADER_POST:
@@ -142,18 +154,11 @@ func _build_actions(ship: Ship) -> void:
 
 
 func _build_port_actions(ship: Ship) -> void:
-	var title := Label.new()
-	title.text = "SHIP_PORT_CARGO"
-	title.modulate = Color(1, 1, 1, 0.6)
-	_actions.add_child(title)
+	_actions.add_child(UiKit.label("SHIP_PORT_CARGO", &"DimLabel"))
 	for good: StringName in ship.goods():
-		var row := HBoxContainer.new()
+		var row := UiKit.icon_line(Icons.good(good), tr(_simulation.data.good(good).name_key))
 		_actions.add_child(row)
-		var label := Label.new()
-		label.text = tr(_simulation.data.good(good).name_key)
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(label)
-		var unload := _button("SHIP_UNLOAD_ALL", func() -> void: _run(TransferCargoCommand.new(ship.id, good, -ship.tons_of(good))))
+		var unload := _button("SHIP_UNLOAD_ALL", "action_unload_cargo", func() -> void: _run(TransferCargoCommand.new(ship.id, good, -ship.tons_of(good))))
 		row.add_child(unload)
 	var load_row := HBoxContainer.new()
 	_actions.add_child(load_row)
@@ -163,10 +168,10 @@ func _build_port_actions(ship: Ship) -> void:
 	var economy := _simulation.world.economy(ship.at)
 	for good_def: GoodDef in _simulation.data.goods:
 		if economy.amount(good_def.id) >= 1.0:
-			goods.add_item("%s (%s t)" % [tr(good_def.name_key), Fmt.integer(economy.amount(good_def.id))])
+			goods.add_icon_item(Icons.good(good_def.id), "%s (%s t)" % [tr(good_def.name_key), Fmt.integer(economy.amount(good_def.id))])
 			goods.set_item_metadata(goods.item_count - 1, good_def.id)
 	load_row.add_child(goods)
-	var load_button := _button("SHIP_LOAD_STEP", func() -> void:
+	var load_button := _button("SHIP_LOAD_STEP", "action_load_cargo", func() -> void:
 		if goods.selected >= 0:
 			var good: StringName = goods.get_item_metadata(goods.selected)
 			_run(TransferCargoCommand.new(ship.id, good, STEP_T)))
@@ -178,10 +183,10 @@ func _build_trader_actions(ship: Ship) -> void:
 	var trader := _simulation.data.trader()
 	if trader == null:
 		return
-	var title := Label.new()
-	title.text = "SHIP_TRADER_DEALS"
-	title.modulate = Color(1, 1, 1, 0.6)
-	_actions.add_child(title)
+	var head := HBoxContainer.new()
+	head.add_child(UiKit.icon_rect(Icons.portrait("trader"), 48))
+	head.add_child(UiKit.label("SHIP_TRADER_DEALS", &"DimLabel"))
+	_actions.add_child(head)
 	var goods: Array[StringName] = trader.sells.duplicate()
 	for good: StringName in trader.buys:
 		if not goods.has(good):
@@ -191,14 +196,15 @@ func _build_trader_actions(ship: Ship) -> void:
 		_actions.add_child(row)
 		var price := TraderState.price(_simulation.world.seed, _simulation.world.trader.tour, _simulation.data.good(good),
 				_simulation.config.trader_price_variation)
+		row.add_child(UiKit.icon_rect(Icons.good(good), 24))
 		var label := Label.new()
 		label.text = tr("TRADE_GOOD_PRICE") % [tr(_simulation.data.good(good).name_key), Fmt.integer(price)]
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(label)
 		if trader.sells.has(good):
-			row.add_child(_button("TRADE_BUY_STEP", func() -> void: _run(TradeWithTraderCommand.new(ship.id, good, STEP_T))))
+			row.add_child(_button("TRADE_BUY_STEP", "action_buy", func() -> void: _run(TradeWithTraderCommand.new(ship.id, good, STEP_T))))
 		if trader.buys.has(good) and ship.tons_of(good) > 0.0:
-			row.add_child(_button("TRADE_SELL_STEP", func() -> void: _run(TradeWithTraderCommand.new(ship.id, good, -STEP_T))))
+			row.add_child(_button("TRADE_SELL_STEP", "action_sell", func() -> void: _run(TradeWithTraderCommand.new(ship.id, good, -STEP_T))))
 
 
 func _run(command: Command) -> void:
@@ -209,9 +215,5 @@ func _run(command: Command) -> void:
 	_refresh()
 
 
-static func _button(text_key: String, action: Callable) -> Button:
-	var button := Button.new()
-	button.text = text_key
-	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(action)
-	return button
+static func _button(text_key: String, icon_name: String, action: Callable) -> Button:
+	return UiKit.button(text_key, icon_name, action, text_key + "_TIP")

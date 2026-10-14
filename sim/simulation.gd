@@ -35,7 +35,8 @@ func _init(game_config: GameConfig, game_data: GameData, state: WorldState = nul
 ## Mundo novo: a ilha plana com o dinheiro e o navio inicial (com os materiais).
 func new_world() -> WorldState:
 	var fresh := WorldState.new()
-	fresh.money = config.starting_money
+	fresh.difficulty = config.default_difficulty
+	fresh.money = config.starting_money_for(fresh.difficulty)
 	fresh.islands.append(IslandGrid.new(config.main_island_size_cells))
 	var economy := IslandEconomy.new()
 	economy.profile_id = data.island_profiles[0].id
@@ -77,8 +78,8 @@ func execute(command: Command) -> CommandResult:
 
 
 ## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
-## população e upgrades (e marcos) → economia → comércio e navios. As estatísticas são
-## calculadas sob pedido.
+## população e upgrades (e marcos) → economia → comércio e navios → estatísticas (a amostra do
+## histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
 	var derived := derived_state()
@@ -95,6 +96,7 @@ func tick(_tick_index: int) -> void:
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
 	world.tick += 1
+	StatisticsSystem.run(world, data, config, derived)
 
 
 ## Roda n ticks de uma vez (testes e simulação sem tela).

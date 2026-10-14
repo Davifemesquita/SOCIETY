@@ -2,13 +2,13 @@ class_name BuildingView
 extends Node3D
 ## Caixas dos prédios. Escuta o EventBus e só lê a simulação; nenhuma regra aqui.
 ## - Casa: cor e altura da classe; refeita quando sobe de classe.
-## - Prédio parado: etiqueta com o motivo (sem estrada, sem entrada, saída cheia…).
-## - Casa em protesto: etiqueta vermelha. Campo e pasto não têm etiqueta.
+## - Prédio parado: ícone do motivo flutuando em cima (sem estrada, sem entrada, saída cheia…);
+##   o texto do motivo fica na dica do painel. Desde a Fase 7 é ícone, não texto.
+## - Casa em protesto: ícone de protesto. Campo e pasto não têm ícone.
 
 const DOOR_COLOR := Color(0.25, 0.18, 0.12)
-const ALERT_COLOR := Color(1.0, 0.55, 0.1)
-const PROTEST_COLOR := Color(1.0, 0.3, 0.25)
-const PAUSED_COLOR := Color(0.85, 0.85, 0.85)
+## Tamanho do ícone na tela (Sprite3D de tamanho fixo).
+const ICON_PIXEL_SIZE := 0.00028
 const SELECTED_COLOR := Color(1.0, 0.85, 0.35, 0.35)
 const REFRESH_SECONDS := 0.5
 ## A caixa desce abaixo do chão: a área pode ter até max_build_height_delta_m de desnível.
@@ -17,7 +17,9 @@ const FOUNDATION_M := 0.6
 var _simulation: Simulation
 var _cell_size: float
 var _nodes: Dictionary[int, Node3D] = {}
-var _labels: Dictionary[int, Label3D] = {}
+var _labels: Dictionary[int, Sprite3D] = {}
+## Texto (chave) do motivo mostrado em cada prédio: o ícone é o desenho dele.
+var _label_keys: Dictionary[int, String] = {}
 var _materials: Dictionary[String, StandardMaterial3D] = {}
 var _door_material := StandardMaterial3D.new()
 var _selection: MeshInstance3D
@@ -61,7 +63,13 @@ func building_count() -> int:
 
 
 func label_text(building_id: int) -> String:
-	return _labels[building_id].text if _labels.has(building_id) and _labels[building_id].visible else ""
+	return tr(_label_keys[building_id]) if _labels.has(building_id) and _labels[building_id].visible and _label_keys.has(building_id) else ""
+
+
+## Nome do ícone mostrado sobre o prédio ("" = nenhum).
+func label_icon(building_id: int) -> String:
+	var key: String = _label_keys.get(building_id, "")
+	return _icon_for(key) if _labels.has(building_id) and _labels[building_id].visible else ""
 
 
 ## Mantido da Fase 1: o prédio mostra algum alerta.
@@ -123,13 +131,15 @@ func _add(building_id: int) -> void:
 	root.add_child(body)
 	if def.kind != BuildingDef.Kind.MODULE:
 		root.add_child(_door(record, def, area))
-		var label := Label3D.new()
-		label.font_size = 34
-		label.outline_size = 10
+		var label := Sprite3D.new()
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.fixed_size = true
-		label.pixel_size = 0.0005
+		label.pixel_size = ICON_PIXEL_SIZE
 		label.no_depth_test = true
+		label.shaded = false
+		label.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
+		label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		label.render_priority = 10
 		# alterna a altura entre vizinhos para as etiquetas não encostarem umas nas outras
 		label.position.y = height + 2.0 + (building_id % 2) * 2.5
 		label.visible = false
@@ -169,6 +179,7 @@ func _remove(building_id: int) -> void:
 		_nodes[building_id].queue_free()
 		_nodes.erase(building_id)
 		_labels.erase(building_id)
+		_label_keys.erase(building_id)
 
 
 func refresh_labels() -> void:
@@ -177,7 +188,7 @@ func refresh_labels() -> void:
 
 
 ## Produção mostra o estado quando parada; casa e serviço mostram só a falta de estrada.
-## Texto curto da etiqueta sobre o prédio (o painel mostra o texto completo). Vira ícone na Fase 7.
+## Texto curto do motivo (dica e testes); o ícone sai de _icon_for.
 static func label_key(state: BuildingRecord.State) -> String:
 	match state:
 		BuildingRecord.State.NO_INPUT:
@@ -204,23 +215,31 @@ func _refresh_label(building_id: int) -> void:
 		return
 	var label := _labels[building_id]
 	var record := _simulation.world.building(building_id)
-	var text := ""
-	var color := ALERT_COLOR
+	var key := ""
 	if record.is_house() and record.happiness < _simulation.config.protest_happiness_threshold and record.residents > 0.0:
-		text = tr("LABEL_PROTEST")
-		color = PROTEST_COLOR
+		key = "LABEL_PROTEST"
 	elif not _simulation.has_road_access(building_id):
-		text = tr("LABEL_NO_ROAD")
+		key = "LABEL_NO_ROAD"
 	elif _simulation.def_of(record).is_warehouse() and not _simulation.derived_state().warehouse_connected.get(building_id, false):
-		text = tr("LABEL_DISCONNECTED")
+		key = "LABEL_DISCONNECTED"
 	elif _simulation.def_of(record).is_production():
 		var state := SelectionPanel.shown_state(record)
 		if state not in [BuildingRecord.State.PRODUCING, BuildingRecord.State.IDLE]:
-			text = tr(label_key(state))
-			color = PAUSED_COLOR if record.paused else ALERT_COLOR
-	label.text = text
-	label.modulate = color
-	label.visible = not text.is_empty()
+			key = label_key(state)
+	if key != _label_keys.get(building_id, ""):
+		_label_keys[building_id] = key
+		if not key.is_empty():
+			var icon := Icons.get_icon(_icon_for(key)) as AtlasTexture
+			# Sprite3D desenha o atlas inteiro de uma AtlasTexture: usa a região
+			label.texture = icon.atlas
+			label.region_enabled = true
+			label.region_rect = icon.region
+	label.visible = not key.is_empty()
+
+
+## Ícone do motivo: LABEL_NO_ROAD → state_no_road.
+static func _icon_for(key: String) -> String:
+	return "state_" + key.trim_prefix("LABEL_").to_lower() if not key.is_empty() else ""
 
 
 func _on_building_placed(building_id: int) -> void:

@@ -48,6 +48,15 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://too
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase6.tscn -- /pasta/de/saida
+# Fase 7: menu principal, jogo novo, partida de 30 min, painéis, estatísticas, camadas, menus,
+# opções, salvar, créditos, inglês, rotas com o mapa ilustrado e comércio
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase7.tscn -- /pasta/de/saida
+# interface: refaz o atlas de ícones e os retratos (depois de mexer em tools/icons/icon_list.csv;
+# os SVGs se baixam com tools/icons/fetch_icons.sh) e o Theme (depois de mexer no ThemeBuilder)
+tools/godot.sh godot --headless --path . --script res://tools/build_icons.gd
+tools/godot.sh godot --headless --path . --script res://tools/build_theme.gd
+# compila todos os scripts e lista os com erro (mais rápido que a suíte para pegar erro de tipo)
+tools/godot.sh godot --headless --path . --script res://tools/check_scripts.gd
 # refaz os pedestres (VAT) a partir de assets/source/quaternius; com a pasta dos pacotes
 # baixados (UAL1_Standard.glb, UAL2_Standard.glb) como argumento, refaz antes as animações
 tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.gd
@@ -78,13 +87,13 @@ do runner de cena do gdUnit4 (6.2.2), que não são defeito do jogo:
   do caminho normal). Por isso a raiz da partida não trata entrada: os atalhos ficam em
   `GameShortcuts`, filho dela. Atalho que alterna (pausa) na raiz alternaria duas vezes.
 
-No executável: `Society.exe -- --novo-jogo` abre direto uma partida, `-- --carregar` abre o
+O jogo abre no **menu principal** (continuar, jogo novo, carregar, opções, créditos, sair). No
+executável: `Society.exe -- --novo-jogo` abre direto uma partida, `-- --carregar` abre o
 save rápido e `-- --benchmark` roda o benchmark e mostra o resultado na tela (é assim que se
 mede no PC alvo; desde a Fase 4 inclui um dia inteiro renderizado com 2.000 pedestres, e desde
 a Fase 5 é no arquipélago da semente 1840). `-- --semente 1234` escolhe o arquipélago do jogo
-novo. F7
-adianta 3 horas no relógio do dia e F8 dá dinheiro e 20 t de cada bem, os dois só em build de
-depuração.
+novo. F1/F2 (camadas de depuração), F7 (adianta 3 horas no relógio do dia) e F8 (dinheiro e
+20 t de cada bem) só funcionam em build de depuração.
 
 **Godot MCP** (`@coding-solo/godot-mcp`, MIT) está em `.mcp.json` e passa a valer na
 próxima sessão do Claude Code aberta nesta pasta. Ele chama o Godot por
@@ -102,9 +111,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/game_clock.gd` | autoload `GameClock`: fonte da verdade do tempo; emite `ticked(tick_index)` |
 | `core/event_bus.gd` | autoload `EventBus`: sinais tipados; interface e áudio só escutam |
 | `core/save_system.gd` | autoload `SaveSystem`: JSON versionado + zstd + miniatura PNG; migrações por versão |
-| `core/settings.gd` | autoload `Settings`: idioma e escala da interface em `user://settings.cfg` |
+| `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
-| `core/input_actions.gd` | atalhos padrão registrados no InputMap (tecla física) |
+| `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
 | `data/game_data.tres` | todas as definições: 23 bens (`goods/`), 2 classes (`tiers/`), 33 prédios (`buildings/`), perfis de ilha (`islands/`), 2 navios (`ships/`) e o comerciante (`traders/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
@@ -119,6 +128,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `sim/island_economy.gd` | estoque da ilha e atendimento das necessidades por classe |
 | `sim/house_needs.gd` | avaliação de uma casa (necessidades, bônus, imposto), usada pela população e pelo painel |
 | `sim/statistics.gd` | t/min produzido, potencial e consumido por bem; população e finanças |
+| `sim/statistics_history.gd`, `sim/systems/statistics_system.gd` | histórico dos gráficos: uma amostra por minuto de jogo (vai no save) |
 | `sim/road_network.gd`, `road_path.gd` | acesso do prédio à estrada, trechos conectados, traçado em L |
 | `world/camera/` | `CameraRig` (contas, testadas) e `StrategyCamera` (entrada e `Camera3D`) |
 | `world/flat_island.gd` | ilha plana e mar dos testes e dos saves de antes da Fase 5 |
@@ -130,7 +140,11 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `world/sky/sky_adapter.gd` | `SkyAdapter`: a única peça que conhece o Sky3D; recebe a hora do GameClock. Sem o addon, céu simples |
 | `presentation/` | caixas dos prédios, estradas em MultiMesh, prévia, grade e camadas F1/F2 |
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
-| `ui/hud/` | barra superior, menu por categoria, painel do selecionado, estatísticas (Tab) |
+| `ui/hud/` | barra superior, menu por categoria com as camadas, painel do selecionado, estatísticas (Tab) com gráficos (`line_chart.gd`), notificações (`notification_feed.gd` + `notice_watcher.gd`), calculadora de proporção |
+| `ui/theme/` | `ThemeBuilder` (o Theme único, gravado em `society_theme.tres`) e `UiPalette` (cores e semáforo com o modo daltônico) |
+| `ui/icons/` | `Icons`: atlas `icons.png` + índice `icons.json`, nomes padronizados; `ui/portraits/` tem os retratos placeholder |
+| `ui/ui_kit.gd` | botão com ícone e dica, rótulo por variação, cabeçalho de janela |
+| `presentation/map_overlays.gd` | camadas do jogador: raio de serviço, alcance de armazém, fertilidade, poluição e estradas |
 | `presentation/cart_view.gd` | carroças num MultiMesh, posição interpolada entre ticks |
 | `presentation/ship_view.gd` | navios provisórios balançando no mar, o posto do comerciante e a marca do selecionado; acha o navio sob o cursor |
 | `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
@@ -140,7 +154,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `shaders/pedestrian_vat.gdshader` | boneco animado pela textura VAT, andando sozinho pelo trecho reto |
 | `tools/vat/vat_baker.gd`, `tools/bake_pedestrians.gd` | gerador próprio de VAT a partir dos personagens da Quaternius (`assets/source/`) |
 | `tools/demo_village.gd` | vila de demonstração com entreposto e armazéns (capturas) |
-| `ui/screens/` | abertura (novo jogo, carregar) e a partida (`GameScreen` monta tudo) |
+| `ui/screens/` | menu principal (`boot_screen`), `Modal`, jogo novo, salvar/carregar, opções, créditos, menu da partida e a partida (`GameScreen` monta tudo) |
 | `tools/town_layout.gd` | vila de teste por comandos (benchmark, testes, captura) |
 | `tools/trade_demo.gd` | duas ilhas com a rota de tijolos (critério da Fase 6, captura, benchmark) |
 | `audio/` | vazia até a fase que a usa |
@@ -348,6 +362,45 @@ Regras que já custaram investigação:
 - **Testes de interface com clique**: o mouse começa no canto e a câmera anda sozinha (pan pela
   borda); mova o mouse para o meio antes de calcular onde clicar.
 
+### Interface (Fase 7)
+
+- **Um Theme só** (`ui/theme/society_theme.tres`, em `gui/theme/custom`), montado pelo
+  `ThemeBuilder` e gravado por `tools/build_theme.gd`: mudou o builder, rode a ferramenta (o teste
+  compara o gravado com o montado). Variações: `TitleLabel`, `HeaderLabel`, `DimLabel`,
+  `BigLabel`, `TopBar`, `MenuPanel`, `NoticePanel`, `ToastPanel`, `IconButton`, `MenuButtonLarge`,
+  `CardButton`, `NoticeButton`. Nada de `add_theme_stylebox_override` nos painéis (o `UiStyle`
+  provisório saiu). Os desenhos pequenos (caixa de marcar, seta, alça) são feitos no builder: os do
+  Godot são para fundo escuro e somem no papel.
+- **Cor de estado no papel**: `UiPalette.paint(label, status)`, nunca `modulate` (escurece a tinta).
+  O modo daltônico troca a paleta e o indicador também tem forma (círculo, triângulo, xis).
+- **Ícones** (`Icons.get_icon("<tipo>_<id>")`): atlas de 128 px gerado de SVGs do game-icons.net
+  (`tools/icons/icon_list.csv`); ícone que falta vira a interrogação e avisa no log. **Todo botão leva
+  ícone e dica** (`UiKit.button`/`icon_button`); o teste do critério anda pela interface inteira e
+  falha com botão sem ícone, chave sem tradução ou formato (`%s`) sobrando. `Sprite3D` desenha o
+  atlas inteiro de uma `AtlasTexture`: use `region_rect`.
+- **Textos**: chave de tradução sempre; a dica de botão é `<CHAVE>_TIP`; as teclas são
+  `ACTION_<AÇÃO>`; o teste varre o código atrás de chave que não está no CSV.
+- **Notificações**: falta, marco, colônia e comerciante vêm do EventBus; prédio parado (depois de
+  `stopped_notice_after_s`), estoque cheio (`storage_full_fraction`, volta a avisar abaixo de
+  `storage_full_reset_fraction`) e navio que chegou saem da comparação com a conferência anterior
+  (`NoticeWatcher`, puro e testado). Ao trocar de mundo, o estado atual vira referência (nada de
+  aviso em massa ao carregar). O clique seleciona e leva a câmera.
+- **Janelas de menu** (`Modal`): o Esc é lido em `_input`, antes dos atalhos; com janela aberta os
+  atalhos da partida não respondem. Na partida o Esc fecha a janela de cima, depois cancela a
+  ferramenta ou a seleção, e só então abre o menu (que pausa e volta à velocidade de antes).
+- **Lambda ligada a sinal do EventBus** que mexe em nó de janela temporária: use método do nó (a
+  ligação some com ele); a lambda do diálogo de opções ficou viva e quebrou o teste seguinte.
+- **Save versão 6**: dificuldade (fácil/normal/difícil multiplica o dinheiro inicial e o limite do
+  saldo negativo) e o histórico das estatísticas. O tamanho do arquipélago (4, 6 ou 8 ilhas
+  menores) não vai à parte: é o número de ilhas do save, e a ilha N sai igual em qualquer tamanho
+  da mesma semente. Saves da Fase 6 abrem em dificuldade normal e com o gráfico vazio.
+- **Salvar com nome**: o slot sai do nome digitado (`SaveSystem.slot_from_name`: minúsculas sem
+  acento) e o resumo (nome, dia, população, dinheiro) vai num `<slot>.info.json` ao lado, para
+  listar sem abrir cada save. Nome repetido grava por cima.
+- **Créditos** saem do `CREDITS.md`, que entra na exportação (`include_filter`).
+- **Dialogue Manager** (seção 13 o põe na Fase 7) fica para a Fase 8, com as metas guiadas: na
+  Fase 7 ninguém fala. Decisão tomada aqui para não instalar addon sem uso.
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -364,13 +417,15 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 3 — Logística | **concluída em 12/10/2026** |
 | 4 — Vida e tempo | **concluída em 12/10/2026** (a medição de FPS na RTX 3060 ainda não voltou) |
 | 5 — Mundo | **concluída em 13/10/2026** |
-| 6 — Navios e comércio | **entregue em 13/10/2026**, aguardando a confirmação do dono do produto |
-| 7 a 11 | — |
+| 6 — Navios e comércio | **concluída em 13/10/2026** |
+| 7 — Interface completa | **concluída em 13/10/2026** (confirmada em 14/10/2026) |
+| 8 a 11 | — |
 
 Pendências já vistas para fases futuras:
 
-- Fase 7: gráficos históricos nas estatísticas e o Theme (os painéis usam `UiStyle` provisório);
-  notificações com clique para ir ao lugar ("navio chegou", marco), mapa ilustrado nas rotas e
-  estatísticas por ilha escolhida na janela.
-- Fase 8: metas guiadas ligadas aos marcos; estaleiro, se a compra de navio no entreposto não bastar.
-- Fase 9: modelos dos navios, rastro na água e gaivotas (`assets/TODO_ASSETS.md`).
+- Fase 8: metas guiadas ligadas aos marcos, com o conselheiro (Dialogue Manager e o retrato dele);
+  retratos e ícones das três classes novas; estaleiro, se a compra de navio no entreposto não bastar.
+- Fase 9: modelos dos navios, rastro na água e gaivotas; papel e moldura com textura na interface;
+  os níveis de qualidade gráfica nas opções (`assets/TODO_ASSETS.md`).
+- Fase 10: áudio (os cinco barramentos já existem e têm volume nas opções) e o salvamento
+  automático (`autosave_interval_minutes` e `autosave_slots` já estão no `GameConfig`).

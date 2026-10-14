@@ -43,6 +43,11 @@ window/stretch/aspect="expand"
 
 enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg", "res://addons/sky_3d/plugin.cfg")
 
+[gui]
+
+theme/custom="res://ui/theme/society_theme.tres"
+theme/custom_font="res://assets/fonts/OldStandard-Regular.ttf"
+
 [internationalization]
 
 locale/translations=PackedStringArray("res://ui/translations/strings.pt_BR.translation", "res://ui/translations/strings.en.translation")
@@ -51,6 +56,7 @@ locale/fallback="pt_BR"
 [rendering]
 
 renderer/rendering_method="forward_plus"
+textures/canvas_textures/default_texture_filter=3
 
 [shader_globals]
 

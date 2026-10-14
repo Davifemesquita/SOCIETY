@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5]
+	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -95,5 +95,15 @@ static func from_4_to_5(state: Dictionary) -> Dictionary:
 			economy["sell_above"] = {}
 			economy["buy_up_to"] = {}
 			island["economy"] = economy
+	state["world"] = world
+	return state
+
+
+## Fase 6 → Fase 7: dificuldade normal (a única que existia) e o histórico das estatísticas vazio
+## (os gráficos começam a partir do carregamento).
+static func from_5_to_6(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	world["difficulty"] = 1
+	world["history"] = StatisticsHistory.new().to_dict()
 	state["world"] = world
 	return state

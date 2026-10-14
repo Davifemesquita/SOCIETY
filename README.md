@@ -14,4 +14,6 @@ tools/godot.sh exportar      # exportado/windows/Society.exe
 tools/godot.sh planilha      # CSV de balanceamento a partir dos dados
 ```
 
-No executável: `Society.exe -- --benchmark` mede o desempenho no PC.
+O jogo abre no menu principal (continuar, jogo novo com semente, tamanho do arquipélago e
+dificuldade, carregar, opções e créditos). No executável: `Society.exe -- --benchmark` mede o
+desempenho no PC.

@@ -25,18 +25,10 @@ func setup(simulation: Simulation, tool: BuildTool) -> void:
 	_simulation = simulation
 	_tool = tool
 	visible = false
-	add_theme_stylebox_override(&"panel", UiStyle.panel())
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override(&"separation", 8)
 	add_child(column)
-	var header := HBoxContainer.new()
-	column.add_child(header)
-	var title := Label.new()
-	title.text = "ROUTES_TITLE"
-	title.add_theme_font_size_override(&"font_size", 22)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
-	header.add_child(_button("STATS_CLOSE", func() -> void: visible = false))
+	column.add_child(UiKit.header("ROUTES_TITLE", func() -> void: visible = false))
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override(&"separation", 14)
 	column.add_child(body)
@@ -45,14 +37,15 @@ func setup(simulation: Simulation, tool: BuildTool) -> void:
 	body.add_child(left)
 	_routes.custom_minimum_size = Vector2(160, 220)
 	_routes.focus_mode = Control.FOCUS_NONE
+	_routes.fixed_icon_size = Vector2i(24, 24)
 	_routes.item_selected.connect(func(index: int) -> void:
 		var picked: int = _routes.get_item_metadata(index)
 		select_route(picked))
 	left.add_child(_routes)
-	var new_route := _button("ROUTES_NEW", create_route)
+	var new_route := _button("ROUTES_NEW", "action_add", create_route)
 	new_route.name = "NewRoute"
 	left.add_child(new_route)
-	left.add_child(_button("ROUTES_DELETE", func() -> void:
+	left.add_child(_button("ROUTES_DELETE", "action_delete", func() -> void:
 		if _route_id != 0:
 			_simulation.execute(DeleteRouteCommand.new(_route_id))))
 	_editor.custom_minimum_size.x = 470
@@ -63,13 +56,10 @@ func setup(simulation: Simulation, tool: BuildTool) -> void:
 	scroll.add_child(_stops)
 	_stops.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_editor.add_child(scroll)
-	var add_stop := _button("ROUTES_ADD_STOP", add_stop_to_route)
+	var add_stop := _button("ROUTES_ADD_STOP", "action_add", add_stop_to_route)
 	add_stop.name = "AddStop"
 	_editor.add_child(add_stop)
-	var ships_title := Label.new()
-	ships_title.text = "ROUTES_SHIPS"
-	ships_title.modulate = Color(1, 1, 1, 0.6)
-	_editor.add_child(ships_title)
+	_editor.add_child(UiKit.label("ROUTES_SHIPS", &"DimLabel"))
 	_editor.add_child(_ships)
 	map.setup(simulation)
 	body.add_child(map)
@@ -156,7 +146,7 @@ func _on_routes_changed() -> void:
 func _fill_list() -> void:
 	_routes.clear()
 	for route_id: int in _simulation.world.route_ids():
-		var index := _routes.add_item(tr("ROUTE_NAME") % route_id)
+		var index := _routes.add_item(tr("ROUTE_NAME") % route_id, Icons.action("routes"))
 		_routes.set_item_metadata(index, route_id)
 		if route_id == _route_id:
 			_routes.select(index)
@@ -164,10 +154,8 @@ func _fill_list() -> void:
 
 
 func _build_stops() -> void:
-	for child: Node in _stops.get_children():
-		# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
-		child.get_parent().remove_child(child)
-		child.queue_free()
+	# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
+	UiKit.clear(_stops)
 	for index: int in _working.size():
 		_stops.add_child(_stop_box(index))
 
@@ -200,13 +188,13 @@ func _stop_box(index: int) -> Control:
 		stop.target = target.get_item_metadata(item)
 		_commit())
 	row.add_child(target)
-	row.add_child(_button("ROUTES_REMOVE", func() -> void:
+	row.add_child(_icon_button("action_delete", "ROUTES_REMOVE", func() -> void:
 		_working.remove_at(_working.find(stop))
 		_commit()
 		_build_stops()))
 	for order: TradeRoute.Order in stop.orders:
 		box.add_child(_order_row(stop, order))
-	var add_order := _button("ROUTES_ADD_ORDER", func() -> void:
+	var add_order := _button("ROUTES_ADD_ORDER", "action_add", func() -> void:
 		stop.orders.append(TradeRoute.Order.new(_simulation.data.goods[0].id, true, 50))
 		_commit()
 		_build_stops())
@@ -223,8 +211,8 @@ func _order_row(stop: TradeRoute.Stop, order: TradeRoute.Order) -> Control:
 	row.add_child(spacer)
 	var action := OptionButton.new()
 	action.focus_mode = Control.FOCUS_NONE
-	action.add_item(tr("ROUTES_LOAD"))
-	action.add_item(tr("ROUTES_UNLOAD"))
+	action.add_icon_item(Icons.action("load_cargo"), tr("ROUTES_LOAD"))
+	action.add_icon_item(Icons.action("unload_cargo"), tr("ROUTES_UNLOAD"))
 	action.select(0 if order.is_load else 1)
 	action.item_selected.connect(func(item: int) -> void:
 		order.is_load = item == 0
@@ -235,7 +223,7 @@ func _order_row(stop: TradeRoute.Stop, order: TradeRoute.Order) -> Control:
 	good.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for index: int in _simulation.data.goods.size():
 		var def := _simulation.data.goods[index]
-		good.add_item(tr(def.name_key))
+		good.add_icon_item(Icons.good(def.id), tr(def.name_key))
 		good.set_item_metadata(index, def.id)
 		if def.id == order.good:
 			good.select(index)
@@ -255,7 +243,7 @@ func _order_row(stop: TradeRoute.Stop, order: TradeRoute.Order) -> Control:
 		order.tons = roundi(value)
 		_commit())
 	row.add_child(tons)
-	row.add_child(_button("ROUTES_REMOVE_ORDER", func() -> void:
+	row.add_child(_icon_button("action_remove", "ROUTES_REMOVE_ORDER", func() -> void:
 		stop.orders.erase(order)
 		_commit()
 		_build_stops()))
@@ -264,10 +252,8 @@ func _order_row(stop: TradeRoute.Stop, order: TradeRoute.Order) -> Control:
 
 ## Uma caixa por navio do jogador: marcada, ele faz esta rota.
 func _fill_ships() -> void:
-	for child: Node in _ships.get_children():
-		# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
-		child.get_parent().remove_child(child)
-		child.queue_free()
+	# fora da árvore já: o nome fica livre para o filho novo de mesmo nome
+	UiKit.clear(_ships)
 	if _route_id == 0:
 		return
 	for ship: Ship in _simulation.world.player_ships():
@@ -282,9 +268,9 @@ func _fill_ships() -> void:
 		_ships.add_child(check)
 
 
-static func _button(text_key: String, action: Callable) -> Button:
-	var button := Button.new()
-	button.text = text_key
-	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(action)
-	return button
+static func _button(text_key: String, icon_name: String, action: Callable) -> Button:
+	return UiKit.button(text_key, icon_name, action, text_key + "_TIP")
+
+
+static func _icon_button(icon_name: String, tooltip_key: String, action: Callable) -> Button:
+	return UiKit.icon_button(icon_name, tooltip_key, action)

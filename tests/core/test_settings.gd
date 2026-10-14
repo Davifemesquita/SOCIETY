@@ -53,3 +53,68 @@ func test_tampered_file_falls_back() -> void:
 	_settings.load_from(TEST_PATH)
 	assert_str(_settings.locale).is_equal("pt_BR")
 	assert_float(_settings.ui_scale).is_equal(1.0)
+
+
+func test_graphics_audio_and_interface_round_trip() -> void:
+	_settings.fullscreen = true
+	_settings.vsync = false
+	_settings.set_render_scale(0.75)
+	_settings.max_fps = 60
+	_settings.colorblind = true
+	_settings.set_volume(&"Music", 0.3)
+	assert_int(_settings.save_to(TEST_PATH)).is_equal(OK)
+	var other: SettingsScript = auto_free(SettingsScript.new())
+	other.load_from(TEST_PATH)
+	assert_bool(other.fullscreen).is_true()
+	assert_bool(other.vsync).is_false()
+	assert_float(other.render_scale).is_equal(0.75)
+	assert_int(other.max_fps).is_equal(60)
+	assert_bool(other.colorblind).is_true()
+	assert_float(other.volume(&"Music")).is_equal_approx(0.3, 0.0001)
+	assert_float(other.volume(&"Effects")).is_equal(1.0)
+
+
+func test_render_scale_and_volumes_are_clamped() -> void:
+	_settings.set_render_scale(0.1)
+	assert_float(_settings.render_scale).is_equal(GameConfig.get_default().render_scale_min)
+	_settings.set_volume(&"Master", 3.0)
+	assert_float(_settings.volume(&"Master")).is_equal(1.0)
+	_settings.set_volume(&"Desconhecido", 0.5)
+	assert_bool(_settings.volumes.has(&"Desconhecido")).is_false()
+
+
+func test_the_five_audio_buses_exist() -> void:
+	SettingsScript.ensure_audio_buses()
+	for bus: StringName in SettingsScript.AUDIO_BUSES:
+		assert_int(AudioServer.get_bus_index(bus)).is_greater_equal(0)
+
+
+func test_rebinding_a_key_frees_it_from_the_other_action() -> void:
+	_settings.bind_key(&"build_road", KEY_E)
+	assert_array(Array(_settings.keys_of(&"build_road"))).is_equal([KEY_E])
+	# Q/E girava a câmera: o E sai de lá (a padrão dela era o E: fica sem tecla)
+	assert_array(Array(_settings.keys_of(&"camera_rotate_right"))).is_empty()
+	assert_bool(InputMap.action_has_event(&"build_road", _key_event(KEY_E))).is_true()
+	assert_bool(InputMap.action_has_event(&"build_road", _key_event(KEY_T))).is_false()
+	assert_int(_settings.save_to(TEST_PATH)).is_equal(OK)
+	var other: SettingsScript = auto_free(SettingsScript.new())
+	other.load_from(TEST_PATH)
+	assert_array(Array(other.keys_of(&"build_road"))).is_equal([KEY_E])
+	_settings.reset_keys()
+	assert_array(Array(_settings.keys_of(&"build_road"))).is_equal([KEY_T])
+	assert_bool(InputMap.action_has_event(&"build_road", _key_event(KEY_T))).is_true()
+	assert_bool(InputMap.action_has_event(&"camera_rotate_right", _key_event(KEY_E))).is_true()
+
+
+func test_debug_and_menu_keys_are_not_remappable() -> void:
+	var actions := InputActions.remappable()
+	for fixed: StringName in [&"game_menu", &"build_cancel", &"debug_grid", &"debug_cheat_resources"]:
+		assert_bool(actions.has(fixed)).is_false()
+	_settings.bind_key(&"debug_grid", KEY_G)
+	assert_bool(_settings.key_bindings.has(&"debug_grid")).is_false()
+
+
+func _key_event(keycode: Key) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = keycode
+	return event
