@@ -4,7 +4,8 @@ extends Node3D
 ## modelos), balançando nas ondas; o do comerciante com vela vermelha. Só lê a simulação: a
 ## posição e o rumo são interpolados entre o tick anterior e o atual. Também desenha o posto do
 ## comerciante no mar aberto e a marca do navio selecionado, e acha o navio sob o cursor.
-## Rastro na água e gaivotas ficam para a Fase 9 (assets/TODO_ASSETS.md).
+## Desde a Fase 9: casco de tábuas, velas enfunadas, rastro de espuma enquanto navega e gaivotas
+## voando em volta dos portos (entrepostos e píeres).
 
 ## Raio do clique em volta do navio, em pixels da tela.
 const PICK_RADIUS_PX := 40.0
@@ -15,6 +16,12 @@ const HULL_HEIGHT_M := 1.6
 const POST_COLOR := Color(0.42, 0.32, 0.22)
 const FLAG_COLOR := Color(0.72, 0.22, 0.18)
 const SELECTION_COLOR := Color(1.0, 0.85, 0.3)
+const WAKE_PARTICLES := 40
+## Gaivotas: quantas por porto, o raio e a altura do voo em volta dele.
+const GULLS_PER_PORT := 6
+const GULL_RADIUS_M := Vector2(10.0, 26.0)
+const GULL_HEIGHT_M := Vector2(9.0, 18.0)
+const GULL_SPEED := 0.35
 
 var selected_ship: int = 0
 
@@ -24,6 +31,13 @@ var _post: Node3D
 var _selection := MeshInstance3D.new()
 var _materials: Dictionary[Color, StandardMaterial3D] = {}
 var _time: float = 0.0
+var _particles_ratio: float = 1.0
+var _detail_range_m: float = 450.0
+var _gulls := MultiMeshInstance3D.new()
+## Centro de cada gaivota (o porto em volta do qual ela voa).
+var _gull_centers: PackedVector3Array = PackedVector3Array()
+## Portos com gaivotas (só eles refazem a revoada ao entrar ou sair: construir não varre tudo).
+var _berths: Dictionary[int, bool] = {}
 
 
 func setup(simulation: Simulation) -> void:
@@ -35,7 +49,15 @@ func setup(simulation: Simulation) -> void:
 	_selection.mesh = ring
 	_selection.visible = false
 	add_child(_selection)
+	_gulls.name = "Gulls"
+	_gulls.multimesh = MultiMesh.new()
+	_gulls.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	_gulls.multimesh.mesh = _gull_mesh()
+	_gulls.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_gulls)
 	EventBus.world_replaced.connect(rebuild)
+	EventBus.building_placed.connect(_on_building_placed)
+	EventBus.building_removed.connect(_on_building_removed)
 	rebuild()
 
 
@@ -48,6 +70,7 @@ func rebuild() -> void:
 		_post.queue_free()
 		_post = null
 	selected_ship = 0
+	_place_gulls()
 	if _simulation.data.trader() != null:
 		_post = _build_post()
 		add_child(_post)
@@ -85,6 +108,10 @@ func _process(delta: float) -> void:
 		var phase := _time * BOB_SPEED + ship.id * 1.7
 		node.position = Vector3(place.x, sin(phase) * BOB_AMPLITUDE_M, place.y)
 		node.basis = Basis(Vector3.UP, -heading) * Basis(Vector3.RIGHT, sin(phase * 0.8) * ROLL_RAD)
+		var wake := node.get_node_or_null(^"Wake") as GPUParticles3D
+		if wake != null:
+			wake.emitting = ship.state == Ship.State.SAILING
+	_fly_gulls()
 	var selected: Node3D = _nodes.get(selected_ship)
 	_selection.visible = selected != null
 	if selected != null:
@@ -93,6 +120,90 @@ func _process(delta: float) -> void:
 
 func select(ship_id: int) -> void:
 	selected_ship = ship_id
+
+
+## Nível gráfico: quantas partículas no rastro e até onde velas, rastro e gaivotas aparecem.
+func set_quality(preset: GraphicsPresetDef) -> void:
+	_particles_ratio = preset.particles_ratio
+	_detail_range_m = _simulation.config.smoke_visibility_range_m * preset.visibility_scale
+	_gulls.visibility_range_end = _detail_range_m
+	for node: Node3D in _nodes.values():
+		node.queue_free()
+	_nodes.clear()
+
+
+func gull_count() -> int:
+	return _gulls.multimesh.instance_count
+
+
+func _on_building_placed(building_id: int) -> void:
+	var record := _simulation.world.building(building_id)
+	if record != null and _simulation.def_of(record).is_berth():
+		_place_gulls()
+
+
+func _on_building_removed(building_id: int) -> void:
+	if _berths.has(building_id):
+		_place_gulls()
+
+
+## Gaivotas em volta de cada porto (entreposto e píer).
+func _place_gulls() -> void:
+	_gull_centers = PackedVector3Array()
+	_berths.clear()
+	var world := _simulation.world
+	for building_id: int in world.building_ids():
+		var record := world.building(building_id)
+		var def := _simulation.def_of(record)
+		if not def.is_berth():
+			continue
+		_berths[building_id] = true
+		var center := world.island(record.island_id).rect_world(Footprint.rect(record.origin, def.size, record.rotation))
+		for i: int in GULLS_PER_PORT:
+			_gull_centers.append(center)
+	_gulls.multimesh.instance_count = _gull_centers.size()
+	_fly_gulls()
+
+
+## Cada gaivota faz um círculo próprio (raio, altura e sentido pelo índice) em volta do porto.
+func _fly_gulls() -> void:
+	var multimesh := _gulls.multimesh
+	for i: int in _gull_centers.size():
+		var seed_value := float(i) * 1.618
+		var radius := lerpf(GULL_RADIUS_M.x, GULL_RADIUS_M.y, fposmod(seed_value, 1.0))
+		var height := lerpf(GULL_HEIGHT_M.x, GULL_HEIGHT_M.y, fposmod(seed_value * 2.3, 1.0))
+		var turn := 1.0 if i % 2 == 0 else -1.0
+		var angle := _time * GULL_SPEED * turn * (14.0 / radius) + seed_value * TAU
+		var offset := Vector3(cos(angle) * radius, height + sin(_time * 1.3 + seed_value) * 1.2, sin(angle) * radius)
+		var forward := Vector3(-sin(angle), 0.0, cos(angle)) * turn
+		var flap := sin(_time * 9.0 + seed_value * 5.0) * 0.5
+		var basis := Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, flap * 0.3)
+		multimesh.set_instance_transform(i, Transform3D(basis, _gull_centers[i] + offset))
+
+
+## Gaivota de longe: duas asas em V, brancas.
+static func _gull_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var wing := 0.75
+	for side: float in [-1.0, 1.0]:
+		tool.add_vertex(Vector3(0.0, 0.0, -0.25))
+		tool.add_vertex(Vector3(side * wing, 0.18, 0.05))
+		tool.add_vertex(Vector3(0.0, 0.0, 0.25))
+	tool.generate_normals()
+	var mesh := tool.commit()
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.95, 0.95, 0.93)
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+func _sail_material(color: Color) -> StandardMaterial3D:
+	var material := _material(color).duplicate() as StandardMaterial3D
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.roughness = 0.9
+	return material
 
 
 ## Navio sob a posição da tela (o mais perto, até PICK_RADIUS_PX), ou 0.
@@ -118,7 +229,9 @@ func trader_post_at_screen(camera: Camera3D, screen_position: Vector2) -> bool:
 	return camera.unproject_position(_post.position + Vector3(0.0, 2.0, 0.0)).distance_to(screen_position) < PICK_RADIUS_PX * 1.5
 
 
-## Casco (com a proa em +X), mastro e duas velas; o tamanho e as cores saem do ShipDef.
+## Casco de madeira afilado na proa e na popa (com a proa em +X), dois mastros e velas enfunadas;
+## o tamanho e as cores saem do ShipDef. Desde a Fase 9 o casco é uma malha própria com a textura
+## de tábuas, e o navio leva o rastro na água (Wake), ligado enquanto navega.
 func _build_ship(ship: Ship) -> Node3D:
 	var def := _simulation.data.ship(ship.def_id)
 	var root := Node3D.new()
@@ -126,28 +239,18 @@ func _build_ship(ship: Ship) -> Node3D:
 	var length := def.length_m
 	var beam := length * 0.28
 	var hull := MeshInstance3D.new()
-	var hull_mesh := BoxMesh.new()
-	hull_mesh.size = Vector3(length * 0.78, HULL_HEIGHT_M, beam)
-	hull_mesh.material = _material(def.hull_color)
-	hull.mesh = hull_mesh
-	hull.position = Vector3(-length * 0.08, HULL_HEIGHT_M * 0.3, 0.0)
+	hull.name = "Hull"
+	hull.mesh = hull_mesh(length, beam, HULL_HEIGHT_M)
+	hull.material_override = BuildingMaterials.walls()
+	BuildingMaterials.dress(hull, BuildingMaterials.Wall.WOOD, def.hull_color, -HULL_HEIGHT_M)
 	root.add_child(hull)
-	var bow := MeshInstance3D.new()
-	var bow_mesh := PrismMesh.new()
-	bow_mesh.size = Vector3(beam, length * 0.22, HULL_HEIGHT_M)
-	bow_mesh.material = _material(def.hull_color)
-	bow.mesh = bow_mesh
-	# o prisma tem a ponta em +Y e a espessura em Z: deitado, a ponta vai para +X (proa) e a
-	# espessura fica na vertical, da altura do casco
-	bow.basis = Basis(Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(0, 1, 0))
-	bow.position = Vector3(length * 0.42, HULL_HEIGHT_M * 0.3, 0.0)
-	root.add_child(bow)
 	var deck := MeshInstance3D.new()
 	var deck_mesh := BoxMesh.new()
-	deck_mesh.size = Vector3(length * 0.7, 0.15, beam * 0.86)
-	deck_mesh.material = _material(def.hull_color.lightened(0.3))
+	deck_mesh.size = Vector3(length * 0.62, 0.12, beam * 0.78)
 	deck.mesh = deck_mesh
-	deck.position = Vector3(-length * 0.08, HULL_HEIGHT_M * 0.8 + 0.08, 0.0)
+	deck.material_override = BuildingMaterials.walls()
+	BuildingMaterials.dress(deck, BuildingMaterials.Wall.WOOD, def.hull_color.lightened(0.35), 0.0)
+	deck.position = Vector3(-length * 0.04, HULL_HEIGHT_M * 0.85, 0.0)
 	root.add_child(deck)
 	var mast_height := length * 0.75
 	for offset: float in [length * 0.12, -length * 0.22]:
@@ -161,13 +264,118 @@ func _build_ship(ship: Ship) -> Node3D:
 		mast.position = Vector3(offset, HULL_HEIGHT_M + mast_height * 0.5, 0.0)
 		root.add_child(mast)
 		var sail := MeshInstance3D.new()
-		var sail_mesh := BoxMesh.new()
-		sail_mesh.size = Vector3(0.12, mast_height * 0.6, beam * 1.5)
-		sail_mesh.material = _material(def.sail_color)
-		sail.mesh = sail_mesh
+		sail.mesh = sail_mesh(mast_height * 0.6, beam * 1.5, beam * 0.18)
+		sail.material_override = _sail_material(def.sail_color)
 		sail.position = Vector3(offset + 0.3, HULL_HEIGHT_M + mast_height * 0.55, 0.0)
+		sail.visibility_range_end = _detail_range_m
 		root.add_child(sail)
+	var wake := _build_wake(length, beam)
+	wake.name = "Wake"
+	root.add_child(wake)
 	return root
+
+
+## Casco: seções de popa a proa, cada uma um U (fundo em V suave) cuja boca segue o perfil do
+## navio — larga no meio, fina e mais alta na proa, arredondada na popa.
+static func hull_mesh(length: float, beam: float, height: float) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sections := 12
+	var around := 9
+	var rings: Array[PackedVector3Array] = []
+	for i: int in sections + 1:
+		var u := float(i) / sections
+		var x := lerpf(-length * 0.5, length * 0.5, u)
+		var width := beam * 0.5 * pow(sin(PI * clampf(u * 0.92 + 0.06, 0.0, 1.0)), 0.6) * (1.0 - 0.75 * smoothstep(0.75, 1.0, u))
+		var sheer := height * (0.85 + 0.25 * smoothstep(0.7, 1.0, u) + 0.1 * smoothstep(0.25, 0.0, u))
+		var ring := PackedVector3Array()
+		for j: int in around + 1:
+			var a := PI * float(j) / around
+			ring.append(Vector3(x, sheer - (sheer + height * 0.35) * sin(a) * (0.7 + 0.3 * sin(a)), cos(a) * width))
+		rings.append(ring)
+	for i: int in sections:
+		for j: int in around:
+			var a := rings[i][j]
+			var b := rings[i + 1][j]
+			var c := rings[i + 1][j + 1]
+			var d := rings[i][j + 1]
+			tool.add_vertex(a)
+			tool.add_vertex(b)
+			tool.add_vertex(c)
+			tool.add_vertex(a)
+			tool.add_vertex(c)
+			tool.add_vertex(d)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Vela enfunada: grade com a barriga para a frente (+X), mais funda no meio.
+static func sail_mesh(height: float, width: float, belly: float) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var steps := 6
+	var points: Array[PackedVector3Array] = []
+	for i: int in steps + 1:
+		var row := PackedVector3Array()
+		var v := float(i) / steps
+		for j: int in steps + 1:
+			var w := float(j) / steps
+			var bulge := sin(PI * v) * sin(PI * w) * belly
+			row.append(Vector3(bulge, (v - 0.5) * height, (w - 0.5) * width * lerpf(0.8, 1.0, v)))
+		points.append(row)
+	for i: int in steps:
+		for j: int in steps:
+			tool.add_vertex(points[i][j])
+			tool.add_vertex(points[i + 1][j])
+			tool.add_vertex(points[i + 1][j + 1])
+			tool.add_vertex(points[i][j])
+			tool.add_vertex(points[i + 1][j + 1])
+			tool.add_vertex(points[i][j + 1])
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Rastro: espuma deitada na água, deixada para trás (as partículas ficam no mundo).
+func _build_wake(length: float, beam: float) -> GPUParticles3D:
+	var wake := GPUParticles3D.new()
+	wake.local_coords = false
+	wake.amount = maxi(1, roundi(WAKE_PARTICLES * _particles_ratio))
+	wake.lifetime = 6.0
+	wake.position = Vector3(-length * 0.5, 0.15 - BOB_AMPLITUDE_M, 0.0)
+	var process := ParticleProcessMaterial.new()
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	process.emission_box_extents = Vector3(0.5, 0.0, beam * 0.4)
+	process.gravity = Vector3.ZERO
+	process.scale_min = 1.0
+	process.scale_max = 1.6
+	var growth := Curve.new()
+	growth.add_point(Vector2(0.0, 0.6))
+	growth.add_point(Vector2(1.0, 2.4))
+	var curve := CurveTexture.new()
+	curve.curve = growth
+	process.scale_curve = curve
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0.75))
+	fade.set_color(1, Color(1, 1, 1, 0.0))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = fade
+	process.color_ramp = ramp
+	wake.process_material = process
+	var foam := QuadMesh.new()
+	foam.orientation = PlaneMesh.FACE_Y
+	foam.size = Vector2(beam * 0.9, beam * 0.9)
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.vertex_color_use_as_albedo = true
+	material.albedo_texture = SmokeView._puff_texture()
+	foam.material = material
+	wake.draw_pass_1 = foam
+	wake.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	wake.visibility_range_end = _detail_range_m
+	wake.visibility_aabb = AABB(Vector3(-80, -2, -80), Vector3(160, 6, 160))
+	wake.emitting = false
+	return wake
 
 
 ## Plataforma de madeira sobre estacas, com o mastro da bandeira do comerciante.

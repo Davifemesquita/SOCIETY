@@ -337,7 +337,7 @@ OPTIONS_RENDER_SCALE_TIP,Abaixo de 100% usa o FSR 2: mais leve para placas mais 
 OPTIONS_MAX_FPS,Limite de quadros,Frame limit
 OPTIONS_MAX_FPS_TIP,Quadros por segundo no máximo,Maximum frames per second
 OPTIONS_FPS_UNLIMITED,Sem limite,Unlimited
-OPTIONS_GRAPHICS_NOTE,"Os níveis de qualidade (baixo, médio, alto e ultra) chegam com os gráficos finais.","Quality presets (low, medium, high and ultra) arrive with the final graphics."
+OPTIONS_GRAPHICS_NOTE,A simulação é a mesma em qualquer nível,The simulation is the same at every level
 OPTIONS_VOLUME_TIP,Volume deste canal,Volume of this channel
 AUDIO_BUS_MASTER,Geral,Master
 AUDIO_BUS_MUSIC,Música,Music
@@ -564,3 +564,9 @@ GOAL_ADVISOR_TIP,Ouvir o conselheiro sobre a meta,Hear the advisor about the goa
 GOAL_CONTINUE,Continuar,Continue
 GOAL_CONTINUE_TIP,Próxima fala do conselheiro,Next line from the advisor
 PORTRAIT_ADVISOR,O conselheiro,The advisor
+OPTIONS_QUALITY,Qualidade gráfica,Graphics quality
+OPTIONS_QUALITY_TIP,Nível de qualidade (sugere também a escala de resolução),Quality level (also suggests the resolution scale)
+GRAPHICS_LOW,Baixa,Low
+GRAPHICS_MEDIUM,Média,Medium
+GRAPHICS_HIGH,Alta,High
+GRAPHICS_ULTRA,Ultra,Ultra

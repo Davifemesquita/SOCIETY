@@ -24,3 +24,4 @@ module_id = &"field"
 modules_required = 6
 terrain = 0
 fertility = &"wheat"
+wall_material = 2

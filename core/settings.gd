@@ -18,6 +18,8 @@ var fullscreen: bool = false
 var vsync: bool = true
 ## Escala da resolução 3D: abaixo de 1 usa o FSR 2.
 var render_scale: float = 1.0
+## Nível de qualidade gráfica (índice em GameConfig.graphics_presets).
+var graphics_preset: int = 2
 ## Limite de quadros por segundo (0 = sem limite).
 var max_fps: int = 0
 ## Volume de cada barramento, de 0 a 1.
@@ -32,6 +34,10 @@ func _ready() -> void:
 	InputActions.register_defaults()
 	ensure_audio_buses()
 	load_from(SETTINGS_PATH)
+	# para testes e capturas: SOCIETY_NIVEL_GRAFICO=0..3 troca o nível sem gravar nas preferências
+	var forced := OS.get_environment("SOCIETY_NIVEL_GRAFICO")
+	if forced.is_valid_int():
+		set_graphics_preset(forced.to_int())
 	apply()
 
 
@@ -45,6 +51,17 @@ func set_ui_scale(value: float) -> void:
 
 func set_render_scale(value: float) -> void:
 	render_scale = clampf(value, _config.render_scale_min, 1.0)
+
+
+## Troca o nível gráfico; a escala de resolução vai para a sugerida pelo nível (o jogador ainda
+## pode mudá-la depois).
+func set_graphics_preset(index: int) -> void:
+	graphics_preset = clampi(index, 0, _config.graphics_presets.size() - 1)
+	set_render_scale(preset().render_scale)
+
+
+func preset() -> GraphicsPresetDef:
+	return _config.graphics_presets[clampi(graphics_preset, 0, _config.graphics_presets.size() - 1)]
 
 
 func set_volume(bus: StringName, value: float) -> void:
@@ -97,6 +114,10 @@ func apply() -> void:
 		root.content_scale_factor = ui_scale
 		root.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR2 if render_scale < 0.999 else Viewport.SCALING_3D_MODE_BILINEAR
 		root.scaling_3d_scale = render_scale
+		root.msaa_3d = preset().msaa as Viewport.MSAA
+		root.mesh_lod_threshold = preset().mesh_lod_threshold
+		RenderingServer.directional_shadow_atlas_set_size(preset().shadow_atlas_size, true)
+		RenderingServer.directional_soft_shadow_filter_set_quality(preset().soft_shadow_quality as RenderingServer.ShadowQuality)
 		_apply_window()
 	EventBus.settings_changed.emit()
 
@@ -127,6 +148,7 @@ func save_to(path: String) -> Error:
 	file.set_value("graphics", "vsync", vsync)
 	file.set_value("graphics", "render_scale", render_scale)
 	file.set_value("graphics", "max_fps", max_fps)
+	file.set_value("graphics", "preset", graphics_preset)
 	for bus: StringName in volumes:
 		file.set_value("audio", String(bus), volumes[bus])
 	for action: StringName in key_bindings:
@@ -144,7 +166,10 @@ func load_from(path: String) -> void:
 	edge_pan = _flag(file.get_value("controls", "edge_pan", true), true)
 	fullscreen = _flag(file.get_value("graphics", "fullscreen", false), false)
 	vsync = _flag(file.get_value("graphics", "vsync", true), true)
-	set_render_scale(_number(file.get_value("graphics", "render_scale", 1.0), 1.0))
+	var raw_preset: Variant = file.get_value("graphics", "preset", _config.default_graphics_preset)
+	graphics_preset = raw_preset if raw_preset is int and raw_preset >= 0 and raw_preset < _config.graphics_presets.size() \
+			else _config.default_graphics_preset
+	set_render_scale(_number(file.get_value("graphics", "render_scale", preset().render_scale), preset().render_scale))
 	var raw_fps: Variant = file.get_value("graphics", "max_fps", 0)
 	max_fps = raw_fps if raw_fps is int and FPS_LIMITS.has(raw_fps) else 0
 	volumes.clear()

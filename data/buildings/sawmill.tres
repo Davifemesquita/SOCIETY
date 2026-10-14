@@ -19,3 +19,5 @@ inputs = Array[StringName]([&"wood"])
 output = &"planks"
 cycle_s = 15.0
 terrain = 0
+wall_material = 2
+smoke = 2

@@ -50,7 +50,8 @@ func test_every_key_used_in_the_code_exists() -> void:
 	var keys: Dictionary[String, bool] = {}
 	for row: PackedStringArray in _rows():
 		keys[row[0]] = true
-	var literal := RegEx.create_from_string("\"([A-Z][A-Z0-9]*_[A-Z0-9_]+)\"")
+	# nome de variável de ambiente (OS.get_environment) tem o mesmo formato, mas não é texto da tela
+	var literal := RegEx.create_from_string("(?<!get_environment\\()\"([A-Z][A-Z0-9]*_[A-Z0-9_]+)\"")
 	var missing: PackedStringArray = []
 	for path: String in _scripts("res://"):
 		for found: RegExMatch in literal.search_all(FileAccess.get_file_as_string(path)):

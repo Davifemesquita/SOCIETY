@@ -24,3 +24,4 @@ module_id = &"field"
 modules_required = 6
 terrain = 0
 fertility = &"hops"
+wall_material = 2

@@ -35,6 +35,11 @@ var pedestrian_view: PedestrianView
 var window_view: WindowLightsView
 var ship_view: ShipView
 var ship_picker: ShipPicker
+## Nível gráfico aplicado ao ambiente, à câmera e aos efeitos (Fase 9).
+var graphics: GraphicsQuality
+var clouds: CloudsAdapter
+var weather: WeatherView
+var smoke_view: SmokeView
 ## Chão do mundo: a ilha plana (FlatIsland) ou terreno, água e árvores do arquipélago.
 var terrain_view: TerrainView
 var water_view: WaterView
@@ -93,6 +98,27 @@ func _ready() -> void:
 	camera.setup(_config, world_bounds())
 	camera.height_at = simulation.world.surface_height
 	look_at_start()
+	graphics = GraphicsQuality.new()
+	graphics.name = "GraphicsQuality"
+	add_child(graphics)
+	graphics.setup(_config, sky, camera, pedestrian_view.crowd, window_view)
+	clouds = CloudsAdapter.new()
+	clouds.name = "Clouds"
+	add_child(clouds)
+	clouds.setup(sky.sun(), sky.environment())
+	graphics.add_effect(clouds)
+	weather = WeatherView.new()
+	weather.name = "Weather"
+	add_child(weather)
+	weather.setup(_config, simulation, sky, clouds, camera)
+	graphics.add_effect(weather)
+	graphics.add_effect(building_view)
+	smoke_view = SmokeView.new()
+	smoke_view.name = "Smoke"
+	add_child(smoke_view)
+	smoke_view.setup(simulation, _config.cell_size_m)
+	graphics.add_effect(smoke_view)
+	graphics.add_effect(ship_view)
 	tool = BuildTool.new()
 	tool.setup(simulation, camera, _config.cell_size_m)
 	add_child(tool)

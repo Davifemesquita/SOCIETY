@@ -13,3 +13,4 @@ color = Color(0.8, 0.7, 0.4, 1)
 cost_money = 300
 cost_materials = Dictionary[StringName, int]({&"planks": 4})
 upkeep_per_min = 20
+wall_material = 2

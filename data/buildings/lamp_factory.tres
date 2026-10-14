@@ -22,3 +22,4 @@ output = &"light_bulbs"
 cycle_s = 60.0
 pollution_radius_cells = 8
 pollution_strength = 0.3
+smoke = 2

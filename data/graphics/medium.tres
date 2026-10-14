@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="GraphicsPresetDef" format=3]
+
+[ext_resource type="Script" path="res://data/graphics_preset_def.gd" id="1_preset"]
+
+[resource]
+script = ExtResource("1_preset")
+id = &"medium"
+name_key = "GRAPHICS_MEDIUM"
+shadow_distance_m = 280.0
+shadow_atlas_size = 4096
+soft_shadow_quality = 1
+ssao = true
+ssil = false
+glow = true
+volumetric_fog = false
+clouds = false
+depth_of_field = false
+particles_ratio = 0.5
+decals = true
+mesh_lod_threshold = 2.0
+visibility_scale = 0.75
+pedestrian_ratio = 0.65
+area_lights = 6
+msaa = 0
+render_scale = 1.0

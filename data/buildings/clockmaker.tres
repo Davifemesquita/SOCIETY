@@ -20,3 +20,5 @@ workers = 50
 inputs = Array[StringName]([&"glass", &"steel"])
 output = &"clocks"
 cycle_s = 90.0
+wall_material = 3
+smoke = 2

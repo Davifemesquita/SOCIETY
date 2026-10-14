@@ -23,3 +23,4 @@ cycle_s = 60.0
 terrain = 0
 pollution_radius_cells = 16
 pollution_strength = 1.0
+smoke = 3

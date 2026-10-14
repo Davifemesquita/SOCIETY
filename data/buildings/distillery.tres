@@ -21,3 +21,5 @@ inputs = Array[StringName]([&"potatoes"])
 output = &"spirits"
 cycle_s = 30.0
 terrain = 0
+wall_material = 2
+smoke = 2

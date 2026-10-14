@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="GraphicsPresetDef" format=3]
+
+[ext_resource type="Script" path="res://data/graphics_preset_def.gd" id="1_preset"]
+
+[resource]
+script = ExtResource("1_preset")
+id = &"ultra"
+name_key = "GRAPHICS_ULTRA"
+shadow_distance_m = 600.0
+shadow_atlas_size = 8192
+soft_shadow_quality = 4
+ssao = true
+ssil = true
+glow = true
+volumetric_fog = true
+clouds = true
+depth_of_field = true
+particles_ratio = 1.0
+decals = true
+mesh_lod_threshold = 0.5
+visibility_scale = 1.5
+pedestrian_ratio = 1.0
+area_lights = 24
+msaa = 1
+render_scale = 1.0

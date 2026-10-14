@@ -20,3 +20,5 @@ workers = 25
 inputs = Array[StringName]([&"coffee_beans"])
 output = &"coffee"
 cycle_s = 30.0
+wall_material = 1
+smoke = 1

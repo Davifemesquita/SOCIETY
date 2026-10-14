@@ -19,3 +19,4 @@ inputs = Array[StringName]([])
 output = &"fish"
 cycle_s = 30.0
 terrain = 1
+wall_material = 2

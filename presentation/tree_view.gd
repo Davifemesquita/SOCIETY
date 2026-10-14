@@ -44,7 +44,7 @@ func setup(world: WorldState) -> void:
 	for name: String in BROADLEAF + CONIFER + ROCKS:
 		var foliage := CONIFER_COLOR if CONIFER.has(name) else (MOSS_COLOR if ROCKS.has(name) else BROADLEAF_COLOR)
 		var wood := STONE_COLOR if ROCKS.has(name) else BARK_COLOR
-		var mesh := _recolor(_load_mesh(MODEL_DIR % name), foliage, wood)
+		var mesh := _recolor(_load_mesh(MODEL_DIR % name), foliage, wood, not ROCKS.has(name))
 		_models.append(mesh)
 		var height := mesh.get_aabb().size.y if mesh != null else 1.0
 		var target := ROCK_SIZE_M if ROCKS.has(name) else TREE_HEIGHT_M
@@ -142,16 +142,21 @@ static func _transform(grid: IslandGrid, cell: Vector2i, seed_value: int, scale:
 
 ## Cópia da malha com os materiais trocados: a superfície esverdeada vira folhagem (ou musgo) e a
 ## outra, casca (ou pedra).
-static func _recolor(mesh: Mesh, foliage: Color, wood: Color) -> Mesh:
+## Troca as cores do pacote pelas do jogo; desde a Fase 9 o material é o da folhagem, que balança
+## ao vento (a pedra não balança).
+static func _recolor(mesh: Mesh, foliage: Color, wood: Color, sways: bool = true) -> Mesh:
 	if mesh == null:
 		return null
 	var copy := mesh.duplicate() as Mesh
+	var shader := load("res://shaders/foliage.gdshader") as Shader
 	for surface: int in copy.get_surface_count():
 		var original := copy.surface_get_material(surface) as BaseMaterial3D
 		var greenish := original != null and original.albedo_color.g > original.albedo_color.r + 0.15
-		var material := StandardMaterial3D.new()
-		material.albedo_color = foliage if greenish else wood
-		material.roughness = 0.95
+		var material := ShaderMaterial.new()
+		material.shader = shader
+		material.set_shader_parameter(&"albedo", foliage if greenish else wood)
+		material.set_shader_parameter(&"model_height", maxf(mesh.get_aabb().end.y, 0.1))
+		material.set_shader_parameter(&"sway", 0.035 if sways else 0.0)
 		var array_mesh := copy as ArrayMesh
 		if array_mesh != null:
 			array_mesh.surface_set_material(surface, material)

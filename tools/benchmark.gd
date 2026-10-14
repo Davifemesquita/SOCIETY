@@ -9,6 +9,8 @@ extends Node
 ## teste é montada sem olhar o terreno (chave só do benchmark), derrubando as árvores debaixo.
 ## Fase 6: entreposto no litoral das outras 4 ilhas e 10 navios em 4 rotas saindo da principal,
 ## mais o navio do comerciante.
+## Fase 9: roda no nível gráfico alto (o do critério), ou no de `-- --nivel N`, com fumaça,
+## clima, materiais PBR e o resto dos gráficos finais.
 ##   tools/godot.sh godot --path . res://tools/benchmark.tscn -- [arquivo.md]
 ## No executável: Society.exe -- --benchmark (mostra o resultado na tela e grava em
 ## user://benchmark.md). Sem GPU (esta VM), o tempo de quadro não vale como meta.
@@ -64,6 +66,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _run() -> void:
 	var config := GameConfig.get_default()
+	# Fase 9: o critério é o orçamento no nível alto; `-- --nivel N` mede outro (0 baixo a 3 ultra)
+	var level := config.default_graphics_preset
+	var args := OS.get_cmdline_user_args()
+	var at := args.find("--nivel")
+	if at >= 0 and at + 1 < args.size() and args[at + 1].is_valid_int():
+		level = args[at + 1].to_int()
+	Settings.set_graphics_preset(level)
+	Settings.apply()
+	_report("nível gráfico", "%s (nuvens volumétricas %s)" % [tr(Settings.preset().name_key),
+			"ligadas" if Settings.preset().clouds and not CloudsAdapter.software_renderer() else "desligadas"])
 	GameScreen.flat_world = false
 	GameScreen.world_seed = SEED
 	var started := Time.get_ticks_usec()

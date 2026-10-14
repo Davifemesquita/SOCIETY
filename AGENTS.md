@@ -31,7 +31,7 @@ Texto de interface só por chave de tradução, em `ui/translations/strings.csv`
 
 ```bash
 tools/godot.sh importar            # importa os recursos; obrigatório num clone novo
-tools/godot.sh testes              # suíte gdUnit4 no xvfb (res://tests), ~3 min
+tools/godot.sh testes              # suíte gdUnit4 no xvfb (res://tests), ~15 a 25 min nesta VM
 tools/godot.sh testes res://tests/core/test_tick_clock.gd   # um arquivo
 tools/godot.sh rodar               # abre o jogo
 tools/godot.sh editor              # abre o editor
@@ -54,6 +54,12 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://to
 # Fase 8: a partida roteirizada até os investidores — rua das casas, painel do investidor, metas e
 # conselheiro, abas de produção das classes novas, paralelepípedo, mover casa, conselheiro em inglês
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase8.tscn -- /pasta/de/saida
+# Fase 9: vila de longe e de perto (miniatura), hora dourada, chuva, neblina, fumaça, andaime, os
+# quatro níveis e o navio com rastro e gaivotas; CAPTURA_NIVEL=0..3 escolhe o nível e
+# CAPTURA_SO=rapido tira só as duas primeiras (o nível alto por software leva ~30 s por captura)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 200000 res://tools/capture_phase9.tscn -- /pasta/de/saida
+# texturas dos prédios e estradas (Poly Haven, CC0) a partir da pasta baixada
+tools/godot.sh godot --headless --path . --script res://tools/pack_material_textures.gd -- /pasta/baixada
 # interface: refaz o atlas de ícones e os retratos (depois de mexer em tools/icons/icon_list.csv;
 # os SVGs se baixam com tools/icons/fetch_icons.sh) e o Theme (depois de mexer no ThemeBuilder)
 tools/godot.sh godot --headless --path . --script res://tools/build_icons.gd
@@ -66,6 +72,14 @@ tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.g
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
+
+A suíte roda no **nível gráfico baixo** (`SOCIETY_NIVEL_GRAFICO=0`, posto pelo `tools/godot.sh
+testes`): no alto, SSIL e neblina volumétrica por software deixavam a suíte três vezes mais lenta. A
+mesma variável troca o nível em qualquer execução, sem gravar nas preferências.
+
+**A VM tem 3 GB de RAM** divididos com outras sessões: um Godot que sobra de uma suíte interrompida
+(processo `... -s -d --remote-debug tcp://127.0.0.1:0`) segura ~900 MB e o próximo cai por falta de
+memória (código 137) ou fica lento pelo swap. Confira com `pgrep -fa godot` antes de rodar a suíte.
 
 O binário fica em `~/ferramentas/godot/` (troque por `GODOT_BIN`), com os modelos de
 exportação em `~/.local/share/godot/export_templates/4.7.2.stable/`.
@@ -153,6 +167,12 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
 | `ui/hud/ship_panel.gd`, `route_window.gd`, `archipelago_map.gd`, `trade_window.gd` | painel do navio, janela de rotas com o mapa, comércio passivo da ilha |
 | `ui/hud/goal_panel.gd` | meta da vez com o progresso e a fala do conselheiro (retrato, texto, continuar) |
+| `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
+| `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
+| `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
+| `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado |
+| `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
+| `presentation/building_materials.gd`, `shaders/building.gdshader` | material PBR dividido dos prédios (paredes e telhados) |
 | `ui/advisor/` | `advisor.dialogue` (as falas, em chaves de tradução) e `AdvisorDialogue`, o adaptador do Dialogue Manager |
 | `tools/progression_demo.gd` | partida roteirizada do camponês ao investidor (critério da Fase 8, captura) |
 | `presentation/pedestrians/` | `Crowd` (rotina dos pedestres, sem nós), `PedestrianView` (MultiMesh por classe e corpo), `SidewalkPath`, `VatModel` |
@@ -455,6 +475,41 @@ Regras que já custaram investigação:
   Scripts que usam `EventBus` não rodam por `--script`: o autoload não existe na compilação; use
   uma cena (as capturas fazem assim).
 
+### Gráficos finais (Fase 9)
+
+- **Níveis gráficos** em `data/graphics/` (`GraphicsPresetDef`), lidos pelo `GameConfig.graphics_presets`:
+  sombra, SSAO, SSIL, glow, neblina volumétrica, nuvens, miniatura, partículas, fuligem, LOD, alcance
+  dos detalhes, pedestres, luzes de área, MSAA e a escala FSR sugerida. O padrão é o **alto** (o do
+  critério). `Settings.apply()` faz a janela (MSAA, LOD, atlas e filtro de sombra); o
+  `GraphicsQuality` faz o resto e repassa `set_quality(preset)` a quem se registrou com `add_effect`.
+- **Nuvens volumétricas (SunshineClouds2) só no ultra**: no Vulkan por software o efeito escurece a
+  tela inteira fora das nuvens (cena mínima confirmou), e não há como saber aqui se é limitação do
+  llvmpipe ou do addon. O adaptador não liga no llvmpipe. **Conferir na RTX 3060** antes de pôr no
+  alto (`assets/TODO_ASSETS.md`). O recurso é a cópia `world/sky/clouds.tres` (o do addon aponta
+  para uma máscara na raiz do projeto dele). O alto tem as nuvens do Sky3D.
+- **Clima** (`WeatherCycle`): só visual, fora do save, sorteado por dia pela semente; chuva numa
+  janela do dia, neblina de manhã, chão molhado que seca em `weather_dry_hours`. O chão molhado é o
+  uniforme global `wetness` (`shaders/wet_surface.gdshaderinc`), usado pelos shaders de prédio,
+  estrada, terreno e árvore. A chuva é um GPUParticles3D em volta do ponto que a câmera olha.
+- **Materiais PBR**: um ShaderMaterial para todas as paredes e um para os telhados (texturas em
+  Texture2DArray, projeção triplanar porque a caixa não tem UV); camada, tom, base e fuligem vão em
+  `instance uniform`. A camada sai de `BuildingDef.wall_material` e de `TierDef.wall_material` /
+  `roof_material`. Campo e pasto continuam com cor lisa.
+- **Fumaça** (`BuildingDef.smoke`: vapor, fumaça, pesada): chaminé de tijolo e partículas que só
+  saem com o prédio produzindo; a pesada põe fuligem (Decal) em volta. A fuligem também escurece as
+  casas poluídas (instance uniform `soot`).
+- **Detalhe e ocultação**: telhado, chaminé, porta, velas, rastro e gaivotas têm `visibility_range`
+  pelo nível; prédio a partir de 5 m de altura ganha `OccluderInstance3D` (caixa 8% menor que a
+  parede), com a ocultação ligada no projeto.
+- **Miniatura** (tilt-shift): `CameraAttributesPractical` com desfoque longe e perto só com a câmera
+  até `tilt_shift_max_distance_m`.
+- **Árvores** com shader de vento (`shaders/foliage.gdshader`), no tempo visual (para na pausa).
+- **Navios**: casco afilado e velas enfunadas feitos no código (`ShipView.hull_mesh`, `sail_mesh`),
+  rastro de espuma em partículas no mundo enquanto navega, gaivotas em volta de cada porto.
+- **Casa que sobe de classe**: andaime e poeira por `upgrade_scaffold_seconds`.
+- **Interface**: papel gerado por ruído com moldura e cantoneiras (`ThemeBuilder.paper_image`,
+  gravado por `tools/build_theme.gd` em `ui/theme/paper_*.png`).
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -473,8 +528,9 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 5 — Mundo | **concluída em 13/10/2026** |
 | 6 — Navios e comércio | **concluída em 13/10/2026** |
 | 7 — Interface completa | **concluída em 13/10/2026** (confirmada em 14/10/2026) |
-| 8 — Conteúdo | **entregue em 14/10/2026**, aguardando a confirmação do dono do produto |
-| 9 a 11 | — |
+| 8 — Conteúdo | **concluída em 14/10/2026** (confirmada em 14/10/2026) |
+| 9 — Gráficos finais | **entregue em 14/10/2026**, aguardando a confirmação do dono do produto e a medição na RTX 3060 |
+| 10 e 11 | — |
 
 Pendências já vistas para fases futuras:
 
@@ -482,7 +538,8 @@ Pendências já vistas para fases futuras:
   artesãos pagarem imposto; um jogador de verdade travaria em −10 mil. Revisar a manutenção das
   fábricas e dos serviços contra o imposto das classes de baixo. Estaleiro, se a compra de navio no
   entreposto não bastar.
-- Fase 9: modelos dos navios, rastro na água e gaivotas; papel e moldura com textura na interface;
-  os níveis de qualidade gráfica nas opções (`assets/TODO_ASSETS.md`).
+- Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
+  volumétricas aparecem certas no ultra; modelos de verdade (prédios, casas, navios) seguem no
+  `assets/TODO_ASSETS.md`.
 - Fase 10: áudio (os cinco barramentos já existem e têm volume nas opções) e o salvamento
   automático (`autosave_interval_minutes` e `autosave_slots` já estão no `GameConfig`).

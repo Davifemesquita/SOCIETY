@@ -64,13 +64,30 @@ static func _grid() -> GridContainer:
 
 func _graphics() -> Control:
 	var grid := _grid()
+	grid.add_child(UiKit.label("OPTIONS_QUALITY"))
+	var quality := OptionButton.new()
+	quality.name = "Quality"
+	quality.tooltip_text = "OPTIONS_QUALITY_TIP"
+	quality.focus_mode = Control.FOCUS_NONE
+	for preset: GraphicsPresetDef in GameConfig.get_default().graphics_presets:
+		quality.add_item(preset.name_key)
+	quality.select(Settings.graphics_preset)
+	grid.add_child(quality)
 	grid.add_child(UiKit.label("OPTIONS_FULLSCREEN"))
 	grid.add_child(_check("OPTIONS_FULLSCREEN_TIP", Settings.fullscreen, func(on: bool) -> void: Settings.fullscreen = on))
 	grid.add_child(UiKit.label("OPTIONS_VSYNC"))
 	grid.add_child(_check("OPTIONS_VSYNC_TIP", Settings.vsync, func(on: bool) -> void: Settings.vsync = on))
 	grid.add_child(UiKit.label("OPTIONS_RENDER_SCALE"))
-	grid.add_child(_slider("OPTIONS_RENDER_SCALE_TIP", GameConfig.get_default().render_scale_min, 1.0, 0.05, Settings.render_scale,
-			func(value: float) -> void: Settings.set_render_scale(value)))
+	var scale := _slider("OPTIONS_RENDER_SCALE_TIP", GameConfig.get_default().render_scale_min, 1.0, 0.05, Settings.render_scale,
+			func(value: float) -> void: Settings.set_render_scale(value))
+	scale.name = "RenderScale"
+	grid.add_child(scale)
+	# o nível sugere a escala: o controle acompanha
+	quality.item_selected.connect(func(index: int) -> void:
+		Settings.set_graphics_preset(index)
+		var slider := scale.get_child(0) as HSlider
+		slider.value = Settings.render_scale
+		Settings.apply())
 	grid.add_child(UiKit.label("OPTIONS_MAX_FPS"))
 	var fps := OptionButton.new()
 	fps.name = "MaxFps"

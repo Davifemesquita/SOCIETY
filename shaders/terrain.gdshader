@@ -5,6 +5,8 @@
 shader_type spatial;
 render_mode cull_back;
 
+#include "res://shaders/wet_surface.gdshaderinc"
+
 uniform sampler2D grass_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D grass_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rock_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
@@ -49,7 +51,9 @@ void fragment() {
 	vec4 ground_n = mix(mix(grass_n, forest_n, forest), rock_n, rock * (1.0 - sand));
 	ground_a = mix(ground_a, sand_a, sand);
 	ground_n = mix(ground_n, sand_n, sand);
-	ALBEDO = ground_a.rgb;
+	// o fundo do mar não molha (já está debaixo d'água)
+	float exposure = step(0.0, world_position.y);
+	ALBEDO = wet_albedo(ground_a.rgb, exposure);
 	NORMAL_MAP = ground_n.rgb;
-	ROUGHNESS = ground_n.a;
+	ROUGHNESS = wet_roughness(ground_n.a, exposure);
 }

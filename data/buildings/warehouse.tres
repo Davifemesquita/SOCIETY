@@ -38,3 +38,4 @@ upkeep_per_min = 15
 terrain = 0
 is_trading_post = false
 levels = Array[ExtResource("2_level")]([SubResource("level_0"), SubResource("level_1"), SubResource("level_2")])
+wall_material = 2

@@ -20,13 +20,16 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_cell_size = cell_size
 	var tile := BoxMesh.new()
 	tile.size = Vector3(cell_size, THICKNESS_M, cell_size)
-	var material := StandardMaterial3D.new()
-	material.vertex_color_use_as_albedo = true
-	material.roughness = 1.0
+	# Fase 9: terra batida e paralelepípedo da Poly Haven; a ponte fica na cor da tábua
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/road.gdshader") as Shader
+	material.set_shader_parameter(&"albedo_rough", load("res://assets/materials/roads_albedo_rough.png"))
+	material.set_shader_parameter(&"normals", load("res://assets/materials/roads_normal.png"))
 	tile.material = material
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = true
+	multimesh.use_custom_data = true
 	multimesh.mesh = tile
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: rebuild())
 	EventBus.world_replaced.connect(rebuild)
@@ -36,15 +39,18 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 func rebuild() -> void:
 	var tiles: Array[Transform3D] = []
 	var colors: Array[Color] = []
+	var kinds: Array[Color] = []
 	for grid: IslandGrid in _simulation.world.islands:
 		for cell: Vector2i in grid.road_cells():
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
 			tiles.append(tile_transform(grid, cell))
 			colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if grid.is_paved(cell) else DIRT_COLOR))
+			kinds.append(Color(1.0 if grid.is_paved(cell) else 0.0, 1.0 if bridge else 0.0, 0.0, 0.0))
 	multimesh.instance_count = tiles.size()
 	for i: int in tiles.size():
 		multimesh.set_instance_transform(i, tiles[i])
 		multimesh.set_instance_color(i, colors[i])
+		multimesh.set_instance_custom_data(i, kinds[i])
 
 
 func tile_count() -> int:

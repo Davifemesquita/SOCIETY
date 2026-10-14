@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"pigs"])
 output = &"tallow"
 cycle_s = 60.0
 terrain = 0
+smoke = 2

@@ -21,3 +21,5 @@ inputs = Array[StringName]([&"wheat"])
 output = &"flour"
 cycle_s = 30.0
 terrain = 0
+wall_material = 2
+smoke = 1

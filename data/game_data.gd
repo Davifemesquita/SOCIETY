@@ -95,6 +95,8 @@ func validate() -> PackedStringArray:
 	for def: BuildingDef in buildings:
 		if def.size.x <= 0 or def.size.y <= 0:
 			problems.append("%s: tamanho deve ser positivo" % def.id)
+		if def.wall_material < 0 or def.wall_material >= BuildingMaterials.Wall.size():
+			problems.append("%s: textura de parede fora da lista" % def.id)
 		for material: StringName in def.cost_materials:
 			if good(material) == null:
 				problems.append("%s: material desconhecido %s" % [def.id, material])
@@ -111,6 +113,9 @@ func validate() -> PackedStringArray:
 			if def.modules_required > 0 and building(def.module_id) == null:
 				problems.append("%s: módulo desconhecido %s" % [def.id, def.module_id])
 	for tier_def: TierDef in tiers:
+		if tier_def.wall_material < 0 or tier_def.wall_material >= BuildingMaterials.Wall.size() \
+				or tier_def.roof_material < 0 or tier_def.roof_material >= BuildingMaterials.Roof.size():
+			problems.append("%s: textura de parede ou telhado fora da lista" % tier_def.id)
 		if tier_def.clothing_colors.is_empty():
 			problems.append("%s: sem cores de roupa para os pedestres" % tier_def.id)
 		for material: StringName in tier_def.upgrade_materials:

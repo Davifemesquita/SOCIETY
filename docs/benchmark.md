@@ -238,3 +238,42 @@ de todas as ilhas e na amostra do histórico das estatísticas, que a Fase 7 nã
 - **Partida roteirizada** (critério): a cidade de 210 casas chega aos investidores em ~50 min de
   jogo; 4 horas de jogo rodam em ~2 min sem tela nesta VM.
 - O FPS desta VM continua não valendo; a meta se mede na RTX 3060.
+
+## Fase 9 — gráficos finais
+
+Mesma carga da Fase 8, no **nível gráfico alto** (o do critério): materiais PBR dos prédios e
+estradas, fumaça nas chaminés, clima, árvores ao vento, SSAO, SSIL, glow e neblina volumétrica. As
+nuvens volumétricas ficam desligadas no llvmpipe (ver as notas).
+
+### 2026-10-14 13:39:10 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| jogo novo: arquipélago, terreno, água e árvores | 6075 ms (semente 1840, 39763 árvores desenhadas) |
+| frota | 10 navios em 4 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1210 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 21090 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.56 / 3.98 / 5.31 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.04 · produção 0.64 · logística 1.36 · necessidades 0.22 · população 1.12 · economia 0.00 · navios 0.07 |
+| construir um prédio com a ilha cheia | 48.5 ms (limite 50 ms): comando e vistas 48.5 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.3 · serviços 10.2 · módulos e poluição 0.0 · armazéns 15.3 · produção 6.3 · grupos de casas 1.3 |
+| salvar | 148 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 1593 ms |
+| quadro com tudo visível | 4707 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1901 na rua (teto 2000); 6693 janelas |
+| multidão saindo de casa (rotas novas) | 493 quadros, 5600 ms; 1404 rotas, 2.13 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.72 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.1 / 0.1 FPS / 11409 ms em 8 quadros (meta 60 FPS), a partir das 07:00 |
+
+- **Tick**: média 3,56 ms, 95% em 3,98 ms, pior 5,31 ms: os gráficos não mexem na simulação.
+- **Construir com a ilha cheia**: 48,5 ms (limite 50 ms). A primeira medição deu 52 ms: as gaivotas
+  refaziam a revoada varrendo todos os prédios a cada construção; agora só quando entra ou sai um
+  porto.
+- **Quadro**: 4,7 s no llvmpipe, que não vale. **O critério da fase (quadro em até 16,6 ms no nível
+  alto) só se mede na RTX 3060**, com `Society.exe -- --benchmark` (`-- --benchmark --nivel 3` mede o
+  ultra, com as nuvens volumétricas).
+- Uma medição feita com outra sessão renderizando vídeo na VM (swap cheio) deu pior tick de 317 ms e
+  construir em 390 ms; foi descartada. Medir com a máquina livre (`uptime`, `free -m`).

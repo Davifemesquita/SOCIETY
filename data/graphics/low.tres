@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="GraphicsPresetDef" format=3]
+
+[ext_resource type="Script" path="res://data/graphics_preset_def.gd" id="1_preset"]
+
+[resource]
+script = ExtResource("1_preset")
+id = &"low"
+name_key = "GRAPHICS_LOW"
+shadow_distance_m = 180.0
+shadow_atlas_size = 2048
+soft_shadow_quality = 0
+ssao = false
+ssil = false
+glow = false
+volumetric_fog = false
+clouds = false
+depth_of_field = false
+particles_ratio = 0.25
+decals = false
+mesh_lod_threshold = 4.0
+visibility_scale = 0.5
+pedestrian_ratio = 0.35
+area_lights = 0
+msaa = 0
+render_scale = 0.75

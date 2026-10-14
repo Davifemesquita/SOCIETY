@@ -110,6 +110,8 @@ var _route_usec: int = 0
 var _building_labels: Dictionary[int, int] = {}
 ## Rotas calculadas (A*) e o tempo total delas, para o benchmark.
 var routes_computed: int = 0
+## Fração do teto de pedestres em uso (o nível gráfico escolhe).
+var pedestrian_ratio: float = 1.0
 var routes_usec: int = 0
 ## Hora recebida no último update.
 var _hour: float = 12.0
@@ -205,7 +207,8 @@ func _rebalance() -> void:
 	for house_id: int in derived.houses:
 		total += world.building(house_id).residents
 	var wanted_total := total / maxf(_config.residents_per_pedestrian, 0.001)
-	var scale := 1.0 if wanted_total <= _config.max_visible_pedestrians else _config.max_visible_pedestrians / wanted_total
+	var cap := _config.max_visible_pedestrians * pedestrian_ratio
+	var scale := 1.0 if wanted_total <= cap else cap / wanted_total
 	var accumulated := 0.0
 	var seen: Dictionary[int, bool] = {}
 	for house_id: int in derived.houses:

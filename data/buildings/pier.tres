@@ -14,3 +14,4 @@ cost_money = 500
 cost_materials = Dictionary[StringName, int]({&"planks": 6})
 upkeep_per_min = 10
 terrain = 1
+wall_material = 2

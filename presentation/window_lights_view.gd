@@ -33,6 +33,8 @@ var _transforms: Array[Transform3D] = []
 var _thresholds := PackedFloat32Array()
 var _slot_lit := PackedByteArray()
 var _area_lights: Array[AreaLight3D] = []
+## Luzes de área em uso (o nível gráfico escolhe; as outras ficam apagadas).
+var area_light_limit: int = 12
 var _refresh_left: float = 0.0
 var _area_left: float = 0.0
 var _rng := RandomNumberGenerator.new()
@@ -55,7 +57,11 @@ func setup(simulation: Simulation, config: GameConfig) -> void:
 	_instance.material_override = material
 	_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_instance)
-	for i: int in config.night_area_lights:
+	area_light_limit = config.night_area_lights
+	var most := config.night_area_lights
+	for preset: GraphicsPresetDef in config.graphics_presets:
+		most = maxi(most, preset.area_lights)
+	for i: int in most:
 		var light := AreaLight3D.new()
 		light.light_color = config.window_light_color
 		light.area_size = Vector2(2.5, 1.2)
@@ -250,7 +256,7 @@ func place_area_lights(camera_position: Vector3, camera_forward: Vector3, night:
 		chosen.sort()
 	for index: int in _area_lights.size():
 		var light := _area_lights[index]
-		light.visible = index < chosen.size()
+		light.visible = index < chosen.size() and index < area_light_limit
 		if light.visible:
 			_aim(light, _simulation.world.building(int(chosen[index].y)), night)
 

@@ -20,3 +20,5 @@ workers = 75
 inputs = Array[StringName]([&"grapes", &"glass"])
 output = &"champagne"
 cycle_s = 60.0
+wall_material = 1
+smoke = 1

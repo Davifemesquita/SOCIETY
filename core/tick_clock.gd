@@ -92,6 +92,11 @@ func hour() -> float:
 	return (position - floorf(position)) * 24.0
 
 
+## Horas desde a meia-noite do dia 1, lisas entre os ticks (o clima anda nelas).
+func total_hours() -> float:
+	return _day_position((tick_count + interpolation_alpha()) * _config.tick_interval()) * 24.0
+
+
 ## Dias decorridos desde a meia-noite do dia 1, com a hora de início e as horas extras.
 func _day_position(seconds: float) -> float:
 	return seconds / _config.day_length_game_seconds() + (_config.day_start_hour + extra_hours) / 24.0

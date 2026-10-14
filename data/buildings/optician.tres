@@ -20,3 +20,4 @@ workers = 25
 inputs = Array[StringName]([&"glass"])
 output = &"glasses"
 cycle_s = 60.0
+wall_material = 1

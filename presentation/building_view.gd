@@ -22,6 +22,9 @@ const HOUSE_SHADE := 0.05
 ## Altura do telhado em fração da altura da casa (ele fica em cima: as janelas não mudam).
 const ROOF_FRACTION := 0.35
 const ROOF_DARKEN := 0.45
+const SCAFFOLD_COLOR := Color(0.52, 0.4, 0.28)
+## Só prédio a partir desta altura esconde o que está atrás (ocultador, Fase 9).
+const OCCLUDER_MIN_HEIGHT_M := 5.0
 
 var _simulation: Simulation
 var _cell_size: float
@@ -32,6 +35,10 @@ var _label_keys: Dictionary[int, String] = {}
 var _materials: Dictionary[String, StandardMaterial3D] = {}
 var _door_material := StandardMaterial3D.new()
 var _selection: MeshInstance3D
+## Detalhes (telhado, chaminé, porta) e ocultadores: até onde aparecem, pelo nível gráfico (Fase 9).
+var _detail_range_m: float = 260.0
+var _occluders: bool = true
+var _details: Array[GeometryInstance3D] = []
 var _selected_id: int = 0
 var _refresh_left: float = 0.0
 
@@ -140,10 +147,13 @@ static func house_variant(building_id: int) -> int:
 ## trás (1), ou plano com chaminé (2).
 func _add_roof(root: Node3D, record: BuildingRecord, body_size: Vector3, height: float) -> void:
 	var variant := house_variant(record.id)
+	var tier := _simulation.data.tier(record.tier)
 	var roof_color := _color(record).darkened(ROOF_DARKEN)
 	var top := height
 	var roof := MeshInstance3D.new()
-	roof.material_override = _material_for(roof_color)
+	roof.material_override = BuildingMaterials.roofs()
+	BuildingMaterials.dress(roof, tier.roof_material, roof_color.lightened(0.35), root.position.y)
+	_detail(roof)
 	if variant == 2:
 		var cap := BoxMesh.new()
 		cap.size = Vector3(body_size.x + 0.3, 0.3, body_size.z + 0.3)
@@ -153,7 +163,9 @@ func _add_roof(root: Node3D, record: BuildingRecord, body_size: Vector3, height:
 		var stack := BoxMesh.new()
 		stack.size = Vector3(0.7, height * ROOF_FRACTION, 0.7)
 		chimney.mesh = stack
-		chimney.material_override = _material_for(roof_color)
+		chimney.material_override = BuildingMaterials.walls()
+		BuildingMaterials.dress(chimney, BuildingMaterials.Wall.BRICK, roof_color, root.position.y)
+		_detail(chimney)
 		chimney.position = Vector3(body_size.x * 0.25, top + height * ROOF_FRACTION * 0.5, -body_size.z * 0.2)
 		root.add_child(chimney)
 	else:
@@ -180,13 +192,23 @@ func _add(building_id: int) -> void:
 	var inset := 0.3 if def.kind != BuildingDef.Kind.MODULE else 0.15
 	box.size = Vector3(area.size.x * _cell_size - inset, height + FOUNDATION_M, area.size.y * _cell_size - inset)
 	body.mesh = box
-	body.material_override = _material_for(_color(record))
 	body.position.y = (height - FOUNDATION_M) * 0.5
+	if def.kind == BuildingDef.Kind.MODULE:
+		body.material_override = _material_for(_color(record))
+	else:
+		body.material_override = BuildingMaterials.walls()
+		var layer := _simulation.data.tier(record.tier).wall_material if record.is_house() else def.wall_material
+		var soot: float = _simulation.derived_state().pollution.get(building_id, 0.0)
+		BuildingMaterials.dress(body, layer, _color(record), root.position.y, soot)
+		if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
+			root.add_child(_occluder(box.size, body.position))
 	root.add_child(body)
 	if record.is_house():
 		_add_roof(root, record, box.size, height)
 	if def.kind != BuildingDef.Kind.MODULE:
-		root.add_child(_door(record, def, area))
+		var door := _door(record, def, area)
+		_detail(door)
+		root.add_child(door)
 		var label := Sprite3D.new()
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.fixed_size = true
@@ -203,6 +225,97 @@ func _add(building_id: int) -> void:
 		_labels[building_id] = label
 	add_child(root)
 	_nodes[building_id] = root
+
+
+## Nível gráfico: até onde os detalhes aparecem e se os prédios ocultam o que está atrás.
+func set_quality(preset: GraphicsPresetDef) -> void:
+	_detail_range_m = _simulation.config.building_detail_range_m * preset.visibility_scale
+	var occluders := preset.visibility_scale >= 0.75
+	_details.assign(_details.filter(func(node: GeometryInstance3D) -> bool: return is_instance_valid(node)))
+	for node: GeometryInstance3D in _details:
+		node.visibility_range_end = _detail_range_m
+	if occluders != _occluders:
+		_occluders = occluders
+		rebuild()
+
+
+func _detail(node: GeometryInstance3D) -> void:
+	node.visibility_range_end = _detail_range_m
+	node.visibility_range_end_margin = _detail_range_m * 0.1
+	node.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	_details.append(node)
+
+
+## Casa que acabou de subir de classe (Fase 9): andaime de madeira em volta e uma nuvem de poeira,
+## que somem sozinhos depois de upgrade_scaffold_seconds.
+func _scaffold(building_id: int) -> void:
+	var root: Node3D = _nodes.get(building_id)
+	if root == null:
+		return
+	var record := _simulation.world.building(building_id)
+	var area := _area(record)
+	var height := _height(record)
+	var size := Vector3(area.size.x * _cell_size + 0.6, height + 1.0, area.size.y * _cell_size + 0.6)
+	var frame := Node3D.new()
+	frame.name = "Scaffold"
+	var wood := _material_for(SCAFFOLD_COLOR)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+		frame.add_child(_beam(Vector3(0.18, size.y, 0.18), Vector3(corner.x * size.x * 0.5, size.y * 0.5, corner.y * size.z * 0.5), wood))
+	for level: float in [0.35, 0.7]:
+		for side: int in 2:
+			var along_x := side == 0
+			var length := size.x if along_x else size.z
+			for sign_value: float in [-1.0, 1.0]:
+				var center := Vector3(0.0, size.y * level, sign_value * size.z * 0.5) if along_x \
+						else Vector3(sign_value * size.x * 0.5, size.y * level, 0.0)
+				frame.add_child(_beam(Vector3(length, 0.12, 0.12) if along_x else Vector3(0.12, 0.12, length), center, wood))
+	var dust := GPUParticles3D.new()
+	dust.one_shot = true
+	dust.amount = 24
+	dust.lifetime = 2.5
+	dust.explosiveness = 0.8
+	var process := ParticleProcessMaterial.new()
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	process.emission_box_extents = size * 0.5
+	process.direction = Vector3.UP
+	process.spread = 60.0
+	process.initial_velocity_min = 0.5
+	process.initial_velocity_max = 1.5
+	process.gravity = Vector3(0.0, -0.3, 0.0)
+	dust.process_material = process
+	var puff := QuadMesh.new()
+	puff.size = Vector2(2.0, 2.0)
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.albedo_color = Color(0.72, 0.64, 0.52, 0.45)
+	material.albedo_texture = SmokeView._puff_texture()
+	puff.material = material
+	dust.draw_pass_1 = puff
+	dust.emitting = true
+	frame.add_child(dust)
+	root.add_child(frame)
+	get_tree().create_timer(_simulation.config.upgrade_scaffold_seconds).timeout.connect(frame.queue_free)
+
+
+static func _beam(size: Vector3, center: Vector3, material: Material) -> MeshInstance3D:
+	var beam := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = size
+	beam.mesh = box
+	beam.material_override = material
+	beam.position = center
+	return beam
+
+
+static func _occluder(size: Vector3, center: Vector3) -> OccluderInstance3D:
+	var occluder := OccluderInstance3D.new()
+	var shape := BoxOccluder3D.new()
+	# um pouco menor que a caixa: o ocultador nunca pode passar da parede
+	shape.size = size * 0.92
+	occluder.occluder = shape
+	occluder.position = center
+	return occluder
 
 
 ## Porta: bloco escuro encostado no meio da face de entrada.
@@ -312,6 +425,7 @@ func _on_building_removed(building_id: int) -> void:
 func _on_house_upgraded(building_id: int) -> void:
 	_remove(building_id)
 	_add(building_id)
+	_scaffold(building_id)
 	_refresh_label(building_id)
 	if building_id == _selected_id:
 		select(building_id)

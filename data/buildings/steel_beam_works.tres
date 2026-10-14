@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"steel"])
 output = &"steel_beams"
 cycle_s = 45.0
 terrain = 0
+smoke = 3

@@ -16,6 +16,8 @@ func before_test() -> void:
 	GameScreen.flat_world = false
 	GameScreen.world_seed = SEED
 	GameScreen.load_slot_on_start = ""
+	# o mouse do xvfb fica no canto: com quadros lentos o pan pela borda tirava a câmera do litoral
+	Settings.edge_pan = false
 	_runner = scene_runner(GAME)
 	_game = _runner.scene()
 	_sim = _game.simulation
@@ -24,6 +26,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.edge_pan = true
 	GameScreen.use_sky3d = true
 	GameScreen.world_seed = -1
 

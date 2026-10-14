@@ -7,6 +7,9 @@ enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE, PIER }
 ## Requisitos de terreno. Até a Fase 5 a ilha de teste cumpre todos, menos o litoral,
 ## que já é a borda da ilha.
 enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
+## O que sai da chaminé enquanto o prédio produz (Fase 9): nada, vapor claro, fumaça ou fumaça
+## pesada (com fuligem no chão em volta).
+enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 
 @export var id: StringName
 ## Chave de tradução do nome.
@@ -15,8 +18,11 @@ enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
 ## Largura (x) e profundidade (y) em células, com a frente voltada para −Z sem rotação.
 @export var size: Vector2i = Vector2i(3, 3)
 @export var height_m: float = 4.0
-## Cor do placeholder enquanto não há modelo.
+## Cor do placeholder enquanto não há modelo (na Fase 9, o tom que pinta a textura).
 @export var color: Color = Color(0.6, 0.6, 0.6)
+## Textura das paredes (Fase 9): camada de assets/materials/walls_* (BuildingMaterials.Wall).
+@export var wall_material: int = 0
+@export var smoke: Smoke = Smoke.NONE
 
 @export_group("Custo")
 @export var cost_money: int = 0

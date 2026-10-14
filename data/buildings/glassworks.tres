@@ -22,3 +22,4 @@ output = &"glass"
 cycle_s = 60.0
 pollution_radius_cells = 10
 pollution_strength = 0.5
+smoke = 3

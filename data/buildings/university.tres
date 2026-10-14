@@ -15,3 +15,4 @@ cost_materials = Dictionary[StringName, int]({&"bricks": 20, &"steel_beams": 6})
 upkeep_per_min = 200
 unlock_tier = &"engineers"
 unlock_residents = 40
+wall_material = 3

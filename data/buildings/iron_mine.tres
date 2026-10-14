@@ -24,3 +24,4 @@ terrain = 3
 pollution_radius_cells = 10
 pollution_strength = 0.6
 deposit = &"iron_ore"
+wall_material = 3

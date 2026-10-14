@@ -21,3 +21,4 @@ inputs = Array[StringName]([])
 output = &"clay"
 cycle_s = 30.0
 terrain = 4
+wall_material = 2

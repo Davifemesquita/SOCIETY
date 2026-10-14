@@ -242,6 +242,34 @@ static var _default: GameConfig
 @export var night_area_light_camera_distance_m: float = 160.0
 @export var window_light_color: Color = Color(1.0, 0.72, 0.38)
 
+@export_group("Clima")
+## Clima só visual (seção 9, Fase 9), sorteado por dia a partir da semente da partida: chance de
+## um dia nublado e de um dia com chuva (o resto é céu limpo), e de neblina de manhã.
+@export var weather_cloudy_chance: float = 0.35
+@export var weather_rain_chance: float = 0.2
+@export var weather_mist_chance: float = 0.5
+## Cobertura de nuvens (0 a 1) no céu limpo, no nublado e no meio da chuva.
+@export var weather_clear_coverage: float = 0.35
+@export var weather_cloudy_coverage: float = 0.7
+@export var weather_rain_coverage: float = 0.95
+## A chuva começa entre estas horas do dia, dura entre estas horas e leva rain_fade_hours para
+## chegar e para parar; o chão seca em dry_hours depois.
+@export var weather_rain_start_hours: Vector2 = Vector2(8.0, 18.0)
+@export var weather_rain_duration_hours: Vector2 = Vector2(1.5, 5.0)
+@export var weather_rain_fade_hours: float = 0.5
+@export var weather_dry_hours: float = 2.0
+## Neblina da manhã: cresce a partir de mist_start, é mais forte em mist_peak e some em mist_end.
+@export var weather_mist_start_hour: float = 4.0
+@export var weather_mist_peak_hour: float = 6.5
+@export var weather_mist_end_hour: float = 9.5
+## Densidade extra da neblina de distância e da volumétrica no auge da neblina e da chuva.
+@export var weather_mist_fog_density: float = 0.0022
+@export var weather_rain_fog_density: float = 0.0015
+## Gotas de chuva no nível mais alto, a caixa em volta da câmera e a velocidade de queda.
+@export var rain_max_drops: int = 6000
+@export var rain_box_m: Vector3 = Vector3(140.0, 60.0, 140.0)
+@export var rain_fall_speed_m_s: float = 28.0
+
 @export_group("Salvar")
 @export var autosave_interval_minutes: float = 10.0
 @export var autosave_slots: int = 3
@@ -269,6 +297,34 @@ static var _default: GameConfig
 @export var notice_check_seconds: float = 1.0
 ## Escala da resolução 3D (FSR 2) oferecida nas opções.
 @export var render_scale_min: float = 0.5
+
+@export_group("Gráficos")
+## Níveis de qualidade (seção 11), do mais leve ao mais pesado; as opções mostram nesta ordem.
+@export var graphics_presets: Array[GraphicsPresetDef] = [
+	preload("res://data/graphics/low.tres"), preload("res://data/graphics/medium.tres"),
+	preload("res://data/graphics/high.tres"), preload("res://data/graphics/ultra.tres")]
+## Nível de quem abre o jogo pela primeira vez (o alto, que é o da meta de desempenho).
+@export var default_graphics_preset: int = 2
+## Até onde telhados, chaminés e portas aparecem no nível alto (o nível multiplica).
+@export var building_detail_range_m: float = 260.0
+## Quanto tempo (s reais) o andaime e a poeira ficam na casa que subiu de classe.
+@export var upgrade_scaffold_seconds: float = 6.0
+## Até onde a fumaça das chaminés aparece no nível alto, e a força da fuligem no chão.
+@export var smoke_visibility_range_m: float = 450.0
+@export var soot_decal_alpha: float = 0.55
+## Força dos efeitos do ambiente quando o nível os liga.
+@export var ssao_intensity: float = 1.6
+@export var glow_intensity: float = 0.5
+@export var glow_bloom: float = 0.03
+@export var glow_hdr_threshold: float = 1.1
+@export var volumetric_fog_density: float = 0.004
+@export var volumetric_fog_length_m: float = 220.0
+## Efeito miniatura (tilt-shift): só com a câmera até esta distância; o desfoque longe começa em
+## distância × far_factor e o de perto termina em distância × near_factor.
+@export var tilt_shift_max_distance_m: float = 90.0
+@export var tilt_shift_far_factor: float = 1.6
+@export var tilt_shift_near_factor: float = 0.35
+@export var tilt_shift_amount: float = 0.08
 
 @export_group("Desempenho")
 ## Orçamento de um tick de simulação na carga do benchmark.
@@ -362,6 +418,10 @@ func validate() -> PackedStringArray:
 		problems.append("terrace_levels_m começa acima do mar (> 0)")
 	if sea_shelf_width_m <= 0.0 or deep_sea_floor_m >= sea_floor_m:
 		problems.append("sea_shelf_width_m deve ser positivo e deep_sea_floor_m ficar abaixo de sea_floor_m")
+	if graphics_presets.is_empty() or default_graphics_preset < 0 or default_graphics_preset >= graphics_presets.size():
+		problems.append("graphics_presets não fica vazio e default_graphics_preset é um deles")
+	for preset: GraphicsPresetDef in graphics_presets:
+		problems.append_array(preset.validate())
 	if cell_size_m <= 0.0:
 		problems.append("cell_size_m deve ser maior que zero")
 	if camera_min_distance_m <= 0.0 or camera_min_distance_m >= camera_max_distance_m:

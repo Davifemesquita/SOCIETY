@@ -5,11 +5,11 @@ a descrição, o orçamento de polígonos e o prompt de imagem de referência.
 
 | Arquivo | Descrição | Orçamento (LOD0) | Prompt de referência | Fase |
 |---|---|---|---|---|
-| `presentation/` estrada de terra | ladrilho plano marrom no lugar da malha e textura de terra batida com sulcos de roda | 200 tri por célula | "estrada de terra batida, século XIX, vista de cima, sulcos de carroça, pedras soltas" | 9 |
+| `presentation/` estrada de terra | desde a Fase 9, ladrilho com a textura de terra da Poly Haven (`shaders/road.gdshader`); falta malha com meio-fio, sulcos de roda e a emenda entre células | 200 tri por célula | "estrada de terra batida, século XIX, vista de cima, sulcos de carroça, pedras soltas" | 10 |
 | `assets/buildings/` (30 prédios) | hoje caixas na cor de cada prédio (`data/buildings/*.tres`, campo `color`); um modelo por prédio, com silhueta própria por cadeia | casa 3.000–8.000, fábrica 8.000–20.000 | "prédio industrial europeu do século XIX, <nome>, tijolo e madeira, vista isométrica, luz de fim de tarde" | 9 |
 | casas por classe | desde a Fase 8, três modelos placeholder por classe (caixa na cor da classe, com tom sorteado pelo id, e telhado de duas águas em dois sentidos ou plano com chaminé, `presentation/building_view.gd`); 3 a 5 modelos de verdade por classe: madeira e palha (camponeses), tijolo geminado (operários), tijolo e pedra com detalhes (artesãos), 3 a 4 andares com sacadas (engenheiros), mansão ornamentada (investidores) | 3.000–8.000 | "casa de <classe> do século XIX, Europa industrial, <material da classe>, vista isométrica" | 9 |
 | andaimes do upgrade | a casa troca de classe na hora; a seção 11 pede andaimes e poeira na mudança | até 1.500 | "andaime de madeira em volta de casa de tijolo, século XIX" | 9 |
-| `presentation/` paralelepípedo | ladrilho cinza-escuro (`RoadView.PAVED_COLOR`); textura de paralelepípedo com meio-fio | 200 tri por célula | "rua de paralelepípedo de granito, século XIX, vista de cima, meio-fio de pedra" | 9 |
+| `presentation/` paralelepípedo | desde a Fase 9, textura de paralelepípedo da Poly Haven no ladrilho; falta o meio-fio | 200 tri por célula | "rua de paralelepípedo de granito, século XIX, vista de cima, meio-fio de pedra" | 10 |
 | campo e pasto | ladrilho plano colorido; plantação e cerca com animais | até 1.000 | "campo de trigo cercado, século XIX, vista de cima" | 9 |
 | carroça | caixa marrom com a carga na cor do bem (`presentation/cart_view.gd`); carroça de madeira com cavalo e carga visível (sacos, barris, tábuas, carvão) | 1.000–2.000 | "carroça de carga do século XIX puxada a cavalo, madeira, vista isométrica" | 9 |
 | entreposto e armazém | caixas; galpão de porto com guindaste e armazém de tijolo com rampas | 8.000–20.000 | "entreposto portuário do século XIX com guindaste de madeira" | 9 |
@@ -22,14 +22,14 @@ a descrição, o orçamento de polígonos e o prompt de imagem de referência.
 | terreno | shader próprio com 4 texturas da Poly Haven (grama, rocha, areia, chão de floresta); falta lama de margem de rio, campo arado e trilhas | — | — | 9 |
 | rio | braço de mar pela planície (fica no nível do mar); rio de verdade, com correnteza e altura própria, pede água em vários níveis | — | — | 9 |
 | ponte | ladrilho de tábuas sobre o rio (`presentation/road_view.gd`); ponte de madeira ou pedra com corrimão | até 1.000 | "ponte de madeira rústica, século XIX, vista isométrica" | 9 |
-| navio mercante | casco em caixa com proa em prisma, dois mastros e velas em placas (`presentation/ship_view.gd`, cores no `data/ships/*.tres`); veleiro de carga de dois mastros com velas, cordame e carga no convés | 4.000–8.000 | "veleiro mercante de dois mastros, 1840, casco de madeira, velas brancas, vista isométrica" | 9 |
+| navio mercante | desde a Fase 9, casco afilado de tábuas, dois mastros e velas enfunadas, gerados no código (`presentation/ship_view.gd`, cores no `data/ships/*.tres`); veleiro de carga de dois mastros com velas, cordame e carga no convés | 4.000–8.000 | "veleiro mercante de dois mastros, 1840, casco de madeira, velas brancas, vista isométrica" | 9 |
 | navio do comerciante | o mesmo placeholder com vela vermelha; navio com bandeira e cores próprias do comerciante | 4.000–8.000 | "navio mercante estrangeiro do século XIX, velas vermelhas, bandeira de comércio" | 9 |
 | posto do comerciante | plataforma de madeira sobre estacas com uma casinha e bandeira (`ShipView._build_post`); feitoria flutuante com armazém, guindaste e barcos amarrados | até 6.000 | "feitoria de madeira sobre estacas no mar, século XIX, bandeira de comércio" | 9 |
 | píer | caixa baixa como os outros prédios; trapiche de madeira avançando sobre a água, com amarras | até 2.000 | "trapiche de madeira sobre estacas, século XIX, cordas e cabeços de amarração" | 9 |
-| rastro, balanço e gaivotas | o navio balança por seno na vista e a espuma é a da água; a seção 9 pede rastro na água e gaivotas no porto | — | "gaivota em voo, baixo polígono" | 9 |
+| rastro e gaivotas | desde a Fase 9, rastro de espuma em partículas e gaivotas em V voando em volta dos portos (`presentation/ship_view.gd`); gaivota de verdade com bater de asas | até 300 | "gaivota em voo, baixo polígono" | 10 |
 | mapa do arquipélago | desde a Fase 7, carta desenhada no código (papel, sépia, litoral a tinta, rosa dos ventos, `ui/hud/archipelago_map.gd`); falta a textura de papel e o traço de gravura no litoral | — | "mapa náutico do século XIX, arquipélago, papel envelhecido, litoral em gravura" | 9 |
 | ícones (`ui/icons/icons.png`) | base do game-icons.net (CC BY 3.0) recolorida e emoldurada por `tools/build_icons.gd`; arte própria no mesmo estilo de medalhão (bens), placa de madeira (prédios) e lacre (classes) | 128 px | "ícone de <nome>, gravura do século XIX, tinta sépia sobre papel, moldura dourada" | 9 |
-| papel da interface | o Theme (`ui/theme/theme_builder.gd`) usa cores lisas de papel e madeira; textura de papel envelhecido e cantoneiras de moldura nos painéis | 512 px, 9-slice | "papel envelhecido do século XIX, bordas gastas, cantoneira de latão" | 9 |
+| papel da interface | desde a Fase 9, papel gerado por ruído com moldura de madeira, filete dourado e cantoneiras (`ThemeBuilder.paper_image`); textura pintada à mão com gravura nas cantoneiras | 512 px, 9-slice | "papel envelhecido do século XIX, bordas gastas, cantoneira de latão" | 10 |
 
 ## Retratos (seção 14)
 
@@ -46,3 +46,13 @@ Placeholder hoje: medalhão oval com o desenho do game-icons sobre fundo escuro,
 | `portrait_tier_investors.png` | investidores | "retrato a óleo, século XIX, meio corpo, fundo neutro, luz lateral quente; investidora de 1870, vestido de seda escura, joias discretas, luvas, olhar firme" | 8 |
 | `portrait_advisor.png` | conselheiro (metas guiadas) | "retrato a óleo, século XIX, meio corpo, fundo neutro, luz lateral quente; conselheiro do governador, homem de 50 anos, costeletas grisalhas, casaca escura, pena e caderno" | 8 |
 | `portrait_trader.png` | comerciante neutro | "retrato a óleo, século XIX, meio corpo, fundo neutro, luz lateral quente; capitã mercante de 1840, casaco de lã azul com botões de latão, lenço no pescoço, luneta" | 8 |
+
+## Gráficos a conferir na placa de vídeo (Fase 9)
+
+Esta VM não tem GPU: estes itens só se confirmam no PC alvo (RTX 3060).
+
+| Item | O que conferir |
+|---|---|
+| nuvens volumétricas (SunshineClouds2) | no Vulkan por software o efeito escurece a tela inteira fora das nuvens; por isso estão só no nível ultra e desligadas no llvmpipe. Na RTX 3060: o céu e o chão aparecem com as nuvens? Se sim, voltam para o nível alto (`data/graphics/high.tres`, `clouds = true`) |
+| benchmark no nível alto | `Society.exe -- --benchmark` (ou `-- --benchmark --nivel 3` para o ultra): o quadro tem de ficar em até 16,6 ms em 1080p |
+

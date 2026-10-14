@@ -16,6 +16,12 @@ const FONT_SIZE := 18
 const ICON_SIZE := 26
 
 
+## Papel dos painéis (Fase 9): gerado por tools/build_theme.gd; a moldura tem PAPER_FRAME_PX.
+const PAPER_TEXTURE := "res://ui/theme/paper_panel.png"
+const MENU_TEXTURE := "res://ui/theme/paper_menu.png"
+const PAPER_FRAME_PX := 14
+
+
 static func build() -> Theme:
 	var theme := Theme.new()
 	var regular: FontFile = load(FONT_REGULAR)
@@ -66,11 +72,16 @@ static func _labels(theme: Theme, bold: Font, italic: Font, title: Font) -> void
 
 
 static func _panels(theme: Theme) -> void:
-	var paper := _box(UiPalette.PAPER, UiPalette.WOOD, 3, 4)
-	paper.shadow_color = Color(0, 0, 0, 0.35)
-	paper.shadow_size = 6
-	paper.shadow_offset = Vector2(0, 2)
-	paper.set_content_margin_all(12)
+	# Fase 9: papel envelhecido com moldura de madeira e filete dourado (textura gerada por
+	# tools/build_theme.gd em PAPER_TEXTURE; sem ela, o papel liso de antes)
+	var paper: StyleBox = _paper_box(12, PAPER_TEXTURE)
+	if paper == null:
+		var flat := _box(UiPalette.PAPER, UiPalette.WOOD, 3, 4)
+		flat.shadow_color = Color(0, 0, 0, 0.35)
+		flat.shadow_size = 6
+		flat.shadow_offset = Vector2(0, 2)
+		flat.set_content_margin_all(12)
+		paper = flat
 	theme.set_stylebox(&"panel", &"PanelContainer", paper)
 	theme.set_stylebox(&"panel", &"Panel", paper)
 	_variation(theme, &"TopBar", &"PanelContainer")
@@ -84,10 +95,13 @@ static func _panels(theme: Theme) -> void:
 	bar.shadow_size = 5
 	theme.set_stylebox(&"panel", &"TopBar", bar)
 	_variation(theme, &"MenuPanel", &"PanelContainer")
-	var menu := _box(UiPalette.PAPER, UiPalette.WOOD, 5, 6)
-	menu.shadow_color = Color(0, 0, 0, 0.5)
-	menu.shadow_size = 14
-	menu.set_content_margin_all(28)
+	var menu: StyleBox = _paper_box(28, MENU_TEXTURE)
+	if menu == null:
+		var flat_menu := _box(UiPalette.PAPER, UiPalette.WOOD, 5, 6)
+		flat_menu.shadow_color = Color(0, 0, 0, 0.5)
+		flat_menu.shadow_size = 14
+		flat_menu.set_content_margin_all(28)
+		menu = flat_menu
 	theme.set_stylebox(&"panel", &"MenuPanel", menu)
 	_variation(theme, &"NoticePanel", &"PanelContainer")
 	var notice := _box(UiPalette.PAPER, UiPalette.GOLD, 2, 4)
@@ -268,6 +282,52 @@ static func _tooltip(theme: Theme) -> void:
 	theme.set_stylebox(&"panel", &"TooltipPanel", box)
 	theme.set_color(&"font_color", &"TooltipLabel", UiPalette.INK)
 	theme.set_font_size(&"font_size", &"TooltipLabel", 16)
+
+
+## Painel de papel com moldura: textura de 9 fatias (os cantos e a borda não esticam).
+static func _paper_box(margin: int, path: String) -> StyleBoxTexture:
+	if not ResourceLoader.exists(path):
+		return null
+	var box := StyleBoxTexture.new()
+	box.texture = load(path) as Texture2D
+	box.set_texture_margin_all(PAPER_FRAME_PX)
+	box.set_content_margin_all(margin)
+	return box
+
+
+## Papel envelhecido (manchas e fibras por ruído, bordas mais escuras), moldura de madeira, filete
+## dourado por dentro e cantoneiras. Determinístico: a mesma imagem a cada geração.
+static func paper_image(side: int, frame: int, seed_value: int) -> Image:
+	var image := Image.create_empty(side, side, false, Image.FORMAT_RGBA8)
+	var stains := FastNoiseLite.new()
+	stains.seed = seed_value
+	stains.frequency = 0.035
+	var fibers := FastNoiseLite.new()
+	fibers.seed = seed_value + 1
+	fibers.frequency = 0.4
+	for y: int in side:
+		for x: int in side:
+			var edge := mini(mini(x, y), mini(side - 1 - x, side - 1 - y))
+			var color: Color
+			if edge < frame - 6:
+				color = UiPalette.WOOD.lerp(UiPalette.WOOD_LIGHT, 0.5 + 0.5 * fibers.get_noise_2d(x * 0.3, y * 3.0))
+			elif edge < frame - 3:
+				color = UiPalette.GOLD.lerp(UiPalette.GOLD_LIGHT, float(edge - frame + 6) / 3.0)
+			else:
+				var inside := float(edge - frame + 3) / float(side / 2 - frame + 3)
+				var stain := stains.get_noise_2d(x, y) * 0.5 + 0.5
+				var fiber := fibers.get_noise_2d(x, y) * 0.5 + 0.5
+				color = UiPalette.PAPER.lerp(UiPalette.PAPER_DARK, stain * 0.55 + fiber * 0.15)
+				color = color.lerp(UiPalette.PAPER_SHADE, (1.0 - smoothstep(0.0, 0.35, inside)) * 0.45)
+			image.set_pixel(x, y, color)
+	# cantoneiras de latão
+	for corner: Vector2i in [Vector2i(0, 0), Vector2i(side - frame, 0), Vector2i(0, side - frame), Vector2i(side - frame, side - frame)]:
+		for y: int in frame:
+			for x: int in frame:
+				var local := Vector2(x, y) - Vector2(frame, frame) * 0.5
+				if local.length() < frame * 0.36:
+					image.set_pixel(corner.x + x, corner.y + y, UiPalette.GOLD_LIGHT.lerp(UiPalette.GOLD, local.length() / (frame * 0.36)))
+	return image
 
 
 static func _variation(theme: Theme, name: StringName, base: StringName) -> void:
