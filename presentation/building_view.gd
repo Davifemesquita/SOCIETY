@@ -1,7 +1,9 @@
 class_name BuildingView
 extends Node3D
 ## Caixas dos prédios. Escuta o EventBus e só lê a simulação; nenhuma regra aqui.
-## - Casa: cor e altura da classe; refeita quando sobe de classe.
+## - Casa: cor e altura da classe; refeita quando sobe de classe. Desde a Fase 8 cada casa tira,
+##   pelo id, um de HOUSE_VARIANTS modelos (telhado de duas águas de frente ou de lado, ou telhado
+##   plano com chaminé) e um tom da cor da classe: a rua deixa de ser fileira de caixas iguais.
 ## - Prédio parado: ícone do motivo flutuando em cima (sem estrada, sem entrada, saída cheia…);
 ##   o texto do motivo fica na dica do painel. Desde a Fase 7 é ícone, não texto.
 ## - Casa em protesto: ícone de protesto. Campo e pasto não têm ícone.
@@ -13,6 +15,13 @@ const SELECTED_COLOR := Color(1.0, 0.85, 0.35, 0.35)
 const REFRESH_SECONDS := 0.5
 ## A caixa desce abaixo do chão: a área pode ter até max_build_height_delta_m de desnível.
 const FOUNDATION_M := 0.6
+## Modelos placeholder de casa por classe, e quanto o tom da cor varia de uma casa para outra.
+const HOUSE_VARIANTS := 3
+const HOUSE_SHADE_STEPS := 5
+const HOUSE_SHADE := 0.05
+## Altura do telhado em fração da altura da casa (ele fica em cima: as janelas não mudam).
+const ROOF_FRACTION := 0.35
+const ROOF_DARKEN := 0.45
 
 var _simulation: Simulation
 var _cell_size: float
@@ -111,7 +120,52 @@ func _height(record: BuildingRecord) -> float:
 
 
 func _color(record: BuildingRecord) -> Color:
-	return _simulation.data.tier(record.tier).house_color if record.is_house() else _simulation.def_of(record).color
+	if not record.is_house():
+		return _simulation.def_of(record).color
+	var shade := (house_hash(record.id) / HOUSE_VARIANTS % HOUSE_SHADE_STEPS - HOUSE_SHADE_STEPS / 2) * HOUSE_SHADE
+	var base := _simulation.data.tier(record.tier).house_color
+	return base.lightened(shade) if shade >= 0.0 else base.darkened(-shade)
+
+
+## Número estável sorteado pelo id da casa (o mesmo modelo depois de salvar e carregar).
+static func house_hash(building_id: int) -> int:
+	return absi(hash(building_id * 7919))
+
+
+static func house_variant(building_id: int) -> int:
+	return house_hash(building_id) % HOUSE_VARIANTS
+
+
+## Telhado da casa pelo modelo: duas águas com a cumeeira de lado a lado (0) ou de frente para
+## trás (1), ou plano com chaminé (2).
+func _add_roof(root: Node3D, record: BuildingRecord, body_size: Vector3, height: float) -> void:
+	var variant := house_variant(record.id)
+	var roof_color := _color(record).darkened(ROOF_DARKEN)
+	var top := height
+	var roof := MeshInstance3D.new()
+	roof.material_override = _material_for(roof_color)
+	if variant == 2:
+		var cap := BoxMesh.new()
+		cap.size = Vector3(body_size.x + 0.3, 0.3, body_size.z + 0.3)
+		roof.mesh = cap
+		roof.position.y = top + 0.15
+		var chimney := MeshInstance3D.new()
+		var stack := BoxMesh.new()
+		stack.size = Vector3(0.7, height * ROOF_FRACTION, 0.7)
+		chimney.mesh = stack
+		chimney.material_override = _material_for(roof_color)
+		chimney.position = Vector3(body_size.x * 0.25, top + height * ROOF_FRACTION * 0.5, -body_size.z * 0.2)
+		root.add_child(chimney)
+	else:
+		var prism := PrismMesh.new()
+		prism.size = Vector3(body_size.x + 0.4, height * ROOF_FRACTION, body_size.z + 0.4)
+		roof.mesh = prism
+		roof.position.y = top + height * ROOF_FRACTION * 0.5
+		# o prisma do Godot tem a cumeeira ao longo de z; o modelo 0 a põe ao longo de x
+		if variant == 0:
+			prism.size = Vector3(body_size.z + 0.4, height * ROOF_FRACTION, body_size.x + 0.4)
+			roof.rotation.y = PI * 0.5
+	root.add_child(roof)
 
 
 func _add(building_id: int) -> void:
@@ -129,6 +183,8 @@ func _add(building_id: int) -> void:
 	body.material_override = _material_for(_color(record))
 	body.position.y = (height - FOUNDATION_M) * 0.5
 	root.add_child(body)
+	if record.is_house():
+		_add_roof(root, record, box.size, height)
 	if def.kind != BuildingDef.Kind.MODULE:
 		root.add_child(_door(record, def, area))
 		var label := Sprite3D.new()

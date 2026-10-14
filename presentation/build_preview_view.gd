@@ -47,7 +47,7 @@ func refresh() -> void:
 	var valid := _tool.preview_reason() == PlacementRules.OK
 	_material.albedo_color = VALID_COLOR if valid else INVALID_COLOR
 	match _tool.mode:
-		BuildTool.Mode.BUILDING:
+		BuildTool.Mode.BUILDING, BuildTool.Mode.MOVE:
 			_show_building()
 		BuildTool.Mode.ROAD:
 			_show_roads()

@@ -22,6 +22,7 @@ var ship_panel: ShipPanel
 var route_window: RouteWindow
 var trade_window: TradeWindow
 var notifications: NotificationFeed
+var goal_panel: GoalPanel
 var overlay_layer: MapOverlays.Layer = MapOverlays.Layer.NONE
 
 var _tool: BuildTool
@@ -37,6 +38,8 @@ var _items := HFlowContainer.new()
 ## Coluna de baixo: a dica em cima do menu de construção (a dica nunca cobre o menu).
 var _bottom := VBoxContainer.new()
 var _item_buttons: Dictionary[StringName, Button] = {}
+## Cartão do paralelepípedo (Fase 8), travado até a classe que o libera (null fora da aba).
+var _paved_button: Button
 var _message_panel := PanelContainer.new()
 var _message := Label.new()
 var _hint_panel := PanelContainer.new()
@@ -67,6 +70,11 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_pin(notifications, Vector2(1.0, 0.0), Vector2(-16, 72), Control.GROW_DIRECTION_BEGIN, Control.GROW_DIRECTION_END)
 	add_child(notifications)
 	notifications.setup(simulation)
+	goal_panel = GoalPanel.new()
+	goal_panel.name = "Goals"
+	_pin(goal_panel, Vector2(0.0, 0.0), Vector2(16, 72), Control.GROW_DIRECTION_END, Control.GROW_DIRECTION_END)
+	add_child(goal_panel)
+	goal_panel.setup(simulation)
 	statistics_window = StatisticsWindow.new()
 	_pin(statistics_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
 	add_child(statistics_window)
@@ -156,6 +164,10 @@ func _refresh() -> void:
 	for def_id: StringName in _item_buttons:
 		var def := _simulation.data.building(def_id)
 		_item_buttons[def_id].disabled = not _simulation.free_build and PlacementRules.check_unlock(world, def) != PlacementRules.OK
+	if _paved_button != null:
+		var config := _simulation.config
+		_paved_button.disabled = not _simulation.free_build \
+				and world.population(config.paved_road_unlock_tier) < config.paved_road_unlock_residents
 
 
 func _build_top_bar() -> void:
@@ -306,6 +318,7 @@ func _select_category(index: int) -> void:
 		_category_buttons[i].text = _category_label(i)
 	UiKit.clear(_items)
 	_item_buttons.clear()
+	_paved_button = null
 	var defs: Array = _categories()[index]
 	for def: BuildingDef in defs:
 		var button := _card(def.name_key, Icons.building(def.id))
@@ -318,6 +331,14 @@ func _select_category(index: int) -> void:
 		road.tooltip_text = tr("HUD_ROAD_TIP") % Fmt.integer(_simulation.config.road_cost_per_cell)
 		road.pressed.connect(_tool.start_road)
 		_items.add_child(road)
+		var config := _simulation.config
+		var paved := _card("HUD_PAVED_ROAD", Icons.action("paved_road"))
+		paved.tooltip_text = tr("HUD_PAVED_ROAD_TIP") % [Fmt.integer(config.paved_road_cost_per_cell),
+				Fmt.decimal(config.paved_road_bricks_per_cell, 1), Fmt.percent(config.paved_road_speed_bonus),
+				Fmt.integer(config.paved_road_unlock_residents), tr(_simulation.data.tier(config.paved_road_unlock_tier).name_key)]
+		paved.pressed.connect(_tool.start_paved_road)
+		_items.add_child(paved)
+		_paved_button = paved
 		var demolish := _card("HUD_DEMOLISH", Icons.action("demolish"))
 		demolish.tooltip_text = tr("HUD_DEMOLISH_TIP") % Fmt.percent(_simulation.config.demolish_refund)
 		demolish.pressed.connect(_tool.start_demolish)
@@ -432,7 +453,9 @@ func _refresh_tool() -> void:
 		BuildTool.Mode.BUILDING:
 			_hint.text = tr("HUD_HINT_BUILDING")
 		BuildTool.Mode.ROAD:
-			_hint.text = tr("HUD_HINT_ROAD")
+			_hint.text = tr("HUD_HINT_PAVED_ROAD") if _tool.road_paved else tr("HUD_HINT_ROAD")
+		BuildTool.Mode.MOVE:
+			_hint.text = tr("HUD_HINT_MOVE")
 		BuildTool.Mode.DEMOLISH:
 			_hint.text = tr("HUD_HINT_DEMOLISH")
 		BuildTool.Mode.SAIL_TO:
@@ -461,6 +484,9 @@ func _update_cursor_label() -> void:
 		text = tr(reason)
 	elif _tool.mode == BuildTool.Mode.ROAD and _tool.dragging:
 		text = tr("PREVIEW_ROAD_COST") % [_tool.road_cells().size(), Fmt.integer(_tool.road_cost())]
+		var bricks: int = _tool.road_materials().get(&"bricks", 0)
+		if bricks > 0:
+			text += "\n" + tr("PREVIEW_ROAD_BRICKS") % Fmt.integer(bricks)
 	_cursor_label.text = text
 	_cursor_panel.visible = not text.is_empty()
 	_cursor_panel.reset_size()

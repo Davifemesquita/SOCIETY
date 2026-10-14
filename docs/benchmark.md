@@ -202,3 +202,39 @@ Mesma carga da Fase 5, mais um entreposto no litoral de cada uma das outras 4 il
 - **Construir com a ilha cheia**: 47,5 ms (limite 50 ms), ~2 ms acima da Fase 5 por causa dos
   pontos de atracação refeitos a cada recálculo.
 - O FPS desta VM continua não valendo; a meta se mede na RTX 3060.
+
+## Fase 8 — conteúdo
+
+Mesma carga da Fase 6 (camponeses e operários): o custo das classes novas aparece nas necessidades
+de todas as ilhas e na amostra do histórico das estatísticas, que a Fase 7 não mediu.
+
+### 2026-10-14 09:08:40 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| jogo novo: arquipélago, terreno, água e árvores | 5310 ms (semente 1840, 39763 árvores desenhadas) |
+| frota | 10 navios em 4 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1130 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 20671 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.59 / 4.00 / 5.08 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.04 · produção 0.63 · logística 1.31 · necessidades 0.22 · população 1.13 · economia 0.00 · navios 0.06 |
+| construir um prédio com a ilha cheia | 48.0 ms (limite 50 ms): comando e vistas 48.0 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.3 · serviços 9.8 · módulos e poluição 0.0 · armazéns 15.3 · produção 5.8 · grupos de casas 1.5 |
+| salvar | 142 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 1646 ms |
+| quadro com tudo visível | 2691 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1900 na rua (teto 2000); 6693 janelas |
+| multidão saindo de casa (rotas novas) | 487 quadros, 6158 ms; 1421 rotas, 1.95 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.68 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.2 / 0.1 FPS / 12574 ms em 10 quadros (meta 60 FPS), a partir das 07:00 |
+
+- **Tick**: média 3,59 ms, 95% em 4,00 ms, pior 5,08 ms. A primeira medição da fase deu 4,37 ms
+  de média e 11 ms de pior tick: as necessidades rodavam as cinco classes nas cinco ilhas, mesmo
+  sem casa (0,97 ms; agora 0,22 ms), e a amostra do histórico das estatísticas (Fase 7, uma a cada
+  60 s) percorria os prédios uma vez por ilha (agora é uma passada).
+- **Construir com a ilha cheia**: 48,0 ms (limite 50 ms), igual à Fase 6.
+- **Partida roteirizada** (critério): a cidade de 210 casas chega aos investidores em ~50 min de
+  jogo; 4 horas de jogo rodam em ~2 min sem tela nesta VM.
+- O FPS desta VM continua não valendo; a meta se mede na RTX 3060.

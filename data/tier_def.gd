@@ -19,3 +19,12 @@ extends Resource
 ## (ou saia) é a mesma para a classe.
 @export var clothing_colors: PackedColorArray = PackedColorArray([Color(0.45, 0.4, 0.35)])
 @export var trousers_color: Color = Color(0.25, 0.22, 0.2)
+
+var _all_needs: Array[NeedCategoryDef] = []
+
+
+## Básicas e depois as de luxo, numa lista feita uma vez (as necessidades rodam a cada tick).
+func all_needs() -> Array[NeedCategoryDef]:
+	if _all_needs.size() != basic_needs.size() + luxury_needs.size():
+		_all_needs = basic_needs + luxury_needs
+	return _all_needs

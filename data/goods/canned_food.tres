@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GoodDef" format=3]
+
+[ext_resource type="Script" path="res://data/good_def.gd" id="1_good"]
+
+[resource]
+script = ExtResource("1_good")
+id = &"canned_food"
+name_key = "GOOD_CANNED_FOOD"
+base_price = 120
+consumption_per_resident_t_min = 0.0025
+color = Color(0.6, 0.6, 0.62, 1)

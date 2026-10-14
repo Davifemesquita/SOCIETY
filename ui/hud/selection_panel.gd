@@ -100,6 +100,7 @@ func show_building(building_id: int) -> void:
 			_build_warehouse(record, def)
 		_:
 			_add_lines(1)
+	_add_button("PANEL_MOVE", "action_move", func() -> void: _tool.start_move(record.id))
 	if def.kind != BuildingDef.Kind.RESIDENCE:
 		_add_button("PANEL_DEMOLISH", "action_demolish", func() -> void:
 			_simulation.execute(DemolishCommand.new(record.island_id, Rect2i(record.origin, Vector2i.ONE))))

@@ -7,7 +7,8 @@ extends RefCounted
 ## plana de antes (flat) segue valendo para testes e saves antigos: sem relevo e sem água por
 ## dentro; o litoral é a borda.
 
-enum Road { NONE = 0, DIRT = 1 }
+## PAVED (Fase 8): paralelepípedo, mais rápido para as carroças e mais barato no A*.
+enum Road { NONE = 0, DIRT = 1, PAVED = 2 }
 enum Ground { LAND = 0, SEA = 1, RIVER = 2 }
 
 var size: Vector2i
@@ -65,6 +66,10 @@ func building_at(cell: Vector2i) -> int:
 
 func has_road(cell: Vector2i) -> bool:
 	return in_bounds(cell) and roads[index(cell)] != Road.NONE
+
+
+func is_paved(cell: Vector2i) -> bool:
+	return in_bounds(cell) and roads[index(cell)] == Road.PAVED
 
 
 func fill_building(area: Rect2i, building_id: int) -> void:

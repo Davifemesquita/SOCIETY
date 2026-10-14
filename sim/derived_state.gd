@@ -36,6 +36,8 @@ var service_houses: Dictionary[int, Array] = {}
 ## Prédio de serviço → células de estrada alcançadas dentro do raio.
 var service_reach: Dictionary[int, PackedInt32Array] = {}
 var houses: Array[int] = []
+## Ilhas com pelo menos uma casa (as outras não têm necessidade a calcular).
+var islands_with_houses: Dictionary[int, bool] = {}
 var production: Array[int] = []
 ## Muda a cada recálculo: a logística confere as rotas das carroças quando ele muda.
 var version: int = 0
@@ -94,6 +96,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	service_houses.clear()
 	service_reach.clear()
 	houses.clear()
+	islands_with_houses.clear()
 	production.clear()
 	production_entries.clear()
 	consumers.clear()
@@ -112,6 +115,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 		match def.kind:
 			BuildingDef.Kind.RESIDENCE:
 				houses.append(building_id)
+				islands_with_houses[record.island_id] = true
 				coverage[building_id] = []
 				pollution[building_id] = 0.0
 			BuildingDef.Kind.PRODUCTION:
@@ -266,7 +270,7 @@ func _assign_warehouses(world: WorldState, config: GameConfig) -> void:
 
 func router(island_id: int) -> RoadRouter:
 	if not _routers.has(island_id):
-		_routers[island_id] = RoadRouter.new(_world.island(island_id))
+		_routers[island_id] = RoadRouter.new(_world.island(island_id), _config.paved_road_speed_bonus)
 	return _routers[island_id]
 
 

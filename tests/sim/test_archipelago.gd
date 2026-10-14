@@ -156,7 +156,7 @@ func test_phase_four_save_stays_on_the_flat_island() -> void:
 			"economy": {"profile": &"test_island", "stock": {}, "category_supply": {}, "good_supply": {}, "shortage_announced": {}}}],
 		"buildings": [], "next_building_id": 1, "money": 1000.0, "tax_levels": {}, "tick": 0, "carts": [],
 	}}
-	var world_data: Dictionary = SaveMigrations.from_5_to_6(SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(phase_four)))["world"]
+	var world_data: Dictionary = SaveMigrations.from_6_to_7(SaveMigrations.from_5_to_6(SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(phase_four))))["world"]
 	var world := WorldState.from_dict(world_data, GameData.get_default())
 	assert_object(world).is_not_null()
 	assert_int(world.terrain_version).is_equal(0)

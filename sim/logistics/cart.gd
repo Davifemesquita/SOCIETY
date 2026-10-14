@@ -43,6 +43,18 @@ func is_away() -> bool:
 	return state != State.HOME
 
 
+## O prédio mudou de lugar (Fase 8): a carroça volta para casa na hora, com a carga que tinha.
+func return_home() -> void:
+	state = State.HOME
+	warehouse_id = 0
+	path = PackedInt32Array()
+	position = 0.0
+	previous_position = 0.0
+	wanted.clear()
+	timer = 0.0
+	blocked = false
+
+
 func to_dict() -> Dictionary:
 	return {"home": home_id, "state": state, "warehouse": warehouse_id, "path": path, "position": position,
 			"cargo": cargo.duplicate(), "wanted": wanted.duplicate(), "timer": timer, "queued_at": queued_at, "blocked": blocked}

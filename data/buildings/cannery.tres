@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"cannery"
+name_key = "BUILDING_CANNERY"
+kind = 1
+size = Vector2i(5, 5)
+height_m = 6.5
+color = Color(0.55, 0.58, 0.62, 1)
+cost_money = 2500
+cost_materials = Dictionary[StringName, int]({&"planks": 6, &"bricks": 10})
+upkeep_per_min = 100
+unlock_tier = &"artisans"
+unlock_residents = 120
+workforce_tier = &"artisans"
+workers = 75
+inputs = Array[StringName]([&"fish", &"steel"])
+output = &"canned_food"
+cycle_s = 60.0

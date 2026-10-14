@@ -38,3 +38,6 @@ signal milestone_reached(count: int)
 signal trader_visited(island_id: int, earned: float, spent: float)
 ## Um entreposto foi fundado numa ilha a partir de um navio (colonização).
 signal island_colonized(island_id: int)
+
+## Metas guiadas (Fase 8): a meta de índice index foi cumprida (e a seguinte, se houver, começou).
+signal goal_completed(index: int)

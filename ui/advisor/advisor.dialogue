@@ -1,0 +1,124 @@
+~ trading_post
+Advisor: ADVISOR_TRADING_POST_1
+Advisor: ADVISOR_TRADING_POST_2
+=> END
+
+~ trading_post_done
+Advisor: ADVISOR_TRADING_POST_DONE_1
+=> END
+
+~ first_houses
+Advisor: ADVISOR_FIRST_HOUSES_1
+Advisor: ADVISOR_FIRST_HOUSES_2
+=> END
+
+~ first_houses_done
+Advisor: ADVISOR_FIRST_HOUSES_DONE_1
+=> END
+
+~ fish
+Advisor: ADVISOR_FISH_1
+Advisor: ADVISOR_FISH_2
+=> END
+
+~ fish_done
+Advisor: ADVISOR_FISH_DONE_1
+=> END
+
+~ clothes
+Advisor: ADVISOR_CLOTHES_1
+Advisor: ADVISOR_CLOTHES_2
+=> END
+
+~ clothes_done
+Advisor: ADVISOR_CLOTHES_DONE_1
+=> END
+
+~ hundred
+Advisor: ADVISOR_HUNDRED_1
+=> END
+
+~ hundred_done
+Advisor: ADVISOR_HUNDRED_DONE_1
+=> END
+
+~ workers
+Advisor: ADVISOR_WORKERS_1
+Advisor: ADVISOR_WORKERS_2
+=> END
+
+~ workers_done
+Advisor: ADVISOR_WORKERS_DONE_1
+=> END
+
+~ bricks
+Advisor: ADVISOR_BRICKS_1
+=> END
+
+~ bricks_done
+Advisor: ADVISOR_BRICKS_DONE_1
+=> END
+
+~ paving
+Advisor: ADVISOR_PAVING_1
+=> END
+
+~ paving_done
+Advisor: ADVISOR_PAVING_DONE_1
+=> END
+
+~ colony
+Advisor: ADVISOR_COLONY_1
+=> END
+
+~ colony_done
+Advisor: ADVISOR_COLONY_DONE_1
+=> END
+
+~ artisans
+Advisor: ADVISOR_ARTISANS_1
+Advisor: ADVISOR_ARTISANS_2
+=> END
+
+~ artisans_done
+Advisor: ADVISOR_ARTISANS_DONE_1
+=> END
+
+~ steel
+Advisor: ADVISOR_STEEL_1
+=> END
+
+~ steel_done
+Advisor: ADVISOR_STEEL_DONE_1
+=> END
+
+~ engineers
+Advisor: ADVISOR_ENGINEERS_1
+Advisor: ADVISOR_ENGINEERS_2
+=> END
+
+~ engineers_done
+Advisor: ADVISOR_ENGINEERS_DONE_1
+=> END
+
+~ windows
+Advisor: ADVISOR_WINDOWS_1
+=> END
+
+~ windows_done
+Advisor: ADVISOR_WINDOWS_DONE_1
+=> END
+
+~ investors
+Advisor: ADVISOR_INVESTORS_1
+Advisor: ADVISOR_INVESTORS_2
+=> END
+
+~ investors_done
+Advisor: ADVISOR_INVESTORS_DONE_1
+=> END
+
+~ all_done
+Advisor: ADVISOR_ALL_DONE_1
+Advisor: ADVISOR_ALL_DONE_2
+=> END

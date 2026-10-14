@@ -9,7 +9,15 @@ var _astar := AStarGrid2D.new()
 var _cache: Dictionary[int, PackedInt32Array] = {}
 
 
-func _init(grid: IslandGrid) -> void:
+## Peso da célula de terra no A* (a de paralelepípedo pesa 1): o tempo relativo de passar por ela.
+## A terra é que pesa mais, e não o paralelepípedo menos, para a heurística de Manhattan (1 por
+## célula) nunca passar do custo real: senão o A* devolve o caminho de terra mesmo com um calçado
+## mais rápido ao lado.
+var dirt_weight: float = 1.5
+
+
+func _init(grid: IslandGrid, paved_speed_bonus: float = 0.5) -> void:
+	dirt_weight = 1.0 + paved_speed_bonus
 	_grid = grid
 	_astar.region = Rect2i(Vector2i.ZERO, grid.size)
 	_astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
@@ -17,9 +25,13 @@ func _init(grid: IslandGrid) -> void:
 	_astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
 	_astar.update()
 	_astar.fill_solid_region(_astar.region, true)
+	# ilha só de terra: tudo pesa 1 (a heurística fica justa e a busca, curta)
+	var mixed := grid.roads.has(IslandGrid.Road.PAVED)
 	for i: int in grid.roads.size():
 		if grid.roads[i] != IslandGrid.Road.NONE:
 			_astar.set_point_solid(grid.cell_at(i), false)
+			if mixed and grid.roads[i] == IslandGrid.Road.DIRT:
+				_astar.set_point_weight_scale(grid.cell_at(i), dirt_weight)
 
 
 ## Índices das células de from até to (as duas inclusive), ou vazio se não há caminho.

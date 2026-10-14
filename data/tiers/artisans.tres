@@ -1,0 +1,74 @@
+[gd_resource type="Resource" script_class="TierDef" format=3]
+
+[ext_resource type="Script" path="res://data/tier_def.gd" id="1_tier"]
+[ext_resource type="Script" path="res://data/need_category_def.gd" id="2_need"]
+
+[sub_resource type="Resource" id="basic_food"]
+script = ExtResource("2_need")
+id = &"food"
+name_key = "NEED_FOOD"
+goods = Array[StringName]([&"sausages", &"bread", &"canned_food"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="basic_clothing"]
+script = ExtResource("2_need")
+id = &"clothing"
+name_key = "NEED_CLOTHING"
+goods = Array[StringName]([&"woolen_clothes"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="basic_hygiene"]
+script = ExtResource("2_need")
+id = &"hygiene"
+name_key = "NEED_HYGIENE"
+goods = Array[StringName]([&"soap"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="basic_household"]
+script = ExtResource("2_need")
+id = &"household"
+name_key = "NEED_HOUSEHOLD"
+goods = Array[StringName]([&"sewing_machines"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="basic_commerce"]
+script = ExtResource("2_need")
+id = &"commerce"
+name_key = "NEED_COMMERCE"
+goods = Array[StringName]([])
+services = Array[StringName]([&"market"])
+
+[sub_resource type="Resource" id="basic_education"]
+script = ExtResource("2_need")
+id = &"education"
+name_key = "NEED_EDUCATION"
+goods = Array[StringName]([])
+services = Array[StringName]([&"school"])
+
+[sub_resource type="Resource" id="luxury_drink"]
+script = ExtResource("2_need")
+id = &"drink"
+name_key = "NEED_DRINK"
+goods = Array[StringName]([&"beer", &"rum"])
+services = Array[StringName]([])
+
+[sub_resource type="Resource" id="luxury_social"]
+script = ExtResource("2_need")
+id = &"social"
+name_key = "NEED_SOCIAL"
+goods = Array[StringName]([])
+services = Array[StringName]([&"tavern", &"church", &"theater"])
+
+[resource]
+script = ExtResource("1_tier")
+id = &"artisans"
+name_key = "TIER_ARTISANS"
+residents_per_house = 30
+tax_per_resident_min = 2.4
+upgrade_materials = Dictionary[StringName, int]({&"bricks": 2, &"planks": 1})
+basic_needs = Array[ExtResource("2_need")]([SubResource("basic_food"), SubResource("basic_clothing"), SubResource("basic_hygiene"), SubResource("basic_household"), SubResource("basic_commerce"), SubResource("basic_education")])
+luxury_needs = Array[ExtResource("2_need")]([SubResource("luxury_drink"), SubResource("luxury_social")])
+house_color = Color(0.62, 0.5, 0.42, 1)
+house_height_m = 8.5
+clothing_colors = PackedColorArray(0.38, 0.3, 0.42, 1, 0.3, 0.36, 0.3, 1, 0.48, 0.34, 0.26, 1, 0.32, 0.32, 0.4, 1, 0.6, 0.52, 0.4, 1)
+trousers_color = Color(0.2, 0.18, 0.18, 1)

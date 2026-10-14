@@ -5,5 +5,5 @@
 [resource]
 script = ExtResource("1_island")
 id = &"test_island"
-fertilities = Array[StringName]([&"potatoes", &"wheat", &"hops"])
+fertilities = Array[StringName]([&"potatoes", &"wheat", &"hops", &"grapes"])
 flat = true

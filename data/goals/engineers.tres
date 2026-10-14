@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GoalDef" format=3]
+
+[ext_resource type="Script" path="res://data/goal_def.gd" id="1_goal"]
+
+[resource]
+script = ExtResource("1_goal")
+id = &"engineers"
+kind = 1
+target = &"engineers"
+need = &""
+amount = 80
+reward_money = 8000
+after_milestone = 0

@@ -23,6 +23,10 @@ var next_route_id: int = 1
 var trader := TraderState.new()
 ## Marcos de população já atingidos (seção 3).
 var milestones_reached: int = 0
+## Metas guiadas cumpridas (Fase 8): a próxima é GameData.goals[goals_done].
+var goals_done: int = 0
+## Save de antes das metas: na primeira conferência, as metas já cumpridas passam sem prêmio.
+var goals_catch_up: bool = false
 ## Semente do arquipélago e a versão do gerador (0 = a ilha plana de antes da Fase 5).
 var seed: int = 0
 var terrain_version: int = 0
@@ -164,14 +168,17 @@ func to_dict() -> Dictionary:
 	for index: int in islands.size():
 		var grid := islands[index]
 		var road_indices := PackedInt32Array()
+		var paved_indices := PackedInt32Array()
 		for i: int in grid.roads.size():
 			if grid.roads[i] != IslandGrid.Road.NONE:
 				road_indices.append(i)
+			if grid.roads[i] == IslandGrid.Road.PAVED:
+				paved_indices.append(i)
 		var cleared := PackedInt32Array()
 		for i: int in grid.cleared_trees.size():
 			if grid.cleared_trees[i] == 1:
 				cleared.append(i)
-		island_list.append({"size": grid.size, "roads": road_indices, "economy": economies[index].to_dict(),
+		island_list.append({"size": grid.size, "roads": road_indices, "paved": paved_indices, "economy": economies[index].to_dict(),
 				"cleared_trees": cleared, "fingerprint": grid.fingerprint, "origin": grid.origin_m})
 	var building_list: Array[Dictionary] = []
 	var cart_list: Array[Dictionary] = []
@@ -189,7 +196,8 @@ func to_dict() -> Dictionary:
 			"money": money, "tax_levels": tax_levels.duplicate(), "tick": tick, "carts": cart_list,
 			"seed": seed, "terrain_version": terrain_version, "ships": ship_list, "next_ship_id": next_ship_id,
 			"routes": route_list, "next_route_id": next_route_id, "trader": trader.to_dict(),
-			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict()}
+			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict(),
+			"goals_done": goals_done, "goals_catch_up": goals_catch_up}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -285,6 +293,14 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	if loaded_history == null:
 		return null
 	world.history = loaded_history
+	var raw_goals: Variant = data.get("goals_done")
+	var raw_catch_up: Variant = data.get("goals_catch_up")
+	if not (raw_goals is int and raw_catch_up is bool):
+		return null
+	world.goals_done = raw_goals
+	world.goals_catch_up = raw_catch_up
+	if world.goals_done < 0 or world.goals_done > game_data.goals.size():
+		return null
 	return world
 
 
@@ -367,6 +383,15 @@ func _restore_island(raw: Variant, game_data: GameData, generated: IslandGrid) -
 		if i < 0 or i >= grid.roads.size():
 			return false
 		grid.roads[i] = IslandGrid.Road.DIRT
+	# paralelepípedo (Fase 8): um subconjunto das estradas
+	var raw_paved: Variant = data.get("paved")
+	if not raw_paved is PackedInt32Array:
+		return false
+	var paved_indices: PackedInt32Array = raw_paved
+	for i: int in paved_indices:
+		if i < 0 or i >= grid.roads.size() or grid.roads[i] != IslandGrid.Road.DIRT:
+			return false
+		grid.roads[i] = IslandGrid.Road.PAVED
 	var raw_fingerprint: Variant = data.get("fingerprint")
 	if generated != null and raw_fingerprint is int and raw_fingerprint != generated.fingerprint:
 		terrain_mismatch = true

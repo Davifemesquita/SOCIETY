@@ -14,6 +14,8 @@ static var _default: GameData
 ## Navios (Fase 6): o primeiro é o que o jogador compra.
 @export var ships: Array[ShipDef] = []
 @export var traders: Array[TraderDef] = []
+## Metas guiadas (Fase 8), na ordem em que o jogador as recebe.
+@export var goals: Array[GoalDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -141,7 +143,27 @@ func validate() -> PackedStringArray:
 				problems.append("%s: bem desconhecido %s" % [trader_def.id, good_id])
 		if trader_def.visit_interval_s <= 0.0 or trader_def.max_tons_per_visit <= 0:
 			problems.append("%s: intervalo e teto por visita devem ser positivos" % trader_def.id)
+	_check_ids(problems, "meta", goals.map(func(def: GoalDef) -> StringName: return def.id))
+	for goal: GoalDef in goals:
+		_check_goal(problems, goal)
 	return problems
+
+
+func _check_goal(problems: PackedStringArray, goal: GoalDef) -> void:
+	if goal.amount <= 0 or goal.reward_money < 0 or goal.after_milestone < 0:
+		problems.append("meta %s: quantidade positiva, prêmio e marco não negativos" % goal.id)
+	match goal.kind:
+		GoalDef.Kind.BUILDING_COUNT:
+			if building(goal.target) == null:
+				problems.append("meta %s: prédio desconhecido %s" % [goal.id, goal.target])
+		GoalDef.Kind.TIER_POPULATION:
+			if tier(goal.target) == null:
+				problems.append("meta %s: classe desconhecida %s" % [goal.id, goal.target])
+		GoalDef.Kind.NEED_SUPPLIED:
+			var tier_def := tier(goal.target)
+			if tier_def == null or not (tier_def.basic_needs + tier_def.luxury_needs).any(
+					func(need: NeedCategoryDef) -> bool: return need.id == goal.need and not need.goods.is_empty()):
+				problems.append("meta %s: necessidade de bem desconhecida %s/%s" % [goal.id, goal.target, goal.need])
 
 
 func _check_ids(problems: PackedStringArray, what: String, ids: Array) -> void:

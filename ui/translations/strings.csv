@@ -455,3 +455,112 @@ OVERLAY_POLLUTION_LEGEND,"Quanto mais escuro, mais a poluição tira felicidade 
 OVERLAY_ROADS,Estradas,Roads
 OVERLAY_ROADS_TIP,Camada: rede de estradas,Layer: road network
 OVERLAY_ROADS_LEGEND,Cada cor é um trecho ligado; cores diferentes não se encontram,Each color is a connected stretch; different colors do not meet
+GOOD_SAND,Areia,Sand
+GOOD_GLASS,Vidro,Glass
+GOOD_WINDOWS,Janelas,Windows
+GOOD_CANNED_FOOD,Enlatados,Canned food
+GOOD_SEWING_MACHINES,Máquinas de costura,Sewing machines
+GOOD_SUGAR,Cana-de-açúcar,Sugar cane
+GOOD_RUM,Rum,Rum
+GOOD_COFFEE_BEANS,Café em grão,Coffee beans
+GOOD_COFFEE,Café,Coffee
+GOOD_LIGHT_BULBS,Lâmpadas,Light bulbs
+GOOD_CLOCKS,Relógios,Clocks
+GOOD_GLASSES,Óculos,Spectacles
+GOOD_GRAPES,Uvas,Grapes
+GOOD_CHAMPAGNE,Champanhe,Champagne
+GOOD_TOBACCO,Tabaco,Tobacco
+GOOD_CIGARS,Charutos,Cigars
+GOOD_GOLD,Ouro,Gold
+GOOD_JEWELRY,Joias,Jewellery
+BUILDING_SAND_PIT,Areal,Sand pit
+BUILDING_GLASSWORKS,Vidraria,Glassworks
+BUILDING_WINDOW_WORKS,Janelaria,Window works
+BUILDING_SEWING_MACHINE_FACTORY,Fábrica de máquinas de costura,Sewing machine factory
+BUILDING_CANNERY,Fábrica de conservas,Cannery
+BUILDING_RUM_DISTILLERY,Destilaria de rum,Rum distillery
+BUILDING_LAMP_FACTORY,Fábrica de lâmpadas,Lamp factory
+BUILDING_OPTICIAN,Ótica,Optician
+BUILDING_CLOCKMAKER,Relojoaria,Clockmaker
+BUILDING_COFFEE_ROASTER,Torrefação,Coffee roaster
+BUILDING_VINEYARD,Vinhedo,Vineyard
+BUILDING_CHAMPAGNE_CELLAR,Adega de champanhe,Champagne cellar
+BUILDING_CIGAR_FACTORY,Charutaria,Cigar factory
+BUILDING_GOLDSMITH,Ourivesaria,Goldsmith
+BUILDING_THEATER,Teatro,Theatre
+BUILDING_UNIVERSITY,Universidade,University
+TIER_ARTISANS,Artesãos,Artisans
+TIER_ENGINEERS,Engenheiros,Engineers
+TIER_INVESTORS,Investidores,Investors
+NEED_HOUSEHOLD,Lar,Household
+NEED_ACCESSORIES,Acessórios,Accessories
+NEED_TOBACCO,Fumo,Tobacco
+NEED_ADORNMENT,Adornos,Adornment
+HUD_PAVED_ROAD,Paralelepípedo,Cobblestone
+HUD_PAVED_ROAD_TIP,Paralelepípedo: %s moedas e %s tijolo por célula · carroças %s mais rápidas · libera com %s %s,Cobblestone: %s coins and %s brick per cell · carts %s faster · unlocks at %s %s
+HUD_HINT_PAVED_ROAD,Arraste para calçar · vale por cima da terra · Esc cancela,Drag to pave · works over dirt · Esc cancels
+HUD_HINT_MOVE,Clique no lugar novo · R gira · sem custo · Esc cancela,Click the new spot · R rotates · free · Esc cancels
+PREVIEW_ROAD_BRICKS,%s tijolos,%s bricks
+REASON_SAME_PLACE,O prédio já está aqui,The building is already here
+REASON_SHIP_AT_BERTH,Há um navio encostado,A ship is moored here
+PANEL_MOVE,Mover,Move
+PANEL_MOVE_TIP,Mudar o prédio de lugar sem custo,Move the building elsewhere for free
+GOAL_TRADING_POST,"Construa o entreposto no litoral","Build the trading post on the coast"
+ADVISOR_TRADING_POST_1,"Bem-vindo, governador. A ilha é nossa, mas ainda não há onde descarregar o navio.","Welcome, governor. The island is ours, but there is nowhere yet to unload the ship."
+ADVISOR_TRADING_POST_2,"Escolha um trecho de litoral e construa o entreposto: o primeiro é por conta da Coroa.","Pick a stretch of coast and build the trading post: the first one is on the Crown."
+ADVISOR_TRADING_POST_DONE_1,"O porão está vazio e as tábuas já estão no estoque.","The hold is empty and the planks are in stock."
+GOAL_FIRST_HOUSES,"Construa %s casas ligadas por estrada","Build %s houses connected by road"
+ADVISOR_FIRST_HOUSES_1,"Agora, gente. Trace estradas a partir do entreposto e levante as primeiras casas.","Now, people. Lay roads out from the trading post and raise the first houses."
+ADVISOR_FIRST_HOUSES_2,"Toda casa precisa da porta encostada numa estrada.","Every house needs its door against a road."
+ADVISOR_FIRST_HOUSES_DONE_1,"Os primeiros camponeses já chegaram.","The first peasants have arrived."
+GOAL_FISH,"Abasteça peixe para %s camponeses","Supply fish for %s peasants"
+ADVISOR_FISH_1,"Gente com fome não fica. Uma cabana de pesca no litoral dá peixe para muitas casas.","Hungry people do not stay. A fishing hut on the coast feeds many houses."
+ADVISOR_FISH_2,"Lembre do lenhador e da serraria: tábua é o que constrói tudo.","Remember the lumberjack and the sawmill: planks build everything."
+ADVISOR_FISH_DONE_1,"Peixe na mesa. As casas vão enchendo.","Fish on the table. The houses are filling up."
+GOAL_CLOTHES,"Vista %s camponeses com roupas de lã","Clothe %s peasants in woollen clothes"
+ADVISOR_CLOTHES_1,"Uma fazenda de ovelhas com pastos e uma tecelagem resolvem o frio.","A sheep farm with pastures and a weavery keep the cold away."
+ADVISOR_CLOTHES_2,"E um mercado ao alcance das casas: sem ele ninguém sobe de vida.","And a market within reach of the houses: without it nobody gets ahead."
+ADVISOR_CLOTHES_DONE_1,"Bem vestidos e bem servidos. As casas cheias já pedem para melhorar.","Well dressed and well served. The full houses are asking to improve."
+GOAL_HUNDRED,"Chegue a %s moradores","Reach %s residents"
+ADVISOR_HUNDRED_1,"Cem moradores é o primeiro marco: libera um segundo navio e uma ilha nova.","A hundred residents is the first milestone: it unlocks a second ship and a new island."
+ADVISOR_HUNDRED_DONE_1,"Primeiro marco atingido. O arquipélago começa a se abrir.","First milestone reached. The archipelago begins to open up."
+GOAL_WORKERS,"Tenha %s operários","Have %s workers"
+ADVISOR_WORKERS_1,"Casa cheia, com tudo o que pede e 2 tábuas no estoque, vira casa de operário.","A full house with all it needs and 2 planks in stock becomes a workers' house."
+ADVISOR_WORKERS_2,"Operários trabalham nas padarias, açougues e olarias. Fazenda continua com os camponeses.","Workers staff bakeries, butchers and brickworks. Farms still need peasants."
+ADVISOR_WORKERS_DONE_1,"A cidade já tem a sua classe trabalhadora.","The town now has its working class."
+GOAL_BRICKS,"Construa uma olaria","Build a brickworks"
+ADVISOR_BRICKS_1,"Tijolo é o material de quem vem depois. Poço de argila na margem do rio, olaria perto.","Bricks are the material of what comes next. A clay pit by the river, a brickworks nearby."
+ADVISOR_BRICKS_DONE_1,"Com tijolo dá para calçar as ruas e erguer casas de artesão.","With bricks you can pave streets and raise artisans' houses."
+GOAL_PAVING,"Calce %s células com paralelepípedo","Pave %s cells with cobblestone"
+ADVISOR_PAVING_1,"Rua de terra atrasa as carroças. Calce as mais movimentadas: elas andam bem mais rápido.","Dirt streets slow the carts. Pave the busiest ones: carts move much faster."
+ADVISOR_PAVING_DONE_1,"Ruas calçadas, carroças apressadas.","Paved streets, hurried carts."
+GOAL_COLONY,"Funde um entreposto numa segunda ilha","Found a trading post on a second island"
+ADVISOR_COLONY_1,"Nossa ilha não tem tudo. Mande um navio com tábuas e dinheiro e funde um entreposto noutra.","Our island does not have everything. Send a ship with planks and money and found a post on another."
+ADVISOR_COLONY_DONE_1,"Uma colônia nova. Rotas de navio ligam o que cada ilha tem de melhor.","A new colony. Ship routes join what each island does best."
+GOAL_ARTISANS,"Tenha %s artesãos","Have %s artisans"
+ADVISOR_ARTISANS_1,"Operário bem servido, com escola e sabão, sobe para artesão com 2 tijolos e 1 tábua.","A well-served worker, with school and soap, becomes an artisan for 2 bricks and 1 plank."
+ADVISOR_ARTISANS_2,"Artesãos pedem máquinas de costura: aço e tábuas numa fábrica própria.","Artisans want sewing machines: steel and planks in a factory of their own."
+ADVISOR_ARTISANS_DONE_1,"Os artesãos chegaram, e com eles vidro, janelas e conservas.","The artisans have arrived, and with them glass, windows and canned food."
+GOAL_STEEL,"Construa uma oficina de vigas","Build a steel beam works"
+ADVISOR_STEEL_1,"Vigas de aço sustentam as casas dos engenheiros. Minério, carvão, fundição e oficina.","Steel beams hold up the engineers' houses. Ore, coal, furnace and works."
+ADVISOR_STEEL_DONE_1,"Aço na cidade. O próximo degrau está ao alcance.","Steel in town. The next step is within reach."
+GOAL_ENGINEERS,"Tenha %s engenheiros","Have %s engineers"
+ADVISOR_ENGINEERS_1,"Artesão com tudo atendido sobe para engenheiro com 2 tijolos e 2 vigas de aço.","An artisan with every need met becomes an engineer for 2 bricks and 2 steel beams."
+ADVISOR_ENGINEERS_2,"Engenheiros estudam: construa uma universidade ao alcance das casas.","Engineers study: build a university within reach of the houses."
+ADVISOR_ENGINEERS_DONE_1,"Engenheiros na cidade. Lâmpadas, relógios e óculos já podem sair daqui.","Engineers in town. Light bulbs, clocks and spectacles can now be made here."
+GOAL_WINDOWS,"Construa uma janelaria","Build a window works"
+ADVISOR_WINDOWS_1,"As casas dos investidores pedem janelas: vidro da vidraria e tábuas.","Investors' houses call for windows: glass from the glassworks and planks."
+ADVISOR_WINDOWS_DONE_1,"Janelas prontas. Falta só a última mudança de classe.","Windows ready. Only the last change of class remains."
+GOAL_INVESTORS,"Tenha %s investidores","Have %s investors"
+ADVISOR_INVESTORS_1,"Engenheiro bem servido sobe para investidor com 2 vigas de aço e 2 janelas.","A well-served engineer becomes an investor for 2 steel beams and 2 windows."
+ADVISOR_INVESTORS_2,"Café, tabaco e ouro vêm de longe: o comerciante os vende.","Coffee, tobacco and gold come from afar: the trader sells them."
+ADVISOR_INVESTORS_DONE_1,"Investidores! A cidade chegou ao topo da sociedade.","Investors! The town has reached the top of society."
+ADVISOR_ALL_DONE_1,"As metas acabaram, governador. A partir daqui a ilha é sua.","The goals are done, governor. From here on the island is yours."
+ADVISOR_ALL_DONE_2,"Cresça como quiser: mais ilhas, mais rotas, mais investidores.","Grow as you like: more islands, more routes, more investors."
+GOAL_ALL_DONE,Partida livre: todas as metas cumpridas,Free play: every goal met
+GOAL_PROGRESS,%s de %s · prêmio %s moedas,%s of %s · reward %s coins
+GOAL_WAITS_MILESTONE,Começa com %s moradores,Starts at %s residents
+GOAL_ADVISOR_TIP,Ouvir o conselheiro sobre a meta,Hear the advisor about the goal
+GOAL_CONTINUE,Continuar,Continue
+GOAL_CONTINUE_TIP,Próxima fala do conselheiro,Next line from the advisor
+PORTRAIT_ADVISOR,O conselheiro,The advisor

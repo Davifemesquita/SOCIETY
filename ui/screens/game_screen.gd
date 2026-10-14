@@ -360,7 +360,7 @@ func update_highlight() -> void:
 	var world := simulation.world
 	var island := tool.island_id
 	var grid := world.island(island)
-	if tool.mode == BuildTool.Mode.BUILDING and tool.building_def != null:
+	if tool.mode in [BuildTool.Mode.BUILDING, BuildTool.Mode.MOVE] and tool.building_def != null:
 		var def := tool.building_def
 		if def.kind == BuildingDef.Kind.SERVICE or def.is_warehouse():
 			var front := Footprint.front_cells(tool.building_origin(), def.size, tool.rotation)

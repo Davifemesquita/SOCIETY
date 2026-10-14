@@ -51,6 +51,9 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://to
 # Fase 7: menu principal, jogo novo, partida de 30 min, painéis, estatísticas, camadas, menus,
 # opções, salvar, créditos, inglês, rotas com o mapa ilustrado e comércio
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase7.tscn -- /pasta/de/saida
+# Fase 8: a partida roteirizada até os investidores — rua das casas, painel do investidor, metas e
+# conselheiro, abas de produção das classes novas, paralelepípedo, mover casa, conselheiro em inglês
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase8.tscn -- /pasta/de/saida
 # interface: refaz o atlas de ícones e os retratos (depois de mexer em tools/icons/icon_list.csv;
 # os SVGs se baixam com tools/icons/fetch_icons.sh) e o Theme (depois de mexer no ThemeBuilder)
 tools/godot.sh godot --headless --path . --script res://tools/build_icons.gd
@@ -114,14 +117,14 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 23 bens (`goods/`), 2 classes (`tiers/`), 33 prédios (`buildings/`), perfis de ilha (`islands/`), 2 navios (`ships/`) e o comerciante (`traders/`) |
-| `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef` |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 49 prédios (`buildings/`), perfis de ilha (`islands/`), 2 navios (`ships/`), o comerciante (`traders/`) e 14 metas guiadas (`goals/`) |
+| `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
-| `sim/commands/` | construir, estrada e demolir: validam tudo antes de mudar o mundo |
+| `sim/commands/` | construir, estrada (terra ou paralelepípedo), demolir e mover: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → economia → navios |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios |
 | `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
 | `sim/ships/` | `SeaChart` (carta náutica, AStarGrid2D no mar), `Ship`, `TradeRoute`, `Harbors` (cais, ancoradouros, posto do comerciante), `CargoTransfer`, `TraderState`/`TraderVisits`, `ShipRules` |
 | `sim/derived_state.gd` | o que sai da geometria (acesso, cobertura, módulos, poluição) e os totais por tick; refeito na mudança |
@@ -149,6 +152,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/ship_view.gd` | navios provisórios balançando no mar, o posto do comerciante e a marca do selecionado; acha o navio sob o cursor |
 | `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
 | `ui/hud/ship_panel.gd`, `route_window.gd`, `archipelago_map.gd`, `trade_window.gd` | painel do navio, janela de rotas com o mapa, comércio passivo da ilha |
+| `ui/hud/goal_panel.gd` | meta da vez com o progresso e a fala do conselheiro (retrato, texto, continuar) |
+| `ui/advisor/` | `advisor.dialogue` (as falas, em chaves de tradução) e `AdvisorDialogue`, o adaptador do Dialogue Manager |
+| `tools/progression_demo.gd` | partida roteirizada do camponês ao investidor (critério da Fase 8, captura) |
 | `presentation/pedestrians/` | `Crowd` (rotina dos pedestres, sem nós), `PedestrianView` (MultiMesh por classe e corpo), `SidewalkPath`, `VatModel` |
 | `presentation/window_lights_view.gd` | janelas nas fachadas (um MultiMesh) e as luzes de área perto da câmera |
 | `shaders/pedestrian_vat.gdshader` | boneco animado pela textura VAT, andando sozinho pelo trecho reto |
@@ -398,8 +404,56 @@ Regras que já custaram investigação:
   acento) e o resumo (nome, dia, população, dinheiro) vai num `<slot>.info.json` ao lado, para
   listar sem abrir cada save. Nome repetido grava por cima.
 - **Créditos** saem do `CREDITS.md`, que entra na exportação (`include_filter`).
-- **Dialogue Manager** (seção 13 o põe na Fase 7) fica para a Fase 8, com as metas guiadas: na
-  Fase 7 ninguém fala. Decisão tomada aqui para não instalar addon sem uso.
+- **Dialogue Manager** (seção 13 o põe na Fase 7) entrou na Fase 8, com as metas guiadas.
+
+### Conteúdo (Fase 8)
+
+- **Classes 3 a 5** (artesãos, engenheiros, investidores) com a tabela da seção 4; as necessidades
+  e as cadeias são propostas nossas sobre as sugestões do PDF (números nos `.tres`, proporções em
+  `tests/data/test_game_data.gd`). Cadeias novas: areal → vidraria → janelaria, conservas (peixe +
+  aço), máquinas de costura (aço + tábuas), lâmpadas (vidro + carvão), relojoaria (vidro + aço),
+  ótica, vinhedo → adega de champanhe, destilaria de rum, torrefação, charutaria e ourivesaria;
+  serviços novos: teatro e universidade.
+- **Importados** (decisão tomada aqui, a especificação deixa o clima temperado e põe a segunda
+  região climática na Fase 11): cana-de-açúcar, café em grão, tabaco e ouro vêm só do comerciante
+  (ele vende), e as fábricas daqui os processam. O ouro não virou jazida porque jazida nova muda o
+  gerador do arquipélago e recusa os saves. **Nenhuma necessidade básica de quem ainda sobe de
+  classe depende de importado** (há teste): os importados ficam no luxo e nos investidores.
+- **Uva** é fertilidade nova (farmland, reef e a ilha de teste); fertilidade não mexe no gerador.
+- **Paralelepípedo** (`IslandGrid.Road.PAVED`): moedas e tijolos por célula, libera com 150
+  operários (`paved_road_*` no `GameConfig`), calça por cima da terra cobrando só o calçamento;
+  carroça +50% na célula calçada. No A*, **a terra pesa 1,5 e o calçado 1** (não o contrário): com
+  o calçado abaixo de 1 a heurística de Manhattan passa do custo real e o A* devolve o caminho de
+  terra. Ilha só de terra fica com peso 1 em tudo (busca curta).
+- **Mover prédio** (`MoveBuildingCommand`): sem custo, mesmas regras de lugar e terreno, a área
+  antiga não atrapalha a conferência; o prédio leva moradores, buffers, nível e pausa; a carroça
+  volta para casa na hora (a entrada a bordo entra no buffer, a saída segue na próxima viagem).
+  Píer ou entreposto com navio encostado não sai do lugar. A vista recebe saída + entrada do mesmo
+  id.
+- **Metas guiadas** (`data/goals/`, `GoalSystem`): uma por vez, conferida a cada segundo de jogo,
+  com prêmio em moedas; a ligada a marco (`after_milestone`) só conta depois dele. Título
+  `GOAL_<ID>`; o conselheiro fala os blocos `<id>` e `<id>_done` do `advisor.dialogue`, cada fala
+  uma chave do `strings.csv` (o Dialogue Manager traduz pela chave ao entregar a fala). Partida nova: o
+  conselheiro apresenta a primeira meta; carregada, só o painel.
+- **Dialogue Manager 4.1.0** só pelo `AdvisorDialogue` (get_node/call); sem o addon o conselheiro
+  fica calado. O plugin precisa estar ligado no `project.godot` para o editor importar o
+  `.dialogue` (`tools/godot.sh importar`).
+- **Save versão 7**: estradas calçadas (`paved`, subconjunto de `roads`) e as metas (`goals_done`).
+  Saves da Fase 7 abrem com tudo de terra e as metas do começo; na primeira conferência as já
+  cumpridas passam **sem prêmio e sem aviso** (`goals_catch_up`).
+- **Casas**: três modelos placeholder por classe e um tom da cor, sorteados pelo id (o mesmo depois
+  de carregar); o telhado fica acima da altura da classe, então as janelas não mudam.
+- **Desempenho**: com cinco classes as necessidades passaram de 0,35 a ~1 ms por tick na carga do
+  benchmark (cinco ilhas com entreposto). Ilha **sem casa** agora pula as necessidades
+  (`DerivedState.islands_with_houses`) e a lista básicas + luxo é feita uma vez por classe
+  (`TierDef.all_needs()`): voltou a ~0,2 ms. A amostra do histórico das estatísticas (Fase 7, a
+  cada 60 s) percorria os prédios uma vez por ilha e dava um tick de ~10 ms; agora é uma passada.
+  A fala do conselheiro ao cumprir meta começa depois do tick (`call_deferred`).
+- **Partida roteirizada** (`ProgressionDemo`): ilha plana de 250×250, transporte instantâneo, sem
+  custo; o "jogador" trava o upgrade das primeiras casas de cada classe até a mão de obra que as
+  fábricas pedem (+15%) e solta o resto. Chega aos investidores em ~50 min de jogo (o teste dá 2 h).
+  Scripts que usam `EventBus` não rodam por `--script`: o autoload não existe na compilação; use
+  uma cena (as capturas fazem assim).
 
 ## Assets e licenças (seção 14)
 
@@ -419,12 +473,15 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 5 — Mundo | **concluída em 13/10/2026** |
 | 6 — Navios e comércio | **concluída em 13/10/2026** |
 | 7 — Interface completa | **concluída em 13/10/2026** (confirmada em 14/10/2026) |
-| 8 a 11 | — |
+| 8 — Conteúdo | **entregue em 14/10/2026**, aguardando a confirmação do dono do produto |
+| 9 a 11 | — |
 
 Pendências já vistas para fases futuras:
 
-- Fase 8: metas guiadas ligadas aos marcos, com o conselheiro (Dialogue Manager e o retrato dele);
-  retratos e ícones das três classes novas; estaleiro, se a compra de navio no entreposto não bastar.
+- Balanceamento (Fase 10): na partida roteirizada o saldo cai a cerca de −60 mil antes de os
+  artesãos pagarem imposto; um jogador de verdade travaria em −10 mil. Revisar a manutenção das
+  fábricas e dos serviços contra o imposto das classes de baixo. Estaleiro, se a compra de navio no
+  entreposto não bastar.
 - Fase 9: modelos dos navios, rastro na água e gaivotas; papel e moldura com textura na interface;
   os níveis de qualidade gráfica nas opções (`assets/TODO_ASSETS.md`).
 - Fase 10: áudio (os cinco barramentos já existem e têm volume nas opções) e o salvamento

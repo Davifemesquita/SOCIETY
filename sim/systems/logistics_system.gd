@@ -22,7 +22,7 @@ static func run(world: WorldState, config: GameConfig, derived: DerivedState, dt
 				_plan(world, config, derived, entry, cart)
 			Cart.State.OUTBOUND:
 				if not cart.blocked:
-					cart.position = minf(cart.position + step, cart.path.size() - 1)
+					cart.position = minf(cart.position + step * _road_factor(world, config, entry, cart), cart.path.size() - 1)
 					if cart.position >= cart.path.size() - 1:
 						cart.state = Cart.State.QUEUED
 						cart.queued_at = world.tick
@@ -32,7 +32,7 @@ static func run(world: WorldState, config: GameConfig, derived: DerivedState, dt
 					_leave_ramp(config, derived, entry, cart)
 			Cart.State.INBOUND:
 				if not cart.blocked:
-					cart.position = maxf(cart.position - step, 0.0)
+					cart.position = maxf(cart.position - step * _road_factor(world, config, entry, cart), 0.0)
 					if cart.position <= 0.0:
 						_arrive_home(entry, cart)
 		if cart.state == Cart.State.AT_RAMP:
@@ -40,6 +40,14 @@ static func run(world: WorldState, config: GameConfig, derived: DerivedState, dt
 		elif cart.state == Cart.State.QUEUED:
 			queued.append(cart)
 	_serve_queue(world, config, derived, queued, at_ramp)
+
+
+## Velocidade relativa na célula em que a carroça está: o paralelepípedo (Fase 8) soma o bônus.
+static func _road_factor(world: WorldState, config: GameConfig, entry: DerivedState.ProductionEntry, cart: Cart) -> float:
+	var cell := cart.path[clampi(floori(cart.position), 0, cart.path.size() - 1)]
+	if world.island(entry.record.island_id).roads[cell] == IslandGrid.Road.PAVED:
+		return 1.0 + config.paved_road_speed_bonus
+	return 1.0
 
 
 ## Decide a viagem da carroça parada em casa.

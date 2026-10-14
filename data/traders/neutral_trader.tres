@@ -6,8 +6,8 @@
 script = ExtResource("1_trader")
 id = &"neutral_trader"
 name_key = "TRADER_NEUTRAL"
-sells = Array[StringName]([&"planks", &"fish", &"potatoes", &"woolen_clothes", &"spirits", &"bread", &"soap", &"coal"])
-buys = Array[StringName]([&"wood", &"planks", &"fish", &"wool", &"woolen_clothes", &"potatoes", &"spirits", &"bread", &"sausages", &"soap", &"beer", &"bricks", &"coal", &"iron_ore", &"steel", &"steel_beams"])
+sells = Array[StringName]([&"planks", &"fish", &"potatoes", &"woolen_clothes", &"spirits", &"bread", &"soap", &"coal", &"sugar", &"coffee_beans", &"tobacco", &"gold"])
+buys = Array[StringName]([&"wood", &"planks", &"fish", &"wool", &"woolen_clothes", &"potatoes", &"spirits", &"bread", &"sausages", &"soap", &"beer", &"bricks", &"coal", &"iron_ore", &"steel", &"steel_beams", &"glass", &"windows", &"canned_food", &"sewing_machines", &"rum", &"coffee", &"light_bulbs", &"clocks", &"glasses", &"champagne", &"cigars", &"jewelry"])
 ship = &"trader_ship"
 visit_interval_s = 300.0
 dwell_s = 20.0

@@ -31,6 +31,9 @@ const STYLES := {
 const PORTRAIT_LIST := {
 	"tier_peasants": ["delapouite/farmer", Color("7a5a36")],
 	"tier_workers": ["delapouite/blacksmith", Color("5a4a3e")],
+	"tier_artisans": ["lorc/gear-hammer", Color("4f5a3a")],
+	"tier_engineers": ["lorc/compass", Color("3a4a5e")],
+	"tier_investors": ["lorc/top-hat", Color("5e3a4a")],
 	"advisor": ["delapouite/scroll-quill", Color("4e3b2c")],
 	"trader": ["lorc/scales", Color("6e2a26")],
 }

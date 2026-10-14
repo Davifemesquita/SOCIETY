@@ -78,7 +78,7 @@ func execute(command: Command) -> CommandResult:
 
 
 ## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
-## população e upgrades (e marcos) → economia → comércio e navios → estatísticas (a amostra do
+## população e upgrades (e marcos e metas) → economia → comércio e navios → estatísticas (a amostra do
 ## histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
@@ -92,6 +92,7 @@ func tick(_tick_index: int) -> void:
 	NeedsSystem.run(world, data, config, derived, dt)
 	PopulationSystem.run(world, data, config, derived, dt)
 	MilestoneSystem.run(world, config, derived)
+	GoalSystem.run(world, data, config, derived)
 	EconomySystem.run(world, derived, dt)
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
@@ -162,6 +163,11 @@ func placement_reason(def: BuildingDef, origin: Vector2i, rotation: int, island_
 	elif reason == PlacementRules.OK and not (def.is_trading_post and not world.any_trading_post(data)):
 		reason = affordability(def, island_id)
 	return reason
+
+
+## Motivo pelo qual o prédio não pode ir para o lugar dado (prévia de mover), ou &"".
+func move_reason(building_id: int, origin: Vector2i, rotation: int) -> StringName:
+	return MoveBuildingCommand.check(world, data, config, building_id, origin, rotation, ignore_terrain)
 
 
 ## Estoque por bem da ilha agora (o maior nível de entreposto dela).

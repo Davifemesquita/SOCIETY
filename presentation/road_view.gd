@@ -1,11 +1,12 @@
 class_name RoadView
 extends MultiMeshInstance3D
-## Estradas de terra como ladrilhos num MultiMesh (todas as ilhas), refeito quando a rede muda.
+## Estradas de terra e de paralelepípedo (cinza, Fase 8) como ladrilhos num MultiMesh (todas as ilhas), refeito quando a rede muda.
 ## No relevo o ladrilho inclina com o terreno (a base tem cisalhamento, a espessura fica de pé);
 ## sobre o rio vira ponte de tábuas, plana, na altura das margens.
 
 const DIRT_COLOR := Color(0.55, 0.45, 0.33)
 const BRIDGE_COLOR := Color(0.36, 0.26, 0.17)
+const PAVED_COLOR := Color(0.3, 0.3, 0.33)
 const THICKNESS_M := 0.08
 ## O ladrilho fica um pouco acima do chão, para não brigar com o terreno.
 const LIFT_M := 0.06
@@ -39,7 +40,7 @@ func rebuild() -> void:
 		for cell: Vector2i in grid.road_cells():
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
 			tiles.append(tile_transform(grid, cell))
-			colors.append(BRIDGE_COLOR if bridge else DIRT_COLOR)
+			colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if grid.is_paved(cell) else DIRT_COLOR))
 	multimesh.instance_count = tiles.size()
 	for i: int in tiles.size():
 		multimesh.set_instance_transform(i, tiles[i])

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"cigar_factory"
+name_key = "BUILDING_CIGAR_FACTORY"
+kind = 1
+size = Vector2i(4, 4)
+height_m = 6.0
+color = Color(0.5, 0.32, 0.2, 1)
+cost_money = 5000
+cost_materials = Dictionary[StringName, int]({&"bricks": 12, &"windows": 2})
+upkeep_per_min = 160
+unlock_tier = &"investors"
+unlock_residents = 50
+workforce_tier = &"investors"
+workers = 25
+inputs = Array[StringName]([&"tobacco"])
+output = &"cigars"
+cycle_s = 60.0

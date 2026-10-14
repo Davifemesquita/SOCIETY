@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_island")
 id = &"farmland"
-fertilities = Array[StringName]([&"potatoes", &"wheat"])
+fertilities = Array[StringName]([&"potatoes", &"wheat", &"grapes"])
 deposits = Array[StringName]([])
 deposit_spots = 0
 forest_coverage = 0.2

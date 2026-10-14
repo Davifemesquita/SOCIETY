@@ -92,6 +92,8 @@ static var _default: GameConfig
 ## cada 2 s, com o tempo de 10 ticks). Moradores e felicidade mudam por minuto: não precisam de
 ## todo tick, e assim o custo da população cabe no orçamento do tick.
 @export var house_update_groups: int = 10
+## Cada quantos ticks as metas guiadas são conferidas (5 = uma vez por segundo de jogo).
+@export var goal_check_ticks: int = 5
 ## Patamares de população total que liberam ilhas, navios e regras.
 @export var population_milestones: PackedInt32Array = PackedInt32Array([100, 500, 1000, 2500, 5000, 10000])
 
@@ -184,6 +186,12 @@ static var _default: GameConfig
 @export var demolish_refund: float = 0.5
 ## Ganho de velocidade da estrada de paralelepípedo sobre a de terra.
 @export var paved_road_speed_bonus: float = 0.5
+## Paralelepípedo (Fase 8): moedas e tijolos por célula (os tijolos somam e arredondam para cima,
+## e pagar terra por baixo não dá desconto) e a classe que o libera, como num prédio.
+@export var paved_road_cost_per_cell: int = 10
+@export var paved_road_bricks_per_cell: float = 0.5
+@export var paved_road_unlock_tier: StringName = &"workers"
+@export var paved_road_unlock_residents: int = 150
 
 @export_group("Câmera")
 @export var camera_min_distance_m: float = 12.0

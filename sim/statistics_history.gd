@@ -41,12 +41,39 @@ func record(world: WorldState, data: GameData, derived: DerivedState, max_sample
 	for tier: TierDef in data.tiers:
 		var residents_now: float = people.get(tier.id, 0.0)
 		_push(population, tier.id, residents_now, count)
+	# uma passada pelos prédios para todas as ilhas (o Statistics.compute de cada ilha percorreria
+	# tudo de novo a cada uma: com 5 ilhas, a amostra passava de 6 ms dentro de um tick)
+	var potential: Dictionary[int, Dictionary] = {}
+	var made: Dictionary[int, Dictionary] = {}
+	var used: Dictionary[int, Dictionary] = {}
 	for island_id: int in world.islands.size():
-		var report := Statistics.compute(world, data, derived, island_id)
-		for line: Statistics.GoodLine in report.goods:
-			if line.potential > 0.0 or line.consumed() > 0.0 or produced.has(key(island_id, line.good)):
-				_push(produced, key(island_id, line.good), line.produced, count)
-				_push(consumed, key(island_id, line.good), line.consumed(), count)
+		potential[island_id] = {}
+		made[island_id] = {}
+		used[island_id] = world.economy(island_id).needs_consumption_per_min.duplicate()
+	for entry: DerivedState.ProductionEntry in derived.production_entries:
+		var island_id := entry.record.island_id
+		var rate := entry.def.output_per_min()
+		var running := rate * entry.record.productivity
+		var island_potential: Dictionary = potential[island_id]
+		var island_made: Dictionary = made[island_id]
+		var island_used: Dictionary = used[island_id]
+		island_potential[entry.def.output] = island_potential.get(entry.def.output, 0.0) + rate
+		island_made[entry.def.output] = island_made.get(entry.def.output, 0.0) + running
+		for input: StringName in entry.def.inputs:
+			island_used[input] = island_used.get(input, 0.0) + running
+	for island_id: int in world.islands.size():
+		var island_potential: Dictionary = potential[island_id]
+		var island_made: Dictionary = made[island_id]
+		var island_used: Dictionary = used[island_id]
+		for good_def: GoodDef in data.goods:
+			var good := good_def.id
+			var name := key(island_id, good)
+			var good_used: float = island_used.get(good, 0.0)
+			var good_potential: float = island_potential.get(good, 0.0)
+			if good_potential > 0.0 or good_used > 0.0 or produced.has(name):
+				var good_made: float = island_made.get(good, 0.0)
+				_push(produced, name, good_made, count)
+				_push(consumed, name, good_used, count)
 	_pad(count + 1)
 	while ticks.size() > max_samples:
 		_drop_first()

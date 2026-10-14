@@ -4,9 +4,10 @@ extends Node
 ## A lógica trabalha em células (hover, press, release), o que a deixa testável sem mouse;
 ## _unhandled_input só converte o mouse em ilha e célula (a ilha sob o cursor, desde a Fase 5).
 ## Desde a Fase 6 também guarda o navio selecionado e o modo de escolher para onde ele vai (o
-## clique no mar e nos navios fica com o ShipPicker).
+## clique no mar e nos navios fica com o ShipPicker). Na Fase 8 entram a estrada de
+## paralelepípedo (o mesmo arrasto, com road_paved) e o modo de mover o prédio selecionado.
 
-enum Mode { NONE, BUILDING, ROAD, DEMOLISH, SAIL_TO }
+enum Mode { NONE, BUILDING, ROAD, DEMOLISH, SAIL_TO, MOVE }
 
 signal changed()
 signal selection_changed(building_id: int)
@@ -24,6 +25,10 @@ var selected_id: int = 0
 var selected_ship: int = 0
 ## Ilha em que a ferramenta está (a que está sob o cursor; não troca no meio de um arrasto).
 var island_id: int = Simulation.MAIN_ISLAND
+## A estrada do modo ROAD é de paralelepípedo.
+var road_paved: bool = false
+## Prédio que está sendo mudado de lugar (modo MOVE).
+var moving_id: int = 0
 
 var _simulation: Simulation
 var _camera: StrategyCamera
@@ -45,8 +50,25 @@ func start_building(def: BuildingDef) -> void:
 	_enter(Mode.BUILDING)
 
 
-func start_road() -> void:
+func start_road(paved: bool = false) -> void:
+	road_paved = paved
 	_enter(Mode.ROAD)
+
+
+func start_paved_road() -> void:
+	start_road(true)
+
+
+## Muda o prédio de lugar: a prévia é a dele, com a rotação que ele tem, e o clique o leva.
+func start_move(building_id: int) -> void:
+	var record := _simulation.world.building(building_id)
+	if record == null:
+		return
+	building_def = _simulation.def_of(record)
+	rotation = record.rotation
+	island_id = record.island_id
+	_enter(Mode.MOVE)
+	moving_id = building_id
 
 
 func start_demolish() -> void:
@@ -111,6 +133,13 @@ func press(cell: Vector2i) -> void:
 			select(grid().building_at(cell))
 		Mode.BUILDING:
 			_run(PlaceBuildingCommand.new(island_id, building_def.id, building_origin(), rotation))
+		Mode.MOVE:
+			var moved := moving_id
+			if _run(MoveBuildingCommand.new(moved, building_origin(), rotation)):
+				mode = Mode.NONE
+				moving_id = 0
+				select(moved)
+				changed.emit()
 		Mode.ROAD, Mode.DEMOLISH:
 			dragging = true
 			drag_start = cell
@@ -121,7 +150,7 @@ func release(cell: Vector2i) -> void:
 	hover(cell)
 	if not dragging:
 		return
-	var command: Command = BuildRoadCommand.new(island_id, road_cells()) if mode == Mode.ROAD \
+	var command: Command = BuildRoadCommand.new(island_id, road_cells(), road_paved) if mode == Mode.ROAD \
 			else DemolishCommand.new(island_id, demolish_rect())
 	dragging = false
 	_run(command)
@@ -153,6 +182,8 @@ func preview_reason() -> StringName:
 	match mode:
 		Mode.BUILDING:
 			return _simulation.placement_reason(building_def, building_origin(), rotation, island_id)
+		Mode.MOVE:
+			return _simulation.move_reason(moving_id, building_origin(), rotation)
 		Mode.ROAD:
 			for cell: Vector2i in road_cells():
 				var reason := PlacementRules.check_road_cell(grid(), cell, _simulation.config)
@@ -160,34 +191,39 @@ func preview_reason() -> StringName:
 					return reason
 			if not _simulation.free_build:
 				var world := _simulation.world
-				if not _simulation.config.instant_logistics and not world.has_trading_post(island_id, _simulation.data):
+				var config := _simulation.config
+				if not config.instant_logistics and not world.has_trading_post(island_id, _simulation.data):
 					return PlacementRules.NEEDS_TRADING_POST
-				var empty: Dictionary[StringName, int] = {}
-				return PlacementRules.check_cost(world, world.economy(island_id), _simulation.config, road_cost(), empty)
+				if road_paved and world.population(config.paved_road_unlock_tier) < config.paved_road_unlock_residents:
+					return PlacementRules.LOCKED
+				return PlacementRules.check_cost(world, world.economy(island_id), config, road_cost(), road_materials())
 	return PlacementRules.OK
 
 
-## Custo do traçado atual: só as células que ainda não são estrada.
+## Custo do traçado atual: só as células que ainda não têm a estrada pedida.
 func road_cost() -> int:
-	var new_cells := 0
-	for cell: Vector2i in road_cells():
-		if grid().in_bounds(cell) and not grid().has_road(cell):
-			new_cells += 1
-	return new_cells * _simulation.config.road_cost_per_cell
+	return BuildRoadCommand.cost_money(_simulation.config, BuildRoadCommand.new_cells(grid(), road_cells(), road_paved), road_paved)
+
+
+## Tijolos do traçado de paralelepípedo (vazio na estrada de terra).
+func road_materials() -> Dictionary[StringName, int]:
+	return BuildRoadCommand.cost_materials(_simulation.config, BuildRoadCommand.new_cells(grid(), road_cells(), road_paved), road_paved)
 
 
 func _enter(new_mode: Mode) -> void:
 	mode = new_mode
+	moving_id = 0
 	dragging = false
 	select(0)
 	select_ship(0)
 	changed.emit()
 
 
-func _run(command: Command) -> void:
+func _run(command: Command) -> bool:
 	var result := _simulation.execute(command)
 	if not result.ok():
 		refused.emit(result.reason)
+	return result.ok()
 
 
 func grid() -> IslandGrid:
@@ -197,6 +233,8 @@ func grid() -> IslandGrid:
 func _on_building_removed(building_id: int) -> void:
 	if building_id == selected_id:
 		select(0)
+	if building_id == moving_id and _simulation.world.building(building_id) == null:
+		cancel()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -206,7 +244,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton:
 		var button: InputEventMouseButton = event
 		_on_mouse_button(button)
-	elif event.is_action_pressed(&"build_rotate") and mode == Mode.BUILDING:
+	elif event.is_action_pressed(&"build_rotate") and mode in [Mode.BUILDING, Mode.MOVE]:
 		rotate_building()
 	elif event.is_action_pressed(&"build_cancel"):
 		cancel()

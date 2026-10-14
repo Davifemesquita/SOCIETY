@@ -11,6 +11,10 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 	var dt_min := dt / 60.0
 	for island_id: int in world.economies.size():
 		var economy := world.economy(island_id)
+		# ilha sem casa (colônia só de produção, ilha vazia): nada a consumir nem a avaliar
+		if not derived.islands_with_houses.has(island_id):
+			economy.needs_consumption_per_min.clear()
+			continue
 		var residents := derived.residents_by_tier(island_id)
 		var demanded: Dictionary[StringName, float] = {}
 		var consumed: Dictionary[StringName, float] = {}
@@ -21,7 +25,7 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 				for need: NeedCategoryDef in tier.basic_needs:
 					for good: StringName in need.goods:
 						basic_goods[good] = true
-			for need: NeedCategoryDef in tier.basic_needs + tier.luxury_needs:
+			for need: NeedCategoryDef in tier.all_needs():
 				if need.goods.is_empty():
 					continue
 				var fulfilled := _consume(economy, data, need, people, dt_min, demanded, consumed)

@@ -11,9 +11,9 @@ func before_test() -> void:
 
 func test_data_loads_and_is_valid() -> void:
 	assert_array(Array(_data.validate())).is_empty()
-	assert_int(_data.goods.size()).is_equal(23)
-	assert_int(_data.tiers.size()).is_equal(2)
-	assert_int(_data.buildings.size()).is_equal(33)
+	assert_int(_data.goods.size()).is_equal(41)
+	assert_int(_data.tiers.size()).is_equal(5)
+	assert_int(_data.buildings.size()).is_equal(49)
 	assert_int(_data.ships.size()).is_equal(2)
 	assert_object(_data.trader()).is_not_null()
 
@@ -60,11 +60,30 @@ func test_chain_proportions_from_the_spec() -> void:
 	_assert_balanced(&"furnace", 4, &"steel_beam_works", 3)
 
 
+## Cadeias da Fase 8 (números nossos; a especificação só sugere os bens).
+func test_upper_chain_proportions() -> void:
+	_assert_balanced(&"sand_pit", 1, &"glassworks", 2)
+	_assert_balanced(&"coal_mine", 1, &"glassworks", 2)
+	_assert_balanced(&"glassworks", 1, &"window_works", 1)
+	_assert_balanced(&"furnace", 1, &"sewing_machine_factory", 1)
+	_assert_balanced(&"fishery", 1, &"cannery", 2)
+	_assert_balanced(&"glassworks", 1, &"lamp_factory", 1)
+	_assert_balanced(&"glassworks", 2, &"clockmaker", 3)
+	_assert_balanced(&"vineyard", 3, &"champagne_cellar", 2)
+	_assert_balanced(&"rum_distillery", 1, &"coffee_roaster", 1)
+
+
 func test_one_building_supplies_the_spec_population() -> void:
 	var expected: Dictionary[StringName, float] = {&"fish": 400, &"woolen_clothes": 500, &"spirits": 600, &"bread": 250,
-			&"sausages": 250, &"soap": 1000, &"beer": 500}
+			&"sausages": 250, &"soap": 1000, &"beer": 500,
+			# Fase 8 (números nossos)
+			&"canned_food": 400, &"sewing_machines": 500, &"rum": 800, &"coffee": 667, &"light_bulbs": 667,
+			&"clocks": 667, &"glasses": 1000, &"champagne": 500, &"cigars": 500, &"jewelry": 667}
 	var producer_of: Dictionary[StringName, StringName] = {&"fish": &"fishery", &"woolen_clothes": &"weavery",
-			&"spirits": &"distillery", &"bread": &"bakery", &"sausages": &"butcher", &"soap": &"soap_factory", &"beer": &"brewery"}
+			&"spirits": &"distillery", &"bread": &"bakery", &"sausages": &"butcher", &"soap": &"soap_factory", &"beer": &"brewery",
+			&"canned_food": &"cannery", &"sewing_machines": &"sewing_machine_factory", &"rum": &"rum_distillery",
+			&"coffee": &"coffee_roaster", &"light_bulbs": &"lamp_factory", &"clocks": &"clockmaker", &"glasses": &"optician",
+			&"champagne": &"champagne_cellar", &"cigars": &"cigar_factory", &"jewelry": &"goldsmith"}
 	for good: StringName in expected:
 		var producer: StringName = producer_of[good]
 		var rate := _data.building(producer).output_per_min()
@@ -82,7 +101,83 @@ func test_tiers_follow_the_spec_table() -> void:
 	assert_float(workers.tax_per_resident_min).is_equal(1.2)
 	assert_dict(workers.upgrade_materials).is_equal({&"planks": 2})
 	assert_object(_data.next_tier(&"peasants")).is_same(workers)
-	assert_object(_data.next_tier(&"workers")).is_null()
+	assert_object(_data.next_tier(&"workers")).is_same(_data.tier(&"artisans"))
+
+
+## Fase 8: as três classes de cima (seção 4) e a ordem do upgrade até a quinta.
+func test_upper_tiers_follow_the_spec_table() -> void:
+	var expected := {
+		&"artisans": [30, 2.4, {&"bricks": 2, &"planks": 1}],
+		&"engineers": [40, 4.0, {&"bricks": 2, &"steel_beams": 2}],
+		&"investors": [50, 7.0, {&"steel_beams": 2, &"windows": 2}],
+	}
+	for tier_id: StringName in expected:
+		var row: Array = expected[tier_id]
+		var residents: int = row[0]
+		var tax: float = row[1]
+		var materials: Dictionary = row[2]
+		var tier := _data.tier(tier_id)
+		assert_int(tier.residents_per_house).is_equal(residents)
+		assert_float(tier.tax_per_resident_min).is_equal_approx(tax, 0.0001)
+		assert_dict(tier.upgrade_materials).is_equal(materials)
+	var order: Array[StringName] = []
+	for tier: TierDef in _data.tiers:
+		order.append(tier.id)
+	assert_array(order).is_equal([&"peasants", &"workers", &"artisans", &"engineers", &"investors"])
+	assert_object(_data.next_tier(&"investors")).is_null()
+
+
+## Nenhuma necessidade básica de quem ainda sobe de classe depende de bem importado: chegar à
+## quinta classe nunca pede o comerciante (os importados ficam no luxo e nos investidores).
+func test_climbing_never_depends_on_imports() -> void:
+	var imported := _data.trader().sells
+	for tier: TierDef in _data.tiers:
+		if _data.next_tier(tier.id) == null:
+			continue
+		for need: NeedCategoryDef in tier.basic_needs:
+			var local := not need.services.is_empty()
+			for good: StringName in need.goods:
+				local = local or _is_made_locally(good, imported)
+			assert_bool(local).override_failure_message("%s/%s só se atende com importado" % [tier.id, need.id]).is_true()
+
+
+## O bem sai de uma cadeia que começa no terreno (sem matéria-prima importada).
+func _is_made_locally(good: StringName, imported: Array[StringName], depth: int = 0) -> bool:
+	if depth > 8:
+		return false
+	for def: BuildingDef in _data.buildings:
+		if def.is_production() and def.output == good:
+			var all_local := true
+			for input: StringName in def.inputs:
+				if imported.has(input) and not _is_produced(input):
+					all_local = false
+				elif not _is_made_locally(input, imported, depth + 1):
+					all_local = false
+			if all_local:
+				return true
+	return false
+
+
+func _is_produced(good: StringName) -> bool:
+	for def: BuildingDef in _data.buildings:
+		if def.is_production() and def.output == good:
+			return true
+	return false
+
+
+## Tudo o que alguém consome ou usa tem quem produza, ou vem do comerciante.
+func test_every_good_has_a_source() -> void:
+	for good: GoodDef in _data.goods:
+		assert_bool(_is_produced(good.id) or _data.trader().sells.has(good.id)) \
+				.override_failure_message("sem origem: " + good.id).is_true()
+
+
+## Cada classe tem os prédios de produção que pedem a mão de obra dela (a aba do menu não fica vazia).
+func test_every_tier_works_somewhere() -> void:
+	for tier: TierDef in _data.tiers:
+		var count := _data.buildings.filter(func(def: BuildingDef) -> bool:
+			return def.is_production() and def.workforce_tier == tier.id).size()
+		assert_int(count).override_failure_message(str(tier.id)).is_greater(0)
 
 
 func test_workforce_follows_the_spec_table() -> void:

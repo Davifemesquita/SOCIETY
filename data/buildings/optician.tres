@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"optician"
+name_key = "BUILDING_OPTICIAN"
+kind = 1
+size = Vector2i(4, 4)
+height_m = 6.0
+color = Color(0.6, 0.62, 0.68, 1)
+cost_money = 3000
+cost_materials = Dictionary[StringName, int]({&"bricks": 8, &"steel_beams": 2})
+upkeep_per_min = 100
+unlock_tier = &"engineers"
+unlock_residents = 150
+workforce_tier = &"engineers"
+workers = 25
+inputs = Array[StringName]([&"glass"])
+output = &"glasses"
+cycle_s = 60.0
