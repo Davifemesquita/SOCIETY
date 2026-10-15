@@ -314,3 +314,26 @@ os prédios em volta da câmera e gera o ruído do vento.
   recálculo dos armazéns (busca em largura da ilha inteira a cada prédio novo). Uma segunda medição,
   com outra sessão pesando na VM (carga 4,2), deu 162 ms e foi descartada.
 - Áudio sem tela não toca; o custo dele no PC alvo (geração do vento, 22 kHz) se vê no `--benchmark`.
+
+### 2026-10-14 22:19:36 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| jogo novo: arquipélago, terreno, água e árvores | 7827 ms (semente 1840, 54682 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1451 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 21467 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.75 / 4.16 / 5.12 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.07 · produção 0.63 · logística 1.30 · necessidades 0.24 · população 1.22 · economia 0.00 · navios 0.08 |
+| construir um prédio com a ilha cheia | 53.1 ms (limite 50 ms): comando e vistas 53.1 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.2 · serviços 9.5 · módulos e poluição 0.0 · armazéns 19.0 · produção 6.4 · grupos de casas 1.6 |
+| salvar | 189 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 2049 ms |
+| quadro com tudo visível | 4624 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1902 na rua (teto 2000); 6786 janelas |
+| multidão saindo de casa (rotas novas) | 489 quadros, 4044 ms; 1423 rotas, 1.48 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.60 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.1 / 0.0 FPS / 44929 ms em 7 quadros (meta 60 FPS), a partir das 07:00 |

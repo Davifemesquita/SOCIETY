@@ -2,7 +2,7 @@ class_name NewGameDialog
 extends PanelContainer
 ## Jogo novo (seção 10): semente do arquipélago (o dado sorteia outra), tamanho do arquipélago
 ## (pequeno, médio, grande: 4, 6 ou 8 ilhas menores) e dificuldade (dinheiro inicial e limite do
-## saldo negativo). Começar avisa pelo sinal start.
+## saldo negativo), e se a partida tem eventos e encomendas (Fase 11). Começar avisa pelo sinal start.
 
 signal start(seed_value: int, archipelago_size: int, difficulty: int)
 signal closed()
@@ -15,6 +15,7 @@ const MAX_SEED := 999_999_999
 var seed_edit := LineEdit.new()
 var size_option := OptionButton.new()
 var difficulty_option := OptionButton.new()
+var events_check := CheckBox.new()
 
 
 func _init() -> void:
@@ -64,6 +65,13 @@ func _init() -> void:
 	difficulty_option.tooltip_text = "NEW_GAME_DIFFICULTY_TIP"
 	difficulty_option.select(config.default_difficulty)
 	grid.add_child(difficulty_option)
+	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_event"), 30))
+	grid.add_child(UiKit.label("NEW_GAME_EVENTS"))
+	events_check.name = "Events"
+	events_check.focus_mode = Control.FOCUS_NONE
+	events_check.tooltip_text = "NEW_GAME_EVENTS_TIP"
+	events_check.button_pressed = true
+	grid.add_child(events_check)
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	buttons.add_theme_constant_override(&"separation", 12)

@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7]
+	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -120,5 +120,37 @@ static func from_6_to_7(state: Dictionary) -> Dictionary:
 			island["paved"] = PackedInt32Array()
 	world["goals_done"] = 0
 	world["goals_catch_up"] = true
+	state["world"] = world
+	return state
+
+
+## Fase 10 → Fase 11: o arquipélago gerado ganha as ilhas tropicais (as mesmas que a semente dá no
+## jogo novo), virgens e sem estoque. As temperadas não mudam; a ilha plana antiga fica sem elas.
+static func from_7_to_8(state: Dictionary) -> Dictionary:
+	var config := GameConfig.get_default()
+	var world: Dictionary = state.get("world", {})
+	var raw_version: Variant = world.get("terrain_version")
+	var raw_seed: Variant = world.get("seed")
+	var raw_islands: Variant = world.get("islands")
+	if raw_version is int and raw_version != 0 and raw_seed is int and raw_islands is Array:
+		var islands: Array = raw_islands
+		var seed_value: int = raw_seed
+		for spec: ArchipelagoGenerator.IslandSpec in ArchipelagoGenerator.tropical_layout(seed_value, config, GameData.get_default(), islands.size()):
+			var economy := IslandEconomy.new()
+			economy.profile_id = spec.profile.id
+			islands.append({"size": Vector2i(spec.size, spec.size), "roads": PackedInt32Array(), "paved": PackedInt32Array(),
+					"cleared_trees": PackedInt32Array(), "economy": economy.to_dict(), "origin": spec.origin_m})
+	state["world"] = world
+	return state
+
+
+## Fase 11 (ilhas tropicais) → Fase 11 (eventos e encomendas): a partida antiga ganha os eventos e
+## as encomendas ligados, com o relógio deles começando do zero (o primeiro sai depois do mesmo
+## tempo que num jogo novo).
+static func from_8_to_9(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	var events := EventsState.new()
+	events.enabled = true
+	world["events"] = events.to_dict()
 	state["world"] = world
 	return state

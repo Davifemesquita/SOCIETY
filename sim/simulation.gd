@@ -74,17 +74,19 @@ func execute(command: Command) -> CommandResult:
 		EventBus.routes_changed.emit()
 	if result.colonized:
 		EventBus.island_colonized.emit(result.island_id)
+	if result.missions_changed:
+		EventBus.missions_changed.emit()
 	return result
 
 
 ## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
-## população e upgrades (e marcos e metas) → economia → comércio e navios → estatísticas (a amostra do
-## histórico; o retrato atual é calculado sob pedido).
+## população e upgrades (e marcos e metas) → economia → comércio e navios → eventos e encomendas →
+## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
 	var derived := derived_state()
 	WorkforceSystem.run(world, derived)
-	ProductionSystem.run(config, derived, dt)
+	ProductionSystem.run(config, derived, dt, world.events_state)
 	if config.instant_logistics:
 		DirectTransferSystem.run(world, config, derived)
 	else:
@@ -96,6 +98,8 @@ func tick(_tick_index: int) -> void:
 	EconomySystem.run(world, derived, dt)
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
+	EventSystem.run(world, data, config)
+	MissionSystem.run(world, data, config)
 	world.tick += 1
 	StatisticsSystem.run(world, data, config, derived)
 

@@ -62,7 +62,7 @@ func _build() -> void:
 		var def := _simulation.data.good(good)
 		_rows.add_child(UiKit.icon_rect(Icons.good(good), 26))
 		_rows.add_child(_label(tr(def.name_key)))
-		var price := TraderState.price(_simulation.world.seed, _simulation.world.trader.tour, def, _simulation.config.trader_price_variation)
+		var price := _simulation.world.trader_price(_simulation.data, _simulation.config, good)
 		_rows.add_child(_label(Fmt.integer(price)))
 		_rows.add_child(_label(Fmt.integer(economy.amount(good))))
 		_rows.add_child(_setting(good, true, trader.buys.has(good), economy.sell_above))

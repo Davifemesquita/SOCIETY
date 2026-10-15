@@ -1,7 +1,7 @@
 class_name NoticeWatcher
 extends RefCounted
 ## O que vira notificação (seção 10): falta de bem, prédio parado, estoque cheio, navio chegou,
-## marco atingido, colônia fundada e visita do comerciante. Os eventos da simulação chegam pelo
+## marco atingido, colônia fundada, visita do comerciante e, desde a Fase 11, eventos e encomendas. Os eventos da simulação chegam pelo
 ## EventBus (falta, marco, colônia, comerciante); prédio parado, estoque cheio e chegada de navio
 ## saem da comparação do estado de agora com o da última conferência. Sem nós: testável.
 
@@ -19,6 +19,8 @@ class Notice:
 	var island_id: int = -1
 	## UiPalette.Status da notificação (cor do texto).
 	var status: int = UiPalette.Status.NEUTRAL
+	## O clique abre a janela das encomendas em vez de levar a câmera (Fase 11).
+	var opens_missions: bool = false
 
 	func _init(notice_key: String, icon_name: String, key_text: String, text_args: Array = []) -> void:
 		key = notice_key
@@ -161,6 +163,45 @@ func trader(island_id: int, earned: float, spent: float) -> Notice:
 			[Fmt.place(island_id), Fmt.integer(earned), Fmt.integer(spent)])
 	notice.island_id = island_id
 	notice.building_id = trading_post_of(island_id)
+	return notice
+
+
+func event_started(def_id: StringName, island_id: int) -> Notice:
+	var event_def := _simulation.data.event(def_id)
+	var place: String = Fmt.place(island_id) if island_id >= 0 else String(TranslationServer.translate("PLACE_ARCHIPELAGO"))
+	var notice := Notice.new("event/%s" % def_id, MissionWindow.event_icon(def_id), "NOTICE_EVENT",
+			[TranslationServer.translate(event_def.title_key()), place])
+	notice.island_id = island_id
+	notice.opens_missions = island_id < 0
+	notice.status = UiPalette.Status.GOOD if event_def.is_good() else UiPalette.Status.PARTIAL
+	return notice
+
+
+func mission_offered(mission_id: int) -> Notice:
+	var item := _simulation.world.events_state.mission(mission_id)
+	var good: String = String(TranslationServer.translate(_simulation.data.good(item.def.good).name_key)) if item != null else ""
+	var tons: int = item.def.tons if item != null else 0
+	var notice := Notice.new("mission/offer", "notice_mission", "NOTICE_MISSION_OFFERED", [Fmt.integer(tons), good])
+	notice.opens_missions = true
+	return notice
+
+
+func mission_completed(def_id: StringName, bonus: int) -> Notice:
+	var def := _simulation.data.mission(def_id)
+	var notice := Notice.new("mission/done/%s" % def_id, "notice_mission", "NOTICE_MISSION_DONE",
+			[TranslationServer.translate(_simulation.data.good(def.good).name_key), Fmt.integer(bonus)])
+	notice.opens_missions = true
+	notice.status = UiPalette.Status.GOOD
+	return notice
+
+
+## Só a aceita que venceu vira aviso; a oferta não respondida some calada.
+func mission_expired(def_id: StringName) -> Notice:
+	var def := _simulation.data.mission(def_id)
+	var notice := Notice.new("mission/expired/%s" % def_id, "notice_mission", "NOTICE_MISSION_EXPIRED",
+			[TranslationServer.translate(_simulation.data.good(def.good).name_key)])
+	notice.opens_missions = true
+	notice.status = UiPalette.Status.PARTIAL
 	return notice
 
 

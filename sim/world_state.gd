@@ -37,6 +37,8 @@ var terrain_mismatch: bool = false
 var difficulty: int = 1
 ## Série histórica das estatísticas (gráficos).
 var history := StatisticsHistory.new()
+## Eventos e encomendas (Fase 11); desligados em mundo novo da simulação.
+var events_state := EventsState.new()
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
@@ -123,6 +125,12 @@ func add_starting_fleet(config: GameConfig, data: GameData) -> void:
 	ships[first.id] = first
 
 
+## Preço do comerciante nesta volta para o bem, com a feira (Fase 11) em andamento.
+func trader_price(data: GameData, config: GameConfig, good: StringName) -> float:
+	var unit := TraderState.price(seed, trader.tour, data.good(good), config.trader_price_variation)
+	return unit * EventEffects.price(events_state, good) if not events_state.events.is_empty() else unit
+
+
 ## Há entreposto nesta ilha (sem ele não se constrói nada nela).
 func has_trading_post(island_id: int, data: GameData) -> bool:
 	for record: BuildingRecord in buildings.values():
@@ -197,7 +205,7 @@ func to_dict() -> Dictionary:
 			"seed": seed, "terrain_version": terrain_version, "ships": ship_list, "next_ship_id": next_ship_id,
 			"routes": route_list, "next_route_id": next_route_id, "trader": trader.to_dict(),
 			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict(),
-			"goals_done": goals_done, "goals_catch_up": goals_catch_up}
+			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -220,9 +228,14 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	if world.terrain_version != 0:
 		# o tamanho do arquipélago é o número de ilhas do save
 		var game_config := config if config != null else GameConfig.get_default()
-		if saved_islands.is_empty() or saved_islands.size() > game_config.island_sizes_cells.size():
+		var tropical := tropical_count(saved_islands, game_data)
+		var temperate := saved_islands.size() - tropical
+		if tropical < 0 or temperate < 1 or temperate > game_config.island_sizes_cells.size() \
+				or tropical > game_config.tropical_island_sizes_cells.size():
 			return null
-		for spec: ArchipelagoGenerator.IslandSpec in ArchipelagoGenerator.layout(world.seed, game_config, game_data, saved_islands.size()):
+		var specs := ArchipelagoGenerator.layout(world.seed, game_config, game_data, temperate)
+		specs.append_array(ArchipelagoGenerator.tropical_layout(world.seed, game_config, game_data, specs.size(), tropical))
+		for spec: ArchipelagoGenerator.IslandSpec in specs:
 			generated.append(ArchipelagoGenerator.build_island(spec, game_config))
 	var raw_buildings: Variant = data.get("buildings")
 	var raw_next: Variant = data.get("next_building_id")
@@ -301,7 +314,47 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	world.goals_catch_up = raw_catch_up
 	if world.goals_done < 0 or world.goals_done > game_data.goals.size():
 		return null
+	var raw_events: Variant = data.get("events")
+	if not raw_events is Dictionary:
+		return null
+	var events_data: Dictionary = raw_events
+	var loaded_events := EventsState.from_dict(events_data, game_data, world.islands.size())
+	if loaded_events == null:
+		return null
+	world.events_state = loaded_events
 	return world
+
+
+## Quantas ilhas do save são tropicais (pelo perfil da economia). Elas vêm depois das temperadas:
+## tropical antes de temperada devolve -1 (save inconsistente).
+static func tropical_count(saved_islands: Array, game_data: GameData) -> int:
+	var count := 0
+	for raw: Variant in saved_islands:
+		var tropical := false
+		if raw is Dictionary:
+			var island_data: Dictionary = raw
+			var raw_economy: Variant = island_data.get("economy")
+			if raw_economy is Dictionary:
+				var economy_data: Dictionary = raw_economy
+				var raw_profile: Variant = economy_data.get("profile")
+				if raw_profile is StringName:
+					var profile_id: StringName = raw_profile
+					var profile := game_data.profile(profile_id)
+					tropical = profile != null and profile.is_tropical()
+		if tropical:
+			count += 1
+		elif count > 0:
+			return -1
+	return count
+
+
+## Ilha de clima tropical (Fase 11)?
+func is_tropical(island_id: int, data: GameData) -> bool:
+	var island_economy := economy(island_id)
+	if island_economy == null:
+		return false
+	var profile := data.profile(island_economy.profile_id)
+	return profile != null and profile.is_tropical()
 
 
 ## Navios, rotas, comerciante e marcos (Fase 6). Navio que aponta para rota, ilha ou cais que não

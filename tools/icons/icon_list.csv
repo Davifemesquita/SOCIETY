@@ -87,6 +87,10 @@ building_vineyard,lorc/vine-leaf,building
 building_champagne_cellar,delapouite/glass-celebration,building
 building_cigar_factory,delapouite/cigarette,building
 building_goldsmith,delapouite/ring-mould,building
+building_sugar_cane_farm,delapouite/sugar-cane,building
+building_coffee_plantation,delapouite/coffee-beans,building
+building_tobacco_plantation,lorc/three-leaves,building
+building_gold_mine,delapouite/gold-mine,building
 building_theater,delapouite/theater,building
 building_university,delapouite/graduate-cap,building
 tier_peasants,delapouite/farmer,tier
@@ -185,3 +189,13 @@ notice_milestone,delapouite/laurels-trophy,notice
 notice_colonized,delapouite/flag-objective,notice
 notice_trader,lorc/scales,notice
 notice_info,delapouite/info,notice
+action_missions,delapouite/contract,action
+hud_event,lorc/sunrise,hud
+notice_mission,delapouite/contract,notice
+event_good_harvest,delapouite/sun-cloud,notice
+event_rich_vein,lorc/crystal-growth,notice
+event_fair,delapouite/price-tag,notice
+event_fair_wind,lorc/whirlwind,notice
+event_storm,lorc/lightning-storm,notice
+event_festival,lorc/firework-rocket,notice
+event_immigrants,delapouite/hiking,notice

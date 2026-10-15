@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://data/event_def.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"storm"
+effect = 2
+target_group = 0
+amount = 0.6
+duration_s = 240.0
+weight = 1
+after_milestone = 1

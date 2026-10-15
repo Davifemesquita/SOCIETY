@@ -139,6 +139,24 @@ static var _default: GameConfig
 @export var ships_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 6, 8])
 @export var islands_by_milestone: PackedInt32Array = PackedInt32Array([1, 2, 3, 4, 5, 7, 9])
 
+@export_group("Eventos e encomendas")
+## Eventos (Fase 11): o primeiro sai depois de event_first_after_s de jogo e os seguintes a cada
+## event_interval_s, com até event_jitter_s a mais ou a menos (sorteado pela semente). No máximo
+## max_active_events ao mesmo tempo.
+@export var event_first_after_s: float = 900.0
+@export var event_interval_s: float = 900.0
+@export var event_jitter_s: float = 300.0
+@export var max_active_events: int = 2
+## Encomendas (Fase 11): a primeira é oferecida depois de mission_first_after_s de jogo com
+## entreposto, as seguintes a cada mission_interval_s; a oferta espera mission_offer_s pela resposta.
+## No máximo max_open_missions (oferecidas e aceitas) ao mesmo tempo.
+@export var mission_first_after_s: float = 600.0
+@export var mission_interval_s: float = 720.0
+@export var mission_offer_s: float = 300.0
+@export var max_open_missions: int = 2
+## Eventos e encomendas são conferidos a cada tantos ticks.
+@export var events_check_ticks: int = 5
+
 @export_group("Ilhas")
 ## Área da ilha plana (testes e saves de antes da Fase 5), em células.
 @export var main_island_size_cells: Vector2i = Vector2i(250, 250)
@@ -155,6 +173,15 @@ static var _default: GameConfig
 @export var main_island_profile: StringName = &"main_island"
 ## Perfis sorteados (pela semente) para as outras ilhas.
 @export var other_island_profiles: Array[StringName] = [&"farmland", &"highlands", &"woodland", &"reef"]
+## Segunda região climática (Fase 11): ilhas tropicais a leste, longe das temperadas, cada uma
+## numa destas regiões (com um mar aberto no meio). Saem da semente à parte, depois das
+## temperadas, e são as mesmas em qualquer tamanho de arquipélago.
+@export var tropical_island_sizes_cells: PackedInt32Array = PackedInt32Array([150, 120, 80])
+@export var tropical_regions: Array[Vector2i] = [Vector2i(3, -1), Vector2i(3, 0), Vector2i(3, 1)]
+## Perfis sorteados (pela semente) para as ilhas tropicais.
+@export var tropical_island_profiles: Array[StringName] = [&"cane_coast", &"coffee_hills", &"tobacco_valley"]
+## Marcos de população atingidos que liberam colonizar ilha tropical (3 = o de 1.000 moradores).
+@export var tropical_milestone: int = 3
 ## Lado da região do terreno de cada ilha, em metros (uma ilha por região).
 @export var terrain_region_m: float = 512.0
 ## Patamares planos, em metros acima do mar: é neles que se constrói. Entre um e outro, encosta.
@@ -376,6 +403,11 @@ func island_count_for(archipelago_size: int) -> int:
 	return mini(archipelago_island_counts[clampi(archipelago_size, 0, archipelago_island_counts.size() - 1)], island_sizes_cells.size())
 
 
+## Segundos de jogo em ticks (arredondado).
+func ticks_of(seconds: float) -> int:
+	return roundi(seconds * ticks_per_second)
+
+
 func tick_interval() -> float:
 	return 1.0 / float(ticks_per_second)
 
@@ -426,6 +458,20 @@ func validate() -> PackedStringArray:
 		if count < 1 or count > island_sizes_cells.size():
 			problems.append("archipelago_island_counts: entre 1 e o número de ilhas de island_sizes_cells")
 			break
+	if tropical_island_sizes_cells.size() > tropical_regions.size() or (not tropical_island_sizes_cells.is_empty() and tropical_island_profiles.is_empty()):
+		problems.append("tropical_island_sizes_cells: no máximo uma ilha por região de tropical_regions, e tropical_island_profiles não fica vazio")
+	for region: Vector2i in tropical_regions:
+		if region == Vector2i.ZERO or ArchipelagoGenerator.REGION_SLOTS.has(region):
+			problems.append("tropical_regions não usa a região da principal nem as vizinhas (as das temperadas)")
+			break
+	if event_first_after_s <= 0.0 or event_interval_s <= 0.0 or event_jitter_s < 0.0 or event_jitter_s >= event_interval_s:
+		problems.append("eventos: primeiro e intervalo positivos, variação menor que o intervalo")
+	if mission_first_after_s <= 0.0 or mission_interval_s <= 0.0 or mission_offer_s <= 0.0:
+		problems.append("encomendas: tempos positivos")
+	if max_active_events < 1 or max_open_missions < 1 or events_check_ticks < 1:
+		problems.append("max_active_events, max_open_missions e events_check_ticks pelo menos 1")
+	if tropical_milestone < 0 or tropical_milestone > population_milestones.size():
+		problems.append("tropical_milestone entre 0 e o número de marcos de population_milestones")
 	if difficulty_money_factors.size() != 3 or difficulty_debt_factors.size() != 3 or default_difficulty < 0 or default_difficulty > 2:
 		problems.append("as dificuldades são três: fácil, normal e difícil")
 	if history_interval_s <= 0.0 or history_samples < 2:

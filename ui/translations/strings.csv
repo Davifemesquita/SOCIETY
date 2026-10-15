@@ -73,6 +73,10 @@ BUILDING_CHURCH,Igreja,Church
 BUILDING_CLAY_PIT,Poço de argila,Clay pit
 BUILDING_BRICKWORKS,Olaria,Brickworks
 BUILDING_HOP_FARM,Fazenda de lúpulo,Hop farm
+BUILDING_SUGAR_CANE_FARM,Canavial,Sugar cane farm
+BUILDING_COFFEE_PLANTATION,Cafezal,Coffee plantation
+BUILDING_TOBACCO_PLANTATION,Plantação de tabaco,Tobacco plantation
+BUILDING_GOLD_MINE,Mina de ouro,Gold mine
 BUILDING_MALTHOUSE,Maltaria,Malthouse
 BUILDING_BREWERY,Cervejaria,Brewery
 BUILDING_COAL_MINE,Mina de carvão,Coal mine
@@ -259,6 +263,7 @@ TIP_COLONY,Em outra ilha: os materiais vêm de um navio ancorado nela,On another
 TIP_PIER,Mais uma vaga de navio; precisa de estrada até o entreposto,One more ship berth; needs a road to the trading post
 REASON_NEEDS_SHIP,Precisa de um navio ancorado nesta ilha com os materiais,Needs a ship anchored at this island with the materials
 REASON_ISLAND_LOCKED,Mais ilhas liberam com o próximo marco de população,More islands unlock at the next population milestone
+REASON_TROPICAL_LOCKED,As ilhas tropicais liberam num marco de população mais alto,Tropical islands unlock at a higher population milestone
 REASON_SHIP_LIMIT,Mais navios liberam com o próximo marco de população,More ships unlock at the next population milestone
 REASON_NO_SHIP,Navio desconhecido,Unknown ship
 REASON_NO_ROUTE,Rota desconhecida,Unknown route
@@ -581,3 +586,45 @@ OPTIONS_ADVISOR,Conselheiro,Advisor
 OPTIONS_ADVISOR_TIP,O conselheiro apresenta e comenta as metas guiadas,The advisor introduces and comments on the guided goals
 OPTIONS_CAMERA_SPEED,Velocidade da câmera,Camera speed
 OPTIONS_CAMERA_SPEED_TIP,Rapidez do movimento da câmera pelo teclado e pela borda da tela,How fast the camera moves with the keyboard and the screen edge
+NEW_GAME_EVENTS,Eventos e encomendas,Events and orders
+NEW_GAME_EVENTS_TIP,"De tempos em tempos acontecem eventos (boa colheita, feira, tempestade) e o comerciante faz encomendas com prêmio","From time to time events happen (good harvest, fair, storm) and the trader places orders with a bonus"
+HUD_MISSIONS,Encomendas (%d),Orders (%d)
+HUD_MISSIONS_TIP,Encomendas do comerciante e eventos em andamento (J),Trader's orders and current events (J)
+ACTION_GAME_MISSIONS,Encomendas e eventos,Orders and events
+MISSIONS_TITLE,Encomendas,Orders
+MISSIONS_HINT,"Entregue vendendo o bem no posto do comerciante, por rota ou pelo painel do navio. Cada tonelada é paga; no prazo, ganha o prêmio.","Deliver by selling the good at the trader's post, by route or from the ship panel. Every ton is paid; on time, you earn the bonus."
+MISSIONS_EVENTS,Eventos em andamento,Current events
+MISSIONS_DISABLED,Esta partida não tem eventos nem encomendas,This game has no events or orders
+MISSIONS_NONE,Nenhuma encomenda agora,No orders right now
+MISSIONS_NO_EVENTS,Nenhum evento agora,No events right now
+MISSION_REQUEST,%s t de %s,%s t of %s
+MISSION_REWARD,"Prêmio de %s moedas, prazo de %s","Bonus of %s coins, %s to deliver"
+MISSION_ANSWER_IN,Responda em %s,Answer within %s
+MISSION_ACCEPT,Aceitar,Accept
+MISSION_ACCEPT_TIP,Aceita a encomenda: o prazo começa a contar agora,Accept the order: the time starts now
+MISSION_DECLINE_TIP,Recusa a encomenda (sem custo),Decline the order (no cost)
+MISSION_DELIVERED,"Entregue %s de %s t, prêmio de %s moedas","Delivered %s of %s t, bonus of %s coins"
+MISSION_DEADLINE,Prazo: %s,Time left: %s
+MISSION_PROGRESS_TIP,Toneladas já entregues,Tons already delivered
+EVENT_TIME_LEFT,Faltam %s,%s left
+EVENT_AT,%s em %s,%s at %s
+PLACE_ARCHIPELAGO,todo o arquipélago,the whole archipelago
+EVENT_GOOD_HARVEST,Boa colheita,Good harvest
+EVENT_GOOD_HARVEST_DESC,Fazendas e criações produzem %s mais rápido,Farms and ranches produce %s faster
+EVENT_RICH_VEIN,Veio rico,Rich vein
+EVENT_RICH_VEIN_DESC,As minas produzem %s mais rápido,Mines produce %s faster
+EVENT_FAIR,Feira no porto,Harbour fair
+EVENT_FAIR_DESC,Preço de %s %s mais alto no comerciante,Trader price of %s %s higher
+EVENT_FAIR_WIND,Vento a favor,Fair wind
+EVENT_FAIR_WIND_DESC,Os navios navegam %s mais rápido,Ships sail %s faster
+EVENT_STORM,Tempestade no mar,Storm at sea
+EVENT_STORM_DESC,Os navios navegam %s mais devagar,Ships sail %s slower
+EVENT_FESTIVAL,Festa da colheita,Harvest festival
+EVENT_FESTIVAL_DESC,Os moradores ganham %s pontos de felicidade,Residents gain %s happiness points
+EVENT_IMMIGRANTS,Leva de imigrantes,Wave of immigrants
+EVENT_IMMIGRANTS_DESC,As casas enchem %s mais rápido,Houses fill up %s faster
+NOTICE_EVENT,%s: %s,%s: %s
+NOTICE_MISSION_OFFERED,Encomenda nova: %s t de %s,New order: %s t of %s
+NOTICE_MISSION_DONE,Encomenda de %s cumprida: prêmio de %s moedas,Order of %s fulfilled: bonus of %s coins
+NOTICE_MISSION_EXPIRED,A encomenda de %s venceu,The order of %s expired
+REASON_NO_MISSION,Essa encomenda não está mais aberta,That order is no longer open

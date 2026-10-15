@@ -1,7 +1,7 @@
 class_name Hud
 extends Control
 ## Interface da partida: barra superior (data e hora, velocidade, dinheiro com o saldo, população
-## por classe, estatísticas, rotas, salvar, carregar e o menu), menu de construção por categoria
+## por classe, os eventos em andamento, estatísticas, rotas, encomendas, salvar, carregar e o menu), menu de construção por categoria
 ## com as camadas de mapa, painel do selecionado, notificações, avisos e a dica ao lado do cursor.
 ## Só lê o estado e chama a ferramenta; nenhuma regra de jogo aqui.
 
@@ -21,6 +21,7 @@ var statistics_window: StatisticsWindow
 var ship_panel: ShipPanel
 var route_window: RouteWindow
 var trade_window: TradeWindow
+var mission_window: MissionWindow
 var notifications: NotificationFeed
 var goal_panel: GoalPanel
 var overlay_layer: MapOverlays.Layer = MapOverlays.Layer.NONE
@@ -31,6 +32,10 @@ var _clock_label := Label.new()
 var _money_label := Label.new()
 var _population := HBoxContainer.new()
 var _population_labels: Dictionary[StringName, Label] = {}
+## Selos dos eventos em andamento (Fase 11) e o botão das encomendas, com quantas estão abertas.
+var _event_chips := HBoxContainer.new()
+var _missions_button: Button
+var _chips_signature: String = ""
 var _speed_buttons: Array[Button] = []
 var _category_buttons: Array[Button] = []
 var _overlay_buttons: Dictionary[MapOverlays.Layer, Button] = {}
@@ -89,6 +94,10 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	add_child(trade_window)
 	trade_window.setup(simulation)
 	selection_panel.trade_requested.connect(trade_window.open)
+	mission_window = MissionWindow.new()
+	_pin(mission_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
+	add_child(mission_window)
+	mission_window.setup(simulation)
 	_build_labels()
 	tool.changed.connect(_refresh_tool)
 	tool.refused.connect(func(reason: StringName) -> void: show_message(tr(reason)))
@@ -116,9 +125,13 @@ func toggle_routes() -> void:
 	route_window.toggle()
 
 
+func toggle_missions() -> void:
+	mission_window.toggle()
+
+
 ## Fecha a janela aberta de cima (Esc); devolve se havia alguma.
 func close_top_window() -> bool:
-	for window: Control in [trade_window, route_window, statistics_window]:
+	for window: Control in [mission_window, trade_window, route_window, statistics_window]:
 		if window.visible:
 			window.visible = false
 			return true
@@ -200,6 +213,7 @@ func _refresh() -> void:
 	for def_id: StringName in _item_buttons:
 		var def := _simulation.data.building(def_id)
 		_item_buttons[def_id].disabled = not _simulation.free_build and PlacementRules.check_unlock(world, def) != PlacementRules.OK
+	_refresh_events()
 	if _paved_button != null:
 		var config := _simulation.config
 		_paved_button.disabled = not _simulation.free_build \
@@ -252,6 +266,9 @@ func _build_top_bar() -> void:
 		_population.add_child(count)
 		_population_labels[tier.id] = count
 	row.add_child(_population)
+	_event_chips.name = "Events"
+	_event_chips.add_theme_constant_override(&"separation", 4)
+	row.add_child(_event_chips)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
@@ -261,11 +278,47 @@ func _build_top_bar() -> void:
 	var routes := UiKit.button("HUD_ROUTES", "action_routes", toggle_routes, "HUD_ROUTES_TIP")
 	routes.name = "Routes"
 	row.add_child(routes)
+	_missions_button = UiKit.button("", "action_missions", toggle_missions, "HUD_MISSIONS_TIP")
+	_missions_button.name = "MissionsButton"
+	row.add_child(_missions_button)
 	row.add_child(UiKit.icon_button("action_save", "HUD_SAVE_TIP", save_requested.emit))
 	row.add_child(UiKit.icon_button("action_load", "HUD_LOAD_TIP", load_requested.emit))
 	var menu := UiKit.icon_button("action_menu", "HUD_MENU_TIP", menu_requested.emit)
 	menu.name = "Menu"
 	row.add_child(menu)
+
+
+## Selos dos eventos (ícone com o título, a descrição e o tempo na dica) e a contagem das encomendas.
+## Os selos só se refazem quando a lista de eventos muda.
+func _refresh_events() -> void:
+	var state := _simulation.world.events_state
+	var open := 0
+	for item: Mission in state.missions:
+		if item.state == Mission.State.OFFERED:
+			open += 1
+	_missions_button.text = tr("HUD_MISSIONS") % state.missions.size()
+	if open > 0:
+		UiPalette.paint(_missions_button, UiPalette.Status.PARTIAL)
+	else:
+		UiPalette.unpaint(_missions_button)
+	var signature := ""
+	for event: WorldEvent in state.events:
+		signature += "%s/%d/%d;" % [event.def_id, event.island_id, event.started_tick]
+	if signature != _chips_signature:
+		_chips_signature = signature
+		UiKit.clear(_event_chips)
+		for event: WorldEvent in state.events:
+			var chip := UiKit.icon_rect(Icons.get_icon(MissionWindow.event_icon(event.def_id)), 28)
+			chip.name = "Event_" + String(event.def_id)
+			chip.mouse_filter = Control.MOUSE_FILTER_STOP
+			_event_chips.add_child(chip)
+	var index := 0
+	for event: WorldEvent in state.events:
+		var chip := _event_chips.get_child(index) as Control
+		chip.tooltip_text = "%s\n%s\n%s" % [MissionWindow.event_title(event, _simulation.data),
+				MissionWindow.event_description(event, _simulation.data),
+				tr("EVENT_TIME_LEFT") % Fmt.countdown(event.ticks_left(_simulation.world.tick) * _simulation.config.tick_interval())]
+		index += 1
 
 
 ## Duas linhas: as categorias (com as camadas de mapa à direita) e, abaixo, os prédios da

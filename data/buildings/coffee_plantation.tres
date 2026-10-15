@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"coffee_plantation"
+name_key = "BUILDING_COFFEE_PLANTATION"
+kind = 1
+size = Vector2i(3, 3)
+height_m = 4.5
+color = Color(0.4, 0.5, 0.26, 1)
+cost_money = 800
+cost_materials = Dictionary[StringName, int]({&"planks": 6, &"bricks": 2})
+upkeep_per_min = 40
+unlock_tier = &"engineers"
+unlock_residents = 200
+workforce_tier = &"peasants"
+workers = 30
+inputs = Array[StringName]([])
+output = &"coffee_beans"
+cycle_s = 60.0
+module_id = &"field"
+modules_required = 6
+terrain = 0
+fertility = &"coffee_beans"
+wall_material = 2

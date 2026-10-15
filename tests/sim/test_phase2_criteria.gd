@@ -95,7 +95,7 @@ func test_phase_one_save_migrates_to_phase_two() -> void:
 		"buildings": [{"id": 1, "def": &"placeholder_house", "island": 0, "origin": Vector2i(5, 5), "rotation": 0}],
 		"next_building_id": 2,
 	}}
-	var migrated := SaveMigrations.from_6_to_7(SaveMigrations.from_5_to_6(SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(SaveMigrations.from_2_to_3(SaveMigrations.from_1_to_2(phase_one))))))
+	var migrated := SaveMigrations.from_8_to_9(SaveMigrations.from_7_to_8(SaveMigrations.from_6_to_7(SaveMigrations.from_5_to_6(SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(SaveMigrations.from_2_to_3(SaveMigrations.from_1_to_2(phase_one))))))))
 	var world_data: Dictionary = migrated["world"]
 	var world := WorldState.from_dict(world_data, GameData.get_default())
 	assert_object(world).is_not_null()

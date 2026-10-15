@@ -194,8 +194,7 @@ func _build_trader_actions(ship: Ship) -> void:
 	for good: StringName in goods:
 		var row := HBoxContainer.new()
 		_actions.add_child(row)
-		var price := TraderState.price(_simulation.world.seed, _simulation.world.trader.tour, _simulation.data.good(good),
-				_simulation.config.trader_price_variation)
+		var price := _simulation.world.trader_price(_simulation.data, _simulation.config, good)
 		row.add_child(UiKit.icon_rect(Icons.good(good), 24))
 		var label := Label.new()
 		label.text = tr("TRADE_GOOD_PRICE") % [tr(_simulation.data.good(good).name_key), Fmt.integer(price)]

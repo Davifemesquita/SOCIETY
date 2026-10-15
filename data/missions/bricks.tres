@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MissionDef" format=3]
+
+[ext_resource type="Script" path="res://data/mission_def.gd" id="1_mission"]
+
+[resource]
+script = ExtResource("1_mission")
+id = &"bricks"
+good = &"bricks"
+tons = 30
+duration_s = 1500.0
+bonus_fraction = 0.5
+weight = 2
+after_milestone = 1

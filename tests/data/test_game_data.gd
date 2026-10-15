@@ -13,7 +13,7 @@ func test_data_loads_and_is_valid() -> void:
 	assert_array(Array(_data.validate())).is_empty()
 	assert_int(_data.goods.size()).is_equal(41)
 	assert_int(_data.tiers.size()).is_equal(5)
-	assert_int(_data.buildings.size()).is_equal(49)
+	assert_int(_data.buildings.size()).is_equal(53)
 	assert_int(_data.ships.size()).is_equal(2)
 	assert_object(_data.trader()).is_not_null()
 
@@ -127,35 +127,74 @@ func test_upper_tiers_follow_the_spec_table() -> void:
 	assert_object(_data.next_tier(&"investors")).is_null()
 
 
-## Nenhuma necessidade básica de quem ainda sobe de classe depende de bem importado: chegar à
-## quinta classe nunca pede o comerciante (os importados ficam no luxo e nos investidores).
+## Nenhuma necessidade básica de quem ainda sobe de classe depende de bem importado ou tropical:
+## chegar à quinta classe nunca pede o comerciante nem as ilhas tropicais (Fase 11), que ficam no
+## luxo e nos investidores.
 func test_climbing_never_depends_on_imports() -> void:
-	var imported := _data.trader().sells
 	for tier: TierDef in _data.tiers:
 		if _data.next_tier(tier.id) == null:
 			continue
 		for need: NeedCategoryDef in tier.basic_needs:
 			var local := not need.services.is_empty()
 			for good: StringName in need.goods:
-				local = local or _is_made_locally(good, imported)
-			assert_bool(local).override_failure_message("%s/%s só se atende com importado" % [tier.id, need.id]).is_true()
+				local = local or _is_made_locally(good)
+			assert_bool(local).override_failure_message("%s/%s só se atende com importado ou tropical" % [tier.id, need.id]).is_true()
 
 
-## O bem sai de uma cadeia que começa no terreno (sem matéria-prima importada).
-func _is_made_locally(good: StringName, imported: Array[StringName], depth: int = 0) -> bool:
+## O bem sai de uma cadeia que começa no terreno de uma ilha temperada.
+func _is_made_locally(good: StringName, depth: int = 0) -> bool:
 	if depth > 8:
 		return false
 	for def: BuildingDef in _data.buildings:
-		if def.is_production() and def.output == good:
+		if def.is_production() and def.output == good and _temperate_terrain(def):
 			var all_local := true
 			for input: StringName in def.inputs:
-				if imported.has(input) and not _is_produced(input):
-					all_local = false
-				elif not _is_made_locally(input, imported, depth + 1):
+				if not _is_made_locally(input, depth + 1):
 					all_local = false
 			if all_local:
 				return true
 	return false
+
+
+## O prédio cabe numa ilha temperada (a fertilidade ou a jazida dele existe numa delas).
+func _temperate_terrain(def: BuildingDef) -> bool:
+	if def.fertility == &"" and def.deposit == &"":
+		return true
+	for profile: IslandProfileDef in _data.island_profiles:
+		if profile.is_tropical():
+			continue
+		if (def.fertility == &"" or profile.fertilities.has(def.fertility)) and (def.deposit == &"" or profile.deposits.has(def.deposit)):
+			return true
+	return false
+
+
+## Fase 11: cana, café, tabaco e ouro só crescem nas ilhas tropicais, cada um em pelo menos uma
+## delas, e as cadeias novas fecham com as fábricas da Fase 8.
+func test_tropical_goods_grow_only_in_the_tropics() -> void:
+	var tropical_goods: Array[StringName] = [&"sugar", &"coffee_beans", &"tobacco", &"gold"]
+	for good: StringName in tropical_goods:
+		var in_tropics := false
+		for profile: IslandProfileDef in _data.island_profiles:
+			var has := profile.fertilities.has(good) or profile.deposits.has(good)
+			if profile.is_tropical():
+				in_tropics = in_tropics or has
+			else:
+				assert_bool(has).override_failure_message("%s na ilha temperada %s" % [good, profile.id]).is_false()
+		assert_bool(in_tropics).override_failure_message(str(good)).is_true()
+	for profile_id: StringName in GameConfig.get_default().tropical_island_profiles:
+		assert_bool(_data.profile(profile_id).is_tropical()).is_true()
+	assert_str(_data.building(&"gold_mine").deposit).is_equal(&"gold")
+	_assert_balanced(&"sugar_cane_farm", 1, &"rum_distillery", 1)
+	_assert_balanced(&"coffee_plantation", 2, &"coffee_roaster", 1)
+	_assert_balanced(&"tobacco_plantation", 1, &"cigar_factory", 1)
+	_assert_balanced(&"gold_mine", 2, &"goldsmith", 3)
+	# a plantação libera junto com a fábrica que a consome
+	for pair: Array in [[&"sugar_cane_farm", &"rum_distillery"], [&"coffee_plantation", &"coffee_roaster"],
+			[&"tobacco_plantation", &"cigar_factory"], [&"gold_mine", &"goldsmith"]]:
+		var producer: StringName = pair[0]
+		var consumer: StringName = pair[1]
+		assert_str(_data.building(producer).unlock_tier).is_equal(_data.building(consumer).unlock_tier)
+		assert_int(_data.building(producer).unlock_residents).is_equal(_data.building(consumer).unlock_residents)
 
 
 func _is_produced(good: StringName) -> bool:

@@ -48,3 +48,11 @@ static func place(target: int) -> String:
 	if target < 0:
 		return TranslationServer.translate("PLACE_OPEN_SEA")
 	return TranslationServer.translate("PLACE_ISLAND") % (target + 1)
+
+
+## Tempo de jogo restante como m:ss (ou h:mm:ss a partir de uma hora).
+static func countdown(seconds: float) -> String:
+	var total := maxi(ceili(seconds), 0)
+	if total >= 3600:
+		return "%d:%02d:%02d" % [total / 3600, (total / 60) % 60, total % 60]
+	return "%d:%02d" % [total / 60, total % 60]

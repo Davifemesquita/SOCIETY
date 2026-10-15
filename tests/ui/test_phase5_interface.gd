@@ -33,7 +33,7 @@ func after_test() -> void:
 
 func test_new_game_is_the_seed_archipelago_seen_from_the_trading_post_coast() -> void:
 	assert_int(_sim.world.seed).is_equal(SEED)
-	assert_int(_sim.world.islands.size()).is_equal(5)
+	assert_int(_sim.world.islands.size()).is_equal(8)
 	assert_object(_game.terrain_view).is_not_null()
 	assert_object(_game.water_view).is_not_null()
 	assert_int(_game.tree_view.instance_count()).is_greater(10000)

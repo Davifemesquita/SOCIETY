@@ -2,7 +2,8 @@ class_name CargoTransfer
 extends RefCounted
 ## Carga e descarga de um navio numa parada (seção 6). Na ilha: descarregar põe no estoque (o que
 ## couber) e carregar tira dele; no posto do comerciante: descarregar vende e carregar compra (o
-## que o dinheiro pagar). Primeiro tudo o que desce, depois o que sobe. plan() estima as
+## que o dinheiro pagar). Primeiro tudo o que desce, depois o que sobe. A venda no posto entrega
+## primeiro às encomendas aceitas do bem (Fase 11), que pagam o prêmio ao se cumprirem. plan() estima as
 ## toneladas (o tempo no cais sai delas); execute() faz de verdade, com o que houver na hora.
 
 
@@ -43,6 +44,9 @@ static func _apply(world: WorldState, data: GameData, config: GameConfig, derive
 	var storage: float = derived.capacity.get(stop.target, float(config.island_storage_capacity_t)) if not at_trader else 0.0
 	var moved := 0.0
 	var cash := money
+	## encomendas: o que ainda cabe nelas por bem (de faz de conta no plano)
+	var mission_room: Dictionary[StringName, float] = {}
+	var delivered := false
 	for pass_index: int in 2:
 		var loading := pass_index == 1
 		for order: TradeRoute.Order in stop.orders:
@@ -53,7 +57,7 @@ static func _apply(world: WorldState, data: GameData, config: GameConfig, derive
 			if at_trader:
 				if trader == null:
 					continue
-				var unit := TraderState.price(world.seed, world.trader.tour, data.good(order.good), config.trader_price_variation)
+				var unit := world.trader_price(data, config, order.good)
 				if loading:
 					if not trader.sells.has(order.good) or unit <= 0.0:
 						continue
@@ -64,6 +68,12 @@ static func _apply(world: WorldState, data: GameData, config: GameConfig, derive
 						continue
 					tons = minf(wanted, ship.tons_of(order.good))
 					cash += tons * unit
+					var room: float = mission_room.get(order.good, MissionSystem.room_for(world, order.good))
+					var for_missions := minf(tons, room)
+					mission_room[order.good] = room - for_missions
+					if real and for_missions > 0.000001:
+						MissionSystem.deliver(world, order.good, for_missions)
+						delivered = true
 			else:
 				var held: float = shadow_stock.get(order.good, economy.amount(order.good))
 				if loading:
@@ -85,6 +95,9 @@ static func _apply(world: WorldState, data: GameData, config: GameConfig, derive
 			moved += tons
 	if real:
 		world.money = cash
+		if delivered:
+			MissionSystem.settle(world, data)
+			EventBus.missions_changed.emit()
 	return moved
 
 

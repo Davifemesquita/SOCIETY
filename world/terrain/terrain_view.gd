@@ -121,7 +121,7 @@ func _on_trees_changed(island_id: int, area: Rect2i) -> void:
 		return
 	var grid := _world.island(island_id)
 	var image := _surface_images[island_id]
-	var region := ArchipelagoGenerator.layout(_world.seed, _config, _data)[island_id].region
+	var region := ArchipelagoGenerator.world_specs(_world, _config, _data)[island_id].region
 	var first := Vector2i((grid.origin_m - Vector2(region) * _config.terrain_region_m) / _config.cell_size_m)
 	for y: int in range(area.position.y, area.end.y + 1):
 		for x: int in range(area.position.x, area.end.x + 1):

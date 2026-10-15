@@ -7,6 +7,7 @@ extends GdUnitTestSuite
 func _small_config() -> GameConfig:
 	var config := GameConfig.new()
 	config.island_sizes_cells = PackedInt32Array([60, 30, 30, 20, 20, 30, 20, 30, 20])
+	config.tropical_island_sizes_cells = PackedInt32Array([30, 20, 20])
 	return config
 
 
@@ -15,7 +16,7 @@ func test_archipelago_sizes_have_four_six_and_eight_smaller_islands() -> void:
 	var data := GameData.get_default()
 	for size_index: int in 3:
 		var world := ArchipelagoGenerator.new_world(5, config, data, size_index)
-		assert_int(world.islands.size()).is_equal([5, 7, 9][size_index])
+		assert_int(world.islands.size()).is_equal([8, 10, 12][size_index])
 		assert_int(world.economies.size()).is_equal(world.islands.size())
 
 
@@ -24,7 +25,8 @@ func test_a_bigger_archipelago_keeps_the_islands_of_the_smaller_one() -> void:
 	var data := GameData.get_default()
 	var small := ArchipelagoGenerator.new_world(5, config, data, 0)
 	var large := ArchipelagoGenerator.new_world(5, config, data, 2)
-	for index: int in small.islands.size():
+	# as temperadas do pequeno são as primeiras do grande (as tropicais vêm depois e têm teste próprio)
+	for index: int in small.islands.size() - config.tropical_island_sizes_cells.size():
 		assert_int(large.island(index).fingerprint).is_equal(small.island(index).fingerprint)
 		assert_vector(large.island(index).origin_m).is_equal(small.island(index).origin_m)
 
@@ -35,7 +37,7 @@ func test_the_save_rebuilds_the_archipelago_with_its_own_number_of_islands() -> 
 	var world := ArchipelagoGenerator.new_world(9, config, data, 1)
 	var back := WorldState.from_dict(world.to_dict(), data, config)
 	assert_object(back).is_not_null()
-	assert_int(back.islands.size()).is_equal(7)
+	assert_int(back.islands.size()).is_equal(10)
 	for index: int in world.islands.size():
 		assert_int(back.island(index).fingerprint).is_equal(world.island(index).fingerprint)
 

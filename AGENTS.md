@@ -60,6 +60,9 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 200000 res://tools/capture_phase9.tscn -- /pasta/de/saida
 # Fase 10: tutorial apontando o entreposto, aba Jogo das opções e o salvamento automático
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase10.tscn -- /pasta/de/saida
+# Fase 11: ilhas tropicais da semente 1840, palmeiras, mina de ouro, canavial, mapa das rotas e a
+# janela de encomendas com os eventos e os avisos
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase11.tscn -- /pasta/de/saida
 # Fase 10: o jogador-robô joga 3 h e grava a linha do tempo do balanceamento
 tools/godot.sh godot --headless --path . res://tools/balance_report.tscn -- "$PWD/docs/balanceamento.md"
 # ícone do jogo (PNGs e o .ico do Windows)
@@ -137,14 +140,16 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 49 prédios (`buildings/`), perfis de ilha (`islands/`), 2 navios (`ships/`), o comerciante (`traders/`) e 14 metas guiadas (`goals/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 53 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 2 navios (`ships/`), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`) e 12 encomendas (`missions/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada (terra ou paralelepípedo), demolir e mover: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → eventos → encomendas |
+| `data/event_def.gd`, `data/mission_def.gd` | `EventDef` (efeito, grupo, multiplicador, duração, peso, marco) e `MissionDef` (bem, toneladas, prazo, prêmio, peso, marco) |
+| `sim/events/` | `EventsState` (no save: ligado ou não, eventos, encomendas, os contadores dos sorteios), `WorldEvent`, `Mission` e `EventEffects` (os multiplicadores que os sistemas leem) |
 | `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
 | `sim/ships/` | `SeaChart` (carta náutica, AStarGrid2D no mar), `Ship`, `TradeRoute`, `Harbors` (cais, ancoradouros, posto do comerciante), `CargoTransfer`, `TraderState`/`TraderVisits`, `ShipRules` |
 | `sim/derived_state.gd` | o que sai da geometria (acesso, cobertura, módulos, poluição) e os totais por tick; refeito na mudança |
@@ -173,6 +178,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
 | `ui/hud/ship_panel.gd`, `route_window.gd`, `archipelago_map.gd`, `trade_window.gd` | painel do navio, janela de rotas com o mapa, comércio passivo da ilha |
 | `ui/hud/goal_panel.gd` | meta da vez com o progresso e a fala do conselheiro (retrato, texto, continuar) |
+| `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
 | `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
 | `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
@@ -446,7 +452,9 @@ Regras que já custaram investigação:
   região climática na Fase 11): cana-de-açúcar, café em grão, tabaco e ouro vêm só do comerciante
   (ele vende), e as fábricas daqui os processam. O ouro não virou jazida porque jazida nova muda o
   gerador do arquipélago e recusa os saves. **Nenhuma necessidade básica de quem ainda sobe de
-  classe depende de importado** (há teste): os importados ficam no luxo e nos investidores.
+  classe depende de importado** (há teste): os importados ficam no luxo e nos investidores. Desde a
+  Fase 11 os quatro também crescem nas ilhas tropicais (a jazida de ouro saiu num perfil novo, sem
+  mexer no gerador das temperadas).
 - **Uva** é fertilidade nova (farmland, reef e a ilha de teste); fertilidade não mexe no gerador.
 - **Paralelepípedo** (`IslandGrid.Road.PAVED`): moedas e tijolos por célula, libera com 150
   operários (`paved_road_*` no `GameConfig`), calça por cima da terra cobrando só o calçamento;
@@ -544,6 +552,57 @@ Regras que já custaram investigação:
 - **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.10.0, nome e descrição no
   `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
 
+### Segunda região climática (Fase 11)
+
+- **Ilhas tropicais** (`ArchipelagoGenerator.tropical_layout`): 3 ilhas (150, 120 e 80 células) nas
+  regiões de `tropical_regions` (x = 3, com um mar aberto entre elas e as temperadas), perfis
+  `cane_coast`, `coffee_hills` e `tobacco_valley` (`IslandProfileDef.climate = &"tropical"`). Saem da
+  semente à parte e entram **depois** das temperadas; são as mesmas em qualquer tamanho de
+  arquipélago. `layout()` e `VERSION` não mudaram: os saves de antes refazem o mesmo terreno.
+  `ArchipelagoGenerator.world_specs(world)` dá as specs de um mundo (temperadas + tropicais, contadas
+  pelo perfil da economia); use-a em vez de `layout()` para achar a região de uma ilha.
+- **Cana, café, tabaco e ouro** crescem só lá: canavial (1:1 com a destilaria de rum), cafezal (2:1
+  com a torrefação), plantação de tabaco (1:1 com a charutaria) e mina de ouro (jazida nova, 2:3 com
+  a ourivesaria), liberados junto com a fábrica que os consome. O comerciante continua vendendo os
+  quatro. O teste "nenhuma necessidade básica depende de importado" passou a exigir cadeia que
+  comece em ilha **temperada**.
+- **Colonizar ilha tropical** pede `tropical_milestone` marcos (3 = 1.000 moradores), além do limite
+  de ilhas por marco (`REASON_TROPICAL_LOCKED`).
+- **Save versão 8**: sem campo novo; a migração 7 → 8 acrescenta as ilhas tropicais da semente,
+  virgens, aos saves de arquipélago (a ilha plana antiga fica sem elas). Tropical antes de temperada
+  recusa o save.
+- **Palmeiras** (Kenney Nature Kit) no lugar da mata nas ilhas tropicais (`TreeView`).
+
+### Eventos e encomendas (Fase 11)
+
+- **Ligados pelo jogo novo** (caixa "Eventos e encomendas", marcada por padrão; `GameScreen.events_enabled`).
+  Todo mundo novo da simulação (`Simulation.new_world`, `ArchipelagoGenerator.new_world`, `SimFixture`,
+  jogador-robô, benchmark) começa com `events_state.enabled = false`: os testes e o balanceamento não
+  mudam com sorteio novo. Save antigo (migração 8 → 9) abre com eles ligados e o relógio do zero.
+- **Eventos** (`EventSystem`, a cada `events_check_ticks`): o primeiro depois de `event_first_after_s`
+  de jogo, os seguintes a cada `event_interval_s` ± `event_jitter_s`, no máximo `max_active_events` e
+  nunca o mesmo duas vezes ao mesmo tempo. Sorteio pelo peso entre os liberados pelos marcos, com
+  `hash([semente, &"event", event_count])`; o de ilha cai numa colonizada, a feira num bem que o
+  comerciante compra. **Só multiplicadores** (`EventEffects`): produção por grupo (todos, fazendas,
+  minas), preço do comerciante (`WorldState.trader_price`, que todo preço do comerciante usa agora),
+  velocidade dos navios, felicidade (pontos) e chegada de moradores. Nada é destruído nem tirado: a
+  tempestade (navios a 60%) é o único efeito ruim. Riscos (incêndio, doença) seguem de fora.
+- **Encomendas** (`MissionSystem`): só com entreposto; a primeira depois de `mission_first_after_s`,
+  as seguintes a cada `mission_interval_s`, no máximo `max_open_missions` abertas e nunca duas do mesmo
+  bem. A oferta espera `mission_offer_s` e some calada; aceita (`AnswerMissionCommand`), o prazo é o
+  `duration_s` dela. **A entrega é a venda no posto do comerciante** (rota ou painel do navio): o
+  `CargoTransfer` entrega primeiro às encomendas aceitas do bem (a mais antiga antes), cada tonelada
+  paga ao preço da volta, e o `settle` paga o prêmio (`bonus_fraction` do valor base) das cumpridas.
+  Por isso o bem de toda encomenda tem de estar no `buys` do comerciante (o `GameData.validate` confere).
+  Vencida, some sem multa. A venda passiva nas ilhas (`TraderVisits`) não conta.
+- **Tempo em ticks** (`GameConfig.ticks_of`): os prazos e o fim dos eventos são ticks inteiros no save,
+  e a partida carregada segue igual à original (há teste).
+- **Save versão 9**: `events` no mundo (`EventsState.to_dict`); evento ou encomenda com definição
+  desconhecida, ilha fora do mundo ou encomenda já cumprida recusa o save.
+- **Interface**: botão "Encomendas (n)" na barra (laranja com oferta esperando resposta; atalho J), selos
+  dos eventos ao lado da população com a dica (título, lugar, efeito e tempo), avisos de evento, oferta,
+  cumprida e vencida; o aviso de encomenda e o de evento do arquipélago abrem a janela.
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -564,8 +623,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 7 — Interface completa | **concluída em 13/10/2026** (confirmada em 14/10/2026) |
 | 8 — Conteúdo | **concluída em 14/10/2026** (confirmada em 14/10/2026) |
 | 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
-| 10 — Polimento | **entregue em 14/10/2026**, aguardando a confirmação do dono do produto e o teste do build em outro PC |
-| 11 | — |
+| 10 — Polimento | **concluída em 14/10/2026** (confirmada em 14/10/2026; o teste do build em outro PC segue com o dono do produto) |
+| 11 — Expansões | em andamento: segunda região climática (ilhas tropicais) e eventos e encomendas feitos em 14/10/2026; rivais com IA e combate naval a seguir |
 
 Pendências já vistas para fases futuras:
 

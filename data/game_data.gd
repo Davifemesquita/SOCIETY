@@ -16,6 +16,9 @@ static var _default: GameData
 @export var traders: Array[TraderDef] = []
 ## Metas guiadas (Fase 8), na ordem em que o jogador as recebe.
 @export var goals: Array[GoalDef] = []
+## Eventos da partida e encomendas do comerciante (Fase 11).
+@export var events: Array[EventDef] = []
+@export var missions: Array[MissionDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -86,6 +89,20 @@ func profile(id: StringName) -> IslandProfileDef:
 	return null
 
 
+func event(id: StringName) -> EventDef:
+	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func mission(id: StringName) -> MissionDef:
+	for def: MissionDef in missions:
+		if def.id == id:
+			return def
+	return null
+
+
 ## Lista definições inválidas ou referências quebradas. Vazia quando está tudo certo.
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()
@@ -151,6 +168,21 @@ func validate() -> PackedStringArray:
 	_check_ids(problems, "meta", goals.map(func(def: GoalDef) -> StringName: return def.id))
 	for goal: GoalDef in goals:
 		_check_goal(problems, goal)
+	_check_ids(problems, "evento", events.map(func(def: EventDef) -> StringName: return def.id))
+	for event_def: EventDef in events:
+		if event_def.duration_s <= 0.0 or event_def.weight <= 0 or event_def.after_milestone < 0:
+			problems.append("evento %s: duração e peso positivos, marco não negativo" % event_def.id)
+		if event_def.effect != EventDef.Effect.HAPPINESS and event_def.amount <= 0.0:
+			problems.append("evento %s: multiplicador deve ser positivo" % event_def.id)
+	_check_ids(problems, "encomenda", missions.map(func(def: MissionDef) -> StringName: return def.id))
+	for mission_def: MissionDef in missions:
+		if good(mission_def.good) == null:
+			problems.append("encomenda %s: bem desconhecido %s" % [mission_def.id, mission_def.good])
+		elif trader() != null and not trader().buys.has(mission_def.good):
+			problems.append("encomenda %s: o comerciante não compra %s (a entrega é a venda no posto)" % [mission_def.id, mission_def.good])
+		if mission_def.tons <= 0 or mission_def.duration_s <= 0.0 or mission_def.bonus_fraction < 0.0 \
+				or mission_def.weight <= 0 or mission_def.after_milestone < 0:
+			problems.append("encomenda %s: toneladas, prazo e peso positivos" % mission_def.id)
 	return problems
 
 

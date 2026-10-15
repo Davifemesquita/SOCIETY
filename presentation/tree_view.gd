@@ -4,12 +4,13 @@ extends Node3D
 ## pela semente) e são desenhadas em MultiMesh por trecho de CHUNK_CELLS × CHUNK_CELLS e por
 ## modelo. Derrubar árvores ao construir refaz só o trecho atingido (trees_changed). Posição,
 ## giro e tamanho de cada árvore saem do índice da célula: o mesmo mundo dá sempre a mesma mata.
-## Modelos do Kenney Nature Kit (CC0).
+## Modelos do Kenney Nature Kit (CC0). Nas ilhas tropicais (Fase 11), palmeiras no lugar da mata.
 
 const CHUNK_CELLS := 64
 const BROADLEAF: Array[String] = ["tree_default", "tree_oak", "tree_fat"]
 const CONIFER: Array[String] = ["tree_pineDefaultA", "tree_pineRoundA"]
 const ROCKS: Array[String] = ["rock_largeA", "rock_largeB"]
+const PALMS: Array[String] = ["tree_palm", "tree_palmTall", "tree_palmBend"]
 const MODEL_DIR := "res://assets/models/nature/%s.glb"
 ## Altura de uma árvore adulta e das pedras, em metros.
 const TREE_HEIGHT_M := 8.0
@@ -30,26 +31,35 @@ const CONIFER_COLOR := Color(0.13, 0.26, 0.15)
 const BARK_COLOR := Color(0.32, 0.23, 0.16)
 const STONE_COLOR := Color(0.47, 0.46, 0.43)
 const MOSS_COLOR := Color(0.3, 0.37, 0.22)
+const PALM_COLOR := Color(0.24, 0.42, 0.14)
+const PALM_TRUNK_COLOR := Color(0.46, 0.36, 0.24)
 
 var _world: WorldState
 var _models: Array[Mesh] = []
 ## Fator de escala de cada modelo para chegar à altura certa.
 var _scales: PackedFloat32Array = []
+## Ilhas de clima tropical (desenham palmeiras).
+var _tropical: Dictionary[int, bool] = {}
 ## chave "ilha/cx/cy" → os MultiMeshInstance3D do trecho, um por modelo.
 var _chunks: Dictionary[String, Array] = {}
 
 
-func setup(world: WorldState) -> void:
+func setup(world: WorldState, data: GameData = GameData.get_default()) -> void:
 	_world = world
-	for name: String in BROADLEAF + CONIFER + ROCKS:
+	for name: String in BROADLEAF + CONIFER + ROCKS + PALMS:
 		var foliage := CONIFER_COLOR if CONIFER.has(name) else (MOSS_COLOR if ROCKS.has(name) else BROADLEAF_COLOR)
 		var wood := STONE_COLOR if ROCKS.has(name) else BARK_COLOR
+		if PALMS.has(name):
+			foliage = PALM_COLOR
+			wood = PALM_TRUNK_COLOR
 		var mesh := _recolor(_load_mesh(MODEL_DIR % name), foliage, wood, not ROCKS.has(name))
 		_models.append(mesh)
 		var height := mesh.get_aabb().size.y if mesh != null else 1.0
 		var target := ROCK_SIZE_M if ROCKS.has(name) else TREE_HEIGHT_M
 		_scales.append(target / maxf(height, 0.01))
 	for index: int in world.islands.size():
+		if world.is_tropical(index, data):
+			_tropical[index] = true
 		var grid := world.island(index)
 		if grid.flat:
 			continue
@@ -64,6 +74,17 @@ func instance_count() -> int:
 	for instances: Array in _chunks.values():
 		for node: MultiMeshInstance3D in instances:
 			total += node.multimesh.instance_count
+	return total
+
+
+## Palmeiras desenhadas numa ilha (as das ilhas tropicais).
+func palm_count(island_id: int) -> int:
+	var total := 0
+	for key: String in _chunks:
+		if key.begins_with("%d/" % island_id):
+			for node: MultiMeshInstance3D in _chunks[key]:
+				if node.name.begins_with("Palm"):
+					total += node.multimesh.instance_count
 	return total
 
 
@@ -83,6 +104,7 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 			node.queue_free()
 		_chunks.erase(key)
 	var grid := _world.island(island_id)
+	var tropical := _tropical.has(island_id)
 	# cada entrada: [modelo, 12 floats da transformação]; o buffer de cada modelo é montado numa
 	# variável local (array empacotado dentro de outro array pode ser alterado numa cópia)
 	var entries: Array[Array] = []
@@ -96,6 +118,10 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 				var high := grid.cell_height(cell) >= CONIFER_HEIGHT_M
 				for n: int in mini(count, DRAWN_PER_CELL):
 					var seed_value := hash([island_id, index, n])
+					if tropical:
+						var palm := BROADLEAF.size() + CONIFER.size() + ROCKS.size() + (seed_value / 7) % PALMS.size()
+						entries.append([palm, _transform(grid, cell, seed_value, _scales[palm] * (0.75 + (seed_value / 13 % 50) / 100.0))])
+						continue
 					var conifer := (seed_value % 100) < (70 if high else 20)
 					var family := CONIFER if conifer else BROADLEAF
 					var model := (0 if not conifer else BROADLEAF.size()) + (seed_value / 7) % family.size()
@@ -122,6 +148,7 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 		multimesh.instance_count = buffer.size() / 12
 		multimesh.buffer = buffer
 		var node := MultiMeshInstance3D.new()
+		node.name = "Palm%d" % model if model >= BROADLEAF.size() + CONIFER.size() + ROCKS.size() else "Trees%d" % model
 		node.multimesh = multimesh
 		node.visibility_range_end = VISIBLE_UNTIL_M
 		add_child(node)

@@ -4,25 +4,28 @@ extends RefCounted
 ## saída (no fim). A velocidade é a da força de trabalho da classe. O prédio para sem
 ## estrada, sem os módulos, sem árvores (lenhador), sem entrada, sem trabalhador, com a saída
 ## cheia ou pausado.
+## Eventos (Fase 11) multiplicam a velocidade (boa colheita, veio rico).
 ## O fim do ciclo tem folga de 1e-6: 75 ticks de 0,2/15 somam 0,99999… e o ciclo atrasaria
 ## um tick inteiro a cada volta.
 
 const _EPSILON := 0.000001
 
 
-static func run(config: GameConfig, derived: DerivedState, dt: float) -> void:
+static func run(config: GameConfig, derived: DerivedState, dt: float, events: EventsState = null) -> void:
 	var smoothing := 1.0 - exp(-dt / config.productivity_smoothing_seconds)
+	var boosted := events != null and not events.events.is_empty()
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		var record := entry.record
 		var previous := record.state
-		var speed := _step(entry, config, dt)
+		var factor := EventEffects.production(events, record.island_id, entry.def) if boosted else 1.0
+		var speed := _step(entry, config, dt, factor)
 		record.productivity = lerpf(record.productivity, speed, smoothing)
 		if record.state != previous:
 			EventBus.building_state_changed.emit(record.id)
 
 
 ## Avança o ciclo e devolve a velocidade efetiva deste tick (0..1).
-static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: float) -> float:
+static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: float, factor: float) -> float:
 	var record := entry.record
 	var def := entry.def
 	if record.paused:
@@ -42,7 +45,7 @@ static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: f
 		return 0.0
 	if not record.in_cycle and not _start_cycle(record, def, config):
 		return 0.0
-	var speed := entry.economy.workforce(def.workforce_tier)
+	var speed := entry.economy.workforce(def.workforce_tier) * factor
 	if speed <= 0.0:
 		record.state = BuildingRecord.State.NO_WORKERS
 		return 0.0

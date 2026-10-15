@@ -27,6 +27,12 @@ func setup(simulation: Simulation) -> void:
 	EventBus.island_colonized.connect(func(island_id: int) -> void: push(watcher.colonized(island_id)))
 	EventBus.trader_visited.connect(func(island_id: int, earned: float, spent: float) -> void:
 		push(watcher.trader(island_id, earned, spent)))
+	EventBus.world_event_started.connect(func(def_id: StringName, island_id: int) -> void: push(watcher.event_started(def_id, island_id)))
+	EventBus.mission_offered.connect(func(mission_id: int) -> void: push(watcher.mission_offered(mission_id)))
+	EventBus.mission_completed.connect(func(def_id: StringName, bonus: int) -> void: push(watcher.mission_completed(def_id, bonus)))
+	EventBus.mission_expired.connect(func(def_id: StringName, accepted: bool) -> void:
+		if accepted:
+			push(watcher.mission_expired(def_id)))
 	EventBus.world_replaced.connect(func() -> void:
 		clear()
 		watcher.reset())

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://data/event_def.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"good_harvest"
+effect = 0
+target_group = 1
+amount = 1.25
+duration_s = 480.0
+weight = 3
+after_milestone = 0

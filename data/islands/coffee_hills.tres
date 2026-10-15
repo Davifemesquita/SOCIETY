@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="IslandProfileDef" format=3]
+
+[ext_resource type="Script" path="res://data/island_profile_def.gd" id="1_island"]
+
+[resource]
+script = ExtResource("1_island")
+id = &"coffee_hills"
+fertilities = Array[StringName]([&"coffee_beans"])
+deposits = Array[StringName]([&"gold"])
+deposit_spots = 2
+forest_coverage = 0.35
+rivers = 0
+relief = 1.5
+climate = &"tropical"

@@ -24,6 +24,7 @@ const NEEDS_RIVER_OR_COAST := &"REASON_NEEDS_RIVER_OR_COAST"
 const TOO_STEEP := &"REASON_TOO_STEEP"
 const NEEDS_SHIP := &"REASON_NEEDS_SHIP"
 const ISLAND_LOCKED := &"REASON_ISLAND_LOCKED"
+const TROPICAL_LOCKED := &"REASON_TROPICAL_LOCKED"
 const SHIP_LIMIT := &"REASON_SHIP_LIMIT"
 ## Folga do ponto flutuante na diferença de altura.
 const _HEIGHT_EPSILON := 0.0001
@@ -119,6 +120,8 @@ static func founds_colony(world: WorldState, data: GameData, island_id: int, def
 static func check_colony(world: WorldState, data: GameData, config: GameConfig, island_id: int, def: BuildingDef) -> StringName:
 	if world.colonized_islands(data).size() >= MilestoneSystem.island_limit(world, config):
 		return ISLAND_LOCKED
+	if world.is_tropical(island_id, data) and world.milestones_reached < config.tropical_milestone:
+		return TROPICAL_LOCKED
 	if world.money - def.cost_money < config.min_balance_for(world.difficulty):
 		return NO_MONEY
 	if colony_ship(world, island_id, def.cost_materials) != null:

@@ -92,14 +92,14 @@ static func trade_passive(world: WorldState, data: GameData, config: GameConfig,
 		var tons := minf(economy.amount(good) - economy.sell_above[good], trader.max_tons_per_visit)
 		if tons <= 0.000001:
 			continue
-		var unit := TraderState.price(world.seed, world.trader.tour, data.good(good), config.trader_price_variation)
+		var unit := world.trader_price(data, config, good)
 		economy.take(good, tons)
 		earned += tons * unit
 	world.money += earned
 	for good: StringName in trader.sells:
 		if not economy.buy_up_to.has(good):
 			continue
-		var unit := TraderState.price(world.seed, world.trader.tour, data.good(good), config.trader_price_variation)
+		var unit := world.trader_price(data, config, good)
 		var tons := minf(minf(economy.buy_up_to[good] - economy.amount(good), float(trader.max_tons_per_visit)),
 				storage - economy.amount(good))
 		tons = minf(tons, maxf(world.money, 0.0) / unit)

@@ -44,3 +44,15 @@ signal goal_completed(index: int)
 
 ## Interface (Fase 10): uma notificação apareceu (o ícone diz o tipo; o áudio toca o som dela).
 signal notice_shown(icon: String)
+
+## Eventos e encomendas (Fase 11).
+## Um evento começou ou acabou (island_id -1 = o arquipélago todo).
+signal world_event_started(def_id: StringName, island_id: int)
+signal world_event_ended(def_id: StringName, island_id: int)
+## O comerciante ofereceu uma encomenda; uma aceita foi cumprida (prêmio em moedas) ou venceu.
+signal mission_offered(mission_id: int)
+signal mission_completed(def_id: StringName, bonus: int)
+## A oferta que não foi respondida ou a encomenda aceita que passou do prazo (accepted diz qual).
+signal mission_expired(def_id: StringName, accepted: bool)
+## Encomenda aceita, recusada ou entregue em parte: a janela refaz a lista.
+signal missions_changed()

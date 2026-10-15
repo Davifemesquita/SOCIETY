@@ -66,7 +66,9 @@ static func new_world(seed_value: int, config: GameConfig, data: GameData, archi
 	world.difficulty = difficulty if difficulty >= 0 else config.default_difficulty
 	world.money = config.starting_money_for(world.difficulty)
 	var size_index := archipelago_size if archipelago_size >= 0 else config.default_archipelago_size
-	for spec: IslandSpec in layout(seed_value, config, data, config.island_count_for(size_index)):
+	var specs := layout(seed_value, config, data, config.island_count_for(size_index))
+	specs.append_array(tropical_layout(seed_value, config, data, specs.size()))
+	for spec: IslandSpec in specs:
 		world.islands.append(build_island(spec, config))
 		var economy := IslandEconomy.new()
 		economy.profile_id = spec.profile.id
@@ -104,6 +106,45 @@ static func layout(seed_value: int, config: GameConfig, data: GameData, island_c
 			var profile_id: StringName = profiles[(index - 1) % profiles.size()]
 			spec.profile = data.profile(profile_id)
 		specs.append(spec)
+	return specs
+
+
+## Ilhas tropicais (Fase 11): saem da semente à parte, nas regiões de tropical_regions, e entram
+## depois das temperadas (first_index é o índice da primeira). São as mesmas em qualquer tamanho de
+## arquipélago, e layout() não muda: os saves de antes continuam com o mesmo terreno.
+static func tropical_layout(seed_value: int, config: GameConfig, data: GameData, first_index: int, island_count: int = -1) -> Array[IslandSpec]:
+	var count := config.tropical_island_sizes_cells.size() if island_count < 0 else mini(island_count, config.tropical_island_sizes_cells.size())
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([seed_value, "tropical"])
+	var regions: Array[Vector2i] = config.tropical_regions.duplicate()
+	_shuffle(regions, rng)
+	var profiles: Array[StringName] = config.tropical_island_profiles.duplicate()
+	_shuffle(profiles, rng)
+	var specs: Array[IslandSpec] = []
+	for number: int in mini(count, regions.size()):
+		var spec := IslandSpec.new()
+		spec.index = first_index + number
+		spec.size = config.tropical_island_sizes_cells[number]
+		spec.seed_value = hash([seed_value, "tropical", number]) & 0x7fffffff
+		spec.region = regions[number]
+		var free_cells := floori((config.terrain_region_m - spec.size * config.cell_size_m) / config.cell_size_m)
+		var offset := Vector2(rng.randi_range(free_cells / 4, free_cells * 3 / 4), rng.randi_range(free_cells / 4, free_cells * 3 / 4))
+		spec.origin_m = Vector2(spec.region) * config.terrain_region_m + offset * config.cell_size_m
+		spec.profile = data.profile(profiles[number % profiles.size()])
+		specs.append(spec)
+	return specs
+
+
+## As ilhas de um mundo gerado, na ordem dele: as temperadas e depois as tropicais (contadas pelo
+## perfil da economia de cada ilha).
+static func world_specs(world: WorldState, config: GameConfig, data: GameData) -> Array[IslandSpec]:
+	var tropical := 0
+	for economy: IslandEconomy in world.economies:
+		var profile := data.profile(economy.profile_id)
+		if profile != null and profile.is_tropical():
+			tropical += 1
+	var specs := layout(world.seed, config, data, world.islands.size() - tropical)
+	specs.append_array(tropical_layout(world.seed, config, data, specs.size(), tropical))
 	return specs
 
 
@@ -364,7 +405,7 @@ enum Surface { AUTO = 0, SAND = 1, FOREST = 2 }
 ## (sem degrau contra o mar aberto, onde não há terreno): é só o desenho, a simulação fica com
 ## sea_floor_m. Percorre a região inteira em GDScript, então lê os arrays da grade direto.
 static func region_corners(world: WorldState, index: int, config: GameConfig, data: GameData) -> Dictionary:
-	var spec := layout(world.seed, config, data)[index]
+	var spec := world_specs(world, config, data)[index]
 	var grid := world.island(index)
 	var noises := Noises.new(spec.seed_value)
 	var cell_m := config.cell_size_m

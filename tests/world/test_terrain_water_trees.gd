@@ -10,6 +10,7 @@ var _sim: Simulation
 func before_test() -> void:
 	_config = GameConfig.new()
 	_config.island_sizes_cells = PackedInt32Array([70, 40])
+	_config.tropical_island_sizes_cells = PackedInt32Array([30])
 	_sim = Simulation.new(_config, GameData.get_default(), ArchipelagoGenerator.new_world(5, _config, GameData.get_default()))
 	_sim.free_build = true
 
@@ -79,6 +80,18 @@ func test_trees_follow_the_grid_and_building_clears_them() -> void:
 		var one: Array[Vector2i] = [cell]
 		_sim.execute(BuildRoadCommand.new(0, one))
 	assert_int(view.instance_count()).is_less(before)
+
+
+## Fase 11: a ilha tropical tem palmeiras, e só ela.
+func test_tropical_island_grows_palms() -> void:
+	var view: TreeView = auto_free(TreeView.new())
+	add_child(view)
+	view.setup(_sim.world, _sim.data)
+	var tropical := _sim.world.islands.size() - 1
+	assert_bool(_sim.world.is_tropical(tropical, _sim.data)).is_true()
+	assert_bool(_sim.world.is_tropical(0, _sim.data)).is_false()
+	assert_int(view.palm_count(tropical)).is_greater(0)
+	assert_int(view.palm_count(0)).is_equal(0)
 
 
 func test_polluting_building_clouds_the_water_around_it() -> void:

@@ -17,6 +17,8 @@ var routes_changed: bool = false
 var created_id: int = 0
 ## Um entreposto foi fundado numa ilha a partir de um navio.
 var colonized: bool = false
+## Encomendas (Fase 11): uma foi aceita ou recusada.
+var missions_changed: bool = false
 
 
 static func refused(why: StringName) -> CommandResult:

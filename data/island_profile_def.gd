@@ -19,3 +19,10 @@ extends Resource
 ## Ilha plana de antes da Fase 5 (saves antigos e testes): sem relevo, sem água por dentro, e
 ## árvores, jazidas e rios valem como presentes; o litoral é a borda.
 @export var flat: bool = false
+## Região climática (Fase 11): &"temperate" (a de origem) ou &"tropical" (as ilhas a leste, com
+## cana, café, tabaco e ouro; colonizar pede o marco GameConfig.tropical_milestone).
+@export var climate: StringName = &"temperate"
+
+
+func is_tropical() -> bool:
+	return climate == &"tropical"

@@ -14,6 +14,8 @@ static var world_seed: int = -1
 ## tela de jogo novo.
 static var archipelago_size: int = -1
 static var difficulty: int = -1
+## Eventos e encomendas (Fase 11) no jogo novo do arquipélago; a ilha plana dos testes fica sem.
+static var events_enabled: bool = true
 ## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
 ## coordenadas dela.
 static var flat_world: bool = false
@@ -73,6 +75,7 @@ func _ready() -> void:
 	else:
 		var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
 		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty))
+		simulation.world.events_state.enabled = events_enabled
 	_build_ground()
 	sky = SkyAdapter.new()
 	add_child(sky)
@@ -226,7 +229,7 @@ func _build_ground() -> void:
 	water_view.setup(simulation)
 	tree_view = TreeView.new()
 	add_child(tree_view)
-	tree_view.setup(world)
+	tree_view.setup(world, simulation.data)
 
 
 ## Área que a câmera alcança: todas as ilhas.
@@ -374,6 +377,9 @@ func _close_all_modals() -> void:
 
 ## Clique numa notificação: seleciona e leva a câmera ao prédio, ao navio ou à ilha dela.
 func go_to(notice: NoticeWatcher.Notice) -> void:
+	if notice.opens_missions:
+		hud.mission_window.open()
+		return
 	var ship := simulation.world.ship(notice.ship_id)
 	if ship != null:
 		tool.select_ship(ship.id)

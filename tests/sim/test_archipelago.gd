@@ -15,6 +15,7 @@ func before() -> void:
 func _small_config() -> GameConfig:
 	var config := GameConfig.new()
 	config.island_sizes_cells = PackedInt32Array([70, 40, 30])
+	config.tropical_island_sizes_cells = PackedInt32Array([30, 20])
 	return config
 
 
@@ -34,7 +35,7 @@ func test_same_seed_same_archipelago_and_another_seed_another() -> void:
 
 func test_one_large_and_four_smaller_islands_each_in_its_own_region() -> void:
 	var config := GameConfig.get_default()
-	assert_int(_world.islands.size()).is_equal(5)
+	assert_int(_world.islands.size()).is_equal(8)
 	var sizes: Array[int] = []
 	var regions: Array[Vector2i] = []
 	for index: int in _world.islands.size():
@@ -45,7 +46,7 @@ func test_one_large_and_four_smaller_islands_each_in_its_own_region() -> void:
 		assert_bool(Rect2(Vector2(region) * config.terrain_region_m, Vector2.ONE * config.terrain_region_m).encloses(rect)).is_true()
 		assert_bool(regions.has(region)).is_false()
 		regions.append(region)
-	assert_array(sizes).is_equal([250, 150, 150, 80, 80])
+	assert_array(sizes).is_equal([250, 150, 150, 80, 80, 150, 120, 80])
 	assert_str(_world.economy(0).profile_id).is_equal("main_island")
 	var profiles: Array[StringName] = []
 	for index: int in range(1, 5):
@@ -57,7 +58,7 @@ func test_one_large_and_four_smaller_islands_each_in_its_own_region() -> void:
 ## fora dela sem refazer a conta do relevo.
 func test_outside_the_grid_is_always_sea_floor() -> void:
 	var config := GameConfig.get_default()
-	var specs := ArchipelagoGenerator.layout(SEED, config, GameData.get_default())
+	var specs := ArchipelagoGenerator.world_specs(_world, config, GameData.get_default())
 	for index: int in _world.islands.size():
 		var spec: ArchipelagoGenerator.IslandSpec = specs[index]
 		var noises := ArchipelagoGenerator.Noises.new(spec.seed_value)
@@ -156,7 +157,7 @@ func test_phase_four_save_stays_on_the_flat_island() -> void:
 			"economy": {"profile": &"test_island", "stock": {}, "category_supply": {}, "good_supply": {}, "shortage_announced": {}}}],
 		"buildings": [], "next_building_id": 1, "money": 1000.0, "tax_levels": {}, "tick": 0, "carts": [],
 	}}
-	var world_data: Dictionary = SaveMigrations.from_6_to_7(SaveMigrations.from_5_to_6(SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(phase_four))))["world"]
+	var world_data: Dictionary = SaveMigrations.from_8_to_9(SaveMigrations.from_7_to_8(SaveMigrations.from_6_to_7(SaveMigrations.from_5_to_6(SaveMigrations.from_4_to_5(SaveMigrations.from_3_to_4(phase_four))))))["world"]
 	var world := WorldState.from_dict(world_data, GameData.get_default())
 	assert_object(world).is_not_null()
 	assert_int(world.terrain_version).is_equal(0)

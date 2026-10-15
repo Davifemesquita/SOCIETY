@@ -100,7 +100,7 @@ static func _cast_off(world: WorldState, harbors: Harbors, ship: Ship, dt: float
 
 ## Anda até speed × dt pelo caminho; chega quando passa do último ponto.
 static func _sail(world: WorldState, data: GameData, config: GameConfig, derived: DerivedState, harbors: Harbors, ship: Ship, dt: float) -> void:
-	if _advance(ship, ship.waypoints, data.ship(ship.def_id).speed_m_s * dt):
+	if _advance(ship, ship.waypoints, data.ship(ship.def_id).speed_m_s * EventEffects.ship_speed(world.events_state) * dt):
 		_arrive(world, data, config, derived, ship)
 
 
@@ -153,7 +153,7 @@ static func _docked(world: WorldState, data: GameData, config: GameConfig, deriv
 		var berth := PackedVector2Array([harbors.berth_point(ship.berth_id)])
 		if not ship.position.is_equal_approx(berth[0]):
 			ship.waypoint = 0
-			_advance(ship, berth, data.ship(ship.def_id).speed_m_s * dt)
+			_advance(ship, berth, data.ship(ship.def_id).speed_m_s * EventEffects.ship_speed(world.events_state) * dt)
 			return
 	if ship.owner == Ship.Owner.TRADER:
 		ship.timer -= dt
