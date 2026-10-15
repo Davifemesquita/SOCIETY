@@ -180,9 +180,9 @@ func _index_warehouses(world: WorldState, data: GameData, config: GameConfig, ca
 		var def := data.building(record.def_id)
 		var grid := world.island(record.island_id)
 		var cells := PackedInt32Array()
-		for cell: Vector2i in Footprint.front_cells(record.origin, def.size, record.rotation):
-			if grid.has_road(cell):
-				cells.append(grid.index(cell))
+		for index: int in Footprint.front_indices(grid.size, record.origin, def.size, record.rotation):
+			if grid.roads[index] != IslandGrid.Road.NONE:
+				cells.append(index)
 		warehouse_cells[building_id] = cells
 		ramps[building_id] = def.level(record.level).ramps
 		if not labels_by_island.has(record.island_id):
@@ -256,18 +256,19 @@ func _add_berth(island_id: int, building_id: int) -> void:
 func _assign_warehouses(world: WorldState, config: GameConfig) -> void:
 	for entry: ProductionEntry in production_entries:
 		var grid := world.island(entry.record.island_id)
+		var roads := grid.roads
 		var field := fields[entry.record.island_id]
+		var front := Footprint.front_indices(grid.size, entry.record.origin, entry.def.size, entry.record.rotation)
 		var best := -1
-		for cell: Vector2i in Footprint.front_cells(entry.record.origin, entry.def.size, entry.record.rotation):
-			if not grid.has_road(cell):
+		for index: int in front:
+			if roads[index] == IslandGrid.Road.NONE:
 				continue
-			var index := grid.index(cell)
 			if field.distance[index] >= 0 and (best == -1 or field.distance[index] < field.distance[best]):
 				best = index
 		if best == -1:
-			for cell: Vector2i in Footprint.front_cells(entry.record.origin, entry.def.size, entry.record.rotation):
-				if grid.has_road(cell):
-					entry.access_cell = grid.index(cell)
+			for index: int in front:
+				if roads[index] != IslandGrid.Road.NONE:
+					entry.access_cell = index
 					break
 			continue
 		entry.access_cell = best
@@ -466,14 +467,13 @@ func _houses_by_front_cell(world: WorldState, data: GameData) -> Dictionary[int,
 	for house_id: int in houses:
 		var house := world.building(house_id)
 		var grid := world.island(house.island_id)
-		for cell: Vector2i in Footprint.front_cells(house.origin, data.building(house.def_id).size, house.rotation):
-			if grid.in_bounds(cell):
-				var key := _cell_key(house.island_id, grid.index(cell))
-				if not map.has(key):
-					map[key] = []
-				var list: Array = map[key]
-				if not list.has(house_id):
-					list.append(house_id)
+		for index: int in Footprint.front_indices(grid.size, house.origin, data.building(house.def_id).size, house.rotation):
+			var key := _cell_key(house.island_id, index)
+			if not map.has(key):
+				map[key] = []
+			var list: Array = map[key]
+			if not list.has(house_id):
+				list.append(house_id)
 	return map
 
 

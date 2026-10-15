@@ -271,7 +271,10 @@ Regras que já custaram investigação:
   instantâneo da Fase 2 (sem carroça e sem entreposto). Os testes da economia usam; os de
   logística (`SimFixture.simulation(..., true)`) não. O jogo nunca usa.
 - **Busca em largura por índice da grade** (sem `Vector2i`) nas buscas que rodam sobre a ilha
-  inteira a cada estrada nova; com coordenadas, construir com a ilha cheia passava de 50 ms.
+  inteira a cada estrada nova; com coordenadas, construir com a ilha cheia passava de 50 ms. Os
+  vizinhos se conferem um a um, sem montar `[esq, dir, cima, baixo]` por célula, a varredura atrás de
+  estrada usa o `find` do `PackedByteArray`, e a frente do prédio no recálculo é
+  `Footprint.front_indices` (índices, sem `Vector2i`): construir voltou de 52 para 37 ms.
 - Saves da Fase 2 abrem: ganham as carroças e esperam o entreposto (decisão do dono do
   produto, 12/10/2026).
 - Nenhum número de regra no código: vai para `GameConfig` ou para os Resources de

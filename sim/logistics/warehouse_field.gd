@@ -31,9 +31,26 @@ func _init(grid: IslandGrid, sources: Array[Vector2i]) -> void:
 		head += 1
 		var next_distance := distance[index] + 1
 		var from := owner[index]
+		# vizinhos na ordem esquerda, direita, cima, baixo (o desempate do dono depende dela),
+		# sem montar um Array por célula: era o grosso do tempo do recálculo
 		var x := index % width
-		for next: int in [index - 1 if x > 0 else -1, index + 1 if x < width - 1 else -1, index - width, index + width]:
-			if next >= 0 and next < count and roads[next] != 0 and distance[next] == -1:
-				distance[next] = next_distance
-				owner[next] = from
-				queue.append(next)
+		var next := index - 1
+		if x > 0 and roads[next] != 0 and distance[next] == -1:
+			distance[next] = next_distance
+			owner[next] = from
+			queue.append(next)
+		next = index + 1
+		if x < width - 1 and roads[next] != 0 and distance[next] == -1:
+			distance[next] = next_distance
+			owner[next] = from
+			queue.append(next)
+		next = index - width
+		if next >= 0 and roads[next] != 0 and distance[next] == -1:
+			distance[next] = next_distance
+			owner[next] = from
+			queue.append(next)
+		next = index + width
+		if next < count and roads[next] != 0 and distance[next] == -1:
+			distance[next] = next_distance
+			owner[next] = from
+			queue.append(next)

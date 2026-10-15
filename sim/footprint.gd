@@ -45,6 +45,44 @@ static func front_cells(origin: Vector2i, size: Vector2i, rotation: int) -> Arra
 	return cells
 
 
+## Índices na grade (largura × altura = grid_size) das células da frente que caem dentro dela, na
+## ordem de front_cells. Sem montar Vector2i: o recálculo do estado derivado chama isto para cada
+## prédio, e com a ilha cheia o Array de células pesava no tempo de construir.
+static func front_indices(grid_size: Vector2i, origin: Vector2i, size: Vector2i, rotation: int) -> PackedInt32Array:
+	var rotated := rotated_size(size, rotation)
+	var x := origin.x
+	var y := origin.y
+	var along_x := true
+	var length := rotated.x
+	match posmod(rotation, 4):
+		0:
+			y -= 1
+		1:
+			x += rotated.x
+			along_x = false
+			length = rotated.y
+		2:
+			y += rotated.y
+		3:
+			x -= 1
+			along_x = false
+			length = rotated.y
+	var result := PackedInt32Array()
+	if along_x:
+		if y < 0 or y >= grid_size.y:
+			return result
+		for i: int in length:
+			if x + i >= 0 and x + i < grid_size.x:
+				result.append(y * grid_size.x + x + i)
+	else:
+		if x < 0 or x >= grid_size.x:
+			return result
+		for i: int in length:
+			if y + i >= 0 and y + i < grid_size.y:
+				result.append((y + i) * grid_size.x + x)
+	return result
+
+
 ## A célula do meio da frente, onde fica a porta.
 static func entrance_cell(origin: Vector2i, size: Vector2i, rotation: int) -> Vector2i:
 	var cells := front_cells(origin, size, rotation)

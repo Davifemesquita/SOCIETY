@@ -370,3 +370,37 @@ Fase 11 (combate naval, eletricidade e especialistas), com outra sessão pesando
   volta otimizando o recálculo dos armazéns (17,5 ms).
 - Combate e oferta de especialistas não aparecem no tick: sem guerra o combate só repara, e a oferta só
   compara o número da volta.
+
+### 2026-10-15 14:35:44 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| jogo novo: arquipélago, terreno, água e árvores | 7292 ms (semente 1840, 54682 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1170 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 15284 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.78 / 4.23 / 5.17 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.06 · produção 0.75 · logística 1.24 · necessidades 0.23 · população 1.12 · economia 0.00 · navios 0.07 |
+| construir um prédio com a ilha cheia | 37.3 ms (limite 50 ms): comando e vistas 37.3 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.2 · serviços 7.7 · módulos e poluição 0.0 · armazéns 5.4 · produção 5.1 · grupos de casas 1.4 |
+| salvar | 180 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 2014 ms |
+| quadro com tudo visível | 5212 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1901 na rua (teto 2000); 6786 janelas |
+| multidão saindo de casa (rotas novas) | 494 quadros, 3088 ms; 1422 rotas, 1.10 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.48 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.1 / 0.1 FPS / 8361 ms em 10 quadros (meta 60 FPS), a partir das 07:00 |
+
+Desempenho depois da Fase 11 (recálculo do estado derivado), com a VM livre (carga ~1,7):
+
+- **Construir com a ilha cheia**: 37,3 ms (antes 52,1), de volta abaixo do limite de 50 ms com folga.
+  Armazéns 17,5 → 5,4 ms e produção 7,0 → 5,1. As buscas em largura (trechos de estrada, armazém mais
+  próximo, alcance de serviço) não montam mais um Array por célula visitada; os trechos pulam de
+  estrada em estrada pelo `find` em vez de varrer as 62,5 mil células da ilha em GDScript; e a frente
+  dos prédios vira índice da grade (`Footprint.front_indices`) sem lista de `Vector2i`. Medido só a
+  simulação (sem vistas, média de 10 recálculos), o recálculo passou de 36,0 para 26,2 ms.
+- O que sobra pesando: prédios (~9 ms, acesso à estrada de cada um dos ~1.000 prédios) e serviços
+  (~8 ms, o mapa das casas pela célula da frente).

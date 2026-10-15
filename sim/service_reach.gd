@@ -10,27 +10,42 @@ static func road_cells(grid: IslandGrid, front: Array[Vector2i], radius: int) ->
 	var roads := grid.roads
 	var width := grid.size.x
 	var count := roads.size()
-	var distance: Dictionary[int, int] = {}
+	# distância por célula (-1 = não alcançada); cada célula entra na fila uma vez só, então a
+	# fila é o alcance
+	var distance := PackedInt32Array()
+	distance.resize(count)
+	distance.fill(-1)
 	var queue := PackedInt32Array()
 	for cell: Vector2i in front:
-		if grid.has_road(cell) and not distance.has(grid.index(cell)):
+		if grid.has_road(cell) and distance[grid.index(cell)] == -1:
 			distance[grid.index(cell)] = 0
 			queue.append(grid.index(cell))
 	var head := 0
 	while head < queue.size():
 		var index := queue[head]
 		head += 1
-		var steps: int = distance[index]
-		if steps >= radius:
+		var steps := distance[index] + 1
+		if steps > radius:
 			continue
 		var x := index % width
-		for next: int in [index - 1 if x > 0 else -1, index + 1 if x < width - 1 else -1, index - width, index + width]:
-			if next >= 0 and next < count and roads[next] != 0 and not distance.has(next):
-				distance[next] = steps + 1
-				queue.append(next)
-	var reach := PackedInt32Array(distance.keys())
-	reach.sort()
-	return reach
+		var next := index - 1
+		if x > 0 and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		next = index + 1
+		if x < width - 1 and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		next = index - width
+		if next >= 0 and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		next = index + width
+		if next < count and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+	queue.sort()
+	return queue
 
 
 ## Casas cuja frente encosta numa das células alcançadas.
