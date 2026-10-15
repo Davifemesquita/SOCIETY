@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9]
+	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -152,5 +152,16 @@ static func from_8_to_9(state: Dictionary) -> Dictionary:
 	var events := EventsState.new()
 	events.enabled = true
 	world["events"] = events.to_dict()
+	state["world"] = world
+	return state
+
+
+## Eventos e encomendas → rivais (Fase 11): a partida antiga ganha as companhias rivais, com a
+## primeira colônia de cada uma marcada a partir de agora.
+static func from_9_to_10(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	var rivals := RivalsState.new()
+	rivals.start(GameData.get_default(), GameConfig.get_default())
+	world["rivals"] = rivals.to_dict()
 	state["world"] = world
 	return state

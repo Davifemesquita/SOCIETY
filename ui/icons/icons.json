@@ -65,6 +65,10 @@
 			256,
 			896
 		],
+		"action_gift": [
+			1152,
+			1536
+		],
 		"action_goal": [
 			640,
 			1152
@@ -108,6 +112,10 @@
 		"action_paved_road": [
 			384,
 			1152
+		],
+		"action_peace": [
+			1408,
+			1536
 		],
 		"action_play": [
 			128,
@@ -153,6 +161,10 @@
 			384,
 			1024
 		],
+		"action_treaty": [
+			1536,
+			1536
+		],
 		"action_unload_cargo": [
 			1152,
 			1024
@@ -160,6 +172,10 @@
 		"action_upgrade": [
 			1280,
 			896
+		],
+		"action_war": [
+			1280,
+			1536
 		],
 		"building_bakery": [
 			640,
@@ -593,6 +609,10 @@
 			1024,
 			1152
 		],
+		"hud_rival": [
+			1024,
+			1536
+		],
 		"hud_seed": [
 			1920,
 			1152
@@ -667,6 +687,10 @@
 		],
 		"notice_mission": [
 			0,
+			1536
+		],
+		"notice_rival": [
+			1664,
 			1536
 		],
 		"notice_ship_arrived": [
@@ -782,19 +806,19 @@
 			1408
 		],
 		"status_bad": [
-			1280,
-			1536
+			0,
+			1664
 		],
 		"status_good": [
-			1024,
+			1792,
 			1536
 		],
 		"status_missing": [
-			1408,
-			1536
+			128,
+			1664
 		],
 		"status_partial": [
-			1152,
+			1920,
 			1536
 		],
 		"tier_artisans": [

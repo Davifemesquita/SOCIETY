@@ -39,10 +39,14 @@ var difficulty: int = 1
 var history := StatisticsHistory.new()
 ## Eventos e encomendas (Fase 11); desligados em mundo novo da simulação.
 var events_state := EventsState.new()
+## Companhias rivais (Fase 11); desligadas em mundo novo da simulação.
+var rivals_state := RivalsState.new()
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
 var upkeep_per_min: float = 0.0
+## Renda dos acordos comerciais com rivais (Fase 11), já somada em income_per_min.
+var treaty_income_per_min: float = 0.0
 
 
 func island(island_id: int) -> IslandGrid:
@@ -205,7 +209,8 @@ func to_dict() -> Dictionary:
 			"seed": seed, "terrain_version": terrain_version, "ships": ship_list, "next_ship_id": next_ship_id,
 			"routes": route_list, "next_route_id": next_route_id, "trader": trader.to_dict(),
 			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict(),
-			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict()}
+			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
+			"rivals": rivals_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -322,6 +327,20 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	if loaded_events == null:
 		return null
 	world.events_state = loaded_events
+	var raw_rivals: Variant = data.get("rivals")
+	if not raw_rivals is Dictionary:
+		return null
+	var rivals_data: Dictionary = raw_rivals
+	var loaded_rivals := RivalsState.from_dict(rivals_data, game_data, world.islands.size())
+	if loaded_rivals == null:
+		return null
+	for rival: RivalState in loaded_rivals.rivals:
+		if rival.ship_id != 0 and (not world.ships.has(rival.ship_id) or world.ships[rival.ship_id].owner != Ship.Owner.RIVAL):
+			return null
+		for island_id: int in rival.islands:
+			if world.has_trading_post(island_id, game_data):
+				return null
+	world.rivals_state = loaded_rivals
 	return world
 
 

@@ -61,7 +61,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 200000 res://t
 # Fase 10: tutorial apontando o entreposto, aba Jogo das opções e o salvamento automático
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase10.tscn -- /pasta/de/saida
 # Fase 11: ilhas tropicais da semente 1840, palmeiras, mina de ouro, canavial, mapa das rotas e a
-# janela de encomendas com os eventos e os avisos
+# janela de encomendas com os eventos e os avisos, e as rivais (vila, navio, mapa e diplomacia);
+# CAPTURA_SO=eventos ou CAPTURA_SO=rivais tira só essas
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase11.tscn -- /pasta/de/saida
 # Fase 10: o jogador-robô joga 3 h e grava a linha do tempo do balanceamento
 tools/godot.sh godot --headless --path . res://tools/balance_report.tscn -- "$PWD/docs/balanceamento.md"
@@ -140,14 +141,14 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 53 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 2 navios (`ships/`), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`) e 12 encomendas (`missions/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 53 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 2 navios (`ships/`), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`) e 3 companhias rivais (`rivals/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada (terra ou paralelepípedo), demolir e mover: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → eventos → encomendas |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → eventos → encomendas → rivais |
 | `data/event_def.gd`, `data/mission_def.gd` | `EventDef` (efeito, grupo, multiplicador, duração, peso, marco) e `MissionDef` (bem, toneladas, prazo, prêmio, peso, marco) |
 | `sim/events/` | `EventsState` (no save: ligado ou não, eventos, encomendas, os contadores dos sorteios), `WorldEvent`, `Mission` e `EventEffects` (os multiplicadores que os sistemas leem) |
 | `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
@@ -178,6 +179,8 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
 | `ui/hud/ship_panel.gd`, `route_window.gd`, `archipelago_map.gd`, `trade_window.gd` | painel do navio, janela de rotas com o mapa, comércio passivo da ilha |
 | `ui/hud/goal_panel.gd` | meta da vez com o progresso e a fala do conselheiro (retrato, texto, continuar) |
+| `data/rival_def.gd`, `sim/rivals/`, `sim/systems/rival_system.gd` | companhias rivais: `RivalDef` (personalidade, cor, ritmo das colônias), `RivalsState`/`RivalState` (no save), `RivalShips` (o navio delas) e o `RivalSystem` (colônias, crescimento, relação, IA da postura, renda do acordo) |
+| `sim/commands/diplomacy_command.gd`, `ui/hud/diplomacy_window.gd`, `presentation/rival_view.gd` | gestos de diplomacia, a janela das rivais (atalho K) e as vilas delas no mundo |
 | `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
 | `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
@@ -603,6 +606,35 @@ Regras que já custaram investigação:
   dos eventos ao lado da população com a dica (título, lugar, efeito e tempo), avisos de evento, oferta,
   cumprida e vencida; o aviso de encomenda e o de evento do arquipélago abrem a janela.
 
+### Companhias rivais e diplomacia (Fase 11)
+
+- **Ligadas pelo jogo novo** (caixa "Companhias rivais"; `GameScreen.rivals_enabled`), desligadas em todo
+  mundo novo da simulação, como os eventos. Save antigo (migração 9 → 10) ganha as rivais.
+- **Sem prédios na simulação**: a rival é um registro (`RivalState`) com as ilhas dela e os moradores de
+  cada uma, que crescem até `rival_residents_per_cell` × células da ilha. A vila no mundo (`RivalView`)
+  sai da grade da ilha (terra plana sem árvore, em espiral do meio), uma casa por
+  `rival_residents_per_house` moradores. Não entra na economia, nas carroças nem nos pedestres.
+- **Colônias** (`RivalSystem`, a cada `events_check_ticks`): cada rival funda a primeira depois de
+  `first_colony_s` e as seguintes a cada `colony_interval_s`, até `max_islands` dela e
+  `rival_island_share` das ilhas além da principal para todas juntas; só ilha sem entreposto do jogador
+  e sem dono, tropical só depois de `rival_tropical_after_s`. Sorteio pela semente. Ilha de rival
+  recusa a colônia do jogador (`REASON_RIVAL_ISLAND`).
+- **Navio da rival** (`Ship.Owner.RIVAL`, achado por `RivalsState.by_ship`): vai e volta entre as ilhas
+  dela e o posto do comerciante, parando `rival_ship_dwell_s`; não ocupa vaga de porto (ancora como quem
+  coloniza) e ancora no posto do lado dele. Velas e marca no mapa na cor da rival.
+- **Relação** (-100 a 100) volta aos poucos (`rival_relation_drift_per_min`) à da personalidade
+  (`rival_base_relation`: pacífica 20, ambiciosa 0, agressiva -20; com acordo, pelo menos
+  `rival_trade_relation`); cada colônia do jogador esfria as não pacíficas (`rival_colony_penalty`).
+- **Gestos** (`DiplomacyCommand`, motivo da recusa por `check`, que a janela usa para desligar o botão):
+  presente, propor e desfazer acordo, declarar guerra e propor paz (custa `rival_peace_money`). O acordo
+  rende `rival_trade_income_per_resident` × moradores da rival por minuto, somado no `income_per_min`.
+- **IA da postura**: a agressiva declara guerra com a relação em `rival_war_relation` ou menos; a não
+  agressiva faz as pazes sozinha acima de `rival_auto_peace_relation`; o acordo cai com relação
+  negativa; a postura não muda de novo antes de `rival_stance_cooldown_s`. A guerra por enquanto só
+  corta o acordo: o combate naval é a próxima parte.
+- **Save versão 10**: `rivals` no mundo; ilha de rival com entreposto do jogador, ilha 0 ou repetida, ou
+  navio de rival que não existe recusa o save.
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -624,7 +656,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 8 — Conteúdo | **concluída em 14/10/2026** (confirmada em 14/10/2026) |
 | 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
 | 10 — Polimento | **concluída em 14/10/2026** (confirmada em 14/10/2026; o teste do build em outro PC segue com o dono do produto) |
-| 11 — Expansões | em andamento: segunda região climática (ilhas tropicais) e eventos e encomendas feitos em 14/10/2026; rivais com IA e combate naval a seguir |
+| 11 — Expansões | em andamento: segunda região climática, eventos e encomendas, rivais com IA e diplomacia feitos em 14/10/2026; combate naval, eletricidade e especialistas a seguir |
 
 Pendências já vistas para fases futuras:
 

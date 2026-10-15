@@ -22,6 +22,7 @@ var ship_panel: ShipPanel
 var route_window: RouteWindow
 var trade_window: TradeWindow
 var mission_window: MissionWindow
+var diplomacy_window: DiplomacyWindow
 var notifications: NotificationFeed
 var goal_panel: GoalPanel
 var overlay_layer: MapOverlays.Layer = MapOverlays.Layer.NONE
@@ -35,6 +36,7 @@ var _population_labels: Dictionary[StringName, Label] = {}
 ## Selos dos eventos em andamento (Fase 11) e o botão das encomendas, com quantas estão abertas.
 var _event_chips := HBoxContainer.new()
 var _missions_button: Button
+var _rivals_button: Button
 var _chips_signature: String = ""
 var _speed_buttons: Array[Button] = []
 var _category_buttons: Array[Button] = []
@@ -98,6 +100,10 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_pin(mission_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
 	add_child(mission_window)
 	mission_window.setup(simulation)
+	diplomacy_window = DiplomacyWindow.new()
+	_pin(diplomacy_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
+	add_child(diplomacy_window)
+	diplomacy_window.setup(simulation)
 	_build_labels()
 	tool.changed.connect(_refresh_tool)
 	tool.refused.connect(func(reason: StringName) -> void: show_message(tr(reason)))
@@ -129,9 +135,13 @@ func toggle_missions() -> void:
 	mission_window.toggle()
 
 
+func toggle_rivals() -> void:
+	diplomacy_window.toggle()
+
+
 ## Fecha a janela aberta de cima (Esc); devolve se havia alguma.
 func close_top_window() -> bool:
-	for window: Control in [mission_window, trade_window, route_window, statistics_window]:
+	for window: Control in [diplomacy_window, mission_window, trade_window, route_window, statistics_window]:
 		if window.visible:
 			window.visible = false
 			return true
@@ -281,6 +291,9 @@ func _build_top_bar() -> void:
 	_missions_button = UiKit.button("", "action_missions", toggle_missions, "HUD_MISSIONS_TIP")
 	_missions_button.name = "MissionsButton"
 	row.add_child(_missions_button)
+	_rivals_button = UiKit.button("HUD_RIVALS", "hud_rival", toggle_rivals, "HUD_RIVALS_TIP")
+	_rivals_button.name = "RivalsButton"
+	row.add_child(_rivals_button)
 	row.add_child(UiKit.icon_button("action_save", "HUD_SAVE_TIP", save_requested.emit))
 	row.add_child(UiKit.icon_button("action_load", "HUD_LOAD_TIP", load_requested.emit))
 	var menu := UiKit.icon_button("action_menu", "HUD_MENU_TIP", menu_requested.emit)
@@ -297,6 +310,12 @@ func _refresh_events() -> void:
 		if item.state == Mission.State.OFFERED:
 			open += 1
 	_missions_button.text = tr("HUD_MISSIONS") % state.missions.size()
+	var rivals := _simulation.world.rivals_state
+	_rivals_button.visible = rivals.enabled
+	if rivals.at_war():
+		UiPalette.paint(_rivals_button, UiPalette.Status.BAD)
+	else:
+		UiPalette.unpaint(_rivals_button)
 	if open > 0:
 		UiPalette.paint(_missions_button, UiPalette.Status.PARTIAL)
 	else:

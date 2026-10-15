@@ -323,5 +323,5 @@ func test_old_saves_migrate_with_events_on() -> void:
 	var world: Dictionary = migrated["world"]
 	var events: Dictionary = world["events"]
 	assert_bool(events["enabled"]).is_true()
-	assert_int(SaveSystem.SAVE_VERSION).is_equal(9)
+	assert_int(SaveSystem.SAVE_VERSION).is_greater_equal(9)
 	assert_int(SaveMigrations.all().size()).is_equal(SaveSystem.SAVE_VERSION - 1)

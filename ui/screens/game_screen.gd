@@ -16,6 +16,8 @@ static var archipelago_size: int = -1
 static var difficulty: int = -1
 ## Eventos e encomendas (Fase 11) no jogo novo do arquipélago; a ilha plana dos testes fica sem.
 static var events_enabled: bool = true
+## Companhias rivais (Fase 11) no jogo novo do arquipélago; a ilha plana dos testes fica sem.
+static var rivals_enabled: bool = true
 ## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
 ## coordenadas dela.
 static var flat_world: bool = false
@@ -36,6 +38,7 @@ var sky: SkyAdapter
 var pedestrian_view: PedestrianView
 var window_view: WindowLightsView
 var ship_view: ShipView
+var rival_view: RivalView
 var ship_picker: ShipPicker
 ## Nível gráfico aplicado ao ambiente, à câmera e aos efeitos (Fase 9).
 var graphics: GraphicsQuality
@@ -76,6 +79,8 @@ func _ready() -> void:
 		var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
 		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty))
 		simulation.world.events_state.enabled = events_enabled
+		if rivals_enabled:
+			simulation.world.rivals_state.start(data, _config)
 	_build_ground()
 	sky = SkyAdapter.new()
 	add_child(sky)
@@ -95,6 +100,9 @@ func _ready() -> void:
 	ship_view = ShipView.new()
 	add_child(ship_view)
 	ship_view.setup(simulation)
+	rival_view = RivalView.new()
+	add_child(rival_view)
+	rival_view.setup(simulation)
 	pedestrian_view = PedestrianView.new()
 	pedestrian_view.setup(simulation, _config)
 	add_child(pedestrian_view)
@@ -379,6 +387,9 @@ func _close_all_modals() -> void:
 func go_to(notice: NoticeWatcher.Notice) -> void:
 	if notice.opens_missions:
 		hud.mission_window.open()
+		return
+	if notice.opens_rivals:
+		hud.diplomacy_window.open()
 		return
 	var ship := simulation.world.ship(notice.ship_id)
 	if ship != null:

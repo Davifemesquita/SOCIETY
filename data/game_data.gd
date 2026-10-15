@@ -19,6 +19,8 @@ static var _default: GameData
 ## Eventos da partida e encomendas do comerciante (Fase 11).
 @export var events: Array[EventDef] = []
 @export var missions: Array[MissionDef] = []
+## Companhias rivais (Fase 11).
+@export var rivals: Array[RivalDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -91,6 +93,13 @@ func profile(id: StringName) -> IslandProfileDef:
 
 func event(id: StringName) -> EventDef:
 	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func rival(id: StringName) -> RivalDef:
+	for def: RivalDef in rivals:
 		if def.id == id:
 			return def
 	return null
@@ -183,6 +192,12 @@ func validate() -> PackedStringArray:
 		if mission_def.tons <= 0 or mission_def.duration_s <= 0.0 or mission_def.bonus_fraction < 0.0 \
 				or mission_def.weight <= 0 or mission_def.after_milestone < 0:
 			problems.append("encomenda %s: toneladas, prazo e peso positivos" % mission_def.id)
+	_check_ids(problems, "rival", rivals.map(func(def: RivalDef) -> StringName: return def.id))
+	for rival_def: RivalDef in rivals:
+		if ship(rival_def.ship) == null:
+			problems.append("rival %s: navio desconhecido %s" % [rival_def.id, rival_def.ship])
+		if rival_def.first_colony_s <= 0.0 or rival_def.colony_interval_s <= 0.0 or rival_def.max_islands < 1 or rival_def.growth_per_min <= 0.0:
+			problems.append("rival %s: tempos, teto de ilhas e crescimento positivos" % rival_def.id)
 	return problems
 
 

@@ -628,3 +628,44 @@ NOTICE_MISSION_OFFERED,Encomenda nova: %s t de %s,New order: %s t of %s
 NOTICE_MISSION_DONE,Encomenda de %s cumprida: prêmio de %s moedas,Order of %s fulfilled: bonus of %s coins
 NOTICE_MISSION_EXPIRED,A encomenda de %s venceu,The order of %s expired
 REASON_NO_MISSION,Essa encomenda não está mais aberta,That order is no longer open
+NEW_GAME_RIVALS,Companhias rivais,Rival companies
+NEW_GAME_RIVALS_TIP,"Três companhias disputam as ilhas livres; dá para negociar, fazer acordo ou guerra","Three companies compete for the free islands; you can negotiate, make deals or go to war"
+HUD_RIVALS,Rivais,Rivals
+HUD_RIVALS_TIP,Companhias rivais e diplomacia (K),Rival companies and diplomacy (K)
+ACTION_GAME_RIVALS,Rivais e diplomacia,Rivals and diplomacy
+RIVALS_TITLE,Companhias rivais,Rival companies
+RIVALS_HINT,"Elas tomam as ilhas que ninguém colonizou. Presentes melhoram a relação; com relação boa, o acordo comercial rende moedas todo minuto.","They take the islands nobody has settled. Gifts improve relations; with good relations, a trade agreement pays coins every minute."
+RIVALS_DISABLED,Esta partida não tem companhias rivais,This game has no rival companies
+RIVALS_SUMMARY,%s · ilhas: %s · %s moradores,%s · islands: %s · %s residents
+RIVALS_NO_ISLANDS,nenhuma ainda,none yet
+RIVALS_PEACEFUL,Pacífica,Peaceful
+RIVALS_AMBITIOUS,Ambiciosa,Ambitious
+RIVALS_AGGRESSIVE,Agressiva,Aggressive
+RIVALS_STANCE_NEUTRAL,Neutra,Neutral
+RIVALS_STANCE_TRADE,Acordo comercial,Trade agreement
+RIVALS_STANCE_WAR,Em guerra,At war
+RIVALS_RELATION,Relação,Relations
+RIVALS_RELATION_TIP,De -100 (inimiga) a 100 (amiga); volta aos poucos ao temperamento dela,From -100 (hostile) to 100 (friendly); slowly returns to her temper
+RIVALS_TRADE_INCOME,acordo rende %s/min,agreement yields %s/min
+RIVALS_GIFT,Presente,Gift
+RIVALS_GIFT_TIP,Envia %s moedas: a relação sobe %s,Send %s coins: relations rise by %s
+RIVALS_TRADE,Propor acordo,Propose agreement
+RIVALS_TRADE_TIP,Acordo comercial: aceito com relação a partir de %s,Trade agreement: accepted with relations from %s
+RIVALS_CANCEL_TRADE,Desfazer acordo,End agreement
+RIVALS_CANCEL_TRADE_TIP,Desfaz o acordo comercial (a relação cai),Ends the trade agreement (relations drop)
+RIVALS_WAR,Declarar guerra,Declare war
+RIVALS_WAR_TIP,Guerra: acaba o acordo e a relação despenca,War: ends the agreement and relations collapse
+RIVALS_PEACE,Propor paz,Propose peace
+RIVALS_PEACE_TIP,"Paz: aceita com relação a partir de %s, pagando %s moedas","Peace: accepted with relations from %s, paying %s coins"
+RIVAL_HANSEATIC,Liga Mercante do Norte,Northern Merchant League
+RIVAL_IRONSIDE,Companhia Ferro e Brasa,Iron and Ember Company
+RIVAL_VERDANT,Cooperativa Vale Verde,Green Vale Cooperative
+NOTICE_RIVAL_COLONY,%s fundou colônia em %s,%s founded a colony on %s
+NOTICE_RIVAL_NEUTRAL,Paz com %s: relação neutra,Peace with %s: neutral relations
+NOTICE_RIVAL_TRADE,Acordo comercial com %s,Trade agreement with %s
+NOTICE_RIVAL_WAR,Guerra com %s,War with %s
+REASON_RIVAL_ISLAND,Esta ilha é de uma companhia rival,This island belongs to a rival company
+REASON_NO_RIVAL,Essa companhia não está na partida,That company is not in this game
+REASON_RIVAL_REFUSES,A companhia recusa: a relação ainda não basta,The company refuses: relations are not good enough yet
+REASON_RIVAL_TOO_SOON,Cedo demais: espere um pouco,Too soon: wait a little
+REASON_RIVAL_WRONG_STANCE,Não vale na situação de agora,Not possible right now

@@ -265,7 +265,7 @@ func _build_ship(ship: Ship) -> Node3D:
 		root.add_child(mast)
 		var sail := MeshInstance3D.new()
 		sail.mesh = sail_mesh(mast_height * 0.6, beam * 1.5, beam * 0.18)
-		sail.material_override = _sail_material(def.sail_color)
+		sail.material_override = _sail_material(sail_color(ship))
 		sail.position = Vector3(offset + 0.3, HULL_HEIGHT_M + mast_height * 0.55, 0.0)
 		sail.visibility_range_end = _detail_range_m
 		root.add_child(sail)
@@ -273,6 +273,12 @@ func _build_ship(ship: Ship) -> Node3D:
 	wake.name = "Wake"
 	root.add_child(wake)
 	return root
+
+
+## Cor das velas: a do tipo de navio, ou a da companhia rival dona dele (Fase 11).
+func sail_color(ship: Ship) -> Color:
+	var rival := _simulation.world.rivals_state.by_ship(ship.id)
+	return rival.def.color if rival != null else _simulation.data.ship(ship.def_id).sail_color
 
 
 ## Casco: seções de popa a proa, cada uma um U (fundo em V suave) cuja boca segue o perfil do

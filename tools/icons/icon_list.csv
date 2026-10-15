@@ -199,3 +199,9 @@ event_fair_wind,lorc/whirlwind,notice
 event_storm,lorc/lightning-storm,notice
 event_festival,lorc/firework-rocket,notice
 event_immigrants,delapouite/hiking,notice
+hud_rival,lorc/flying-flag,hud
+action_gift,delapouite/present,action
+action_war,lorc/crossed-swords,action
+action_peace,lorc/dove,action
+action_treaty,delapouite/shaking-hands,action
+notice_rival,lorc/flying-flag,notice

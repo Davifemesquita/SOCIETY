@@ -158,6 +158,11 @@
 [ext_resource type="Resource" path="res://data/missions/light_bulbs.tres" id="mission_light_bulbs"]
 [ext_resource type="Resource" path="res://data/missions/champagne.tres" id="mission_champagne"]
 
+[ext_resource type="Script" path="res://data/rival_def.gd" id="11_rival"]
+[ext_resource type="Resource" path="res://data/rivals/hanseatic.tres" id="rival_hanseatic"]
+[ext_resource type="Resource" path="res://data/rivals/ironside.tres" id="rival_ironside"]
+[ext_resource type="Resource" path="res://data/rivals/verdant.tres" id="rival_verdant"]
+
 [resource]
 script = ExtResource("1_data")
 goods = Array[ExtResource("2_good")]([ExtResource("g_wood"), ExtResource("g_planks"), ExtResource("g_fish"), ExtResource("g_wool"), ExtResource("g_woolen_clothes"), ExtResource("g_potatoes"), ExtResource("g_spirits"), ExtResource("g_wheat"), ExtResource("g_flour"), ExtResource("g_bread"), ExtResource("g_pigs"), ExtResource("g_sausages"), ExtResource("g_tallow"), ExtResource("g_soap"), ExtResource("g_hops"), ExtResource("g_malt"), ExtResource("g_beer"), ExtResource("g_clay"), ExtResource("g_bricks"), ExtResource("g_coal"), ExtResource("g_iron_ore"), ExtResource("g_steel"), ExtResource("g_steel_beams"), ExtResource("g_sand"), ExtResource("g_glass"), ExtResource("g_windows"), ExtResource("g_canned_food"), ExtResource("g_sewing_machines"), ExtResource("g_sugar"), ExtResource("g_rum"), ExtResource("g_coffee_beans"), ExtResource("g_coffee"), ExtResource("g_light_bulbs"), ExtResource("g_clocks"), ExtResource("g_glasses"), ExtResource("g_grapes"), ExtResource("g_champagne"), ExtResource("g_tobacco"), ExtResource("g_cigars"), ExtResource("g_gold"), ExtResource("g_jewelry")])
@@ -169,3 +174,4 @@ traders = Array[ExtResource("7_trader")]([ExtResource("tr_neutral")])
 goals = Array[ExtResource("8_goal")]([ExtResource("goal_trading_post"), ExtResource("goal_first_houses"), ExtResource("goal_fish"), ExtResource("goal_clothes"), ExtResource("goal_hundred"), ExtResource("goal_workers"), ExtResource("goal_bricks"), ExtResource("goal_paving"), ExtResource("goal_colony"), ExtResource("goal_artisans"), ExtResource("goal_steel"), ExtResource("goal_engineers"), ExtResource("goal_windows"), ExtResource("goal_investors")])
 events = Array[ExtResource("9_event")]([ExtResource("event_good_harvest"), ExtResource("event_rich_vein"), ExtResource("event_fair"), ExtResource("event_fair_wind"), ExtResource("event_storm"), ExtResource("event_festival"), ExtResource("event_immigrants")])
 missions = Array[ExtResource("10_mission")]([ExtResource("mission_planks"), ExtResource("mission_fish"), ExtResource("mission_clothes"), ExtResource("mission_bricks"), ExtResource("mission_beer"), ExtResource("mission_soap"), ExtResource("mission_steel"), ExtResource("mission_canned_food"), ExtResource("mission_windows"), ExtResource("mission_sewing_machines"), ExtResource("mission_light_bulbs"), ExtResource("mission_champagne")])
+rivals = Array[ExtResource("11_rival")]([ExtResource("rival_hanseatic"), ExtResource("rival_ironside"), ExtResource("rival_verdant")])

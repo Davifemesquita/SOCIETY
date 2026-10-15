@@ -3,7 +3,8 @@ extends Control
 ## Mapa do arquipélago na janela de rotas (seção 10), no estilo de carta náutica do século XIX:
 ## papel, mar com faixa mais escura junto à costa, terra em sépia com o litoral a tinta, rosa dos
 ## ventos e moldura. Por cima: o número das ilhas, os portos (âncora), o posto do comerciante, a
-## rota escolhida (tracejada) e os navios. Só desenha; a terra sai da carta náutica.
+## rota escolhida (tracejada) e os navios. As ilhas das rivais (Fase 11) ganham um círculo na cor
+## delas, e os navios delas também. Só desenha; a terra sai da carta náutica.
 
 const SEA := Color("cdd5c4")
 const SEA_SHALLOW := Color("b9c6b4")
@@ -44,6 +45,9 @@ func _draw() -> void:
 	for island_id: int in _simulation.world.islands.size():
 		var center := _to_map(_simulation.world.island(island_id).world_rect().get_center(), area)
 		var name := str(island_id + 1)
+		var rival := _simulation.world.rivals_state.owner_of(island_id)
+		if rival != null:
+			draw_arc(center, 15.0, 0.0, TAU, 32, rival.def.color, 3.0)
 		draw_string_outline(font, center + Vector2(-5, 6), name, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, 4, UiPalette.PAPER)
 		draw_string(font, center + Vector2(-5, 6), name, HORIZONTAL_ALIGNMENT_CENTER, -1, 16, UiPalette.INK)
 		if _simulation.world.has_trading_post(island_id, _simulation.data):
@@ -63,7 +67,11 @@ func _draw() -> void:
 			var on_route := route_id != 0 and ship.route_id == route_id
 			var radius := 5.0 if on_route else 3.5
 			draw_circle(at, radius + 1.5, UiPalette.PAPER)
-			draw_circle(at, radius, SHIP if ship.owner == Ship.Owner.PLAYER else TRADER)
+			var color := SHIP if ship.owner == Ship.Owner.PLAYER else TRADER
+			var owner_rival := _simulation.world.rivals_state.by_ship(ship.id)
+			if owner_rival != null:
+				color = owner_rival.def.color
+			draw_circle(at, radius, color)
 
 
 func _icon(texture: Texture2D, center: Vector2, side: float) -> void:

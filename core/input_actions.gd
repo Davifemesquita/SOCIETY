@@ -25,6 +25,7 @@ const KEYS: Dictionary[StringName, Array] = {
 	&"game_statistics": [KEY_TAB],
 	&"game_routes": [KEY_B],
 	&"game_missions": [KEY_J],
+	&"game_rivals": [KEY_K],
 	&"game_menu": [KEY_ESCAPE],
 	&"debug_grid": [KEY_F1],
 	&"debug_roads": [KEY_F2],

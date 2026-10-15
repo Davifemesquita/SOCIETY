@@ -7,7 +7,8 @@ extends RefCounted
 ## um lado para o outro. Depois segue para a parada seguinte e repete o ciclo. Navio sem rota fica
 ## ancorado onde chegou. O navio do comerciante faz a volta dele pelos entrepostos (TraderVisits).
 ## Ao zarpar, o navio iça velas por ship_cast_off_seconds enquanto o caminho no mar é calculado em
-## outra thread (SeaChart.request); ao fim dele recolhe o caminho e sai.
+## outra thread (SeaChart.request); ao fim dele recolhe o caminho e sai. Os navios das rivais (Fase 11)
+## vão e voltam entre as ilhas delas e o comerciante (RivalShips).
 
 ## Folga dos cronômetros (cais, içar velas) contra o erro de somar 0,2 s em ponto flutuante.
 const TIMER_EPSILON := 0.000001
@@ -27,6 +28,8 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 			Ship.State.IDLE:
 				if ship.owner == Ship.Owner.TRADER:
 					TraderVisits.idle(world, data, harbors, ship, dt)
+				elif ship.owner == Ship.Owner.RIVAL:
+					RivalShips.idle(world, config, harbors, ship, dt)
 				elif ship.route_id != 0:
 					next_leg(world, harbors, ship)
 			Ship.State.SAILING:
@@ -127,6 +130,9 @@ static func _arrive(world: WorldState, data: GameData, config: GameConfig, deriv
 	ship.waypoint = 0
 	if ship.owner == Ship.Owner.TRADER:
 		TraderVisits.arrived(world, data, ship)
+		return
+	if ship.owner == Ship.Owner.RIVAL:
+		RivalShips.arrived(config, ship)
 		return
 	var route: TradeRoute = world.routes.get(ship.route_id)
 	if route == null or route.stop(ship.stop_index) == null:

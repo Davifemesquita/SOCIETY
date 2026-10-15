@@ -5,7 +5,8 @@ extends Node
 ## ilha tropical de cima, as palmeiras de perto, a mina de ouro sobre a jazida (destaque de
 ## terreno), o canavial com os campos e o mapa das rotas com as ilhas novas. Depois, eventos e
 ## encomendas: a janela com a oferta, a aceita e os eventos, os selos na barra e os avisos
-## (CAPTURA_SO=eventos tira só estas).
+## (CAPTURA_SO=eventos tira só estas) e as rivais: a vila, o navio, o mapa e a diplomacia
+## (CAPTURA_SO=rivais).
 
 const SEED := 1840
 
@@ -34,6 +35,9 @@ func _run() -> void:
 	var bounds := _game.world_bounds()
 	if OS.get_environment("CAPTURA_SO") == "eventos":
 		await _events_shots()
+		return
+	if OS.get_environment("CAPTURA_SO") == "rivais":
+		await _rival_shots()
 		return
 	await _shot("01_arquipelago_com_os_tropicos.png", Vector3(bounds.get_center().x, 0.0, bounds.get_center().y), 2200.0, 0.0)
 	var tropical: Array[int] = []
@@ -68,6 +72,7 @@ func _run() -> void:
 	await _shot("06_mapa_das_rotas.png", Vector3(bounds.get_center().x, 0.0, bounds.get_center().y), 2200.0, 0.0)
 	_game.hud.route_window.visible = false
 	await _events_shots()
+	await _rival_shots()
 
 
 ## Eventos e encomendas (CAPTURA_SO=eventos tira só estas).
@@ -84,6 +89,56 @@ func _events_shots() -> void:
 	feed.push(feed.watcher.mission_offered(1))
 	feed.push(feed.watcher.mission_completed(&"fish", 540))
 	await _shot("08_avisos_de_eventos_e_encomendas.png", main.cell_world(main.size / 2), 260.0, 0.3)
+	feed.clear()
+	if OS.get_environment("CAPTURA_SO") == "eventos":
+		get_tree().quit()
+
+
+## Rivais: as colônias saem cedo (tempos encurtados), a vila cresce, o navio vai ao comerciante; a
+## vila de perto, o navio dela, o mapa com as ilhas marcadas e a janela da diplomacia.
+func _rival_shots() -> void:
+	var state := _sim.world.rivals_state
+	state.start(_sim.data, _sim.config)
+	for rival: RivalState in state.rivals:
+		rival.def = rival.def.duplicate()
+		rival.def.first_colony_s = 10.0
+		rival.def.colony_interval_s = 20.0
+	_sim.free_build = true
+	var main := _sim.world.island(0)
+	var site := SiteFinder.find(_sim, &"trading_post", 0, main.size / 2)
+	if not site.is_empty() and not _sim.world.has_trading_post(0, _sim.data):
+		var post_origin: Vector2i = site[0]
+		var post_rotation: int = site[1]
+		_sim.execute(PlaceBuildingCommand.new(0, &"trading_post", post_origin, post_rotation))
+	print("rivais: simulando")
+	var started := Time.get_ticks_msec()
+	_sim.run_ticks(_sim.config.ticks_per_second * 60 * 25)
+	print("rivais: 25 min simulados em %d ms" % (Time.get_ticks_msec() - started))
+	GameClock.clock.tick_count = _sim.world.tick
+	_set_hour(15.0)
+	_game.rival_view.refresh()
+	var first := state.rivals[0]
+	if first.islands.is_empty():
+		get_tree().quit()
+		return
+	var island_id: int = first.island_ids()[0]
+	var grid := _sim.world.island(island_id)
+	var slots := RivalView._find_slots(grid, _sim.config)
+	var village_cell: Vector2i = slots[0] if not slots.is_empty() else grid.size / 2
+	var village_at := grid.cell_world(village_cell)
+	await _shot("09_vila_rival.png", village_at, 90.0, 0.6)
+	var ship := _sim.world.ship(first.ship_id)
+	if ship != null:
+		await _shot("10_navio_rival.png", Vector3(ship.position.x, 0.0, ship.position.y), 45.0, 0.9)
+	_game.hud.route_window.toggle()
+	await _shot("11_mapa_com_as_rivais.png", village_at, 300.0, 0.0)
+	_game.hud.route_window.visible = false
+	_sim.world.money = 100000.0
+	_sim.execute(DiplomacyCommand.new(&"hanseatic", DiplomacyCommand.Action.GIFT))
+	state.by_id(&"ironside").stance = RivalState.Stance.WAR
+	_game.hud._refresh()
+	_game.hud.diplomacy_window.open()
+	await _shot("12_diplomacia.png", village_at, 300.0, 0.0)
 	get_tree().quit()
 
 

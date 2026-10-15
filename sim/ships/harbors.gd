@@ -21,7 +21,7 @@ var _berths: Dictionary[int, Array] = {}
 var _berth_points: Dictionary[int, Vector2] = {}
 var _roadsteads: Dictionary[int, Vector2] = {}
 var _anchors: Dictionary[int, Vector2] = {}
-## Onde ancoram, no posto do comerciante, os navios do jogador e o dele.
+## Onde ancoram, no posto do comerciante, os navios do jogador, o dele e os das rivais.
 var _trader_anchors: Dictionary[int, Vector2] = {}
 
 
@@ -30,8 +30,10 @@ func _init(world: WorldState, config: GameConfig) -> void:
 	_config = config
 	chart = SeaChart.new(world, config)
 	trader_post = _find_trader_post()
-	for owner: int in [Ship.Owner.PLAYER, Ship.Owner.TRADER]:
+	for owner: int in [Ship.Owner.PLAYER, Ship.Owner.TRADER, Ship.Owner.RIVAL]:
 		var side := Vector2(0.0, TRADER_ANCHOR_M if owner == Ship.Owner.TRADER else -TRADER_ANCHOR_M)
+		if owner == Ship.Owner.RIVAL:
+			side = Vector2(TRADER_ANCHOR_M, 0.0)
 		var cell := chart.nearest_navigable(trader_post + side)
 		_trader_anchors[owner] = chart.center_of(cell) if cell.x >= 0 else trader_post
 

@@ -33,6 +33,8 @@ func setup(simulation: Simulation) -> void:
 	EventBus.mission_expired.connect(func(def_id: StringName, accepted: bool) -> void:
 		if accepted:
 			push(watcher.mission_expired(def_id)))
+	EventBus.rival_colonized.connect(func(rival_id: StringName, island_id: int) -> void: push(watcher.rival_colonized(rival_id, island_id)))
+	EventBus.rival_stance_changed.connect(func(rival_id: StringName, stance: int) -> void: push(watcher.rival_stance(rival_id, stance)))
 	EventBus.world_replaced.connect(func() -> void:
 		clear()
 		watcher.reset())

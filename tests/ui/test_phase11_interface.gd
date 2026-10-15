@@ -187,3 +187,47 @@ func test_new_game_dialog_offers_events_on_by_default() -> void:
 	assert_bool(dialog.events_check.button_pressed).is_true()
 	await _check("jogo novo")
 	_game._close_all_modals()
+
+
+func test_diplomacy_window_shows_the_rivals_and_their_gestures() -> void:
+	var hud := _game.hud
+	hud._refresh()
+	assert_bool((hud.find_child("RivalsButton", true, false) as Button).visible).is_false()
+	_sim.world.rivals_state.start(_sim.data, _sim.config)
+	_sim.world.money = 100000.0
+	hud._refresh()
+	assert_bool((hud.find_child("RivalsButton", true, false) as Button).visible).is_true()
+	hud.toggle_rivals()
+	await _check("rivais")
+	var window := hud.diplomacy_window
+	for def: RivalDef in _sim.data.rivals:
+		assert_object(window.find_child("Rival_" + String(def.id), true, false)).is_not_null()
+	var row := window.find_child("Rival_hanseatic", true, false)
+	var gift := row.find_child("Action_%d" % DiplomacyCommand.Action.GIFT, true, false) as Button
+	assert_bool(gift.disabled).is_false()
+	gift.pressed.emit()
+	await _runner.simulate_frames(2)
+	row = window.find_child("Rival_hanseatic", true, false)
+	# depois do presente, o próximo espera: o botão desliga com o motivo na dica
+	gift = row.find_child("Action_%d" % DiplomacyCommand.Action.GIFT, true, false) as Button
+	assert_bool(gift.disabled).is_true()
+	assert_str(gift.tooltip_text).contains(tr(DiplomacyCommand.TOO_SOON))
+	var war := row.find_child("Action_%d" % DiplomacyCommand.Action.DECLARE_WAR, true, false) as Button
+	war.pressed.emit()
+	await _runner.simulate_frames(2)
+	assert_int(_sim.world.rivals_state.by_id(&"hanseatic").stance).is_equal(RivalState.Stance.WAR)
+	row = window.find_child("Rival_hanseatic", true, false)
+	assert_object(row.find_child("Action_%d" % DiplomacyCommand.Action.PROPOSE_PEACE, true, false)).is_not_null()
+	await _check("rivais em guerra")
+	var feed := _game.hud.notifications
+	feed.push(feed.watcher.rival_stance(&"ironside", RivalState.Stance.WAR))
+	feed.push(feed.watcher.rival_colonized(&"verdant", 0))
+	await _check("avisos das rivais")
+	assert_bool(hud.close_top_window()).is_true()
+
+
+func test_new_game_dialog_offers_rivals_on_by_default() -> void:
+	var dialog := NewGameDialog.new()
+	Modal.open(_game._ui_layer, dialog)
+	assert_bool(dialog.rivals_check.button_pressed).is_true()
+	_game._close_all_modals()

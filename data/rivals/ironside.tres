@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RivalDef" format=3]
+
+[ext_resource type="Script" path="res://data/rival_def.gd" id="1_rival"]
+
+[resource]
+script = ExtResource("1_rival")
+id = &"ironside"
+name_key = "RIVAL_IRONSIDE"
+personality = 2
+color = Color(0.55, 0.16, 0.14, 1)
+ship = &"merchant_ship"
+first_colony_s = 1800.0
+colony_interval_s = 2700.0
+max_islands = 2
+growth_per_min = 7.0

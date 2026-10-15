@@ -21,6 +21,8 @@ class Notice:
 	var status: int = UiPalette.Status.NEUTRAL
 	## O clique abre a janela das encomendas em vez de levar a câmera (Fase 11).
 	var opens_missions: bool = false
+	## O clique abre a janela das rivais (Fase 11).
+	var opens_rivals: bool = false
 
 	func _init(notice_key: String, icon_name: String, key_text: String, text_args: Array = []) -> void:
 		key = notice_key
@@ -192,6 +194,24 @@ func mission_completed(def_id: StringName, bonus: int) -> Notice:
 			[TranslationServer.translate(_simulation.data.good(def.good).name_key), Fmt.integer(bonus)])
 	notice.opens_missions = true
 	notice.status = UiPalette.Status.GOOD
+	return notice
+
+
+func rival_colonized(rival_id: StringName, island_id: int) -> Notice:
+	var rival := _simulation.data.rival(rival_id)
+	var notice := Notice.new("rival/colony/%d" % island_id, "notice_rival", "NOTICE_RIVAL_COLONY",
+			[TranslationServer.translate(rival.name_key), Fmt.place(island_id)])
+	notice.island_id = island_id
+	notice.status = UiPalette.Status.PARTIAL
+	return notice
+
+
+func rival_stance(rival_id: StringName, stance: int) -> Notice:
+	var rival := _simulation.data.rival(rival_id)
+	var keys: Array[String] = ["NOTICE_RIVAL_NEUTRAL", "NOTICE_RIVAL_TRADE", "NOTICE_RIVAL_WAR"]
+	var notice := Notice.new("rival/stance/%s" % rival_id, "notice_rival", keys[stance], [TranslationServer.translate(rival.name_key)])
+	notice.opens_rivals = true
+	notice.status = [UiPalette.Status.NEUTRAL, UiPalette.Status.GOOD, UiPalette.Status.BAD][stance]
 	return notice
 
 

@@ -118,6 +118,7 @@ func open_new_game() -> NewGameDialog:
 		GameScreen.archipelago_size = archipelago_size
 		GameScreen.difficulty = difficulty
 		GameScreen.events_enabled = dialog.events_check.button_pressed
+		GameScreen.rivals_enabled = dialog.rivals_check.button_pressed
 		_start(""))
 	Modal.open(_layer, dialog)
 	return dialog

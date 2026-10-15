@@ -73,14 +73,17 @@ func execute(command: Command) -> CommandResult:
 	if result.routes_changed:
 		EventBus.routes_changed.emit()
 	if result.colonized:
+		RivalSystem.on_player_colony(world, config)
 		EventBus.island_colonized.emit(result.island_id)
+	if result.rivals_changed:
+		EventBus.rivals_changed.emit()
 	if result.missions_changed:
 		EventBus.missions_changed.emit()
 	return result
 
 
 ## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
-## população e upgrades (e marcos e metas) → economia → comércio e navios → eventos e encomendas →
+## população e upgrades (e marcos e metas) → economia → comércio e navios → eventos e encomendas → rivais →
 ## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
@@ -100,6 +103,10 @@ func tick(_tick_index: int) -> void:
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
 	EventSystem.run(world, data, config)
 	MissionSystem.run(world, data, config)
+	if world.rivals_state.enabled:
+		RivalSystem.run(world, data, config, harbors(), dt)
+	else:
+		world.treaty_income_per_min = 0.0
 	world.tick += 1
 	StatisticsSystem.run(world, data, config, derived)
 

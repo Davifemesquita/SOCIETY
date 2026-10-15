@@ -5,7 +5,8 @@ extends RefCounted
 ## carta náutica; numa parada de rota espera vaga no porto (WAITING) e carrega no cais (DOCKED).
 
 enum State { IDLE, SAILING, WAITING, DOCKED }
-enum Owner { PLAYER, TRADER }
+## RIVAL (Fase 11): o navio mercante de uma companhia rival (RivalsState.by_ship diz qual).
+enum Owner { PLAYER, TRADER, RIVAL }
 
 ## Destino e lugar especiais: em mar aberto (nenhum) e o posto do comerciante.
 const NOWHERE := -1
@@ -174,7 +175,7 @@ static func from_dict(data: Dictionary, game_data: GameData) -> Ship:
 	var ship_id: int = raw_id
 	var owner_value: int = raw_owner
 	var state_value: int = raw_state
-	if def == null or ship_id <= 0 or owner_value < Owner.PLAYER or owner_value > Owner.TRADER \
+	if def == null or ship_id <= 0 or owner_value < Owner.PLAYER or owner_value > Owner.RIVAL \
 			or state_value < State.IDLE or state_value > State.DOCKED:
 		return null
 	var ship := Ship.new(ship_id, def, owner_value)

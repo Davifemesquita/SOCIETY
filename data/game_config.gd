@@ -157,6 +157,41 @@ static var _default: GameConfig
 ## Eventos e encomendas são conferidos a cada tantos ticks.
 @export var events_check_ticks: int = 5
 
+@export_group("Rivais")
+## Relação para onde cada personalidade volta sozinha (pacífica, ambiciosa, agressiva).
+@export var rival_base_relation: PackedFloat32Array = PackedFloat32Array([20.0, 0.0, -20.0])
+## Fração das ilhas além da principal que as rivais podem tomar juntas.
+@export var rival_island_share: float = 0.5
+## Ilha tropical só entra na lista das rivais depois de tanto tempo de jogo.
+@export var rival_tropical_after_s: float = 3600.0
+## Moradores com que a colônia rival começa, teto por célula da ilha e moradores por casa desenhada.
+@export var rival_founding_population: float = 40.0
+@export var rival_residents_per_cell: float = 0.04
+@export var rival_residents_per_house: float = 25.0
+@export var rival_max_houses: int = 40
+## Tempo que o navio da rival fica parado em cada ponta da viagem.
+@export var rival_ship_dwell_s: float = 30.0
+## Quanto a relação anda por minuto de volta à da personalidade.
+@export var rival_relation_drift_per_min: float = 1.0
+## Diplomacia: relação mínima para o acordo comercial, renda dele por morador da rival por minuto,
+## presente (custo, ganho, espera), paz (relação mínima, custo), quanto o jogador perde ao colonizar,
+## desfazer o acordo e declarar guerra; a agressiva declara guerra abaixo de rival_war_relation e a
+## não agressiva faz as pazes sozinha acima de rival_auto_peace_relation. Postura não muda de novo
+## antes de rival_stance_cooldown_s.
+@export var rival_trade_relation: float = 30.0
+@export var rival_trade_income_per_resident: float = 0.3
+@export var rival_gift_money: int = 2000
+@export var rival_gift_relation: float = 15.0
+@export var rival_gift_cooldown_s: float = 300.0
+@export var rival_peace_relation: float = -40.0
+@export var rival_peace_money: int = 5000
+@export var rival_colony_penalty: float = 8.0
+@export var rival_cancel_penalty: float = 15.0
+@export var rival_war_penalty: float = 40.0
+@export var rival_war_relation: float = -60.0
+@export var rival_auto_peace_relation: float = -10.0
+@export var rival_stance_cooldown_s: float = 300.0
+
 @export_group("Ilhas")
 ## Área da ilha plana (testes e saves de antes da Fase 5), em células.
 @export var main_island_size_cells: Vector2i = Vector2i(250, 250)
@@ -470,6 +505,11 @@ func validate() -> PackedStringArray:
 		problems.append("encomendas: tempos positivos")
 	if max_active_events < 1 or max_open_missions < 1 or events_check_ticks < 1:
 		problems.append("max_active_events, max_open_missions e events_check_ticks pelo menos 1")
+	if rival_base_relation.size() != 3 or rival_island_share < 0.0 or rival_island_share > 1.0 or rival_residents_per_cell <= 0.0 \
+			or rival_residents_per_house <= 0.0 or rival_max_houses < 2:
+		problems.append("rivais: três relações de base, fração entre 0 e 1, teto e casas positivos")
+	if rival_war_relation >= rival_auto_peace_relation or rival_peace_relation > rival_auto_peace_relation:
+		problems.append("rivais: guerra abaixo da paz sozinha, paz pedida até a paz sozinha")
 	if tropical_milestone < 0 or tropical_milestone > population_milestones.size():
 		problems.append("tropical_milestone entre 0 e o número de marcos de population_milestones")
 	if difficulty_money_factors.size() != 3 or difficulty_debt_factors.size() != 3 or default_difficulty < 0 or default_difficulty > 2:
