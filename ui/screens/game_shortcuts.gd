@@ -45,6 +45,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_game.hud.toggle_missions()
 	elif event.is_action_pressed(&"game_rivals"):
 		_game.hud.toggle_rivals()
+	elif event.is_action_pressed(&"game_specialists"):
+		_game.hud.toggle_specialists()
 	elif event.is_action_pressed(&"camera_center_selected"):
 		_game.center_on_selected()
 	elif event.is_action_pressed(&"game_statistics"):

@@ -38,10 +38,11 @@ static func compute(world: WorldState, data: GameData, derived: DerivedState, is
 		if record.island_id != island_id:
 			continue
 		var def := data.building(record.def_id)
-		var rate := def.output_per_min()
-		lines[def.output].potential += rate
+		var rate := 60.0 / def.cycle_s
 		var running := rate * record.productivity
-		lines[def.output].produced += running
+		if def.output != &"":
+			lines[def.output].potential += rate
+			lines[def.output].produced += running
 		for input: StringName in def.inputs:
 			lines[input].consumed_by_buildings += running
 	var people: Dictionary[StringName, float] = {}

@@ -79,11 +79,14 @@ func execute(command: Command) -> CommandResult:
 		EventBus.rivals_changed.emit()
 	if result.missions_changed:
 		EventBus.missions_changed.emit()
+	if result.specialists_changed:
+		_dirty = true
+		EventBus.specialists_changed.emit()
 	return result
 
 
 ## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
-## população e upgrades (e marcos e metas) → economia → comércio e navios → eventos e encomendas → rivais →
+## população e upgrades (e marcos e metas) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → rivais →
 ## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
@@ -101,8 +104,10 @@ func tick(_tick_index: int) -> void:
 	EconomySystem.run(world, derived, dt)
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
+		CombatSystem.run(world, data, config, dt)
 	EventSystem.run(world, data, config)
 	MissionSystem.run(world, data, config)
+	SpecialistSystem.run(world, data, config)
 	if world.rivals_state.enabled:
 		RivalSystem.run(world, data, config, harbors(), dt)
 	else:

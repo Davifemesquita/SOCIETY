@@ -389,7 +389,7 @@ HUD_CLOCK_TIP,Dia e hora da partida (o dia e a noite não mudam a economia),Game
 HUD_SPEED_PAUSE_TIP,Pausar (Espaço): dá para construir com o jogo parado,Pause (Space): you can build while paused
 HUD_SPEED_TIP,Velocidade %sx,Speed %sx
 HUD_POPULATION_TIP,Moradores por classe,Residents by class
-HUD_STATS_TIP,"Produção, consumo, população e finanças (Tab)","Production, consumption, population and finances (Tab)"
+HUD_STATS_TIP,"Estatísticas: produção, consumo, população e finanças (Tab)","Statistics: production, consumption, population and finances (Tab)"
 HUD_ROUTES_TIP,Rotas comerciais e o mapa do arquipélago (B),Trade routes and the archipelago map (B)
 HUD_SAVE_TIP,Salvar o jogo (F5 salva rápido),Save the game (F5 quick saves)
 HUD_LOAD_TIP,Carregar um jogo (F9 carrega o rápido),Load a game (F9 loads the quick save)
@@ -654,7 +654,7 @@ RIVALS_TRADE_TIP,Acordo comercial: aceito com relação a partir de %s,Trade agr
 RIVALS_CANCEL_TRADE,Desfazer acordo,End agreement
 RIVALS_CANCEL_TRADE_TIP,Desfaz o acordo comercial (a relação cai),Ends the trade agreement (relations drop)
 RIVALS_WAR,Declarar guerra,Declare war
-RIVALS_WAR_TIP,Guerra: acaba o acordo e a relação despenca,War: ends the agreement and relations collapse
+RIVALS_WAR_TIP,"Guerra: acaba o acordo, a relação despenca e as fragatas dela atacam seus navios","War: ends the agreement, relations collapse and her frigates attack your ships"
 RIVALS_PEACE,Propor paz,Propose peace
 RIVALS_PEACE_TIP,"Paz: aceita com relação a partir de %s, pagando %s moedas","Peace: accepted with relations from %s, paying %s coins"
 RIVAL_HANSEATIC,Liga Mercante do Norte,Northern Merchant League
@@ -669,3 +669,66 @@ REASON_NO_RIVAL,Essa companhia não está na partida,That company is not in this
 REASON_RIVAL_REFUSES,A companhia recusa: a relação ainda não basta,The company refuses: relations are not good enough yet
 REASON_RIVAL_TOO_SOON,Cedo demais: espere um pouco,Too soon: wait a little
 REASON_RIVAL_WRONG_STANCE,Não vale na situação de agora,Not possible right now
+SHIP_FRIGATE,Fragata,Frigate
+PANEL_BUY_FRIGATE,Comprar fragata,Buy frigate
+PANEL_BUY_FRIGATE_TIP,"Navio de guerra: %s canhões, casco %s; em guerra atira sozinho no inimigo ao alcance e escolta rotas","Warship: %s cannons, hull %s; at war it fires on its own at enemies in range and escorts routes"
+SHIP_HULL,Casco %s de %s,Hull %s of %s
+SHIP_CANNONS,"%d canhões, alcance %s m","%d cannons, range %s m"
+NOTICE_SHIP_SUNK,Perdemos um navio no combate,We lost a ship in battle
+NOTICE_ENEMY_SUNK,Afundamos um navio inimigo,We sank an enemy ship
+NOTICE_UNDER_ATTACK,%s está sob fogo,%s is under fire
+REASON_SHIP_LOCKED,Este navio ainda não foi liberado (marco de população),This ship is not unlocked yet (population milestone)
+BUILDING_POWER_STATION,Usina elétrica,Power station
+TIP_POWER,"Eletrifica as fábricas a até %d células: +%s de velocidade","Electrifies factories within %d cells: +%s speed"
+PANEL_POWER_SUPPLIES,Fábricas no raio: %d,Factories in range: %d
+PANEL_POWERED,Com eletricidade: +%s,Electrified: +%s
+PANEL_POWER_IDLE,Usina parada: sem eletricidade,Power station idle: no electricity
+PANEL_UNPOWERED,Fora do raio da usina,Out of power station range
+OVERLAY_ELECTRICITY,Eletricidade,Electricity
+OVERLAY_ELECTRICITY_TIP,Camada: raio das usinas elétricas,Layer: power station range
+OVERLAY_ELECTRICITY_LEGEND,"Amarelo é o raio da usina ligada; fábrica verde tem eletricidade, vermelha não","Yellow is the range of a running power station; green factories are electrified, red are not"
+HUD_SPECIALISTS,%d,%d
+HUD_SPECIALISTS_TIP,Especialistas: a oferta do comerciante e os contratados (L),Specialists: the trader's offer and your hires (L)
+ACTION_GAME_SPECIALISTS,Especialistas,Specialists
+SPECIALISTS_TITLE,Especialistas,Specialists
+SPECIALISTS_HINT,"A cada volta, o comerciante traz gente de ofício. Contrate, pague o salário e ponha cada um num prédio de produção do ramo dele.","Each tour the trader brings skilled people. Hire them, pay their wages and put each one in a production building of their trade."
+SPECIALISTS_FOR,Designar a: %s — %s,Assign to: %s — %s
+SPECIALISTS_OFFER,Oferta desta volta,This tour's offer
+SPECIALISTS_NO_TRADER,O comerciante aparece com o primeiro entreposto.,The trader arrives with the first trading post.
+SPECIALISTS_OFFER_EMPTY,Nada mais nesta volta. A próxima traz outros.,Nothing more this tour. The next one brings others.
+SPECIALISTS_HIRED,Contratados (%d de %d),Hired (%d of %d)
+SPECIALISTS_NONE,Ninguém contratado ainda.,Nobody hired yet.
+SPECIALIST_PRICE,Contratação: %s moedas · salário: %s por minuto,Hiring: %s coins · wage: %s per minute
+SPECIALIST_HIRE,Contratar,Hire
+SPECIALIST_HIRE_TIP,Paga a contratação agora; o salário entra na manutenção,Pay the hiring fee now; the wage goes into upkeep
+SPECIALIST_AT,Em: %s — %s,At: %s — %s
+SPECIALIST_NO_POST,Sem posto: recebe salário sem render,No post: paid but not working
+SPECIALIST_ASSIGN,Designar aqui,Assign here
+SPECIALIST_ASSIGN_TIP,Põe o especialista neste prédio (sai do posto anterior),Put the specialist in this building (leaves the previous post)
+SPECIALIST_UNASSIGN,Retirar,Withdraw
+SPECIALIST_UNASSIGN_TIP,Tira do prédio; continua contratado,Take out of the building; stays hired
+SPECIALIST_DISMISS_TIP,"Dispensar: sai da companhia, sem devolução","Dismiss: leaves the company, no refund"
+PANEL_SPECIALIST,Especialista,Specialist
+PANEL_SPECIALIST_TIP,Contratar ou designar um especialista para este prédio,Hire or assign a specialist for this building
+PANEL_SPECIALIST_AT,Especialista: %s,Specialist: %s
+REASON_NO_SPECIALIST_OFFER,Fora da oferta desta volta,Not in this tour's offer
+REASON_NO_SPECIALIST,Especialista não encontrado,Specialist not found
+REASON_SPECIALIST_LIMIT,Teto de especialistas contratados,Specialist limit reached
+REASON_SPECIALIST_WRONG_BUILDING,O prédio não é do ramo deste especialista,This building is not in the specialist's trade
+REASON_SPECIALIST_SLOT_TAKEN,O prédio já tem um especialista,The building already has a specialist
+SPECIALIST_FORESTER,Silvicultor,Forester
+SPECIALIST_FORESTER_DESC,Lenhador e serraria: +%s de velocidade,Lumberjack and sawmill: +%s speed
+SPECIALIST_AGRONOMIST,Agrônomo,Agronomist
+SPECIALIST_AGRONOMIST_DESC,Fazendas e plantações: +%s de velocidade,Farms and plantations: +%s speed
+SPECIALIST_BOOKKEEPER,Guarda-livros,Bookkeeper
+SPECIALIST_BOOKKEEPER_DESC,Qualquer produção: −%s na manutenção do prédio,Any production: −%s building upkeep
+SPECIALIST_MINING_ENGINEER,Engenheiro de minas,Mining engineer
+SPECIALIST_MINING_ENGINEER_DESC,Minas: +%s de velocidade,Mines: +%s speed
+SPECIALIST_FOREMAN,Contramestre,Foreman
+SPECIALIST_FOREMAN_DESC,Fábricas (produção com entrada): +%s de velocidade,Factories (production with inputs): +%s speed
+SPECIALIST_MASTER_BREWER,Mestre de adega,Cellar master
+SPECIALIST_MASTER_BREWER_DESC,"Maltaria, cervejaria e destilarias: 1 t a mais a cada %s ciclos","Malthouse, brewery and distilleries: 1 extra t every %s cycles"
+SPECIALIST_MASTER_GLASSBLOWER,Mestre vidreiro,Master glassblower
+SPECIALIST_MASTER_GLASSBLOWER_DESC,"Vidraria, janelaria, lâmpadas e ótica: 1 t a mais a cada %s ciclos","Glassworks, window works, lamps and optics: 1 extra t every %s cycles"
+SPECIALIST_STEELMASTER,Mestre fundidor,Master founder
+SPECIALIST_STEELMASTER_DESC,Fundição e vigas de aço: 1 t a mais a cada %s ciclos,Furnace and steel beam works: 1 extra t every %s cycles

@@ -5,6 +5,9 @@ extends RefCounted
 ## estrada, sem os módulos, sem árvores (lenhador), sem entrada, sem trabalhador, com a saída
 ## cheia ou pausado.
 ## Eventos (Fase 11) multiplicam a velocidade (boa colheita, veio rico).
+## Eletricidade (Fase 11): a usina queima a entrada sem gerar bem; a fábrica no raio de uma usina
+## que produzia no tick anterior ganha electricity_bonus na velocidade.
+## Especialistas (Fase 11): o de velocidade multiplica o fator; o de tonelada extra conta os ciclos.
 ## O fim do ciclo tem folga de 1e-6: 75 ticks de 0,2/15 somam 0,99999… e o ciclo atrasaria
 ## um tick inteiro a cada volta.
 
@@ -15,9 +18,19 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 	var smoothing := 1.0 - exp(-dt / config.productivity_smoothing_seconds)
 	var boosted := events != null and not events.events.is_empty()
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
+		entry.powered = false
+		for plant: DerivedState.ProductionEntry in entry.power_plants:
+			if plant.record.state == BuildingRecord.State.PRODUCING:
+				entry.powered = true
+				break
+	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		var record := entry.record
 		var previous := record.state
 		var factor := EventEffects.production(events, record.island_id, entry.def) if boosted else 1.0
+		if entry.powered:
+			factor *= 1.0 + config.electricity_bonus
+		if entry.specialist != null and entry.specialist.def.effect == SpecialistDef.Effect.SPEED:
+			factor *= 1.0 + entry.specialist.def.amount
 		var speed := _step(entry, config, dt, factor)
 		record.productivity = lerpf(record.productivity, speed, smoothing)
 		if record.state != previous:
@@ -52,7 +65,9 @@ static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: f
 	record.state = BuildingRecord.State.PRODUCING
 	record.progress += dt * speed / def.cycle_s
 	if record.progress >= 1.0 - _EPSILON:
-		record.output_buffer += 1.0
+		if def.output != &"":
+			record.output_buffer += 1.0
+			_extra_output(entry, config)
 		record.in_cycle = false
 		var leftover := maxf(record.progress - 1.0, 0.0)
 		record.progress = 0.0
@@ -75,3 +90,15 @@ static func _start_cycle(record: BuildingRecord, def: BuildingDef, config: GameC
 		record.input_buffer[input] = record.input_buffer[input] - 1.0
 	record.in_cycle = true
 	return true
+
+
+## Especialista de tonelada extra: a cada cycles_per_extra ciclos, mais 1 t na saída, se couber.
+static func _extra_output(entry: DerivedState.ProductionEntry, config: GameConfig) -> void:
+	var specialist := entry.specialist
+	if specialist == null or specialist.def.effect != SpecialistDef.Effect.EXTRA_OUTPUT:
+		return
+	specialist.cycles += 1
+	if specialist.cycles < specialist.def.cycles_per_extra():
+		return
+	specialist.cycles = 0
+	entry.record.output_buffer = minf(entry.record.output_buffer + 1.0, float(config.building_buffer_t))

@@ -19,6 +19,9 @@ var next_colony_tick: int = 0
 var last_gift_tick: int = -1_000_000
 ## Última vez que a postura mudou (guerra e paz não se alternam a cada segundo).
 var stance_tick: int = 0
+## Fragatas dela (só existem em guerra) e quando sai a próxima.
+var warships: Array[int] = []
+var next_warship_tick: int = 0
 ## runtime: a definição, fora do save.
 var def: RivalDef
 
@@ -43,7 +46,8 @@ func to_dict() -> Dictionary:
 	for island_id: int in island_ids():
 		island_list.append({"island": island_id, "population": islands[island_id]})
 	return {"def": def_id, "islands": island_list, "relation": relation, "stance": stance, "ship": ship_id,
-			"next_colony_tick": next_colony_tick, "last_gift_tick": last_gift_tick, "stance_tick": stance_tick}
+			"next_colony_tick": next_colony_tick, "last_gift_tick": last_gift_tick, "stance_tick": stance_tick,
+			"warships": warships.duplicate(), "next_warship_tick": next_warship_tick}
 
 
 static func from_dict(data: Dictionary, game_data: GameData, island_count: int) -> RivalState:
@@ -55,8 +59,10 @@ static func from_dict(data: Dictionary, game_data: GameData, island_count: int) 
 	var raw_next: Variant = data.get("next_colony_tick")
 	var raw_gift: Variant = data.get("last_gift_tick")
 	var raw_stance_tick: Variant = data.get("stance_tick")
+	var raw_warships: Variant = data.get("warships")
+	var raw_next_warship: Variant = data.get("next_warship_tick")
 	if not (raw_def is StringName and raw_islands is Array and raw_relation is float and raw_stance is int and raw_ship is int \
-			and raw_next is int and raw_gift is int and raw_stance_tick is int):
+			and raw_next is int and raw_gift is int and raw_stance_tick is int and raw_warships is Array and raw_next_warship is int):
 		return null
 	var state := RivalState.new()
 	state.def_id = raw_def
@@ -70,6 +76,15 @@ static func from_dict(data: Dictionary, game_data: GameData, island_count: int) 
 	state.next_colony_tick = raw_next
 	state.last_gift_tick = raw_gift
 	state.stance_tick = raw_stance_tick
+	state.next_warship_tick = raw_next_warship
+	var warship_list: Array = raw_warships
+	for raw_id: Variant in warship_list:
+		if not raw_id is int:
+			return null
+		var warship_id: int = raw_id
+		if warship_id <= 0 or state.warships.has(warship_id):
+			return null
+		state.warships.append(warship_id)
 	var island_list: Array = raw_islands
 	for raw: Variant in island_list:
 		if not raw is Dictionary:

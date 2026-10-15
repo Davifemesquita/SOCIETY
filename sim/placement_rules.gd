@@ -28,6 +28,8 @@ const TROPICAL_LOCKED := &"REASON_TROPICAL_LOCKED"
 const SHIP_LIMIT := &"REASON_SHIP_LIMIT"
 ## A ilha é de uma companhia rival (Fase 11).
 const RIVAL_ISLAND := &"REASON_RIVAL_ISLAND"
+## O navio ainda não foi liberado pelos marcos (fragata, Fase 11).
+const SHIP_LOCKED := &"REASON_SHIP_LOCKED"
 ## Folga do ponto flutuante na diferença de altura.
 const _HEIGHT_EPSILON := 0.0001
 
@@ -156,6 +158,8 @@ static func check_ship_purchase(world: WorldState, data: GameData, config: GameC
 		return UNKNOWN_BUILDING
 	if not world.has_trading_post(island_id, data):
 		return NEEDS_TRADING_POST
+	if world.milestones_reached < def.unlock_milestone:
+		return SHIP_LOCKED
 	if world.player_ships().size() >= MilestoneSystem.ship_limit(world, config):
 		return SHIP_LIMIT
 	return check_cost(world, world.economy(island_id), config, def.cost_money, def.cost_materials)

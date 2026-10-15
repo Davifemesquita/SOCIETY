@@ -36,6 +36,9 @@ func execute(context: CommandContext) -> CommandResult:
 		grid.fill_building(Footprint.rect(record.origin, def.size, record.rotation), 0)
 		world.buildings.erase(building_id)
 		world.carts.erase(building_id)
+		# o especialista do prédio (Fase 11) volta para a lista, sem posto
+		if world.specialists_state.release(building_id):
+			result.specialists_changed = true
 		if not context.free_build:
 			for material: StringName in def.cost_materials:
 				economy.add(material, floorf(def.cost_materials[material] * context.config.demolish_refund), _capacity(context, island_id))

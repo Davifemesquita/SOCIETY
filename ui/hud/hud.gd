@@ -23,6 +23,7 @@ var route_window: RouteWindow
 var trade_window: TradeWindow
 var mission_window: MissionWindow
 var diplomacy_window: DiplomacyWindow
+var specialist_window: SpecialistWindow
 var notifications: NotificationFeed
 var goal_panel: GoalPanel
 var overlay_layer: MapOverlays.Layer = MapOverlays.Layer.NONE
@@ -37,6 +38,7 @@ var _population_labels: Dictionary[StringName, Label] = {}
 var _event_chips := HBoxContainer.new()
 var _missions_button: Button
 var _rivals_button: Button
+var _specialists_button: Button
 var _chips_signature: String = ""
 var _speed_buttons: Array[Button] = []
 var _category_buttons: Array[Button] = []
@@ -104,6 +106,11 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_pin(diplomacy_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
 	add_child(diplomacy_window)
 	diplomacy_window.setup(simulation)
+	specialist_window = SpecialistWindow.new()
+	_pin(specialist_window, Vector2(0.5, 0.5), Vector2.ZERO, Control.GROW_DIRECTION_BOTH, Control.GROW_DIRECTION_BOTH)
+	add_child(specialist_window)
+	specialist_window.setup(simulation)
+	selection_panel.specialists_requested.connect(specialist_window.open)
 	_build_labels()
 	tool.changed.connect(_refresh_tool)
 	tool.refused.connect(func(reason: StringName) -> void: show_message(tr(reason)))
@@ -139,9 +146,13 @@ func toggle_rivals() -> void:
 	diplomacy_window.toggle()
 
 
+func toggle_specialists() -> void:
+	specialist_window.toggle()
+
+
 ## Fecha a janela aberta de cima (Esc); devolve se havia alguma.
 func close_top_window() -> bool:
-	for window: Control in [diplomacy_window, mission_window, trade_window, route_window, statistics_window]:
+	for window: Control in [specialist_window, diplomacy_window, mission_window, trade_window, route_window, statistics_window]:
 		if window.visible:
 			window.visible = false
 			return true
@@ -282,18 +293,22 @@ func _build_top_bar() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
-	var stats := UiKit.button("HUD_STATS", "action_statistics", toggle_statistics, "HUD_STATS_TIP")
+	# só ícone (a dica tem o nome e o atalho): com rivais e especialistas a barra passava de 1920 px
+	var stats := UiKit.icon_button("action_statistics", "HUD_STATS_TIP", toggle_statistics)
 	stats.name = "Statistics"
 	row.add_child(stats)
-	var routes := UiKit.button("HUD_ROUTES", "action_routes", toggle_routes, "HUD_ROUTES_TIP")
+	var routes := UiKit.icon_button("action_routes", "HUD_ROUTES_TIP", toggle_routes)
 	routes.name = "Routes"
 	row.add_child(routes)
 	_missions_button = UiKit.button("", "action_missions", toggle_missions, "HUD_MISSIONS_TIP")
 	_missions_button.name = "MissionsButton"
 	row.add_child(_missions_button)
-	_rivals_button = UiKit.button("HUD_RIVALS", "hud_rival", toggle_rivals, "HUD_RIVALS_TIP")
+	_rivals_button = UiKit.icon_button("hud_rival", "HUD_RIVALS_TIP", toggle_rivals)
 	_rivals_button.name = "RivalsButton"
 	row.add_child(_rivals_button)
+	_specialists_button = UiKit.button("", "action_specialists", toggle_specialists, "HUD_SPECIALISTS_TIP")
+	_specialists_button.name = "SpecialistsButton"
+	row.add_child(_specialists_button)
 	row.add_child(UiKit.icon_button("action_save", "HUD_SAVE_TIP", save_requested.emit))
 	row.add_child(UiKit.icon_button("action_load", "HUD_LOAD_TIP", load_requested.emit))
 	var menu := UiKit.icon_button("action_menu", "HUD_MENU_TIP", menu_requested.emit)
@@ -310,6 +325,13 @@ func _refresh_events() -> void:
 		if item.state == Mission.State.OFFERED:
 			open += 1
 	_missions_button.text = tr("HUD_MISSIONS") % state.missions.size()
+	var specialists := _simulation.world.specialists_state
+	_specialists_button.text = tr("HUD_SPECIALISTS") % specialists.specialists.size()
+	# contratado sem posto pede atenção
+	if specialists.unassigned_count() > 0:
+		UiPalette.paint(_specialists_button, UiPalette.Status.PARTIAL)
+	else:
+		UiPalette.unpaint(_specialists_button)
 	var rivals := _simulation.world.rivals_state
 	_rivals_button.visible = rivals.enabled
 	if rivals.at_war():
@@ -478,7 +500,10 @@ func _tooltip(def: BuildingDef) -> String:
 	if def.upkeep_per_min > 0:
 		lines.append(tr("TIP_UPKEEP") % Fmt.integer(def.upkeep_per_min))
 	if def.is_production():
-		lines.append(tr("TIP_PRODUCES") % [Fmt.decimal(def.output_per_min()), tr(data.good(def.output).name_key)])
+		if def.is_power_plant():
+			lines.append(tr("TIP_POWER") % [def.power_radius_cells, Fmt.percent(_simulation.config.electricity_bonus)])
+		else:
+			lines.append(tr("TIP_PRODUCES") % [Fmt.decimal(def.output_per_min()), tr(data.good(def.output).name_key)])
 		if not def.inputs.is_empty():
 			lines.append(tr("TIP_NEEDS") % ", ".join(def.inputs.map(func(good: StringName) -> String: return tr(data.good(good).name_key))))
 		lines.append(tr("TIP_WORKERS") % [def.workers, tr(data.tier(def.workforce_tier).name_key)])

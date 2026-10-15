@@ -38,6 +38,9 @@ var route_id: int = 0
 var stop_index: int = 0
 var slot_goods: Array[StringName] = []
 var slot_tons: Array[float] = []
+## Casco que resta e segundos até o próximo tiro (Fase 11).
+var hp: float = 0.0
+var reload_left: float = 0.0
 
 # runtime: posição no tick anterior, para a vista interpolar
 var previous_position := Vector2(NAN, NAN)
@@ -49,6 +52,7 @@ func _init(ship_id: int, def: ShipDef, ship_owner: Owner = Owner.PLAYER) -> void
 	owner = ship_owner
 	if def != null:
 		def_id = def.id
+		hp = def.hull_points
 		for slot: int in def.cargo_slots:
 			slot_goods.append(&"")
 			slot_tons.append(0.0)
@@ -143,7 +147,7 @@ func to_dict() -> Dictionary:
 	return {"id": id, "def": def_id, "owner": owner, "position": position, "heading": heading, "state": state,
 			"destination": destination, "at": at, "waypoints": waypoints, "waypoint": waypoint, "berth": berth_id,
 			"queued_at": queued_at, "timer": timer, "route": route_id, "stop": stop_index,
-			"slot_goods": slot_goods.duplicate(), "slot_tons": slot_tons.duplicate()}
+			"slot_goods": slot_goods.duplicate(), "slot_tons": slot_tons.duplicate(), "hp": hp, "reload": reload_left}
 
 
 ## Lê um navio do save; null se algum campo vier com tipo errado ou fora do lugar.
@@ -165,10 +169,12 @@ static func from_dict(data: Dictionary, game_data: GameData) -> Ship:
 	var raw_stop: Variant = data.get("stop")
 	var raw_goods: Variant = data.get("slot_goods")
 	var raw_tons: Variant = data.get("slot_tons")
+	var raw_hp: Variant = data.get("hp")
+	var raw_reload: Variant = data.get("reload")
 	if not (raw_id is int and raw_def is StringName and raw_owner is int and raw_position is Vector2 and raw_heading is float \
 			and raw_state is int and raw_destination is int and raw_at is int and raw_waypoints is PackedVector2Array \
 			and raw_waypoint is int and raw_berth is int and raw_queued is int and raw_timer is float and raw_route is int \
-			and raw_stop is int and raw_goods is Array and raw_tons is Array):
+			and raw_stop is int and raw_goods is Array and raw_tons is Array and raw_hp is float and raw_reload is float):
 		return null
 	var def_name: StringName = raw_def
 	var def := game_data.ship(def_name)
@@ -193,6 +199,10 @@ static func from_dict(data: Dictionary, game_data: GameData) -> Ship:
 	ship.timer = raw_timer
 	ship.route_id = raw_route
 	ship.stop_index = raw_stop
+	ship.hp = raw_hp
+	ship.reload_left = raw_reload
+	if ship.hp <= 0.0 or ship.hp > def.hull_points + 0.0001 or ship.reload_left < 0.0:
+		return null
 	var goods_list: Array = raw_goods
 	var tons_list: Array = raw_tons
 	if goods_list.size() != def.cargo_slots or tons_list.size() != def.cargo_slots:

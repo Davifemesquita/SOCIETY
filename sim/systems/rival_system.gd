@@ -5,7 +5,8 @@ extends RefCounted
 ## respeitando o teto dela e o teto de todas juntas; as vilas crescem até o teto da ilha; a relação
 ## volta aos poucos para a da personalidade; e a IA decide a postura (a agressiva declara guerra com
 ## a relação baixa, a não agressiva faz as pazes quando a relação melhora, o acordo cai com a relação
-## negativa). Todo tick: a renda do acordo comercial entra no caixa. Os sorteios saem da semente.
+## negativa). Em guerra ela arma fragatas (até rival_warships) e desarma na paz. Todo tick: a renda do
+## acordo comercial entra no caixa. Os sorteios saem da semente.
 
 
 static func run(world: WorldState, data: GameData, config: GameConfig, harbors: Harbors, dt: float) -> void:
@@ -25,6 +26,7 @@ static func run(world: WorldState, data: GameData, config: GameConfig, harbors: 
 		_grow(world, config, rival, step_min)
 		_colonize(world, data, config, rival)
 		_ensure_ship(world, data, harbors, rival)
+		_arm(world, data, config, harbors, rival)
 		_drift(config, rival, step_min)
 		_decide(world, config, rival)
 
@@ -75,7 +77,8 @@ static func free_islands(world: WorldState, data: GameData, config: GameConfig) 
 
 
 static func _ensure_ship(world: WorldState, data: GameData, harbors: Harbors, rival: RivalState) -> void:
-	if rival.ship_id != 0 or rival.islands.is_empty():
+	# em guerra o comércio dela para: o mercante afundado só volta na paz
+	if rival.ship_id != 0 or rival.islands.is_empty() or rival.stance == RivalState.Stance.WAR:
 		return
 	var ship := Ship.new(world.next_ship_id, data.ship(rival.def.ship), Ship.Owner.RIVAL)
 	world.next_ship_id += 1
@@ -84,6 +87,35 @@ static func _ensure_ship(world: WorldState, data: GameData, harbors: Harbors, ri
 	ship.previous_position = ship.position
 	world.ships[ship.id] = ship
 	rival.ship_id = ship.id
+	EventBus.ships_changed.emit()
+
+
+## Em guerra, uma fragata a cada rival_warship_build_s até rival_warships; fora dela, desarma.
+static func _arm(world: WorldState, data: GameData, config: GameConfig, harbors: Harbors, rival: RivalState) -> void:
+	if rival.stance != RivalState.Stance.WAR:
+		if not rival.warships.is_empty():
+			for ship_id: int in rival.warships:
+				world.ships.erase(ship_id)
+			rival.warships.clear()
+			EventBus.ships_changed.emit()
+		rival.next_warship_tick = 0
+		return
+	if rival.islands.is_empty() or rival.warships.size() >= config.rival_warships:
+		return
+	if rival.next_warship_tick == 0:
+		rival.next_warship_tick = world.tick + config.ticks_of(config.rival_warship_build_s)
+		return
+	if world.tick < rival.next_warship_tick:
+		return
+	rival.next_warship_tick = world.tick + config.ticks_of(config.rival_warship_build_s)
+	var ship := Ship.new(world.next_ship_id, data.ship(config.rival_warship), Ship.Owner.RIVAL)
+	world.next_ship_id += 1
+	ship.at = rival.island_ids()[0]
+	ship.position = harbors.target_point(ship.at, Ship.Owner.RIVAL)
+	ship.previous_position = ship.position
+	ship.timer = config.rival_warship_dwell_s
+	world.ships[ship.id] = ship
+	rival.warships.append(ship.id)
 	EventBus.ships_changed.emit()
 
 

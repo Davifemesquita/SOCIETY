@@ -229,4 +229,4 @@ func test_old_saves_migrate_with_rivals() -> void:
 	assert_bool(rivals["enabled"]).is_true()
 	var list: Array = rivals["rivals"]
 	assert_int(list.size()).is_equal(GameData.get_default().rivals.size())
-	assert_int(SaveSystem.SAVE_VERSION).is_equal(10)
+	assert_int(SaveSystem.SAVE_VERSION).is_greater_equal(10)

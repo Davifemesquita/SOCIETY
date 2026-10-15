@@ -1,18 +1,18 @@
 class_name MapOverlays
 extends RefCounted
 ## Camadas de mapa do jogador (seções 7 e 10): raio dos serviços, alcance dos armazéns,
-## fertilidade, poluição e rede de estradas, como imagens por célula para o DebugOverlay. Só lê o
+## fertilidade, poluição, rede de estradas e eletricidade (Fase 11), como imagens por célula para o DebugOverlay. Só lê o
 ## estado da simulação. As camadas F1/F2 de depuração continuam no DebugOverlay.
 
-enum Layer { NONE, SERVICE, WAREHOUSE, FERTILITY, POLLUTION, ROADS }
+enum Layer { NONE, SERVICE, WAREHOUSE, FERTILITY, POLLUTION, ROADS, ELECTRICITY }
 
 const ICONS: Dictionary[Layer, String] = {
 	Layer.SERVICE: "overlay_service", Layer.WAREHOUSE: "overlay_warehouse", Layer.FERTILITY: "overlay_fertility",
-	Layer.POLLUTION: "overlay_pollution", Layer.ROADS: "overlay_roads",
+	Layer.POLLUTION: "overlay_pollution", Layer.ROADS: "overlay_roads", Layer.ELECTRICITY: "overlay_electricity",
 }
 const KEYS: Dictionary[Layer, String] = {
 	Layer.SERVICE: "OVERLAY_SERVICE", Layer.WAREHOUSE: "OVERLAY_WAREHOUSE", Layer.FERTILITY: "OVERLAY_FERTILITY",
-	Layer.POLLUTION: "OVERLAY_POLLUTION", Layer.ROADS: "OVERLAY_ROADS",
+	Layer.POLLUTION: "OVERLAY_POLLUTION", Layer.ROADS: "OVERLAY_ROADS", Layer.ELECTRICITY: "OVERLAY_ELECTRICITY",
 }
 
 const REACHED := Color(0.35, 0.75, 1.0, 0.5)
@@ -22,6 +22,8 @@ const FERTILE := Color(0.45, 0.85, 0.25, 0.32)
 const POLLUTED := Color(0.55, 0.25, 0.1)
 const SERVED := Color(0.3, 0.9, 0.4, 0.6)
 const UNSERVED := Color(1.0, 0.35, 0.25, 0.6)
+const POWER_ON := Color(1.0, 0.85, 0.25, 0.3)
+const POWER_OFF := Color(0.6, 0.6, 0.6, 0.25)
 
 
 static func image(layer: Layer, simulation: Simulation, island_id: int) -> Image:
@@ -39,6 +41,8 @@ static func image(layer: Layer, simulation: Simulation, island_id: int) -> Image
 			return pollution(simulation, island_id)
 		Layer.ROADS:
 			return roads(grid)
+		Layer.ELECTRICITY:
+			return electricity(simulation, island_id)
 	return null
 
 
@@ -149,6 +153,28 @@ static func pollution(simulation: Simulation, island_id: int) -> Image:
 	for i: int in strength.size():
 		if strength[i] > 0.0:
 			image.set_pixelv(grid.cell_at(i), Color(POLLUTED, 0.15 + 0.55 * strength[i]))
+	return image
+
+
+## Raio das usinas (amarelo se a usina produz, cinza se parada) e as fábricas: verde com
+## eletricidade, vermelho sem.
+static func electricity(simulation: Simulation, island_id: int) -> Image:
+	var grid := simulation.world.island(island_id)
+	var image := _blank(grid)
+	var derived := simulation.derived_state()
+	for entry: DerivedState.ProductionEntry in derived.production_entries:
+		if entry.record.island_id != island_id or not entry.def.is_power_plant():
+			continue
+		var area := Footprint.rect(entry.record.origin, entry.def.size, entry.record.rotation)
+		var reach := area.grow(entry.def.power_radius_cells).intersection(Rect2i(Vector2i.ZERO, grid.size))
+		var tint := POWER_ON if entry.record.state == BuildingRecord.State.PRODUCING else POWER_OFF
+		for y: int in range(reach.position.y, reach.end.y):
+			for x: int in range(reach.position.x, reach.end.x):
+				if image.get_pixel(x, y).a < tint.a:
+					image.set_pixel(x, y, tint)
+	for entry: DerivedState.ProductionEntry in derived.production_entries:
+		if entry.record.island_id == island_id and entry.def.is_electrifiable():
+			_fill_building(image, simulation, entry.record, SERVED if entry.powered else UNSERVED)
 	return image
 
 

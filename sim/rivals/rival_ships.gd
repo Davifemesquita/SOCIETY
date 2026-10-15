@@ -1,6 +1,6 @@
 class_name RivalShips
 extends RefCounted
-## O navio mercante de cada rival (Fase 11): vai e volta entre as ilhas dela e o posto do
+## Os navios de cada rival (Fase 11), o mercante e as fragatas da guerra: vão e voltam entre as ilhas dela e o posto do
 ## comerciante, parando rival_ship_dwell_s em cada ponta. Não ocupa vaga de porto (ancora no
 ## ancoradouro da ilha, como quem coloniza) e não mexe na economia do jogador.
 
@@ -20,9 +20,15 @@ static func idle(world: WorldState, config: GameConfig, harbors: Harbors, ship: 
 		target = ids[rng.randi_range(0, ids.size() - 1)]
 	ShipSystem.depart(harbors, ship, target)
 	if ship.state == Ship.State.IDLE:
-		ship.timer = config.rival_ship_dwell_s
+		ship.timer = dwell(world, config, ship)
 
 
-static func arrived(config: GameConfig, ship: Ship) -> void:
+static func arrived(world: WorldState, config: GameConfig, ship: Ship) -> void:
 	ship.stop()
-	ship.timer = config.rival_ship_dwell_s
+	ship.timer = dwell(world, config, ship)
+
+
+## A fragata fica mais tempo em cada ponta (guarda a ilha e bloqueia o comerciante).
+static func dwell(world: WorldState, config: GameConfig, ship: Ship) -> float:
+	var rival := world.rivals_state.by_ship(ship.id)
+	return config.rival_warship_dwell_s if rival != null and rival.warships.has(ship.id) else config.rival_ship_dwell_s

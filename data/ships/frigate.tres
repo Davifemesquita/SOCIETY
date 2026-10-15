@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ShipDef" format=3]
+
+[ext_resource type="Script" path="res://data/ship_def.gd" id="1_ship"]
+
+[resource]
+script = ExtResource("1_ship")
+id = &"frigate"
+name_key = "SHIP_FRIGATE"
+cargo_slots = 1
+slot_capacity_t = 20
+speed_m_s = 7.5
+upkeep_per_min = 120
+cost_money = 9000
+cost_materials = Dictionary[StringName, int]({&"planks": 40, &"bricks": 20})
+hull_points = 500.0
+cannons = 12
+salvo_damage = 40.0
+cannon_range_m = 130.0
+reload_s = 5.0
+unlock_milestone = 2
+hull_color = Color(0.2, 0.17, 0.15, 1)
+sail_color = Color(0.85, 0.83, 0.76, 1)
+length_m = 22.0

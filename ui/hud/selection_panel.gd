@@ -6,11 +6,13 @@ extends PanelContainer
 ## Campo e pasto: a fazenda que servem. Entreposto (Fase 6): vagas de navio, comprar navio e o
 ## comércio com o comerciante; píer: se está em funcionamento. Desde a Fase 7: ícone do prédio no
 ## título, retrato da classe na casa, semáforo com forma (modo para daltonismo) e a calculadora de
-## proporção na produção.
+## proporção na produção. Fase 11: eletricidade e o especialista do prédio.
 
 signal trade_requested(island_id: int)
 ## O jogador pediu para a câmera ir até o prédio (botão do olho, igual à tecla F).
 signal center_requested()
+## Especialistas (Fase 11): abrir a janela para designar alguém a este prédio.
+signal specialists_requested(building_id: int)
 
 const REFRESH_SECONDS := 0.25
 ## Produtividade média a partir da qual o prédio aparece como produzindo.
@@ -132,18 +134,39 @@ func _build_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 			else:
 				_tool.select_ship(result.created_id))
 		buy.name = "BuyShip"
-		var ship_def := _simulation.data.ship(&"merchant_ship")
-		if ship_def != null:
-			var cost: PackedStringArray = [tr("TIP_COINS") % Fmt.integer(ship_def.cost_money)]
-			for material: StringName in ship_def.cost_materials:
-				cost.append("%d %s" % [ship_def.cost_materials[material], tr(_simulation.data.good(material).name_key)])
-			buy.tooltip_text = tr("TIP_COST") % ", ".join(cost)
+		buy.tooltip_text = _ship_cost_tip(&"merchant_ship")
+		# fragata (Fase 11): navio de guerra, liberado por um marco
+		var frigate := _simulation.data.ship(&"frigate")
+		if frigate != null:
+			var buy_frigate := _add_button("PANEL_BUY_FRIGATE", "action_buy_frigate", func() -> void:
+				var result := _simulation.execute(BuyShipCommand.new(record.island_id, &"frigate"))
+				if not result.ok():
+					_tool.refused.emit(result.reason)
+				else:
+					_tool.select_ship(result.created_id))
+			buy_frigate.name = "BuyFrigate"
+			buy_frigate.tooltip_text = tr("PANEL_BUY_FRIGATE_TIP") % [Fmt.integer(frigate.cannons), Fmt.integer(frigate.hull_points)] \
+					+ "\n" + _ship_cost_tip(&"frigate")
+			if _simulation.world.milestones_reached < frigate.unlock_milestone and not _simulation.free_build:
+				buy_frigate.disabled = true
+				buy_frigate.tooltip_text += "\n" + tr(PlacementRules.SHIP_LOCKED)
 		var trade := _add_button("PANEL_TRADE", "action_trade", func() -> void: trade_requested.emit(record.island_id))
 		trade.name = "Trade"
 
 
+## Custo do navio (moedas e materiais) para a dica do botão de comprar.
+func _ship_cost_tip(def_id: StringName) -> String:
+	var ship_def := _simulation.data.ship(def_id)
+	if ship_def == null:
+		return ""
+	var cost: PackedStringArray = [tr("TIP_COINS") % Fmt.integer(ship_def.cost_money)]
+	for material: StringName in ship_def.cost_materials:
+		cost.append("%d %s" % [ship_def.cost_materials[material], tr(_simulation.data.good(material).name_key)])
+	return tr("TIP_COST") % ", ".join(cost)
+
+
 func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
-	_add_lines(8 + def.inputs.size())
+	_add_lines(10 + def.inputs.size())
 	for text: String in RatioCalculator.lines(def, _simulation.data):
 		var ratio := UiKit.label(text, &"DimLabel")
 		ratio.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -152,6 +175,9 @@ func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
 		_simulation.execute(SetPausedCommand.new(record.id, not _simulation.world.building(record.id).paused))
 		_refresh())
 	_add_button("PANEL_COPY", "action_copy", func() -> void: _tool.start_building(def))
+	if _simulation.data.specialists.any(func(specialist: SpecialistDef) -> bool: return specialist.covers(def)):
+		var specialists := _add_button("PANEL_SPECIALIST", "action_specialists", func() -> void: specialists_requested.emit(record.id))
+		specialists.name = "Specialist"
 
 
 func _build_house(record: BuildingRecord) -> void:
@@ -242,14 +268,44 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 		var held: float = record.input_buffer.get(input, 0.0)
 		_lines[index].text = tr("PANEL_BUFFER") % [tr(data.good(input).name_key), Fmt.decimal(held), config.building_buffer_t]
 		index += 1
-	_lines[index].text = tr("PANEL_BUFFER") % [tr(data.good(def.output).name_key), Fmt.decimal(record.output_buffer), config.building_buffer_t]
+	_lines[index].text = _output_or_power_text(record, def, entry)
 	var workforce := _simulation.world.economy(record.island_id).workforce(def.workforce_tier)
 	_lines[index + 1].text = tr("PANEL_WORKERS") % [def.workers, tr(data.tier(def.workforce_tier).name_key), Fmt.percent(workforce)]
-	_lines[index + 2].text = tr("PANEL_UPKEEP") % Fmt.integer(def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0))
+	var specialist := _simulation.world.specialists_state.at(record.id)
+	_lines[index + 2].text = tr("PANEL_UPKEEP") % Fmt.integer(def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0)
+			* DerivedState.upkeep_factor(specialist))
 	_refresh_logistics(record, index + 3)
+	_lines[index + 5].text = _electricity_text(def, entry)
+	_lines[index + 5].visible = not _lines[index + 5].text.is_empty()
+	if entry != null and entry.powered:
+		UiPalette.paint(_lines[index + 5], UiPalette.Status.GOOD)
+	else:
+		UiPalette.paint(_lines[index + 5], UiPalette.Status.BAD)
+	_lines[index + 6].text = tr("PANEL_SPECIALIST_AT") % tr(specialist.def.title_key()) if specialist != null else ""
+	_lines[index + 6].visible = specialist != null
+	_lines[index + 6].tooltip_text = SpecialistWindow.description_of(specialist.def) if specialist != null else ""
+	_lines[index + 6].mouse_filter = Control.MOUSE_FILTER_STOP
 	if _pause != null:
 		_pause.text = tr("PANEL_RESUME") if record.paused else tr("PANEL_PAUSE")
 		_pause.icon = Icons.action("play" if record.paused else "pause")
+
+
+## Buffer de saída; na usina (Fase 11), quantas fábricas ela alcança.
+func _output_or_power_text(record: BuildingRecord, def: BuildingDef, entry: DerivedState.ProductionEntry) -> String:
+	if def.is_power_plant():
+		return tr("PANEL_POWER_SUPPLIES") % _simulation.derived_state().powered_by(record.id).size() if entry != null else ""
+	return tr("PANEL_BUFFER") % [tr(_simulation.data.good(def.output).name_key), Fmt.decimal(record.output_buffer),
+			_simulation.config.building_buffer_t]
+
+
+## Fábrica (Fase 11): com eletricidade (o bônus), alcançada por usina parada ou fora de alcance.
+## Sem usina na ilha a linha some.
+func _electricity_text(def: BuildingDef, entry: DerivedState.ProductionEntry) -> String:
+	if entry == null or not def.is_electrifiable() or not _simulation.derived_state().has_power_plant(entry.record.island_id):
+		return ""
+	if entry.powered:
+		return tr("PANEL_POWERED") % Fmt.percent(_simulation.config.electricity_bonus)
+	return tr("PANEL_POWER_IDLE") if not entry.power_plants.is_empty() else tr("PANEL_UNPOWERED")
 
 
 ## Armazém que atende o prédio e o que a carroça está fazendo.

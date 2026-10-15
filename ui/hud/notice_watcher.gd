@@ -215,6 +215,26 @@ func rival_stance(rival_id: StringName, stance: int) -> Notice:
 	return notice
 
 
+## Navio afundado: o nosso (vermelho) ou o da rival (verde).
+func ship_sunk(owner: int) -> Notice:
+	var ours := owner == Ship.Owner.PLAYER
+	var notice := Notice.new("sunk/%d/%d" % [owner, Time.get_ticks_msec()], "notice_sunk",
+			"NOTICE_SHIP_SUNK" if ours else "NOTICE_ENEMY_SUNK")
+	notice.status = UiPalette.Status.BAD if ours else UiPalette.Status.GOOD
+	return notice
+
+
+## Navio nosso sob fogo (uma vez por navio enquanto a notificação está na tela).
+func under_attack(ship_id: int) -> Notice:
+	var ship := _simulation.world.ship(ship_id)
+	var def := _simulation.data.ship(ship.def_id)
+	var notice := Notice.new("attack/%d" % ship_id, "notice_battle", "NOTICE_UNDER_ATTACK",
+			[TranslationServer.translate("SHIP_TITLE") % [TranslationServer.translate(def.name_key), ship.id]])
+	notice.ship_id = ship_id
+	notice.status = UiPalette.Status.BAD
+	return notice
+
+
 ## Só a aceita que venceu vira aviso; a oferta não respondida some calada.
 func mission_expired(def_id: StringName) -> Notice:
 	var def := _simulation.data.mission(def_id)
@@ -223,6 +243,10 @@ func mission_expired(def_id: StringName) -> Notice:
 	notice.opens_missions = true
 	notice.status = UiPalette.Status.PARTIAL
 	return notice
+
+
+func simulation_world() -> WorldState:
+	return _simulation.world
 
 
 ## O entreposto da ilha (o de menor id), ou 0.

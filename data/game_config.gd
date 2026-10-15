@@ -116,6 +116,11 @@ static var _default: GameConfig
 ## Raio dos serviços (mercado, taverna, igreja, escola), medido por estrada.
 @export var service_radius_cells: int = 25
 @export var lumberjack_min_trees: int = 20
+## Fábrica eletrificada (Fase 11): fração somada à velocidade enquanto uma usina no raio produz.
+@export var electricity_bonus: float = 0.5
+## Especialistas (Fase 11): quantos o comerciante oferece a cada volta e o teto de contratados.
+@export var specialist_offers: int = 3
+@export var max_specialists: int = 10
 
 @export_group("Navios e comércio")
 ## Navio com que o jogo começa, ancorado na ilha principal (vazio = nenhum: testes da economia).
@@ -191,6 +196,15 @@ static var _default: GameConfig
 @export var rival_war_relation: float = -60.0
 @export var rival_auto_peace_relation: float = -10.0
 @export var rival_stance_cooldown_s: float = 300.0
+## Combate naval: o casco se repara tanto por segundo parado num porto do dono; em guerra a rival arma
+## até rival_warships fragatas (o navio rival_warship), uma a cada rival_warship_build_s, que param
+## rival_warship_dwell_s em cada ponta; cada uma afundada melhora a relação em rival_loss_relation.
+@export var ship_repair_per_s: float = 2.0
+@export var rival_warship: StringName = &"frigate"
+@export var rival_warships: int = 2
+@export var rival_warship_build_s: float = 180.0
+@export var rival_warship_dwell_s: float = 90.0
+@export var rival_loss_relation: float = 15.0
 
 @export_group("Ilhas")
 ## Área da ilha plana (testes e saves de antes da Fase 5), em células.
@@ -542,6 +556,10 @@ func validate() -> PackedStringArray:
 		problems.append("os níveis de imposto são três: baixo, normal e alto")
 	if need_partial_threshold > need_met_threshold:
 		problems.append("need_partial_threshold passa de need_met_threshold")
+	if electricity_bonus < 0.0:
+		problems.append("electricity_bonus não pode ser negativo")
+	if specialist_offers < 0 or max_specialists < 0:
+		problems.append("specialist_offers e max_specialists não podem ser negativos")
 	if supply_smoothing_seconds <= 0.0 or productivity_smoothing_seconds <= 0.0:
 		problems.append("as constantes de tempo das médias devem ser maiores que zero")
 	if autosave_slots <= 0:

@@ -16,6 +16,7 @@ var _simulation: Simulation
 var _title := Label.new()
 var _icon := TextureRect.new()
 var _state := Label.new()
+var _hull := UiKit.icon_line(Icons.get_icon("hud_hull"), "", 22)
 var _hold := VBoxContainer.new()
 var _route := OptionButton.new()
 var _actions := VBoxContainer.new()
@@ -44,6 +45,8 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	head.add_child(UiKit.icon_button("action_center", "INFO_CENTER_HINT", func() -> void: center_requested.emit()))
 	head.add_child(UiKit.icon_button("action_close", "UI_CLOSE", func() -> void: tool.select_ship(0)))
 	column.add_child(_state)
+	_hull.name = "Hull"
+	column.add_child(_hull)
 	column.add_child(UiKit.label("SHIP_HOLD", &"DimLabel"))
 	column.add_child(_hold)
 	var route_row := HBoxContainer.new()
@@ -94,6 +97,18 @@ func _refresh() -> void:
 	_title.text = tr("SHIP_TITLE") % [tr(def.name_key), ship.id]
 	_icon.texture = Icons.get_icon("ship_" + def.id)
 	_state.text = state_text(ship)
+	# casco e canhões (Fase 11)
+	var hull_label: Label = _hull.get_child(1)
+	hull_label.text = tr("SHIP_HULL") % [Fmt.integer(ship.hp), Fmt.integer(def.hull_points)]
+	if def.cannons > 0:
+		hull_label.text += "\n" + tr("SHIP_CANNONS") % [def.cannons, Fmt.integer(def.cannon_range_m)]
+	var hull_share := ship.hp / def.hull_points
+	if hull_share < 0.35:
+		UiPalette.paint(hull_label, UiPalette.Status.BAD)
+	elif hull_share < 0.99:
+		UiPalette.paint(hull_label, UiPalette.Status.PARTIAL)
+	else:
+		UiPalette.unpaint(hull_label)
 	var lines := _hold.get_children()
 	while lines.size() < ship.slot_goods.size():
 		var row := UiKit.icon_line(Icons.get_icon("hud_storage"), "", 22)

@@ -21,6 +21,8 @@ static var _default: GameData
 @export var missions: Array[MissionDef] = []
 ## Companhias rivais (Fase 11).
 @export var rivals: Array[RivalDef] = []
+## Especialistas que o comerciante traz (Fase 11).
+@export var specialists: Array[SpecialistDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -105,6 +107,13 @@ func rival(id: StringName) -> RivalDef:
 	return null
 
 
+func specialist(id: StringName) -> SpecialistDef:
+	for def: SpecialistDef in specialists:
+		if def.id == id:
+			return def
+	return null
+
+
 func mission(id: StringName) -> MissionDef:
 	for def: MissionDef in missions:
 		if def.id == id:
@@ -129,7 +138,7 @@ func validate() -> PackedStringArray:
 		if def.unlock_tier != &"" and tier(def.unlock_tier) == null:
 			problems.append("%s: classe de desbloqueio desconhecida" % def.id)
 		if def.is_production():
-			if def.cycle_s <= 0.0 or good(def.output) == null:
+			if def.cycle_s <= 0.0 or (good(def.output) == null and not def.is_power_plant()):
 				problems.append("%s: produção sem ciclo ou sem saída válida" % def.id)
 			if tier(def.workforce_tier) == null:
 				problems.append("%s: classe de trabalho desconhecida" % def.id)
@@ -163,6 +172,8 @@ func validate() -> PackedStringArray:
 	for ship_def: ShipDef in ships:
 		if ship_def.cargo_slots <= 0 or ship_def.slot_capacity_t <= 0 or ship_def.speed_m_s <= 0.0:
 			problems.append("%s: porão e velocidade devem ser positivos" % ship_def.id)
+		if ship_def.hull_points <= 0.0 or (ship_def.cannons > 0 and (ship_def.salvo_damage <= 0.0 or ship_def.cannon_range_m <= 0.0 or ship_def.reload_s <= 0.0)):
+			problems.append("%s: casco positivo; navio armado com dano, alcance e recarga positivos" % ship_def.id)
 		for material: StringName in ship_def.cost_materials:
 			if good(material) == null:
 				problems.append("%s: material desconhecido %s" % [ship_def.id, material])
@@ -198,6 +209,18 @@ func validate() -> PackedStringArray:
 			problems.append("rival %s: navio desconhecido %s" % [rival_def.id, rival_def.ship])
 		if rival_def.first_colony_s <= 0.0 or rival_def.colony_interval_s <= 0.0 or rival_def.max_islands < 1 or rival_def.growth_per_min <= 0.0:
 			problems.append("rival %s: tempos, teto de ilhas e crescimento positivos" % rival_def.id)
+	_check_ids(problems, "especialista", specialists.map(func(def: SpecialistDef) -> StringName: return def.id))
+	for specialist_def: SpecialistDef in specialists:
+		if specialist_def.amount <= 0.0 or specialist_def.hire_cost < 0 or specialist_def.salary_per_min < 0 \
+				or specialist_def.weight <= 0 or specialist_def.after_milestone < 0:
+			problems.append("especialista %s: efeito e peso positivos, custo, salário e marco não negativos" % specialist_def.id)
+		if specialist_def.effect == SpecialistDef.Effect.UPKEEP and specialist_def.amount > 1.0:
+			problems.append("especialista %s: corte de manutenção acima de 100%%" % specialist_def.id)
+		if not buildings.any(func(def: BuildingDef) -> bool: return specialist_def.covers(def)):
+			problems.append("especialista %s: nenhum prédio aceita" % specialist_def.id)
+		for building_id: StringName in specialist_def.buildings:
+			if building(building_id) == null:
+				problems.append("especialista %s: prédio desconhecido %s" % [specialist_def.id, building_id])
 	return problems
 
 

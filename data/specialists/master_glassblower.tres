@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SpecialistDef" format=3]
+
+[ext_resource type="Script" path="res://data/specialist_def.gd" id="1_specialist"]
+
+[resource]
+script = ExtResource("1_specialist")
+id = &"master_glassblower"
+effect = 2
+target_group = 4
+buildings = Array[StringName]([&"glassworks", &"window_works", &"lamp_factory", &"optician"])
+amount = 3.0
+hire_cost = 4000
+salary_per_min = 30
+weight = 2
+after_milestone = 3

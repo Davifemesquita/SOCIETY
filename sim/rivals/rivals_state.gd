@@ -23,10 +23,12 @@ func by_id(def_id: StringName) -> RivalState:
 	return null
 
 
-## Rival pelo navio dela, ou null.
+## Rival pelo navio dela (o mercante ou uma fragata), ou null.
 func by_ship(ship_id: int) -> RivalState:
+	if ship_id == 0:
+		return null
 	for rival: RivalState in rivals:
-		if rival.ship_id == ship_id and ship_id != 0:
+		if rival.ship_id == ship_id or rival.warships.has(ship_id):
 			return rival
 	return null
 

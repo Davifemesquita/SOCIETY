@@ -6,7 +6,9 @@ extends Node
 ## terreno), o canavial com os campos e o mapa das rotas com as ilhas novas. Depois, eventos e
 ## encomendas: a janela com a oferta, a aceita e os eventos, os selos na barra e os avisos
 ## (CAPTURA_SO=eventos tira só estas) e as rivais: a vila, o navio, o mapa e a diplomacia
-## (CAPTURA_SO=rivais).
+## (CAPTURA_SO=rivais) e o combate naval: tiro, fragata avariada, navio afundando e o painel
+## (CAPTURA_SO=combate) e os especialistas: a janela com a oferta e os contratados e o painel da
+## fábrica com o especialista (CAPTURA_SO=especialistas).
 
 const SEED := 1840
 
@@ -38,6 +40,12 @@ func _run() -> void:
 		return
 	if OS.get_environment("CAPTURA_SO") == "rivais":
 		await _rival_shots()
+		return
+	if OS.get_environment("CAPTURA_SO") == "combate":
+		await _combat_shots()
+		return
+	if OS.get_environment("CAPTURA_SO") == "especialistas":
+		await _specialist_shots()
 		return
 	await _shot("01_arquipelago_com_os_tropicos.png", Vector3(bounds.get_center().x, 0.0, bounds.get_center().y), 2200.0, 0.0)
 	var tropical: Array[int] = []
@@ -139,7 +147,107 @@ func _rival_shots() -> void:
 	_game.hud._refresh()
 	_game.hud.diplomacy_window.open()
 	await _shot("12_diplomacia.png", village_at, 300.0, 0.0)
+	_game.hud.diplomacy_window.visible = false
+	if OS.get_environment("CAPTURA_SO") == "rivais":
+		get_tree().quit()
+		return
+	await _combat_shots()
+
+
+## Combate: em guerra com a Ferro e Brasa, uma fragata nossa contra uma dela perto do posto do
+## comerciante; o tiro, o navio avariado soltando fumaça e o afundado descendo.
+func _combat_shots() -> void:
+	var state := _sim.world.rivals_state
+	if not state.enabled:
+		state.start(_sim.data, _sim.config)
+	var rival := state.by_id(&"ironside")
+	if rival.islands.is_empty():
+		rival.islands[_sim.world.islands.size() - 1] = 100.0
+	RivalSystem.set_stance(_sim.world, rival, RivalState.Stance.WAR)
+	var point := _sim.harbors().trader_post + Vector2(0.0, 90.0)
+	var ours := _place_ship(&"frigate", Ship.Owner.PLAYER, point)
+	var theirs := _place_ship(&"frigate", Ship.Owner.RIVAL, point + Vector2(70.0, 10.0))
+	rival.warships.append(theirs.id)
+	theirs.timer = 9999.0
+	theirs.hp = 140.0
+	ours.reload_left = 0.0
+	theirs.reload_left = 0.2
+	_set_hour(16.0)
+	var middle := Vector3(point.x + 35.0, 0.0, point.y + 5.0)
+	for frame: int in 4:
+		await get_tree().process_frame
+	# o clarão vive 0,35 s e o software leva segundos por quadro: a vista para enquanto fotografa
+	_game.ship_view.set_process(false)
+	var fired := [false]
+	var on_fire := func(_attacker: int, _target: int) -> void: fired[0] = true
+	EventBus.ship_fired.connect(on_fire)
+	while not fired[0]:
+		_sim.tick(0)
+	EventBus.ship_fired.disconnect(on_fire)
+	await _shot("13_tiro_de_canhao.png", middle, 70.0, 0.5)
+	_game.ship_view.set_process(true)
+	theirs.hp = 120.0
+	# a fumaça precisa de alguns segundos de partícula para subir
+	for frame: int in 40:
+		await get_tree().process_frame
+	await _shot("14_fragata_avariada.png", Vector3(theirs.position.x, 0.0, theirs.position.y), 75.0, 0.4)
+	var sunk := [false]
+	var on_sunk := func(_ship: int, _owner: int, _at: Vector2) -> void: sunk[0] = true
+	EventBus.ship_sunk.connect(on_sunk)
+	while not sunk[0] and _sim.world.tick < 1_000_000:
+		_sim.tick(0)
+	EventBus.ship_sunk.disconnect(on_sunk)
+	GameClock.clock.tick_count = _sim.world.tick
+	_game.ship_view.set_process(false)
+	_game.ship_view._animate_combat(2.0)
+	await _shot("15_navio_afundando.png", middle, 70.0, 0.5)
+	_game.ship_view.set_process(true)
+	_game.tool.select_ship(ours.id)
+	await _shot("16_painel_da_fragata.png", Vector3(ours.position.x, 0.0, ours.position.y), 60.0, 0.5)
+	_game.tool.select(0)
+	if OS.get_environment("CAPTURA_SO") == "combate":
+		get_tree().quit()
+		return
+	await _specialist_shots()
+
+
+## Especialistas: uma fábrica de vigas no meio da ilha principal (sem custo), a oferta da volta e um
+## contratado sem posto; a janela aberta pelo painel da fábrica e, depois de designar, o painel.
+func _specialist_shots() -> void:
+	var grid := _sim.world.island(0)
+	_sim.free_build = true
+	var site := SiteFinder.find(_sim, &"steel_beam_works", 0, grid.size / 2)
+	if site.is_empty():
+		get_tree().quit()
+		return
+	var origin: Vector2i = site[0]
+	var rotation: int = site[1]
+	var factory := _sim.execute(PlaceBuildingCommand.new(0, &"steel_beam_works", origin, rotation)).placed[0]
+	var state := _sim.world.specialists_state
+	if _sim.world.trader.ship_id == 0:
+		_sim.world.trader.ship_id = -1
+	state.offers.assign([&"foreman", &"bookkeeper", &"steelmaster"])
+	_sim.execute(SpecialistCommand.hire(&"steelmaster"))
+	state.offers.append(&"agronomist")
+	_sim.execute(SpecialistCommand.hire(&"agronomist"))
+	_game.hud._refresh()
+	_game.tool.select(factory)
+	_game.hud.specialist_window.open(factory)
+	await _shot("17_especialistas.png", grid.cell_world(origin), 60.0, 0.5)
+	_game.hud.specialist_window.visible = false
+	_sim.execute(SpecialistCommand.assign(state.specialists[0].id, factory))
+	_game.hud._refresh()
+	await _shot("18_fabrica_com_especialista.png", grid.cell_world(origin), 60.0, 0.5)
 	get_tree().quit()
+
+
+func _place_ship(def_id: StringName, owner: Ship.Owner, point: Vector2) -> Ship:
+	var ship := Ship.new(_sim.world.next_ship_id, _sim.data.ship(def_id), owner)
+	_sim.world.next_ship_id += 1
+	ship.position = point
+	ship.previous_position = point
+	_sim.world.ships[ship.id] = ship
+	return ship
 
 
 ## Uma encomenda oferecida, uma aceita em andamento e dois eventos (sem esperar o sorteio).

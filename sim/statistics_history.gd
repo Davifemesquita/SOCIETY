@@ -52,13 +52,14 @@ func record(world: WorldState, data: GameData, derived: DerivedState, max_sample
 		used[island_id] = world.economy(island_id).needs_consumption_per_min.duplicate()
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		var island_id := entry.record.island_id
-		var rate := entry.def.output_per_min()
+		var rate := 60.0 / entry.def.cycle_s
 		var running := rate * entry.record.productivity
 		var island_potential: Dictionary = potential[island_id]
 		var island_made: Dictionary = made[island_id]
 		var island_used: Dictionary = used[island_id]
-		island_potential[entry.def.output] = island_potential.get(entry.def.output, 0.0) + rate
-		island_made[entry.def.output] = island_made.get(entry.def.output, 0.0) + running
+		if entry.def.output != &"":
+			island_potential[entry.def.output] = island_potential.get(entry.def.output, 0.0) + rate
+			island_made[entry.def.output] = island_made.get(entry.def.output, 0.0) + running
 		for input: StringName in entry.def.inputs:
 			island_used[input] = island_used.get(input, 0.0) + running
 	for island_id: int in world.islands.size():

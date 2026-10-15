@@ -17,6 +17,7 @@ const SOUNDS := {
 	&"milestone": ["res://assets/audio/sfx/milestone.ogg"],
 	&"goal": ["res://assets/audio/sfx/goal.ogg"],
 	&"coins": ["res://assets/audio/sfx/coins.ogg"],
+	&"cannon": ["res://assets/audio/sfx/cannon_1.wav", "res://assets/audio/sfx/cannon_2.wav"],
 	&"wood": ["res://assets/audio/sfx/work_wood_1.ogg", "res://assets/audio/sfx/work_wood_2.ogg"],
 	&"metal": ["res://assets/audio/sfx/work_metal_1.ogg", "res://assets/audio/sfx/work_metal_2.ogg"],
 }
@@ -80,6 +81,7 @@ func setup(config: GameConfig, simulation: Simulation, camera: StrategyCamera) -
 	EventBus.building_removed.connect(func(_id: int) -> void: play(&"demolish"))
 	EventBus.roads_changed.connect(func(_island: int) -> void: play(&"road"))
 	EventBus.goal_completed.connect(func(_index: int) -> void: play(&"goal"))
+	EventBus.ship_fired.connect(func(_attacker: int, _target: int) -> void: play(&"cannon"))
 	EventBus.notice_shown.connect(_on_notice)
 	EventBus.world_replaced.connect(_clear_voices)
 	# todo botão que entra na árvore ganha o clique (a interface não precisa saber do áudio)

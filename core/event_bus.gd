@@ -62,3 +62,11 @@ signal missions_changed()
 signal rival_colonized(rival_id: StringName, island_id: int)
 signal rival_stance_changed(rival_id: StringName, stance: int)
 signal rivals_changed()
+
+## Combate naval (Fase 11): um navio atirou em outro; um navio afundou (dono e onde, para a vista).
+signal ship_fired(attacker_id: int, target_id: int)
+signal ship_sunk(ship_id: int, owner: int, position: Vector2)
+
+## Especialistas (Fase 11): a oferta da volta chegou; a lista ou um posto mudou.
+signal specialists_offered()
+signal specialists_changed()

@@ -5,7 +5,8 @@ extends Node3D
 ## posição e o rumo são interpolados entre o tick anterior e o atual. Também desenha o posto do
 ## comerciante no mar aberto e a marca do navio selecionado, e acha o navio sob o cursor.
 ## Desde a Fase 9: casco de tábuas, velas enfunadas, rastro de espuma enquanto navega e gaivotas
-## voando em volta dos portos (entrepostos e píeres).
+## voando em volta dos portos (entrepostos e píeres). Desde a Fase 11: clarão e fumaça dos tiros,
+## fumaça do navio avariado (casco abaixo da metade) e o navio afundado descendo devagar antes de sumir.
 
 ## Raio do clique em volta do navio, em pixels da tela.
 const PICK_RADIUS_PX := 40.0
@@ -22,6 +23,14 @@ const GULLS_PER_PORT := 6
 const GULL_RADIUS_M := Vector2(10.0, 26.0)
 const GULL_HEIGHT_M := Vector2(9.0, 18.0)
 const GULL_SPEED := 0.35
+## Combate (Fase 11): quanto dura o clarão do tiro e quanto leva o navio para afundar.
+const FLASH_SECONDS := 0.35
+## A água é transparente e grava profundidade: o que é transparente sobre ela (espuma, fumaça,
+## clarão) precisa ser desenhado depois, ou some.
+const ABOVE_WATER := 1
+const DAMAGE_SMOKE_COLOR := Color(0.12, 0.11, 0.1, 1.0)
+const SINK_SECONDS := 5.0
+const FLASH_COLOR := Color(1.0, 0.85, 0.45)
 
 var selected_ship: int = 0
 
@@ -38,6 +47,9 @@ var _gulls := MultiMeshInstance3D.new()
 var _gull_centers: PackedVector3Array = PackedVector3Array()
 ## Portos com gaivotas (só eles refazem a revoada ao entrar ou sair: construir não varre tudo).
 var _berths: Dictionary[int, bool] = {}
+## Clarões dos tiros (nó → segundos que faltam) e navios afundando (nó → segundos que faltam).
+var _flashes: Dictionary[Node3D, float] = {}
+var _sinking: Dictionary[Node3D, float] = {}
 
 
 func setup(simulation: Simulation) -> void:
@@ -58,6 +70,8 @@ func setup(simulation: Simulation) -> void:
 	EventBus.world_replaced.connect(rebuild)
 	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(_on_building_removed)
+	EventBus.ship_fired.connect(_on_ship_fired)
+	EventBus.ship_sunk.connect(_on_ship_sunk)
 	rebuild()
 
 
@@ -66,6 +80,10 @@ func rebuild() -> void:
 	for node: Node3D in _nodes.values():
 		node.queue_free()
 	_nodes.clear()
+	for node: Node3D in _flashes.keys() + _sinking.keys():
+		node.queue_free()
+	_flashes.clear()
+	_sinking.clear()
 	if _post != null:
 		_post.queue_free()
 		_post = null
@@ -111,11 +129,89 @@ func _process(delta: float) -> void:
 		var wake := node.get_node_or_null(^"Wake") as GPUParticles3D
 		if wake != null:
 			wake.emitting = ship.state == Ship.State.SAILING
+		var damage := node.get_node_or_null(^"Damage") as CPUParticles3D
+		if damage != null:
+			damage.emitting = ship.hp < _simulation.data.ship(ship.def_id).hull_points * 0.5
 	_fly_gulls()
+	_animate_combat(delta)
 	var selected: Node3D = _nodes.get(selected_ship)
 	_selection.visible = selected != null
 	if selected != null:
 		_selection.position = Vector3(selected.position.x, 0.3, selected.position.z)
+
+
+## Navios afundando agora (testes).
+func sinking_count() -> int:
+	return _sinking.size()
+
+
+func flash_count() -> int:
+	return _flashes.size()
+
+
+func _on_ship_fired(attacker_id: int, target_id: int) -> void:
+	var attacker: Node3D = _nodes.get(attacker_id)
+	var target: Node3D = _nodes.get(target_id)
+	if attacker == null:
+		return
+	var flash := MeshInstance3D.new()
+	var glow := QuadMesh.new()
+	glow.size = Vector2(7.0, 7.0)
+	glow.material = _flash_material()
+	flash.mesh = glow
+	flash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var toward := Vector3.ZERO
+	if target != null:
+		toward = (target.position - attacker.position).normalized() * 8.0
+	flash.position = attacker.position + toward + Vector3(0.0, HULL_HEIGHT_M + 2.5, 0.0)
+	add_child(flash)
+	_flashes[flash] = FLASH_SECONDS
+
+
+## Clarão do tiro: bolota macia virada para a câmera, somando luz ao que está atrás.
+func _flash_material() -> StandardMaterial3D:
+	if not _materials.has(FLASH_COLOR):
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		material.albedo_color = FLASH_COLOR
+		material.albedo_texture = SmokeView._puff_texture()
+		material.render_priority = ABOVE_WATER
+		_materials[FLASH_COLOR] = material
+	return _materials[FLASH_COLOR]
+
+
+## O nó do navio afundado sai da lista (o _process não o apaga) e desce devagar, adernando.
+func _on_ship_sunk(ship_id: int, _owner: int, _at: Vector2) -> void:
+	var node: Node3D = _nodes.get(ship_id)
+	if node == null:
+		return
+	_nodes.erase(ship_id)
+	var wake := node.get_node_or_null(^"Wake") as GPUParticles3D
+	if wake != null:
+		wake.emitting = false
+	_sinking[node] = SINK_SECONDS
+	if selected_ship == ship_id:
+		selected_ship = 0
+
+
+func _animate_combat(delta: float) -> void:
+	for flash: Node3D in _flashes.keys():
+		_flashes[flash] -= delta
+		flash.scale = Vector3.ONE * (1.0 + (FLASH_SECONDS - _flashes[flash]) * 3.0)
+		if _flashes[flash] <= 0.0:
+			_flashes.erase(flash)
+			flash.queue_free()
+	for node: Node3D in _sinking.keys():
+		_sinking[node] -= delta
+		var done := 1.0 - _sinking[node] / SINK_SECONDS
+		node.position.y = -done * 8.0
+		node.basis = node.basis.slerp(Basis(Vector3.FORWARD, 0.6) * node.basis, delta * 0.4)
+		if _sinking[node] <= 0.0:
+			_sinking.erase(node)
+			node.queue_free()
 
 
 func select(ship_id: int) -> void:
@@ -272,7 +368,48 @@ func _build_ship(ship: Ship) -> Node3D:
 	var wake := _build_wake(length, beam)
 	wake.name = "Wake"
 	root.add_child(wake)
+	var damage := _build_damage_smoke(length)
+	damage.name = "Damage"
+	root.add_child(damage)
 	return root
+
+
+## Fumaça escura subindo do convés do navio avariado (liga com o casco abaixo da metade). Na CPU:
+## são poucas partículas por navio, e assim aparecem também no Godot por software.
+func _build_damage_smoke(length: float) -> CPUParticles3D:
+	var particles := CPUParticles3D.new()
+	particles.amount = maxi(roundi(24 * _particles_ratio), 6)
+	particles.lifetime = 3.0
+	particles.emitting = false
+	particles.position = Vector3(-length * 0.1, HULL_HEIGHT_M + 1.0, 0.0)
+	particles.visibility_aabb = AABB(Vector3(-12, -2, -12), Vector3(24, 30, 24))
+	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	particles.direction = Vector3.UP
+	particles.spread = 15.0
+	particles.initial_velocity_min = 1.5
+	particles.initial_velocity_max = 2.5
+	particles.gravity = Vector3(0.6, 0.4, 0.0)
+	particles.scale_amount_min = 1.5
+	particles.scale_amount_max = 3.0
+	var fade := Gradient.new()
+	fade.set_color(0, Color(DAMAGE_SMOKE_COLOR, 0.0))
+	fade.set_color(1, Color(DAMAGE_SMOKE_COLOR, 0.0))
+	fade.add_point(0.1, DAMAGE_SMOKE_COLOR)
+	fade.add_point(0.6, Color(DAMAGE_SMOKE_COLOR, DAMAGE_SMOKE_COLOR.a * 0.6))
+	particles.color_ramp = fade
+	var puff := QuadMesh.new()
+	puff.size = Vector2(3.2, 3.2)
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.vertex_color_use_as_albedo = true
+	material.albedo_texture = SmokeView._puff_texture()
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.render_priority = ABOVE_WATER
+	puff.material = material
+	particles.mesh = puff
+	return particles
 
 
 ## Cor das velas: a do tipo de navio, ou a da companhia rival dona dele (Fase 11).
@@ -375,6 +512,7 @@ func _build_wake(length: float, beam: float) -> GPUParticles3D:
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.vertex_color_use_as_albedo = true
 	material.albedo_texture = SmokeView._puff_texture()
+	material.render_priority = ABOVE_WATER
 	foam.material = material
 	wake.draw_pass_1 = foam
 	wake.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

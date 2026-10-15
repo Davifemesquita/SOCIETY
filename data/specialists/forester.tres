@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SpecialistDef" format=3]
+
+[ext_resource type="Script" path="res://data/specialist_def.gd" id="1_specialist"]
+
+[resource]
+script = ExtResource("1_specialist")
+id = &"forester"
+effect = 0
+target_group = 4
+buildings = Array[StringName]([&"lumberjack", &"sawmill"])
+amount = 0.5
+hire_cost = 800
+salary_per_min = 5
+weight = 3
+after_milestone = 0

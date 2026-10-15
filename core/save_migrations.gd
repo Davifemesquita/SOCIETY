@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10]
+	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10, from_10_to_11, from_11_to_12]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -163,5 +163,39 @@ static func from_9_to_10(state: Dictionary) -> Dictionary:
 	var rivals := RivalsState.new()
 	rivals.start(GameData.get_default(), GameConfig.get_default())
 	world["rivals"] = rivals.to_dict()
+	state["world"] = world
+	return state
+
+
+## Rivais → combate naval (Fase 11): todo navio ganha o casco cheio e a arma pronta; as rivais, a
+## lista de fragatas vazia (só existem em guerra).
+static func from_10_to_11(state: Dictionary) -> Dictionary:
+	var data := GameData.get_default()
+	var world: Dictionary = state.get("world", {})
+	var ships: Array = world.get("ships", [])
+	for raw: Variant in ships:
+		if raw is Dictionary:
+			var ship: Dictionary = raw
+			var raw_def: Variant = ship.get("def")
+			var def_id: StringName = raw_def if raw_def is StringName else &""
+			var def := data.ship(def_id)
+			ship["hp"] = def.hull_points if def != null else 1.0
+			ship["reload"] = 0.0
+	var rivals: Dictionary = world.get("rivals", {})
+	var list: Array = rivals.get("rivals", [])
+	for raw: Variant in list:
+		if raw is Dictionary:
+			var rival: Dictionary = raw
+			rival["warships"] = []
+			rival["next_warship_tick"] = 0
+	state["world"] = world
+	return state
+
+
+## Combate naval → especialistas (Fase 11): a partida antiga começa sem contratados; a oferta da volta
+## em que o comerciante está chega no primeiro tick. A eletricidade não mudou o save.
+static func from_11_to_12(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	world["specialists"] = SpecialistsState.new().to_dict()
 	state["world"] = world
 	return state

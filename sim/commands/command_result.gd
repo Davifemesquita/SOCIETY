@@ -21,6 +21,8 @@ var colonized: bool = false
 var missions_changed: bool = false
 ## Rivais (Fase 11): um gesto de diplomacia mudou a relação ou a postura.
 var rivals_changed: bool = false
+## Especialistas (Fase 11): contratado, designado, retirado ou dispensado.
+var specialists_changed: bool = false
 
 
 static func refused(why: StringName) -> CommandResult:

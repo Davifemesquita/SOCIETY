@@ -21,6 +21,12 @@ class ProductionEntry:
 	## Célula de estrada da frente por onde a carroça sai (-1 = nenhuma).
 	var access_cell: int = -1
 	var warehouse_distance: int = -1
+	## Fábrica (Fase 11): usinas da ilha que a alcançam; vazio = fora de qualquer raio.
+	var power_plants: Array[ProductionEntry] = []
+	## Se alguma dessas usinas produzia no tick (o ProductionSystem atualiza).
+	var powered: bool = false
+	## Especialista posto no prédio (Fase 11), ou null.
+	var specialist: Specialist
 
 var road_access: Dictionary[int, bool] = {}
 ## Casa → serviços (id do tipo) que a cobrem.
@@ -135,10 +141,12 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 				same.append(building_id)
 		if def.pollution_radius_cells > 0:
 			polluters.append(building_id)
-		upkeep_per_min += def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0)
+		upkeep_per_min += def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0) \
+				* upkeep_factor(world.specialists_state.at(building_id))
 	for ship: Ship in world.ships.values():
 		if ship.owner == Ship.Owner.PLAYER:
 			upkeep_per_min += data.ship(ship.def_id).upkeep_per_min
+	upkeep_per_min += world.specialists_state.salaries_per_min()
 	_lap("prédios")
 	var houses_at_road := _houses_by_front_cell(world, data)
 	for service_id: int in services:
@@ -274,6 +282,13 @@ func router(island_id: int) -> RoadRouter:
 	return _routers[island_id]
 
 
+## Fração da manutenção do prédio que sobra com o especialista dele (Fase 11).
+static func upkeep_factor(specialist: Specialist) -> float:
+	if specialist == null or specialist.def.effect != SpecialistDef.Effect.UPKEEP:
+		return 1.0
+	return 1.0 - specialist.def.amount
+
+
 func entry_of(building_id: int) -> ProductionEntry:
 	for entry: ProductionEntry in production_entries:
 		if entry.record.id == building_id:
@@ -302,6 +317,7 @@ func _index_production(world: WorldState, data: GameData) -> void:
 		entry.def = data.building(entry.record.def_id)
 		entry.economy = world.economy(entry.record.island_id)
 		entry.has_road = road_access[building_id]
+		entry.specialist = world.specialists_state.at(building_id)
 		entry.modules_ok = module_count.get(building_id, 0) >= entry.def.modules_required
 		var grid := world.island(entry.record.island_id)
 		if entry.def.terrain == BuildingDef.Terrain.TREES and not grid.flat:
@@ -324,6 +340,46 @@ func _index_production(world: WorldState, data: GameData) -> void:
 					by_good[input] = []
 				var list: Array = by_good[input]
 				list.append(entry)
+	_wire_power()
+
+
+## Liga cada fábrica às usinas da mesma ilha cujo raio a alcança (folga entre os retângulos).
+func _wire_power() -> void:
+	var plants: Array[ProductionEntry] = []
+	for entry: ProductionEntry in production_entries:
+		if entry.def.is_power_plant():
+			plants.append(entry)
+	if plants.is_empty():
+		return
+	for entry: ProductionEntry in production_entries:
+		if not entry.def.is_electrifiable():
+			continue
+		var area := Footprint.rect(entry.record.origin, entry.def.size, entry.record.rotation)
+		for plant: ProductionEntry in plants:
+			if plant.record.island_id != entry.record.island_id:
+				continue
+			var reach := Footprint.rect(plant.record.origin, plant.def.size, plant.record.rotation)
+			if _rect_gap(reach, area) <= plant.def.power_radius_cells:
+				entry.power_plants.append(plant)
+
+
+## Se a ilha tem usina (o painel da fábrica só fala de eletricidade com uma).
+func has_power_plant(island_id: int) -> bool:
+	for entry: ProductionEntry in production_entries:
+		if entry.record.island_id == island_id and entry.def.is_power_plant():
+			return true
+	return false
+
+
+## Fábricas que a usina alcança (painel da usina).
+func powered_by(plant_id: int) -> Array[ProductionEntry]:
+	var result: Array[ProductionEntry] = []
+	for entry: ProductionEntry in production_entries:
+		for plant: ProductionEntry in entry.power_plants:
+			if plant.record.id == plant_id:
+				result.append(entry)
+				break
+	return result
 
 
 func _group_houses(world: WorldState, config: GameConfig) -> void:

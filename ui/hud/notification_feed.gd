@@ -35,9 +35,19 @@ func setup(simulation: Simulation) -> void:
 			push(watcher.mission_expired(def_id)))
 	EventBus.rival_colonized.connect(func(rival_id: StringName, island_id: int) -> void: push(watcher.rival_colonized(rival_id, island_id)))
 	EventBus.rival_stance_changed.connect(func(rival_id: StringName, stance: int) -> void: push(watcher.rival_stance(rival_id, stance)))
+	EventBus.ship_sunk.connect(func(_ship_id: int, owner: int, _at: Vector2) -> void: push(watcher.ship_sunk(owner)))
+	EventBus.ship_fired.connect(_on_ship_fired)
 	EventBus.world_replaced.connect(func() -> void:
 		clear()
 		watcher.reset())
+
+
+## Tiro num navio nosso: avisa, sem repetir enquanto o aviso daquele navio está na tela.
+func _on_ship_fired(_attacker: int, target_id: int) -> void:
+	var target := watcher.simulation_world().ship(target_id)
+	if target == null or target.owner != Ship.Owner.PLAYER or _items.has("attack/%d" % target_id):
+		return
+	push(watcher.under_attack(target_id))
 
 
 func _process(delta: float) -> void:

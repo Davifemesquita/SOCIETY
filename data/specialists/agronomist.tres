@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SpecialistDef" format=3]
+
+[ext_resource type="Script" path="res://data/specialist_def.gd" id="1_specialist"]
+
+[resource]
+script = ExtResource("1_specialist")
+id = &"agronomist"
+effect = 0
+target_group = 1
+buildings = Array[StringName]([])
+amount = 0.5
+hire_cost = 1500
+salary_per_min = 10
+weight = 3
+after_milestone = 1

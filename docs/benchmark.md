@@ -337,3 +337,36 @@ os prédios em volta da câmera e gera o ruído do vento.
 | multidão saindo de casa (rotas novas) | 489 quadros, 4044 ms; 1423 rotas, 1.48 ms cada |
 | multidão na CPU depois de sair (rotina + instâncias) | 0.60 ms por quadro |
 | dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.1 / 0.0 FPS / 44929 ms em 7 quadros (meta 60 FPS), a partir das 07:00 |
+
+### 2026-10-15 12:25:23 — Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| jogo novo: arquipélago, terreno, água e árvores | 7135 ms (semente 1840, 54682 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1460 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 21437 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.93 / 4.42 / 5.37 ms (orçamento 4.0 ms) |
+| tick por sistema | força de trabalho 0.06 · produção 0.76 · logística 1.31 · necessidades 0.23 · população 1.16 · economia 0.00 · navios 0.07 |
+| construir um prédio com a ilha cheia | 52.1 ms (limite 50 ms): comando e vistas 52.1 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 10.5 · serviços 8.8 · módulos e poluição 0.0 · armazéns 17.5 · produção 7.0 · grupos de casas 1.4 |
+| salvar | 161 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 2008 ms |
+| quadro com tudo visível | 4485 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1902 na rua (teto 2000); 6786 janelas |
+| multidão saindo de casa (rotas novas) | 473 quadros, 2910 ms; 1421 rotas, 1.05 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.48 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.2 / 0.1 FPS / 7803 ms em 10 quadros (meta 60 FPS), a partir das 07:00 |
+
+Fase 11 (combate naval, eletricidade e especialistas), com outra sessão pesando na VM (carga ~3,2):
+
+- **Tick**: média 3,93 ms, 95% em 4,42 ms (antes 3,75 / 4,16). A produção passou de 0,63 para 0,76 ms:
+  cada fábrica confere as usinas do raio e o especialista do prédio a cada tick. A carga do benchmark
+  não tem usina nem especialista, então o resto é ruído da VM; a média segue abaixo dos 4 ms.
+- **Construir com a ilha cheia**: 52,1 ms (antes 53,1), no limite de 50 ms, como já estava; a folga
+  volta otimizando o recálculo dos armazéns (17,5 ms).
+- Combate e oferta de especialistas não aparecem no tick: sem guerra o combate só repara, e a oferta só
+  compara o número da volta.

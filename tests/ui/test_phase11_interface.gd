@@ -231,3 +231,86 @@ func test_new_game_dialog_offers_rivals_on_by_default() -> void:
 	Modal.open(_game._ui_layer, dialog)
 	assert_bool(dialog.rivals_check.button_pressed).is_true()
 	_game._close_all_modals()
+
+
+func test_ship_panel_shows_the_hull_and_the_trading_post_sells_frigates() -> void:
+	DemoVillage.build(_sim)
+	var post := 0
+	for building_id: int in _sim.world.building_ids():
+		if _sim.def_of(_sim.world.building(building_id)).is_trading_post:
+			post = building_id
+	_game.tool.select(post)
+	await _runner.simulate_frames(3)
+	var buy := _game.hud.selection_panel.find_child("BuyFrigate", true, false) as Button
+	assert_object(buy).is_not_null()
+	assert_str(buy.tooltip_text).contains(tr("PANEL_BUY_FRIGATE_TIP").split(":")[0])
+	await _check("entreposto com fragata")
+	_game.tool.select(0)
+	var frigate := Ship.new(_sim.world.next_ship_id, _sim.data.ship(&"frigate"))
+	_sim.world.next_ship_id += 1
+	frigate.at = 0
+	frigate.hp = 120.0
+	_sim.world.ships[frigate.id] = frigate
+	_sim.place_new_ships()
+	_game.tool.select_ship(frigate.id)
+	await _runner.simulate_frames(3)
+	var hull := _game.hud.ship_panel.find_child("Hull", true, false)
+	var hull_label: Label = hull.get_child(1)
+	assert_str(hull_label.text).contains("120")
+	assert_str(hull_label.text).contains("500")
+	await _check("painel da fragata")
+
+
+func test_specialist_window_hires_from_the_offer_and_assigns_from_the_panel() -> void:
+	DemoVillage.build(_sim)
+	_sim.free_build = true
+	var factory := 0
+	for building_id: int in _sim.world.building_ids():
+		if _sim.data.specialist(&"bookkeeper").covers(_sim.def_of(_sim.world.building(building_id))):
+			factory = building_id
+			break
+	assert_int(factory).is_not_equal(0)
+	var state := _sim.world.specialists_state
+	_sim.world.trader.ship_id = 99
+	state.offers.assign([&"bookkeeper", &"foreman"])
+	var hud := _game.hud
+	hud._refresh()
+	var button := hud.find_child("SpecialistsButton", true, false) as Button
+	assert_str(button.text).contains("0")
+	hud.toggle_specialists()
+	await _check("especialistas, oferta")
+	var window := hud.specialist_window
+	var offer := window.find_child("Offer_bookkeeper", true, false)
+	assert_object(offer).is_not_null()
+	(offer.find_child("Hire", true, false) as Button).pressed.emit()
+	await _runner.simulate_frames(2)
+	assert_int(state.specialists.size()).is_equal(1)
+	assert_array(state.offers).is_equal([&"foreman"])
+	await _check("especialistas, contratado sem posto")
+	hud.close_top_window()
+	# pelo painel do prédio: o botão abre a janela já apontando para ele
+	_game.tool.select(factory)
+	await _runner.simulate_frames(3)
+	var open := hud.selection_panel.find_child("Specialist", true, false) as Button
+	assert_object(open).is_not_null()
+	open.pressed.emit()
+	await _runner.simulate_frames(2)
+	assert_bool(window.visible).is_true()
+	assert_int(window.target_building).is_equal(factory)
+	var row := window.find_child("Specialist_1", true, false)
+	(row.find_child("Assign", true, false) as Button).pressed.emit()
+	await _runner.simulate_frames(2)
+	assert_int(state.specialist(1).building_id).is_equal(factory)
+	assert_object(window.find_child("Specialist_1", true, false).find_child("Unassign", true, false)).is_not_null()
+	await _check("especialistas, designado")
+	hud.close_top_window()
+	await _runner.simulate_frames(10)
+	await _check("painel com especialista")
+
+
+func test_specialist_window_empty_states_have_text() -> void:
+	_game.hud.toggle_specialists()
+	await _check("especialistas sem comerciante")
+	_sim.world.trader.ship_id = 99
+	_game.hud.specialist_window.rebuild()
+	await _check("especialistas sem oferta")

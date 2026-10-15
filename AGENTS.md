@@ -62,7 +62,7 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 200000 res://t
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase10.tscn -- /pasta/de/saida
 # Fase 11: ilhas tropicais da semente 1840, palmeiras, mina de ouro, canavial, mapa das rotas e a
 # janela de encomendas com os eventos e os avisos, e as rivais (vila, navio, mapa e diplomacia);
-# CAPTURA_SO=eventos ou CAPTURA_SO=rivais tira só essas
+# o combate naval e os especialistas; CAPTURA_SO=eventos, rivais, combate ou especialistas tira só essas
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 20000 res://tools/capture_phase11.tscn -- /pasta/de/saida
 # Fase 10: o jogador-robô joga 3 h e grava a linha do tempo do balanceamento
 tools/godot.sh godot --headless --path . res://tools/balance_report.tscn -- "$PWD/docs/balanceamento.md"
@@ -141,14 +141,14 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 53 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 2 navios (`ships/`), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`) e 3 companhias rivais (`rivals/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 54 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 3 navios (`ships/`: mercante, o do comerciante e a fragata), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) e 8 especialistas (`specialists/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada (terra ou paralelepípedo), demolir e mover: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → eventos → encomendas → rivais |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → combate → eventos → encomendas → oferta de especialistas → rivais |
 | `data/event_def.gd`, `data/mission_def.gd` | `EventDef` (efeito, grupo, multiplicador, duração, peso, marco) e `MissionDef` (bem, toneladas, prazo, prêmio, peso, marco) |
 | `sim/events/` | `EventsState` (no save: ligado ou não, eventos, encomendas, os contadores dos sorteios), `WorldEvent`, `Mission` e `EventEffects` (os multiplicadores que os sistemas leem) |
 | `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
@@ -181,6 +181,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/hud/goal_panel.gd` | meta da vez com o progresso e a fala do conselheiro (retrato, texto, continuar) |
 | `data/rival_def.gd`, `sim/rivals/`, `sim/systems/rival_system.gd` | companhias rivais: `RivalDef` (personalidade, cor, ritmo das colônias), `RivalsState`/`RivalState` (no save), `RivalShips` (o navio delas) e o `RivalSystem` (colônias, crescimento, relação, IA da postura, renda do acordo) |
 | `sim/commands/diplomacy_command.gd`, `ui/hud/diplomacy_window.gd`, `presentation/rival_view.gd` | gestos de diplomacia, a janela das rivais (atalho K) e as vilas delas no mundo |
+| `sim/systems/combat_system.gd` | combate naval: tiro, casco, afundar e reparo no porto |
+| `data/specialist_def.gd`, `sim/specialists/`, `sim/systems/specialist_system.gd` | especialistas: `SpecialistDef` (efeito, grupo de prédios, contratação, salário), `SpecialistsState`/`Specialist` (no save) e o sorteio da oferta por volta do comerciante |
+| `sim/commands/specialist_command.gd`, `ui/hud/specialist_window.gd` | contratar, designar, retirar e dispensar; a janela dos especialistas (atalho L) |
 | `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
 | `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
@@ -552,7 +555,7 @@ Regras que já custaram investigação:
   material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
   cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
   `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
-- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.10.0, nome e descrição no
+- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.11.0 (era 0.10.0 até a Fase 10), nome e descrição no
   `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
 
 ### Segunda região climática (Fase 11)
@@ -630,10 +633,76 @@ Regras que já custaram investigação:
   rende `rival_trade_income_per_resident` × moradores da rival por minuto, somado no `income_per_min`.
 - **IA da postura**: a agressiva declara guerra com a relação em `rival_war_relation` ou menos; a não
   agressiva faz as pazes sozinha acima de `rival_auto_peace_relation`; o acordo cai com relação
-  negativa; a postura não muda de novo antes de `rival_stance_cooldown_s`. A guerra por enquanto só
-  corta o acordo: o combate naval é a próxima parte.
-- **Save versão 10**: `rivals` no mundo; ilha de rival com entreposto do jogador, ilha 0 ou repetida, ou
+  negativa; a postura não muda de novo antes de `rival_stance_cooldown_s`. Em guerra o mercante dela
+  afundado só volta na paz.
+- **Save versão 10** (a 11 acrescenta casco e fragatas): `rivals` no mundo; ilha de rival com entreposto do jogador, ilha 0 ou repetida, ou
   navio de rival que não existe recusa o save.
+
+### Combate naval (Fase 11)
+
+- **Casco e canhões no `ShipDef`** (grupo Combate): `hull_points`, `cannons`, `salvo_damage`,
+  `cannon_range_m`, `reload_s` e `unlock_milestone` (a compra espera o marco: `REASON_SHIP_LOCKED`). A
+  fragata (`frigate`, 12 canhões, casco 500) é o único navio armado; o mercante tem casco 120. Comprada no
+  entreposto ("Comprar fragata"), entra em rota como qualquer navio (porão de 20 t): é a escolta.
+- **`CombatSystem`**, logo depois dos navios: só jogador contra rival **em guerra com ele** (o
+  comerciante é neutro, rivais não brigam entre si). Navio armado recarrega e atira no inimigo mais perto
+  ao alcance (desempate pelo id); casco a zero afunda o navio com a carga (`ship_sunk`); parado num porto
+  do dono, o casco volta `ship_repair_per_s`. Sem guerra só o reparo roda.
+- **Fragatas da rival** (`RivalState.warships`, achadas pelo `by_ship` junto do mercante): em guerra, uma
+  a cada `rival_warship_build_s` até `rival_warships`, revezando entre a ilha dela e o posto do
+  comerciante com `rival_warship_dwell_s` em cada ponta (guarda e bloqueio); na paz somem. Cada uma
+  afundada soma `rival_loss_relation` na relação (a guerra cansa).
+- **Na tela**: clarão no navio que atira, fumaça no avariado (casco abaixo da metade), o afundado desce
+  adernando por `SINK_SECONDS` antes de sumir (o nó sai do `_nodes` no `ship_sunk`), som de canhão
+  próprio (`tools/build_cannon_sound.py`, ruído filtrado, sem arquivo de terceiros), casco e canhões no
+  painel do navio, avisos de navio sob fogo e afundado.
+- **Save versão 11**: `hp` e `reload` em cada navio; `warships` e `next_warship_tick` em cada rival.
+
+### Eletricidade (Fase 11)
+
+- **Usina elétrica** (`power_station`, engenheiros 150): prédio de produção com `power_radius_cells`
+  e sem `output`; queima 1 t de carvão por ciclo de 60 s e não põe bem no estoque
+  (`BuildingDef.is_power_plant`). Polui e solta fumaça pesada como a fundição.
+- **Quem ganha**: só fábrica, isto é, produção com entrada (`is_electrifiable`); extração, fazenda e a
+  própria usina não. A fábrica a até o raio (folga entre os retângulos, como a poluição) de uma usina
+  da mesma ilha **que produzia no tick anterior** ganha `electricity_bonus` (+50%) na velocidade,
+  multiplicado com os eventos; a produtividade passa de 100%.
+- **Sem estado novo no save**: as usinas de cada fábrica (`ProductionEntry.power_plants`) saem da
+  geometria no `DerivedState`; `powered` se refaz a cada tick pelo estado da usina. O save segue na
+  versão 11.
+- **Na tela**: camada de mapa "Eletricidade" (raio amarelo com a usina ligada, cinza parada; fábrica
+  verde com eletricidade, vermelha sem), linha no painel da fábrica (só com usina na ilha) e "Fábricas
+  no raio" no painel da usina; a dica do menu diz o raio e o bônus.
+
+### Especialistas (Fase 11)
+
+- **Ideia própria** (a especificação só diz "especialistas"): gente de ofício que o comerciante traz.
+  Cada um trabalha num prédio de produção do grupo dele (`SpecialistDef.covers`: todos, fazendas,
+  minas, fábricas ou uma lista; a usina nunca), **um por prédio**, e ganha `salary_per_min` enquanto
+  está contratado, posto ou não (somado na manutenção pelo `DerivedState`).
+- **Efeitos**: velocidade (multiplica junto com eventos e eletricidade), corte da manutenção do prédio
+  e 1 t a mais na saída a cada N ciclos completos (`Specialist.cycles`, no save; a tonelada extra só
+  entra se couber no buffer). Navio não recebe especialista.
+- **Oferta** (`SpecialistSystem`): a cada volta nova do comerciante (`trader.tour`), `specialist_offers`
+  sorteados pelo peso entre os liberados por marco, sem repetir, com `hash([semente, &"specialist",
+  volta, i])`. A oferta fica guardada como lista de ids: contratar tira dela e a mesma volta não repõe.
+  Sem o navio do comerciante no mar não há oferta. Sempre ligados (não há caixa no jogo novo): quem
+  não contrata não muda nada, e o jogador-robô não contrata.
+- **Gestos** (`SpecialistCommand`, motivo da recusa por `check`, que a janela usa para desligar o
+  botão): contratar paga `hire_cost` (até `max_specialists`), designar (o já posto muda de prédio),
+  retirar e dispensar (sem devolução). Demolir o prédio devolve o especialista à lista, sem posto;
+  mover o prédio leva o especialista junto (o id não muda).
+- **Save versão 12**: `specialists` no mundo; especialista em prédio que não existe ou fora do grupo
+  dele recusa o save. Saves antigos (migração 11 → 12) começam sem contratados e recebem a oferta da
+  volta em que o comerciante está no primeiro tick.
+- **Na tela**: botão dos especialistas na barra, com o ícone e o número de contratados (laranja com
+  contratado sem posto; atalho L), janela
+  com a oferta e os contratados, e no painel da produção a linha do especialista (efeito na dica), a
+  manutenção já com o corte e o botão "Especialista", que abre a janela apontando para o prédio
+  ("Designar aqui" nos contratados sem posto que servem a ele).
+- **Barra superior em 1920 px**: com rivais e especialistas ela passava da tela e empurrava salvar,
+  carregar e menu para fora. Estatísticas, Rotas e Rivais viraram botões só de ícone (o nome e o
+  atalho ficam na dica); Encomendas mantém o texto com a contagem.
 
 ## Assets e licenças (seção 14)
 
@@ -656,7 +725,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 8 — Conteúdo | **concluída em 14/10/2026** (confirmada em 14/10/2026) |
 | 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
 | 10 — Polimento | **concluída em 14/10/2026** (confirmada em 14/10/2026; o teste do build em outro PC segue com o dono do produto) |
-| 11 — Expansões | em andamento: segunda região climática, eventos e encomendas, rivais com IA e diplomacia feitos em 14/10/2026; combate naval, eletricidade e especialistas a seguir |
+| 11 — Expansões | **concluída em 15/10/2026**: segunda região climática, eventos e encomendas, rivais com IA e diplomacia e combate naval em 14/10/2026; eletricidade e especialistas em 15/10/2026 |
 
 Pendências já vistas para fases futuras:
 

@@ -132,7 +132,7 @@ static func _arrive(world: WorldState, data: GameData, config: GameConfig, deriv
 		TraderVisits.arrived(world, data, ship)
 		return
 	if ship.owner == Ship.Owner.RIVAL:
-		RivalShips.arrived(config, ship)
+		RivalShips.arrived(world, config, ship)
 		return
 	var route: TradeRoute = world.routes.get(ship.route_id)
 	if route == null or route.stop(ship.stop_index) == null:

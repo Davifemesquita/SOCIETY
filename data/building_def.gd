@@ -65,6 +65,11 @@ enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 ## Raio do serviço medido por estrada; 0 usa GameConfig.service_radius_cells.
 @export var service_radius_cells: int = 0
 
+@export_group("Eletricidade")
+## Usina (Fase 11): queima as entradas sem gerar bem e, enquanto produz, eletrifica as fábricas
+## (prédio de produção com entrada) a até este raio, em células. 0 = não é usina.
+@export var power_radius_cells: int = 0
+
 @export_group("Poluição")
 @export var pollution_radius_cells: int = 0
 ## Fração da penalidade máxima de felicidade que a poluição deste prédio aplica.
@@ -89,10 +94,20 @@ func is_berth() -> bool:
 	return is_trading_post or kind == Kind.PIER
 
 
+## Usina elétrica (Fase 11): produção sem bem de saída.
+func is_power_plant() -> bool:
+	return is_production() and power_radius_cells > 0
+
+
+## Fábrica que a usina acelera: produção com entrada. Extração, fazenda e a própria usina, não.
+func is_electrifiable() -> bool:
+	return is_production() and not inputs.is_empty() and power_radius_cells <= 0
+
+
 func level(index: int) -> BuildingLevelDef:
 	return levels[clampi(index, 0, levels.size() - 1)] if not levels.is_empty() else null
 
 
 ## t/min gerado a 100% de produtividade.
 func output_per_min() -> float:
-	return 60.0 / cycle_s if is_production() else 0.0
+	return 60.0 / cycle_s if is_production() and output != &"" else 0.0

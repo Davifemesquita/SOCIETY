@@ -17,6 +17,10 @@
 			1280,
 			1024
 		],
+		"action_buy_frigate": [
+			1920,
+			1536
+		],
 		"action_buy_ship": [
 			512,
 			1024
@@ -152,6 +156,10 @@
 		"action_sell": [
 			1408,
 			1024
+		],
+		"action_specialists": [
+			640,
+			1664
 		],
 		"action_statistics": [
 			640,
@@ -308,6 +316,10 @@
 		"building_potato_farm": [
 			128,
 			384
+		],
+		"building_power_station": [
+			384,
+			1664
 		],
 		"building_rendering_works": [
 			1024,
@@ -597,6 +609,10 @@
 			1280,
 			1152
 		],
+		"hud_hull": [
+			0,
+			1664
+		],
 		"hud_island": [
 			0,
 			1280
@@ -673,6 +689,10 @@
 			1536,
 			768
 		],
+		"notice_battle": [
+			128,
+			1664
+		],
 		"notice_colonized": [
 			1408,
 			1408
@@ -709,6 +729,10 @@
 			1024,
 			1408
 		],
+		"notice_sunk": [
+			256,
+			1664
+		],
 		"notice_trader": [
 			1536,
 			1408
@@ -737,6 +761,10 @@
 			512,
 			1280
 		],
+		"overlay_electricity": [
+			512,
+			1664
+		],
 		"overlay_fertility": [
 			1152,
 			1280
@@ -757,6 +785,10 @@
 			1024,
 			1280
 		],
+		"ship_frigate": [
+			1792,
+			1536
+		],
 		"ship_merchant_ship": [
 			1792,
 			768
@@ -764,6 +796,38 @@
 		"ship_trader_ship": [
 			1920,
 			768
+		],
+		"specialist_agronomist": [
+			896,
+			1664
+		],
+		"specialist_bookkeeper": [
+			1024,
+			1664
+		],
+		"specialist_foreman": [
+			1280,
+			1664
+		],
+		"specialist_forester": [
+			768,
+			1664
+		],
+		"specialist_master_brewer": [
+			1408,
+			1664
+		],
+		"specialist_master_glassblower": [
+			1536,
+			1664
+		],
+		"specialist_mining_engineer": [
+			1152,
+			1664
+		],
+		"specialist_steelmaster": [
+			1664,
+			1664
 		],
 		"state_disconnected": [
 			640,
@@ -807,19 +871,19 @@
 		],
 		"status_bad": [
 			0,
-			1664
+			1792
 		],
 		"status_good": [
 			1792,
-			1536
+			1664
 		],
 		"status_missing": [
 			128,
-			1664
+			1792
 		],
 		"status_partial": [
 			1920,
-			1536
+			1664
 		],
 		"tier_artisans": [
 			0,
