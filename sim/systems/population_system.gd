@@ -46,14 +46,17 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 		house.happiness = move_toward(house.happiness, clampf(happiness_target, 0.0, 100.0), config.happiness_change_per_minute * dt_min)
 		house.tax_per_min = HouseNeeds.tax_from(world, config, house, tier, evaluation.bonus_categories)
 		if not upgraded_on.has(house.island_id) and evaluation.all_basic_met \
-				and _try_upgrade(world, data, house, tier, capacity):
+				and _try_upgrade(world, data, house, tier, target):
 			upgraded_on[house.island_id] = true
 	derived.recount_group(world, group)
 
 
-static func _try_upgrade(world: WorldState, data: GameData, house: BuildingRecord, tier: TierDef, capacity: float) -> bool:
+## Sobe quando a casa chegou aos moradores que o atendimento dela permite (target). Exigir a casa
+## cheia travava a subida para sempre com uma necessidade em 95%: a categoria já conta como
+## atendida (need_met_threshold), mas a casa só enche com 100%.
+static func _try_upgrade(world: WorldState, data: GameData, house: BuildingRecord, tier: TierDef, target: float) -> bool:
 	var next := data.next_tier(tier.id)
-	if next == null or house.upgrade_blocked or house.residents < capacity - 0.001:
+	if next == null or house.upgrade_blocked or house.residents < target - 0.001:
 		return false
 	var economy := world.economy(house.island_id)
 	if not economy.has_materials(next.upgrade_materials):

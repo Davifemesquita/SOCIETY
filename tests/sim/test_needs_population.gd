@@ -119,6 +119,44 @@ func test_full_house_with_all_needs_upgrades_with_planks() -> void:
 	assert_float(SimFixture.stock(_sim, &"planks")).is_equal(1.0)
 
 
+## Peixe em 95% conta como atendido, mas a casa não enche: sobe assim mesmo, com os moradores que
+## o atendimento permite (antes travava para sempre).
+func test_house_upgrades_with_a_need_met_below_full_supply() -> void:
+	var houses := _peasant_village(1)
+	_sim.world.building(houses[0]).residents = 2.0
+	SimFixture.warm_supply(_sim)
+	SimFixture.give(_sim, &"woolen_clothes", 100.0)
+	SimFixture.give(_sim, &"planks", 2.0)
+	var economy := _sim.world.economy(SimFixture.ISLAND)
+	var upgraded: Array[int] = []
+	var residents_at_upgrade: Array[float] = []
+	var listener := func(building_id: int) -> void:
+		upgraded.append(building_id)
+		residents_at_upgrade.append(_sim.world.building(building_id).residents)
+	EventBus.house_upgraded.connect(listener)
+	for i: int in 240:
+		# só 95% do peixe que os moradores pedem chega a cada segundo
+		var house := _sim.world.building(houses[0])
+		if house.tier == &"peasants":
+			economy.stock[&"fish"] = house.residents * 0.005 / 60.0 * 0.95
+		SimFixture.run(_sim, 1.0)
+	EventBus.house_upgraded.disconnect(listener)
+	assert_array(upgraded).is_equal([houses[0]])
+	assert_float(residents_at_upgrade[0]).is_less(10.0)
+
+
+func test_house_below_what_its_supply_allows_does_not_upgrade() -> void:
+	var houses := _peasant_village(1)
+	_sim.world.building(houses[0]).residents = 5.0
+	SimFixture.warm_supply(_sim)
+	SimFixture.give(_sim, &"fish", 100.0)
+	SimFixture.give(_sim, &"woolen_clothes", 100.0)
+	SimFixture.give(_sim, &"planks", 2.0)
+	SimFixture.run(_sim, 30.0)
+	assert_str(_sim.world.building(houses[0]).tier).is_equal(&"peasants")
+	assert_float(_sim.world.building(houses[0]).residents).is_less(10.0)
+
+
 func test_luxury_raises_happiness_and_tax() -> void:
 	var houses := _peasant_village(1)
 	SimFixture.give(_sim, &"fish", 100.0)

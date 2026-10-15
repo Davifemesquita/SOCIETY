@@ -151,9 +151,10 @@ func _grow_houses() -> void:
 		residents += record.residents
 		capacity += simulation.data.tier(record.tier).residents_per_house
 	var full := houses.is_empty() or residents >= capacity * HOUSE_FILL
-	# casa nova nasce camponesa: só ajuda direto quando faltam camponeses; as outras classes vêm do
-	# upgrade das casas que já existem
-	var short := _workforce_short() and _short_tier() == &"peasants"
+	# falta gente para a próxima fábrica: casa nova nasce camponesa e as outras classes vêm do upgrade,
+	# então faltando operário ou artesão também se constrói (antes o robô esperava parado, com o caixa
+	# cheio, uma subida que não vinha)
+	var short := _workforce_short()
 	# casa nova só com quem já mora bem servido (ou faltando gente para a próxima fábrica)
 	if not short and (not full or not _basic_needs_met()):
 		return

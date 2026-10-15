@@ -252,6 +252,9 @@ Regras que já custaram investigação:
   o carregar determinístico: depois de carregar, a simulação segue idêntica à original (há
   teste disso).
 - **Aviso de falta só para bem de necessidade básica**; luxo não é exigido.
+- **A casa sobe ao chegar aos moradores que o atendimento permite**, não cheia (15/10/2026): a
+  categoria conta como atendida a partir de `need_met_threshold` (90%), mas a casa só enche com 100%;
+  exigir a casa cheia travava a subida para sempre com um bem em 95%, com o painel todo verde.
 
 ### Logística (Fase 3)
 
@@ -732,8 +735,10 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 
 Pendências já vistas para fases futuras:
 
-- Balanceamento: ver `docs/balanceamento.md`. Manutenção e imposto andam colados no meio da partida;
-  os números da tabela da especificação não foram mexidos (os candidatos estão anotados lá).
+- Balanceamento: ver `docs/balanceamento.md`. O aperto de dinheiro do meio da partida era o defeito da
+  subida de classe (corrigido em 15/10/2026); os números da especificação e os nossos não foram mexidos.
+  O robô para aos 135 min por falta de rua para casas e de fila, não de dinheiro: para medir engenheiros
+  e investidores, ele precisa de mais ruas e da cadeia das classes altas na fila.
   Estaleiro, se a compra de navio no entreposto não bastar. Riscos (incêndio e doença, opcionais na
   seção 8) ficaram de fora.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
