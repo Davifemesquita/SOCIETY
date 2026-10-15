@@ -12,9 +12,15 @@ const ISLAND := Simulation.MAIN_ISLAND
 ## norte). As outras ruas de produção ficam a cada STREET_STEP células para baixo; as casas, nas ruas
 ## RESIDENTIAL; as fazendas, nas ruas FARM. Avenidas verticais ligam tudo a cada AVENUE_STEP.
 const MAIN_STREET := 6
-const PRODUCTION_STREETS: Array[int] = [6, 22, 38, 170, 186, 202, 218]
-const RESIDENTIAL_STREETS: Array[int] = [54, 70, 86, 100]
-const FARM_STREETS: Array[int] = [110, 125, 140, 155]
+## A ilha do robô tem 350×350 células, a terra do arquipélago inteiro (principal de 250, duas de 150
+## e duas de 80): ele não coloniza, e numa ilha de 250 as fazendas acabavam antes dos artesãos terem o
+## básico. As faixas abaixo de y = 250 fazem as vezes das colônias.
+const ISLAND_SIZE := Vector2i(350, 350)
+const PRODUCTION_STREETS: Array[int] = [6, 22, 38, 170, 186, 202, 218, 250]
+## As de baixo entram para a população chegar às classes altas: com só quatro ruas as 488 casas não
+## davam gente para as fábricas dos artesãos.
+const RESIDENTIAL_STREETS: Array[int] = [54, 70, 86, 100, 230, 242, 326, 338]
+const FARM_STREETS: Array[int] = [110, 125, 140, 155, 262, 277, 292, 307]
 const AVENUE_STEP := 60
 ## Armazém a cada tantas células numa rua (o alcance da carroça é de 40 por estrada).
 const WAREHOUSE_STEP := 30
@@ -28,8 +34,18 @@ const HOUSES_PER_ROUND := 4
 const WORKFORCE_NEEDED := 0.75
 const WORKFORCE_MARGIN := 1.15
 const ENGINEER_HOUSES := 4
-## Depois de pôr um produtor na frente, espera tanto antes de julgar outra falta (s de jogo).
+## Depois de pôr o produtor de um bem na frente, espera tanto antes de julgar o mesmo bem de novo
+## (s de jogo).
 const SHORTAGE_PAUSE_S := 45.0
+## Faltas de bens diferentes atacadas numa rodada, e obras numa rodada: a cidade grande pede várias
+## fábricas ao mesmo tempo, e uma por vez deixava o caixa parado.
+const SHORTAGES_PER_ROUND := 3
+const BUILDS_PER_ROUND := 3
+## Até onde na fila o robô procura uma obra que já dá para fazer, quando a da frente espera.
+const QUEUE_LOOKAHEAD := 8
+## Depois de erguer um produtor, a falta do bem dele não pede outro antes disto (s de jogo): a fábrica
+## nova leva uns ciclos e uma viagem de carroça para aparecer no estoque.
+const PRODUCER_RAMP_S := 120.0
 ## Obra urgente (contra uma falta) gasta até esta folga acima do limite do saldo negativo.
 const URGENT_MARGIN := 2000.0
 ## Pausa a fábrica com o estoque do produto acima desta fração e volta abaixo desta outra.
@@ -46,6 +62,10 @@ const ORDER: Array = [
 	[&"sewing_machine_factory", 1], [&"pig_farm", 1], [&"rendering_works", 1], [&"soap_factory", 1],
 	[&"sand_pit", 1], [&"glassworks", 1], [&"cannery", 1], [&"fishery", 2], [&"furnace", 1],
 	[&"window_works", 1], [&"sheep_farm", 2], [&"weavery", 1], [&"fishery", 2],
+	# engenheiros e investidores: cada fábrica espera o desbloqueio dela na frente da fila
+	[&"sewing_machine_factory", 1], [&"coal_mine", 1], [&"furnace", 1], [&"cannery", 1],
+	[&"lamp_factory", 1], [&"sand_pit", 1], [&"glassworks", 1], [&"optician", 1],
+	[&"clockmaker", 1], [&"vineyard", 2], [&"champagne_cellar", 1], [&"window_works", 1],
 ]
 const COAST: Array[StringName] = [&"fishery", &"sand_pit", &"clay_pit"]
 const RESIDENTIAL_SERVICES: Array[StringName] = [&"market", &"school", &"university"]
@@ -69,13 +89,19 @@ var _warehouses: Dictionary[String, bool] = {}
 var _coast_cursor: int = 10
 var _farm_cursor: Dictionary[int, int] = {}
 var _blocked_reason: StringName = &""
-var _next_fix_at: float = 0.0
+## Bem → quando pode ser julgado de novo (s de jogo).
+var _next_fix_at: Dictionary[StringName, float] = {}
 var _urgent: Dictionary[StringName, bool] = {}
+## Prédio → quando o último foi erguido (s de jogo).
+var _last_built: Dictionary[StringName, float] = {}
 
 
 static func create(config: GameConfig = null) -> AutoPlayer:
 	var player := AutoPlayer.new()
-	var game_config := config if config != null else GameConfig.get_default()
+	var game_config := config
+	if game_config == null:
+		game_config = GameConfig.get_default().duplicate() as GameConfig
+		game_config.main_island_size_cells = ISLAND_SIZE
 	player.simulation = Simulation.new(game_config, GameData.get_default())
 	for item: Array in ORDER:
 		var count: int = item[1]
@@ -178,24 +204,30 @@ func _basic_needs_met() -> bool:
 
 
 ## O que um jogador faz quando algo falta: põe o produtor na frente da fila. Bem de necessidade
-## básica abaixo do atendimento, ou entrada que deixa fábricas paradas. Um por vez, com uma pausa
-## para o efeito aparecer.
+## básica abaixo do atendimento, ou entrada que deixa fábricas paradas. Até SHORTAGES_PER_ROUND bens
+## por rodada, cada um com uma pausa para o efeito aparecer.
 func _fix_shortage() -> void:
-	if seconds < _next_fix_at:
-		return
-	var good := _short_good()
-	if good == &"":
-		return
-	var producer := _producer_of(good)
-	if producer == &"" or _queue.slice(0, 2).has(producer):
-		return
-	_queue.push_front(producer)
-	_urgent[producer] = true
-	_next_fix_at = seconds + SHORTAGE_PAUSE_S
-	log.append([seconds, "falta %s: %s na frente" % [good, producer]])
+	var fixed := 0
+	for good: StringName in _short_goods():
+		if fixed >= SHORTAGES_PER_ROUND:
+			return
+		if seconds < _next_fix_at.get(good, 0.0):
+			continue
+		var producer := _producer_of(good)
+		if producer == &"" or _queue.slice(0, QUEUE_LOOKAHEAD).has(producer) \
+				or seconds - _last_built.get(producer, -PRODUCER_RAMP_S) < PRODUCER_RAMP_S:
+			continue
+		_queue.push_front(producer)
+		_urgent[producer] = true
+		_next_fix_at[good] = seconds + SHORTAGE_PAUSE_S
+		log.append([seconds, "falta %s: %s na frente" % [good, producer]])
+		fixed += 1
 
 
-func _short_good() -> StringName:
+## Os bens em falta, na ordem de prioridade (material que trava a fila, necessidade básica das classes
+## de baixo para cima, entrada de fábrica parada), cada um uma vez, já descendo à falta de verdade.
+func _short_goods() -> Array[StringName]:
+	var found: Array[StringName] = []
 	var world := simulation.world
 	var economy := world.economy(ISLAND)
 	# material de construção que trava a fila há um tempo
@@ -203,7 +235,7 @@ func _short_good() -> StringName:
 		var waiting := simulation.data.building(_queue[0])
 		for material: StringName in waiting.cost_materials:
 			if economy.amount(material) < waiting.cost_materials[material]:
-				return _root_shortage(material)
+				_add_unique(found, _root_shortage(material))
 	for tier: TierDef in simulation.data.tiers:
 		if world.population(tier.id) <= 0:
 			continue
@@ -213,13 +245,19 @@ func _short_good() -> StringName:
 			for good: StringName in need.goods:
 				var producer := _producer_of(good)
 				if producer != &"" and PlacementRules.check_unlock(world, simulation.data.building(producer)) == PlacementRules.OK:
-					return _root_shortage(good)
+					_add_unique(found, _root_shortage(good))
+					break
 	for record: BuildingRecord in world.buildings.values():
 		if record.state == BuildingRecord.State.NO_INPUT:
 			for input: StringName in simulation.def_of(record).inputs:
 				if economy.amount(input) < 2.0:
-					return _root_shortage(input)
-	return &""
+					_add_unique(found, _root_shortage(input))
+	return found
+
+
+static func _add_unique(list: Array[StringName], good: StringName) -> void:
+	if good != &"" and not list.has(good):
+		list.append(good)
 
 
 ## Se o bem que falta para por falta de entrada, a falta de verdade é a entrada.
@@ -296,23 +334,43 @@ func _hold_workforce() -> void:
 
 # --- fábricas -------------------------------------------------------------------------------
 
+## Constrói até BUILDS_PER_ROUND obras da fila: a primeira que já dá para fazer entre as
+## QUEUE_LOOKAHEAD da frente (fábrica esperando gente de uma classe não trava a de outra). O motivo
+## de espera mostrado é o da obra da frente.
 func _next_production() -> void:
 	if _queue.is_empty():
 		_blocked_reason = &""
 		return
-	var def_id := _queue[0]
+	# no vermelho e perdendo dinheiro, fábrica nova só aumenta a manutenção: esperam as casas
+	var world := simulation.world
+	if world.money < 0.0 and world.income_per_min < world.upkeep_per_min:
+		_blocked_reason = &"DEFICIT"
+		return
+	for build: int in BUILDS_PER_ROUND:
+		var built := false
+		for index: int in mini(QUEUE_LOOKAHEAD, _queue.size()):
+			var reason := _try_queue_item(index)
+			if index == 0:
+				_blocked_reason = reason
+			if reason == &"":
+				built = true
+				break
+		if not built or _queue.is_empty():
+			return
+
+
+## Tenta a obra da posição index da fila; devolve vazio se construiu, senão o motivo da espera.
+func _try_queue_item(index: int) -> StringName:
+	var def_id := _queue[index]
 	var def := simulation.data.building(def_id)
 	if def.is_production() and _free_workforce(def.workforce_tier) < def.workers * WORKFORCE_NEEDED:
-		_blocked_reason = &"WORKFORCE"
-		return
+		return &"WORKFORCE"
 	var urgent := _urgent.has(def_id)
 	if not (_can_spend_urgent(def.cost_money) if urgent else _can_spend(def.cost_money)):
-		_blocked_reason = &"RESERVE"
-		return
+		return &"RESERVE"
 	var reason := simulation.affordability(def)
 	if reason != PlacementRules.OK:
-		_blocked_reason = reason
-		return
+		return reason
 	var placed := false
 	if COAST.has(def_id):
 		placed = _place_coast(def)
@@ -323,12 +381,13 @@ func _next_production() -> void:
 	else:
 		placed = _place_on_street(def)
 	if not placed:
-		_blocked_reason = &"FULL"
-	if placed:
-		_queue.pop_front()
+		return &"FULL"
+	_queue.remove_at(index)
+	_last_built[def_id] = seconds
+	if not _queue.has(def_id):
 		_urgent.erase(def_id)
-		_blocked_reason = &""
-		log.append([seconds, "construiu %s" % def_id])
+	log.append([seconds, "construiu %s" % def_id])
+	return &""
 
 
 func _can_spend(cost: float) -> bool:
@@ -466,6 +525,9 @@ func _ensure_services(street: int, x: int) -> bool:
 		if not wanted:
 			continue
 		var def := simulation.data.building(service)
+		# o último grupo da rua pode não ter espaço até a borda da ilha
+		if start + index * 7 + def.size.x >= world.island(ISLAND).size.x - 1:
+			continue
 		if not _can_spend(def.cost_money) or simulation.affordability(def) != PlacementRules.OK:
 			if service == &"market":
 				return false

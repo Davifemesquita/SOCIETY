@@ -557,7 +557,9 @@ Regras que já custaram investigação:
 - **Tutorial pelas metas**: `GoalDef.hint` é o prédio do menu que a meta pede; a aba e o cartão dele
   piscam em dourado enquanto ela é a da vez.
 - **Jogador-robô** (`AutoPlayer`): joga a partida inteira com custo, material, desbloqueio, carroças e
-  armazéns; põe o produtor na frente da fila quando um bem falta (necessidade básica, entrada parada ou
+  armazéns, numa ilha plana de 350×350 (a terra do arquipélago: ele não coloniza); até 3 faltas e 3
+  obras por rodada, pulando a obra da frente que espera gente; não repete um produtor antes de 2 min nem
+  ergue fábrica no vermelho perdendo dinheiro; põe o produtor na frente da fila quando um bem falta (necessidade básica, entrada parada ou
   material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
   cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
   `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
@@ -737,8 +739,8 @@ Pendências já vistas para fases futuras:
 
 - Balanceamento: ver `docs/balanceamento.md`. O aperto de dinheiro do meio da partida era o defeito da
   subida de classe (corrigido em 15/10/2026); os números da especificação e os nossos não foram mexidos.
-  O robô para aos 135 min por falta de rua para casas e de fila, não de dinheiro: para medir engenheiros
-  e investidores, ele precisa de mais ruas e da cadeia das classes altas na fila.
+  O robô joga 4 h numa ilha plana de 350×350 (a terra do arquipélago, no lugar das colônias) e chega às
+  cinco classes (investidores aos ~225 min); o aperto é a entrada das fábricas dos engenheiros.
   Estaleiro, se a compra de navio no entreposto não bastar. Riscos (incêndio e doença, opcionais na
   seção 8) ficaram de fora.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens

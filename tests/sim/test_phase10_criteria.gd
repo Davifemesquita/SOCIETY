@@ -32,9 +32,11 @@ func test_a_three_hour_match_runs_without_errors() -> void:
 	OS.remove_logger(catcher)
 	assert_array(Array(catcher.errors)).is_empty()
 	assert_float(player.lowest_money).override_failure_message(player.summary()).is_greater_equal(floor_money)
-	# a partida anda: operários e artesãos em 3 horas
+	# a partida anda: operários, artesãos e engenheiros em 3 horas (os investidores chegam aos ~225 min,
+	# no relatório de balanceamento)
 	assert_int(sim.world.population(&"workers")).override_failure_message(player.summary()).is_greater(500)
 	assert_int(sim.world.population(&"artisans")).override_failure_message(player.summary()).is_greater(0)
+	assert_int(sim.world.population(&"engineers")).override_failure_message(player.summary()).is_greater(0)
 
 
 func _assert_sane(sim: Simulation, when: String) -> void:

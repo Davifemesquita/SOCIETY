@@ -1,11 +1,11 @@
 extends Node
-## Relatório de balanceamento (Fase 10): o jogador-robô joga 3 horas na ilha plana e a linha do
+## Relatório de balanceamento (Fase 10): o jogador-robô joga 4 horas na ilha plana e a linha do
 ## tempo vai para docs/balanceamento.md (ou para o caminho dado), com população por classe, saldo, o
 ## pior saldo e o que travou a fila. Use junto da planilha (tools/godot.sh planilha) ao mexer nos números.
 ##   tools/godot.sh godot --headless --path . res://tools/balance_report.tscn -- "$PWD/docs/balanceamento.md"
 
 const STEP_S := 900.0
-const DURATION_S := 3.0 * 3600.0
+const DURATION_S := 4.0 * 3600.0
 
 
 func _ready() -> void:
@@ -35,7 +35,8 @@ func _ready() -> void:
 		rows.append("| " + " | ".join(cells) + " |")
 	var text := """# Balanceamento — partida do jogador-robô
 
-Gerado por `tools/balance_report.tscn` em %s. O robô (`tools/auto_player.gd`) joga na ilha plana,
+Gerado por `tools/balance_report.tscn` em %s. O robô (`tools/auto_player.gd`) joga 4 h numa ilha plana de
+350×350 (a terra do arquipélago inteiro, no lugar das colônias),
 dificuldade normal, pagando cada prédio, esperando material e desbloqueio, com carroças e armazéns;
 corrige faltas pondo o produtor na frente da fila e pausa fábrica com o estoque cheio.
 

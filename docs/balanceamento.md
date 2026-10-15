@@ -1,43 +1,48 @@
 # Balanceamento — partida do jogador-robô
 
-Gerado por `tools/balance_report.tscn` em 2026-10-15T15:28:15. O robô (`tools/auto_player.gd`) joga na ilha plana,
+Gerado por `tools/balance_report.tscn` em 2026-10-15T16:25:27. O robô (`tools/auto_player.gd`) joga 4 h numa ilha plana de
+350×350 (a terra do arquipélago inteiro, no lugar das colônias),
 dificuldade normal, pagando cada prédio, esperando material e desbloqueio, com carroças e armazéns;
 corrige faltas pondo o produtor na frente da fila e pausa fábrica com o estoque cheio.
 
-- Pior saldo: **1472** aos 112 min (limite para construir: -10000).
-- Prédios no fim: 935; casas: 488.
+- Pior saldo: **-8326** aos 181 min (limite para construir: -10000).
+- Prédios no fim: 2051; casas: 998.
 
 | min | Camponeses | Operários | Artesãos | Engenheiros | Investidores | casas | saldo | renda/min | manutenção/min | próximo da fila | parado por |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 15 | 209 | 147 | 0 | 0 | 0 | 33 | 51863 | 273 | 305 | sawmill | REASON_NO_MATERIALS |
-| 30 | 615 | 307 | 0 | 0 | 0 | 85 | 35847 | 707 | 860 | sawmill | REASON_NO_MATERIALS |
-| 45 | 588 | 999 | 0 | 0 | 0 | 122 | 36466 | 1454 | 920 | sawmill | REASON_NO_MATERIALS |
-| 60 | 706 | 1213 | 0 | 0 | 0 | 152 | 35660 | 1725 | 1380 | lumberjack |  |
-| 75 | 996 | 2709 | 0 | 0 | 0 | 259 | 22158 | 3791 | 2460 | sawmill | REASON_NO_MATERIALS |
-| 90 | 1292 | 3022 | 560 | 0 | 0 | 315 | 11533 | 5536 | 4170 | furnace | REASON_NO_MATERIALS |
-| 105 | 1681 | 1788 | 1836 | 0 | 0 | 383 | 18250 | 6798 | 4595 | soap_factory | WORKFORCE |
-| 120 | 1871 | 2456 | 2440 | 0 | 0 | 424 | 13748 | 9047 | 6465 |  |  |
-| 135 | 2350 | 2657 | 2524 | 0 | 0 | 488 | 38250 | 9926 | 7375 |  |  |
-| 150 | 2336 | 2753 | 2599 | 0 | 0 | 488 | 68166 | 10318 | 7640 | weavery | WORKFORCE |
-| 165 | 2374 | 2778 | 2630 | 0 | 0 | 488 | 109236 | 10472 | 7750 | butcher | WORKFORCE |
-| 180 | 2374 | 2778 | 2632 | 0 | 0 | 488 | 154173 | 10478 | 7690 | butcher | WORKFORCE |
-## O que a partida mostra (15/10/2026)
+| 15 | 219 | 249 | 0 | 0 | 0 | 41 | 50347 | 382 | 345 | sawmill | REASON_NO_MATERIALS |
+| 30 | 704 | 590 | 0 | 0 | 0 | 107 | 28312 | 1113 | 1225 | lumberjack | REASON_NO_MATERIALS |
+| 45 | 950 | 1745 | 0 | 0 | 0 | 212 | 16428 | 2575 | 1895 | brickworks | REASON_NO_MATERIALS |
+| 60 | 1217 | 2478 | 127 | 0 | 0 | 269 | 94 | 3879 | 3450 | furnace | RESERVE |
+| 75 | 1364 | 2259 | 548 | 0 | 0 | 276 | 2451 | 4723 | 3915 | furnace | RESERVE |
+| 90 | 1564 | 1799 | 1158 | 0 | 0 | 296 | 2705 | 5901 | 4605 | furnace | RESERVE |
+| 105 | 2105 | 1725 | 1377 | 0 | 0 | 365 | 1608 | 6614 | 5335 | furnace | WORKFORCE |
+| 120 | 1972 | 2096 | 1362 | 0 | 0 | 367 | 2685 | 6937 | 5690 | cannery | RESERVE |
+| 135 | 2092 | 2661 | 1634 | 0 | 0 | 414 | 1959 | 8421 | 7260 | cannery | RESERVE |
+| 150 | 2312 | 3410 | 2057 | 696 | 0 | 519 | 20050 | 12601 | 8318 | sewing_machine_factory | REASON_NO_MATERIALS |
+| 165 | 2956 | 3506 | 2361 | 737 | 0 | 615 | 19703 | 14791 | 10820 | champagne_cellar | REASON_NO_MATERIALS |
+| 180 | 3321 | 4680 | 2364 | 729 | 0 | 699 | -6527 | 16144 | 14310 |  |  |
+| 195 | 3834 | 5175 | 2023 | 1334 | 0 | 782 | 735 | 19665 | 16190 |  |  |
+| 210 | 4325 | 6631 | 1433 | 2054 | 0 | 914 | 35495 | 23980 | 17975 |  |  |
+| 225 | 4803 | 7499 | 1435 | 2040 | 84 | 998 | 25200 | 26066 | 21440 | lamp_factory | REASON_NO_MATERIALS |
+| 240 | 4926 | 7579 | 1469 | 1621 | 734 | 998 | 43187 | 29684 | 23055 |  |  |
+## O que a partida mostra (15/10/2026, robô ampliado)
 
-- **O aperto de dinheiro era um defeito da subida de classe, não dos números.** A casa só subia
-  cheia, e só enche com 100% de atendimento; a categoria conta como atendida a partir de 90%
-  (`need_met_threshold`). Com o peixe em 95%, o painel ficava todo verde e nenhuma casa subia, para
-  sempre: a população parava, a renda também, e a manutenção das cadeias já construídas comia o
-  saldo. Agora a casa sobe ao chegar aos moradores que o atendimento dela permite. A especificação só
-  pede "categorias básicas cobertas e materiais"; a casa cheia era regra nossa.
-- Com a correção: pior saldo **+1,5 mil** (antes −7,6 mil), renda 1,4× a manutenção aos 120 min (antes
-  1,1×), artesãos aos 90 min (antes 75 min, mas parados até os 150). Os números da especificação e
-  os nossos ficaram como estavam: a redução da manutenção da escola e do armazém, testada antes da
-  correção, deixou de ser necessária.
-- **O robô também esperava parado** quando faltava operário ou artesão para a próxima fábrica: só
-  construía casa nova faltando camponês. Agora constrói para qualquer classe (a casa nasce camponesa
-  e sobe).
-- **Depois dos 135 min o limite é do robô**: as quatro ruas de casas (488 casas) enchem e a fila de
-  construção acaba; o caixa só acumula. Engenheiros e investidores continuam fora do alcance dele;
-  a quinta classe segue provada pela partida roteirizada (`tests/sim/test_phase8_criteria.gd`).
-- **Roupa de lã continua o gargalo de escala** (uma tecelagem para 500 moradores, número da
-  especificação), mas não trava mais a subida: a casa sobe com a roupa a 95%.
+- **As cinco classes em 4 horas**: operários aos ~15 min, artesãos aos ~60, engenheiros aos ~150 e
+  investidores aos ~225, com 16 mil moradores no fim. A renda fica 1,2× a 1,4× a manutenção na maior
+  parte da partida; o aperto é a entrada das fábricas dos engenheiros (lâmpada, relógio, champanhe,
+  vidro), perto de −8 mil aos 180 min, com o limite em −10 mil. Nenhum número dos dados mudou.
+- **O que mudou no robô** para medir as classes altas:
+  - ilha plana de **350×350**, a terra do arquipélago inteiro (ele não coloniza): na de 250 as
+    fazendas acabavam antes dos artesãos terem sabão (a criação de porcos é a cadeia que mais pede
+    terra);
+  - mais ruas de casas, de fazendas e uma de produção no sul;
+  - a fila termina com as fábricas dos engenheiros e dos investidores;
+  - **várias faltas por rodada** (até 3 bens, cada um com a sua pausa) e **até 3 obras por rodada**, a
+    primeira que já dá para fazer entre as 8 da frente: uma fábrica esperando gente de uma classe não
+    trava mais a de outra;
+  - **freios de jogador**: o mesmo produtor não é pedido de novo antes de 2 min da última obra dele (a
+    fábrica nova leva uns ciclos para aparecer no estoque), e no vermelho com a renda abaixo da
+    manutenção não entra fábrica nova, só casa.
+- Sem os freios, o robô ampliado erguia cinco saboarias em dois minutos e afundava a −50 mil: o ritmo
+  de construção, não os números, decide se o meio da partida aperta.
