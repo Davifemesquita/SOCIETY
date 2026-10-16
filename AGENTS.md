@@ -576,7 +576,7 @@ Regras que já custaram investigação:
   material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
   cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
   `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
-- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.12.0 (0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
+- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.13.0 (0.12.0 na Fase 12, 0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
   `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
 
 ### Segunda região climática (Fase 11)
