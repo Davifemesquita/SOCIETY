@@ -95,3 +95,22 @@ func test_a_new_farm_brings_its_crop_without_rebuilding_by_hand() -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_int(view.plant_count(BuildingDef.Crop.HOPS)).is_greater(0)
+
+
+func test_pastures_get_a_fence_around_them_open_toward_other_pastures() -> void:
+	SimFixture.place(_sim, &"pasture", Vector2i(10, 10), 0)
+	var view := _view()
+	var cell_size := _sim.config.cell_size_m
+	# um pasto 3 × 3 sozinho: quatro lados de 6 m, menos as folgas dos cantos
+	var lone := view.fence_count()
+	assert_int(lone).is_equal(4 * roundi(3 * cell_size / CropView.FENCE_STEP_M))
+	assert_int(view.tuft_count()).is_equal(9 * CropView.TUFTS_PER_CELL)
+	# a cerca fica dentro do pasto
+	var grid := _sim.world.island(SimFixture.ISLAND)
+	for index: int in lone:
+		var cell := grid.world_to_cell(view.fence_transform(index).origin + Vector3(0.01, 0.0, 0.01))
+		assert_int(grid.building_at(cell)).is_not_equal(0)
+	# o vizinho encostado à direita: o lado comum fica aberto nos dois
+	SimFixture.place(_sim, &"pasture", Vector2i(13, 10), 0)
+	view.rebuild()
+	assert_int(view.fence_count()).is_equal(2 * lone - 2 * roundi(3 * cell_size / CropView.FENCE_STEP_M))

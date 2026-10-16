@@ -890,6 +890,9 @@ Regras que já custaram investigação:
   fazenda (`BuildingRecord.progress`, em `GROWTH_STEPS` degraus, a partir de `MIN_GROWTH`); o cereal vai do verde
   ao dourado. Na colheita o ciclo volta a zero e a planta também. Só o campo que mudou de degrau é reescrito
   (conferência a cada 0,5 s). Campo sem dono fica na terra arada (a cor do `field.tres` virou de solo).
+- **Pastos** (também na `CropView`): todo pasto, de dono ou não, ganha cerca de madeira por dentro da borda, em
+  lanços de `FENCE_STEP_M` (o lanço é esticado em x), e touceiras de capim. O lado que encosta em outro pasto
+  fica aberto: pastos vizinhos viram um cercado só. As ovelhas e os porcos ficam a `PASTURE_MARGIN_M` da borda.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -915,7 +918,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
-| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos; depois cerca e capim nos pastos, meio-fio e emenda nas estradas, ponte de madeira e pássaros |
+| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos, cerca e capim nos pastos; depois meio-fio e emenda nas estradas, ponte de madeira e pássaros |
 
 Pendências já vistas para fases futuras:
 

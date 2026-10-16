@@ -177,7 +177,7 @@ func _house_trims() -> void:
 
 ## Fase 14: cada fazenda de campo com os campos dela, em três pontos do ciclo (começo, meio e colheita).
 func _crops() -> void:
-	var farms: Array[StringName] = [&"wheat_farm", &"potato_farm", &"hop_farm", &"vineyard", &"sugar_cane_farm",
+	var farms: Array[StringName] = [&"sheep_farm", &"wheat_farm", &"potato_farm", &"hop_farm", &"vineyard", &"sugar_cane_farm",
 			&"coffee_plantation", &"tobacco_plantation"]
 	var growths: Array[float] = [0.1, 0.5, 0.95]
 	for i: int in farms.size():
@@ -199,3 +199,4 @@ func _crops() -> void:
 	await _shot("22_trigo_batata.png", Vector3(85.0, 0.0, 286.0), 30.0, 0.4, 0.5)
 	await _shot("23_lupulo_parreira.png", Vector3(150.0, 0.0, 286.0), 30.0, 0.4, 0.5)
 	await _shot("24_cana_cafe_tabaco.png", Vector3(230.0, 0.0, 286.0), 40.0, 0.4, 0.5)
+	await _shot("25_pasto.png", Vector3(66.0, 0.0, 282.0), 26.0, 0.5, 0.5)

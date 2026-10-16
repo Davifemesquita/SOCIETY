@@ -14,7 +14,7 @@ const LENGTH_M := {&"sheep": 1.3, &"pig": 1.2, &"dog": 0.65, &"horse": 2.3}
 const PASTURE_ANIMAL := {&"sheep_farm": &"sheep", &"pig_farm": &"pig"}
 const PER_PASTURE := 4
 ## Folga dos bichos até a borda do pasto.
-const PASTURE_MARGIN_M := 0.8
+const PASTURE_MARGIN_M := 1.0
 ## Um cão a cada DOG_EVERY casas (pelo id), deitado ao lado da porta.
 const DOG_EVERY := 5
 const DOG_SIDE_M := 1.1

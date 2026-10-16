@@ -4,7 +4,8 @@ extends Node3D
 ## (BuildingDef.crop), crescendo com o ciclo da fazenda (BuildingRecord.progress): curta e verde no começo,
 ## alta (e dourada, no cereal) perto da colheita. Campo sem dono fica só a terra arada. As plantas são
 ## geradas aqui (cor no vértice), um MultiMesh por planta; o crescimento reescreve só as instâncias do
-## campo que mudou. Só lê o mundo.
+## campo que mudou. Os pastos (de dono ou não) ganham cerca de madeira em volta (menos do lado que encosta
+## em outro pasto: viram um cercado só) e touceiras de capim. Só lê o mundo.
 
 const REFRESH_SECONDS := 0.5
 ## O crescimento anda em degraus (menos reescrita), e a planta nova já aparece com este tamanho.
@@ -15,6 +16,12 @@ const MARGIN_M := 0.45
 const JITTER_M := 0.08
 ## Cereal verde no começo do ciclo (a cor da instância multiplica a do vértice).
 const GREEN_TINT := Color(0.55, 1.0, 0.45)
+
+## Pasto: lanço de cerca (m), folga da cerca até a borda e touceiras de capim por célula.
+const PASTURE := &"pasture"
+const FENCE_STEP_M := 1.0
+const FENCE_INSET_M := 0.12
+const TUFTS_PER_CELL := 5
 
 ## Por planta: espaço entre plantas na fileira e entre fileiras (m).
 const SPACING := {
@@ -29,6 +36,8 @@ const SPACING := {
 
 var _simulation: Simulation
 var _layers: Dictionary[int, MultiMeshInstance3D] = {}
+var _fence := MultiMeshInstance3D.new()
+var _grass := MultiMeshInstance3D.new()
 ## Por campo: [planta, primeira instância, quantidade, lugares (Array[Transform3D]), id da fazenda].
 var _fields: Dictionary[int, Array] = {}
 var _growth: Dictionary[int, int] = {}
@@ -57,6 +66,19 @@ func setup(simulation: Simulation) -> void:
 		layer.material_override = material
 		add_child(layer)
 		_layers[crop] = layer
+	for pair: Array in [[_fence, "Fence", fence_mesh()], [_grass, "Grass", tuft_mesh()]]:
+		var layer: MultiMeshInstance3D = pair[0]
+		var name_text: String = pair[1]
+		var mesh: ArrayMesh = pair[2]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_colors = true
+		multimesh.mesh = mesh
+		multimesh.visible_instance_count = 0
+		layer.name = name_text
+		layer.multimesh = multimesh
+		layer.material_override = material
+		add_child(layer)
 	_apply_range()
 	EventBus.building_placed.connect(func(_building_id: int) -> void: _dirty = true)
 	EventBus.building_removed.connect(func(_building_id: int) -> void: _dirty = true)
@@ -76,6 +98,19 @@ func plant_count(crop: int = -1) -> int:
 		if crop < 0 or kind == crop:
 			total += _layers[kind].multimesh.visible_instance_count
 	return total
+
+
+## Lanços de cerca e touceiras de capim à vista (todos os pastos).
+func fence_count() -> int:
+	return _fence.multimesh.visible_instance_count
+
+
+func tuft_count() -> int:
+	return _grass.multimesh.visible_instance_count
+
+
+func fence_transform(index: int) -> Transform3D:
+	return _fence.multimesh.get_instance_transform(index)
 
 
 ## Quanto o campo cresceu (0..1, em degraus); -1 se ele não tem plantas.
@@ -110,10 +145,15 @@ func rebuild() -> void:
 	var lists: Dictionary[int, Array] = {}
 	for crop: int in _layers:
 		lists[crop] = []
+	var fences: Array = []
+	var tufts: Array = []
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := _simulation.def_of(record)
 		if def.kind != BuildingDef.Kind.MODULE:
+			continue
+		if def.id == PASTURE:
+			_pasture(record, def, fences, tufts)
 			continue
 		var owner_id: int = derived.module_owner.get(building_id, 0)
 		var farm := world.building(owner_id)
@@ -135,6 +175,70 @@ func rebuild() -> void:
 		multimesh.visible_instance_count = count
 	for field_id: int in _fields:
 		_draw_field(field_id)
+	for pair: Array in [[_fence, fences], [_grass, tufts]]:
+		var layer: MultiMeshInstance3D = pair[0]
+		var multimesh := layer.multimesh
+		var items: Array = pair[1]
+		if multimesh.instance_count < items.size():
+			multimesh.visible_instance_count = -1
+			multimesh.instance_count = items.size() + 64
+		multimesh.visible_instance_count = items.size()
+		for index: int in items.size():
+			var item: Array = items[index]
+			var place: Transform3D = item[0]
+			var color: Color = item[1]
+			multimesh.set_instance_transform(index, place)
+			multimesh.set_instance_color(index, color)
+
+
+## A cerca em volta do pasto (lanços de FENCE_STEP_M, de canto a canto, por dentro da borda) e o capim.
+## O lado que encosta em outro pasto fica aberto.
+func _pasture(record: BuildingRecord, def: BuildingDef, fences: Array, tufts: Array) -> void:
+	var grid := _simulation.world.island(record.island_id)
+	var area := Footprint.rect(record.origin, def.size, record.rotation)
+	var cell_size := _simulation.config.cell_size_m
+	var center := grid.rect_world(area) + Vector3(0.0, def.height_m, 0.0)
+	var low := center - Vector3(area.size.x, 0.0, area.size.y) * cell_size * 0.5
+	var wood := Color(0.48, 0.36, 0.24)
+	# [célula do canto inicial, passo ao longo da borda, vizinho de fora, giro do lanço, onde começa]
+	var sides := [
+		[area.position, Vector2i(1, 0), Vector2i(0, -1), 0.0, Vector3(FENCE_INSET_M, 0.0, FENCE_INSET_M)],
+		[Vector2i(area.position.x, area.end.y - 1), Vector2i(1, 0), Vector2i(0, 1), 0.0,
+				Vector3(FENCE_INSET_M, 0.0, area.size.y * cell_size - FENCE_INSET_M)],
+		[area.position, Vector2i(0, 1), Vector2i(-1, 0), -PI * 0.5, Vector3(FENCE_INSET_M, 0.0, FENCE_INSET_M)],
+		[Vector2i(area.end.x - 1, area.position.y), Vector2i(0, 1), Vector2i(1, 0), -PI * 0.5,
+				Vector3(area.size.x * cell_size - FENCE_INSET_M, 0.0, FENCE_INSET_M)],
+	]
+	for side: Array in sides:
+		var corner: Vector2i = side[0]
+		var along: Vector2i = side[1]
+		var outward: Vector2i = side[2]
+		var turn: float = side[3]
+		var start: Vector3 = side[4]
+		var count := area.size.x if along.x != 0 else area.size.y
+		var direction := Vector3(along.x, 0.0, along.y)
+		for step: int in count:
+			var outside := corner + along * step + outward
+			if grid.in_bounds(outside):
+				var neighbor := _simulation.world.building(grid.building_at(outside))
+				if neighbor != null and neighbor.def_id == PASTURE:
+					continue
+			for piece: int in roundi(cell_size / FENCE_STEP_M):
+				# o último lanço da borda fica mais curto: não passa da folga do outro canto
+				var from := step * cell_size + piece * FENCE_STEP_M
+				var length := minf(FENCE_STEP_M, count * cell_size - 2.0 * FENCE_INSET_M - from)
+				if length <= 0.01:
+					continue
+				var origin := low + start + direction * from
+				fences.append([Transform3D(Basis(Vector3.UP, turn).scaled_local(Vector3(length, 1.0, 1.0)), origin), wood])
+	for i: int in area.size.x * area.size.y * TUFTS_PER_CELL:
+		var random := RandomNumberGenerator.new()
+		random.seed = hash([record.id, &"tuft", i])
+		var point := low + Vector3(random.randf_range(0.3, area.size.x * cell_size - 0.3), 0.0,
+				random.randf_range(0.3, area.size.y * cell_size - 0.3))
+		var shade := random.randf_range(0.8, 1.15)
+		tufts.append([Transform3D(Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3.ONE * random.randf_range(0.7, 1.3)),
+				point), Color(shade, shade, shade)])
 
 
 ## Confere o ciclo de cada fazenda e redesenha os campos que cresceram (ou foram colhidos).
@@ -264,6 +368,31 @@ static func plant_mesh(crop: int) -> ArrayMesh:
 	var mesh := tool.commit()
 	_meshes[crop] = mesh
 	return mesh
+
+
+## Um lanço de cerca de 1 m em +x: o mourão no começo e duas travessas (a escala em x estica o lanço).
+static func fence_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var wood := Color.WHITE
+	_part(tool, _box(Vector3(0.1, 0.95, 0.1)), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.475, 0.0)), wood)
+	for height: float in [0.42, 0.78]:
+		_part(tool, _box(Vector3(1.0, 0.07, 0.04)), Transform3D(Basis.IDENTITY, Vector3(0.5, height, 0.0)), wood)
+	tool.index()
+	return tool.commit()
+
+
+## Touceira de capim: folhas finas abertas em leque.
+static func tuft_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i: int in 5:
+		var angle := TAU * i / 5.0
+		var lean := Basis(Vector3(cos(angle), 0.0, sin(angle)).cross(Vector3.UP), 0.35)
+		_part(tool, _box(Vector3(0.05, 0.32, 0.015)), Transform3D(lean * Basis(Vector3.UP, angle), lean * Vector3(0.0, 0.16, 0.0)),
+				Color(0.36, 0.52, 0.22) if i % 2 == 0 else Color(0.44, 0.58, 0.26))
+	tool.index()
+	return tool.commit()
 
 
 static func _part(tool: SurfaceTool, mesh: PrimitiveMesh, place: Transform3D, color: Color) -> void:
