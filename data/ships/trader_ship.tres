@@ -16,3 +16,4 @@ hull_color = Color(0.22, 0.2, 0.24, 1)
 sail_color = Color(0.72, 0.22, 0.18, 1)
 length_m = 18.0
 hull_points = 400.0
+model = "ship-medium"

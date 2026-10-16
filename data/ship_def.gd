@@ -30,6 +30,11 @@ extends Resource
 ## Marcos de população que liberam a compra (0 = desde o começo).
 @export var unlock_milestone: int = 0
 
+@export_group("Modelo")
+## Modelo em assets/models/ships/<model>.glb (Kenney Pirate Kit), esticado até length_m; vazio = o
+## casco gerado no código.
+@export var model: String = ""
+
 @export_group("Placeholder")
 @export var hull_color: Color = Color(0.36, 0.24, 0.16)
 @export var sail_color: Color = Color(0.92, 0.9, 0.82)

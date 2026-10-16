@@ -773,6 +773,13 @@ Regras que já custaram investigação:
 
 ## Assets e licenças (seção 14)
 
+- **Navios e carroças de modelo** (15/10/2026): Kenney Pirate Kit e Fantasy Town Kit (CC0). Cada
+  `ShipDef.model` aponta um `.glb` de `assets/models/ships/`, esticado até `length_m`, girado com a proa
+  para +X e afundado `MODEL_DRAFT` (`ShipView`); as velas são o texel claro e sem saturação da textura,
+  tingido na cor do tipo ou da rival (`shaders/ship_model.gdshader`). A carroça junta as peças do
+  `cart.glb` numa malha só (`CartView.model_mesh`), porque o MultiMesh só desenha uma. Sem o arquivo,
+  os dois voltam ao placeholder gerado no código. `tools/capture_ships.tscn` tira as capturas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.

@@ -14,6 +14,11 @@ const BOB_AMPLITUDE_M := 0.18
 const BOB_SPEED := 1.3
 const ROLL_RAD := 0.035
 const HULL_HEIGHT_M := 1.6
+## Modelos dos navios (Kenney Pirate Kit): onde ficam, o giro que põe a proa em +X e quanto do
+## modelo (em unidades dele) fica abaixo d'água.
+const MODEL_DIR := "res://assets/models/ships/%s.glb"
+const MODEL_YAW := PI * 0.5
+const MODEL_DRAFT := 0.6
 const POST_COLOR := Color(0.42, 0.32, 0.22)
 const FLAG_COLOR := Color(0.72, 0.22, 0.18)
 const SELECTION_COLOR := Color(1.0, 0.85, 0.3)
@@ -334,6 +339,11 @@ func _build_ship(ship: Ship) -> Node3D:
 	root.name = "Ship%d" % ship.id
 	var length := def.length_m
 	var beam := length * 0.28
+	var model := _model(def, sail_color(ship))
+	if model != null:
+		root.add_child(model)
+		_add_effects(root, length, beam)
+		return root
 	var hull := MeshInstance3D.new()
 	hull.name = "Hull"
 	hull.mesh = hull_mesh(length, beam, HULL_HEIGHT_M)
@@ -365,13 +375,65 @@ func _build_ship(ship: Ship) -> Node3D:
 		sail.position = Vector3(offset + 0.3, HULL_HEIGHT_M + mast_height * 0.55, 0.0)
 		sail.visibility_range_end = _detail_range_m
 		root.add_child(sail)
+	_add_effects(root, length, beam)
+	return root
+
+
+func _add_effects(root: Node3D, length: float, beam: float) -> void:
 	var wake := _build_wake(length, beam)
 	wake.name = "Wake"
 	root.add_child(wake)
 	var damage := _build_damage_smoke(length)
 	damage.name = "Damage"
 	root.add_child(damage)
-	return root
+
+
+## O modelo do navio (Kenney Pirate Kit) deitado no eixo X com a proa para +X, esticado até o
+## comprimento do tipo e afundado até a linha d'água, com as velas na cor dada. Sem modelo, null.
+func _model(def: ShipDef, sails: Color) -> Node3D:
+	if def.model.is_empty():
+		return null
+	var path := MODEL_DIR % def.model
+	if not ResourceLoader.exists(path):
+		return null
+	var scene := load(path) as PackedScene
+	var model := scene.instantiate() as Node3D
+	model.name = "Hull"
+	var size := _model_size(model)
+	var scale_factor := def.length_m / maxf(size.z, 0.001)
+	model.scale = Vector3.ONE * scale_factor
+	model.rotation.y = MODEL_YAW
+	model.position.y = -MODEL_DRAFT * scale_factor
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/ship_model.gdshader") as Shader
+	material.set_shader_parameter(&"colormap", load(MODEL_DIR.get_base_dir().path_join("Textures/colormap.png")))
+	material.set_shader_parameter(&"sail_tint", sails)
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = node
+		mesh.material_override = material
+	return model
+
+
+## Tamanho do modelo (caixa de todas as malhas, no espaço dele).
+static func _model_size(model: Node3D) -> Vector3:
+	var box := AABB()
+	var first := true
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = node
+		var local := _transform_to(model, mesh) * mesh.get_aabb()
+		box = local if first else box.merge(local)
+		first = false
+	return box.size
+
+
+static func _transform_to(root: Node3D, node: Node3D) -> Transform3D:
+	var transform := Transform3D.IDENTITY
+	var current: Node = node
+	while current != root and current is Node3D:
+		var spatial: Node3D = current
+		transform = spatial.transform * transform
+		current = current.get_parent()
+	return transform
 
 
 ## Fumaça escura subindo do convés do navio avariado (liga com o casco abaixo da metade). Na CPU:

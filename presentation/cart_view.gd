@@ -1,13 +1,20 @@
 class_name CartView
 extends Node3D
-## Carroças na estrada (seção 9): caixa marrom com a carga na cor do bem na ida e vazia na
-## volta. Só lê as carroças da simulação; a posição é interpolada entre o tick anterior e o
+## Carroças na estrada (seção 9): a carroça do Kenney Fantasy Town Kit (as peças juntas numa malha
+## só, para o MultiMesh) com a carga na cor do bem na ida e vazia na volta; sem o modelo, uma caixa
+## marrom. Só lê as carroças da simulação; a posição é interpolada entre o tick anterior e o
 ## atual, para andar liso a 60 quadros com 5 ticks por segundo (seção 12).
 
 const BODY_COLOR := Color(0.42, 0.3, 0.2)
 const BODY_SIZE := Vector3(1.4, 0.8, 2.3)
-const CARGO_SIZE := Vector3(1.2, 0.8, 1.5)
+const CARGO_SIZE := Vector3(1.0, 0.6, 1.2)
 const HEIGHT_M := 0.5
+const MODEL_PATH := "res://assets/models/props/cart.glb"
+const MODEL_TEXTURE := "res://assets/models/props/Textures/colormap.png"
+## Comprimento da carroça de modelo no mundo, e o giro que põe a frente dela em −Z (para onde
+## Basis.looking_at aponta).
+const MODEL_LENGTH_M := 2.6
+const MODEL_YAW := PI
 
 var _simulation: Simulation
 var _cell_size: float
@@ -18,11 +25,14 @@ var _loads := MultiMeshInstance3D.new()
 func setup(simulation: Simulation, cell_size: float) -> void:
 	_simulation = simulation
 	_cell_size = cell_size
-	var body := BoxMesh.new()
-	body.size = BODY_SIZE
-	var body_material := StandardMaterial3D.new()
-	body_material.albedo_color = BODY_COLOR
-	body.material = body_material
+	var body: Mesh = model_mesh()
+	if body == null:
+		var box := BoxMesh.new()
+		box.size = BODY_SIZE
+		var body_material := StandardMaterial3D.new()
+		body_material.albedo_color = BODY_COLOR
+		box.material = body_material
+		body = box
 	_bodies.multimesh = _multimesh(body, false)
 	var cargo := BoxMesh.new()
 	cargo.size = CARGO_SIZE
@@ -32,6 +42,39 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_loads.multimesh = _multimesh(cargo, true)
 	add_child(_bodies)
 	add_child(_loads)
+
+
+## As peças do modelo numa malha só, já no tamanho, no giro e com a base em y = −HEIGHT_M (a
+## instância sobe HEIGHT_M). Null sem o modelo.
+static func model_mesh() -> ArrayMesh:
+	if not ResourceLoader.exists(MODEL_PATH):
+		return null
+	var model := (load(MODEL_PATH) as PackedScene).instantiate() as Node3D
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var length := 0.0
+	var parts: Array[MeshInstance3D] = []
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		parts.append(node as MeshInstance3D)
+	var box := AABB()
+	for index: int in parts.size():
+		var local := ShipView._transform_to(model, parts[index]) * parts[index].get_aabb()
+		box = local if index == 0 else box.merge(local)
+	length = maxf(box.size.z, 0.001)
+	var scale_factor := MODEL_LENGTH_M / length
+	var place := Transform3D(Basis(Vector3.UP, MODEL_YAW).scaled(Vector3.ONE * scale_factor), Vector3(0.0, -HEIGHT_M, 0.0))
+	for part: MeshInstance3D in parts:
+		var transform := place * ShipView._transform_to(model, part)
+		for surface: int in part.mesh.get_surface_count():
+			tool.append_from(part.mesh, surface, transform)
+	model.free()
+	var mesh := tool.commit()
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = load(MODEL_TEXTURE) as Texture2D
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	material.roughness = 0.9
+	mesh.surface_set_material(0, material)
+	return mesh
 
 
 func _multimesh(mesh: Mesh, colored: bool) -> MultiMesh:
@@ -70,7 +113,7 @@ func _process(_delta: float) -> void:
 		_bodies.multimesh.set_instance_transform(index, Transform3D(basis, place + Vector3(0.0, HEIGHT_M, 0.0)))
 		var tons := cart.tons()
 		var load_basis := basis.scaled(Vector3.ONE * clampf(tons / 2.0, 0.0, 1.0)) if tons > 0.0 else basis.scaled(Vector3.ZERO)
-		_loads.multimesh.set_instance_transform(index, Transform3D(load_basis, place + Vector3(0.0, HEIGHT_M + 0.6, 0.0)))
+		_loads.multimesh.set_instance_transform(index, Transform3D(load_basis, place + Vector3(0.0, HEIGHT_M + 0.45, 0.0)))
 		_loads.multimesh.set_instance_color(index, _cargo_color(cart))
 
 
