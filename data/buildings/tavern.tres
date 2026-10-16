@@ -16,3 +16,4 @@ upkeep_per_min = 30
 unlock_tier = &"peasants"
 unlock_residents = 60
 wall_material = 2
+silhouette = 7

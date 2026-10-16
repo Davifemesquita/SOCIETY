@@ -57,6 +57,27 @@ const PIECES := {
 	},
 }
 const CHIMNEY := "chimney"
+## Silhueta por cadeia (Fase 13, BuildingDef.silhouette): as peças do mesmo kit.
+const WINDMILL := "windmill"
+const WATERWHEEL := "watermill"
+const SHEAVE := "wheel"
+const BEAM := "pillar-wood"
+const STALLS: Array[String] = ["stall-red", "stall-green"]
+const BANNER := "banner-red"
+## Medidas das peças do kit (caixa da peça importada): diâmetro das rodas, meio da polia, lado da viga.
+const WINDMILL_DIAMETER := 3.113
+const WATERWHEEL_DIAMETER := 1.8
+const SHEAVE_DIAMETER := 0.483
+const SHEAVE_CENTER := Vector3(0.318, 0.2416, 0.0)
+const BEAM_SIDE := 0.16
+## Torre de mina e guindaste: altura acima do telhado e espessura das vigas.
+const HEADFRAME_M := 5.5
+const CRANE_M := 3.0
+const BEAM_M := 0.35
+## Giro das partes que andam (rad/s de jogo a 1x) enquanto o prédio produz.
+const WINDMILL_SPEED := 0.7
+const WATERWHEEL_SPEED := 0.5
+const SHEAVE_SPEED := 1.6
 
 
 ## A forma de um prédio: tudo que muda a malha (e nada que só muda a cor).
@@ -73,10 +94,35 @@ class Spec:
 	var window_style: int = 0
 	var sparse_windows: bool = false
 	var chimney: bool = false
+	var silhouette: int = BuildingDef.Silhouette.NONE
+	## Fileiras da frente sem paredes (o pátio das bancas do mercado): o corpo fica nas de trás.
+	var court_rows: int = 0
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
-				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney)]
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
+				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette, court_rows]
+
+	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
+	func hall() -> Spec:
+		if court_rows == 0:
+			return self
+		var copy := Spec.new()
+		copy.cells = Vector2i(cells.x, cells.y - court_rows)
+		copy.cell_m = cell_m
+		copy.height_m = height_m
+		copy.walls = walls
+		copy.roof = roof
+		copy.roof_m = roof_m
+		copy.door = door
+		copy.door_index = door_index
+		copy.window_style = window_style
+		copy.sparse_windows = sparse_windows
+		copy.chimney = chimney
+		copy.silhouette = silhouette
+		return copy
+
+	func hall_offset() -> Vector3:
+		return Vector3(0.0, 0.0, court_rows * cell_m * 0.5)
 
 	func size_m() -> Vector2:
 		return Vector2(cells.x * cell_m - INSET_M, cells.y * cell_m - INSET_M)
@@ -140,6 +186,18 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.roof_m = FLAT_ROOF_M
 	if def.wall_material == BuildingMaterials.Wall.WOOD:
 		spec.window_style = 0
+	spec.silhouette = def.silhouette
+	if def.silhouette == BuildingDef.Silhouette.STALLS:
+		# metade da frente vira pátio; o telhado segue o lado curto do corpo
+		spec.court_rows = def.size.y / 2
+		var hall := spec.hall()
+		spec.roof = Roof.GABLE_X if hall.cells.x >= hall.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(hall.cells.x, hall.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.WINDMILL:
+		# a empena fica na frente e as pás giram nela
+		spec.roof = Roof.GABLE_Z
+	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
+		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
 	return spec
 
 
@@ -160,6 +218,8 @@ static func cached_meshes() -> int:
 static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
 	if face == 0 and level == 0 and index == spec.door_index and spec.door != Door.NONE:
 		return &"arch" if spec.door == Door.ARCH else &"door"
+	if spec.silhouette == BuildingDef.Silhouette.BANNERS and face == 0 and level == 1 and index == spec.door_index:
+		return &"plain"
 	if spec.sparse_windows and (index + level + face) % 2 == 1:
 		return &"plain"
 	return &"window"
@@ -168,6 +228,11 @@ static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
 ## Vidros acesos à noite no referencial canônico: um por janela do modelo, logo à frente dela, com
 ## o +Z do vidro para fora.
 static func windows(spec: Spec) -> Array[Transform3D]:
+	if spec.court_rows > 0:
+		var shifted: Array[Transform3D] = []
+		for window: Transform3D in windows(spec.hall()):
+			shifted.append(window.translated(spec.hall_offset()))
+		return shifted
 	var result: Array[Transform3D] = []
 	var size := spec.size_m()
 	var floor_m := spec.floor_m()
@@ -195,6 +260,8 @@ const FACE_YAWS: Array[float] = [PI * 0.5, 0.0, -PI * 0.5, PI]
 
 ## Meio da porta no chão, na fachada da frente (referencial canônico).
 static func door_position(spec: Spec) -> Vector3:
+	if spec.court_rows > 0:
+		return door_position(spec.hall()) + spec.hall_offset()
 	var place := _cell_transform(spec, 0, spec.door_index, 0)
 	return place.origin + FACE_NORMALS[0] * (spec.size_m().y / spec.cells.y * 0.5)
 
@@ -255,19 +322,21 @@ static func _append_piece(tool: SurfaceTool, piece: String, transform: Transform
 static func _build(spec: Spec) -> ArrayMesh:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var hall := spec.hall()
+	var offset := Transform3D(Basis.IDENTITY, spec.hall_offset())
 	var pieces: Dictionary = PIECES[spec.walls]
 	var choices: Array = pieces[&"windows"]
 	for face: int in 4:
-		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
-		for level: int in spec.floors():
+		var count := hall.cells.x if face % 2 == 0 else hall.cells.y
+		for level: int in hall.floors():
 			for index: int in count:
-				var kind := slot(spec, face, index, level)
+				var kind := slot(hall, face, index, level)
 				var piece: String = pieces[&"plain"]
 				if kind == &"window":
 					piece = choices[spec.window_style % choices.size()]
 				elif kind != &"plain":
 					piece = pieces[kind]
-				_append_piece(tool, piece, _cell_transform(spec, face, index, level))
+				_append_piece(tool, piece, offset * _cell_transform(hall, face, index, level))
 	var size := spec.size_m()
 	# alicerce e telhado à parte: as peças do kit chegam indexadas, e vértice solto depois delas
 	# ficaria fora do índice
@@ -275,7 +344,15 @@ static func _build(spec: Spec) -> ArrayMesh:
 	extra.begin(Mesh.PRIMITIVE_TRIANGLES)
 	_box(extra, Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0),
 			Vector3(size.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, size.y + 0.1), UV_STONE)
-	_roof(extra, spec)
+	if spec.court_rows > 0:
+		# o telhado do corpo é feito no referencial dele e trazido para o do prédio
+		var roof := SurfaceTool.new()
+		roof.begin(Mesh.PRIMITIVE_TRIANGLES)
+		_roof(roof, hall)
+		extra.append_from(roof.commit(), 0, offset)
+	else:
+		_roof(extra, spec)
+	_silhouette(tool, extra, spec)
 	extra.index()
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
@@ -288,6 +365,123 @@ static func _build(spec: Spec) -> ArrayMesh:
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	importer.generate_lods(25.0, 60.0, [])
 	return importer.get_mesh()
+
+
+## As peças paradas da silhueta (Fase 13). As que giram ficam em rotor().
+static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var top := spec.height_m + spec.roof_m
+	match spec.silhouette:
+		BuildingDef.Silhouette.HEADFRAME:
+			# quatro pernas inclinadas do telhado até a plataforma da polia, travadas no meio
+			var high := top + HEADFRAME_M
+			var feet: Array[Vector3] = []
+			var heads: Array[Vector3] = []
+			for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+				feet.append(Vector3(corner.x * minf(1.3, size.x * 0.3), top, corner.y * minf(1.0, size.y * 0.3)))
+				heads.append(Vector3(corner.x * 0.55, high, corner.y * 0.3))
+			for i: int in 4:
+				_beam(tool, feet[i], heads[i], BEAM_M)
+				var j := (i + 1) % 4
+				_beam(tool, feet[i].lerp(heads[i], 0.5), feet[j].lerp(heads[j], 0.5), BEAM_M * 0.6)
+				_beam(tool, heads[i], heads[j], BEAM_M * 0.6)
+		BuildingDef.Silhouette.STALLS:
+			# bancas no pátio, menos na coluna que leva à porta
+			var step := size.x / spec.cells.x
+			for row: int in spec.court_rows:
+				for column: int in spec.cells.x:
+					if column == spec.door_index:
+						continue
+					var center := Vector3(-size.x * 0.5 + step * (column + 0.5), 0.0,
+							-size.y * 0.5 + spec.cell_m * (row + 0.5))
+					var scale := spec.cell_m * 0.8
+					_append_piece(tool, STALLS[(row + column) % STALLS.size()],
+							Transform3D(Basis(Vector3.UP, PI).scaled(Vector3.ONE * scale), center))
+		BuildingDef.Silhouette.CRANE:
+			# mastro no canto de trás, lança ao longo do lado e o cabo descendo fora da parede
+			var mast := Vector3(size.x * 0.5 + 0.35, 0.0, size.y * 0.5 - 0.35)
+			var high := top + CRANE_M
+			var tip := Vector3(mast.x, high, -size.y * 0.15)
+			_beam(tool, mast, mast + Vector3(0.0, high, 0.0), BEAM_M * 1.3)
+			_beam(tool, mast + Vector3(0.0, high - 0.2, 0.0), tip, BEAM_M)
+			_beam(tool, mast + Vector3(0.0, high - 2.2, 0.0), mast.lerp(tip, 0.5) + Vector3(0.0, high * 0.5 - 0.1, 0.0), BEAM_M * 0.6)
+			_beam(tool, tip, Vector3(tip.x, 1.8, tip.z), 0.06)
+			_box(extra, Vector3(tip.x, 1.4, tip.z), Vector3(0.8, 0.8, 0.8), UV_WALL)
+		BuildingDef.Silhouette.CLERESTORY:
+			# lanternim: uma faixa de parede mais alta ao longo da cumeeira, com o seu telhado
+			var along_x := spec.roof != Roof.GABLE_Z
+			var length := (size.x if along_x else size.y) * 0.7
+			var ridge := spec.height_m + spec.roof_m
+			_box(extra, Vector3(0.0, ridge + 0.35, 0.0), _uv_point(along_x, length, 1.3, 1.4), UV_WALL)
+			_box(extra, Vector3(0.0, ridge + 1.08, 0.0), _uv_point(along_x, length + 0.4, 0.16, 2.2), UV_ROOF)
+		BuildingDef.Silhouette.BANNERS:
+			var hall := spec.hall()
+			if hall.floors() > 1:
+				# a bandeira fica sobre a parede lisa em cima da porta, um pouco à frente dela
+				var place := Transform3D(Basis.IDENTITY, spec.hall_offset()) * _cell_transform(hall, 0, hall.door_index, 1)
+				_append_piece(tool, BANNER, place * Transform3D(Basis.IDENTITY, Vector3(0.11, 0.0, 0.0)))
+
+
+## Viga da peça de madeira do kit de a até b (o comprimento da peça é 1 em y).
+static func _beam(tool: SurfaceTool, a: Vector3, b: Vector3, thickness: float) -> void:
+	var along := b - a
+	if along.length_squared() < 1e-6:
+		return
+	var side := along.cross(Vector3.UP if absf(along.normalized().y) < 0.95 else Vector3.RIGHT).normalized()
+	var other := side.cross(along).normalized()
+	var k := thickness / BEAM_SIDE
+	_append_piece(tool, BEAM, Transform3D(Basis(side * k, along, other * k), a))
+
+
+## A parte que gira enquanto o prédio produz: pás do moinho, roda d'água ou polia da torre de mina.
+class Rotor:
+	var mesh: ArrayMesh
+	## Onde fica o eixo, no referencial canônico; o giro é em torno do x local.
+	var pivot: Transform3D
+	var speed: float
+
+
+static var _rotors: Dictionary[String, Rotor] = {}
+
+
+static func rotor(spec: Spec) -> Rotor:
+	if spec.silhouette not in [BuildingDef.Silhouette.WINDMILL, BuildingDef.Silhouette.WATERWHEEL,
+			BuildingDef.Silhouette.HEADFRAME]:
+		return null
+	var key := spec.key()
+	if _rotors.has(key):
+		return _rotors[key]
+	var size := spec.size_m()
+	var result := Rotor.new()
+	var piece := ""
+	var scale := 1.0
+	var center := Vector3.ZERO
+	match spec.silhouette:
+		BuildingDef.Silhouette.WINDMILL:
+			# pás na frente, com o eixo para fora da fachada (o x da peça vira −Z)
+			piece = WINDMILL
+			scale = minf(size.x * 0.9, spec.height_m * 0.9) / WINDMILL_DIAMETER
+			result.pivot = Transform3D(Basis(Vector3.UP, PI * 0.5),
+					Vector3(0.0, spec.height_m + spec.roof_m * 0.35, -size.y * 0.5 - 0.6))
+			result.speed = WINDMILL_SPEED
+		BuildingDef.Silhouette.WATERWHEEL:
+			piece = WATERWHEEL
+			var diameter := minf(3.4, size.y * 0.6)
+			scale = diameter / WATERWHEEL_DIAMETER
+			result.pivot = Transform3D(Basis.IDENTITY, Vector3(size.x * 0.5 + 0.85, diameter * 0.38, 0.0))
+			result.speed = WATERWHEEL_SPEED
+		BuildingDef.Silhouette.HEADFRAME:
+			piece = SHEAVE
+			scale = 1.6 / SHEAVE_DIAMETER
+			center = SHEAVE_CENTER
+			result.pivot = Transform3D(Basis.IDENTITY, Vector3(0.0, spec.height_m + spec.roof_m + HEADFRAME_M + 0.4, 0.0))
+			result.speed = SHEAVE_SPEED
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_append_piece(tool, piece, Transform3D(Basis.from_scale(Vector3.ONE * scale), -center * scale))
+	result.mesh = tool.commit()
+	_rotors[key] = result
+	return result
 
 
 ## Telhado: as águas com a UV do telhado; as empenas (triângulos das pontas) com a UV da parede.

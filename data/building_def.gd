@@ -13,6 +13,9 @@ enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 ## O que o serviço protege (riscos, seção 8): nada, incêndio (quartel de bombeiros) ou doença
 ## (hospital).
 enum Hazard { NONE, FIRE, DISEASE }
+## O que se reconhece de longe no prédio de modelo (Fase 13): moinho de vento, roda d'água, torre de
+## mina, bancas na frente, guindaste, lanternim no telhado ou bandeiras na fachada.
+enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS }
 
 @export var id: StringName
 ## Chave de tradução do nome.
@@ -28,6 +31,7 @@ enum Hazard { NONE, FIRE, DISEASE }
 @export var smoke: Smoke = Smoke.NONE
 ## Som de trabalho enquanto produz (Fase 10): &"wood", &"metal" ou vazio (sem som).
 @export var work_sound: StringName
+@export var silhouette: Silhouette = Silhouette.NONE
 
 @export_group("Custo")
 @export var cost_money: int = 0

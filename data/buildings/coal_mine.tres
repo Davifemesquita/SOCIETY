@@ -26,3 +26,4 @@ pollution_strength = 0.6
 deposit = &"coal"
 wall_material = 3
 work_sound = &"metal"
+silhouette = 3

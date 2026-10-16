@@ -25,3 +25,4 @@ pollution_strength = 0.7
 smoke = 3
 wall_material = 3
 work_sound = &"metal"
+silhouette = 6

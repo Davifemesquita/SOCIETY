@@ -16,3 +16,4 @@ upkeep_per_min = 120
 unlock_tier = &"artisans"
 unlock_residents = 200
 wall_material = 3
+silhouette = 7

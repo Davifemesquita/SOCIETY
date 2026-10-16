@@ -10,6 +10,8 @@ extends Node3D
 ## - Prédio parado: ícone do motivo flutuando em cima (sem estrada, sem entrada, saída cheia…);
 ##   o texto do motivo fica na dica do painel. Desde a Fase 7 é ícone, não texto.
 ## - Casa em protesto: ícone de protesto. Campo e pasto não têm ícone.
+## - Silhueta por cadeia (Fase 13): pás do moinho, roda d'água e polia da torre de mina giram enquanto
+##   o prédio produz, no tempo de jogo (param na pausa).
 
 const DOOR_COLOR := Color(0.25, 0.18, 0.12)
 ## Tamanho do ícone na tela (Sprite3D de tamanho fixo).
@@ -43,6 +45,9 @@ var _detail_range_m: float = 260.0
 var _occluders: bool = true
 var _details: Array[GeometryInstance3D] = []
 var _selected_id: int = 0
+## Partes que giram (BuildingKit.Rotor), pelo prédio, e quanto giram por segundo de jogo.
+var _rotors: Dictionary[int, Node3D] = {}
+var _rotor_speeds: Dictionary[int, float] = {}
 var _refresh_left: float = 0.0
 
 
@@ -111,10 +116,25 @@ func select(building_id: int) -> void:
 
 
 func _process(delta: float) -> void:
+	spin_rotors(delta * GameClock.clock.speed_multiplier())
 	_refresh_left -= delta
 	if _refresh_left <= 0.0:
 		_refresh_left = REFRESH_SECONDS
 		refresh_labels()
+
+
+## Gira as partes dos prédios que estão produzindo por "game_seconds" segundos de jogo.
+func spin_rotors(game_seconds: float) -> void:
+	if game_seconds <= 0.0:
+		return
+	for building_id: int in _rotors:
+		var record := _simulation.world.building(building_id)
+		if record != null and record.state == BuildingRecord.State.PRODUCING and not record.paused:
+			_rotors[building_id].rotate_object_local(Vector3.RIGHT, _rotor_speeds[building_id] * game_seconds)
+
+
+func rotor_count() -> int:
+	return _rotors.size()
 
 
 func _grid(record: BuildingRecord) -> IslandGrid:
@@ -207,6 +227,21 @@ func _add(building_id: int) -> void:
 		var color := _color(record)
 		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, color.darkened(ROOF_DARKEN).lightened(0.35),
 				root.position.y, soot)
+		var rotor := BuildingKit.rotor(spec)
+		if rotor != null:
+			var pivot := Node3D.new()
+			pivot.name = "Rotor"
+			pivot.transform = rotor.pivot
+			var blades := MeshInstance3D.new()
+			blades.mesh = rotor.mesh
+			blades.material_override = BuildingMaterials.kit()
+			BuildingMaterials.dress_kit(blades, wall_layer, color, roof_layer, color.darkened(ROOF_DARKEN).lightened(0.35),
+					root.position.y, soot)
+			_detail(blades)
+			pivot.add_child(blades)
+			body.add_child(pivot)
+			_rotors[building_id] = pivot
+			_rotor_speeds[building_id] = rotor.speed
 		if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
 			root.add_child(_occluder(box_size, Vector3(0.0, (height - FOUNDATION_M) * 0.5, 0.0)))
 		root.add_child(body)
@@ -371,6 +406,8 @@ func _remove(building_id: int) -> void:
 		_nodes.erase(building_id)
 		_labels.erase(building_id)
 		_label_keys.erase(building_id)
+		_rotors.erase(building_id)
+		_rotor_speeds.erase(building_id)
 
 
 func refresh_labels() -> void:

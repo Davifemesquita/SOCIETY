@@ -3,7 +3,7 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_buildings.tscn -- <pasta>
 ## Na ilha plana: uma fileira de casas de cada classe nas quatro rotações e todos os outros prédios
 ## (menos campo, pasto e píer) lado a lado; capturas de longe, de perto e à noite.
-## CAPTURA_SO=casas tira só as casas.
+## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13).
 
 var _out_dir: String
 var _game: GameScreen
@@ -29,6 +29,10 @@ func _run() -> void:
 	_sim.ignore_terrain = true
 	_set_hour(15.0)
 	_place(&"trading_post", Vector2i(200, 2), 2)
+	if OS.get_environment("CAPTURA_SO") == "silhuetas":
+		await _silhouettes()
+		get_tree().quit()
+		return
 	var tiers: Array[StringName] = [&"peasants", &"workers", &"artisans", &"engineers", &"investors"]
 	for row: int in tiers.size():
 		for i: int in 6:
@@ -98,3 +102,19 @@ func _set_hour(hour: float) -> void:
 	var clock := GameClock.clock
 	clock.extra_hours = 0.0
 	clock.extra_hours = fposmod(hour - clock.hour(), 24.0)
+
+
+## Fase 13: os prédios com silhueta própria numa fileira, produzindo (as partes giradas um pouco).
+func _silhouettes() -> void:
+	var x := 40
+	for def_id: StringName in [&"mill", &"sawmill", &"coal_mine", &"market", &"warehouse", &"furnace", &"tavern"]:
+		var id := _place(def_id, Vector2i(x, 100), 0)
+		if id != 0:
+			_sim.world.building(id).state = BuildingRecord.State.PRODUCING
+		x += _sim.data.building(def_id).size.x + 3
+	_game.building_view.spin_rotors(0.6)
+	# a frente dos prédios (rotação 0) olha para −Z: a câmera fica do lado de −Z
+	await _shot("08_silhuetas.png", Vector3(100.0, 0.0, 196.0), 60.0, PI + 0.25, 0.5)
+	await _shot("09_silhuetas_moinho.png", Vector3(88.0, 3.0, 200.0), 30.0, PI + 0.35, 0.3)
+	await _shot("10_silhuetas_mercado.png", Vector3(122.0, 2.0, 200.0), 26.0, PI - 0.3, 0.4)
+	await _shot("11_silhuetas_fundicao.png", Vector3(152.0, 3.0, 204.0), 34.0, PI + 0.5, 0.45)

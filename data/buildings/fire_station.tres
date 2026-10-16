@@ -17,3 +17,4 @@ unlock_tier = &"peasants"
 unlock_residents = 50
 service_radius_cells = 30
 protects = 1
+silhouette = 7

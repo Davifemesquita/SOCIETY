@@ -824,7 +824,22 @@ Regras que já custaram investigação:
   reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
   de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
   (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
-  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas` ou `noite`).
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite` ou `silhuetas`).
+
+### Cidade viva (Fase 13, nossa)
+
+- **A especificação acaba na Fase 11** e a 12 foi nossa; a 13 fecha o que as seções 9 (mundo vivo) e
+  11 (arte) pedem e ainda faltava, em partes com commit próprio. Tudo é só visual: nada muda na
+  simulação nem no save (segue na versão 15).
+- **Silhueta por cadeia** (`BuildingDef.silhouette`, nos `.tres`): pás na empena do moinho (o telhado vira
+  de frente), roda d'água no lado da serraria, torre de vigas com polia nas minas, pátio de bancas na
+  metade da frente do mercado (`Spec.court_rows`: o corpo é `Spec.hall()`, deslocado por `hall_offset()`,
+  e as janelas e a porta seguem), guindaste no armazém, entreposto e estaleiro, lanternim nas fábricas
+  pesadas e bandeira em cima da porta dos serviços (a janela de cima da porta vira parede lisa). As peças
+  paradas entram na malha da forma; vigas são a `pillar-wood` do kit esticada de um ponto a outro
+  (`BuildingKit._beam`). A parte que gira (`BuildingKit.rotor`, malha em cache com o meio no eixo) é um nó
+  `Rotor` filho do modelo, que a `BuildingView` gira em torno do x local enquanto o prédio produz, no tempo
+  de jogo (`spin_rotors`, para na pausa).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -849,6 +864,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
+| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia; depois pilhas de estoque, carga e cavalo na carroça, postes e fogueiras, detalhe das casas e animais |
 
 Pendências já vistas para fases futuras:
 
@@ -857,7 +873,6 @@ Pendências já vistas para fases futuras:
   O robô joga 4 h numa ilha plana de 350×350 (a terra do arquipélago, no lugar das colônias) e chega às
   cinco classes (investidores aos ~225 min); o aperto é a entrada das fábricas dos engenheiros.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
-  volumétricas aparecem certas no ultra; o detalhe que falta nos modelos (silhueta por cadeia, cavalo na
-  carroça) segue no `assets/TODO_ASSETS.md`.
+  volumétricas aparecem certas no ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).

@@ -15,7 +15,8 @@ func test_the_kit_is_in_the_project() -> void:
 	assert_bool(BuildingKit.available()).is_true()
 	for piece: String in ["wall", "wall-door", "wall-doorway-round", "wall-window-shutters", "wall-window-glass",
 			"wall-window-small", "wall-wood", "wall-wood-door", "wall-wood-doorway-round", "wall-wood-window-shutters",
-			"wall-wood-window-glass", "wall-wood-window-small", "chimney"]:
+			"wall-wood-window-glass", "wall-wood-window-small", "chimney", "windmill", "watermill", "wheel",
+			"pillar-wood", "stall-red", "stall-green", "banner-red"]:
 		assert_bool(ResourceLoader.exists(BuildingKit.DIR + piece + ".glb")).override_failure_message(piece).is_true()
 
 
@@ -104,3 +105,104 @@ func test_the_view_draws_the_model_and_keeps_boxes_for_fields() -> void:
 	assert_int(view.building_count()).is_equal(2)
 	assert_int(house).is_greater(0)
 	assert_int(field).is_greater(0)
+
+
+func _spec(def_id: StringName) -> BuildingKit.Spec:
+	return BuildingKit.spec_for(_sim, BuildingRecord.new(5, def_id, 0, Vector2i(10, 10), 0), 2.0)
+
+
+func test_chains_get_their_own_silhouette() -> void:
+	var seen := {}
+	for def: BuildingDef in _sim.data.buildings:
+		if def.silhouette == BuildingDef.Silhouette.NONE:
+			continue
+		seen[def.silhouette] = true
+		var spec := _spec(def.id)
+		assert_int(spec.silhouette).override_failure_message(String(def.id)).is_equal(def.silhouette)
+		var plain := _spec(def.id)
+		plain.silhouette = BuildingDef.Silhouette.NONE
+		plain.court_rows = 0
+		var extra := BuildingKit.triangles(spec) - BuildingKit.triangles(plain)
+		var rotor := BuildingKit.rotor(spec)
+		# a silhueta acrescenta peças paradas, uma parte que gira ou as duas
+		assert_bool(extra != 0 or rotor != null).override_failure_message(String(def.id)).is_true()
+	# toda silhueta tem ao menos um prédio
+	assert_int(seen.size()).is_equal(BuildingDef.Silhouette.size() - 1)
+	assert_int(_spec(&"mill").silhouette).is_equal(BuildingDef.Silhouette.WINDMILL)
+	assert_int(_spec(&"iron_mine").silhouette).is_equal(BuildingDef.Silhouette.HEADFRAME)
+	assert_int(_spec(&"bakery").silhouette).is_equal(BuildingDef.Silhouette.NONE)
+
+
+func test_rotors_sit_where_the_machine_is() -> void:
+	assert_object(BuildingKit.rotor(_spec(&"bakery"))).is_null()
+	var mill := _spec(&"mill")
+	var blades := BuildingKit.rotor(mill)
+	# pás na frente da fachada, sem tocar o chão
+	assert_float(blades.pivot.origin.z).is_less(-mill.size_m().y * 0.5)
+	assert_float(blades.pivot.origin.y - blades.mesh.get_aabb().size.y * 0.5).is_greater(1.0)
+	# o eixo (x da peça) aponta para fora da frente
+	assert_float((blades.pivot.basis * Vector3.RIGHT).dot(Vector3.FORWARD)).is_greater(0.99)
+	var sawmill := _spec(&"sawmill")
+	var wheel := BuildingKit.rotor(sawmill)
+	assert_float(wheel.pivot.origin.x).is_greater(sawmill.size_m().x * 0.5)
+	var mine := _spec(&"coal_mine")
+	var sheave := BuildingKit.rotor(mine)
+	assert_float(sheave.pivot.origin.y).is_greater(mine.height_m + BuildingKit.HEADFRAME_M)
+	# a polia gira em torno do meio dela
+	assert_float(sheave.mesh.get_aabb().get_center().length()).is_less(0.2)
+	assert_object(BuildingKit.rotor(_spec(&"mill"))).is_same(blades)
+
+
+func test_the_market_keeps_a_court_of_stalls_in_front() -> void:
+	var market := _spec(&"market")
+	assert_int(market.court_rows).is_greater(0)
+	var front := -market.size_m().y * 0.5
+	var court_end := front + market.court_rows * market.cell_m
+	# nenhuma janela no pátio, e a porta no fim dele
+	for window: Transform3D in BuildingKit.windows(market):
+		assert_float(window.origin.z).is_greater(court_end - 0.5)
+	assert_float(BuildingKit.door_position(market).z).is_between(court_end - 0.5, court_end + 0.5)
+	# as bancas aparecem no modelo, no pátio
+	var box := BuildingKit.mesh(market).get_aabb()
+	assert_float(box.position.z).is_less(court_end - market.cell_m)
+
+
+func test_a_banner_hangs_above_the_door_of_services() -> void:
+	var tavern := _spec(&"tavern")
+	assert_int(tavern.silhouette).is_equal(BuildingDef.Silhouette.BANNERS)
+	assert_str(String(BuildingKit.slot(tavern, 0, tavern.door_index, 1))).is_equal("plain")
+	var plain := _spec(&"tavern")
+	plain.silhouette = BuildingDef.Silhouette.NONE
+	assert_int(BuildingKit.windows(tavern).size()).is_equal(BuildingKit.windows(plain).size() - 1)
+
+
+func test_rotors_turn_only_while_producing() -> void:
+	SimFixture.road(_sim, Vector2i(0, 10), Vector2i(79, 10))
+	var mill := SimFixture.place(_sim, &"mill", Vector2i(2, 11), 0)
+	var sawmill := SimFixture.place(_sim, &"sawmill", Vector2i(10, 11), 0)
+	var view: BuildingView = auto_free(BuildingView.new())
+	add_child(view)
+	view.setup(_sim, _sim.config.cell_size_m)
+	assert_int(view.rotor_count()).is_equal(2)
+	var rotors := view.find_children("Rotor", "Node3D", true, false)
+	var before: Array[Basis] = []
+	for rotor: Node in rotors:
+		before.append((rotor as Node3D).basis)
+	_sim.world.building(mill).state = BuildingRecord.State.PRODUCING
+	_sim.world.building(sawmill).state = BuildingRecord.State.NO_INPUT
+	view.spin_rotors(1.0)
+	var turned := 0
+	for i: int in rotors.size():
+		if not (rotors[i] as Node3D).basis.is_equal_approx(before[i]):
+			turned += 1
+	assert_int(turned).is_equal(1)
+	# o giro é em torno do próprio eixo: o eixo não sai do lugar
+	_sim.world.building(mill).paused = true
+	var frozen: Array[Basis] = []
+	for rotor: Node in rotors:
+		frozen.append((rotor as Node3D).basis)
+	view.spin_rotors(1.0)
+	for i: int in rotors.size():
+		assert_bool((rotors[i] as Node3D).basis.is_equal_approx(frozen[i])).is_true()
+	_sim.execute(DemolishCommand.new(0, Rect2i(Vector2i(2, 11), Vector2i(1, 1))))
+	assert_int(view.rotor_count()).is_equal(1)

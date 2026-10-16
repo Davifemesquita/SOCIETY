@@ -18,3 +18,4 @@ unlock_tier = &"workers"
 unlock_residents = 200
 service_radius_cells = 30
 protects = 2
+silhouette = 7

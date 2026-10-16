@@ -22,3 +22,4 @@ cycle_s = 60.0
 terrain = 1
 shipyard_ships = Array[StringName]([&"merchant_ship", &"clipper", &"frigate"])
 fire_risk = 1.5
+silhouette = 5

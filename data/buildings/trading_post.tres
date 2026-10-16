@@ -39,3 +39,4 @@ terrain = 1
 is_trading_post = true
 levels = Array[ExtResource("2_level")]([SubResource("level_0"), SubResource("level_1"), SubResource("level_2")])
 wall_material = 2
+silhouette = 5

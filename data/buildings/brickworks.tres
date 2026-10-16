@@ -26,3 +26,4 @@ pollution_strength = 0.5
 smoke = 3
 work_sound = &"metal"
 fire_risk = 2.0
+silhouette = 6
