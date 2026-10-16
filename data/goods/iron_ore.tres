@@ -9,3 +9,4 @@ name_key = "GOOD_IRON_ORE"
 base_price = 35
 consumption_per_resident_t_min = 0
 color = Color(0.45, 0.35, 0.33, 1)
+pile = 5

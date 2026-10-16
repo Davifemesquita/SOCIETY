@@ -9,3 +9,4 @@ name_key = "GOOD_CLAY"
 base_price = 15
 consumption_per_resident_t_min = 0
 color = Color(0.7, 0.45, 0.3, 1)
+pile = 5

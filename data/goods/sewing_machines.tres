@@ -9,3 +9,4 @@ name_key = "GOOD_SEWING_MACHINES"
 base_price = 170
 consumption_per_resident_t_min = 0.002
 color = Color(0.25, 0.25, 0.28, 1)
+pile = 3

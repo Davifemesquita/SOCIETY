@@ -9,3 +9,4 @@ name_key = "GOOD_RUM"
 base_price = 110
 consumption_per_resident_t_min = 0.0025
 color = Color(0.55, 0.3, 0.15, 1)
+pile = 2

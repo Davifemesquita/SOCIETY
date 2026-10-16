@@ -9,3 +9,4 @@ name_key = "GOOD_PIGS"
 base_price = 30
 consumption_per_resident_t_min = 0
 color = Color(0.9, 0.65, 0.65, 1)
+pile = 0

@@ -9,3 +9,4 @@ name_key = "GOOD_STEEL"
 base_price = 120
 consumption_per_resident_t_min = 0
 color = Color(0.55, 0.58, 0.62, 1)
+pile = 4

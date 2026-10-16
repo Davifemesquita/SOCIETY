@@ -107,14 +107,19 @@ func _set_hour(hour: float) -> void:
 ## Fase 13: os prédios com silhueta própria numa fileira, produzindo (as partes giradas um pouco).
 func _silhouettes() -> void:
 	var x := 40
-	for def_id: StringName in [&"mill", &"sawmill", &"coal_mine", &"market", &"warehouse", &"furnace", &"tavern"]:
+	for def_id: StringName in [&"mill", &"sawmill", &"coal_mine", &"market", &"warehouse", &"furnace", &"tavern", &"brewery", &"clockmaker"]:
 		var id := _place(def_id, Vector2i(x, 100), 0)
 		if id != 0:
 			_sim.world.building(id).state = BuildingRecord.State.PRODUCING
+			# estoque de saída cheio: as pilhas (Fase 13, parte 2) aparecem
+			_sim.world.building(id).output_buffer = 3.0 + (x % 2)
 		x += _sim.data.building(def_id).size.x + 3
 	_game.building_view.spin_rotors(0.6)
+	_game.stockpile_view.refresh()
 	# a frente dos prédios (rotação 0) olha para −Z: a câmera fica do lado de −Z
 	await _shot("08_silhuetas.png", Vector3(100.0, 0.0, 196.0), 60.0, PI + 0.25, 0.5)
 	await _shot("09_silhuetas_moinho.png", Vector3(88.0, 3.0, 200.0), 30.0, PI + 0.35, 0.3)
 	await _shot("10_silhuetas_mercado.png", Vector3(122.0, 2.0, 200.0), 26.0, PI - 0.3, 0.4)
 	await _shot("11_silhuetas_fundicao.png", Vector3(152.0, 3.0, 204.0), 34.0, PI + 0.5, 0.45)
+	await _shot("12_pilhas.png", Vector3(100.0, 1.0, 196.0), 26.0, PI + 0.15, 0.35)
+	await _shot("13_pilhas_cervejaria.png", Vector3(186.0, 1.0, 196.0), 26.0, PI + 0.15, 0.35)
