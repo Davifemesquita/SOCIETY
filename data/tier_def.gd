@@ -18,6 +18,10 @@ extends Resource
 ## Texturas da casa (Fase 9): paredes (BuildingMaterials.Wall) e telhado (BuildingMaterials.Roof).
 @export var wall_material: int = 0
 @export var roof_material: int = 0
+## Detalhe da casa de modelo (Fase 13): quintal cercado na frente, floreiras nas janelas, sacadas nos
+## andares de cima ou pórtico de colunas com sebe.
+enum HouseTrim { NONE, YARD, FLOWER_BOXES, BALCONIES, PORTICO }
+@export var house_trim: HouseTrim = HouseTrim.NONE
 ## Roupa dos pedestres desta classe (seção 9): cada um sorteia a cor de cima desta lista; a calça
 ## (ou saia) é a mesma para a classe.
 @export var clothing_colors: PackedColorArray = PackedColorArray([Color(0.45, 0.4, 0.35)])

@@ -20,6 +20,9 @@ uniform float grime_strength = 0.35;
 uniform float trim_desaturate = 0.3;
 uniform float trim_darken = 0.85;
 uniform vec4 trim_wood : source_color = vec4(0.36, 0.25, 0.17, 1.0);
+// folhagem da sebe e da floreira (célula (3, 3), Fase 13): o turquesa do kit vira verde, com flores
+uniform vec4 foliage : source_color = vec4(0.2, 0.34, 0.14, 1.0);
+uniform float flower_share = 0.22;
 
 instance uniform vec4 tint : source_color = vec4(1.0);
 instance uniform float layer = 0.0;
@@ -56,6 +59,16 @@ void fragment() {
 	float kit_luma = dot(color, vec3(0.299, 0.587, 0.114));
 	if (cell == ivec2(4, 3)) {
 		color = kit_luma / 0.55 * mix(trim_wood.rgb, tint.rgb * 0.6, 0.35);
+	} else if (cell == ivec2(3, 3)) {
+		// um sorteio por bolinha de ~12 cm, pela posição no mundo: folha mais clara ou mais escura, ou flor
+		vec3 blob = floor(world_position * 8.0);
+		float pick = fract(sin(dot(blob, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+		color = foliage.rgb * (0.75 + 0.5 * fract(pick * 7.13));
+		if (pick < flower_share) {
+			float hue = fract(pick * 31.7);
+			color = hue < 0.35 ? vec3(0.75, 0.12, 0.12) : (hue < 0.6 ? vec3(0.85, 0.7, 0.2)
+					: (hue < 0.85 ? vec3(0.8, 0.45, 0.6) : vec3(0.85, 0.85, 0.8)));
+		}
 	} else {
 		color = mix(color, vec3(kit_luma), trim_desaturate) * trim_darken;
 	}

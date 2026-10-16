@@ -64,6 +64,20 @@ const SHEAVE := "wheel"
 const BEAM := "pillar-wood"
 const STALLS: Array[String] = ["stall-red", "stall-green"]
 const BANNER := "banner-red"
+## Detalhe das casas (Fase 13, TierDef.house_trim): cerca e portão do quintal, sebe (também a floreira),
+## frente de sacada com colunas e parapeito e coluna de pedra do pórtico.
+const FENCE := "fence"
+const GATE := "fence-gate"
+const HEDGE := "hedge"
+const BALCONY := "balcony-wall-fence"
+const PILLAR := "pillar-stone"
+const PLANKS := "planks-half"
+## Altura da cerca, quanto a sacada e a floreira saem da parede e a altura da coluna do pórtico em
+## fração do andar.
+const FENCE_M := 1.0
+const BALCONY_OUT_M := 0.8
+const FLOWER_BOX_OUT_M := 0.16
+const PORTICO_HEIGHT := 0.95
 ## Medidas das peças do kit (caixa da peça importada): diâmetro das rodas, meio da polia, lado da viga.
 const WINDMILL_DIAMETER := 3.113
 const WATERWHEEL_DIAMETER := 1.8
@@ -95,12 +109,14 @@ class Spec:
 	var sparse_windows: bool = false
 	var chimney: bool = false
 	var silhouette: int = BuildingDef.Silhouette.NONE
-	## Fileiras da frente sem paredes (o pátio das bancas do mercado): o corpo fica nas de trás.
+	## Fileiras da frente sem paredes (o pátio das bancas do mercado, o quintal da casa): o corpo fica
+	## nas de trás.
 	var court_rows: int = 0
+	var trim: int = TierDef.HouseTrim.NONE
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
-				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette, court_rows]
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
+				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette, court_rows, trim]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -119,6 +135,7 @@ class Spec:
 		copy.sparse_windows = sparse_windows
 		copy.chimney = chimney
 		copy.silhouette = silhouette
+		copy.trim = trim
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -163,6 +180,10 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.roof_m = tier.house_height_m * HOUSE_ROOF_FRACTION
 		spec.chimney = variant == 2
 		spec.window_style = BuildingView.house_hash(record.id) / 3 % 2
+		spec.trim = tier.house_trim
+		if spec.trim == TierDef.HouseTrim.YARD and spec.cells.y > 2:
+			# a fileira da frente vira quintal cercado; a casa fica nas de trás
+			spec.court_rows = 1
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -342,8 +363,11 @@ static func _build(spec: Spec) -> ArrayMesh:
 	# ficaria fora do índice
 	var extra := SurfaceTool.new()
 	extra.begin(Mesh.PRIMITIVE_TRIANGLES)
-	_box(extra, Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0),
-			Vector3(size.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, size.y + 0.1), UV_STONE)
+	# o quintal fica no chão: o alicerce é só o do corpo
+	var base := hall.size_m() if spec.trim == TierDef.HouseTrim.YARD else size
+	var base_center := spec.hall_offset() if spec.trim == TierDef.HouseTrim.YARD else Vector3.ZERO
+	_box(extra, base_center + Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0),
+			Vector3(base.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, base.y + 0.1), UV_STONE)
 	if spec.court_rows > 0:
 		# o telhado do corpo é feito no referencial dele e trazido para o do prédio
 		var roof := SurfaceTool.new()
@@ -353,13 +377,15 @@ static func _build(spec: Spec) -> ArrayMesh:
 	else:
 		_roof(extra, spec)
 	_silhouette(tool, extra, spec)
+	_trim(tool, spec)
 	extra.index()
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
 	if spec.chimney:
 		var stack := spec.roof_m + 0.6
-		_append_piece(tool, CHIMNEY, Transform3D(Basis.from_scale(Vector3(3.0, stack, 3.0)),
-				Vector3(size.x * 0.25 - 0.6, spec.height_m, -size.y * 0.2 + 0.5)))
+		var body := hall.size_m()
+		_append_piece(tool, CHIMNEY, offset * Transform3D(Basis.from_scale(Vector3(3.0, stack, 3.0)),
+				Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5)))
 	var arrays := tool.commit_to_arrays()
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -420,6 +446,78 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 				# a bandeira fica sobre a parede lisa em cima da porta, um pouco à frente dela
 				var place := Transform3D(Basis.IDENTITY, spec.hall_offset()) * _cell_transform(hall, 0, hall.door_index, 1)
 				_append_piece(tool, BANNER, place * Transform3D(Basis.IDENTITY, Vector3(0.11, 0.0, 0.0)))
+
+
+## O detalhe da casa pela classe (Fase 13). As peças do kit têm a face de fora em x = 0,5, como as
+## paredes.
+static func _trim(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var offset := Transform3D(Basis.IDENTITY, spec.hall_offset())
+	match spec.trim:
+		TierDef.HouseTrim.YARD:
+			if spec.court_rows == 0:
+				return
+			# cerca na borda da área, em volta das fileiras da frente, com o portão diante da porta
+			for index: int in spec.cells.x:
+				var piece := GATE if index == spec.door_index else FENCE
+				_append_piece(tool, piece, _fence_place(spec, 0, index))
+			for row: int in spec.court_rows:
+				_append_piece(tool, FENCE, _fence_place(spec, 1, row))
+				_append_piece(tool, FENCE, _fence_place(spec, 3, row))
+		TierDef.HouseTrim.FLOWER_BOXES:
+			# floreira debaixo de cada janela da frente, dos andares de cima
+			for level: int in range(1, hall.floors()):
+				for index: int in hall.cells.x:
+					if slot(hall, 0, index, level) == &"window":
+						var under := hall.floor_m() * (WINDOW_CENTER - WINDOW_HEIGHT * 0.5) - 0.18
+						_append_piece(tool, HEDGE, offset * _face_place(hall, 0, index, level,
+								Vector3(0.64, 0.9, 0.5), FLOWER_BOX_OUT_M, under))
+		TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO:
+			# sacada corrida no primeiro andar (e nos do meio, nos engenheiros): piso e frente com parapeito
+			var top := hall.floors() - 1 if spec.trim == TierDef.HouseTrim.BALCONIES else mini(2, hall.floors())
+			for level: int in range(1, top):
+				for index: int in hall.cells.x:
+					_append_piece(tool, BALCONY, offset * _face_place(hall, 0, index, level,
+							Vector3(1.0, hall.floor_m(), 1.0), BALCONY_OUT_M, 0.0))
+					# o piso de tábuas vai da parede (x = 0 da peça) até a frente da sacada
+					_append_piece(tool, PLANKS, offset * _face_place(hall, 0, index, level,
+							Vector3(BALCONY_OUT_M * 2.0, 2.0, 1.0), BALCONY_OUT_M, -0.12))
+			if spec.trim == TierDef.HouseTrim.PORTICO:
+				# duas colunas de pedra dos lados da porta e sebe diante das outras células do térreo
+				var door := _wall_point(hall, 0, hall.door_index, 0)
+				var step := hall.size_m().x / hall.cells.x
+				for side: float in [-0.42, 0.42]:
+					var foot := door + _face_normal(0) * 0.35 + Vector3(side * step, 0.0, 0.0)
+					_append_piece(tool, PILLAR, offset * Transform3D(Basis.from_scale(Vector3(1.7,
+							hall.floor_m() * PORTICO_HEIGHT, 2.2)), foot))
+				for index: int in hall.cells.x:
+					if index != hall.door_index:
+						_append_piece(tool, HEDGE, offset * _face_place(hall, 0, index, 0,
+								Vector3(1.6, 3.0, 0.9), 0.45, 0.0))
+
+
+## Peça presa à fachada: o meio da célula na face de fora da parede, saindo out_m dela e up_m acima do
+## chão do andar, com a escala da peça (o x da escala é a profundidade: a face de fora da peça, x = 0,5,
+## fica a out_m da parede).
+static func _face_place(spec: Spec, face: int, index: int, level: int, scale: Vector3, out_m: float,
+		up_m: float) -> Transform3D:
+	var normal := _face_normal(face)
+	var origin := _wall_point(spec, face, index, level) + normal * (out_m - 0.5 * scale.x) + Vector3(0.0, up_m, 0.0)
+	return Transform3D(Basis(Vector3.UP, FACE_YAWS[face]) * Basis.from_scale(scale), origin)
+
+
+## O meio da célula na face de fora da parede, no chão do andar.
+static func _wall_point(spec: Spec, face: int, index: int, level: int) -> Vector3:
+	var place := _cell_transform(spec, face, index, level)
+	return place.origin + _face_normal(face) * place.basis.x.length() * 0.5
+
+
+## Lanço da cerca na borda da área (não da parede): a célula da fachada, com a altura da cerca.
+static func _fence_place(spec: Spec, face: int, index: int) -> Transform3D:
+	var place := _cell_transform(spec, face, index, 0)
+	place.basis.y = Vector3.UP * FENCE_M / 0.38
+	# a borda da área fica INSET_M / 2 além da parede
+	return place.translated(_face_normal(face) * INSET_M * 0.5)
 
 
 ## Viga da peça de madeira do kit de a até b (o comprimento da peça é 1 em y).

@@ -4,7 +4,8 @@ extends Node
 ## Na ilha plana: uma fileira de casas de cada classe nas quatro rotações e todos os outros prédios
 ## (menos campo, pasto e píer) lado a lado; capturas de longe, de perto e à noite.
 ## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13); postes,
-## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13).
+## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
+## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13).
 
 var _out_dir: String
 var _game: GameScreen
@@ -32,6 +33,10 @@ func _run() -> void:
 	_place(&"trading_post", Vector2i(200, 2), 2)
 	if OS.get_environment("CAPTURA_SO") == "silhuetas":
 		await _silhouettes()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "detalhes":
+		await _house_trims()
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "postes":
@@ -147,3 +152,19 @@ func _lamps() -> void:
 	_game.window_view.refresh_lit()
 	await _shot("15_postes_noite.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
 	await _shot("16_fogueiras_noite.png", Vector3(100.0, 0.0, 110.0), 30.0, 0.3, 0.5)
+
+
+## Fase 13: uma casa de cada classe lado a lado (rotação 0, frente em −Z), vistas de frente.
+func _house_trims() -> void:
+	var tiers: Array[StringName] = [&"peasants", &"workers", &"artisans", &"engineers", &"investors"]
+	for i: int in tiers.size():
+		var house := _place(&"house", Vector2i(40 + i * 5, 100), 0)
+		if house != 0:
+			_sim.world.building(house).tier = tiers[i]
+			_sim.world.building(house).residents = 10.0
+	_game.building_view.rebuild()
+	_game.window_view.rebuild()
+	await _shot("17_casas_de_frente.png", Vector3(105.0, 4.0, 202.0), 46.0, PI + 0.35, 0.3)
+	await _shot("18_quintal.png", Vector3(83.0, 1.0, 201.0), 14.0, PI + 0.5, 0.35)
+	await _shot("19_floreiras_e_sacadas.png", Vector3(108.0, 5.0, 201.0), 22.0, PI + 0.3, 0.2)
+	await _shot("20_portico.png", Vector3(123.0, 3.0, 201.0), 18.0, PI + 0.3, 0.15)

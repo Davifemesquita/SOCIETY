@@ -69,6 +69,7 @@ upgrade_materials = Dictionary[StringName, int]({&"bricks": 2, &"planks": 1})
 basic_needs = Array[ExtResource("2_need")]([SubResource("basic_food"), SubResource("basic_clothing"), SubResource("basic_hygiene"), SubResource("basic_household"), SubResource("basic_commerce"), SubResource("basic_education")])
 luxury_needs = Array[ExtResource("2_need")]([SubResource("luxury_drink"), SubResource("luxury_social")])
 house_color = Color(0.62, 0.5, 0.42, 1)
+house_trim = 2
 house_height_m = 8.5
 clothing_colors = PackedColorArray(0.38, 0.3, 0.42, 1, 0.3, 0.36, 0.3, 1, 0.48, 0.34, 0.26, 1, 0.32, 0.32, 0.4, 1, 0.6, 0.52, 0.4, 1)
 trousers_color = Color(0.2, 0.18, 0.18, 1)

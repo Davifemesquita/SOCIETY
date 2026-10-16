@@ -826,7 +826,7 @@ Regras que já custaram investigação:
   reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
   de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
   (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
-  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas` ou `postes`).
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes` ou `detalhes`).
 
 ### Cidade viva (Fase 13, nossa)
 
@@ -858,6 +858,12 @@ Regras que já custaram investigação:
   (`shaders/night_glow.gdshader`; a cor da instância chega em sRGB e é convertida lá, senão a chama saía
   branca); luz de verdade (OmniLight3D) só nos `LIGHTS` mais perto de onde a câmera olha, de noite e com a
   câmera perto. Refeito quando estrada, prédio ou classe da casa muda.
+- **Detalhe das casas** (`TierDef.house_trim`, nos `.tres` das classes; `BuildingKit._trim`): quintal cercado
+  com portão na fileira da frente dos camponeses (`court_rows = 1`, como o pátio do mercado: a casa, a porta e
+  as janelas recuam e o alicerce é só o do corpo), floreiras debaixo das janelas de cima dos artesãos, sacadas
+  (piso de tábuas e frente com parapeito) nos andares do meio dos engenheiros e, nos investidores, sacada no
+  primeiro andar, duas colunas de pedra na porta e sebe florida no térreo. As peças são do kit; o verde da
+  sebe (célula (3, 3) da paleta) vira folhagem com flores no `shaders/building_kit.gdshader`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -882,7 +888,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
-| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras; depois detalhe das casas e animais (com o cavalo da carroça) |
+| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas; depois animais (com o cavalo da carroça) |
 
 Pendências já vistas para fases futuras:
 

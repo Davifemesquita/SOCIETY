@@ -16,7 +16,8 @@ func test_the_kit_is_in_the_project() -> void:
 	for piece: String in ["wall", "wall-door", "wall-doorway-round", "wall-window-shutters", "wall-window-glass",
 			"wall-window-small", "wall-wood", "wall-wood-door", "wall-wood-doorway-round", "wall-wood-window-shutters",
 			"wall-wood-window-glass", "wall-wood-window-small", "chimney", "windmill", "watermill", "wheel",
-			"pillar-wood", "stall-red", "stall-green", "banner-red"]:
+			"pillar-wood", "stall-red", "stall-green", "banner-red", "fence", "fence-gate", "hedge",
+			"balcony-wall-fence", "pillar-stone", "planks-half"]:
 		assert_bool(ResourceLoader.exists(BuildingKit.DIR + piece + ".glb")).override_failure_message(piece).is_true()
 
 
@@ -60,7 +61,8 @@ func test_the_door_faces_the_entrance_in_every_rotation() -> void:
 		var def := _sim.data.building(def_id)
 		for rotation: int in 4:
 			var record := BuildingRecord.new(3, def_id, 0, Vector2i(20, 20), rotation)
-			record.tier = &"peasants"
+			# os camponeses têm o quintal na frente (a porta fica atrás dele): ver o teste do detalhe
+			record.tier = &"workers"
 			var spec := BuildingKit.spec_for(_sim, record, 2.0)
 			var area := Footprint.rect(record.origin, def.size, rotation)
 			var center := GridSpace.rect_center(area, 2.0)
@@ -206,3 +208,35 @@ func test_rotors_turn_only_while_producing() -> void:
 		assert_bool((rotors[i] as Node3D).basis.is_equal_approx(frozen[i])).is_true()
 	_sim.execute(DemolishCommand.new(0, Rect2i(Vector2i(2, 11), Vector2i(1, 1))))
 	assert_int(view.rotor_count()).is_equal(1)
+
+
+func _house(tier: StringName) -> BuildingKit.Spec:
+	var record := BuildingRecord.new(7, &"house", 0, Vector2i(10, 10), 0)
+	record.tier = tier
+	return BuildingKit.spec_for(_sim, record, 2.0)
+
+
+func test_houses_get_the_trim_of_their_class() -> void:
+	# quintal cercado na frente dos camponeses: a casa e as janelas recuam uma fileira, a cerca fica na borda
+	var cottage := _house(&"peasants")
+	assert_int(cottage.trim).is_equal(TierDef.HouseTrim.YARD)
+	assert_int(cottage.court_rows).is_equal(1)
+	var front := -cottage.size_m().y * 0.5
+	var yard_end := front + cottage.cell_m
+	for window: Transform3D in BuildingKit.windows(cottage):
+		assert_float(window.origin.z).is_greater(yard_end - 0.5)
+	assert_float(BuildingKit.door_position(cottage).z).is_between(yard_end - 0.5, yard_end + 0.5)
+	assert_float(BuildingKit.mesh(cottage).get_aabb().position.z).is_less(front)
+	assert_int(_house(&"workers").trim).is_equal(TierDef.HouseTrim.NONE)
+	assert_int(_house(&"workers").court_rows).is_equal(0)
+	# floreiras, sacadas e pórtico acrescentam peças; a sacada sai da frente
+	for tier: StringName in [&"artisans", &"engineers", &"investors"]:
+		var spec := _house(tier)
+		var bare := _house(tier)
+		bare.trim = TierDef.HouseTrim.NONE
+		assert_int(BuildingKit.triangles(spec)).override_failure_message(String(tier)).is_greater(BuildingKit.triangles(bare))
+	var engineers := _house(&"engineers")
+	var balcony_front := -engineers.size_m().y * 0.5 - BuildingKit.BALCONY_OUT_M * 0.9
+	assert_float(BuildingKit.mesh(engineers).get_aabb().position.z).is_less(balcony_front)
+	assert_int(_house(&"engineers").trim).is_equal(TierDef.HouseTrim.BALCONIES)
+	assert_int(_house(&"investors").trim).is_equal(TierDef.HouseTrim.PORTICO)
