@@ -753,3 +753,18 @@ NOTICE_BUILDING_LOST,Perdemos no fogo: %s,Lost to fire: %s
 NOTICE_OUTBREAK,Doença numa casa de %s,Disease in a %s house
 RISK_FIRE_OUT_IN,Bombeiros no local: o fogo se apaga em %s s,Fire brigade on site: fire out in %s s
 RISK_FIRE_LOST_IN,Sem bombeiros: o prédio se perde em %s s,No fire brigade: the building is lost in %s s
+BUILDING_SHIPYARD,Estaleiro,Shipyard
+SHIP_CLIPPER,Clíper,Clipper
+REASON_NOT_SHIPYARD,Não é um estaleiro,Not a shipyard
+REASON_SHIPYARD_BUSY,O estaleiro já tem uma encomenda,The shipyard already has an order
+REASON_SHIPYARD_NO_ORDER,O estaleiro não tem encomenda,The shipyard has no order
+REASON_SHIPYARD_WRONG_SHIP,Este estaleiro não faz esse navio,This shipyard doesn't build that ship
+REASON_SHIPYARD_ONLY,Só o estaleiro constrói este navio,Only the shipyard builds this ship
+SHIPYARD_IDLE,Sem encomenda,No order
+SHIPYARD_BUILDING,Construindo %s: %s,Building %s: %s
+SHIPYARD_ORDER,Construir %s,Build %s
+SHIPYARD_ORDER_TIP,%s min com toda a força de trabalho · %s,%s min at full workforce · %s
+SHIPYARD_CANCEL,Cancelar,Cancel
+SHIPYARD_CANCEL_TIP,Devolve %s moedas; o material não volta,Returns %s coins; materials are not returned
+TIP_SHIPYARD,"Constrói navios por encomenda a %s do preço do entreposto, e o clíper; navios no porto da ilha se reparam %s× mais rápido","Builds ships to order at %s of the trading post price, and the clipper; ships in the island's port repair %s× faster"
+NOTICE_SHIP_BUILT,Navio pronto no estaleiro: %s,Ship ready at the shipyard: %s

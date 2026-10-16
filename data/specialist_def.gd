@@ -56,7 +56,7 @@ func cycles_per_extra() -> int:
 
 ## O prédio aceita este especialista?
 func covers(def: BuildingDef) -> bool:
-	if def == null or not def.is_production() or def.is_power_plant():
+	if def == null or not def.is_production() or def.is_power_plant() or def.is_shipyard():
 		return false
 	match target_group:
 		Group.FARMS:

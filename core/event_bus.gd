@@ -78,3 +78,6 @@ signal fire_ended(building_id: int, lost: bool)
 signal building_lost(building_id: int, def_id: StringName, island_id: int)
 signal outbreak_started(house_id: int)
 signal outbreak_ended(house_id: int)
+
+## Estaleiro: o navio encomendado ficou pronto e está no porto da ilha.
+signal ship_built(ship_id: int)

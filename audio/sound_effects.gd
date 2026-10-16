@@ -25,7 +25,7 @@ const SOUNDS := {
 const NOTICE_SOUNDS := {
 	"notice_shortage": &"alert", "notice_stopped": &"alert", "notice_storage_full": &"alert",
 	"notice_ship_arrived": &"ship", "notice_milestone": &"milestone", "notice_colonized": &"goal",
-	"notice_trader": &"coins", "notice_fire": &"alert", "notice_disease": &"alert",
+	"notice_trader": &"coins", "notice_fire": &"alert", "notice_disease": &"alert", "notice_ship_built": &"ship",
 }
 const POOL_SIZE := 6
 const REFRESH_SECONDS := 1.0

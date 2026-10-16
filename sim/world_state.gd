@@ -45,6 +45,8 @@ var rivals_state := RivalsState.new()
 var specialists_state := SpecialistsState.new()
 ## Incêndio e doença (seção 8); desligados em mundo novo da simulação.
 var risks_state := RisksState.new()
+## Encomendas dos estaleiros.
+var shipyard_state := ShipyardState.new()
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
@@ -215,7 +217,7 @@ func to_dict() -> Dictionary:
 			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict(),
 			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
 			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
-			"risks": risks_state.to_dict()}
+			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -368,6 +370,14 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	if loaded_risks == null:
 		return null
 	world.risks_state = loaded_risks
+	var raw_shipyard: Variant = data.get("shipyard")
+	if not raw_shipyard is Dictionary:
+		return null
+	var shipyard_data: Dictionary = raw_shipyard
+	var loaded_shipyard := ShipyardState.from_dict(shipyard_data, world, game_data)
+	if loaded_shipyard == null:
+		return null
+	world.shipyard_state = loaded_shipyard
 	return world
 
 

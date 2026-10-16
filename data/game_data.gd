@@ -138,7 +138,7 @@ func validate() -> PackedStringArray:
 		if def.unlock_tier != &"" and tier(def.unlock_tier) == null:
 			problems.append("%s: classe de desbloqueio desconhecida" % def.id)
 		if def.is_production():
-			if def.cycle_s <= 0.0 or (good(def.output) == null and not def.is_power_plant()):
+			if def.cycle_s <= 0.0 or (good(def.output) == null and not def.is_power_plant() and not def.is_shipyard()):
 				problems.append("%s: produção sem ciclo ou sem saída válida" % def.id)
 			if tier(def.workforce_tier) == null:
 				problems.append("%s: classe de trabalho desconhecida" % def.id)
@@ -147,6 +147,9 @@ func validate() -> PackedStringArray:
 					problems.append("%s: entrada desconhecida %s" % [def.id, input])
 			if def.modules_required > 0 and building(def.module_id) == null:
 				problems.append("%s: módulo desconhecido %s" % [def.id, def.module_id])
+			for ship_id: StringName in def.shipyard_ships:
+				if ship(ship_id) == null:
+					problems.append("%s: navio desconhecido %s" % [def.id, ship_id])
 	for tier_def: TierDef in tiers:
 		if tier_def.wall_material < 0 or tier_def.wall_material >= BuildingMaterials.Wall.size() \
 				or tier_def.roof_material < 0 or tier_def.roof_material >= BuildingMaterials.Roof.size():

@@ -502,6 +502,8 @@ func _tooltip(def: BuildingDef) -> String:
 	if def.is_production():
 		if def.is_power_plant():
 			lines.append(tr("TIP_POWER") % [def.power_radius_cells, Fmt.percent(_simulation.config.electricity_bonus)])
+		elif def.is_shipyard():
+			lines.append(tr("TIP_SHIPYARD") % [Fmt.percent(_simulation.config.shipyard_cost_factor), Fmt.decimal(_simulation.config.shipyard_repair_factor)])
 		else:
 			lines.append(tr("TIP_PRODUCES") % [Fmt.decimal(def.output_per_min()), tr(data.good(def.output).name_key)])
 		if not def.inputs.is_empty():

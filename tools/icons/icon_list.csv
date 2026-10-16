@@ -226,3 +226,7 @@ building_hospital,delapouite/hospital,building
 notice_fire,sbed/fire,notice
 notice_disease,lorc/virus,notice
 hud_risk,lorc/fire-ring,hud
+building_shipyard,delapouite/ship-wheel,building
+ship_clipper,delapouite/sailboat,building
+action_build_ship,lorc/hammer-nails,action
+notice_ship_built,delapouite/ship-bow,notice

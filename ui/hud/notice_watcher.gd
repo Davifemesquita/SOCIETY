@@ -285,6 +285,15 @@ func outbreak(house_id: int) -> Notice:
 	return notice
 
 
+func ship_built(ship_id: int) -> Notice:
+	var ship := _simulation.world.ship(ship_id)
+	var name: String = TranslationServer.translate(_simulation.data.ship(ship.def_id).name_key) if ship != null else ""
+	var notice := Notice.new("ship_built/%d" % ship_id, "notice_ship_built", "NOTICE_SHIP_BUILT", [name])
+	notice.ship_id = ship_id
+	notice.status = UiPalette.Status.GOOD
+	return notice
+
+
 func simulation_world() -> WorldState:
 	return _simulation.world
 

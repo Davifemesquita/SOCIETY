@@ -24,7 +24,8 @@ var _title := Label.new()
 var _title_icon := TextureRect.new()
 var _portrait := TextureRect.new()
 var _body := VBoxContainer.new()
-var _buttons := HBoxContainer.new()
+## Botões do bloco numa linha, que quebra quando não cabe (estaleiro com vários navios).
+var _buttons := HFlowContainer.new()
 var _road := Label.new()
 var _lines: Array[Label] = []
 var _pause: Button
@@ -65,7 +66,8 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_road.text = "INFO_ROAD_MISSING"
 	UiPalette.paint(_road, UiPalette.Status.BAD)
 	column.add_child(_road)
-	_buttons.add_theme_constant_override(&"separation", 6)
+	_buttons.add_theme_constant_override(&"h_separation", 6)
+	_buttons.add_theme_constant_override(&"v_separation", 6)
 	column.add_child(_buttons)
 	tool.selection_changed.connect(show_building)
 	EventBus.house_upgraded.connect(func(building_id: int) -> void:
@@ -175,9 +177,56 @@ func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
 		_simulation.execute(SetPausedCommand.new(record.id, not _simulation.world.building(record.id).paused))
 		_refresh())
 	_add_button("PANEL_COPY", "action_copy", func() -> void: _tool.start_building(def))
+	if def.is_shipyard():
+		_build_shipyard(record, def)
 	if _simulation.data.specialists.any(func(specialist: SpecialistDef) -> bool: return specialist.covers(def)):
 		var specialists := _add_button("PANEL_SPECIALIST", "action_specialists", func() -> void: specialists_requested.emit(record.id))
 		specialists.name = "Specialist"
+
+
+## Estaleiro: um botão por navio que ele faz e o de cancelar a encomenda.
+func _build_shipyard(record: BuildingRecord, def: BuildingDef) -> void:
+	for ship_id: StringName in def.shipyard_ships:
+		var ship_def := _simulation.data.ship(ship_id)
+		var button := UiKit.button(tr("SHIPYARD_ORDER") % tr(ship_def.name_key), "ship_" + ship_id, func() -> void:
+			var result := _simulation.execute(ShipyardCommand.order(record.id, ship_id))
+			if not result.ok():
+				_tool.refused.emit(result.reason)
+			_refresh())
+		button.name = "Order_" + ship_id
+		_buttons.add_child(button)
+	var cancel := _add_button("SHIPYARD_CANCEL", "action_close", func() -> void:
+		_simulation.execute(ShipyardCommand.cancel_order(record.id))
+		_refresh())
+	cancel.name = "CancelOrder"
+
+
+## Estado da encomenda e os botões: desligados com o motivo na dica.
+func _refresh_shipyard(record: BuildingRecord, def: BuildingDef) -> String:
+	var config := _simulation.config
+	var item := _simulation.world.shipyard_state.order(record.id)
+	for ship_id: StringName in def.shipyard_ships:
+		var button := _buttons.find_child("Order_" + ship_id, false, false) as Button
+		if button == null:
+			continue
+		var ship_def := _simulation.data.ship(ship_id)
+		var cost: PackedStringArray = [tr("TIP_COINS") % Fmt.integer(ShipyardSystem.cost_money(ship_def, config))]
+		var materials := ShipyardSystem.cost_materials(ship_def, config)
+		for material: StringName in materials:
+			cost.append("%d %s" % [materials[material], tr(_simulation.data.good(material).name_key)])
+		var reason := ShipyardCommand.check(_simulation.world, _simulation.data, config, record.id, ship_id, _simulation.free_build)
+		button.disabled = reason != PlacementRules.OK
+		button.tooltip_text = tr("SHIPYARD_ORDER_TIP") % [Fmt.decimal(ship_def.build_time_s / 60.0), ", ".join(cost)] \
+				+ ("\n" + tr(reason) if reason != PlacementRules.OK else "")
+		button.visible = item == null
+	var cancel := _buttons.find_child("CancelOrder", false, false) as Button
+	if cancel != null:
+		cancel.visible = item != null
+		if item != null:
+			cancel.tooltip_text = tr("SHIPYARD_CANCEL_TIP") % Fmt.integer(floorf(item.paid_money * config.shipyard_cancel_refund))
+	if item == null:
+		return tr("SHIPYARD_IDLE")
+	return tr("SHIPYARD_BUILDING") % [tr(_simulation.data.ship(item.def_id).name_key), Fmt.percent(item.progress)]
 
 
 func _build_house(record: BuildingRecord) -> void:
@@ -260,6 +309,9 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_lines[0].text = tr(state_key(state))
 	UiPalette.paint(_lines[0], UiPalette.Status.GOOD if state == BuildingRecord.State.PRODUCING \
 			else (UiPalette.Status.NEUTRAL if record.paused else UiPalette.Status.BAD))
+	if def.is_shipyard() and record.state == BuildingRecord.State.IDLE:
+		_lines[0].text = tr("SHIPYARD_IDLE")
+		UiPalette.paint(_lines[0], UiPalette.Status.NEUTRAL)
 	_lines[1].text = tr("PANEL_PRODUCTIVITY") % Fmt.percent(record.productivity)
 	_lines[2].text = tr("PANEL_CYCLE") % Fmt.integer(def.cycle_s)
 	var entry := _simulation.derived_state().entry_of(record.id)
@@ -296,6 +348,8 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 
 ## Buffer de saída; na usina (Fase 11), quantas fábricas ela alcança.
 func _output_or_power_text(record: BuildingRecord, def: BuildingDef, entry: DerivedState.ProductionEntry) -> String:
+	if def.is_shipyard():
+		return _refresh_shipyard(record, def)
 	if def.is_power_plant():
 		return tr("PANEL_POWER_SUPPLIES") % _simulation.derived_state().powered_by(record.id).size() if entry != null else ""
 	return tr("PANEL_BUFFER") % [tr(_simulation.data.good(def.output).name_key), Fmt.decimal(record.output_buffer),

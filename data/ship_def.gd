@@ -14,6 +14,10 @@ extends Resource
 @export var upkeep_per_min: int = 40
 @export var cost_money: int = 0
 @export var cost_materials: Dictionary[StringName, int] = {}
+## Estaleiro: tempo de construção a toda força de trabalho (s de jogo), e se só o estaleiro o faz
+## (o entreposto não vende).
+@export var build_time_s: float = 180.0
+@export var shipyard_only: bool = false
 
 @export_group("Combate")
 ## Casco (Fase 11): o navio afunda quando chega a zero. Canhões > 0 fazem dele um navio de guerra,

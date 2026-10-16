@@ -141,7 +141,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 56 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 3 navios (`ships/`: mercante, o do comerciante e a fragata), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) e 8 especialistas (`specialists/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 57 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) e 8 especialistas (`specialists/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
@@ -185,6 +185,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `data/specialist_def.gd`, `sim/specialists/`, `sim/systems/specialist_system.gd` | especialistas: `SpecialistDef` (efeito, grupo de prédios, contratação, salário), `SpecialistsState`/`Specialist` (no save) e o sorteio da oferta por volta do comerciante |
 | `sim/commands/specialist_command.gd`, `ui/hud/specialist_window.gd` | contratar, designar, retirar e dispensar; a janela dos especialistas (atalho L) |
 | `sim/risks/risks_state.gd`, `sim/systems/risk_system.gd` | incêndio e doença: `RisksState` (no save: ligado ou não, prédios em chamas e casas doentes com o tick do começo) e o `RiskSystem` (sorteio, fogo apagado ou prédio perdido, cura) |
+| `sim/ships/shipyard_state.gd`, `sim/systems/shipyard_system.gd`, `sim/commands/shipyard_command.gd` | estaleiro: as encomendas (no save), o avanço pela força de trabalho e a entrega do navio, e o gesto de encomendar e cancelar |
 | `presentation/fire_view.gd` | labaredas, fumaça escura e luz laranja no prédio em chamas |
 | `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
@@ -748,6 +749,28 @@ Regras que já custaram investigação:
   e o destaque do que ele protege, avisos de fogo (sem bombeiros diz em quanto tempo o prédio se perde),
   fogo apagado, prédio perdido e doença, com som de alerta, e o fogo desenhado (`FireView`).
 
+### Estaleiro (depois da Fase 11)
+
+- **Ideia própria** (pendência antiga: "estaleiro, se a compra no entreposto não bastar"). Produção sem
+  bem no litoral (`BuildingDef.shipyard_ships`, `is_shipyard`), 60 operários, livre com 300 operários.
+  Não tem ciclo: o `ProductionSystem` o pula e o `ShipyardSystem` (logo depois da produção) cuida do
+  estado (sem encomenda fica `IDLE`, "Sem encomenda" no painel, e não vira aviso de parado) e do avanço.
+- **Encomenda** (`ShipyardCommand`, motivo por `check`, que o painel usa para desligar o botão): um
+  navio por estaleiro, pago na hora a `shipyard_cost_factor` (75%) do preço do entreposto (moedas e
+  materiais, para cima), esperando o marco do navio; **conta no limite de navios** (o entreposto também
+  conta as encomendas). Anda `dt × força de trabalho / build_time_s` (`ShipDef`); pronta, o navio
+  aparece no porto da ilha (`ship_built`). Cancelar devolve `shipyard_cancel_refund` das moedas; o
+  material não volta. Demolir ou perder o estaleiro no fogo perde a encomenda.
+- **Clíper** (`clipper`, `ShipDef.shipyard_only`): 5 porões, 9 m/s, casco 150, terceiro marco; o
+  entreposto recusa (`REASON_SHIPYARD_ONLY`). O estaleiro também faz o mercante e a fragata.
+- **Reparo**: navio do jogador parado no porto de ilha com estaleiro se repara `shipyard_repair_factor`
+  (2×) mais depressa. Especialista não vai para o estaleiro.
+- **Save versão 14**: `shipyard` no mundo (encomendas por estaleiro, com o progresso e as moedas pagas);
+  encomenda em prédio que não é estaleiro ou de navio que ele não faz recusa o save.
+- **Na tela**: um botão por navio no painel (custo e tempo na dica, motivo quando não dá), a encomenda
+  com o progresso e o cancelar, a dica do menu e o aviso do navio pronto. A fila de botões do painel
+  virou `HFlowContainer` (quebra a linha quando não cabe).
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -770,7 +793,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
 | 10 — Polimento | **concluída em 14/10/2026** (confirmada em 14/10/2026; o teste do build em outro PC segue com o dono do produto) |
 | 11 — Expansões | **concluída em 15/10/2026**: segunda região climática, eventos e encomendas, rivais com IA e diplomacia e combate naval em 14/10/2026; eletricidade e especialistas em 15/10/2026 |
-| Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8) |
+| Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper |
 
 Pendências já vistas para fases futuras:
 
@@ -778,7 +801,6 @@ Pendências já vistas para fases futuras:
   subida de classe (corrigido em 15/10/2026); os números da especificação e os nossos não foram mexidos.
   O robô joga 4 h numa ilha plana de 350×350 (a terra do arquipélago, no lugar das colônias) e chega às
   cinco classes (investidores aos ~225 min); o aperto é a entrada das fábricas dos engenheiros.
-  Estaleiro, se a compra de navio no entreposto não bastar.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
   volumétricas aparecem certas no ultra; modelos de verdade (prédios, casas, navios) seguem no
   `assets/TODO_ASSETS.md`.

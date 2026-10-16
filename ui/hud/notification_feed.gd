@@ -43,6 +43,7 @@ func setup(simulation: Simulation) -> void:
 			push(watcher.fire_out(building_id)))
 	EventBus.building_lost.connect(func(building_id: int, def_id: StringName, island_id: int) -> void:
 		push(watcher.building_lost(building_id, def_id, island_id)))
+	EventBus.ship_built.connect(func(ship_id: int) -> void: push(watcher.ship_built(ship_id)))
 	EventBus.outbreak_started.connect(func(house_id: int) -> void: push(watcher.outbreak(house_id)))
 	EventBus.world_replaced.connect(func() -> void:
 		clear()

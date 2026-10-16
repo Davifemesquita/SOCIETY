@@ -37,6 +37,7 @@ func execute(context: CommandContext) -> CommandResult:
 		world.buildings.erase(building_id)
 		world.carts.erase(building_id)
 		world.risks_state.forget(building_id)
+		world.shipyard_state.forget(building_id)
 		# o especialista do prédio (Fase 11) volta para a lista, sem posto
 		if world.specialists_state.release(building_id):
 			result.specialists_changed = true

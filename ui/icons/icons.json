@@ -13,6 +13,10 @@
 			0,
 			1152
 		],
+		"action_build_ship": [
+			640,
+			1792
+		],
 		"action_buy": [
 			1280,
 			1024
@@ -356,6 +360,10 @@
 		"building_sheep_farm": [
 			1920,
 			256
+		],
+		"building_shipyard": [
+			384,
+			1792
 		],
 		"building_soap_factory": [
 			1152,
@@ -737,6 +745,10 @@
 			1152,
 			1408
 		],
+		"notice_ship_built": [
+			768,
+			1792
+		],
 		"notice_shortage": [
 			768,
 			1408
@@ -804,6 +816,10 @@
 		"overlay_warehouse": [
 			1024,
 			1280
+		],
+		"ship_clipper": [
+			512,
+			1792
 		],
 		"ship_frigate": [
 			1792,
@@ -890,19 +906,19 @@
 			1408
 		],
 		"status_bad": [
-			640,
+			1152,
 			1792
 		],
 		"status_good": [
-			384,
+			896,
 			1792
 		],
 		"status_missing": [
-			768,
+			1280,
 			1792
 		],
 		"status_partial": [
-			512,
+			1024,
 			1792
 		],
 		"tier_artisans": [

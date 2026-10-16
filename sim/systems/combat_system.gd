@@ -3,7 +3,8 @@ extends RefCounted
 ## Combate naval (Fase 11), depois dos navios. Só entre o jogador e uma rival em guerra com ele: o
 ## comerciante é neutro e rivais não brigam entre si. Todo navio armado (ShipDef.cannons) recarrega e,
 ## pronto, atira no inimigo mais perto ao alcance (cannon_range_m), tirando salvo_damage do casco. Casco
-## a zero afunda o navio com a carga. Parado num porto próprio, o casco se repara (ship_repair_per_s).
+## a zero afunda o navio com a carga. Parado num porto próprio, o casco se repara (ship_repair_per_s;
+## shipyard_repair_factor vezes mais depressa em ilha com estaleiro).
 ## Cada fragata que a rival perde a deixa mais perto da paz (rival_loss_relation).
 
 
@@ -13,7 +14,9 @@ static func run(world: WorldState, data: GameData, config: GameConfig, dt: float
 		var ship := world.ships[ship_id]
 		var def := data.ship(ship.def_id)
 		if ship.hp < def.hull_points and in_home_port(world, data, ship):
-			ship.hp = minf(ship.hp + config.ship_repair_per_s * dt, def.hull_points)
+			var factor := config.shipyard_repair_factor if ship.owner == Ship.Owner.PLAYER \
+					and ShipyardSystem.island_has_shipyard(world, data, ship.at) else 1.0
+			ship.hp = minf(ship.hp + config.ship_repair_per_s * factor * dt, def.hull_points)
 	if not world.rivals_state.at_war():
 		return
 	for ship_id: int in ids:

@@ -162,6 +162,14 @@ static var _default: GameConfig
 ## Eventos e encomendas são conferidos a cada tantos ticks.
 @export var events_check_ticks: int = 5
 
+@export_group("Estaleiro")
+## O navio encomendado ao estaleiro custa esta fração do preço do entreposto (moedas e materiais,
+## arredondados para cima); cancelar devolve shipyard_cancel_refund das moedas pagas. Navio parado num
+## porto de ilha com estaleiro se repara shipyard_repair_factor vezes mais depressa.
+@export var shipyard_cost_factor: float = 0.75
+@export var shipyard_cancel_refund: float = 0.5
+@export var shipyard_repair_factor: float = 2.0
+
 @export_group("Riscos")
 ## Incêndio e doença (seção 8, opcionais): conferidos a cada risk_check_ticks. Cada prédio que pode
 ## arder tem fire_chance_per_hour (por hora de jogo, vezes o fire_risk do prédio) de pegar fogo; no
@@ -605,4 +613,6 @@ func validate() -> PackedStringArray:
 		problems.append("chances dos riscos não negativas e fatores de proteção entre 0 e 1")
 	if max_active_fires < 0 or max_active_outbreaks < 0:
 		problems.append("max_active_fires e max_active_outbreaks não podem ser negativos")
+	if shipyard_cost_factor <= 0.0 or shipyard_cancel_refund < 0.0 or shipyard_cancel_refund > 1.0 or shipyard_repair_factor < 1.0:
+		problems.append("estaleiro: custo positivo, devolução entre 0 e 1 e reparo de pelo menos 1")
 	return problems

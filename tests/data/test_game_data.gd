@@ -13,8 +13,8 @@ func test_data_loads_and_is_valid() -> void:
 	assert_array(Array(_data.validate())).is_empty()
 	assert_int(_data.goods.size()).is_equal(41)
 	assert_int(_data.tiers.size()).is_equal(5)
-	assert_int(_data.buildings.size()).is_equal(56)
-	assert_int(_data.ships.size()).is_equal(3)
+	assert_int(_data.buildings.size()).is_equal(57)
+	assert_int(_data.ships.size()).is_equal(4)
 	assert_object(_data.trader()).is_not_null()
 
 

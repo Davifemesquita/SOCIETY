@@ -30,6 +30,8 @@ const SHIP_LIMIT := &"REASON_SHIP_LIMIT"
 const RIVAL_ISLAND := &"REASON_RIVAL_ISLAND"
 ## O navio ainda não foi liberado pelos marcos (fragata, Fase 11).
 const SHIP_LOCKED := &"REASON_SHIP_LOCKED"
+## Navio que só o estaleiro constrói (o entreposto não vende).
+const SHIPYARD_ONLY := &"REASON_SHIPYARD_ONLY"
 ## Folga do ponto flutuante na diferença de altura.
 const _HEIGHT_EPSILON := 0.0001
 
@@ -158,9 +160,11 @@ static func check_ship_purchase(world: WorldState, data: GameData, config: GameC
 		return UNKNOWN_BUILDING
 	if not world.has_trading_post(island_id, data):
 		return NEEDS_TRADING_POST
+	if def.shipyard_only:
+		return SHIPYARD_ONLY
 	if world.milestones_reached < def.unlock_milestone:
 		return SHIP_LOCKED
-	if world.player_ships().size() >= MilestoneSystem.ship_limit(world, config):
+	if world.player_ships().size() + world.shipyard_state.orders.size() >= MilestoneSystem.ship_limit(world, config):
 		return SHIP_LIMIT
 	return check_cost(world, world.economy(island_id), config, def.cost_money, def.cost_materials)
 

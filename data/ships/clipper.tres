@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ShipDef" format=3]
+
+[ext_resource type="Script" path="res://data/ship_def.gd" id="1_ship"]
+
+[resource]
+script = ExtResource("1_ship")
+id = &"clipper"
+name_key = "SHIP_CLIPPER"
+cargo_slots = 5
+slot_capacity_t = 50
+speed_m_s = 9.0
+upkeep_per_min = 70
+cost_money = 6000
+cost_materials = Dictionary[StringName, int]({&"planks": 30, &"steel": 10})
+build_time_s = 240.0
+shipyard_only = true
+hull_points = 150.0
+unlock_milestone = 3
+hull_color = Color(0.2, 0.22, 0.26, 1)
+sail_color = Color(0.97, 0.96, 0.92, 1)
+length_m = 20.0

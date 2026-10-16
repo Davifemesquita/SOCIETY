@@ -9,6 +9,7 @@ extends RefCounted
 ## que produzia no tick anterior ganha electricity_bonus na velocidade.
 ## Especialistas (Fase 11): o de velocidade multiplica o fator; o de tonelada extra conta os ciclos.
 ## Riscos: o prédio em chamas para (o ciclo espera o fogo apagar).
+## O estaleiro não tem ciclo: o ShipyardSystem cuida dele.
 ## O fim do ciclo tem folga de 1e-6: 75 ticks de 0,2/15 somam 0,99999… e o ciclo atrasaria
 ## um tick inteiro a cada volta.
 
@@ -26,6 +27,8 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 				entry.powered = true
 				break
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
+		if entry.def.is_shipyard():
+			continue
 		var record := entry.record
 		var previous := record.state
 		var factor := EventEffects.production(events, record.island_id, entry.def) if boosted else 1.0

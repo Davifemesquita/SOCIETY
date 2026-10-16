@@ -85,7 +85,7 @@ func execute(command: Command) -> CommandResult:
 	return result
 
 
-## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
+## Um tick de simulação: força de trabalho → produção (e estaleiros) → logística (carroças) → necessidades →
 ## população e upgrades (e marcos e metas) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → riscos → rivais →
 ## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
@@ -93,6 +93,13 @@ func tick(_tick_index: int) -> void:
 	var derived := derived_state()
 	WorkforceSystem.run(world, derived)
 	ProductionSystem.run(config, derived, dt, world.events_state, world.risks_state)
+	var built := ShipyardSystem.run(world, data, config, derived, dt)
+	if not built.is_empty():
+		_dirty = true
+		place_new_ships()
+		EventBus.ships_changed.emit()
+		for ship_id: int in built:
+			EventBus.ship_built.emit(ship_id)
 	if config.instant_logistics:
 		DirectTransferSystem.run(world, config, derived)
 	else:
@@ -127,6 +134,7 @@ func _remove_lost(lost: Array[int]) -> void:
 		world.buildings.erase(building_id)
 		world.carts.erase(building_id)
 		world.risks_state.forget(building_id)
+		world.shipyard_state.forget(building_id)
 		if world.specialists_state.release(building_id):
 			EventBus.specialists_changed.emit()
 		_dirty = true

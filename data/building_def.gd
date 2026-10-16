@@ -73,6 +73,10 @@ enum Hazard { NONE, FIRE, DISEASE }
 ## (prédio de produção com entrada) a até este raio, em células. 0 = não é usina.
 @export var power_radius_cells: int = 0
 
+@export_group("Estaleiro")
+## Estaleiro: produção sem bem, que constrói estes navios por encomenda (um por vez). Vazio = não é.
+@export var shipyard_ships: Array[StringName] = []
+
 @export_group("Riscos")
 ## Multiplica a chance de incêndio do prédio (casa e produção); 0 = não pega fogo.
 @export var fire_risk: float = 1.0
@@ -101,6 +105,11 @@ func is_pier() -> bool:
 ## Onde atraca navio: o entreposto e os píeres.
 func is_berth() -> bool:
 	return is_trading_post or kind == Kind.PIER
+
+
+## Estaleiro: produção sem bem que constrói navio por encomenda.
+func is_shipyard() -> bool:
+	return is_production() and not shipyard_ships.is_empty()
 
 
 ## Usina elétrica (Fase 11): produção sem bem de saída.
