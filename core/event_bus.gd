@@ -70,3 +70,11 @@ signal ship_sunk(ship_id: int, owner: int, position: Vector2)
 ## Especialistas (Fase 11): a oferta da volta chegou; a lista ou um posto mudou.
 signal specialists_offered()
 signal specialists_changed()
+
+## Riscos (seção 8): fogo num prédio; o fogo acabou (apagado, ou o prédio se perdeu: lost, já fora
+## do mundo, com o tipo e a ilha para o aviso); doença numa casa e a cura dela.
+signal fire_started(building_id: int)
+signal fire_ended(building_id: int, lost: bool)
+signal building_lost(building_id: int, def_id: StringName, island_id: int)
+signal outbreak_started(house_id: int)
+signal outbreak_ended(house_id: int)

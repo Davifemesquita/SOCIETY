@@ -732,3 +732,24 @@ SPECIALIST_MASTER_GLASSBLOWER,Mestre vidreiro,Master glassblower
 SPECIALIST_MASTER_GLASSBLOWER_DESC,"Vidraria, janelaria, lâmpadas e ótica: 1 t a mais a cada %s ciclos","Glassworks, window works, lamps and optics: 1 extra t every %s cycles"
 SPECIALIST_STEELMASTER,Mestre fundidor,Master founder
 SPECIALIST_STEELMASTER_DESC,Fundição e vigas de aço: 1 t a mais a cada %s ciclos,Furnace and steel beam works: 1 extra t every %s cycles
+BUILDING_FIRE_STATION,Quartel de bombeiros,Fire station
+BUILDING_HOSPITAL,Hospital,Hospital
+STATE_ON_FIRE,Em chamas,On fire
+HOUSE_ON_FIRE,Em chamas: sem imposto até o fogo apagar,On fire: no tax until the fire is out
+HOUSE_SICK,Doença: perde moradores até sarar,Disease: losing residents until it heals
+HOUSE_FIRE_PROTECTION,Bombeiros: %s,Fire brigade: %s
+HOUSE_HEALTH_PROTECTION,Hospital: %s,Hospital: %s
+RISK_COVERED,no raio,in range
+RISK_UNCOVERED,fora do raio,out of range
+SERVICE_PROTECTS,Protege %s prédios,Protects %s buildings
+TIP_PROTECTS_FIRE,"Protege casas e produção a até %s células de estrada: menos incêndio, e o fogo se apaga em %s s","Protects houses and production up to %s road cells away: fewer fires, put out in %s s"
+TIP_PROTECTS_DISEASE,"Protege casas a até %s células de estrada: menos doença, curada em %s s","Protects houses up to %s road cells away: less disease, healed in %s s"
+NEW_GAME_RISKS,Incêndio e doença,Fire and disease
+NEW_GAME_RISKS_TIP,"Prédios podem pegar fogo e casas adoecer; bombeiros e hospital protegem o que alcançam","Buildings may catch fire and houses fall ill; fire stations and hospitals protect what they reach"
+NOTICE_FIRE,Incêndio: %s,Fire: %s
+NOTICE_FIRE_UNPROTECTED,Incêndio sem bombeiros: %s se perde em %s s,Fire with no fire brigade: %s is lost in %s s
+NOTICE_FIRE_OUT,Fogo apagado: %s,Fire put out: %s
+NOTICE_BUILDING_LOST,Perdemos no fogo: %s,Lost to fire: %s
+NOTICE_OUTBREAK,Doença numa casa de %s,Disease in a %s house
+RISK_FIRE_OUT_IN,Bombeiros no local: o fogo se apaga em %s s,Fire brigade on site: fire out in %s s
+RISK_FIRE_LOST_IN,Sem bombeiros: o prédio se perde em %s s,No fire brigade: the building is lost in %s s

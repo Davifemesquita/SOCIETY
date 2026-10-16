@@ -18,6 +18,8 @@ static var difficulty: int = -1
 static var events_enabled: bool = true
 ## Companhias rivais (Fase 11) no jogo novo do arquipélago; a ilha plana dos testes fica sem.
 static var rivals_enabled: bool = true
+## Incêndio e doença no jogo novo (caixa do diálogo; ligados por padrão).
+static var risks_enabled: bool = true
 ## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
 ## coordenadas dela.
 static var flat_world: bool = false
@@ -45,6 +47,7 @@ var graphics: GraphicsQuality
 var clouds: CloudsAdapter
 var weather: WeatherView
 var smoke_view: SmokeView
+var fire_view: FireView
 ## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
 var music: MusicDirector
 var ambience: AmbiencePlayer
@@ -79,6 +82,7 @@ func _ready() -> void:
 		var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
 		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty))
 		simulation.world.events_state.enabled = events_enabled
+		simulation.world.risks_state.enabled = risks_enabled
 		if rivals_enabled:
 			simulation.world.rivals_state.start(data, _config)
 	_build_ground()
@@ -134,6 +138,11 @@ func _ready() -> void:
 	add_child(smoke_view)
 	smoke_view.setup(simulation, _config.cell_size_m)
 	graphics.add_effect(smoke_view)
+	fire_view = FireView.new()
+	fire_view.name = "Fire"
+	add_child(fire_view)
+	fire_view.setup(simulation, _config.cell_size_m)
+	graphics.add_effect(fire_view)
 	graphics.add_effect(ship_view)
 	music = MusicDirector.new()
 	music.name = "Music"
@@ -432,6 +441,8 @@ func update_highlight() -> void:
 			var radius := _config.logistics_range_cells if def.is_warehouse() else ServiceReach.radius_of(def, _config)
 			var reach := ServiceReach.road_cells(grid, front, radius)
 			var targets: Array[int] = simulation.derived_state().houses if def.kind == BuildingDef.Kind.SERVICE else simulation.derived_state().production
+			if def.protects == BuildingDef.Hazard.FIRE:
+				targets = simulation.derived_state().houses + simulation.derived_state().production
 			var covered := ServiceReach.houses(world, simulation.data, island, reach, targets)
 			overlay.show_custom(Highlight.service(world, simulation.data, island, reach, covered))
 			return
@@ -454,7 +465,8 @@ func update_highlight() -> void:
 		overlay.set_island(selected.island_id)
 		if def.kind == BuildingDef.Kind.SERVICE:
 			var reach: PackedInt32Array = derived.service_reach.get(selected.id, PackedInt32Array())
-			var houses: Array = derived.service_houses.get(selected.id, [])
+			var houses: Array = derived.protected_by.get(selected.id, []) if def.protects != BuildingDef.Hazard.NONE \
+					else derived.service_houses.get(selected.id, [])
 			overlay.show_custom(Highlight.service(world, simulation.data, selected.island_id, reach, houses))
 			return
 		if def.modules_required > 0:

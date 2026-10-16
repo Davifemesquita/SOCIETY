@@ -86,13 +86,13 @@ func execute(command: Command) -> CommandResult:
 
 
 ## Um tick de simulação: força de trabalho → produção → logística (carroças) → necessidades →
-## população e upgrades (e marcos e metas) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → rivais →
+## população e upgrades (e marcos e metas) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → riscos → rivais →
 ## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
 	var derived := derived_state()
 	WorkforceSystem.run(world, derived)
-	ProductionSystem.run(config, derived, dt, world.events_state)
+	ProductionSystem.run(config, derived, dt, world.events_state, world.risks_state)
 	if config.instant_logistics:
 		DirectTransferSystem.run(world, config, derived)
 	else:
@@ -108,12 +108,31 @@ func tick(_tick_index: int) -> void:
 	EventSystem.run(world, data, config)
 	MissionSystem.run(world, data, config)
 	SpecialistSystem.run(world, data, config)
+	if world.risks_state.enabled:
+		_remove_lost(RiskSystem.run(world, data, config, derived))
 	if world.rivals_state.enabled:
 		RivalSystem.run(world, data, config, harbors(), dt)
 	else:
 		world.treaty_income_per_min = 0.0
 	world.tick += 1
 	StatisticsSystem.run(world, data, config, derived)
+
+
+## Prédios perdidos no fogo saem do mundo como na demolição, sem devolver material.
+func _remove_lost(lost: Array[int]) -> void:
+	for building_id: int in lost:
+		var record := world.building(building_id)
+		var def := data.building(record.def_id)
+		world.island(record.island_id).fill_building(Footprint.rect(record.origin, def.size, record.rotation), 0)
+		world.buildings.erase(building_id)
+		world.carts.erase(building_id)
+		world.risks_state.forget(building_id)
+		if world.specialists_state.release(building_id):
+			EventBus.specialists_changed.emit()
+		_dirty = true
+		EventBus.building_removed.emit(building_id)
+		EventBus.fire_ended.emit(building_id, true)
+		EventBus.building_lost.emit(building_id, record.def_id, record.island_id)
 
 
 ## Roda n ticks de uma vez (testes e simulação sem tela).

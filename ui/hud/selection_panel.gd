@@ -166,7 +166,7 @@ func _ship_cost_tip(def_id: StringName) -> String:
 
 
 func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
-	_add_lines(10 + def.inputs.size())
+	_add_lines(11 + def.inputs.size())
 	for text: String in RatioCalculator.lines(def, _simulation.data):
 		var ratio := UiKit.label(text, &"DimLabel")
 		ratio.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -185,7 +185,7 @@ func _build_house(record: BuildingRecord) -> void:
 	_title_icon.texture = Icons.tier(tier.id)
 	_portrait.texture = Icons.portrait("tier_" + tier.id)
 	_portrait.visible = _portrait.texture != null
-	_add_lines(3)
+	_add_lines(4)
 	for need: NeedCategoryDef in tier.basic_needs + tier.luxury_needs:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override(&"separation", 6)
@@ -236,6 +236,9 @@ func _refresh() -> void:
 			_title.text = tr(def.name_key)
 			var houses: Array = _simulation.derived_state().service_houses.get(record.id, [])
 			_lines[0].text = tr("SERVICE_HOUSES") % Fmt.integer(houses.size())
+			if def.protects != BuildingDef.Hazard.NONE:
+				var guarded: Array = _simulation.derived_state().protected_by.get(record.id, [])
+				_lines[0].text = tr("SERVICE_PROTECTS") % Fmt.integer(guarded.size())
 		BuildingDef.Kind.PIER:
 			_title.text = tr(def.name_key)
 			var berths: Array = _simulation.derived_state().berths.get(record.island_id, [])
@@ -285,6 +288,7 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_lines[index + 6].visible = specialist != null
 	_lines[index + 6].tooltip_text = SpecialistWindow.description_of(specialist.def) if specialist != null else ""
 	_lines[index + 6].mouse_filter = Control.MOUSE_FILTER_STOP
+	_refresh_risks(record, _lines[index + 7])
 	if _pause != null:
 		_pause.text = tr("PANEL_RESUME") if record.paused else tr("PANEL_PAUSE")
 		_pause.icon = Icons.action("play" if record.paused else "pause")
@@ -416,8 +420,10 @@ func _refresh_house(record: BuildingRecord) -> void:
 		UiPalette.paint(_lines[1], UiPalette.Status.BAD)
 	else:
 		UiPalette.unpaint(_lines[1])
-	_lines[2].text = tr("HOUSE_TAX") % Fmt.decimal(HouseNeeds.tax_per_min(world, data, config, derived, record))
-	var index := 3
+	var burning := world.risks_state.is_burning(record.id)
+	_lines[2].text = tr("HOUSE_TAX") % Fmt.decimal(0.0 if burning else HouseNeeds.tax_per_min(world, data, config, derived, record))
+	_refresh_risks(record, _lines[3])
+	var index := 4
 	for need: NeedCategoryDef in tier.basic_needs + tier.luxury_needs:
 		var value := HouseNeeds.satisfaction(world, derived, record, need)
 		var luxury := tier.luxury_needs.has(need)
@@ -432,11 +438,44 @@ func _refresh_house(record: BuildingRecord) -> void:
 		_block.set_pressed_no_signal(record.upgrade_blocked)
 
 
+## Linha dos riscos (com eles ligados): em chamas ou doente, em vermelho; senão, se o prédio está
+## no raio dos bombeiros (e a casa, no do hospital).
+func _refresh_risks(record: BuildingRecord, line: Label) -> void:
+	var risks := _simulation.world.risks_state
+	line.visible = risks.enabled
+	if not risks.enabled:
+		return
+	var derived := _simulation.derived_state()
+	if risks.is_burning(record.id):
+		var config := _simulation.config
+		var burning_s := float(_simulation.world.tick - risks.fires[record.id]) / config.ticks_per_second
+		var protected := derived.fire_protected.has(record.id)
+		var left := (config.fire_extinguish_s if protected else config.fire_burnout_s) - burning_s
+		line.text = tr("RISK_FIRE_OUT_IN" if protected else "RISK_FIRE_LOST_IN") % Fmt.integer(maxf(left, 0.0))
+		if record.is_house():
+			line.text = tr("HOUSE_ON_FIRE") + "  ·  " + line.text
+		UiPalette.paint(line, UiPalette.Status.PARTIAL if protected else UiPalette.Status.BAD)
+		return
+	if risks.is_sick(record.id):
+		line.text = tr("HOUSE_SICK")
+		UiPalette.paint(line, UiPalette.Status.BAD)
+		return
+	var fire := derived.fire_protected.has(record.id)
+	var parts: PackedStringArray = [tr("HOUSE_FIRE_PROTECTION") % tr("RISK_COVERED" if fire else "RISK_UNCOVERED")]
+	var covered := fire
+	if record.is_house():
+		var health := derived.health_protected.has(record.id)
+		parts.append(tr("HOUSE_HEALTH_PROTECTION") % tr("RISK_COVERED" if health else "RISK_UNCOVERED"))
+		covered = covered and health
+	line.text = "  ·  ".join(parts)
+	UiPalette.paint(line, UiPalette.Status.GOOD if covered else UiPalette.Status.PARTIAL)
+
+
 ## Estado para mostrar: entre um ciclo e o próximo o prédio passa um tick "sem entrada" sem
 ## perder tempo; só vale como parado quando a produtividade média cai.
 static func shown_state(record: BuildingRecord) -> BuildingRecord.State:
 	if record.paused or record.state in [BuildingRecord.State.NO_ROAD, BuildingRecord.State.NO_MODULES, BuildingRecord.State.NO_WAREHOUSE,
-			BuildingRecord.State.NO_TREES]:
+			BuildingRecord.State.NO_TREES, BuildingRecord.State.ON_FIRE]:
 		return record.state
 	return BuildingRecord.State.PRODUCING if record.productivity >= SHOWN_PRODUCING else record.state
 
@@ -461,4 +500,6 @@ static func state_key(state: BuildingRecord.State) -> String:
 			return "STATE_NO_WAREHOUSE"
 		BuildingRecord.State.NO_TREES:
 			return "STATE_NO_TREES"
+		BuildingRecord.State.ON_FIRE:
+			return "STATE_ON_FIRE"
 	return "STATE_IDLE"

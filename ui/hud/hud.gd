@@ -513,7 +513,14 @@ func _tooltip(def: BuildingDef) -> String:
 			lines.append(tr("TIP_COAST"))
 		lines.append_array(RatioCalculator.lines(def, data))
 	if def.kind == BuildingDef.Kind.SERVICE:
-		lines.append(tr("TIP_SERVICE_RADIUS") % ServiceReach.radius_of(def, _simulation.config))
+		var config := _simulation.config
+		match def.protects:
+			BuildingDef.Hazard.FIRE:
+				lines.append(tr("TIP_PROTECTS_FIRE") % [ServiceReach.radius_of(def, config), Fmt.integer(config.fire_extinguish_s)])
+			BuildingDef.Hazard.DISEASE:
+				lines.append(tr("TIP_PROTECTS_DISEASE") % [ServiceReach.radius_of(def, config), Fmt.integer(config.disease_cure_s)])
+			_:
+				lines.append(tr("TIP_SERVICE_RADIUS") % ServiceReach.radius_of(def, config))
 	if def.kind == BuildingDef.Kind.RESIDENCE:
 		lines.append(tr("TIP_HOUSE"))
 	if def.unlock_tier != &"":

@@ -245,6 +245,10 @@
 			1280,
 			256
 		],
+		"building_fire_station": [
+			1792,
+			1664
+		],
 		"building_fishery": [
 			1792,
 			256
@@ -268,6 +272,10 @@
 		"building_hop_farm": [
 			1280,
 			384
+		],
+		"building_hospital": [
+			1920,
+			1664
 		],
 		"building_house": [
 			1152,
@@ -625,6 +633,10 @@
 			1024,
 			1152
 		],
+		"hud_risk": [
+			256,
+			1792
+		],
 		"hud_rival": [
 			1024,
 			1536
@@ -696,6 +708,14 @@
 		"notice_colonized": [
 			1408,
 			1408
+		],
+		"notice_disease": [
+			128,
+			1792
+		],
+		"notice_fire": [
+			0,
+			1792
 		],
 		"notice_info": [
 			1664,
@@ -870,20 +890,20 @@
 			1408
 		],
 		"status_bad": [
-			0,
+			640,
 			1792
 		],
 		"status_good": [
-			1792,
-			1664
+			384,
+			1792
 		],
 		"status_missing": [
-			128,
+			768,
 			1792
 		],
 		"status_partial": [
-			1920,
-			1664
+			512,
+			1792
 		],
 		"tier_artisans": [
 			0,

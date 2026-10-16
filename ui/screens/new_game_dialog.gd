@@ -17,6 +17,7 @@ var size_option := OptionButton.new()
 var difficulty_option := OptionButton.new()
 var events_check := CheckBox.new()
 var rivals_check := CheckBox.new()
+var risks_check := CheckBox.new()
 
 
 func _init() -> void:
@@ -80,6 +81,13 @@ func _init() -> void:
 	rivals_check.tooltip_text = "NEW_GAME_RIVALS_TIP"
 	rivals_check.button_pressed = true
 	grid.add_child(rivals_check)
+	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_risk"), 30))
+	grid.add_child(UiKit.label("NEW_GAME_RISKS"))
+	risks_check.name = "Risks"
+	risks_check.focus_mode = Control.FOCUS_NONE
+	risks_check.tooltip_text = "NEW_GAME_RISKS_TIP"
+	risks_check.button_pressed = true
+	grid.add_child(risks_check)
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	buttons.add_theme_constant_override(&"separation", 12)

@@ -43,6 +43,8 @@ var events_state := EventsState.new()
 var rivals_state := RivalsState.new()
 ## Especialistas contratados e a oferta do comerciante (Fase 11).
 var specialists_state := SpecialistsState.new()
+## Incêndio e doença (seção 8); desligados em mundo novo da simulação.
+var risks_state := RisksState.new()
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
@@ -212,7 +214,8 @@ func to_dict() -> Dictionary:
 			"routes": route_list, "next_route_id": next_route_id, "trader": trader.to_dict(),
 			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict(),
 			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
-			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict()}
+			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
+			"risks": risks_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -357,6 +360,14 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 			if record == null or not item.def.covers(game_data.building(record.def_id)):
 				return null
 	world.specialists_state = loaded_specialists
+	var raw_risks: Variant = data.get("risks")
+	if not raw_risks is Dictionary:
+		return null
+	var risks_data: Dictionary = raw_risks
+	var loaded_risks := RisksState.from_dict(risks_data, world, game_data)
+	if loaded_risks == null:
+		return null
+	world.risks_state = loaded_risks
 	return world
 
 

@@ -23,3 +23,4 @@ cycle_s = 60.0
 terrain = 0
 wall_material = 1
 smoke = 2
+fire_risk = 2.0

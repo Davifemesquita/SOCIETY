@@ -245,6 +245,46 @@ func mission_expired(def_id: StringName) -> Notice:
 	return notice
 
 
+## Fogo num prédio (riscos): sem bombeiros, diz em quanto tempo ele se perde.
+func fire_started(building_id: int) -> Notice:
+	var record := _simulation.world.building(building_id)
+	var name: String = TranslationServer.translate(_simulation.def_of(record).name_key) if record != null else ""
+	var protected := _simulation.derived_state().fire_protected.has(building_id)
+	var notice := Notice.new("fire/%d" % building_id, "notice_fire", "NOTICE_FIRE" if protected else "NOTICE_FIRE_UNPROTECTED",
+			[name] if protected else [name, Fmt.integer(_simulation.config.fire_burnout_s)])
+	notice.building_id = building_id
+	notice.status = UiPalette.Status.PARTIAL if protected else UiPalette.Status.BAD
+	return notice
+
+
+func fire_out(building_id: int) -> Notice:
+	var record := _simulation.world.building(building_id)
+	var name: String = TranslationServer.translate(_simulation.def_of(record).name_key) if record != null else ""
+	var notice := Notice.new("fire/%d" % building_id, "notice_fire", "NOTICE_FIRE_OUT", [name])
+	notice.building_id = building_id
+	notice.status = UiPalette.Status.GOOD
+	return notice
+
+
+## O prédio já saiu do mundo: o clique leva à ilha.
+func building_lost(building_id: int, def_id: StringName, island_id: int) -> Notice:
+	var notice := Notice.new("fire/%d" % building_id, "notice_fire", "NOTICE_BUILDING_LOST",
+			[TranslationServer.translate(_simulation.data.building(def_id).name_key)])
+	notice.island_id = island_id
+	notice.status = UiPalette.Status.BAD
+	return notice
+
+
+func outbreak(house_id: int) -> Notice:
+	var record := _simulation.world.building(house_id)
+	var tier := _simulation.data.tier(record.tier) if record != null else null
+	var notice := Notice.new("disease/%d" % house_id, "notice_disease", "NOTICE_OUTBREAK",
+			[TranslationServer.translate(tier.name_key) if tier != null else ""])
+	notice.building_id = house_id
+	notice.status = UiPalette.Status.PARTIAL
+	return notice
+
+
 func simulation_world() -> WorldState:
 	return _simulation.world
 

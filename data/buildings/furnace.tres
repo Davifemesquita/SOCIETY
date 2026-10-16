@@ -25,3 +25,4 @@ pollution_radius_cells = 16
 pollution_strength = 1.0
 smoke = 3
 work_sound = &"metal"
+fire_risk = 2.0

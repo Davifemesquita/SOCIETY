@@ -221,3 +221,8 @@ specialist_foreman,lorc/gears,notice
 specialist_master_brewer,delapouite/barrel,notice
 specialist_master_glassblower,lorc/round-bottom-flask,notice
 specialist_steelmaster,lorc/anvil,notice
+building_fire_station,delapouite/fire-extinguisher,building
+building_hospital,delapouite/hospital,building
+notice_fire,sbed/fire,notice
+notice_disease,lorc/virus,notice
+hud_risk,lorc/fire-ring,hud

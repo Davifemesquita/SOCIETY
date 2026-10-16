@@ -107,7 +107,7 @@ static func run_production(sim: Simulation, seconds: float) -> void:
 	for i: int in roundi(seconds / dt):
 		var derived := sim.derived_state()
 		WorkforceSystem.run(sim.world, derived)
-		ProductionSystem.run(sim.config, derived, dt, sim.world.events_state)
+		ProductionSystem.run(sim.config, derived, dt, sim.world.events_state, sim.world.risks_state)
 		if sim.config.instant_logistics:
 			DirectTransferSystem.run(sim.world, sim.config, derived)
 		else:

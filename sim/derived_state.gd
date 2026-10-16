@@ -41,6 +41,11 @@ var pollution: Dictionary[int, float] = {}
 var service_houses: Dictionary[int, Array] = {}
 ## Prédio de serviço → células de estrada alcançadas dentro do raio.
 var service_reach: Dictionary[int, PackedInt32Array] = {}
+## Riscos (seção 8): prédios no raio de um quartel de bombeiros (casas e produção) e casas no raio
+## de um hospital; e, por quartel ou hospital, os prédios que ele protege.
+var fire_protected: Dictionary[int, bool] = {}
+var health_protected: Dictionary[int, bool] = {}
+var protected_by: Dictionary[int, Array] = {}
 var houses: Array[int] = []
 ## Ilhas com pelo menos uma casa (as outras não têm necessidade a calcular).
 var islands_with_houses: Dictionary[int, bool] = {}
@@ -101,6 +106,9 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	pollution.clear()
 	service_houses.clear()
 	service_reach.clear()
+	fire_protected.clear()
+	health_protected.clear()
+	protected_by.clear()
 	houses.clear()
 	islands_with_houses.clear()
 	production.clear()
@@ -149,8 +157,14 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	upkeep_per_min += world.specialists_state.salaries_per_min()
 	_lap("prédios")
 	var houses_at_road := _houses_by_front_cell(world, data)
+	var production_at_road: Dictionary[int, Array] = {}
+	for service_id: int in services:
+		if data.building(world.building(service_id).def_id).protects == BuildingDef.Hazard.FIRE:
+			production_at_road = _by_front_cell(world, data, production)
+			break
 	for service_id: int in services:
 		_cover(world, data, config, service_id, houses_at_road)
+		_protect(world, data, service_id, production_at_road)
 	_lap("serviços")
 	_assign_modules(world, data, farms, modules)
 	_spread_pollution(world, data, polluters)
@@ -463,8 +477,13 @@ static func _cell_key(island_id: int, index: int) -> int:
 
 ## Célula da frente de cada casa → casas que encostam nela.
 func _houses_by_front_cell(world: WorldState, data: GameData) -> Dictionary[int, Array]:
+	return _by_front_cell(world, data, houses)
+
+
+## Célula da frente de cada prédio da lista → prédios que encostam nela.
+func _by_front_cell(world: WorldState, data: GameData, ids: Array[int]) -> Dictionary[int, Array]:
 	var map: Dictionary[int, Array] = {}
-	for house_id: int in houses:
+	for house_id: int in ids:
 		var house := world.building(house_id)
 		var grid := world.island(house.island_id)
 		for index: int in Footprint.front_indices(grid.size, house.origin, data.building(house.def_id).size, house.rotation):
@@ -496,6 +515,30 @@ func _cover(world: WorldState, data: GameData, config: GameConfig, service_id: i
 					services.append(def.id)
 	covered.sort()
 	service_houses[service_id] = covered
+
+
+## Riscos: o quartel protege as casas e a produção que encostam na estrada ao alcance dele; o
+## hospital, as casas que ele cobre.
+func _protect(world: WorldState, data: GameData, service_id: int, production_at_road: Dictionary[int, Array]) -> void:
+	var record := world.building(service_id)
+	var hazard := data.building(record.def_id).protects
+	if hazard == BuildingDef.Hazard.NONE:
+		return
+	var guarded: Array[int] = []
+	var houses_served: Array = service_houses[service_id]
+	for house_id: int in houses_served:
+		guarded.append(house_id)
+	if hazard == BuildingDef.Hazard.FIRE:
+		for index: int in service_reach[service_id]:
+			var touching: Array = production_at_road.get(_cell_key(record.island_id, index), [])
+			for building_id: int in touching:
+				if not guarded.has(building_id):
+					guarded.append(building_id)
+	guarded.sort()
+	protected_by[service_id] = guarded
+	var into := fire_protected if hazard == BuildingDef.Hazard.FIRE else health_protected
+	for building_id: int in guarded:
+		into[building_id] = true
 
 
 ## Cada módulo serve a uma fazenda só: a de menor id que o tem no raio e ainda precisa dele.

@@ -162,6 +162,32 @@ static var _default: GameConfig
 ## Eventos e encomendas são conferidos a cada tantos ticks.
 @export var events_check_ticks: int = 5
 
+@export_group("Riscos")
+## Incêndio e doença (seção 8, opcionais): conferidos a cada risk_check_ticks. Cada prédio que pode
+## arder tem fire_chance_per_hour (por hora de jogo, vezes o fire_risk do prédio) de pegar fogo; no
+## raio de um quartel de bombeiros, só fire_protected_factor disso. O fogo protegido se apaga em
+## fire_extinguish_s; o desprotegido queima fire_burnout_s e o prédio se perde.
+@export var risk_check_ticks: int = 25
+@export var fire_after_milestone: int = 1
+@export var fire_chance_per_hour: float = 0.015
+@export var fire_protected_factor: float = 0.25
+@export var fire_extinguish_s: float = 20.0
+@export var fire_burnout_s: float = 90.0
+@export var max_active_fires: int = 3
+## Doença: cada casa tem disease_chance_per_hour de adoecer (mais com a poluição, até
+## 1 + disease_pollution_factor); no raio de um hospital, só disease_protected_factor disso. A casa
+## doente perde disease_residents_lost_per_min moradores e disease_happiness_penalty de felicidade;
+## sara em disease_cure_s com hospital, em disease_duration_s sem.
+@export var disease_after_milestone: int = 2
+@export var disease_chance_per_hour: float = 0.015
+@export var disease_pollution_factor: float = 2.0
+@export var disease_protected_factor: float = 0.25
+@export var disease_cure_s: float = 45.0
+@export var disease_duration_s: float = 240.0
+@export var disease_residents_lost_per_min: float = 2.0
+@export var disease_happiness_penalty: float = 25.0
+@export var max_active_outbreaks: int = 3
+
 @export_group("Rivais")
 ## Relação para onde cada personalidade volta sozinha (pacífica, ambiciosa, agressiva).
 @export var rival_base_relation: PackedFloat32Array = PackedFloat32Array([20.0, 0.0, -20.0])
@@ -572,4 +598,11 @@ func validate() -> PackedStringArray:
 		if fraction < 0.0 or fraction > 1.0:
 			problems.append("frações (devolução, manutenção pausada, variação de preço) ficam entre 0 e 1")
 			break
+	if risk_check_ticks <= 0 or fire_extinguish_s <= 0.0 or fire_burnout_s <= 0.0 or disease_cure_s <= 0.0 or disease_duration_s <= 0.0:
+		problems.append("risk_check_ticks e as durações do fogo e da doença devem ser positivos")
+	if fire_chance_per_hour < 0.0 or disease_chance_per_hour < 0.0 or fire_protected_factor < 0.0 or fire_protected_factor > 1.0 \
+			or disease_protected_factor < 0.0 or disease_protected_factor > 1.0:
+		problems.append("chances dos riscos não negativas e fatores de proteção entre 0 e 1")
+	if max_active_fires < 0 or max_active_outbreaks < 0:
+		problems.append("max_active_fires e max_active_outbreaks não podem ser negativos")
 	return problems

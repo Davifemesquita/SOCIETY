@@ -10,6 +10,9 @@ enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
 ## O que sai da chaminé enquanto o prédio produz (Fase 9): nada, vapor claro, fumaça ou fumaça
 ## pesada (com fuligem no chão em volta).
 enum Smoke { NONE, STEAM, SMOKE, HEAVY }
+## O que o serviço protege (riscos, seção 8): nada, incêndio (quartel de bombeiros) ou doença
+## (hospital).
+enum Hazard { NONE, FIRE, DISEASE }
 
 @export var id: StringName
 ## Chave de tradução do nome.
@@ -70,6 +73,12 @@ enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 ## (prédio de produção com entrada) a até este raio, em células. 0 = não é usina.
 @export var power_radius_cells: int = 0
 
+@export_group("Riscos")
+## Multiplica a chance de incêndio do prédio (casa e produção); 0 = não pega fogo.
+@export var fire_risk: float = 1.0
+## Serviço que protege contra um risco no raio dele (bombeiros: casas e produção; hospital: casas).
+@export var protects: Hazard = Hazard.NONE
+
 @export_group("Poluição")
 @export var pollution_radius_cells: int = 0
 ## Fração da penalidade máxima de felicidade que a poluição deste prédio aplica.
@@ -102,6 +111,11 @@ func is_power_plant() -> bool:
 ## Fábrica que a usina acelera: produção com entrada. Extração, fazenda e a própria usina, não.
 func is_electrifiable() -> bool:
 	return is_production() and not inputs.is_empty() and power_radius_cells <= 0
+
+
+## Pode pegar fogo: casa e prédio de produção com risco acima de zero.
+func can_burn() -> bool:
+	return fire_risk > 0.0 and (kind == Kind.RESIDENCE or kind == Kind.PRODUCTION)
 
 
 func level(index: int) -> BuildingLevelDef:

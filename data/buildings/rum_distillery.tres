@@ -21,3 +21,4 @@ inputs = Array[StringName]([&"sugar"])
 output = &"rum"
 cycle_s = 30.0
 smoke = 2
+fire_risk = 2.0

@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10, from_10_to_11, from_11_to_12]
+	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10, from_10_to_11, from_11_to_12, from_12_to_13]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -197,5 +197,14 @@ static func from_10_to_11(state: Dictionary) -> Dictionary:
 static func from_11_to_12(state: Dictionary) -> Dictionary:
 	var world: Dictionary = state.get("world", {})
 	world["specialists"] = SpecialistsState.new().to_dict()
+	state["world"] = world
+	return state
+
+
+## Especialistas → riscos (seção 8): a partida antiga abre com incêndio e doença desligados, para
+## nada pegar fogo de repente numa cidade erguida sem bombeiros.
+static func from_12_to_13(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	world["risks"] = RisksState.new().to_dict()
 	state["world"] = world
 	return state

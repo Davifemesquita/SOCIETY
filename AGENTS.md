@@ -141,14 +141,14 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 54 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 3 navios (`ships/`: mercante, o do comerciante e a fragata), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) e 8 especialistas (`specialists/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 56 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 3 navios (`ships/`: mercante, o do comerciante e a fragata), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) e 8 especialistas (`specialists/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
 | `sim/placement_rules.gd` | validação; o motivo da recusa é chave de tradução `REASON_*` |
 | `sim/commands/` | construir, estrada (terra ou paralelepípedo), demolir e mover: validam tudo antes de mudar o mundo |
 | `sim/simulation.gd` | dona do `WorldState`; executa comandos e roda os sistemas na ordem da seção 12 |
-| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → combate → eventos → encomendas → oferta de especialistas → rivais |
+| `sim/systems/` | força de trabalho → produção → logística (carroças) → necessidades → população → marcos → metas → economia → navios → combate → eventos → encomendas → oferta de especialistas → riscos → rivais |
 | `data/event_def.gd`, `data/mission_def.gd` | `EventDef` (efeito, grupo, multiplicador, duração, peso, marco) e `MissionDef` (bem, toneladas, prazo, prêmio, peso, marco) |
 | `sim/events/` | `EventsState` (no save: ligado ou não, eventos, encomendas, os contadores dos sorteios), `WorldEvent`, `Mission` e `EventEffects` (os multiplicadores que os sistemas leem) |
 | `sim/logistics/` | `Cart` (registro da carroça), `RoadRouter` (AStarGrid2D por ilha), `WarehouseField` (armazém mais próximo) |
@@ -184,6 +184,8 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `sim/systems/combat_system.gd` | combate naval: tiro, casco, afundar e reparo no porto |
 | `data/specialist_def.gd`, `sim/specialists/`, `sim/systems/specialist_system.gd` | especialistas: `SpecialistDef` (efeito, grupo de prédios, contratação, salário), `SpecialistsState`/`Specialist` (no save) e o sorteio da oferta por volta do comerciante |
 | `sim/commands/specialist_command.gd`, `ui/hud/specialist_window.gd` | contratar, designar, retirar e dispensar; a janela dos especialistas (atalho L) |
+| `sim/risks/risks_state.gd`, `sim/systems/risk_system.gd` | incêndio e doença: `RisksState` (no save: ligado ou não, prédios em chamas e casas doentes com o tick do começo) e o `RiskSystem` (sorteio, fogo apagado ou prédio perdido, cura) |
+| `presentation/fire_view.gd` | labaredas, fumaça escura e luz laranja no prédio em chamas |
 | `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
 | `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
@@ -600,7 +602,8 @@ Regras que já custaram investigação:
   comerciante compra. **Só multiplicadores** (`EventEffects`): produção por grupo (todos, fazendas,
   minas), preço do comerciante (`WorldState.trader_price`, que todo preço do comerciante usa agora),
   velocidade dos navios, felicidade (pontos) e chegada de moradores. Nada é destruído nem tirado: a
-  tempestade (navios a 60%) é o único efeito ruim. Riscos (incêndio, doença) seguem de fora.
+  tempestade (navios a 60%) é o único efeito ruim. Os riscos (incêndio, doença) são um sistema à parte
+  (ver "Riscos").
 - **Encomendas** (`MissionSystem`): só com entreposto; a primeira depois de `mission_first_after_s`,
   as seguintes a cada `mission_interval_s`, no máximo `max_open_missions` abertas e nunca duas do mesmo
   bem. A oferta espera `mission_offer_s` e some calada; aceita (`AnswerMissionCommand`), o prazo é o
@@ -712,6 +715,39 @@ Regras que já custaram investigação:
   carregar e menu para fora. Estatísticas, Rotas e Rivais viraram botões só de ícone (o nome e o
   atalho ficam na dica); Encomendas mantém o texto com a contagem.
 
+### Riscos (seção 8, opcionais; depois da Fase 11)
+
+- **Ideia própria nos números** (a especificação só diz "incêndio e doença, com bombeiros e hospital").
+  Ligados pela caixa "Incêndio e doença" do jogo novo (`GameScreen.risks_enabled`, marcada por padrão) e
+  desligados em todo mundo novo da simulação, como os eventos: os testes e o jogador-robô não mudam.
+- **Quartel de bombeiros e hospital** são serviços (`BuildingDef.protects`, raio por estrada como os
+  outros, 30 células) que não atendem necessidade de classe. O quartel protege casa e produção cuja
+  frente encosta na estrada ao alcance dele (`DerivedState.fire_protected`); o hospital, as casas que ele
+  cobre (`health_protected`). `protected_by` dá, por quartel ou hospital, o que ele protege (painel e
+  destaque). Quartel livre com 50 camponeses; hospital com 200 operários.
+- **`RiskSystem`**, a cada `risk_check_ticks`, depois dos especialistas: resolve e depois sorteia, pela
+  semente e pelo tick. Fogo só em casa e produção (`BuildingDef.can_burn`, `fire_risk` multiplica: 2 nas
+  fábricas de forno), a partir de `fire_after_milestone`; doença só em casa com morador, a partir de
+  `disease_after_milestone`, mais com a poluição. Teto de `max_active_fires` e `max_active_outbreaks`.
+- **Proteção é a de agora**: fogo no raio do quartel se apaga em `fire_extinguish_s`; fora dele queima
+  `fire_burnout_s` e o prédio se perde (sai do mundo como na demolição, sem devolver material; o
+  especialista volta para a lista). Quartel erguido durante o fogo ainda salva o prédio. A doença sara em
+  `disease_cure_s` com hospital e em `disease_duration_s` sem.
+- **Efeitos**: produção em chamas para (`State.ON_FIRE`, no fim da lista); casa em chamas não paga
+  imposto, não recebe gente e não sobe; casa doente perde `disease_residents_lost_per_min` moradores e
+  `disease_happiness_penalty` de felicidade e não sobe.
+- **O sorteio anda pela lista do estado derivado**, que ainda tem os prédios perdidos na mesma
+  conferência (saem do mundo depois, pela `Simulation`): eles ficam de fora, senão pegavam fogo de novo
+  e a partida carregada divergia (o teste de save pegou).
+- **Save versão 13**: `risks` no mundo (`RisksState.to_dict`, listas de prédio e tick); fogo em prédio
+  que não arde, doença fora de casa ou prédio inexistente recusa o save. Demolir esquece o risco do
+  prédio. Saves antigos (migração 12 → 13) abrem com os riscos **desligados**: nada pega fogo de repente
+  numa cidade erguida sem bombeiros.
+- **Na tela**: caixa no jogo novo, dica do menu com o raio e o tempo de apagar/curar, linha dos riscos
+  no painel (em chamas, doente, no raio ou fora), "Protege n prédios" no painel do quartel e do hospital
+  e o destaque do que ele protege, avisos de fogo (sem bombeiros diz em quanto tempo o prédio se perde),
+  fogo apagado, prédio perdido e doença, com som de alerta, e o fogo desenhado (`FireView`).
+
 ## Assets e licenças (seção 14)
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
@@ -734,6 +770,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
 | 10 — Polimento | **concluída em 14/10/2026** (confirmada em 14/10/2026; o teste do build em outro PC segue com o dono do produto) |
 | 11 — Expansões | **concluída em 15/10/2026**: segunda região climática, eventos e encomendas, rivais com IA e diplomacia e combate naval em 14/10/2026; eletricidade e especialistas em 15/10/2026 |
+| Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8) |
 
 Pendências já vistas para fases futuras:
 
@@ -741,8 +778,7 @@ Pendências já vistas para fases futuras:
   subida de classe (corrigido em 15/10/2026); os números da especificação e os nossos não foram mexidos.
   O robô joga 4 h numa ilha plana de 350×350 (a terra do arquipélago, no lugar das colônias) e chega às
   cinco classes (investidores aos ~225 min); o aperto é a entrada das fábricas dos engenheiros.
-  Estaleiro, se a compra de navio no entreposto não bastar. Riscos (incêndio e doença, opcionais na
-  seção 8) ficaram de fora.
+  Estaleiro, se a compra de navio no entreposto não bastar.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
   volumétricas aparecem certas no ultra; modelos de verdade (prédios, casas, navios) seguem no
   `assets/TODO_ASSETS.md`.

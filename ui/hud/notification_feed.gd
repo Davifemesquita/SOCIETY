@@ -37,6 +37,13 @@ func setup(simulation: Simulation) -> void:
 	EventBus.rival_stance_changed.connect(func(rival_id: StringName, stance: int) -> void: push(watcher.rival_stance(rival_id, stance)))
 	EventBus.ship_sunk.connect(func(_ship_id: int, owner: int, _at: Vector2) -> void: push(watcher.ship_sunk(owner)))
 	EventBus.ship_fired.connect(_on_ship_fired)
+	EventBus.fire_started.connect(func(building_id: int) -> void: push(watcher.fire_started(building_id)))
+	EventBus.fire_ended.connect(func(building_id: int, lost: bool) -> void:
+		if not lost:
+			push(watcher.fire_out(building_id)))
+	EventBus.building_lost.connect(func(building_id: int, def_id: StringName, island_id: int) -> void:
+		push(watcher.building_lost(building_id, def_id, island_id)))
+	EventBus.outbreak_started.connect(func(house_id: int) -> void: push(watcher.outbreak(house_id)))
 	EventBus.world_replaced.connect(func() -> void:
 		clear()
 		watcher.reset())

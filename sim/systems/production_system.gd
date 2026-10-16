@@ -8,15 +8,17 @@ extends RefCounted
 ## Eletricidade (Fase 11): a usina queima a entrada sem gerar bem; a fábrica no raio de uma usina
 ## que produzia no tick anterior ganha electricity_bonus na velocidade.
 ## Especialistas (Fase 11): o de velocidade multiplica o fator; o de tonelada extra conta os ciclos.
+## Riscos: o prédio em chamas para (o ciclo espera o fogo apagar).
 ## O fim do ciclo tem folga de 1e-6: 75 ticks de 0,2/15 somam 0,99999… e o ciclo atrasaria
 ## um tick inteiro a cada volta.
 
 const _EPSILON := 0.000001
 
 
-static func run(config: GameConfig, derived: DerivedState, dt: float, events: EventsState = null) -> void:
+static func run(config: GameConfig, derived: DerivedState, dt: float, events: EventsState = null, risks: RisksState = null) -> void:
 	var smoothing := 1.0 - exp(-dt / config.productivity_smoothing_seconds)
 	var boosted := events != null and not events.events.is_empty()
+	var fires: Dictionary[int, int] = risks.fires if risks != null else {}
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		entry.powered = false
 		for plant: DerivedState.ProductionEntry in entry.power_plants:
@@ -31,7 +33,11 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 			factor *= 1.0 + config.electricity_bonus
 		if entry.specialist != null and entry.specialist.def.effect == SpecialistDef.Effect.SPEED:
 			factor *= 1.0 + entry.specialist.def.amount
-		var speed := _step(entry, config, dt, factor)
+		var speed := 0.0
+		if not fires.is_empty() and fires.has(record.id):
+			record.state = BuildingRecord.State.ON_FIRE
+		else:
+			speed = _step(entry, config, dt, factor)
 		record.productivity = lerpf(record.productivity, speed, smoothing)
 		if record.state != previous:
 			EventBus.building_state_changed.emit(record.id)
