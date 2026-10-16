@@ -294,6 +294,13 @@ func ship_built(ship_id: int) -> Notice:
 	return notice
 
 
+func achievement(def: AchievementDef) -> Notice:
+	var notice := Notice.new("achievement/%s" % def.id, "notice_achievement", "NOTICE_ACHIEVEMENT",
+			[TranslationServer.translate(def.title_key())])
+	notice.status = UiPalette.Status.GOOD
+	return notice
+
+
 func simulation_world() -> WorldState:
 	return _simulation.world
 

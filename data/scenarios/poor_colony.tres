@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ScenarioDef" format=3]
+
+[ext_resource type="Script" path="res://data/scenario_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"poor_colony"
+seed = 7319
+archipelago_size = 0
+difficulty = 2
+starting_money = 0
+events = true
+rivals = false
+risks = true
+victory_kind = 1
+victory_target = &"artisans"
+victory_amount = 300
+time_limit_min = 0

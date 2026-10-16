@@ -20,6 +20,15 @@ static var events_enabled: bool = true
 static var rivals_enabled: bool = true
 ## Incêndio e doença no jogo novo (caixa do diálogo; ligados por padrão).
 static var risks_enabled: bool = true
+## Objetivo do jogo novo (Fase 12): GoalDef.Kind (−1 = partida livre), alvo, quantidade e prazo em
+## minutos (0 = sem prazo); o cenário de onde veio (vazio = jogo novo comum) e o dinheiro inicial dele
+## (0 = o da dificuldade).
+static var victory_kind: int = -1
+static var victory_target: StringName = &""
+static var victory_amount: int = 0
+static var victory_deadline_min: float = 0.0
+static var scenario_id: StringName = &""
+static var starting_money: int = 0
 ## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
 ## coordenadas dela.
 static var flat_world: bool = false
@@ -27,6 +36,7 @@ static var flat_world: bool = false
 const QUICK_SLOT := "rapido"
 const MAIN_MENU := "res://ui/screens/boot_screen.tscn"
 const THUMBNAIL_SIZE := Vector2i(320, 180)
+const ACHIEVEMENT_CHECK_SECONDS := 2.0
 
 var simulation: Simulation
 var camera: StrategyCamera
@@ -63,6 +73,9 @@ var _terrain_highlights: Dictionary[String, Image] = {}
 ## Quanto é noite agora (0 a 1), o mesmo valor do uniforme global night_light.
 var night_light: float = 0.0
 
+## Conquistas do jogador conferidas nesta partida (Fase 12).
+var achievements: AchievementWatcher
+var _achievement_left: float = ACHIEVEMENT_CHECK_SECONDS
 var _config: GameConfig
 ## Camada da interface (onde abrem as janelas dos menus).
 var _ui_layer: CanvasLayer
@@ -83,6 +96,10 @@ func _ready() -> void:
 		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty))
 		simulation.world.events_state.enabled = events_enabled
 		simulation.world.risks_state.enabled = risks_enabled
+		if starting_money > 0:
+			simulation.world.money = starting_money
+		if victory_kind >= 0:
+			VictorySystem.start(simulation.world, _config, victory_kind, victory_target, victory_amount, victory_deadline_min, scenario_id)
 		if rivals_enabled:
 			simulation.world.rivals_state.start(data, _config)
 	_build_ground()
@@ -196,6 +213,10 @@ func _ready() -> void:
 	EventBus.world_replaced.connect(func() -> void: _terrain_highlights.clear())
 	EventBus.building_placed.connect(func(_id: int) -> void: update_highlight())
 	EventBus.building_removed.connect(func(_id: int) -> void: update_highlight())
+	EventBus.match_won.connect(open_victory)
+	EventBus.match_lost.connect(open_victory)
+	achievements = AchievementWatcher.new(simulation, Achievements.shared())
+	achievements.connect_events()
 	var shortcuts := GameShortcuts.new()
 	shortcuts.setup(self)
 	add_child(shortcuts)
@@ -208,8 +229,15 @@ func _ready() -> void:
 		load_slot_on_start = ""
 
 
-## Céu e luzes seguem a hora do GameClock, lisa entre os ticks.
-func _process(_delta: float) -> void:
+## Céu e luzes seguem a hora do GameClock, lisa entre os ticks. As conquistas de estado são
+## conferidas a cada ACHIEVEMENT_CHECK_SECONDS.
+func _process(delta: float) -> void:
+	_achievement_left -= delta
+	if _achievement_left <= 0.0:
+		_achievement_left = ACHIEVEMENT_CHECK_SECONDS
+		for def: AchievementDef in achievements.check():
+			hud.notifications.push(hud.notifications.watcher.achievement(def))
+			EventBus.achievement_unlocked.emit(def.id)
 	var hour := GameClock.clock.hour()
 	sky.set_hour(hour)
 	night_light = DayClock.night_factor(_config, hour)
@@ -358,6 +386,49 @@ func open_menu() -> GameMenu:
 	menu.main_menu_requested.connect(func() -> void: get_tree().change_scene_to_file.call_deferred(MAIN_MENU))
 	menu.quit_requested.connect(func() -> void: get_tree().quit())
 	return menu
+
+
+## Fim da partida com objetivo (Fase 12): pausa e mostra o resumo; continuar fecha e volta à
+## velocidade de antes (a partida segue livre); o menu principal sai da partida.
+func open_victory() -> VictoryDialog:
+	var dialog := VictoryDialog.new(simulation)
+	_speed_before_menu = GameClock.clock.speed_index
+	GameClock.set_speed(TickClock.PAUSED)
+	var modal := Modal.open(_ui_layer, dialog)
+	dialog.continue_requested.connect(func() -> void:
+		modal.close()
+		if not modal_open():
+			GameClock.set_speed(_speed_before_menu))
+	dialog.menu_requested.connect(func() -> void: get_tree().change_scene_to_file.call_deferred(MAIN_MENU))
+	return dialog
+
+
+## Volta o jogo novo ao padrão (partida livre, sem cenário): a tela de abertura chama antes de
+## preencher o que o jogador escolheu.
+static func reset_new_game() -> void:
+	victory_kind = -1
+	victory_target = &""
+	victory_amount = 0
+	victory_deadline_min = 0.0
+	scenario_id = &""
+	starting_money = 0
+
+
+## Prepara o jogo novo de um cenário.
+static func apply_scenario(def: ScenarioDef) -> void:
+	reset_new_game()
+	world_seed = def.seed
+	archipelago_size = def.archipelago_size
+	difficulty = def.difficulty
+	starting_money = def.starting_money
+	events_enabled = def.events
+	rivals_enabled = def.rivals
+	risks_enabled = def.risks
+	victory_kind = def.victory_kind
+	victory_target = def.victory_target
+	victory_amount = def.victory_amount
+	victory_deadline_min = def.time_limit_min
+	scenario_id = def.id
 
 
 func modal_open_except(modal: Modal) -> bool:

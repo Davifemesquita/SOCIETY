@@ -86,7 +86,7 @@ func execute(command: Command) -> CommandResult:
 
 
 ## Um tick de simulação: força de trabalho → produção (e estaleiros) → logística (carroças) → necessidades →
-## população e upgrades (e marcos e metas) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → riscos → rivais →
+## população e upgrades (e marcos, metas e objetivo) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → riscos → rivais →
 ## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
 	var dt := config.tick_interval()
@@ -108,6 +108,7 @@ func tick(_tick_index: int) -> void:
 	PopulationSystem.run(world, data, config, derived, dt)
 	MilestoneSystem.run(world, config, derived)
 	GoalSystem.run(world, data, config, derived)
+	VictorySystem.run(world, data, config, derived)
 	EconomySystem.run(world, derived, dt)
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)

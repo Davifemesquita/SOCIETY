@@ -47,6 +47,8 @@ var specialists_state := SpecialistsState.new()
 var risks_state := RisksState.new()
 ## Encomendas dos estaleiros.
 var shipyard_state := ShipyardState.new()
+## Objetivo da partida (Fase 12); partida livre em mundo novo.
+var victory_state := VictoryState.new()
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
@@ -217,7 +219,8 @@ func to_dict() -> Dictionary:
 			"milestones_reached": milestones_reached, "difficulty": difficulty, "history": history.to_dict(),
 			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
 			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
-			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict()}
+			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict(),
+			"victory": victory_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -378,6 +381,14 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	if loaded_shipyard == null:
 		return null
 	world.shipyard_state = loaded_shipyard
+	var raw_victory: Variant = data.get("victory")
+	if not raw_victory is Dictionary:
+		return null
+	var victory_data: Dictionary = raw_victory
+	var loaded_victory := VictoryState.from_dict(victory_data, game_data)
+	if loaded_victory == null:
+		return null
+	world.victory_state = loaded_victory
 	return world
 
 

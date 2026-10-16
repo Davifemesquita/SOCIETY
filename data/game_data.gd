@@ -23,6 +23,9 @@ static var _default: GameData
 @export var rivals: Array[RivalDef] = []
 ## Especialistas que o comerciante traz (Fase 11).
 @export var specialists: Array[SpecialistDef] = []
+## Cenários prontos e conquistas (Fase 12).
+@export var scenarios: Array[ScenarioDef] = []
+@export var achievements: Array[AchievementDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -72,6 +75,13 @@ func tier_index(id: StringName) -> int:
 func next_tier(id: StringName) -> TierDef:
 	var index := tier_index(id)
 	return tiers[index + 1] if index >= 0 and index + 1 < tiers.size() else null
+
+
+func scenario(id: StringName) -> ScenarioDef:
+	for def: ScenarioDef in scenarios:
+		if def.id == id:
+			return def
+	return null
 
 
 func ship(id: StringName) -> ShipDef:
@@ -188,6 +198,21 @@ func validate() -> PackedStringArray:
 				problems.append("%s: bem desconhecido %s" % [trader_def.id, good_id])
 		if trader_def.visit_interval_s <= 0.0 or trader_def.max_tons_per_visit <= 0:
 			problems.append("%s: intervalo e teto por visita devem ser positivos" % trader_def.id)
+	_check_ids(problems, "cenário", scenarios.map(func(def: ScenarioDef) -> StringName: return def.id))
+	for scenario_def: ScenarioDef in scenarios:
+		if scenario_def.victory_amount <= 0 or scenario_def.time_limit_min < 0.0 or scenario_def.archipelago_size < 0 \
+				or scenario_def.archipelago_size > 2 or scenario_def.difficulty < 0 or scenario_def.difficulty > 2:
+			problems.append("cenário %s: objetivo positivo, prazo não negativo, tamanho e dificuldade de 0 a 2" % scenario_def.id)
+		if scenario_def.victory_kind == GoalDef.Kind.TIER_POPULATION and tier(scenario_def.victory_target) == null:
+			problems.append("cenário %s: classe desconhecida %s" % [scenario_def.id, scenario_def.victory_target])
+	_check_ids(problems, "conquista", achievements.map(func(def: AchievementDef) -> StringName: return def.id))
+	for achievement_def: AchievementDef in achievements:
+		if achievement_def.amount <= 0:
+			problems.append("conquista %s: quantidade positiva" % achievement_def.id)
+		if achievement_def.kind == AchievementDef.Kind.TIER_POPULATION and tier(achievement_def.target) == null:
+			problems.append("conquista %s: classe desconhecida %s" % [achievement_def.id, achievement_def.target])
+		if achievement_def.kind == AchievementDef.Kind.VICTORY and achievement_def.target != &"" and scenario(achievement_def.target) == null:
+			problems.append("conquista %s: cenário desconhecido %s" % [achievement_def.id, achievement_def.target])
 	_check_ids(problems, "meta", goals.map(func(def: GoalDef) -> StringName: return def.id))
 	for goal: GoalDef in goals:
 		_check_goal(problems, goal)

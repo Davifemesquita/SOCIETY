@@ -141,7 +141,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 57 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) e 8 especialistas (`specialists/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 57 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) 8 especialistas (`specialists/`), 3 cenários (`scenarios/`) e 11 conquistas (`achievements/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
@@ -186,6 +186,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `sim/commands/specialist_command.gd`, `ui/hud/specialist_window.gd` | contratar, designar, retirar e dispensar; a janela dos especialistas (atalho L) |
 | `sim/risks/risks_state.gd`, `sim/systems/risk_system.gd` | incêndio e doença: `RisksState` (no save: ligado ou não, prédios em chamas e casas doentes com o tick do começo) e o `RiskSystem` (sorteio, fogo apagado ou prédio perdido, cura) |
 | `sim/ships/shipyard_state.gd`, `sim/systems/shipyard_system.gd`, `sim/commands/shipyard_command.gd` | estaleiro: as encomendas (no save), o avanço pela força de trabalho e a entrega do navio, e o gesto de encomendar e cancelar |
+| `sim/victory_state.gd`, `sim/systems/victory_system.gd`, `data/scenario_def.gd` | objetivo da partida (Fase 12): o alvo, o prazo e o resultado (no save), a conferência e os cenários prontos |
+| `core/achievements.gd`, `ui/achievement_watcher.gd`, `data/achievement_def.gd` | conquistas do jogador em `user://achievements.cfg` (fora do save) e quem as confere na partida |
+| `ui/screens/scenario_dialog.gd`, `achievements_dialog.gd`, `ui/hud/victory_dialog.gd`, `ui/objective_text.gd` | telas da Fase 12 e o texto do objetivo |
 | `presentation/fire_view.gd` | labaredas, fumaça escura e luz laranja no prédio em chamas |
 | `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
@@ -566,7 +569,7 @@ Regras que já custaram investigação:
   material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
   cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
   `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
-- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.11.0 (era 0.10.0 até a Fase 10), nome e descrição no
+- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.12.0 (0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
   `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
 
 ### Segunda região climática (Fase 11)
@@ -771,6 +774,35 @@ Regras que já custaram investigação:
   com o progresso e o cancelar, a dica do menu e o aviso do navio pronto. A fila de botões do painel
   virou `HFlowContainer` (quebra a linha quando não cabe).
 
+### Cenários e vitória (Fase 12)
+
+- **A especificação acaba na Fase 11**; a 12 é proposta nossa (15/10/2026): a partida ganha um fim.
+- **Objetivo** (`VictoryState`, no save): um `GoalDef.Kind` (a mesma conta das metas guiadas, com
+  `MONEY` acrescentado no fim da lista), o alvo, a quantidade e o prazo em ticks. Sem objetivo
+  (`kind = -1`) a partida é livre, como antes. O `VictorySystem` confere a cada `goal_check_ticks`,
+  logo depois das metas: cumprido, `match_won`; passado o prazo, `match_lost`. Depois disso não confere
+  mais e a partida segue livre ("Continuar jogando").
+- **Jogo novo**: "Objetivo" (partida livre ou um dos de `GameConfig.victory_kinds/targets/amounts`) e
+  "Prazo" (`deadline_choices_min`; desligado na partida livre). A escolha vai pelas variáveis estáticas
+  da `GameScreen` (`victory_*`, `scenario_id`, `starting_money`), zeradas por `reset_new_game()` antes de
+  cada jogo novo.
+- **Cenários** (`ScenarioDef`, `data/scenarios/`): semente, tamanho, dificuldade, dinheiro inicial,
+  eventos, rivais, riscos, objetivo e prazo. `GameScreen.apply_scenario` prepara o jogo novo. Colônia
+  pobre (300 artesãos, sem rivais, difícil), Corrida pelas ilhas (4 ilhas em 3 h,
+  arquipélago grande) e Príncipe mercador (250.000 moedas em 4 h).
+- **Conquistas** (`AchievementDef`, `data/achievements/`): de estado (população de uma classe, moedas,
+  ilhas, navios do estaleiro), conferidas a cada 2 s reais, e de acontecimento (fogo apagado, navio de
+  rival afundado, vitória), somadas em contadores pelo `EventBus`. A de cenário só vale com aquele
+  cenário vencido. Ficam em `user://achievements.cfg`, valem para todas as partidas e **não vão no save**;
+  arquivo estragado começa do zero. Construir de graça (`free_build`) não ganha nada. Os testes trocam a
+  instância (`Achievements.use`) para não mexer no arquivo do jogador.
+- **Save versão 15**: `victory` no mundo; classe ou cenário desconhecido recusa o save. Saves antigos
+  (migração 14 → 15) seguem livres.
+- **Na tela**: menu principal com "Cenários" e "Conquistas", linha do objetivo no painel das metas
+  (progresso e tempo que falta; verde vencida, vermelha perdida), tela de fim com o resumo (tempo,
+  moradores por classe, moedas, ilhas, navios, prédios perdidos no fogo, encomendas) e aviso de
+  conquista.
+
 ## Assets e licenças (seção 14)
 
 - **Navios e carroças de modelo** (15/10/2026): Kenney Pirate Kit e Fantasy Town Kit (CC0). Cada
@@ -800,7 +832,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 9 — Gráficos finais | **concluída em 14/10/2026** (confirmada em 14/10/2026; a medição na RTX 3060 segue pendente) |
 | 10 — Polimento | **concluída em 14/10/2026** (confirmada em 14/10/2026; o teste do build em outro PC segue com o dono do produto) |
 | 11 — Expansões | **concluída em 15/10/2026**: segunda região climática, eventos e encomendas, rivais com IA e diplomacia e combate naval em 14/10/2026; eletricidade e especialistas em 15/10/2026 |
-| Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper |
+| Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
+| 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 
 Pendências já vistas para fases futuras:
 

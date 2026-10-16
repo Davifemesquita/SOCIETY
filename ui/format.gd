@@ -56,3 +56,11 @@ static func countdown(seconds: float) -> String:
 	if total >= 3600:
 		return "%d:%02d:%02d" % [total / 3600, (total / 60) % 60, total % 60]
 	return "%d:%02d" % [total / 60, total % 60]
+
+
+## Data de um instante unix: 16/10/2026 em português, 2026-10-16 nas outras línguas.
+static func date(unix_time: int) -> String:
+	var parts := Time.get_date_dict_from_unix_time(unix_time)
+	if _is_portuguese():
+		return "%02d/%02d/%d" % [parts["day"], parts["month"], parts["year"]]
+	return "%d-%02d-%02d" % [parts["year"], parts["month"], parts["day"]]

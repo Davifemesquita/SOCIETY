@@ -17,6 +17,8 @@ enum Kind {
 	PAVED_CELLS,
 	## Ilhas com entreposto.
 	COLONIZED_ISLANDS,
+	## Moedas no caixa (objetivo da partida, Fase 12).
+	MONEY,
 }
 
 @export var id: StringName

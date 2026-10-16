@@ -18,6 +18,9 @@ var difficulty_option := OptionButton.new()
 var events_check := CheckBox.new()
 var rivals_check := CheckBox.new()
 var risks_check := CheckBox.new()
+## Objetivo (Fase 12): 0 = partida livre, depois os de GameConfig.victory_kinds; e o prazo.
+var objective_option := OptionButton.new()
+var deadline_option := OptionButton.new()
 
 
 func _init() -> void:
@@ -88,6 +91,25 @@ func _init() -> void:
 	risks_check.tooltip_text = "NEW_GAME_RISKS_TIP"
 	risks_check.button_pressed = true
 	grid.add_child(risks_check)
+	var data := GameData.get_default()
+	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_objective"), 30))
+	grid.add_child(UiKit.label("NEW_GAME_OBJECTIVE"))
+	objective_option.name = "Objective"
+	objective_option.tooltip_text = "NEW_GAME_OBJECTIVE_TIP"
+	objective_option.add_item(tr("OBJECTIVE_FREE"))
+	for index: int in config.victory_kinds.size():
+		objective_option.add_item(ObjectiveText.describe(config.victory_kinds[index], config.victory_targets[index],
+				config.victory_amounts[index], data))
+	objective_option.item_selected.connect(func(index: int) -> void: deadline_option.disabled = index == 0)
+	grid.add_child(objective_option)
+	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_clock"), 30))
+	grid.add_child(UiKit.label("NEW_GAME_DEADLINE"))
+	deadline_option.name = "Deadline"
+	deadline_option.tooltip_text = "NEW_GAME_DEADLINE_TIP"
+	for minutes: float in config.deadline_choices_min:
+		deadline_option.add_item(ObjectiveText.deadline(minutes))
+	deadline_option.disabled = true
+	grid.add_child(deadline_option)
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	buttons.add_theme_constant_override(&"separation", 12)
@@ -107,3 +129,16 @@ func roll() -> void:
 func confirm() -> void:
 	var seed_value := clampi(seed_edit.text.to_int(), 0, MAX_SEED) if seed_edit.text.is_valid_int() else randi() % 1_000_000
 	start.emit(seed_value, size_option.selected, difficulty_option.selected)
+
+
+## Põe o objetivo escolhido no jogo novo (GameScreen); partida livre zera.
+func apply_objective() -> void:
+	var config := GameConfig.get_default()
+	GameScreen.reset_new_game()
+	var index := objective_option.selected - 1
+	if index < 0 or index >= config.victory_kinds.size():
+		return
+	GameScreen.victory_kind = config.victory_kinds[index]
+	GameScreen.victory_target = config.victory_targets[index]
+	GameScreen.victory_amount = config.victory_amounts[index]
+	GameScreen.victory_deadline_min = config.deadline_choices_min[clampi(deadline_option.selected, 0, config.deadline_choices_min.size() - 1)]

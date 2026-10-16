@@ -768,3 +768,67 @@ SHIPYARD_CANCEL,Cancelar,Cancel
 SHIPYARD_CANCEL_TIP,Devolve %s moedas; o material não volta,Returns %s coins; materials are not returned
 TIP_SHIPYARD,"Constrói navios por encomenda a %s do preço do entreposto, e o clíper; navios no porto da ilha se reparam %s× mais rápido","Builds ships to order at %s of the trading post price, and the clipper; ships in the island's port repair %s× faster"
 NOTICE_SHIP_BUILT,Navio pronto no estaleiro: %s,Ship ready at the shipyard: %s
+OBJECTIVE_FREE,Partida livre,Free play
+OBJECTIVE_TIER_POPULATION,Chegar a %s %s,Reach %s %s
+OBJECTIVE_MONEY,Juntar %s moedas,Gather %s coins
+OBJECTIVE_COLONIZED_ISLANDS,Ter %s ilhas com entreposto,Hold %s islands with a trading post
+OBJECTIVE_TOTAL_POPULATION,Chegar a %s moradores,Reach %s residents
+OBJECTIVE_NO_DEADLINE,sem prazo,no deadline
+OBJECTIVE_DEADLINE,prazo de %s,deadline %s
+OBJECTIVE_PROGRESS,%s de %s,%s of %s
+OBJECTIVE_TIME_LEFT,faltam %s,%s left
+OBJECTIVE_TITLE,Objetivo,Objective
+NEW_GAME_OBJECTIVE,Objetivo,Objective
+NEW_GAME_OBJECTIVE_TIP,"Partida livre não acaba; com objetivo, cumprir vence a partida","Free play never ends; with an objective, meeting it wins the match"
+NEW_GAME_DEADLINE,Prazo,Deadline
+NEW_GAME_DEADLINE_TIP,"Tempo de jogo para cumprir o objetivo; passou, a partida está perdida (dá para continuar jogando)","Game time to meet the objective; once it passes the match is lost (you can keep playing)"
+BOOT_SCENARIOS,Cenários,Scenarios
+BOOT_ACHIEVEMENTS,Conquistas,Achievements
+SCENARIOS_TITLE,Cenários,Scenarios
+SCENARIO_PLAY,Jogar,Play
+SCENARIO_PLAY_TIP,Começa o cenário com o objetivo e o prazo dele,Starts the scenario with its objective and deadline
+SCENARIO_WON,Vencido,Won
+SCENARIO_POOR_COLONY,Colônia pobre,Poor colony
+SCENARIO_POOR_COLONY_DESC,"Pouco dinheiro num arquipélago pequeno e nenhuma companhia rival: cada moeda conta até a cidade ter artesãos","Little money on a small archipelago and no rival company: every coin counts until the town has artisans"
+SCENARIO_ISLAND_RACE,Corrida pelas ilhas,Race for the islands
+SCENARIO_ISLAND_RACE_DESC,"Arquipélago grande e três companhias atrás das mesmas ilhas: colonize antes delas","A large archipelago and three companies after the same islands: settle them first"
+SCENARIO_MERCHANT_PRINCE,Príncipe mercador,Merchant prince
+SCENARIO_MERCHANT_PRINCE_DESC,"Feiras, encomendas e rotas: junte uma fortuna antes do prazo","Fairs, orders and routes: build a fortune before the deadline"
+ACHIEVEMENTS_TITLE,Conquistas,Achievements
+ACHIEVEMENTS_COUNT,%s de %s ganhas,%s of %s earned
+ACHIEVEMENT_WON_ON,Ganha em %s,Earned on %s
+ACHIEVEMENT_LOCKED,Ainda não,Not yet
+ACHIEVEMENT_FIRST_INVESTOR,Primeiro investidor,First investor
+ACHIEVEMENT_FIRST_INVESTOR_DESC,Ter o primeiro investidor na cidade,Get the first investor in town
+ACHIEVEMENT_ENGINEER_CITY,Cidade de engenheiros,City of engineers
+ACHIEVEMENT_ENGINEER_CITY_DESC,Chegar a %s %s,Reach %s %s
+ACHIEVEMENT_TYCOON,Magnata,Tycoon
+ACHIEVEMENT_TYCOON_DESC,Ter %s moedas no caixa,Hold %s coins
+ACHIEVEMENT_ARCHIPELAGO,Senhor do arquipélago,Lord of the archipelago
+ACHIEVEMENT_ARCHIPELAGO_DESC,Ter %s ilhas com entreposto,Hold %s islands with a trading post
+ACHIEVEMENT_SHIPWRIGHT,Construtor naval,Shipwright
+ACHIEVEMENT_SHIPWRIGHT_DESC,Receber %s navio do estaleiro,Receive %s ship from the shipyard
+ACHIEVEMENT_FIRE_BRIGADE,Corpo de bombeiros,Fire brigade
+ACHIEVEMENT_FIRE_BRIGADE_DESC,Apagar %s incêndios,Put out %s fires
+ACHIEVEMENT_ADMIRAL,Almirante,Admiral
+ACHIEVEMENT_ADMIRAL_DESC,Afundar %s navios de rivais,Sink %s rival ships
+ACHIEVEMENT_FIRST_VICTORY,Missão cumprida,Mission accomplished
+ACHIEVEMENT_FIRST_VICTORY_DESC,Vencer uma partida com objetivo,Win a match with an objective
+ACHIEVEMENT_WON_POOR_COLONY,Da pobreza à oficina,From poverty to workshop
+ACHIEVEMENT_WON_POOR_COLONY_DESC,Vencer o cenário Colônia pobre,Win the Poor colony scenario
+ACHIEVEMENT_WON_ISLAND_RACE,Primeiro a chegar,First to arrive
+ACHIEVEMENT_WON_ISLAND_RACE_DESC,Vencer o cenário Corrida pelas ilhas,Win the Race for the islands scenario
+ACHIEVEMENT_WON_MERCHANT_PRINCE,Fortuna feita,Fortune made
+ACHIEVEMENT_WON_MERCHANT_PRINCE_DESC,Vencer o cenário Príncipe mercador,Win the Merchant prince scenario
+NOTICE_ACHIEVEMENT,Conquista: %s,Achievement: %s
+VICTORY_WON,Vitória,Victory
+VICTORY_LOST,O prazo acabou,Time is up
+VICTORY_MENU,Menu principal,Main menu
+VICTORY_CONTINUE,Continuar jogando,Keep playing
+VICTORY_CONTINUE_TIP,A partida segue livre,The match goes on as free play
+VICTORY_TIME,Tempo de jogo: %s,Game time: %s
+VICTORY_POPULATION,Moradores: %s,Residents: %s
+VICTORY_MONEY,Moedas: %s,Coins: %s
+VICTORY_ISLANDS,Ilhas com entreposto: %s,Islands with a trading post: %s
+VICTORY_SHIPS,Navios: %s (%s do estaleiro),Ships: %s (%s from the shipyard)
+VICTORY_RISKS,Prédios perdidos no fogo: %s · encomendas cumpridas: %s,Buildings lost to fire: %s · orders fulfilled: %s

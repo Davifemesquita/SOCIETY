@@ -8,6 +8,8 @@ var _simulation: Simulation
 var _goal_row := PanelContainer.new()
 var _goal_title := Label.new()
 var _goal_progress := Label.new()
+## Objetivo da partida (Fase 12), embaixo da meta: o alvo, o progresso e o tempo que falta.
+var objective := Label.new()
 var _speech := PanelContainer.new()
 var _speech_text := Label.new()
 var _next_button: Button
@@ -37,6 +39,15 @@ func _process(delta: float) -> void:
 ## Título e progresso da meta da vez; sem meta, o painel diz que a partida está livre.
 func refresh() -> void:
 	var world := _simulation.world
+	objective.text = ObjectiveText.progress_line(_simulation)
+	objective.visible = not objective.text.is_empty()
+	var outcome := world.victory_state.outcome
+	if outcome == VictoryState.Outcome.WON:
+		UiPalette.paint(objective, UiPalette.Status.GOOD)
+	elif outcome == VictoryState.Outcome.LOST:
+		UiPalette.paint(objective, UiPalette.Status.BAD)
+	else:
+		UiPalette.unpaint(objective)
 	var goal := GoalSystem.current(world, _simulation.data)
 	if goal == null:
 		_goal_title.text = tr("GOAL_ALL_DONE")
@@ -106,6 +117,11 @@ func _build_goal_row() -> void:
 	column.add_child(_goal_title)
 	_goal_progress.theme_type_variation = &"DimLabel"
 	column.add_child(_goal_progress)
+	objective.name = "Objective"
+	objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	objective.custom_minimum_size.x = 300
+	objective.visible = false
+	column.add_child(objective)
 	row.add_child(column)
 	add_child(_goal_row)
 

@@ -170,6 +170,14 @@ static var _default: GameConfig
 @export var shipyard_cancel_refund: float = 0.5
 @export var shipyard_repair_factor: float = 2.0
 
+@export_group("Objetivo")
+## Objetivos oferecidos no jogo novo (Fase 12), além da partida livre: tipo (GoalDef.Kind), alvo e
+## quantidade, na mesma posição das três listas. Prazos oferecidos, em minutos de jogo (0 = sem prazo).
+@export var victory_kinds: PackedInt32Array = PackedInt32Array([1, 1, 6, 5])
+@export var victory_targets: Array[StringName] = [&"artisans", &"investors", &"", &""]
+@export var victory_amounts: PackedInt32Array = PackedInt32Array([500, 100, 250000, 4])
+@export var deadline_choices_min: PackedFloat32Array = PackedFloat32Array([0.0, 120.0, 240.0, 360.0])
+
 @export_group("Riscos")
 ## Incêndio e doença (seção 8, opcionais): conferidos a cada risk_check_ticks. Cada prédio que pode
 ## arder tem fire_chance_per_hour (por hora de jogo, vezes o fire_risk do prédio) de pegar fogo; no
@@ -615,4 +623,6 @@ func validate() -> PackedStringArray:
 		problems.append("max_active_fires e max_active_outbreaks não podem ser negativos")
 	if shipyard_cost_factor <= 0.0 or shipyard_cancel_refund < 0.0 or shipyard_cancel_refund > 1.0 or shipyard_repair_factor < 1.0:
 		problems.append("estaleiro: custo positivo, devolução entre 0 e 1 e reparo de pelo menos 1")
+	if victory_kinds.size() != victory_targets.size() or victory_kinds.size() != victory_amounts.size() or deadline_choices_min.is_empty():
+		problems.append("objetivos do jogo novo: tipos, alvos e quantidades do mesmo tamanho, e ao menos um prazo")
 	return problems

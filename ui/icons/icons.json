@@ -1,6 +1,10 @@
 {
 	"cell": 128,
 	"icons": {
+		"action_achievements": [
+			1024,
+			1792
+		],
 		"action_add": [
 			768,
 			1024
@@ -156,6 +160,10 @@
 		"action_save": [
 			384,
 			896
+		],
+		"action_scenarios": [
+			896,
+			1792
 		],
 		"action_sell": [
 			1408,
@@ -637,6 +645,10 @@
 			896,
 			1152
 		],
+		"hud_objective": [
+			1408,
+			1792
+		],
 		"hud_population": [
 			1024,
 			1152
@@ -709,6 +721,10 @@
 			1536,
 			768
 		],
+		"notice_achievement": [
+			1152,
+			1792
+		],
 		"notice_battle": [
 			128,
 			1664
@@ -768,6 +784,10 @@
 		"notice_trader": [
 			1536,
 			1408
+		],
+		"notice_victory": [
+			1280,
+			1792
 		],
 		"option_audio": [
 			256,
@@ -906,19 +926,19 @@
 			1408
 		],
 		"status_bad": [
-			1152,
+			1792,
 			1792
 		],
 		"status_good": [
-			896,
+			1536,
 			1792
 		],
 		"status_missing": [
-			1280,
+			1920,
 			1792
 		],
 		"status_partial": [
-			1024,
+			1664,
 			1792
 		],
 		"tier_artisans": [

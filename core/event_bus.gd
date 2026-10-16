@@ -81,3 +81,8 @@ signal outbreak_ended(house_id: int)
 
 ## Estaleiro: o navio encomendado ficou pronto e está no porto da ilha.
 signal ship_built(ship_id: int)
+
+## Objetivo da partida (Fase 12): cumprido; prazo vencido sem cumprir. Uma conquista ganha agora.
+signal match_won()
+signal match_lost()
+signal achievement_unlocked(achievement_id: StringName)

@@ -1,6 +1,7 @@
 extends Control
 ## Menu principal (seção 10): continuar (o save mais recente), jogo novo (semente, tamanho do
-## arquipélago, dificuldade), carregar com miniaturas, opções, créditos e sair. Ao abrir, valida a
+## arquipélago, dificuldade, objetivo), cenários e conquistas (Fase 12), carregar com miniaturas,
+## opções, créditos e sair. Ao abrir, valida a
 ## configuração e os dados: problema vai para o log e aparece no rodapé.
 ## Atalhos de linha de comando (também no .exe): `-- --novo-jogo` abre direto uma partida nova,
 ## `-- --carregar` abre o save rápido, `-- --benchmark` roda o benchmark da fase e mostra o
@@ -75,9 +76,11 @@ func _build() -> void:
 	continue_button = _menu_button(column, "BOOT_CONTINUE", "action_continue", func() -> void: _start(latest))
 	continue_button.disabled = latest.is_empty()
 	var new_game := _menu_button(column, "BOOT_NEW_GAME", "action_new_game", open_new_game)
+	_menu_button(column, "BOOT_SCENARIOS", "action_scenarios", open_scenarios)
 	load_button = _menu_button(column, "BOOT_LOAD_GAME", "action_load", open_load)
 	load_button.disabled = SaveSystem.list_slots().is_empty()
 	_menu_button(column, "BOOT_OPTIONS", "action_options", func() -> void: Modal.open(_layer, OptionsDialog.new()))
+	_menu_button(column, "BOOT_ACHIEVEMENTS", "action_achievements", open_achievements)
 	_menu_button(column, "BOOT_CREDITS", "action_credits", func() -> void: Modal.open(_layer, CreditsDialog.new()))
 	_menu_button(column, "BOOT_QUIT", "action_exit", func() -> void: get_tree().quit())
 	new_game.grab_focus()
@@ -120,7 +123,24 @@ func open_new_game() -> NewGameDialog:
 		GameScreen.events_enabled = dialog.events_check.button_pressed
 		GameScreen.rivals_enabled = dialog.rivals_check.button_pressed
 		GameScreen.risks_enabled = dialog.risks_check.button_pressed
+		dialog.apply_objective()
 		_start(""))
+	Modal.open(_layer, dialog)
+	return dialog
+
+
+## Cenários (Fase 12): jogar abre a partida já configurada.
+func open_scenarios() -> ScenarioDialog:
+	var dialog := ScenarioDialog.new()
+	dialog.start.connect(func(id: StringName) -> void:
+		GameScreen.apply_scenario(GameData.get_default().scenario(id))
+		_start(""))
+	Modal.open(_layer, dialog)
+	return dialog
+
+
+func open_achievements() -> AchievementsDialog:
+	var dialog := AchievementsDialog.new()
 	Modal.open(_layer, dialog)
 	return dialog
 

@@ -57,4 +57,6 @@ static func progress(world: WorldState, data: GameData, config: GameConfig, deri
 			return paved
 		GoalDef.Kind.COLONIZED_ISLANDS:
 			return world.colonized_islands(data).size()
+		GoalDef.Kind.MONEY:
+			return maxi(floori(world.money), 0)
 	return 0

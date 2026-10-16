@@ -43,7 +43,8 @@ func test_main_menu_has_every_entry_and_continue_needs_a_save() -> void:
 	var runner := scene_runner(BOOT)
 	await runner.simulate_frames(2)
 	var boot: Control = runner.scene()
-	for key: String in ["BOOT_CONTINUE", "BOOT_NEW_GAME", "BOOT_LOAD_GAME", "BOOT_OPTIONS", "BOOT_CREDITS", "BOOT_QUIT"]:
+	for key: String in ["BOOT_CONTINUE", "BOOT_NEW_GAME", "BOOT_SCENARIOS", "BOOT_LOAD_GAME", "BOOT_OPTIONS", "BOOT_ACHIEVEMENTS", "BOOT_CREDITS",
+			"BOOT_QUIT"]:
 		var button: Button = boot.find_child(key, true, false)
 		assert_object(button).override_failure_message(key).is_not_null()
 		assert_object(button.icon).is_not_null()
