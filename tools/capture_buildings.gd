@@ -3,7 +3,8 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_buildings.tscn -- <pasta>
 ## Na ilha plana: uma fileira de casas de cada classe nas quatro rotações e todos os outros prédios
 ## (menos campo, pasto e píer) lado a lado; capturas de longe, de perto e à noite.
-## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13).
+## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13); postes,
+## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13).
 
 var _out_dir: String
 var _game: GameScreen
@@ -31,6 +32,10 @@ func _run() -> void:
 	_place(&"trading_post", Vector2i(200, 2), 2)
 	if OS.get_environment("CAPTURA_SO") == "silhuetas":
 		await _silhouettes()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "postes":
+		await _lamps()
 		get_tree().quit()
 		return
 	var tiers: Array[StringName] = [&"peasants", &"workers", &"artisans", &"engineers", &"investors"]
@@ -123,3 +128,22 @@ func _silhouettes() -> void:
 	await _shot("11_silhuetas_fundicao.png", Vector3(152.0, 3.0, 204.0), 34.0, PI + 0.5, 0.45)
 	await _shot("12_pilhas.png", Vector3(100.0, 1.0, 196.0), 26.0, PI + 0.15, 0.35)
 	await _shot("13_pilhas_cervejaria.png", Vector3(186.0, 1.0, 196.0), 26.0, PI + 0.15, 0.35)
+
+
+## Fase 13: rua calçada com casas de camponeses de frente para ela (rotação 0, frente em −Z), à noite.
+func _lamps() -> void:
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(20, 50), Vector2i(80, 50)), true))
+	for i: int in 14:
+		var house := _place(&"house", Vector2i(21 + i * 4, 51), 0)
+		if house != 0:
+			_sim.world.building(house).tier = &"peasants"
+			_sim.world.building(house).residents = 5.0
+	_game.building_view.rebuild()
+	_game.window_view.rebuild()
+	_game.lamp_view.rebuild()
+	print("postes ", _game.lamp_view.lamp_count(), " fogueiras ", _game.lamp_view.bonfire_count())
+	await _shot("14_postes_de_dia.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
+	_set_hour(22.0)
+	_game.window_view.refresh_lit()
+	await _shot("15_postes_noite.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
+	await _shot("16_fogueiras_noite.png", Vector3(100.0, 0.0, 110.0), 30.0, 0.3, 0.5)

@@ -58,6 +58,7 @@ var clouds: CloudsAdapter
 var weather: WeatherView
 var smoke_view: SmokeView
 var stockpile_view: StockpileView
+var lamp_view: LampView
 var fire_view: FireView
 ## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
 var music: MusicDirector
@@ -161,6 +162,11 @@ func _ready() -> void:
 	add_child(stockpile_view)
 	stockpile_view.setup(simulation, _config.cell_size_m)
 	graphics.add_effect(stockpile_view)
+	lamp_view = LampView.new()
+	lamp_view.name = "Lamps"
+	add_child(lamp_view)
+	lamp_view.setup(simulation, _config.cell_size_m)
+	graphics.add_effect(lamp_view)
 	fire_view = FireView.new()
 	fire_view.name = "Fire"
 	add_child(fire_view)

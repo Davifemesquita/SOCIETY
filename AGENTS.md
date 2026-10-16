@@ -196,6 +196,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
 | `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado |
 | `presentation/cargo_kit.gd`, `stockpile_view.gd` | peças de carga (saco, barril, caixote, toras, monte) e as pilhas de estoque diante dos prédios (Fase 13) |
+| `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
 | `presentation/building_materials.gd`, `shaders/building.gdshader` | material PBR dividido dos prédios (paredes e telhados) |
 | `presentation/building_kit.gd`, `shaders/building_kit.gdshader` | prédios de modelo: fachadas com as peças do Kenney Fantasy Town Kit e telhado gerado, uma malha por forma |
@@ -825,7 +826,7 @@ Regras que já custaram investigação:
   reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
   de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
   (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
-  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite` ou `silhuetas`).
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas` ou `postes`).
 
 ### Cidade viva (Fase 13, nossa)
 
@@ -850,6 +851,13 @@ Regras que já custaram investigação:
 - **Carga da carroça** (`CartView`): as mesmas peças, uma por tonelada começada (até duas, frente e trás da
   caçamba, `CARGO_SLOTS`), num MultiMesh por tipo de peça; a caixa colorida de antes fica só para o bem sem
   peça (o porco). Volta vazia, sem peça.
+- **Postes e fogueiras** (`LampView`): o lampião do kit (`assets/models/props/lantern.glb`) numa célula
+  calçada a cada `LAMP_EVERY` (pelo desenho da grade, `posmod(x + 3y, 4)`), deslocado para o lado da
+  célula que não é rua; fogueira (pedras, lenha e chama gerados) atrás de uma casa de camponeses a cada
+  `BONFIRE_EVERY` (pelo id), só com a célula de trás livre. O vidro e a chama acendem pelo `night_light`
+  (`shaders/night_glow.gdshader`; a cor da instância chega em sRGB e é convertida lá, senão a chama saía
+  branca); luz de verdade (OmniLight3D) só nos `LIGHTS` mais perto de onde a câmera olha, de noite e com a
+  câmera perto. Refeito quando estrada, prédio ou classe da casa muda.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -874,7 +882,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
-| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia, pilhas de estoque e carga na carroça; depois postes e fogueiras, detalhe das casas e animais (com o cavalo da carroça) |
+| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras; depois detalhe das casas e animais (com o cavalo da carroça) |
 
 Pendências já vistas para fases futuras:
 
