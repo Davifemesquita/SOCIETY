@@ -1,6 +1,9 @@
 class_name BuildingView
 extends Node3D
-## Caixas dos prédios. Escuta o EventBus e só lê a simulação; nenhuma regra aqui.
+## Prédios. Escuta o EventBus e só lê a simulação; nenhuma regra aqui.
+## - Desde 16/10/2026 o prédio é um modelo montado com as peças do Kenney Fantasy Town Kit
+##   (BuildingKit): fachadas com janelas e porta, telhado pela forma. Campo, pasto e píer, e tudo se
+##   o kit faltar, continuam caixas (o que vem abaixo).
 ## - Casa: cor e altura da classe; refeita quando sobe de classe. Desde a Fase 8 cada casa tira,
 ##   pelo id, um de HOUSE_VARIANTS modelos (telhado de duas águas de frente ou de lado, ou telhado
 ##   plano com chaminé) e um tom da cor da classe: a rua deixa de ser fileira de caixas iguais.
@@ -187,28 +190,47 @@ func _add(building_id: int) -> void:
 	var height := _height(record)
 	var root := Node3D.new()
 	root.position = _grid(record).rect_world(area)
+	var spec := BuildingKit.spec_for(_simulation, record, _cell_size)
 	var body := MeshInstance3D.new()
-	var box := BoxMesh.new()
+	var soot: float = _simulation.derived_state().pollution.get(building_id, 0.0)
 	var inset := 0.3 if def.kind != BuildingDef.Kind.MODULE else 0.15
-	box.size = Vector3(area.size.x * _cell_size - inset, height + FOUNDATION_M, area.size.y * _cell_size - inset)
-	body.mesh = box
-	body.position.y = (height - FOUNDATION_M) * 0.5
-	if def.kind == BuildingDef.Kind.MODULE:
-		body.material_override = _material_for(_color(record))
-	else:
-		body.material_override = BuildingMaterials.walls()
-		var layer := _simulation.data.tier(record.tier).wall_material if record.is_house() else def.wall_material
-		var soot: float = _simulation.derived_state().pollution.get(building_id, 0.0)
-		BuildingMaterials.dress(body, layer, _color(record), root.position.y, soot)
+	var box_size := Vector3(area.size.x * _cell_size - inset, height + FOUNDATION_M, area.size.y * _cell_size - inset)
+	if spec != null:
+		body.name = "Model"
+		body.mesh = BuildingKit.mesh(spec)
+		body.rotation.y = -PI * 0.5 * posmod(record.rotation, 4)
+		body.material_override = BuildingMaterials.kit()
+		var tier := _simulation.data.tier(record.tier) if record.is_house() else null
+		var wall_layer := tier.wall_material if tier != null else def.wall_material
+		var roof_layer: int = tier.roof_material if tier != null else (BuildingMaterials.Roof.PLANKS
+				if def.wall_material == BuildingMaterials.Wall.WOOD else BuildingMaterials.Roof.TILES)
+		var color := _color(record)
+		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, color.darkened(ROOF_DARKEN).lightened(0.35),
+				root.position.y, soot)
 		if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
-			root.add_child(_occluder(box.size, body.position))
-	root.add_child(body)
-	if record.is_house():
-		_add_roof(root, record, box.size, height)
+			root.add_child(_occluder(box_size, Vector3(0.0, (height - FOUNDATION_M) * 0.5, 0.0)))
+		root.add_child(body)
+	else:
+		var box := BoxMesh.new()
+		box.size = box_size
+		body.mesh = box
+		body.position.y = (height - FOUNDATION_M) * 0.5
+		if def.kind == BuildingDef.Kind.MODULE:
+			body.material_override = _material_for(_color(record))
+		else:
+			body.material_override = BuildingMaterials.walls()
+			var layer := _simulation.data.tier(record.tier).wall_material if record.is_house() else def.wall_material
+			BuildingMaterials.dress(body, layer, _color(record), root.position.y, soot)
+			if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
+				root.add_child(_occluder(box.size, body.position))
+		root.add_child(body)
+		if record.is_house():
+			_add_roof(root, record, box.size, height)
 	if def.kind != BuildingDef.Kind.MODULE:
-		var door := _door(record, def, area)
-		_detail(door)
-		root.add_child(door)
+		if spec == null:
+			var door := _door(record, def, area)
+			_detail(door)
+			root.add_child(door)
 		var label := Sprite3D.new()
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.fixed_size = true

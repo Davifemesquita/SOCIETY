@@ -45,7 +45,8 @@ func setup(simulation: Simulation, config: GameConfig) -> void:
 	_config = config
 	_rng.seed = 7
 	var quad := QuadMesh.new()
-	quad.size = WINDOW_SIZE
+	# o tamanho do vidro vem na escala de cada instância
+	quad.size = Vector2.ONE
 	var material := ShaderMaterial.new()
 	material.shader = SHADER
 	material.set_shader_parameter(&"light_color", config.window_light_color)
@@ -101,7 +102,24 @@ func lit_area_lights() -> int:
 	return _area_lights.filter(func(light: AreaLight3D) -> bool: return light.visible).size()
 
 
-## Vidros de um prédio: em cada fachada, colunas a cada ~2,4 m e um andar a cada 2,8 m; no térreo
+## Vidros do prédio de modelo: um em cada janela do BuildingKit, girado com o prédio. Sem o kit (ou
+## para campo e píer), o desenho antigo de windows_of.
+static func building_windows(simulation: Simulation, record: BuildingRecord) -> Array[Transform3D]:
+	var grid := simulation.world.island(record.island_id)
+	var def := simulation.def_of(record)
+	var spec := BuildingKit.spec_for(simulation, record, grid.cell_size)
+	var height := simulation.data.tier(record.tier).house_height_m if record.is_house() else def.height_m
+	if spec == null:
+		return windows_of(grid, record, def, height)
+	var center := grid.rect_world(Footprint.rect(record.origin, def.size, record.rotation))
+	var place := Transform3D(Basis(Vector3.UP, -PI * 0.5 * posmod(record.rotation, 4)), center)
+	var result: Array[Transform3D] = []
+	for window: Transform3D in BuildingKit.windows(spec):
+		result.append(place * window)
+	return result
+
+
+## Vidros de um prédio (caixa): em cada fachada, colunas a cada ~2,4 m e um andar a cada 2,8 m; no térreo
 ## da frente, nada no lugar da porta.
 static func windows_of(grid: IslandGrid, record: BuildingRecord, def: BuildingDef, height: float) -> Array[Transform3D]:
 	var result: Array[Transform3D] = []
@@ -129,7 +147,7 @@ static func windows_of(grid: IslandGrid, record: BuildingRecord, def: BuildingDe
 				if side == front and level == 0 and absf(t - door.dot(along)) < (WINDOW_SIZE.x + DOOR_WIDTH_M) * 0.5 + 0.1:
 					continue
 				var origin := Vector3(center.x, center.y + y, center.z) + normal * (depth + WALL_GAP_M) + along * t
-				result.append(Transform3D(Basis.looking_at(-normal, Vector3.UP), origin))
+				result.append(Transform3D(Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(WINDOW_SIZE.x, WINDOW_SIZE.y, 1.0)), origin))
 	return result
 
 
@@ -160,10 +178,6 @@ func _process(delta: float) -> void:
 			place_area_lights(camera.global_position, -camera.global_basis.z, night)
 
 
-func _height(record: BuildingRecord) -> float:
-	return _simulation.data.tier(record.tier).house_height_m if record.is_house() else _simulation.def_of(record).height_m
-
-
 func _add(building_id: int) -> void:
 	var record := _simulation.world.building(building_id)
 	if record == null or _slots.has(building_id):
@@ -171,7 +185,7 @@ func _add(building_id: int) -> void:
 	var def := _simulation.def_of(record)
 	if def.kind == BuildingDef.Kind.MODULE:
 		return
-	var windows := windows_of(_simulation.world.island(record.island_id), record, def, _height(record))
+	var windows := building_windows(_simulation, record)
 	var slots := PackedInt32Array()
 	var lit := is_lit(_simulation, record)
 	for window: Transform3D in windows:

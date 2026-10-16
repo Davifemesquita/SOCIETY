@@ -64,9 +64,30 @@ func test_demolishing_frees_the_windows() -> void:
 	var view := _view()
 	var house := SimFixture.house(_sim, 4, 10, &"peasants", 10.0)
 	SimFixture.house(_sim, 7, 10, &"peasants", 10.0)
-	assert_int(view.window_count()).is_equal(16)
+	var each := WindowLightsView.building_windows(_sim, _sim.world.building(house)).size()
+	assert_int(each).is_greater(7)
+	assert_int(view.window_count()).is_equal(each * 2)
 	_sim.execute(DemolishCommand.new(0, Rect2i(_sim.world.building(house).origin, Vector2i(1, 1))))
-	assert_int(view.window_count()).is_equal(8)
+	assert_int(view.window_count()).is_equal(each)
+
+
+func test_model_windows_sit_on_the_facades_and_skip_the_door() -> void:
+	var house := _sim.world.building(SimFixture.house(_sim, 4, 10, &"workers", 10.0))
+	var def := _sim.def_of(house)
+	var area := Footprint.rect(house.origin, def.size, house.rotation)
+	var center := GridSpace.rect_center(area, 2.0)
+	var door := GridSpace.cell_center(Footprint.entrance_cell(house.origin, def.size, house.rotation), 2.0)
+	var windows := WindowLightsView.building_windows(_sim, house)
+	var spec := BuildingKit.spec_for(_sim, house, 2.0)
+	# uma janela por célula da borda e por andar, menos a porta
+	assert_int(windows.size()).is_equal((def.size.x + def.size.y) * 2 * spec.floors() - 1)
+	var half := spec.size_m().x * 0.5
+	for window: Transform3D in windows:
+		var offset := window.origin - Vector3(center.x, window.origin.y, center.z)
+		assert_float(maxf(absf(offset.x), absf(offset.z))).is_between(half, half + 0.2)
+		assert_float(window.basis.z.normalized().dot(offset.normalized())).is_greater(0.5)
+		var flat := Vector2(window.origin.x - door.x, window.origin.z - door.z)
+		assert_bool(window.origin.y < spec.floor_m() and flat.length() < 2.0).is_false()
 
 
 func test_area_lights_only_at_night_and_with_the_camera_close() -> void:

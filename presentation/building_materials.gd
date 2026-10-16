@@ -9,9 +9,12 @@ enum Wall { BRICK, PLASTER, WOOD, STONE }
 enum Roof { TILES, PLANKS }
 
 const SHADER := "res://shaders/building.gdshader"
+const KIT_SHADER := "res://shaders/building_kit.gdshader"
+const KIT_COLORMAP := "res://assets/models/buildings/Textures/colormap.png"
 
 static var _walls: ShaderMaterial
 static var _roofs: ShaderMaterial
+static var _kit: ShaderMaterial
 
 
 static func walls() -> ShaderMaterial:
@@ -24,6 +27,27 @@ static func roofs() -> ShaderMaterial:
 	if _roofs == null:
 		_roofs = _material("roofs", 2.5)
 	return _roofs
+
+
+## Prédios de modelo (BuildingKit): as duas pilhas de texturas e a paleta do kit num material só.
+static func kit() -> ShaderMaterial:
+	if _kit == null:
+		_kit = ShaderMaterial.new()
+		_kit.shader = load(KIT_SHADER) as Shader
+		_kit.set_shader_parameter(&"colormap", load(KIT_COLORMAP))
+		_kit.set_shader_parameter(&"wall_albedo_rough", load("res://assets/materials/walls_albedo_rough.png"))
+		_kit.set_shader_parameter(&"wall_normals", load("res://assets/materials/walls_normal.png"))
+		_kit.set_shader_parameter(&"roof_albedo_rough", load("res://assets/materials/roofs_albedo_rough.png"))
+		_kit.set_shader_parameter(&"roof_normals", load("res://assets/materials/roofs_normal.png"))
+	return _kit
+
+
+## Dados da instância do prédio de modelo: parede e telhado (camada e tom), base e fuligem.
+static func dress_kit(instance: GeometryInstance3D, layer: int, tint: Color, roof_layer: int, roof_tint: Color,
+		base_height: float, soot: float = 0.0) -> void:
+	dress(instance, layer, tint, base_height, soot)
+	instance.set_instance_shader_parameter(&"roof_layer", float(roof_layer))
+	instance.set_instance_shader_parameter(&"roof_tint", roof_tint)
 
 
 ## Passa os dados da instância ao material dividido.

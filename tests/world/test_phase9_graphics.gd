@@ -187,7 +187,9 @@ func test_buildings_share_the_pbr_material_by_tier_and_type() -> void:
 	add_child(view)
 	view.setup(sim, sim.config.cell_size_m)
 	var bodies := view.find_children("*", "MeshInstance3D", true, false)
-	var walls := bodies.filter(func(node: MeshInstance3D) -> bool: return node.material_override == BuildingMaterials.walls())
+	# desde os prédios de modelo, as paredes da casa estão no material do kit (mesma camada)
+	var shared := BuildingMaterials.kit() if BuildingKit.available() else BuildingMaterials.walls()
+	var walls := bodies.filter(func(node: MeshInstance3D) -> bool: return node.material_override == shared)
 	assert_bool(walls.is_empty()).is_false()
 	var body: MeshInstance3D = walls[0]
 	assert_float(body.get_instance_shader_parameter(&"layer")).is_equal(float(BuildingMaterials.Wall.WOOD))

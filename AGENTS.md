@@ -197,6 +197,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
 | `presentation/building_materials.gd`, `shaders/building.gdshader` | material PBR dividido dos prédios (paredes e telhados) |
+| `presentation/building_kit.gd`, `shaders/building_kit.gdshader` | prédios de modelo: fachadas com as peças do Kenney Fantasy Town Kit e telhado gerado, uma malha por forma |
 | `ui/advisor/` | `advisor.dialogue` (as falas, em chaves de tradução) e `AdvisorDialogue`, o adaptador do Dialogue Manager |
 | `tools/progression_demo.gd` | partida roteirizada do camponês ao investidor (critério da Fase 8, captura) |
 | `presentation/pedestrians/` | `Crowd` (rotina dos pedestres, sem nós), `PedestrianView` (MultiMesh por classe e corpo), `SidewalkPath`, `VatModel` |
@@ -811,6 +812,19 @@ Regras que já custaram investigação:
   tingido na cor do tipo ou da rival (`shaders/ship_model.gdshader`). A carroça junta as peças do
   `cart.glb` numa malha só (`CartView.model_mesh`), porque o MultiMesh só desenha uma. Sem o arquivo,
   os dois voltam ao placeholder gerado no código. `tools/capture_ships.tscn` tira as capturas.
+- **Prédios de modelo** (16/10/2026): `BuildingKit` monta cada prédio com as peças de parede do mesmo
+  kit (`assets/models/buildings/`): uma peça por célula da borda e por andar (andar de ~2,6 m), porta na
+  célula da entrada (arco no armazém, estaleiro e serviços de pedra), janelas no resto (alternadas com
+  parede lisa nas fábricas com fumaça e nos depósitos). O telhado é gerado (duas águas, quatro águas na
+  igreja/teatro/universidade, plano em mina, poço e prédio baixo; a casa sorteia três). Uma malha por
+  forma (`Spec.key`), em cache, com LOD gerado (`ImporterMesh.generate_lods`); a vista gira o nó
+  (`-PI/2 × rotação`, a porta canônica fica em −Z e o índice dela espelha nas rotações 2 e 3). As peças
+  chegam indexadas: alicerce e telhado vão num `SurfaceTool` à parte, senão os vértices soltos ficam fora
+  do índice e não aparecem. O material (`BuildingMaterials.kit`, `shaders/building_kit.gdshader`)
+  reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
+  de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
+  (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas` ou `noite`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -834,6 +848,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 11 — Expansões | **concluída em 15/10/2026**: segunda região climática, eventos e encomendas, rivais com IA e diplomacia e combate naval em 14/10/2026; eletricidade e especialistas em 15/10/2026 |
 | Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
+| Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 
 Pendências já vistas para fases futuras:
 
@@ -842,7 +857,7 @@ Pendências já vistas para fases futuras:
   O robô joga 4 h numa ilha plana de 350×350 (a terra do arquipélago, no lugar das colônias) e chega às
   cinco classes (investidores aos ~225 min); o aperto é a entrada das fábricas dos engenheiros.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
-  volumétricas aparecem certas no ultra; modelos de verdade (prédios, casas, navios) seguem no
-  `assets/TODO_ASSETS.md`.
+  volumétricas aparecem certas no ultra; o detalhe que falta nos modelos (silhueta por cadeia, cavalo na
+  carroça) segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).
