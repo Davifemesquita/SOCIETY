@@ -2,7 +2,8 @@ class_name CartView
 extends Node3D
 ## Carroças na estrada (seção 9): a carroça do Kenney Fantasy Town Kit (as peças juntas numa malha
 ## só, para o MultiMesh) com a carga na forma do bem (Fase 13: sacos, barris, caixotes, toras ou monte,
-## as peças do CargoKit, uma por tonelada) na ida e vazia na volta; sem o modelo, uma caixa marrom. Só lê as carroças da simulação; a posição é interpolada entre o tick anterior e o
+## as peças do CargoKit, uma por tonelada) na ida e vazia na volta, puxada por um cavalo (Fase 13, o bicho
+## da AnimalView andando); sem o modelo, uma caixa marrom. Só lê as carroças da simulação; a posição é interpolada entre o tick anterior e o
 ## atual, para andar liso a 60 quadros com 5 ticks por segundo (seção 12).
 
 const BODY_COLOR := Color(0.42, 0.3, 0.2)
@@ -16,10 +17,12 @@ const CARGO_SLOTS: Array[float] = [-0.45, 0.45]
 const HEIGHT_M := 0.5
 const MODEL_PATH := "res://assets/models/props/cart.glb"
 const MODEL_TEXTURE := "res://assets/models/props/Textures/colormap.png"
-## Comprimento da carroça de modelo no mundo, e o giro que põe a frente dela em −Z (para onde
-## Basis.looking_at aponta).
+## Comprimento da carroça de modelo no mundo, e o giro que põe a frente dela (os varais) em −Z (para
+## onde Basis.looking_at aponta). Até a Fase 13 ela andava de ré: sem o cavalo não se via.
 const MODEL_LENGTH_M := 2.6
-const MODEL_YAW := PI
+const MODEL_YAW := 0.0
+## O cavalo entra entre os varais: quanto ele avança sobre a ponta da carroça.
+const HORSE_OVERLAP_M := 0.5
 
 var _simulation: Simulation
 var _cell_size: float
@@ -27,6 +30,8 @@ var _bodies := MultiMeshInstance3D.new()
 var _loads := MultiMeshInstance3D.new()
 ## Uma camada por tipo de peça (GoodDef.Pile); o bem sem peça (o porco) usa a caixa colorida.
 var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
+## O cavalo de cada carroça (null sem o modelo do bicho).
+var _horses: MultiMeshInstance3D
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -58,6 +63,11 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		layer.multimesh = _multimesh(mesh, CargoKit.tinted(pile))
 		add_child(layer)
 		_cargo[pile] = layer
+	_horses = AnimalView.layer(&"horse")
+	if _horses != null:
+		_horses.name = "Horses"
+		_horses.multimesh.visible_instance_count = 0
+		add_child(_horses)
 
 
 ## As peças do modelo numa malha só, já no tamanho, no giro e com a base em y = −HEIGHT_M (a
@@ -105,6 +115,10 @@ func visible_carts() -> int:
 	return _bodies.multimesh.visible_instance_count
 
 
+func visible_horses() -> int:
+	return _horses.multimesh.visible_instance_count if _horses != null else 0
+
+
 ## Peças de carga à vista, de um tipo (GoodDef.Pile) ou de todos (-1).
 func cargo_items(pile: int = -1) -> int:
 	var total := 0
@@ -126,6 +140,10 @@ func _process(_delta: float) -> void:
 		_loads.multimesh.instance_count = away.size() + 16
 	_bodies.multimesh.visible_instance_count = away.size()
 	_loads.multimesh.visible_instance_count = away.size()
+	if _horses != null:
+		if _horses.multimesh.instance_count < away.size():
+			_horses.multimesh.instance_count = away.size() + 16
+		_horses.multimesh.visible_instance_count = away.size()
 	var items: Dictionary[int, Array] = {}
 	for kind: int in _cargo:
 		items[kind] = []
@@ -139,6 +157,11 @@ func _process(_delta: float) -> void:
 		if not ahead.is_equal_approx(place):
 			basis = Basis.looking_at((ahead - place).normalized(), Vector3.UP)
 		_bodies.multimesh.set_instance_transform(index, Transform3D(basis, place + Vector3(0.0, HEIGHT_M, 0.0)))
+		if _horses != null:
+			# o cavalo vai na frente da carroça (o −Z da base), com o pé no chão
+			var reach := MODEL_LENGTH_M * 0.5 + float(AnimalView.LENGTH_M[&"horse"]) * 0.5 - HORSE_OVERLAP_M
+			AnimalView.place(_horses.multimesh, index, &"horse", Transform3D(basis, place + basis * Vector3(0.0, 0.0, -reach)),
+					cart.home_id, &"walk")
 		var tons := cart.tons()
 		var good := _cargo_good(cart)
 		var pile := good.pile if good != null else GoodDef.Pile.NONE

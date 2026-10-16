@@ -28,6 +28,9 @@ class Source:
 	var weights := PackedFloat32Array()
 	var influences: int = 4
 	var indices := PackedInt32Array()
+	## Cor de cada vértice (a do material da superfície; Fase 13, animais). Vazio nos pedestres, que
+	## pintam pela região do corpo.
+	var colors := PackedColorArray()
 	var bone_names := PackedStringArray()
 	var bone_parents := PackedInt32Array()
 	var bone_rest: Array[Transform3D] = []
@@ -55,9 +58,10 @@ class ClipSource:
 		walks = clip_walks
 
 
-## Lê o esqueleto e as malhas nomeadas de uma cena gerada do glTF (ImporterMeshInstance3D ou
-## MeshInstance3D), juntando todas as superfícies numa só.
-static func from_scene(root: Node, mesh_names: PackedStringArray) -> Source:
+## Lê o esqueleto e as malhas nomeadas de uma cena gerada do glTF ou do FBX (ImporterMeshInstance3D ou
+## MeshInstance3D), juntando todas as superfícies numa só. Com keep_colors, cada vértice guarda a cor
+## do material da superfície dele.
+static func from_scene(root: Node, mesh_names: PackedStringArray, keep_colors: bool = false) -> Source:
 	var source := Source.new()
 	var skeletons := root.find_children("*", "Skeleton3D", true, false)
 	if skeletons.is_empty():
@@ -83,6 +87,8 @@ static func from_scene(root: Node, mesh_names: PackedStringArray) -> Source:
 			for surface: int in importer_node.mesh.get_surface_count():
 				_append_surface(source, importer_node.mesh.get_surface_arrays(surface),
 						importer_node.mesh.get_surface_format(surface))
+				if keep_colors:
+					_append_color(source, importer_node.mesh.get_surface_material(surface))
 		elif found is MeshInstance3D:
 			var mesh_node: MeshInstance3D = found
 			var array_mesh := mesh_node.mesh as ArrayMesh
@@ -91,6 +97,9 @@ static func from_scene(root: Node, mesh_names: PackedStringArray) -> Source:
 			skin = mesh_node.skin
 			for surface: int in array_mesh.get_surface_count():
 				_append_surface(source, array_mesh.surface_get_arrays(surface), array_mesh.surface_get_format(surface))
+				if keep_colors:
+					var material := mesh_node.get_surface_override_material(surface)
+					_append_color(source, material if material != null else array_mesh.surface_get_material(surface))
 	if skin == null or source.vertices.is_empty():
 		return null
 	for bind: int in skin.get_bind_count():
@@ -100,6 +109,16 @@ static func from_scene(root: Node, mesh_names: PackedStringArray) -> Source:
 		source.bind_bones.append(bone)
 		source.bind_poses.append(skin.get_bind_pose(bind))
 	return source
+
+
+## Completa as cores até o último vértice com a cor do material (cinza sem material).
+static func _append_color(source: Source, material: Material) -> void:
+	var color := Color(0.6, 0.6, 0.6)
+	if material is BaseMaterial3D:
+		var base: BaseMaterial3D = material
+		color = base.albedo_color
+	while source.colors.size() < source.vertices.size():
+		source.colors.append(color)
 
 
 static func _append_surface(source: Source, arrays: Array, format: int) -> void:
@@ -139,6 +158,8 @@ static func reduce(source: Source, target_triangles: int) -> Source:
 	arrays[Mesh.ARRAY_BONES] = source.bones
 	arrays[Mesh.ARRAY_WEIGHTS] = source.weights
 	arrays[Mesh.ARRAY_INDEX] = source.indices
+	if not source.colors.is_empty():
+		arrays[Mesh.ARRAY_COLOR] = source.colors
 	var importer := ImporterMesh.new()
 	var flags := Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS if source.influences == 8 else 0
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, null, "", flags)
@@ -164,6 +185,7 @@ static func reduce(source: Source, target_triangles: int) -> Source:
 	var normals: PackedVector3Array = generated[Mesh.ARRAY_NORMAL]
 	var bones: PackedInt32Array = generated[Mesh.ARRAY_BONES]
 	var weights: PackedFloat32Array = generated[Mesh.ARRAY_WEIGHTS]
+	var colors: PackedColorArray = generated[Mesh.ARRAY_COLOR] if not source.colors.is_empty() else PackedColorArray()
 	var remap := PackedInt32Array()
 	remap.resize(vertices.size())
 	remap.fill(-1)
@@ -172,6 +194,8 @@ static func reduce(source: Source, target_triangles: int) -> Source:
 			remap[index] = reduced.vertices.size()
 			reduced.vertices.append(vertices[index])
 			reduced.normals.append(normals[index])
+			if not colors.is_empty():
+				reduced.colors.append(colors[index])
 			for k: int in source.influences:
 				reduced.bones.append(bones[index * source.influences + k])
 				reduced.weights.append(weights[index * source.influences + k])
@@ -260,8 +284,9 @@ static func skin(source: Source, globals: Array[Transform3D]) -> Array[PackedVec
 
 
 ## Grava as animações num VatModel: a malha em repouso virada para −Z, as texturas de posição e
-## de normal (uma linha por quadro) e o passo das animações que andam.
-static func bake(source: Source, clips: Array[ClipSource], fps: float) -> VatModel:
+## de normal (uma linha por quadro) e o passo das animações que andam. Sem pés para medir (os
+## animais), head_bone diz para onde o bicho olha: a cabeça na frente do quadril (Hips).
+static func bake(source: Source, clips: Array[ClipSource], fps: float, head_bone: String = "") -> VatModel:
 	var rest := skin(source, pose(source, null, 0.0))
 	var frames_positions: Array[PackedVector3Array] = []
 	var frames_normals: Array[PackedVector3Array] = []
@@ -294,6 +319,12 @@ static func bake(source: Source, clips: Array[ClipSource], fps: float) -> VatMod
 		strides.append(absf(measured.x))
 		forward_sign += measured.y
 	model.clip_strides_m = strides
+	if head_bone != "":
+		var still := pose(source, null, 0.0)
+		var head := source.to_root * still[source.bone_index(head_bone)].origin
+		var hips := source.to_root * still[source.bone_index("Hips")].origin
+		# cabeça em +z: o bicho olha para +z e precisa virar
+		forward_sign = -1.0 if head.z > hips.z else 1.0
 	var facing := Basis.IDENTITY if forward_sign >= 0.0 else Basis(Vector3.UP, PI)
 	var turn := Transform3D(facing, Vector3.ZERO)
 	_write_textures(model, frames_positions, frames_normals, turn)
@@ -367,6 +398,8 @@ static func _rest_mesh(source: Source, rest_positions: PackedVector3Array, rest_
 	arrays[Mesh.ARRAY_TEX_UV] = uv
 	arrays[Mesh.ARRAY_TEX_UV2] = uv2
 	arrays[Mesh.ARRAY_INDEX] = source.indices
+	if not source.colors.is_empty():
+		arrays[Mesh.ARRAY_COLOR] = source.colors
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh.custom_aabb = mesh.get_aabb().grow(AABB_MARGIN_M)

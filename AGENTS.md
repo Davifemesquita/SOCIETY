@@ -79,6 +79,9 @@ tools/godot.sh godot --headless --path . --script res://tools/check_scripts.gd
 # refaz os pedestres (VAT) a partir de assets/source/quaternius; com a pasta dos pacotes
 # baixados (UAL1_Standard.glb, UAL2_Standard.glb) como argumento, refaz antes as animações
 tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.gd
+# refaz os animais (VAT) a partir dos FBX de assets/source/quaternius/animals; a captura dos bichos é
+# CAPTURA_SO=animais no tools/capture_phase3.tscn
+tools/godot.sh godot --headless --path . --script res://tools/bake_animals.gd
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
@@ -196,6 +199,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
 | `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado |
 | `presentation/cargo_kit.gd`, `stockpile_view.gd` | peças de carga (saco, barril, caixote, toras, monte) e as pilhas de estoque diante dos prédios (Fase 13) |
+| `presentation/animal_view.gd`, `shaders/animal_vat.gdshader`, `tools/bake_animals.gd` | ovelhas e porcos nos pastos, cães nas portas e o cavalo da carroça, em VAT (Fase 13) |
 | `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
 | `presentation/building_materials.gd`, `shaders/building.gdshader` | material PBR dividido dos prédios (paredes e telhados) |
@@ -864,6 +868,16 @@ Regras que já custaram investigação:
   (piso de tábuas e frente com parapeito) nos andares do meio dos engenheiros e, nos investidores, sacada no
   primeiro andar, duas colunas de pedra na porta e sebe florida no térreo. As peças são do kit; o verde da
   sebe (célula (3, 3) da paleta) vira folhagem com flores no `shaders/building_kit.gdshader`.
+- **Animais** (`AnimalView`): ovelhas e porcos (`PER_PASTURE` por pasto) no pasto que tem dono
+  (`DerivedState.module_owner`: `PASTURE_ANIMAL` diz o bicho de cada fazenda; pasto sem fazenda fica vazio), um
+  cão ao lado da porta de uma casa a cada `DOG_EVERY` (pelo id) e o cavalo andando na frente de cada carroça,
+  entre os varais (`CartView`). Os bichos são do Farm Animals Pack da Quaternius (FBX em
+  `assets/source/quaternius/animals/`, com `.gdignore`), gravados em VAT por `tools/bake_animals.gd` com o mesmo
+  `VatBaker` dos pedestres: a cor sai do material de cada superfície (cor do vértice) e o lado para onde o bicho
+  olha, da cabeça (não há pés para medir). Ovelha, porco e cão só têm a animação parada; o cavalo anda. O
+  `shaders/animal_vat.gdshader` anima no `visual_time` (para na pausa). **A carroça andava de ré** até aqui
+  (`CartView.MODEL_YAW` era PI): com o cavalo se viu, e os varais agora vão na frente. Pássaros nas ruas ficaram
+  de fora (`assets/TODO_ASSETS.md`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -888,7 +902,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
-| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas; depois animais (com o cavalo da carroça) |
+| 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 
 Pendências já vistas para fases futuras:
 
