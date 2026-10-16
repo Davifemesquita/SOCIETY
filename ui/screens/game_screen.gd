@@ -60,6 +60,7 @@ var smoke_view: SmokeView
 var stockpile_view: StockpileView
 var lamp_view: LampView
 var animal_view: AnimalView
+var crop_view: CropView
 var fire_view: FireView
 ## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
 var music: MusicDirector
@@ -173,6 +174,11 @@ func _ready() -> void:
 	add_child(animal_view)
 	animal_view.setup(simulation)
 	graphics.add_effect(animal_view)
+	crop_view = CropView.new()
+	crop_view.name = "Crops"
+	add_child(crop_view)
+	crop_view.setup(simulation)
+	graphics.add_effect(crop_view)
 	fire_view = FireView.new()
 	fire_view.name = "Fire"
 	add_child(fire_view)

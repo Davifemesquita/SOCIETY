@@ -16,6 +16,9 @@ enum Hazard { NONE, FIRE, DISEASE }
 ## O que se reconhece de longe no prédio de modelo (Fase 13): moinho de vento, roda d'água, torre de
 ## mina, bancas na frente, guindaste, lanternim no telhado ou bandeiras na fachada.
 enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS }
+## A planta que a fazenda põe nos campos dela (Fase 14): cereal, tubérculo, lúpulo na estaca, parreira,
+## cana, arbusto (café) ou folha larga (tabaco).
+enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }
 
 @export var id: StringName
 ## Chave de tradução do nome.
@@ -32,6 +35,7 @@ enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTO
 ## Som de trabalho enquanto produz (Fase 10): &"wood", &"metal" ou vazio (sem som).
 @export var work_sound: StringName
 @export var silhouette: Silhouette = Silhouette.NONE
+@export var crop: Crop = Crop.NONE
 
 @export_group("Custo")
 @export var cost_money: int = 0

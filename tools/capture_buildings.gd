@@ -5,7 +5,8 @@ extends Node
 ## (menos campo, pasto e píer) lado a lado; capturas de longe, de perto e à noite.
 ## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13); postes,
 ## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
-## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13).
+## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13); plantacoes, uma fazenda de cada
+## planta com os campos em três pontos do ciclo (Fase 14).
 
 var _out_dir: String
 var _game: GameScreen
@@ -33,6 +34,10 @@ func _run() -> void:
 	_place(&"trading_post", Vector2i(200, 2), 2)
 	if OS.get_environment("CAPTURA_SO") == "silhuetas":
 		await _silhouettes()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "plantacoes":
+		await _crops()
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "detalhes":
@@ -168,3 +173,29 @@ func _house_trims() -> void:
 	await _shot("18_quintal.png", Vector3(83.0, 1.0, 201.0), 14.0, PI + 0.5, 0.35)
 	await _shot("19_floreiras_e_sacadas.png", Vector3(108.0, 5.0, 201.0), 22.0, PI + 0.3, 0.2)
 	await _shot("20_portico.png", Vector3(123.0, 3.0, 201.0), 18.0, PI + 0.3, 0.15)
+
+
+## Fase 14: cada fazenda de campo com os campos dela, em três pontos do ciclo (começo, meio e colheita).
+func _crops() -> void:
+	var farms: Array[StringName] = [&"wheat_farm", &"potato_farm", &"hop_farm", &"vineyard", &"sugar_cane_farm",
+			&"coffee_plantation", &"tobacco_plantation"]
+	var growths: Array[float] = [0.1, 0.5, 0.95]
+	for i: int in farms.size():
+		var def := _sim.data.building(farms[i])
+		var origin := Vector2i(30 + i * 22, 140)
+		var farm := _place(farms[i], origin, 0)
+		var reach := Footprint.rect(origin, def.size, 0).grow(def.module_radius_cells)
+		var placed := 0
+		for y: int in range(origin.y - 3, reach.end.y - 2, 3):
+			for x: int in range(reach.position.x, reach.end.x - 2, 3):
+				if placed < def.modules_required and _place(def.module_id, Vector2i(x, y), 0) != 0:
+					placed += 1
+		if farm != 0:
+			_sim.world.building(farm).progress = growths[i % growths.size()]
+	_game.building_view.rebuild()
+	_game.crop_view.rebuild()
+	print("plantas ", _game.crop_view.plant_count())
+	await _shot("21_plantacoes.png", Vector3(130.0, 0.0, 290.0), 90.0, 0.3, 0.6)
+	await _shot("22_trigo_batata.png", Vector3(85.0, 0.0, 286.0), 30.0, 0.4, 0.5)
+	await _shot("23_lupulo_parreira.png", Vector3(150.0, 0.0, 286.0), 30.0, 0.4, 0.5)
+	await _shot("24_cana_cafe_tabaco.png", Vector3(230.0, 0.0, 286.0), 40.0, 0.4, 0.5)

@@ -199,6 +199,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
 | `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado |
 | `presentation/cargo_kit.gd`, `stockpile_view.gd` | peças de carga (saco, barril, caixote, toras, monte) e as pilhas de estoque diante dos prédios (Fase 13) |
+| `presentation/crop_view.gd` | plantações nos campos, crescendo com o ciclo da fazenda (Fase 14) |
 | `presentation/animal_view.gd`, `shaders/animal_vat.gdshader`, `tools/bake_animals.gd` | ovelhas e porcos nos pastos, cães nas portas e o cavalo da carroça, em VAT (Fase 13) |
 | `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
@@ -830,7 +831,7 @@ Regras que já custaram investigação:
   reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
   de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
   (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
-  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes` ou `detalhes`).
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes`, `detalhes` ou `plantacoes`).
 
 ### Cidade viva (Fase 13, nossa)
 
@@ -879,6 +880,17 @@ Regras que já custaram investigação:
   (`CartView.MODEL_YAW` era PI): com o cavalo se viu, e os varais agora vão na frente. Pássaros nas ruas ficaram
   de fora (`assets/TODO_ASSETS.md`).
 
+### Campo e caminho (Fase 14, nossa)
+
+- **Proposta nossa** (16/10/2026), em partes com commit próprio: plantações nos campos, cerca e capim nos
+  pastos, meio-fio e emenda nas estradas, ponte de madeira e pássaros. Só visual; o save fica na versão 15.
+- **Plantações** (`CropView`, `BuildingDef.crop` nas fazendas de campo): o campo que tem dono
+  (`DerivedState.module_owner`) ganha fileiras da planta da fazenda (cereal, batata, lúpulo na estaca, parreira,
+  cana, café, tabaco), geradas no código com a cor no vértice, um MultiMesh por planta. Crescem com o ciclo da
+  fazenda (`BuildingRecord.progress`, em `GROWTH_STEPS` degraus, a partir de `MIN_GROWTH`); o cereal vai do verde
+  ao dourado. Na colheita o ciclo volta a zero e a planta também. Só o campo que mudou de degrau é reescrito
+  (conferência a cada 0,5 s). Campo sem dono fica na terra arada (a cor do `field.tres` virou de solo).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -903,6 +915,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
+| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos; depois cerca e capim nos pastos, meio-fio e emenda nas estradas, ponte de madeira e pássaros |
 
 Pendências já vistas para fases futuras:
 

@@ -21,6 +21,7 @@ inputs = Array[StringName]([])
 output = &"hops"
 cycle_s = 90.0
 module_id = &"field"
+crop = 3
 modules_required = 6
 terrain = 0
 fertility = &"hops"

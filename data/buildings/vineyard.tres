@@ -21,6 +21,7 @@ inputs = Array[StringName]([])
 output = &"grapes"
 cycle_s = 90.0
 module_id = &"field"
+crop = 4
 modules_required = 6
 fertility = &"grapes"
 wall_material = 2
