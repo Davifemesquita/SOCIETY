@@ -847,6 +847,9 @@ Regras que já custaram investigação:
   caixote, toras ou monte; o porco não tem pilha), feita pelo `CargoKit`: barril e caixote do Kenney Pirate
   Kit (`assets/models/cargo/`), saco, tora e monte gerados no código na cor do bem. Um MultiMesh por tipo de
   peça, refeito só quando alguma pilha muda (conferência a cada 0,5 s).
+- **Carga da carroça** (`CartView`): as mesmas peças, uma por tonelada começada (até duas, frente e trás da
+  caçamba, `CARGO_SLOTS`), num MultiMesh por tipo de peça; a caixa colorida de antes fica só para o bem sem
+  peça (o porco). Volta vazia, sem peça.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -871,7 +874,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 11 | 15/10/2026: robô até os investidores; riscos (incêndio e doença, seção 8); estaleiro e clíper; navios e carroça de modelo |
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
-| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia e pilhas de estoque; depois carga na carroça, postes e fogueiras, detalhe das casas e animais (com o cavalo da carroça) |
+| 13 — Cidade viva (nossa) | em andamento desde 16/10/2026: silhueta por cadeia, pilhas de estoque e carga na carroça; depois postes e fogueiras, detalhe das casas e animais (com o cavalo da carroça) |
 
 Pendências já vistas para fases futuras:
 

@@ -55,6 +55,11 @@ func test_cart_shows_on_the_road_while_delivering() -> void:
 	assert_bool(_sim.world.cart(lumberjack).is_away()).is_true()
 	await _runner.simulate_frames(3)
 	assert_int(_game.cart_view.visible_carts()).is_equal(1)
+	# a carga vai em toras (Fase 13): uma peça por tonelada levada, nenhuma de outro tipo
+	var cart := _sim.world.cart(lumberjack)
+	assert_int(_game.cart_view.cargo_items(GoodDef.Pile.LOGS)).is_equal(mini(ceili(cart.tons() - 0.000001), 2))
+	assert_int(_game.cart_view.cargo_items()).is_equal(_game.cart_view.cargo_items(GoodDef.Pile.LOGS))
+	assert_float(cart.tons()).is_greater(0.0)
 	_game.tool.select(lumberjack)
 	await _runner.simulate_frames(10)
 	assert_str(_game.hud.selection_panel.find_children("*", "Label", true, false).map(
