@@ -184,3 +184,24 @@ func test_demolishing_the_home_removes_its_cart() -> void:
 	var lumberjack := SimFixture.place(_sim, &"lumberjack", Vector2i(20, 7))
 	_sim.execute(DemolishCommand.new(0, Rect2i(20, 7, 1, 1)))
 	assert_object(_sim.world.cart(lumberjack)).is_null()
+
+
+func test_a_cart_delivers_over_a_diagonal_road() -> void:
+	# Fase 17: o lenhador só se liga ao entreposto por uma estrada em diagonal
+	SimFixture.port(_sim)
+	_workers()
+	# perto do entreposto: o caminho todo fica dentro das 40 células de alcance
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.diagonal_path(Vector2i(10, 7), Vector2i(20, 17))))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(21, 17), Vector2i(30, 17))))
+	var lumberjack := SimFixture.place(_sim, &"lumberjack", Vector2i(25, 18))
+	assert_bool(_sim.has_road_access(lumberjack)).is_true()
+	SimFixture.run(_sim, 16.0)
+	var cart := SimFixture.cart(_sim, lumberjack)
+	var grid := _sim.world.island(0)
+	var diagonal_steps := 0
+	for i: int in cart.path.size() - 1:
+		if RoadRouter.step_length(grid, cart.path[i], cart.path[i + 1]) > 1.0:
+			diagonal_steps += 1
+	assert_int(diagonal_steps).is_equal(10)
+	SimFixture.run(_sim, 60.0)
+	assert_float(SimFixture.stock(_sim, &"wood")).is_greater(0.0)
