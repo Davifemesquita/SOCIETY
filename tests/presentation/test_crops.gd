@@ -87,6 +87,45 @@ func test_the_crop_grows_with_the_farm_cycle_and_starts_over_at_harvest() -> voi
 	assert_float(view.plant_transform(field, 0).basis.get_scale().y).is_equal_approx(CropView.MIN_GROWTH, 0.01)
 
 
+## Fase 19: a terra arada tem leiras dentro dos campos; úmidas logo depois de lavrar, secam até a
+## colheita; o campo sem dono fica com as leiras secas.
+func test_fields_get_furrows_that_dry_out_until_the_harvest() -> void:
+	SimFixture.road(_sim, Vector2i(0, 20), Vector2i(79, 20))
+	var potato := _farm(&"potato_farm", Vector2i(10, 21))
+	var farm_id: int = potato[0]
+	var farm := _sim.world.building(farm_id)
+	SimFixture.place(_sim, &"field", Vector2i(70, 2), 0)
+	var view := _view()
+	var grid := _sim.world.island(SimFixture.ISLAND)
+	assert_int(view.furrow_count()).is_greater(0)
+	# um multimesh só para todos os campos: alcance de visibilidade contaria do centro dele e apagaria os
+	# campos longe do meio
+	assert_float((view.get_node("Furrows") as MultiMeshInstance3D).visibility_range_end).is_equal(0.0)
+	for index: int in view.furrow_count():
+		var place := view.furrow_transform(index)
+		var id := grid.building_at(grid.world_to_cell(place.origin))
+		assert_str(String(_sim.def_of(_sim.world.building(id)).id)).is_equal("field")
+		assert_float(place.basis.get_scale().x).is_greater(5.0)
+	farm.progress = 0.0
+	view.refresh()
+	view.rebuild()
+	var fresh := 0
+	var dry := 0
+	for index: int in view.furrow_count():
+		var color := view.furrow_color(index)
+		if color.is_equal_approx(CropView.FRESH_SOIL):
+			fresh += 1
+		elif color.is_equal_approx(CropView.DRY_SOIL):
+			dry += 1
+	assert_int(fresh + dry).is_equal(view.furrow_count())
+	assert_int(fresh).is_greater(0)
+	assert_int(dry).is_greater(0)
+	farm.progress = 1.0
+	view.refresh()
+	for index: int in view.furrow_count():
+		assert_bool(view.furrow_color(index).is_equal_approx(CropView.DRY_SOIL)).is_true()
+
+
 func test_a_new_farm_brings_its_crop_without_rebuilding_by_hand() -> void:
 	var view := _view()
 	assert_int(view.plant_count()).is_equal(0)

@@ -7,7 +7,8 @@ extends Node
 ## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13; cornija, vergas, grade de ferro e
 ## frontão, Fase 18); plantacoes, uma fazenda de cada
-## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14). Os pombos na rua saem
+## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14), e as leiras da terra
+## arada, úmidas e secas, e o campo sem dono (Fase 19). Os pombos na rua saem
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
 ## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17); epoca, o
 ## campanário da igreja e o portão das fábricas pesadas (Fase 18).
@@ -238,14 +239,19 @@ func _crops() -> void:
 					placed += 1
 		if farm != 0:
 			_sim.world.building(farm).progress = growths[i % growths.size()]
+	# campo sem dono: só as leiras secas (Fase 19)
+	_place(&"field", Vector2i(30, 180), 0)
 	_game.building_view.rebuild()
 	_game.crop_view.rebuild()
-	print("plantas ", _game.crop_view.plant_count())
+	print("plantas ", _game.crop_view.plant_count(), " leiras ", _game.crop_view.furrow_count())
 	await _shot("21_plantacoes.png", Vector3(130.0, 0.0, 290.0), 90.0, 0.3, 0.6)
 	await _shot("22_trigo_batata.png", Vector3(85.0, 0.0, 286.0), 30.0, 0.4, 0.5)
 	await _shot("23_lupulo_parreira.png", Vector3(150.0, 0.0, 286.0), 30.0, 0.4, 0.5)
 	await _shot("24_cana_cafe_tabaco.png", Vector3(230.0, 0.0, 286.0), 40.0, 0.4, 0.5)
 	await _shot("25_pasto.png", Vector3(66.0, 0.0, 282.0), 26.0, 0.5, 0.5)
+	await _shot("26_leiras_lupulo_novo.png", Vector3(196.0, 0.0, 290.0), 22.0, 0.4, 0.55)
+	await _shot("27_leiras_batata_madura.png", Vector3(152.0, 0.0, 290.0), 22.0, 0.4, 0.55)
+	await _shot("28_campo_sem_dono.png", Vector3(63.0, 0.0, 363.0), 14.0, 0.4, 0.55)
 	_game.bird_view.rebuild()
 	print("estorninhos ", _game.bird_view.flock_count(BirdView.Kind.STARLING))
 	await _shot("29_estorninhos.png", Vector3(110.0, 0.0, 286.0), 45.0, 0.4, 0.35)

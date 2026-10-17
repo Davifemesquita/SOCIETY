@@ -1046,6 +1046,12 @@ Regras que já custaram investigação:
   textura de rocha em escala larga. A areia da praia escurece e fica lisa até `wet_sand_m` acima do mar. A
   assinatura do terreno não muda (o tipo de chão é só desenho). Captura: `CAPTURA_SO=margem` no
   `tools/capture_phase5.tscn`.
+- **Campo arado** (`CropView`, multimesh `Furrows`): uma leira de terra em telhado (`furrow_mesh`,
+  `FURROW_HEIGHT_M`) por fileira da planta da fazenda, de ponta a ponta do campo, ocupando `FURROW_FILL` da
+  fileira; a cor vai de `FRESH_SOIL` (úmida, logo depois de lavrar) a `DRY_SOIL` (seca, clara) com o ciclo
+  da fazenda. Campo sem dono: leiras secas a cada `BARE_SPACING_M`. As leiras não têm alcance de
+  visibilidade: o multimesh cobre todos os campos e o alcance contaria do centro dele (os campos longe do
+  meio sumiam). Captura: `CAPTURA_SO=plantacoes` (`26_`, `27_` e `28_campo_sem_dono.png`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1076,7 +1082,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
 | 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
-| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia |
+| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos |
 
 Pendências já vistas para fases futuras:
 

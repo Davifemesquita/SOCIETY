@@ -2,7 +2,9 @@ class_name CropView
 extends Node3D
 ## Plantações nos campos (Fase 14): o campo que tem dono ganha fileiras da planta da fazenda dele
 ## (BuildingDef.crop), crescendo com o ciclo da fazenda (BuildingRecord.progress): curta e verde no começo,
-## alta (e dourada, no cereal) perto da colheita. Campo sem dono fica só a terra arada. As plantas são
+## alta (e dourada, no cereal) perto da colheita. Campo sem dono fica só a terra arada. Desde a Fase 19, a
+## terra arada tem leiras (uma por fileira, pela planta da fazenda), escuras e úmidas logo depois de lavrada e
+## secando até a colheita; o campo sem dono fica com as leiras secas. As plantas são
 ## geradas aqui (cor no vértice), um MultiMesh por planta; o crescimento reescreve só as instâncias do
 ## campo que mudou. Os pastos (de dono ou não) ganham cerca de madeira em volta (menos do lado que encosta
 ## em outro pasto: viram um cercado só) e touceiras de capim. Só lê o mundo.
@@ -16,6 +18,14 @@ const MARGIN_M := 0.45
 const JITTER_M := 0.08
 ## Cereal verde no começo do ciclo (a cor da instância multiplica a do vértice).
 const GREEN_TINT := Color(0.55, 1.0, 0.45)
+
+## Leiras (Fase 19): altura, quanto da fileira cada uma ocupa, espaço no campo sem dono e a cor da terra
+## lavrada (úmida) e seca.
+const FURROW_HEIGHT_M := 0.13
+const FURROW_FILL := 0.7
+const BARE_SPACING_M := 0.75
+const FRESH_SOIL := Color(0.25, 0.17, 0.1)
+const DRY_SOIL := Color(0.58, 0.46, 0.32)
 
 ## Pasto: lanço de cerca (m), folga da cerca até a borda e touceiras de capim por célula.
 const PASTURE := &"pasture"
@@ -38,7 +48,9 @@ var _simulation: Simulation
 var _layers: Dictionary[int, MultiMeshInstance3D] = {}
 var _fence := MultiMeshInstance3D.new()
 var _grass := MultiMeshInstance3D.new()
-## Por campo: [planta, primeira instância, quantidade, lugares (Array[Transform3D]), id da fazenda].
+var _furrows := MultiMeshInstance3D.new()
+## Por campo: [planta, primeira instância, quantidade, lugares (Array[Transform3D]), id da fazenda, primeira
+## leira, quantidade de leiras].
 var _fields: Dictionary[int, Array] = {}
 var _growth: Dictionary[int, int] = {}
 var _range_m: float = 260.0
@@ -66,7 +78,7 @@ func setup(simulation: Simulation) -> void:
 		layer.material_override = material
 		add_child(layer)
 		_layers[crop] = layer
-	for pair: Array in [[_fence, "Fence", fence_mesh()], [_grass, "Grass", tuft_mesh()]]:
+	for pair: Array in [[_fence, "Fence", fence_mesh()], [_grass, "Grass", tuft_mesh()], [_furrows, "Furrows", furrow_mesh()]]:
 		var layer: MultiMeshInstance3D = pair[0]
 		var name_text: String = pair[1]
 		var mesh: ArrayMesh = pair[2]
@@ -109,6 +121,19 @@ func tuft_count() -> int:
 	return _grass.multimesh.visible_instance_count
 
 
+## Leiras à vista (todos os campos) e a cor de uma delas.
+func furrow_count() -> int:
+	return _furrows.multimesh.visible_instance_count
+
+
+func furrow_color(index: int) -> Color:
+	return _furrows.multimesh.get_instance_color(index)
+
+
+func furrow_transform(index: int) -> Transform3D:
+	return _furrows.multimesh.get_instance_transform(index)
+
+
 func fence_transform(index: int) -> Transform3D:
 	return _fence.multimesh.get_instance_transform(index)
 
@@ -147,6 +172,7 @@ func rebuild() -> void:
 		lists[crop] = []
 	var fences: Array = []
 	var tufts: Array = []
+	var furrows: Array = []
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := _simulation.def_of(record)
@@ -157,15 +183,19 @@ func rebuild() -> void:
 			continue
 		var owner_id: int = derived.module_owner.get(building_id, 0)
 		var farm := world.building(owner_id)
-		if farm == null:
-			continue
-		var crop := _simulation.def_of(farm).crop
+		var crop := _simulation.def_of(farm).crop if farm != null else -1
 		if not _layers.has(crop):
+			for place: Transform3D in _furrow_places(record, def, BARE_SPACING_M):
+				furrows.append([place, DRY_SOIL])
 			continue
 		var places := _plant_places(record, def, crop)
+		var spacing: Vector2 = SPACING[crop]
+		var rows := _furrow_places(record, def, spacing.y)
 		var list: Array = lists[crop]
-		_fields[building_id] = [crop, list.size(), places.size(), places, owner_id]
+		_fields[building_id] = [crop, list.size(), places.size(), places, owner_id, furrows.size(), rows.size()]
 		list.append_array(places)
+		for place: Transform3D in rows:
+			furrows.append([place, DRY_SOIL])
 	for crop: int in lists:
 		var multimesh := _layers[crop].multimesh
 		var count: int = lists[crop].size()
@@ -173,9 +203,7 @@ func rebuild() -> void:
 			multimesh.visible_instance_count = -1
 			multimesh.instance_count = count + 64
 		multimesh.visible_instance_count = count
-	for field_id: int in _fields:
-		_draw_field(field_id)
-	for pair: Array in [[_fence, fences], [_grass, tufts]]:
+	for pair: Array in [[_fence, fences], [_grass, tufts], [_furrows, furrows]]:
 		var layer: MultiMeshInstance3D = pair[0]
 		var multimesh := layer.multimesh
 		var items: Array = pair[1]
@@ -189,6 +217,8 @@ func rebuild() -> void:
 			var color: Color = item[1]
 			multimesh.set_instance_transform(index, place)
 			multimesh.set_instance_color(index, color)
+	for field_id: int in _fields:
+		_draw_field(field_id)
 
 
 ## A cerca em volta do pasto (lanços de FENCE_STEP_M, de canto a canto, por dentro da borda) e o capim.
@@ -275,6 +305,11 @@ func _draw_field(field_id: int) -> void:
 		var place: Transform3D = places[index]
 		multimesh.set_instance_transform(first + index, Transform3D(place.basis.scaled_local(size), place.origin))
 		multimesh.set_instance_color(first + index, tint)
+	var soil := FRESH_SOIL.lerp(DRY_SOIL, float(step) / GROWTH_STEPS)
+	var first_furrow: int = field[5]
+	var furrow_total: int = field[6]
+	for index: int in furrow_total:
+		_furrows.multimesh.set_instance_color(first_furrow + index, soil)
 
 
 ## Lugares das plantas no campo (mundo, tamanho cheio): fileiras pelo espaço da planta, com a folga da
@@ -303,7 +338,24 @@ func _plant_places(record: BuildingRecord, def: BuildingDef, crop: int) -> Array
 	return result
 
 
+## Leiras do campo (mundo): uma por fileira de `spacing` m, de ponta a ponta em x, na altura da terra.
+func _furrow_places(record: BuildingRecord, def: BuildingDef, spacing: float) -> Array:
+	var grid := _simulation.world.island(record.island_id)
+	var area := Footprint.rect(record.origin, def.size, record.rotation)
+	var center := grid.rect_world(area) + Vector3(0.0, def.height_m, 0.0)
+	var cell_size := _simulation.config.cell_size_m
+	var half := Vector2(area.size) * cell_size * 0.5 - Vector2(MARGIN_M, MARGIN_M)
+	var rows := maxi(1, floori(half.y * 2.0 / spacing) + 1)
+	var start := -(rows - 1) * spacing * 0.5
+	var size := Basis.from_scale(Vector3(half.x * 2.0 + MARGIN_M, 1.0, spacing * FURROW_FILL))
+	var result: Array = []
+	for row: int in rows:
+		result.append(Transform3D(size, center + Vector3(0.0, 0.0, start + row * spacing)))
+	return result
+
+
 func _apply_range() -> void:
+	# as leiras não têm alcance: o multimesh delas cobre todos os campos e o alcance conta do centro dele
 	for layer: MultiMeshInstance3D in _layers.values():
 		layer.visibility_range_end = _range_m
 		layer.visibility_range_end_margin = _range_m * 0.1
@@ -368,6 +420,18 @@ static func plant_mesh(crop: int) -> ArrayMesh:
 	var mesh := tool.commit()
 	_meshes[crop] = mesh
 	return mesh
+
+
+## Uma leira de 1 m em x e 1 m de largura: terra amontoada em telhado (a escala estica o comprimento e a
+## largura; a cor vem da instância).
+static func furrow_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var prism := PrismMesh.new()
+	prism.size = Vector3(1.0, FURROW_HEIGHT_M, 1.0)
+	_part(tool, prism, Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(0.0, FURROW_HEIGHT_M * 0.5 - 0.02, 0.0)), Color.WHITE)
+	tool.index()
+	return tool.commit()
 
 
 ## Um lanço de cerca de 1 m em +x: o mourão no começo e duas travessas (a escala em x estica o lanço).
