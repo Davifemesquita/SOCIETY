@@ -3,9 +3,15 @@ extends Node3D
 ## Multidão na tela (seção 9): um MultiMesh por classe e corpo, com o shader de VAT. Avança o
 ## tempo visual (para na pausa, acelera com a velocidade do jogo), roda a Crowd e aplica só as
 ## instâncias que mudaram. Nenhuma regra aqui.
+## Fase 15: cada grupo tem também um MultiMesh de cestos e um de sacos (shaders/carried_vat.gdshader), com uma
+## instância por pedestre, mostrada só em quem anda carregando aquilo (Crowd.Agent.load).
 
 const MODEL_PATHS: Array[String] = ["res://assets/vat/pedestrian_male.res", "res://assets/vat/pedestrian_female.res"]
 const SHADER := preload("res://shaders/pedestrian_vat.gdshader")
+const CARRIED_SHADER := preload("res://shaders/carried_vat.gdshader")
+## Onde vai a carga, no referencial do boneco: altura (fração da altura do corpo) e quanto à frente (m).
+const HOLD_HEIGHT := 0.54
+const HOLD_FORWARD_M := 0.3
 const HIDDEN := Transform3D(Basis(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO), Vector3.ZERO)
 ## Altura da caixa de recorte da multidão (o boneco anda no shader, longe da posição da instância).
 const BOUNDS_HEIGHT_M := 4.0
@@ -18,6 +24,8 @@ var crowd: Crowd
 var last_update_usec: int = 0
 
 var _instances: Array[MultiMeshInstance3D] = []
+## Por grupo: a carga (Crowd.Load) → o MultiMesh dela.
+var _carried: Array[Dictionary] = []
 var _models: Array[VatModel] = []
 
 
@@ -59,6 +67,24 @@ func setup(simulation: Simulation, config: GameConfig, seed_value: int = 1) -> v
 				else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(instance)
 		_instances.append(instance)
+		var carried: Dictionary[int, MultiMeshInstance3D] = {}
+		var hold := Vector3(0.0, model.mesh.get_aabb().size.y * HOLD_HEIGHT, -HOLD_FORWARD_M)
+		for load: int in [Crowd.Load.BASKET, Crowd.Load.SACK]:
+			var load_material := ShaderMaterial.new()
+			load_material.shader = CARRIED_SHADER
+			load_material.set_shader_parameter(&"hold", hold)
+			var load_multimesh := MultiMesh.new()
+			load_multimesh.transform_format = MultiMesh.TRANSFORM_3D
+			load_multimesh.use_custom_data = true
+			load_multimesh.mesh = CarriedGoods.basket_mesh() if load == Crowd.Load.BASKET else CarriedGoods.sack_mesh()
+			var load_instance := MultiMeshInstance3D.new()
+			load_instance.multimesh = load_multimesh
+			load_instance.material_override = load_material
+			load_instance.custom_aabb = bounds
+			load_instance.cast_shadow = instance.cast_shadow
+			add_child(load_instance)
+			carried[load] = load_instance
+		_carried.append(carried)
 	var changed := func(_id: int) -> void: crowd.mark_structure_changed()
 	EventBus.building_placed.connect(changed)
 	EventBus.building_removed.connect(changed)
@@ -89,28 +115,61 @@ func apply() -> void:
 		multimeshes.append(instance.multimesh)
 	for slot: Vector2i in crowd.cleared:
 		multimeshes[slot.x].set_instance_transform(slot.y, HIDDEN)
+		for load_instance: MultiMeshInstance3D in _carried[slot.x].values():
+			if slot.y < load_instance.multimesh.instance_count:
+				load_instance.multimesh.set_instance_transform(slot.y, HIDDEN)
 	crowd.cleared.clear()
 	for agent: Crowd.Agent in crowd.take_changes():
 		if not agent.removed:
-			_write(multimeshes[agent.group], agent)
+			_write(agent.group, agent)
 
 
 func _rebuild_group(index: int) -> void:
-	var multimesh := _instances[index].multimesh
-	multimesh.instance_count = crowd.groups[index].capacity
-	for slot: int in multimesh.instance_count:
-		multimesh.set_instance_transform(slot, HIDDEN)
+	var multimeshes: Array[MultiMesh] = [_instances[index].multimesh]
+	for load_instance: MultiMeshInstance3D in _carried[index].values():
+		multimeshes.append(load_instance.multimesh)
+	for multimesh: MultiMesh in multimeshes:
+		multimesh.instance_count = crowd.groups[index].capacity
+		for slot: int in multimesh.instance_count:
+			multimesh.set_instance_transform(slot, HIDDEN)
 	for agent: Crowd.Agent in crowd.agents:
 		if agent != null and agent.group == index:
-			_write(multimesh, agent)
+			_write(index, agent)
 
 
-func _write(multimesh: MultiMesh, agent: Crowd.Agent) -> void:
+func _write(index: int, agent: Crowd.Agent) -> void:
+	var multimesh := _instances[index].multimesh
 	if agent.slot >= multimesh.instance_count:
 		return
-	multimesh.set_instance_transform(agent.slot, crowd.instance_transform(agent))
+	var place := crowd.instance_transform(agent)
+	var custom := crowd.instance_custom(agent)
+	multimesh.set_instance_transform(agent.slot, place)
 	multimesh.set_instance_color(agent.slot, agent.color)
-	multimesh.set_instance_custom_data(agent.slot, crowd.instance_custom(agent))
+	multimesh.set_instance_custom_data(agent.slot, custom)
+	# a carga: só em quem anda carregando; w leva o passo da animação (o balanço)
+	var walking := agent.state == Crowd.State.WALKING and agent.clip == Crowd.CLIP_WALK_CARRY
+	for load: int in _carried[index]:
+		var holder: MultiMeshInstance3D = _carried[index][load]
+		var carried := holder.multimesh
+		if agent.slot >= carried.instance_count:
+			continue
+		if walking and agent.load == load:
+			carried.set_instance_transform(agent.slot, place)
+			carried.set_instance_custom_data(agent.slot, Color(custom.r, custom.g, custom.b, crowd.stride_of(agent)))
+		else:
+			carried.set_instance_transform(agent.slot, HIDDEN)
+
+
+## Cargas à vista agora (cestos ou sacos, Crowd.Load), para os testes.
+func carried_count(load: int) -> int:
+	var total := 0
+	for carried: Dictionary in _carried:
+		var holder: MultiMeshInstance3D = carried[load]
+		var multimesh := holder.multimesh
+		for slot: int in multimesh.instance_count:
+			if multimesh.get_instance_transform(slot).basis.determinant() != 0.0:
+				total += 1
+	return total
 
 
 func instance_count() -> int:

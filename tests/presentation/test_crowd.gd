@@ -168,6 +168,11 @@ func test_people_leaving_the_market_carry_baskets() -> void:
 		for agent: Crowd.Agent in crowd.agents:
 			if agent != null and agent.state == Crowd.State.WALKING and agent.leg == Crowd.Leg.TO_HOME:
 				carried = carried or agent.clip == Crowd.CLIP_WALK_CARRY
+				# do mercado se leva cesto (Fase 15); de mãos vazias, nada
+				if agent.clip == Crowd.CLIP_WALK_CARRY:
+					assert_int(agent.load).is_equal(Crowd.Load.BASKET)
+				else:
+					assert_int(agent.load).is_equal(Crowd.Load.NONE)
 	assert_bool(carried).is_true()
 
 

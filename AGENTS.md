@@ -935,6 +935,12 @@ Regras que já custaram investigação:
   tábuas sobre estacas que entram na água, galpão de tábuas com telhado de duas águas (`PrismMesh`) e porta larga,
   guindaste de vigas para o mar com um caixote pendurado, carga do `CargoKit`, dois barcos a remo e o mastro com a
   bandeira. A captura é `CAPTURA_SO=posto` no `tools/capture_phase6.tscn`.
+- **Cesto e saco na mão** (`CarriedGoods`, `shaders/carried_vat.gdshader`): quem sai do mercado leva cesto e quem
+  sai de fazenda leva saco (`Crowd.Load`, guardado no agente junto da animação de carregar). Cada grupo da
+  `PedestrianView` tem um MultiMesh de cestos e um de sacos, com uma instância por pedestre no mesmo lugar dele e o
+  mesmo dado (o shader faz a mesma conta do passo; em w vai o passo da animação, que dá o balanço), escondida em
+  quem não leva aquilo. A peça fica em `HOLD_HEIGHT` da altura do corpo e `HOLD_FORWARD_M` à frente. A captura é
+  `CAPTURA_SO=cestos` no `tools/capture_phase4.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -961,7 +967,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
-| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante; depois cestos e sacos nos pedestres, varais e vasos |
+| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres; depois varais e vasos |
 
 Pendências já vistas para fases futuras:
 

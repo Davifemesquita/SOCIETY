@@ -2,7 +2,8 @@ extends Node
 ## Roteiro de verificação visual da Fase 4 (sem tela, roda no xvfb):
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 6000 res://tools/capture_phase4.tscn -- <pasta>
 ## Vila de demonstração com a economia andando: o céu e as janelas em seis horas do dia, a
-## multidão de perto, de longe e à noite, e as janelas com as luzes de área de perto.
+## multidão de perto, de longe e à noite, e as janelas com as luzes de área de perto. CAPTURA_SO=cestos tira só
+## quem anda com cesto e com saco, de perto (Fase 15).
 
 const MINUTES := 10
 ## Horas capturadas, com o nome do arquivo.
@@ -44,6 +45,20 @@ func _run() -> void:
 	for second: int in 90:
 		_game.pedestrian_view.crowd.update(1.0, GameClock.clock.hour())
 	print("pedestres: %d na multidão, %d à vista" % [_game.pedestrian_view.crowd.agent_count(), _game.pedestrian_view.crowd.visible_count()])
+	if OS.get_environment("CAPTURA_SO") == "cestos":
+		for load: int in [Crowd.Load.BASKET, Crowd.Load.SACK]:
+			var spot := _carrier_spot(load)
+			print("carga %d em %s" % [load, spot])
+			if spot.is_finite():
+				# de cima e um pouco de lado: de perto demais a câmera entra nos prédios da rua
+				rig.yaw = 0.6 if load == Crowd.Load.BASKET else 2.4
+				rig.target_yaw = rig.yaw
+				rig.focus = spot
+				rig.distance = 9.0
+				_game.camera.apply()
+				await _capture("11_cesto.png" if load == Crowd.Load.BASKET else "12_saco.png")
+		get_tree().quit()
+		return
 	# rua da produção vista do sul: os campos na frente são baixos e não tapam a calçada
 	rig.yaw = 0.0
 	rig.target_yaw = 0.0
@@ -86,3 +101,15 @@ func _walking_spot() -> Vector3:
 		if agent != null and agent.state == Crowd.State.WALKING:
 			return crowd.position_of(agent)
 	return Vector3(200, 0, 40)
+
+
+## Onde está o primeiro pedestre andando com a carga pedida (Crowd.Load), ou INF.
+func _carrier_spot(load: int) -> Vector3:
+	var crowd := _game.pedestrian_view.crowd
+	for second: int in 120:
+		for agent: Crowd.Agent in crowd.agents:
+			if agent != null and agent.state == Crowd.State.WALKING and agent.load == load \
+					and agent.clip == Crowd.CLIP_WALK_CARRY:
+				return crowd.position_of(agent)
+		crowd.update(1.0, GameClock.clock.hour())
+	return Vector3.INF

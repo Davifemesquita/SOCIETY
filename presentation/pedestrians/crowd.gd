@@ -25,6 +25,9 @@ const CLIP_WALK := 0
 const CLIP_WALK_CARRY := 1
 const CLIP_IDLE := 2
 const CLIP_TALK := 3
+## O que vai na mão de quem anda com a animação de carregar (Fase 15): cesto saindo do mercado, saco saindo
+## de fazenda.
+enum Load { NONE, BASKET, SACK }
 const BODIES := 2
 
 ## HOME e INSIDE ficam escondidos; INSIDE é a pausa na porta do trabalho ou de casa no meio da
@@ -51,6 +54,7 @@ class Agent:
 	var segment_start: float = 0.0
 	var walked: float = 0.0
 	var clip: int = CLIP_WALK
+	var load: Load = Load.NONE
 	var phase: float = 0.0
 	var spot := Vector3.ZERO
 	var facing := Vector3.FORWARD
@@ -466,7 +470,8 @@ func _start_leg(agent: Agent, leg: Leg, from_id: int, to_id: int, warm: bool) ->
 	agent.target_id = to_id
 	agent.segment = 0
 	agent.walked = 0.0
-	agent.clip = CLIP_WALK_CARRY if _carries_from(from_id) else CLIP_WALK
+	agent.load = _load_from(from_id)
+	agent.clip = CLIP_WALK_CARRY if agent.load != Load.NONE else CLIP_WALK
 	agent.phase = _rng.randf()
 	agent.segment_start = time
 	if warm:
@@ -483,13 +488,15 @@ func _start_leg(agent: Agent, leg: Leg, from_id: int, to_id: int, warm: bool) ->
 	return true
 
 
-## Sai de fazenda ou de mercado carregando cesto (seção 9).
-func _carries_from(building_id: int) -> bool:
+## Sai do mercado com cesto e de fazenda com saco (seção 9); de outro lugar, de mãos vazias.
+func _load_from(building_id: int) -> Load:
 	var record := _simulation.world.building(building_id)
 	if record == null:
-		return false
+		return Load.NONE
 	var def := _simulation.def_of(record)
-	return def.modules_required > 0 or def.id == &"market"
+	if def.id == &"market":
+		return Load.BASKET
+	return Load.SACK if def.modules_required > 0 else Load.NONE
 
 
 ## Comprimento do trecho no chão (o passo e o tempo contam a distância horizontal).
@@ -728,6 +735,11 @@ func instance_custom(agent: Agent) -> Color:
 	var stride := _strides[agent.body][agent.clip] if agent.clip < _strides[agent.body].size() else 0.0
 	var phase := fposmod(agent.phase + (agent.walked / stride if stride > 0.0 else 0.0), 1.0)
 	return Color(agent.segment_start, _segment_length(agent), _config.pedestrian_speed_m_s, agent.clip + minf(phase, 0.999))
+
+
+## Passo (m por ciclo) da animação do pedestre; 0 na animação parada.
+func stride_of(agent: Agent) -> float:
+	return _strides[agent.body][agent.clip] if agent.clip < _strides[agent.body].size() else 0.0
 
 
 ## Posição do pedestre agora (para testes e depuração): o shader faz a mesma conta.
