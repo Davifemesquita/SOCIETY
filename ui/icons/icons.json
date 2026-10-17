@@ -269,6 +269,10 @@
 			1664,
 			1792
 		],
+		"building_fountain_square": [
+			1920,
+			1792
+		],
 		"building_furnace": [
 			128,
 			512
@@ -938,19 +942,19 @@
 			1408
 		],
 		"status_bad": [
-			128,
-			1920
-		],
-		"status_good": [
-			1920,
-			1792
-		],
-		"status_missing": [
 			256,
 			1920
 		],
-		"status_partial": [
+		"status_good": [
 			0,
+			1920
+		],
+		"status_missing": [
+			384,
+			1920
+		],
+		"status_partial": [
+			128,
 			1920
 		],
 		"tier_artisans": [

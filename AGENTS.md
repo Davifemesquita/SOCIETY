@@ -965,6 +965,9 @@ Regras que já custaram investigação:
 - **Aba Decoração** no menu, antes da infraestrutura (que continua a última: as estradas entram nela). Com seis
   abas de texto a barra passava de 1920 px; as de produção levam só o nome da classe, e "Produção: <classe>" vai na
   dica. O painel da decoração diz quantas casas ela embeleza; o da casa mostra "Beleza" ao lado da felicidade.
+- **Praça com chafariz** (3×3, operários 100, 900 moedas e 6 tijolos, beleza 0,45 em 7 células): lajes de pedra em
+  tons, meio-fio, bacia octogonal com a coluna e a taça, dois bancos (o mesmo `_bench`, virado) e o jato, um
+  `CPUParticles3D` por praça que a `DecorationView` cria e tira junto com ela.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -992,7 +995,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
-| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco; depois praça com chafariz, estátua e coreto, camada Beleza |
+| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco, praça com chafariz; depois estátua e coreto, camada Beleza |
 
 Pendências já vistas para fases futuras:
 

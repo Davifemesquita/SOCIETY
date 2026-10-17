@@ -1,11 +1,20 @@
 class_name DecorationView
 extends Node3D
-## Decoração (Fase 16): árvore plantada, canteiro de flores e banco de praça, gerados aqui com a cor no
-## vértice, um MultiMesh por tipo, no meio da área do prédio e girados com ele. Decoração sem malha própria
-## fica numa caixa na cor do BuildingDef. Refeito quando prédio ou mundo muda. Só lê o mundo.
+## Decoração (Fase 16): árvore plantada, canteiro de flores, banco de praça e praça calçada com chafariz,
+## gerados aqui com a cor no vértice, um MultiMesh por tipo, no meio da área do prédio e girados com ele. O
+## jato do chafariz é um CPUParticles3D por praça. Decoração sem malha própria fica numa caixa na cor do
+## BuildingDef. Refeito quando prédio ou mundo muda. Só lê o mundo.
+
+## Chafariz: altura da bica (acima do chão da praça) e quantas gotas no ar.
+const SPOUT_HEIGHT_M := 2.1
+const JET_DROPS := 48
+const WATER := Color(0.45, 0.62, 0.72)
+const STONE := Color(0.62, 0.6, 0.56)
 
 var _simulation: Simulation
 var _layers: Dictionary[StringName, MultiMeshInstance3D] = {}
+## Jato de cada chafariz, pelo id da praça.
+var _jets: Dictionary[int, CPUParticles3D] = {}
 var _material := StandardMaterial3D.new()
 var _range_m: float = 260.0
 var _dirty: bool = false
@@ -26,6 +35,8 @@ func set_quality(preset: GraphicsPresetDef) -> void:
 	_range_m = _simulation.config.building_detail_range_m * preset.visibility_scale
 	for layer: MultiMeshInstance3D in _layers.values():
 		layer.visibility_range_end = _range_m
+	for jet: CPUParticles3D in _jets.values():
+		jet.visibility_range_end = _range_m
 
 
 ## Peças de decoração à vista de um tipo (ou de todos, com o id vazio).
@@ -52,6 +63,10 @@ static func houses_near(simulation: Simulation, record: BuildingRecord) -> Array
 	return result
 
 
+func jet_count() -> int:
+	return _jets.size()
+
+
 func _process(_delta: float) -> void:
 	if _dirty:
 		rebuild()
@@ -61,6 +76,7 @@ func rebuild() -> void:
 	_dirty = false
 	var places: Dictionary[StringName, Array] = {}
 	var world := _simulation.world
+	var fountains: Dictionary[int, Vector3] = {}
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := _simulation.def_of(record)
@@ -72,6 +88,17 @@ func rebuild() -> void:
 		var center := world.island(record.island_id).rect_world(area)
 		var list: Array = places[def.id]
 		list.append(Transform3D(Basis(Vector3.UP, -PI * 0.5 * posmod(record.rotation, 4)), center))
+		if def.id == &"fountain_square":
+			fountains[building_id] = center
+	for building_id: int in _jets.keys():
+		if not fountains.has(building_id):
+			_jets[building_id].queue_free()
+			_jets.erase(building_id)
+	for building_id: int in fountains:
+		if not _jets.has(building_id):
+			_jets[building_id] = _jet()
+			add_child(_jets[building_id])
+		_jets[building_id].position = fountains[building_id] + Vector3(0.0, SPOUT_HEIGHT_M, 0.0)
 	for id: StringName in places:
 		if not _layers.has(id):
 			_layers[id] = _layer(_simulation.data.building(id))
@@ -106,7 +133,9 @@ static func mesh_for(def: BuildingDef, cell_size: float) -> ArrayMesh:
 		&"flower_bed":
 			_flower_bed(tool, cell_size)
 		&"park_bench":
-			_bench(tool)
+			_bench(tool, Vector3.ZERO, false)
+		&"fountain_square":
+			_fountain_square(tool, def.size.x * cell_size)
 		_:
 			_box(tool, Vector3(0.0, def.height_m * 0.5, 0.0), Vector3(def.size.x * cell_size * 0.4, def.height_m * 0.5,
 					def.size.y * cell_size * 0.4), def.color)
@@ -142,17 +171,87 @@ static func _flower_bed(tool: SurfaceTool, cell_size: float) -> void:
 			CarriedGoods._lump(tool, Vector3(x, 0.36, z), Vector3(0.07, 0.05, 0.07), colors[(row + column) % colors.size()])
 
 
-## Banco de praça de ripas com pés de ferro, de frente para −Z (quem senta olha para a frente do prédio).
-static func _bench(tool: SurfaceTool) -> void:
+## Banco de praça de ripas com pés de ferro em at, de frente para −Z (quem senta olha para a frente do
+## prédio); flip vira para +Z.
+static func _bench(tool: SurfaceTool, at: Vector3, flip: bool) -> void:
 	var wood := Color(0.5, 0.36, 0.22)
 	var iron := Color(0.15, 0.15, 0.16)
+	var back := -1.0 if flip else 1.0
 	for x: float in [-0.65, 0.65]:
-		_box(tool, Vector3(x, 0.22, 0.0), Vector3(0.04, 0.22, 0.22), iron)
-		_box(tool, Vector3(x, 0.6, 0.2), Vector3(0.04, 0.2, 0.03), iron)
+		_box(tool, at + Vector3(x, 0.22, 0.0), Vector3(0.04, 0.22, 0.22), iron)
+		_box(tool, at + Vector3(x, 0.6, 0.2 * back), Vector3(0.04, 0.2, 0.03), iron)
 	for z: float in [-0.14, 0.0, 0.14]:
-		_box(tool, Vector3(0.0, 0.45, z), Vector3(0.75, 0.025, 0.055), wood)
+		_box(tool, at + Vector3(0.0, 0.45, z), Vector3(0.75, 0.025, 0.055), wood)
 	for y: float in [0.62, 0.76]:
-		_box(tool, Vector3(0.0, y, 0.22), Vector3(0.75, 0.05, 0.02), wood)
+		_box(tool, at + Vector3(0.0, y, 0.22 * back), Vector3(0.75, 0.05, 0.02), wood)
+
+
+## Praça calçada de side metros: lajes de pedra em tons, meio-fio em volta, chafariz de bacia octogonal com
+## a coluna e a taça de cima no meio, e dois bancos virados para ele.
+static func _fountain_square(tool: SurfaceTool, side: float) -> void:
+	var half := side * 0.5 - 0.05
+	var tile := 0.75
+	var count := int(half * 2.0 / tile)
+	for i: int in count:
+		for k: int in count:
+			var x := -half + (i + 0.5) * half * 2.0 / count
+			var z := -half + (k + 0.5) * half * 2.0 / count
+			var tone := 0.92 + fposmod((i * 7 + k * 13) * 0.618, 1.0) * 0.16
+			_box(tool, Vector3(x, 0.05, z), Vector3(half / count - 0.025, 0.05, half / count - 0.025), STONE * tone)
+	for edge: float in [-1.0, 1.0]:
+		_box(tool, Vector3(edge * half, 0.09, 0.0), Vector3(0.08, 0.09, half), STONE.darkened(0.15))
+		_box(tool, Vector3(0.0, 0.09, edge * half), Vector3(half, 0.09, 0.08), STONE.darkened(0.15))
+	# bacia: oito muretas em volta da água
+	var radius := 1.3
+	for i: int in 8:
+		var angle := TAU * i / 8.0
+		var wall := Vector3(cos(angle), 0.0, sin(angle)) * radius
+		_wall(tool, wall + Vector3(0.0, 0.3, 0.0), angle, Vector3(0.12, 0.2, radius * 0.42), STONE.lightened(0.05))
+	_box(tool, Vector3(0.0, 0.32, 0.0), Vector3(radius * 0.88, 0.02, radius * 0.88), WATER)
+	_box(tool, Vector3(0.0, 1.0, 0.0), Vector3(0.14, 0.7, 0.14), STONE)
+	CarriedGoods._lump(tool, Vector3(0.0, 1.75, 0.0), Vector3(0.5, 0.12, 0.5), STONE.lightened(0.08))
+	_box(tool, Vector3(0.0, 1.9, 0.0), Vector3(0.06, 0.2, 0.06), STONE.darkened(0.1))
+	_bench(tool, Vector3(0.0, 0.1, -half + 0.45), true)
+	_bench(tool, Vector3(0.0, 0.1, half - 0.45), false)
+
+
+## Mureta girada angle em torno de y (a meia-medida half no referencial dela, com x para fora).
+static func _wall(tool: SurfaceTool, center: Vector3, angle: float, half: Vector3, color: Color) -> void:
+	tool.set_color(color)
+	var basis := Basis(Vector3.UP, -angle)
+	var corners: Array[Vector3] = []
+	for i: int in 8:
+		corners.append(center + basis * Vector3(half.x if i & 1 else -half.x, half.y if i & 2 else -half.y,
+				half.z if i & 4 else -half.z))
+	_faces(tool, corners)
+
+
+## O jato do chafariz: gotas subindo da bica e caindo na bacia.
+func _jet() -> CPUParticles3D:
+	var jet := CPUParticles3D.new()
+	jet.name = "Jet"
+	jet.amount = JET_DROPS
+	jet.lifetime = 0.9
+	jet.direction = Vector3.UP
+	jet.spread = 28.0
+	jet.initial_velocity_min = 1.6
+	jet.initial_velocity_max = 2.2
+	jet.gravity = Vector3(0.0, -6.0, 0.0)
+	jet.scale_amount_min = 0.6
+	jet.scale_amount_max = 1.0
+	var drop := SphereMesh.new()
+	drop.radius = 0.035
+	drop.height = 0.07
+	drop.radial_segments = 6
+	drop.rings = 3
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(WATER.lightened(0.35), 0.8)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.roughness = 0.1
+	drop.material = material
+	jet.mesh = drop
+	jet.visibility_range_end = _range_m
+	return jet
 
 
 ## Caixa de meia-medida half em volta de center (as seis faces).
@@ -161,6 +260,11 @@ static func _box(tool: SurfaceTool, center: Vector3, half: Vector3, color: Color
 	var corners: Array[Vector3] = []
 	for i: int in 8:
 		corners.append(center + Vector3(half.x if i & 1 else -half.x, half.y if i & 2 else -half.y, half.z if i & 4 else -half.z))
+	_faces(tool, corners)
+
+
+## As seis faces de uma caixa pelos oito cantos (bit 0 = x, bit 1 = y, bit 2 = z).
+static func _faces(tool: SurfaceTool, corners: Array[Vector3]) -> void:
 	# cada face com os cantos em volta (anti-horário de fora); o Godot quer o horário, então a ordem vira
 	var faces := [[0, 2, 3, 1], [4, 5, 7, 6], [0, 1, 5, 4], [2, 6, 7, 3], [0, 4, 6, 2], [1, 3, 7, 5]]
 	for face: Array in faces:
