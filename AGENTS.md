@@ -1005,6 +1005,21 @@ Regras que já custaram investigação:
   calçada dos pedestres estica a esquina pela meia-esquadria (`SidewalkPath.offset_polyline`): na de 45° a soma dos
   dois deslocamentos dava o ponto errado. Captura: `CAPTURA_SO=diagonal` no `tools/capture_buildings.tscn`.
 
+### Detalhes de época (Fase 18, nossa)
+
+- **Proposta nossa** (17/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede e dá para gerar no código, sem asset novo. Só visual; o save fica na
+  versão 15. Partes com commit próprio.
+- **Campanário e portão** (`BuildingKit`): a igreja ganha `BuildingDef.Silhouette.BELFRY` (no fim do enum):
+  torre quadrada de `BELFRY_SIDE_M` no canto da frente à esquerda, saindo `BELFRY_OUT_M` das paredes, com
+  cornija no beiral e no alto do fuste, sineira aberta de quatro pilares, o sino de bronze (`_bell`, perfil de
+  `BELL_PROFILE` em `BELL_SEGMENTS` faces) pendurado numa trave e a agulha com a cruz de ferro; a cumeeira de
+  quatro águas da igreja baixou (`SPIRE_SLOPE` 0,55) para a torre ser o ponto mais alto. As fábricas de fumaça
+  pesada e as de lanternim ganham `Door.GATE`: o vão em arco com dois esteios, a verga e duas folhas de tábua
+  entreabertas a `GATE_OPEN` (aberta de todo, a folha passava da área e entrava na rua). Cores novas da paleta
+  do kit: `UV_TIMBER` (o madeiramento escuro), `UV_IRON` e `UV_BRONZE`. Captura: `CAPTURA_SO=epoca` no
+  `tools/capture_buildings.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1033,6 +1048,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
+| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas |
 
 Pendências já vistas para fases futuras:
 

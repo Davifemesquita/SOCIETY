@@ -241,3 +241,35 @@ func test_houses_get_the_trim_of_their_class() -> void:
 	assert_float(BuildingKit.mesh(engineers).get_aabb().position.z).is_less(balcony_front)
 	assert_int(_house(&"engineers").trim).is_equal(TierDef.HouseTrim.BALCONIES)
 	assert_int(_house(&"investors").trim).is_equal(TierDef.HouseTrim.PORTICO)
+
+
+func test_the_church_gets_a_belfry_with_a_bell_above_the_roof() -> void:
+	var church := _spec(&"church")
+	assert_int(church.silhouette).is_equal(BuildingDef.Silhouette.BELFRY)
+	var box := BuildingKit.mesh(church).get_aabb()
+	# a agulha (e a cruz em cima dela) é o ponto mais alto, acima da cumeeira da igreja
+	assert_float(box.end.y).is_greater_equal(BuildingKit.belfry_top(church))
+	assert_float(BuildingKit.belfry_top(church)).is_greater(church.height_m + church.roof_m + 3.0)
+	# a torre fica no canto da frente e sai só um pouco das paredes
+	var tower := BuildingKit.belfry_center(church)
+	var size := church.size_m()
+	assert_float(tower.x).is_less(-size.x * 0.25)
+	assert_float(tower.z).is_less(-size.y * 0.25)
+	assert_float(box.position.x).is_greater_equal(-size.x * 0.5 - BuildingKit.BELFRY_OUT_M - 0.3)
+	var plain := _spec(&"church")
+	plain.silhouette = BuildingDef.Silhouette.NONE
+	assert_int(BuildingKit.triangles(church)).is_greater(BuildingKit.triangles(plain) + BuildingKit.BELL_SEGMENTS * 6)
+
+
+func test_heavy_factories_get_a_wide_gate() -> void:
+	for def_id: StringName in [&"furnace", &"glassworks", &"brickworks", &"steel_beam_works", &"power_station"]:
+		var spec := _spec(def_id)
+		assert_int(spec.door).override_failure_message(String(def_id)).is_equal(BuildingKit.Door.GATE)
+		assert_str(String(BuildingKit.slot(spec, 0, spec.door_index, 0))).is_equal("arch")
+		var arch := _spec(def_id)
+		arch.door = BuildingKit.Door.ARCH
+		assert_int(BuildingKit.triangles(spec)).override_failure_message(String(def_id)).is_greater(BuildingKit.triangles(arch))
+		# as folhas abertas saem da frente
+		assert_float(BuildingKit.mesh(spec).get_aabb().position.z).is_less(-spec.size_m().y * 0.5 - 0.5)
+	# fumaça leve fica com a porta comum
+	assert_int(_spec(&"bakery").door).is_equal(BuildingKit.Door.DOOR)

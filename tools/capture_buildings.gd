@@ -8,7 +8,8 @@ extends Node
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13); plantacoes, uma fazenda de cada
 ## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14). Os pombos na rua saem
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
-## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17).
+## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17); epoca, o
+## campanário da igreja e o portão das fábricas pesadas (Fase 18).
 
 var _out_dir: String
 var _game: GameScreen
@@ -52,6 +53,10 @@ func _run() -> void:
 		return
 	if OS.get_environment("CAPTURA_SO") == "decoracao":
 		await _decorations()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "epoca":
+		await _period_details()
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "postes":
@@ -287,3 +292,13 @@ func _diagonals() -> void:
 	await _shot("37_diagonal.png", Vector3(80.0, 0.0, 92.0), 40.0, 0.3, 0.6)
 	await _shot("38_diagonal_de_perto.png", Vector3(72.0, 0.0, 96.0), 12.0, 0.6, 0.45)
 	await _shot("39_paralelepipedo_diagonal.png", Vector3(114.0, 0.0, 94.0), 12.0, 0.6, 0.45)
+
+
+## Fase 18: a igreja com o campanário e as fábricas pesadas com o portão, de frente (rotação 0, frente em −Z).
+func _period_details() -> void:
+	_place(&"church", Vector2i(40, 100), 0)
+	_place(&"furnace", Vector2i(50, 100), 0)
+	_place(&"glassworks", Vector2i(58, 100), 0)
+	await _shot("40_epoca_igreja.png", Vector3(85.0, 8.0, 205.0), 40.0, PI + 0.5, 0.25)
+	await _shot("41_epoca_sino.png", Vector3(81.5, 17.0, 201.5), 9.0, PI + 0.6, 0.15)
+	await _shot("42_epoca_portao.png", Vector3(106.0, 2.0, 200.0), 22.0, PI + 0.3, 0.3)

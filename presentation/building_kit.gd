@@ -26,7 +26,7 @@ const ROOF_THICKNESS_M := 0.18
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
 const ROOF_SLOPE := 0.28
-const SPIRE_SLOPE := 0.75
+const SPIRE_SLOPE := 0.55
 const FLAT_ROOF_M := 0.3
 ## Vidro aceso (WindowLightsView): onde fica a abertura da janela na peça, em fração da célula
 ## (largura) e do andar (centro e altura).
@@ -40,10 +40,15 @@ const WINDOW_GAP_M := 0.06
 const UV_WALL := Vector2(1.25 / 8.0, 2.5 / 4.0)
 const UV_ROOF := Vector2(0.25 / 8.0, 3.5 / 4.0)
 const UV_STONE := Vector2(7.5 / 8.0, 3.5 / 4.0)
+## Fase 18: madeiramento (o shader escurece), ferro (cinza-chumbo da paleta) e bronze (o marrom-cobre).
+const UV_TIMBER := Vector2(4.5 / 8.0, 3.5 / 4.0)
+const UV_IRON := Vector2(6.5 / 8.0, 3.5 / 4.0)
+const UV_BRONZE := Vector2(4.5 / 8.0, 2.5 / 4.0)
 
 enum Walls { PLASTER, WOOD }
 enum Roof { GABLE_X, GABLE_Z, HIP, FLAT }
-enum Door { NONE, DOOR, ARCH }
+## GATE (Fase 18): o vão em arco com portão largo de duas folhas abertas, nas fábricas pesadas.
+enum Door { NONE, DOOR, ARCH, GATE }
 
 ## Peças: parede lisa, janelas e portas de cada estilo.
 const PIECES := {
@@ -92,6 +97,20 @@ const BEAM_M := 0.35
 const WINDMILL_SPEED := 0.7
 const WATERWHEEL_SPEED := 0.5
 const SHEAVE_SPEED := 1.6
+## Campanário da igreja (Fase 18): torre quadrada no canto da frente, saindo um pouco das paredes, que
+## passa do beiral, sineira aberta com o sino e a agulha com a cruz.
+const BELFRY_SIDE_M := 2.4
+const BELFRY_OUT_M := 0.2
+const BELFRY_SHAFT_M := 3.0
+const BELFRY_OPEN_M := 2.3
+const BELFRY_SPIRE_M := 5.5
+const BELL_HEIGHT_M := 0.95
+const BELL_RADIUS_M := 0.6
+## Portão da fábrica (Fase 18): largura em células, altura em fração do andar e quanto as folhas abrem
+## (entreaberto: aberto de todo, a folha passava da área e entrava na rua).
+const GATE_CELLS := 1.5
+const GATE_HEIGHT := 0.82
+const GATE_OPEN := deg_to_rad(40.0)
 
 
 ## A forma de um prédio: tudo que muda a malha (e nada que só muda a cor).
@@ -202,6 +221,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.window_style = 2
 	elif def.kind == BuildingDef.Kind.PRODUCTION and def.smoke != BuildingDef.Smoke.NONE:
 		spec.sparse_windows = true
+		if def.smoke == BuildingDef.Smoke.HEAVY or def.silhouette == BuildingDef.Silhouette.CLERESTORY:
+			spec.door = Door.GATE
 	if def.height_m < 3.0 or def.deposit != &"" or def.id in [&"clay_pit", &"sand_pit"]:
 		spec.roof = Roof.FLAT
 		spec.roof_m = FLAT_ROOF_M
@@ -238,7 +259,7 @@ static func cached_meshes() -> int:
 ## faces: 0 = frente (−Z), 1 = +X, 2 = fundo (+Z), 3 = −X; índice crescendo em x ou z.
 static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
 	if face == 0 and level == 0 and index == spec.door_index and spec.door != Door.NONE:
-		return &"arch" if spec.door == Door.ARCH else &"door"
+		return &"arch" if spec.door in [Door.ARCH, Door.GATE] else &"door"
 	if spec.silhouette == BuildingDef.Silhouette.BANNERS and face == 0 and level == 1 and index == spec.door_index:
 		return &"plain"
 	if spec.sparse_windows and (index + level + face) % 2 == 1:
@@ -378,6 +399,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_roof(extra, spec)
 	_silhouette(tool, extra, spec)
 	_trim(tool, spec)
+	if spec.door == Door.GATE:
+		_gate(tool, extra, hall, offset)
 	extra.index()
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
@@ -446,6 +469,109 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 				# a bandeira fica sobre a parede lisa em cima da porta, um pouco à frente dela
 				var place := Transform3D(Basis.IDENTITY, spec.hall_offset()) * _cell_transform(hall, 0, hall.door_index, 1)
 				_append_piece(tool, BANNER, place * Transform3D(Basis.IDENTITY, Vector3(0.11, 0.0, 0.0)))
+		BuildingDef.Silhouette.BELFRY:
+			_belfry(extra, spec)
+
+
+## Campanário (Fase 18) no canto da frente à esquerda: o fuste de parede até BELFRY_SHAFT_M acima do
+## beiral, a sineira (quatro pilares, laje de pedra embaixo e em cima) com o sino pendurado na trave, e
+## a agulha de quatro águas com a cruz de ferro.
+static func belfry_center(spec: Spec) -> Vector3:
+	var size := spec.size_m()
+	var half := BELFRY_SIDE_M * 0.5
+	return Vector3(-size.x * 0.5 + half - BELFRY_OUT_M, 0.0, -size.y * 0.5 + half - BELFRY_OUT_M)
+
+
+static func belfry_top(spec: Spec) -> float:
+	return spec.height_m + BELFRY_SHAFT_M + BELFRY_OPEN_M + 0.3 + BELFRY_SPIRE_M
+
+
+static func _belfry(tool: SurfaceTool, spec: Spec) -> void:
+	var center := belfry_center(spec)
+	var side := BELFRY_SIDE_M
+	var shaft := spec.height_m + BELFRY_SHAFT_M
+	_box(tool, center + Vector3(0.0, shaft * 0.5 - FOUNDATION_DOWN_M * 0.5, 0.0),
+			Vector3(side, shaft + FOUNDATION_DOWN_M, side), UV_WALL)
+	# cornija no alto do fuste e no beiral da igreja
+	for height: float in [spec.height_m - 0.1, shaft - 0.15]:
+		_box(tool, center + Vector3(0.0, height, 0.0), Vector3(side + 0.24, 0.3, side + 0.24), UV_STONE)
+	var pier := 0.42
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		var at := center + Vector3(corner.x, 0.0, corner.y) * (side - pier) * 0.5
+		_box(tool, at + Vector3(0.0, shaft + BELFRY_OPEN_M * 0.5, 0.0), Vector3(pier, BELFRY_OPEN_M, pier), UV_WALL)
+	var cap := shaft + BELFRY_OPEN_M
+	_box(tool, center + Vector3(0.0, cap + 0.15, 0.0), Vector3(side + 0.3, 0.3, side + 0.3), UV_STONE)
+	# trave de madeira de um lado ao outro e o sino pendurado nela
+	var yoke := cap - 0.25
+	_box(tool, center + Vector3(0.0, yoke, 0.0), Vector3(side - pier, 0.16, 0.2), UV_TIMBER)
+	_bell(tool, center + Vector3(0.0, yoke - 0.1 - BELL_HEIGHT_M, 0.0))
+	# agulha
+	var base := cap + 0.3
+	var half := side * 0.5 + 0.1
+	var tip := center + Vector3(0.0, base + BELFRY_SPIRE_M, 0.0)
+	var ring: Array[Vector3] = []
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		ring.append(center + Vector3(corner.x * half, base, corner.y * half))
+	for i: int in 4:
+		var a := ring[i]
+		var b := ring[(i + 1) % 4]
+		var middle := (a + b) * 0.5 - center
+		_triangle(tool, a, b, tip, Vector3(middle.x, 0.5, middle.z), UV_ROOF)
+	_box(tool, tip + Vector3(0.0, 0.55, 0.0), Vector3(0.08, 1.1, 0.08), UV_IRON)
+	_box(tool, tip + Vector3(0.0, 0.75, 0.0), Vector3(0.55, 0.08, 0.08), UV_IRON)
+
+
+## Sino de bronze: tronco de cone de BELL_SEGMENTS faces que se abre na boca, com a coroa em cima; a
+## boca fica em "mouth".
+const BELL_SEGMENTS := 12
+const BELL_PROFILE: Array[Vector2] = [Vector2(0.38, 1.0), Vector2(0.55, 0.62), Vector2(0.72, 0.22), Vector2(1.0, 0.0)]
+
+
+static func _bell(tool: SurfaceTool, mouth: Vector3) -> void:
+	for k: int in BELL_PROFILE.size() - 1:
+		var upper := BELL_PROFILE[k]
+		var lower := BELL_PROFILE[k + 1]
+		for i: int in BELL_SEGMENTS:
+			var a0 := TAU * i / BELL_SEGMENTS
+			var a1 := TAU * (i + 1) / BELL_SEGMENTS
+			var d0 := Vector3(cos(a0), 0.0, sin(a0))
+			var d1 := Vector3(cos(a1), 0.0, sin(a1))
+			var y_up := Vector3.UP * upper.y * BELL_HEIGHT_M
+			var y_low := Vector3.UP * lower.y * BELL_HEIGHT_M
+			_quad(tool, mouth + d0 * lower.x * BELL_RADIUS_M + y_low, mouth + d1 * lower.x * BELL_RADIUS_M + y_low,
+					mouth + d1 * upper.x * BELL_RADIUS_M + y_up, mouth + d0 * upper.x * BELL_RADIUS_M + y_up,
+					(d0 + d1) * 0.5 + Vector3.UP * 0.3, UV_BRONZE)
+	var crown := BELL_PROFILE[0].x * BELL_RADIUS_M
+	_box(tool, mouth + Vector3(0.0, BELL_HEIGHT_M + 0.02, 0.0), Vector3(crown * 1.6, 0.06, crown * 1.6), UV_BRONZE)
+
+
+## Portão largo (Fase 18) diante do vão em arco da fábrica: dois esteios e a verga de madeira, e as duas
+## folhas de tábua abertas para fora, presas nos esteios.
+static func _gate(tool: SurfaceTool, extra: SurfaceTool, hall: Spec, offset: Transform3D) -> void:
+	var door := offset * _wall_point(hall, 0, hall.door_index, 0)
+	var width := hall.size_m().x / hall.cells.x * GATE_CELLS
+	var height := hall.floor_m() * GATE_HEIGHT
+	var out := _face_normal(0) * 0.12
+	for side: float in [-1.0, 1.0]:
+		var post := door + out + Vector3(side * width * 0.5, 0.0, 0.0)
+		_beam(tool, post, post + Vector3(0.0, height + 0.25, 0.0), 0.24)
+		# a folha sai do esteio para o meio do vão e gira para fora
+		var swing := Basis(Vector3.UP, -side * GATE_OPEN)
+		var leaf := width * 0.5 - 0.1
+		var along := swing * Vector3(-side, 0.0, 0.0)
+		_box_at(extra, Transform3D(Basis.looking_at(along.cross(Vector3.UP), Vector3.UP),
+				post + along * (leaf * 0.5 + 0.1) + Vector3(0.0, height * 0.5, 0.0)),
+				Vector3(leaf, height, 0.08), UV_TIMBER)
+	_beam(tool, door + out + Vector3(-width * 0.5 - 0.2, height + 0.2, 0.0),
+			door + out + Vector3(width * 0.5 + 0.2, height + 0.2, 0.0), 0.26)
+
+
+## Caixa girada: a caixa do _box no referencial "place" (x, y e z da base são largura, altura e fundo).
+static func _box_at(tool: SurfaceTool, place: Transform3D, size: Vector3, uv: Vector2) -> void:
+	var local := SurfaceTool.new()
+	local.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_box(local, Vector3.ZERO, size, uv)
+	tool.append_from(local.commit(), 0, place)
 
 
 ## O detalhe da casa pela classe (Fase 13). As peças do kit têm a face de fora em x = 0,5, como as

@@ -16,3 +16,4 @@ upkeep_per_min = 60
 unlock_tier = &"workers"
 unlock_residents = 150
 wall_material = 3
+silhouette = 8
