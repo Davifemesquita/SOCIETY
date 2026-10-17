@@ -47,7 +47,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://too
 # Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite);
 # CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14); porto, o entreposto com o píer (Fase 15)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
-# Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas
+# Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas;
+# CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase6.tscn -- /pasta/de/saida
 # Fase 7: menu principal, jogo novo, partida de 30 min, painéis, estatísticas, camadas, menus,
 # opções, salvar, créditos, inglês, rotas com o mapa ilustrado e comércio
@@ -202,7 +203,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/cargo_kit.gd`, `stockpile_view.gd` | peças de carga (saco, barril, caixote, toras, monte) e as pilhas de estoque diante dos prédios (Fase 13) |
 | `presentation/crop_view.gd` | plantações nos campos, crescendo com o ciclo da fazenda (Fase 14) |
 | `presentation/bird_view.gd` | pombos nas ruas e estorninhos sobre os campos (Fase 14) |
-| `presentation/harbor_view.gd` | trapiche dos píeres (Fase 15) |
+| `presentation/harbor_view.gd`, `trader_post_model.gd` | trapiche dos píeres, cais do entreposto e feitoria do comerciante (Fase 15) |
 | `presentation/animal_view.gd`, `shaders/animal_vat.gdshader`, `tools/bake_animals.gd` | ovelhas e porcos nos pastos, cães nas portas e o cavalo da carroça, em VAT (Fase 13) |
 | `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
@@ -930,6 +931,10 @@ Regras que já custaram investigação:
   (`boat_mesh`, casco aberto gerado no código) amarrados de comprido; cada píer ganha um barco ao lado da
   passarela. O barco só fica onde boia (`afloat`: célula de mar **e** fundo abaixo da quilha; a praia é célula de
   mar e fica acima da água), andando para fora até `BOAT_SEARCH_M`; sem isso, nenhum barco.
+- **Feitoria do comerciante** (`TraderPostModel`, no lugar das caixas da `ShipView._build_post`): plataforma de
+  tábuas sobre estacas que entram na água, galpão de tábuas com telhado de duas águas (`PrismMesh`) e porta larga,
+  guindaste de vigas para o mar com um caixote pendurado, carga do `CargoKit`, dois barcos a remo e o mastro com a
+  bandeira. A captura é `CAPTURA_SO=posto` no `tools/capture_phase6.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -956,7 +961,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
-| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga; depois feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos |
+| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante; depois cestos e sacos nos pedestres, varais e vasos |
 
 Pendências já vistas para fases futuras:
 

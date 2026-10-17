@@ -19,8 +19,6 @@ const HULL_HEIGHT_M := 1.6
 const MODEL_DIR := "res://assets/models/ships/%s.glb"
 const MODEL_YAW := PI * 0.5
 const MODEL_DRAFT := 0.6
-const POST_COLOR := Color(0.42, 0.32, 0.22)
-const FLAG_COLOR := Color(0.72, 0.22, 0.18)
 const SELECTION_COLOR := Color(1.0, 0.85, 0.3)
 const WAKE_PARTICLES := 40
 ## Gaivotas: quantas por porto, o raio e a altura do voo em volta dele.
@@ -584,52 +582,9 @@ func _build_wake(length: float, beam: float) -> GPUParticles3D:
 	return wake
 
 
-## Plataforma de madeira sobre estacas, com o mastro da bandeira do comerciante.
+## Posto do comerciante: a feitoria do TraderPostModel (Fase 15; antes, plataforma e casinha em caixas).
 func _build_post() -> Node3D:
-	var root := Node3D.new()
-	root.name = "TraderPost"
-	var deck := MeshInstance3D.new()
-	var deck_mesh := BoxMesh.new()
-	deck_mesh.size = Vector3(14.0, 1.0, 10.0)
-	deck_mesh.material = _material(POST_COLOR)
-	deck.mesh = deck_mesh
-	deck.position = Vector3(0.0, 1.6, 0.0)
-	root.add_child(deck)
-	for corner: Vector2 in [Vector2(-6, -4), Vector2(6, -4), Vector2(-6, 4), Vector2(6, 4)]:
-		var pile := MeshInstance3D.new()
-		var pile_mesh := CylinderMesh.new()
-		pile_mesh.top_radius = 0.35
-		pile_mesh.bottom_radius = 0.35
-		pile_mesh.height = 6.0
-		pile_mesh.material = _material(POST_COLOR.darkened(0.3))
-		pile.mesh = pile_mesh
-		pile.position = Vector3(corner.x, -1.0, corner.y)
-		root.add_child(pile)
-	var hut := MeshInstance3D.new()
-	var hut_mesh := BoxMesh.new()
-	hut_mesh.size = Vector3(6.0, 4.0, 5.0)
-	hut_mesh.material = _material(POST_COLOR.lightened(0.2))
-	hut.mesh = hut_mesh
-	hut.position = Vector3(-2.5, 4.1, 0.0)
-	root.add_child(hut)
-	var pole := MeshInstance3D.new()
-	var pole_mesh := CylinderMesh.new()
-	pole_mesh.top_radius = 0.1
-	pole_mesh.bottom_radius = 0.12
-	pole_mesh.height = 9.0
-	pole_mesh.material = _material(POST_COLOR.darkened(0.4))
-	pole.mesh = pole_mesh
-	pole.position = Vector3(4.0, 6.6, 0.0)
-	root.add_child(pole)
-	var flag := MeshInstance3D.new()
-	var flag_mesh := BoxMesh.new()
-	flag_mesh.size = Vector3(2.6, 1.6, 0.08)
-	flag_mesh.material = _material(FLAG_COLOR)
-	flag.mesh = flag_mesh
-	flag.position = Vector3(5.3, 10.2, 0.0)
-	root.add_child(flag)
-	return root
-
+	return TraderPostModel.build()
 
 func _material(color: Color, unshaded: bool = false) -> StandardMaterial3D:
 	if not _materials.has(color):

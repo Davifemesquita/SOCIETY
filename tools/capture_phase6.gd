@@ -3,7 +3,7 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase6.tscn -- <pasta>
 ## Arquipélago da semente 1840 com a rota de tijolos (TradeDemo): o navio inicial no mar, o navio
 ## da rota no cais da colônia, navegando entre as ilhas, o posto do comerciante, o painel do navio
-## e a janela de rotas com o mapa.
+## e a janela de rotas com o mapa. CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15).
 
 const SEED := 1840
 
@@ -28,6 +28,12 @@ func _ready() -> void:
 func _run() -> void:
 	_sim = _game.simulation
 	_set_hour(10.0)
+	if OS.get_environment("CAPTURA_SO") == "posto":
+		var spot := _sim.harbors().trader_post
+		await _shot("04a_feitoria.png", spot, 45.0, 0.8)
+		await _shot("04b_feitoria_de_perto.png", spot, 24.0, 2.6)
+		get_tree().quit()
+		return
 	var start := _sim.world.player_ships()[0]
 	await _shot("01_navio_inicial.png", start.position, 70.0, 0.5)
 	var ids := TradeDemo.build(_sim)
