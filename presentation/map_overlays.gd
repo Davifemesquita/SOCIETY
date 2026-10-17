@@ -1,18 +1,20 @@
 class_name MapOverlays
 extends RefCounted
 ## Camadas de mapa do jogador (seções 7 e 10): raio dos serviços, alcance dos armazéns,
-## fertilidade, poluição, rede de estradas e eletricidade (Fase 11), como imagens por célula para o DebugOverlay. Só lê o
+## fertilidade, poluição, rede de estradas, eletricidade (Fase 11) e beleza (Fase 16), como imagens por célula para o DebugOverlay. Só lê o
 ## estado da simulação. As camadas F1/F2 de depuração continuam no DebugOverlay.
 
-enum Layer { NONE, SERVICE, WAREHOUSE, FERTILITY, POLLUTION, ROADS, ELECTRICITY }
+enum Layer { NONE, SERVICE, WAREHOUSE, FERTILITY, POLLUTION, ROADS, ELECTRICITY, BEAUTY }
 
 const ICONS: Dictionary[Layer, String] = {
 	Layer.SERVICE: "overlay_service", Layer.WAREHOUSE: "overlay_warehouse", Layer.FERTILITY: "overlay_fertility",
 	Layer.POLLUTION: "overlay_pollution", Layer.ROADS: "overlay_roads", Layer.ELECTRICITY: "overlay_electricity",
+	Layer.BEAUTY: "overlay_beauty",
 }
 const KEYS: Dictionary[Layer, String] = {
 	Layer.SERVICE: "OVERLAY_SERVICE", Layer.WAREHOUSE: "OVERLAY_WAREHOUSE", Layer.FERTILITY: "OVERLAY_FERTILITY",
 	Layer.POLLUTION: "OVERLAY_POLLUTION", Layer.ROADS: "OVERLAY_ROADS", Layer.ELECTRICITY: "OVERLAY_ELECTRICITY",
+	Layer.BEAUTY: "OVERLAY_BEAUTY",
 }
 
 const REACHED := Color(0.35, 0.75, 1.0, 0.5)
@@ -24,6 +26,7 @@ const SERVED := Color(0.3, 0.9, 0.4, 0.6)
 const UNSERVED := Color(1.0, 0.35, 0.25, 0.6)
 const POWER_ON := Color(1.0, 0.85, 0.25, 0.3)
 const POWER_OFF := Color(0.6, 0.6, 0.6, 0.25)
+const BEAUTIFUL := Color(0.95, 0.45, 0.7)
 
 
 static func image(layer: Layer, simulation: Simulation, island_id: int) -> Image:
@@ -43,6 +46,8 @@ static func image(layer: Layer, simulation: Simulation, island_id: int) -> Image
 			return roads(grid)
 		Layer.ELECTRICITY:
 			return electricity(simulation, island_id)
+		Layer.BEAUTY:
+			return beauty(simulation, island_id)
 	return null
 
 
@@ -153,6 +158,32 @@ static func pollution(simulation: Simulation, island_id: int) -> Image:
 	for i: int in strength.size():
 		if strength[i] > 0.0:
 			image.set_pixelv(grid.cell_at(i), Color(POLLUTED, 0.15 + 0.55 * strength[i]))
+	return image
+
+
+## Beleza das decorações por célula (Fase 16), como a poluição: quanto mais forte o rosa, mais felicidade ela
+## dá à casa que estiver ali.
+static func beauty(simulation: Simulation, island_id: int) -> Image:
+	var world := simulation.world
+	var grid := world.island(island_id)
+	var strength := PackedFloat32Array()
+	strength.resize(grid.occupancy.size())
+	for record: BuildingRecord in world.buildings.values():
+		var def := simulation.def_of(record)
+		if record.island_id != island_id or def.beauty <= 0.0 or def.beauty_radius_cells <= 0:
+			continue
+		var area := Footprint.rect(record.origin, def.size, record.rotation)
+		var reach := area.grow(def.beauty_radius_cells).intersection(Rect2i(Vector2i.ZERO, grid.size))
+		for y: int in range(reach.position.y, reach.end.y):
+			for x: int in range(reach.position.x, reach.end.x):
+				var gap := DerivedState._rect_gap(area, Rect2i(x, y, 1, 1))
+				var falloff := 1.0 - float(gap) / float(def.beauty_radius_cells + 1)
+				var i := y * grid.size.x + x
+				strength[i] = minf(1.0, strength[i] + def.beauty * falloff)
+	var image := _blank(grid)
+	for i: int in strength.size():
+		if strength[i] > 0.0:
+			image.set_pixelv(grid.cell_at(i), Color(BEAUTIFUL, 0.12 + 0.5 * strength[i]))
 	return image
 
 

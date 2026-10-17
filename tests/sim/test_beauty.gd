@@ -57,3 +57,13 @@ func test_every_decoration_is_cheap_harmless_and_in_its_own_menu_tab() -> void:
 		assert_int(def.beauty_radius_cells).override_failure_message(String(def.id)).is_greater(0)
 		assert_float(def.fire_risk).override_failure_message(String(def.id)).is_equal(0.0)
 		assert_int(def.workers).is_equal(0)
+
+
+func test_the_beauty_layer_paints_around_decorations() -> void:
+	SimFixture.place(_sim, &"statue", Vector2i(30, 20), 0)
+	var image := MapOverlays.image(MapOverlays.Layer.BEAUTY, _sim, SimFixture.ISLAND)
+	var def := _sim.data.building(&"statue")
+	# a estátua, a borda do raio e fora dele
+	assert_float(image.get_pixel(30, 20).a).is_greater(0.2)
+	assert_float(image.get_pixel(30 - def.beauty_radius_cells, 20).a).is_greater(0.0)
+	assert_float(image.get_pixel(30 - def.beauty_radius_cells - 1, 20).a).is_equal(0.0)

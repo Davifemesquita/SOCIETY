@@ -46,3 +46,12 @@ corrige faltas pondo o produtor na frente da fila e pausa fábrica com o estoque
     manutenção não entra fábrica nova, só casa.
 - Sem os freios, o robô ampliado erguia cinco saboarias em dois minutos e afundava a −50 mil: o ritmo
   de construção, não os números, decide se o meio da partida aperta.
+
+## Beleza (Fase 16)
+
+A beleza vai de 0 a 1 por casa e soma até `happiness_per_beauty` (12) de felicidade; o imposto anda de 0,5× a 1,5× com
+a felicidade, então beleza cheia vale +12% do imposto da casa. Um quarteirão de dez casas de camponeses (6 moedas/min
+cada) cercado de árvores plantadas até a beleza 1 custa umas 240 moedas e devolve ~7 moedas/min: paga-se em ~35 min.
+Nos artesãos (2,4/morador) o retorno é quatro vezes mais rápido, mas a estátua e o coreto custam caro e pedem tijolo e
+viga. É um ganho de capricho, abaixo do luxo (25 de felicidade). O jogador-robô não constrói decoração: a linha do
+tempo do balanceamento não muda.

@@ -546,8 +546,8 @@ func center_on_selected() -> void:
 	camera.rig.center_on(Vector3(center.x, 0.0, center.z))
 
 
-## Destaque no chão: o alcance do serviço (o que vai ser construído ou o selecionado) e a
-## área de campos e pastos da fazenda.
+## Destaque no chão: o alcance do serviço (o que vai ser construído ou o selecionado), a
+## área de campos e pastos da fazenda e o raio de beleza da decoração (Fase 16).
 func update_highlight() -> void:
 	var world := simulation.world
 	var island := tool.island_id
@@ -566,6 +566,10 @@ func update_highlight() -> void:
 			return
 		if def.modules_required > 0:
 			overlay.show_custom(Highlight.area(grid, tool.building_rect().grow(def.module_radius_cells)))
+			return
+		# decoração (Fase 16): o raio da beleza
+		if def.is_decoration():
+			overlay.show_custom(Highlight.area(grid, tool.building_rect().grow(def.beauty_radius_cells)))
 			return
 		# terreno pedido pelo prédio: jazida, floresta, litoral ou rio
 		var key := "%d/%s" % [island, def.id]
@@ -589,6 +593,9 @@ func update_highlight() -> void:
 			return
 		if def.modules_required > 0:
 			overlay.show_custom(Highlight.area(grid, Footprint.rect(selected.origin, def.size, selected.rotation).grow(def.module_radius_cells)))
+			return
+		if def.is_decoration():
+			overlay.show_custom(Highlight.area(grid, Footprint.rect(selected.origin, def.size, selected.rotation).grow(def.beauty_radius_cells)))
 			return
 		if def.is_warehouse():
 			var cells: PackedInt32Array = derived.warehouse_cells.get(selected.id, PackedInt32Array())

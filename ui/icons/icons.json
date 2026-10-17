@@ -837,6 +837,10 @@
 			512,
 			1280
 		],
+		"overlay_beauty": [
+			256,
+			1920
+		],
 		"overlay_electricity": [
 			512,
 			1664
@@ -950,19 +954,19 @@
 			1408
 		],
 		"status_bad": [
-			512,
-			1920
-		],
-		"status_good": [
-			256,
-			1920
-		],
-		"status_missing": [
 			640,
 			1920
 		],
-		"status_partial": [
+		"status_good": [
 			384,
+			1920
+		],
+		"status_missing": [
+			768,
+			1920
+		],
+		"status_partial": [
+			512,
 			1920
 		],
 		"tier_artisans": [

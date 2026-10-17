@@ -972,6 +972,9 @@ Regras que já custaram investigação:
   genérica de bronze com azinhavre sobre pedestal de degraus num canteiro de grama; coreto de piso octogonal
   elevado, oito colunas de ferro, guarda-corpo aberto na escada da frente e telhado de oito águas. Leque de
   triângulos (piso e telhado) segue a ordem da `CarriedGoods._lump`, que é a que o Godot desenha por fora.
+- **Camada Beleza** (`MapOverlays.Layer.BEAUTY`, no fim do enum): a beleza por célula em rosa, como a poluição; ao
+  escolher ou selecionar uma decoração, o chão destaca o raio dela. Balanceamento em `docs/balanceamento.md`
+  (beleza cheia = +12 de felicidade = +12% do imposto da casa; o robô não constrói decoração).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -999,7 +1002,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
-| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco, praça com chafariz, estátua e coreto; depois camada Beleza e balanceamento |
+| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco, praça com chafariz, estátua e coreto, camada Beleza e balanceamento conferido |
 
 Pendências já vistas para fases futuras:
 

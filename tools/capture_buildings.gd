@@ -263,3 +263,5 @@ func _decorations() -> void:
 	await _shot("33_decoracao_de_perto.png", Vector3(62.0, 0.0, 95.0), 10.0, PI + 0.5, 0.35)
 	await _shot("34_chafariz.png", Vector3(62.0, 0.0, 86.0), 14.0, PI + 0.4, 0.4)
 	await _shot("35_estatua_e_coreto.png", Vector3(80.0, 0.0, 87.0), 16.0, PI + 0.4, 0.4)
+	_game.hud.set_overlay(MapOverlays.Layer.BEAUTY)
+	await _shot("36_camada_beleza.png", Vector3(70.0, 0.0, 92.0), 60.0, PI + 0.3, 0.7)
