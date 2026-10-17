@@ -3,7 +3,8 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- <pasta>
 ## Arquipélago da semente 1840: visto de cima, a ilha principal, o litoral com a água, a floresta,
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
-## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14).
+## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
+## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15).
 
 const SEED := 1840
 
@@ -30,6 +31,10 @@ func _run() -> void:
 	var grid := _sim.world.island(0)
 	var rig := _game.camera.rig
 	_set_hour(11.0)
+	if OS.get_environment("CAPTURA_SO") == "porto":
+		await _harbor(grid)
+		get_tree().quit()
+		return
 	if OS.get_environment("CAPTURA_SO") == "ponte":
 		await _bridge(grid)
 		get_tree().quit()
@@ -104,6 +109,39 @@ func _build_village(post_origin: Vector2i, post_rotation: int) -> void:
 		_sim.execute(PlaceBuildingCommand.new(0, &"furnace", furnace_origin, furnace_rotation))
 		var center := grid.rect_world(Footprint.rect(furnace_origin, _sim.data.building(&"furnace").size, furnace_rotation))
 		print("fundição em %s; poluição da água ali: %.2f" % [furnace_origin, _game.water_view.pollution_at(center.x, center.z)])
+
+
+## Entreposto, rua e um píer ao lado ligado à rua (Fase 15).
+func _harbor(grid: IslandGrid) -> void:
+	var post := SiteFinder.find(_sim, &"trading_post", 0, Vector2i(grid.size.x / 2, 0))
+	var post_origin: Vector2i = post[0]
+	var post_rotation: int = post[1]
+	_build_village(post_origin, post_rotation)
+	var front := Footprint.front_direction(post_rotation)
+	var side := Vector2i(front.y, -front.x)
+	var pier_site := SiteFinder.find(_sim, &"pier", 0, post_origin + side * 14)
+	var pier_origin: Vector2i = pier_site[0]
+	var pier_rotation: int = pier_site[1]
+	var placed := _sim.execute(PlaceBuildingCommand.new(0, &"pier", pier_origin, pier_rotation))
+	var pier_def := _sim.data.building(&"pier")
+	var entrance := Footprint.entrance_cell(pier_origin, pier_def.size, pier_rotation)
+	var street_cell := Footprint.entrance_cell(post_origin, _sim.data.building(&"trading_post").size, post_rotation) + front * 2
+	var road := _sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(entrance, street_cell)))
+	if not road.ok():
+		road = _sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(street_cell, entrance)))
+	print("píer em %s (giro %d): %s; estrada: %s" % [pier_origin, pier_rotation, placed.ok(), road.ok()])
+	_sim.run_ticks(5)
+	_game.harbor_view.rebuild()
+	print("tábuas ", _game.harbor_view.board_count(), " estacas ", _game.harbor_view.pile_count(),
+			" cabeços ", _game.harbor_view.bollard_count())
+	var plan := HarborView.walkway(_sim, _sim.world.building(placed.placed[0]))
+	var start: Vector3 = plan["start"]
+	var direction: Vector3 = plan["direction"]
+	var length: float = plan["length"]
+	print("passarela de %.1f m para %s" % [length, direction])
+	var focus := start + direction * length * 0.5
+	await _shot("12_porto.png", focus, 45.0, atan2(direction.x, direction.z) + 0.6)
+	await _shot("13_trapiche.png", focus, 18.0, atan2(direction.x, direction.z) + PI * 0.5)
 
 
 ## Estrada de terra atravessando o rio na primeira célula de rio do meio para fora (Fase 14).

@@ -45,7 +45,7 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://too
 # Fase 4: céu em seis horas do dia, multidão de perto e de longe, janelas à noite
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
 # Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite);
-# CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14)
+# CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14); porto, o entreposto com o píer (Fase 15)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase6.tscn -- /pasta/de/saida
@@ -202,6 +202,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/cargo_kit.gd`, `stockpile_view.gd` | peças de carga (saco, barril, caixote, toras, monte) e as pilhas de estoque diante dos prédios (Fase 13) |
 | `presentation/crop_view.gd` | plantações nos campos, crescendo com o ciclo da fazenda (Fase 14) |
 | `presentation/bird_view.gd` | pombos nas ruas e estorninhos sobre os campos (Fase 14) |
+| `presentation/harbor_view.gd` | trapiche dos píeres (Fase 15) |
 | `presentation/animal_view.gd`, `shaders/animal_vat.gdshader`, `tools/bake_animals.gd` | ovelhas e porcos nos pastos, cães nas portas e o cavalo da carroça, em VAT (Fase 13) |
 | `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
@@ -913,6 +914,18 @@ Regras que já custaram investigação:
   Duas malhas, pousado (corpo e cabeça) e voando (com as asas), cada uma num MultiMesh com uma instância por
   pássaro; a do que ele não está fazendo fica encolhida a zero. Asa encolhida no chão parecia aviãozinho de papel.
 
+### Porto e quintal (Fase 15, nossa)
+
+- **Proposta nossa** (16/10/2026), em partes com commit próprio: trapiche no píer, cais do entreposto com barcos e
+  carga, feitoria do comerciante, cestos e sacos na mão dos pedestres (seção 9) e varais e vasos nas casas (seção
+  11). Só visual; o save fica na versão 15.
+- **Trapiche** (`HarborView`): o píer não tem mais caixa na `BuildingView` (só a etiqueta). Tábuas de través sobre
+  a área dele e uma passarela de `WALK_WIDTH_M` saindo pelo lado mais virado para o cais (`Harbors.berth_point`,
+  parando `BERTH_CLEARANCE_M` antes: o casco encosta ali), com estacas nas duas bordas a cada `PILE_STEP_M` e dois
+  cabeços de amarração de ferro na ponta. Sem cais (píer sem estrada até um entreposto), a passarela vai para o
+  mar mais perto (`seaward`, pela célula de mar: a altura não serve, a ilha plana fica no zero); antes ia para trás
+  da entrada e entrava pela terra, por baixo do prédio vizinho.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -938,6 +951,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
+| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer; depois cais do entreposto, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos |
 
 Pendências já vistas para fases futuras:
 

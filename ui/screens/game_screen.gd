@@ -62,6 +62,7 @@ var lamp_view: LampView
 var animal_view: AnimalView
 var crop_view: CropView
 var bird_view: BirdView
+var harbor_view: HarborView
 var fire_view: FireView
 ## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
 var music: MusicDirector
@@ -185,6 +186,10 @@ func _ready() -> void:
 	add_child(bird_view)
 	bird_view.setup(simulation)
 	graphics.add_effect(bird_view)
+	harbor_view = HarborView.new()
+	harbor_view.name = "Harbor"
+	add_child(harbor_view)
+	harbor_view.setup(simulation)
 	fire_view = FireView.new()
 	fire_view.name = "Fire"
 	add_child(fire_view)
