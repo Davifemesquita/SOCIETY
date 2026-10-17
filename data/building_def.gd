@@ -2,8 +2,8 @@ class_name BuildingDef
 extends Resource
 ## Definição de um tipo de prédio: forma, função, custo e desbloqueio.
 
-## PIER (Fase 6) entra no fim: o número do tipo fica nos .tres.
-enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE, PIER }
+## PIER (Fase 6) e DECORATION (Fase 16) entram no fim: o número do tipo fica nos .tres.
+enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE, PIER, DECORATION }
 ## Requisitos de terreno. Até a Fase 5 a ilha de teste cumpre todos, menos o litoral,
 ## que já é a borda da ilha.
 enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
@@ -91,10 +91,21 @@ enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }
 ## Serviço que protege contra um risco no raio dele (bombeiros: casas e produção; hospital: casas).
 @export var protects: Hazard = Hazard.NONE
 
+@export_group("Beleza")
+## Decoração (Fase 16): quanto ela embeleza as casas a até beauty_radius_cells (cai linear com a distância;
+## a soma por casa vai até 1). 0 = não embeleza.
+@export var beauty: float = 0.0
+@export var beauty_radius_cells: int = 0
+
 @export_group("Poluição")
 @export var pollution_radius_cells: int = 0
 ## Fração da penalidade máxima de felicidade que a poluição deste prédio aplica.
 @export var pollution_strength: float = 0.0
+
+
+## Decoração (Fase 16): não produz nem atende necessidade; embeleza as casas em volta e não pede estrada.
+func is_decoration() -> bool:
+	return kind == Kind.DECORATION
 
 
 func is_production() -> bool:

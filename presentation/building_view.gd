@@ -258,15 +258,16 @@ func _add(building_id: int) -> void:
 			BuildingMaterials.dress(body, layer, _color(record), root.position.y, soot)
 			if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
 				root.add_child(_occluder(box.size, body.position))
-		# o píer é o trapiche da HarborView (Fase 15): aqui fica só a etiqueta
-		if def.kind != BuildingDef.Kind.PIER:
+		# o píer é o trapiche da HarborView (Fase 15) e a decoração é da DecorationView (Fase 16): aqui fica só a
+		# etiqueta
+		if def.kind not in [BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
 			root.add_child(body)
 		else:
 			body.free()
 		if record.is_house():
 			_add_roof(root, record, box.size, height)
 	if def.kind != BuildingDef.Kind.MODULE:
-		if spec == null and def.kind != BuildingDef.Kind.PIER:
+		if spec == null and def.kind not in [BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
 			var door := _door(record, def, area)
 			_detail(door)
 			root.add_child(door)

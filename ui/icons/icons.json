@@ -265,6 +265,10 @@
 			1792,
 			256
 		],
+		"building_flower_bed": [
+			1664,
+			1792
+		],
 		"building_furnace": [
 			128,
 			512
@@ -321,6 +325,10 @@
 			128,
 			640
 		],
+		"building_park_bench": [
+			1792,
+			1792
+		],
 		"building_pasture": [
 			1408,
 			256
@@ -332,6 +340,10 @@
 		"building_pig_farm": [
 			768,
 			384
+		],
+		"building_planted_tree": [
+			1536,
+			1792
 		],
 		"building_potato_farm": [
 			128,
@@ -926,20 +938,20 @@
 			1408
 		],
 		"status_bad": [
-			1792,
-			1792
+			128,
+			1920
 		],
 		"status_good": [
-			1536,
-			1792
-		],
-		"status_missing": [
 			1920,
 			1792
 		],
+		"status_missing": [
+			256,
+			1920
+		],
 		"status_partial": [
-			1664,
-			1792
+			0,
+			1920
 		],
 		"tier_artisans": [
 			0,

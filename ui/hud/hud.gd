@@ -387,7 +387,7 @@ func _build_build_menu() -> void:
 	top.add_theme_constant_override(&"separation", 6)
 	column.add_child(top)
 	for index: int in _categories().size():
-		var button := UiKit.button(_category_label(index), _category_icon(index))
+		var button := UiKit.button(_category_label(index), _category_icon(index), Callable(), _category_tip(index))
 		button.toggle_mode = true
 		button.pressed.connect(_select_category.bind(index))
 		top.add_child(button)
@@ -410,7 +410,8 @@ func _build_build_menu() -> void:
 	column.add_child(_items)
 
 
-## Categorias do menu: residências, produção por classe, serviços e infraestrutura.
+## Categorias do menu: residências, produção por classe, serviços, decoração (Fase 16) e infraestrutura (a
+## última: as estradas entram nela).
 func _categories() -> Array[Array]:
 	var data := _simulation.data
 	var groups: Array[Array] = [data.buildings.filter(func(def: BuildingDef) -> bool: return def.kind == BuildingDef.Kind.RESIDENCE)]
@@ -419,6 +420,7 @@ func _categories() -> Array[Array]:
 			return (def.is_production() and def.workforce_tier == tier.id) \
 					or (def.kind == BuildingDef.Kind.MODULE and def.unlock_tier == tier.id)))
 	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.kind == BuildingDef.Kind.SERVICE))
+	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_decoration()))
 	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_warehouse() or def.is_pier()))
 	return groups
 
@@ -427,9 +429,20 @@ func _category_label(index: int) -> String:
 	var tiers := _simulation.data.tiers
 	if index == 0:
 		return tr("HUD_CATEGORY_RESIDENCES")
+	# a produção de cada classe vai só com o nome dela (e o ícone da classe): com a aba de decoração (Fase 16),
+	# "Produção: <classe>" em cinco abas passava de 1920 px; o nome inteiro fica na dica
 	if index <= tiers.size():
+		return tr(tiers[index - 1].name_key)
+	if index == tiers.size() + 1:
+		return tr("HUD_CATEGORY_SERVICES")
+	return tr("HUD_CATEGORY_DECORATION") if index == tiers.size() + 2 else tr("HUD_CATEGORY_INFRASTRUCTURE")
+
+
+func _category_tip(index: int) -> String:
+	var tiers := _simulation.data.tiers
+	if index >= 1 and index <= tiers.size():
 		return tr("HUD_CATEGORY_PRODUCTION") % tr(tiers[index - 1].name_key)
-	return tr("HUD_CATEGORY_SERVICES") if index == tiers.size() + 1 else tr("HUD_CATEGORY_INFRASTRUCTURE")
+	return _category_label(index)
 
 
 func _category_icon(index: int) -> String:
@@ -438,7 +451,9 @@ func _category_icon(index: int) -> String:
 		return "building_house"
 	if index <= tiers.size():
 		return "tier_" + tiers[index - 1].id
-	return "building_market" if index == tiers.size() + 1 else "building_trading_post"
+	if index == tiers.size() + 1:
+		return "building_market"
+	return "building_flower_bed" if index == tiers.size() + 2 else "building_trading_post"
 
 
 func _select_category(index: int) -> void:
@@ -446,6 +461,7 @@ func _select_category(index: int) -> void:
 	for i: int in _category_buttons.size():
 		_category_buttons[i].set_pressed_no_signal(i == index)
 		_category_buttons[i].text = _category_label(i)
+		_category_buttons[i].tooltip_text = _category_tip(i)
 	UiKit.clear(_items)
 	_item_buttons.clear()
 	_paved_button = null
@@ -514,6 +530,9 @@ func _tooltip(def: BuildingDef) -> String:
 		if def.terrain == BuildingDef.Terrain.COAST:
 			lines.append(tr("TIP_COAST"))
 		lines.append_array(RatioCalculator.lines(def, data))
+	if def.is_decoration():
+		lines.append(tr("TIP_BEAUTY") % [def.beauty_radius_cells,
+				Fmt.integer(roundi(def.beauty * _simulation.config.happiness_per_beauty))])
 	if def.kind == BuildingDef.Kind.SERVICE:
 		var config := _simulation.config
 		match def.protects:

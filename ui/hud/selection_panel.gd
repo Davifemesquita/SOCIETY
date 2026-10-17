@@ -288,6 +288,9 @@ func _refresh() -> void:
 			if def.protects != BuildingDef.Hazard.NONE:
 				var guarded: Array = _simulation.derived_state().protected_by.get(record.id, [])
 				_lines[0].text = tr("SERVICE_PROTECTS") % Fmt.integer(guarded.size())
+		BuildingDef.Kind.DECORATION:
+			_title.text = tr(def.name_key)
+			_lines[0].text = tr("DECORATION_HOUSES") % Fmt.integer(DecorationView.houses_near(_simulation, record).size())
 		BuildingDef.Kind.PIER:
 			_title.text = tr(def.name_key)
 			var berths: Array = _simulation.derived_state().berths.get(record.island_id, [])
@@ -468,7 +471,9 @@ func _refresh_house(record: BuildingRecord) -> void:
 	var tier := data.tier(record.tier)
 	_title.text = tr("HOUSE_TITLE") % tr(tier.name_key)
 	_lines[0].text = tr("HOUSE_RESIDENTS") % [floori(record.residents), tier.residents_per_house]
+	var beauty: float = derived.beauty.get(record.id, 0.0)
 	_lines[1].text = tr("HOUSE_HAPPINESS") % roundi(record.happiness) \
+			+ ("  ·  " + tr("HOUSE_BEAUTY") % Fmt.percent(beauty) if beauty > 0.0 else "") \
 			+ ("  ·  " + tr("STATE_PROTEST") if record.happiness < config.protest_happiness_threshold else "")
 	if record.happiness < config.protest_happiness_threshold:
 		UiPalette.paint(_lines[1], UiPalette.Status.BAD)

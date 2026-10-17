@@ -8,6 +8,9 @@ const NEIGHBORS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0,
 
 ## O prédio tem estrada encostada na face de entrada.
 static func has_access(grid: IslandGrid, record: BuildingRecord, def: BuildingDef) -> bool:
+	# a decoração (Fase 16) não pede estrada: fica bem até no meio da praça
+	if def.kind == BuildingDef.Kind.DECORATION:
+		return true
 	var roads := grid.roads
 	for index: int in Footprint.front_indices(grid.size, record.origin, def.size, record.rotation):
 		if roads[index] != IslandGrid.Road.NONE:

@@ -183,7 +183,8 @@ func _add(building_id: int) -> void:
 	if record == null or _slots.has(building_id):
 		return
 	var def := _simulation.def_of(record)
-	if def.kind == BuildingDef.Kind.MODULE:
+	# campo e pasto, píer (trapiche, Fase 15) e decoração (Fase 16) não têm fachada
+	if def.kind in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
 		return
 	var windows := building_windows(_simulation, record)
 	var slots := PackedInt32Array()

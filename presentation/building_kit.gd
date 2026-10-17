@@ -165,7 +165,7 @@ static func available() -> bool:
 ## A forma do prédio do registro (null: fica a caixa — campo, pasto, píer ou kit ausente).
 static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: float) -> Spec:
 	var def := simulation.def_of(record)
-	if not available() or def.kind in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER]:
+	if not available() or def.kind in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
 		return null
 	var spec := Spec.new()
 	spec.cells = def.size

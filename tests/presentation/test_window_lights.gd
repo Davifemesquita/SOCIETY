@@ -105,3 +105,13 @@ func test_area_lights_only_at_night_and_with_the_camera_close() -> void:
 	var far := Vector3(12.0, 300.0, 300.0)
 	view.place_area_lights(far, (Vector3(12.0, 0.0, 18.0) - far).normalized(), 1.0)
 	assert_int(view.lit_area_lights()).is_equal(0)
+
+
+func test_piers_and_decorations_get_no_windows() -> void:
+	# o trapiche (Fase 15) e a árvore plantada (Fase 16) não têm fachada: a árvore ganhava janela preta
+	var view := _view()
+	var before := view.window_count()
+	SimFixture.place(_sim, &"planted_tree", Vector2i(20, 14), 0)
+	SimFixture.place(_sim, &"pier", Vector2i(30, 0), 2)
+	view.rebuild()
+	assert_int(view.window_count()).is_equal(before)

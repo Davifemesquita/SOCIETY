@@ -37,6 +37,8 @@ var module_count: Dictionary[int, int] = {}
 var module_owner: Dictionary[int, int] = {}
 ## Casa → poluição somada, 0..1.
 var pollution: Dictionary[int, float] = {}
+## Beleza de cada casa (Fase 16), 0..1: a soma das decorações em volta, cada uma caindo com a distância.
+var beauty: Dictionary[int, float] = {}
 ## Prédio de serviço → casas cobertas.
 var service_houses: Dictionary[int, Array] = {}
 ## Prédio de serviço → células de estrada alcançadas dentro do raio.
@@ -104,6 +106,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	module_count.clear()
 	module_owner.clear()
 	pollution.clear()
+	beauty.clear()
 	service_houses.clear()
 	service_reach.clear()
 	fire_protected.clear()
@@ -119,6 +122,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	var services: Array[int] = []
 	var farms: Array[int] = []
 	var polluters: Array[int] = []
+	var decorations: Array[int] = []
 	var depots: Array[int] = []
 	var piers: Array[int] = []
 	var modules: Dictionary[StringName, Array] = {}
@@ -132,6 +136,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 				islands_with_houses[record.island_id] = true
 				coverage[building_id] = []
 				pollution[building_id] = 0.0
+				beauty[building_id] = 0.0
 			BuildingDef.Kind.PRODUCTION:
 				production.append(building_id)
 				if def.modules_required > 0:
@@ -149,6 +154,8 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 				same.append(building_id)
 		if def.pollution_radius_cells > 0:
 			polluters.append(building_id)
+		if def.beauty > 0.0 and def.beauty_radius_cells > 0:
+			decorations.append(building_id)
 		upkeep_per_min += def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0) \
 				* upkeep_factor(world.specialists_state.at(building_id))
 	for ship: Ship in world.ships.values():
@@ -168,7 +175,8 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	_lap("serviços")
 	_assign_modules(world, data, farms, modules)
 	_spread_pollution(world, data, polluters)
-	_lap("módulos e poluição")
+	_spread_beauty(world, data, decorations)
+	_lap("módulos, poluição e beleza")
 	_index_warehouses(world, data, config, depots, piers)
 	_lap("armazéns")
 	_index_production(world, data)
@@ -577,6 +585,24 @@ func _spread_pollution(world: WorldState, data: GameData, polluters: Array[int])
 			if gap <= def.pollution_radius_cells:
 				var falloff := 1.0 - float(gap) / float(def.pollution_radius_cells + 1)
 				pollution[house_id] = minf(1.0, pollution[house_id] + def.pollution_strength * falloff)
+
+
+## Beleza (Fase 16): como a poluição, cada decoração cai linear com a distância até o raio dela, e a soma
+## por casa vai até 1.
+func _spread_beauty(world: WorldState, data: GameData, decorations: Array[int]) -> void:
+	for source_id: int in decorations:
+		var source := world.building(source_id)
+		var def := data.building(source.def_id)
+		var area := Footprint.rect(source.origin, def.size, source.rotation)
+		for house_id: int in houses:
+			var house := world.building(house_id)
+			if house.island_id != source.island_id:
+				continue
+			var house_area := Footprint.rect(house.origin, data.building(house.def_id).size, house.rotation)
+			var gap := _rect_gap(area, house_area)
+			if gap <= def.beauty_radius_cells:
+				var falloff := 1.0 - float(gap) / float(def.beauty_radius_cells + 1)
+				beauty[house_id] = minf(1.0, beauty[house_id] + def.beauty * falloff)
 
 
 static func _rect_gap(a: Rect2i, b: Rect2i) -> int:

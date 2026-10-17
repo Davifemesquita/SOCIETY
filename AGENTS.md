@@ -146,7 +146,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 57 prédios (`buildings/`), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) 8 especialistas (`specialists/`), 3 cenários (`scenarios/`) e 11 conquistas (`achievements/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 60 prédios (`buildings/`, com as decorações da Fase 16), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) 8 especialistas (`specialists/`), 3 cenários (`scenarios/`) e 11 conquistas (`achievements/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
@@ -205,6 +205,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/bird_view.gd` | pombos nas ruas e estorninhos sobre os campos (Fase 14) |
 | `presentation/harbor_view.gd`, `trader_post_model.gd` | trapiche dos píeres, cais do entreposto e feitoria do comerciante (Fase 15) |
 | `presentation/yard_view.gd` | varais atrás e vasos na porta das casas de camponeses e operários (Fase 15) |
+| `presentation/decoration_view.gd` | peças de decoração (Fase 16) |
 | `presentation/animal_view.gd`, `shaders/animal_vat.gdshader`, `tools/bake_animals.gd` | ovelhas e porcos nos pastos, cães nas portas e o cavalo da carroça, em VAT (Fase 13) |
 | `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
@@ -836,7 +837,7 @@ Regras que já custaram investigação:
   reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
   de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
   (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
-  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes` (com os pombos), `detalhes` ou `plantacoes` (com os estorninhos)).
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes` (com os pombos), `detalhes`, `plantacoes` (com os estorninhos) ou `decoracao`).
 
 ### Cidade viva (Fase 13, nossa)
 
@@ -948,6 +949,23 @@ Regras que já custaram investigação:
   porta em uma casa a cada `POT_EVERY`, na frente do corpo (no quintal cercado dos camponeses a casa recua uma
   fileira, `TierDef.HouseTrim.YARD`). As capturas saem no `CAPTURA_SO=postes`.
 
+### Praças e jardins (Fase 16, nossa)
+
+- **Proposta nossa** (17/10/2026): a seção 10 pede a categoria **decoração** no menu de construção, e ela não
+  existia. Partes com commit próprio: beleza na simulação com as peças pequenas, praça calçada com chafariz,
+  estátua e coreto, e a camada de mapa "Beleza" com o balanceamento conferido.
+- **Beleza** (`BuildingDef.beauty`, `beauty_radius_cells`; `BuildingDef.Kind.DECORATION`, no fim do enum): como a
+  poluição, cada decoração cai linear com a distância até o raio dela e a soma por casa vai até 1
+  (`DerivedState.beauty`); a felicidade ganha `happiness_per_beauty` × beleza. Sai da geometria: o save segue na
+  versão 15. A decoração não pede estrada (`RoadNetwork.has_access`), não pega fogo e não tem trabalhador.
+- **Peças pequenas** (livres desde o começo): árvore plantada, canteiro de flores e banco de praça, desenhados pela
+  `DecorationView` (geradas no código, cor no vértice, um MultiMesh por tipo). A `BuildingView` não desenha caixa
+  nem porta para a decoração, e a `WindowLightsView` não põe janela nela nem no píer (a árvore ganhava janela
+  preta, e o píer da Fase 15 ficava com janelas soltas no ar).
+- **Aba Decoração** no menu, antes da infraestrutura (que continua a última: as estradas entram nela). Com seis
+  abas de texto a barra passava de 1920 px; as de produção levam só o nome da classe, e "Produção: <classe>" vai na
+  dica. O painel da decoração diz quantas casas ela embeleza; o da casa mostra "Beleza" ao lado da felicidade.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -974,6 +992,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
+| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco; depois praça com chafariz, estátua e coreto, camada Beleza |
 
 Pendências já vistas para fases futuras:
 

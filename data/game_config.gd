@@ -85,6 +85,8 @@ static var _default: GameConfig
 @export var happiness_per_luxury: float = 25.0
 @export var happiness_shortage_penalty: float = 40.0
 @export var happiness_pollution_penalty: float = 30.0
+## Felicidade da casa com beleza 1 (Fase 16): a beleza vai de 0 a 1 e soma até isto.
+@export var happiness_per_beauty: float = 12.0
 @export var happiness_change_per_minute: float = 20.0
 ## Constante de tempo da produtividade mostrada no painel do prédio.
 @export var productivity_smoothing_seconds: float = 20.0

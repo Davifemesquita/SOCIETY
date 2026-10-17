@@ -3,7 +3,7 @@ extends RefCounted
 ## Moradores, felicidade, imposto e upgrade de cada casa.
 ## - A casa enche até uma fração do máximo sem nenhuma necessidade e até o máximo com todas as
 ##   básicas; o que falta sai aos poucos (1 morador por minuto), nunca tudo de uma vez.
-## - Felicidade: base + luxo − falta de bens + nível de imposto − poluição (+ festa, Fase 11),
+## - Felicidade: base + luxo − falta de bens + nível de imposto − poluição + beleza (decoração, Fase 16) (+ festa, Fase 11),
 ##   andando devagar. A chegada de imigrantes (Fase 11) acelera o enchimento.
 ## - O imposto da casa fica em tax_per_min para a economia somar no mesmo tick.
 ## - Cada tick avalia um grupo de casas (DerivedState.house_groups) com o tempo do ciclo
@@ -46,11 +46,13 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 			change = minf(change, 0.0) - config.disease_residents_lost_per_min * dt_min
 		house.residents = clampf(house.residents + change, 0.0, capacity)
 		var pollution: float = derived.pollution.get(house_id, 0.0)
+		var beauty: float = derived.beauty.get(house_id, 0.0)
 		var happiness_target: float = config.happiness_base \
 				+ config.happiness_per_luxury * evaluation.luxury_total \
 				- config.happiness_shortage_penalty * (1.0 - evaluation.basic_average) \
 				+ config.tax_level_happiness[world.tax_level(house.tier)] \
 				- config.happiness_pollution_penalty * pollution \
+				+ config.happiness_per_beauty * beauty \
 				+ (EventEffects.happiness(events, house.island_id) if not events.events.is_empty() else 0.0) \
 				- (config.disease_happiness_penalty if sick else 0.0)
 		house.happiness = move_toward(house.happiness, clampf(happiness_target, 0.0, 100.0), config.happiness_change_per_minute * dt_min)

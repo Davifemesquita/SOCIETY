@@ -115,6 +115,7 @@ HUD_STATS,Estatísticas (Tab),Statistics (Tab)
 HUD_CATEGORY_RESIDENCES,Residências,Residences
 HUD_CATEGORY_SERVICES,Serviços,Services
 HUD_CATEGORY_INFRASTRUCTURE,Infraestrutura,Infrastructure
+HUD_CATEGORY_DECORATION,Decoração,Decoration
 HUD_CATEGORY_PRODUCTION,Produção: %s,Production: %s
 TIP_COST,Custo: %s,Cost: %s
 TIP_COINS,%s moedas,%s coins
@@ -137,6 +138,7 @@ PANEL_DEMOLISH,Demolir,Demolish
 HOUSE_TITLE,Casa · %s,House · %s
 HOUSE_RESIDENTS,Moradores %s / %s,Residents %s / %s
 HOUSE_HAPPINESS,Felicidade %s,Happiness %s
+HOUSE_BEAUTY,Beleza %s,Beauty %s
 HOUSE_TAX,Imposto %s/min,Tax %s/min
 HOUSE_BLOCK_UPGRADE,Bloquear upgrade,Block upgrade
 HOUSE_BASIC,Básicas,Basic
@@ -832,3 +834,8 @@ VICTORY_MONEY,Moedas: %s,Coins: %s
 VICTORY_ISLANDS,Ilhas com entreposto: %s,Islands with a trading post: %s
 VICTORY_SHIPS,Navios: %s (%s do estaleiro),Ships: %s (%s from the shipyard)
 VICTORY_RISKS,Prédios perdidos no fogo: %s · encomendas cumpridas: %s,Buildings lost to fire: %s · orders fulfilled: %s
+BUILDING_PLANTED_TREE,Árvore plantada,Planted tree
+BUILDING_FLOWER_BED,Canteiro de flores,Flower bed
+BUILDING_PARK_BENCH,Banco de praça,Park bench
+TIP_BEAUTY,Embeleza as casas a até %s células (felicidade até +%s),Beautifies houses within %s cells (happiness up to +%s)
+DECORATION_HOUSES,Embeleza %s casas,Beautifies %s houses

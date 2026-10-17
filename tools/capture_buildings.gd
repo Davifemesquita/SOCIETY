@@ -7,7 +7,8 @@ extends Node
 ## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13); plantacoes, uma fazenda de cada
 ## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14). Os pombos na rua saem
-## em postes (Fase 14), e os varais e vasos das casas (Fase 15).
+## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
+## casas (Fase 16).
 
 var _out_dir: String
 var _game: GameScreen
@@ -43,6 +44,10 @@ func _run() -> void:
 		return
 	if OS.get_environment("CAPTURA_SO") == "detalhes":
 		await _house_trims()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "decoracao":
+		await _decorations()
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "postes":
@@ -232,3 +237,22 @@ func _crops() -> void:
 	_game.bird_view.rebuild()
 	print("estorninhos ", _game.bird_view.flock_count(BirdView.Kind.STARLING))
 	await _shot("29_estorninhos.png", Vector3(110.0, 0.0, 286.0), 45.0, 0.4, 0.35)
+
+
+## Fase 16: uma rua de casas de artesãos com árvores plantadas na calçada de trás, canteiros e bancos.
+func _decorations() -> void:
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(20, 50), Vector2i(60, 50)), true))
+	for i: int in 8:
+		var house := _place(&"house", Vector2i(21 + i * 4, 51), 0)
+		if house != 0:
+			_sim.world.building(house).tier = &"artisans"
+			_sim.world.building(house).residents = 10.0
+	for i: int in 10:
+		_place(&"planted_tree", Vector2i(20 + i * 4, 48), 0)
+		_place(&"flower_bed", Vector2i(22 + i * 4, 48), 0)
+		_place(&"park_bench", Vector2i(21 + i * 4, 47), 2)
+	_game.building_view.rebuild()
+	_game.decoration_view.rebuild()
+	print("decorações ", _game.decoration_view.piece_count())
+	await _shot("32_decoracao.png", Vector3(70.0, 0.0, 96.0), 26.0, PI + 0.3, 0.45)
+	await _shot("33_decoracao_de_perto.png", Vector3(62.0, 0.0, 95.0), 10.0, PI + 0.5, 0.35)
