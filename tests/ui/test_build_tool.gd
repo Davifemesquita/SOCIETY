@@ -59,6 +59,21 @@ func test_road_is_dragged_as_an_l() -> void:
 	assert_bool(_tool.dragging).is_false()
 
 
+func test_the_rotate_key_switches_the_road_to_a_diagonal() -> void:
+	_tool.start_road()
+	_tool.toggle_road_diagonal()
+	_tool.press(Vector2i(2, 2))
+	_tool.hover(Vector2i(8, 5))
+	# três passos diagonais e três retos (Fase 17)
+	assert_int(_tool.road_cells().size()).is_equal(7)
+	_tool.release(Vector2i(8, 5))
+	var grid := _sim.world.island(0)
+	assert_int(grid.road_cells().size()).is_equal(7)
+	assert_bool(RoadNetwork.linked_diagonal(grid, Vector2i(2, 2), Vector2i(3, 3))).is_true()
+	_tool.toggle_road_diagonal()
+	assert_bool(_tool.road_diagonal).is_false()
+
+
 func test_road_preview_through_building_is_red() -> void:
 	_tool.start_building(_house())
 	_tool.press(Vector2i(10, 10))

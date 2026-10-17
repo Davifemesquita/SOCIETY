@@ -1,7 +1,7 @@
 class_name RoadNetwork
 extends RefCounted
 ## Leitura da rede de estradas: acesso de um prédio e componentes conectados.
-## Rotas (AStarGrid2D) entram na Fase 3, com as carroças.
+## Rotas (AStarGrid2D) entram na Fase 3, com as carroças. Diagonal pura liga desde a Fase 17.
 
 const NEIGHBORS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
@@ -18,7 +18,8 @@ static func has_access(grid: IslandGrid, record: BuildingRecord, def: BuildingDe
 	return false
 
 
-## Rótulo de componente por célula: 0 sem estrada, 1..n para cada trecho conectado.
+## Rótulo de componente por célula: 0 sem estrada, 1..n para cada trecho conectado. Desde a Fase 17 a diagonal
+## pura também liga (linked_diagonal).
 ## Anda por índice da grade: roda sobre a ilha inteira a cada estrada nova.
 static func components(grid: IslandGrid) -> PackedInt32Array:
 	var roads := grid.roads
@@ -66,7 +67,38 @@ static func components(grid: IslandGrid) -> PackedInt32Array:
 			if next < count and roads[next] != 0 and labels[next] == 0:
 				labels[next] = next_label
 				queue.append(next)
+			# diagonal pura (Fase 17): a célula do canto, sem estrada nas duas vizinhas em comum
+			var road_left := x > 0 and roads[index - 1] != 0
+			var road_right := x < width - 1 and roads[index + 1] != 0
+			var road_up := index - width >= 0 and roads[index - width] != 0
+			var road_down := index + width < count and roads[index + width] != 0
+			next = index - width - 1
+			if x > 0 and next >= 0 and next < count and not road_left and not road_up and roads[next] != 0 and labels[next] == 0:
+				labels[next] = next_label
+				queue.append(next)
+			next = index - width + 1
+			if x < width - 1 and next >= 0 and next < count and not road_right and not road_up and roads[next] != 0 and labels[next] == 0:
+				labels[next] = next_label
+				queue.append(next)
+			next = index + width - 1
+			if x > 0 and next >= 0 and next < count and not road_left and not road_down and roads[next] != 0 and labels[next] == 0:
+				labels[next] = next_label
+				queue.append(next)
+			next = index + width + 1
+			if x < width - 1 and next >= 0 and next < count and not road_right and not road_down and roads[next] != 0 and labels[next] == 0:
+				labels[next] = next_label
+				queue.append(next)
 	return labels
+
+
+## As duas células se tocam pelo canto, as duas são estrada e nenhuma das duas células que elas têm em comum é
+## (diagonal pura, Fase 17): só aí a ligação pelo canto conta. Numa esquina em L a célula do meio já liga.
+static func linked_diagonal(grid: IslandGrid, a: Vector2i, b: Vector2i) -> bool:
+	var delta := b - a
+	if absi(delta.x) != 1 or absi(delta.y) != 1:
+		return false
+	return grid.has_road(a) and grid.has_road(b) and not grid.has_road(Vector2i(b.x, a.y)) \
+			and not grid.has_road(Vector2i(a.x, b.y))
 
 
 ## Rótulos dos trechos de estrada que encostam na entrada do prédio.

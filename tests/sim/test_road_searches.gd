@@ -17,7 +17,9 @@ func _grid() -> IslandGrid:
 
 
 ## Vizinhos na ordem esquerda, direita, cima, baixo, sem atravessar a borda.
-func _neighbors(index: int) -> Array[int]:
+## Os quatro de lado e, desde a Fase 17, as diagonais puras (na ordem da busca: acima à esquerda, acima à
+## direita, abaixo à esquerda, abaixo à direita).
+func _neighbors(grid: IslandGrid, index: int) -> Array[int]:
 	var x := index % SIZE.x
 	var result: Array[int] = []
 	if x > 0:
@@ -28,6 +30,10 @@ func _neighbors(index: int) -> Array[int]:
 		result.append(index - SIZE.x)
 	if index + SIZE.x < SIZE.x * SIZE.y:
 		result.append(index + SIZE.x)
+	var cell := grid.cell_at(index)
+	for step: Vector2i in [Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(1, 1)]:
+		if grid.in_bounds(cell + step) and RoadNetwork.linked_diagonal(grid, cell, cell + step):
+			result.append(grid.index(cell + step))
 	return result
 
 
@@ -44,11 +50,12 @@ func test_components_number_stretches_in_index_order() -> void:
 		var queue: Array[int] = [start]
 		while not queue.is_empty():
 			var index: int = queue.pop_front()
-			for next: int in _neighbors(index):
+			for next: int in _neighbors(grid, index):
 				if grid.roads[next] != 0 and expected[next] == 0:
 					expected[next] = label
 					queue.append(next)
-	assert_int(label).is_greater(3)
+	# com a diagonal pura (Fase 17) dois trechos da grade sorteada se juntam: sobram três
+	assert_int(label).is_greater_equal(3)
 	assert_array(RoadNetwork.components(grid)).is_equal(expected)
 
 
@@ -71,7 +78,7 @@ func _reference_distances(grid: IslandGrid, starts: PackedInt32Array) -> Diction
 			queue.append(start)
 	while not queue.is_empty():
 		var index: int = queue.pop_front()
-		for next: int in _neighbors(index):
+		for next: int in _neighbors(grid, index):
 			if grid.roads[next] != 0 and not distance.has(next):
 				distance[next] = distance[index] + 1
 				queue.append(next)

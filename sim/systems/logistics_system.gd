@@ -42,12 +42,16 @@ static func run(world: WorldState, config: GameConfig, derived: DerivedState, dt
 	_serve_queue(world, config, derived, queued, at_ramp)
 
 
-## Velocidade relativa na célula em que a carroça está: o paralelepípedo (Fase 8) soma o bônus.
+## Velocidade relativa na célula em que a carroça está: o paralelepípedo (Fase 8) soma o bônus, e o passo
+## diagonal (Fase 17), √2 mais longo, anda na mesma proporção mais devagar em índice de caminho.
 static func _road_factor(world: WorldState, config: GameConfig, entry: DerivedState.ProductionEntry, cart: Cart) -> float:
-	var cell := cart.path[clampi(floori(cart.position), 0, cart.path.size() - 1)]
-	if world.island(entry.record.island_id).roads[cell] == IslandGrid.Road.PAVED:
-		return 1.0 + config.paved_road_speed_bonus
-	return 1.0
+	var at := clampi(floori(cart.position), 0, cart.path.size() - 1)
+	var cell := cart.path[at]
+	var grid := world.island(entry.record.island_id)
+	var factor := 1.0 + config.paved_road_speed_bonus if grid.roads[cell] == IslandGrid.Road.PAVED else 1.0
+	if at + 1 < cart.path.size():
+		factor /= RoadRouter.step_length(grid, cell, cart.path[at + 1])
+	return factor
 
 
 ## Decide a viagem da carroça parada em casa.

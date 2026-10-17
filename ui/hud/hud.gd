@@ -620,6 +620,12 @@ func _refresh_tool() -> void:
 			_hint.text = tr("HUD_HINT_BUILDING")
 		BuildTool.Mode.ROAD:
 			_hint.text = tr("HUD_HINT_PAVED_ROAD") if _tool.road_paved else tr("HUD_HINT_ROAD")
+			# o traçado da vez e a tecla que troca (Fase 17)
+			var keys: PackedStringArray = []
+			for keycode: int in Settings.keys_of(&"build_rotate"):
+				keys.append(InputActions.key_name(keycode))
+			_hint.text += " · " + tr("HUD_HINT_ROAD_DIAGONAL" if _tool.road_diagonal else "HUD_HINT_ROAD_STRAIGHT") \
+					% " / ".join(keys)
 		BuildTool.Mode.MOVE:
 			_hint.text = tr("HUD_HINT_MOVE")
 		BuildTool.Mode.DEMOLISH:

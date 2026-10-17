@@ -846,3 +846,5 @@ BUILDING_BANDSTAND,Coreto,Bandstand
 OVERLAY_BEAUTY,Beleza,Beauty
 OVERLAY_BEAUTY_TIP,Camada: beleza das decorações,Layer: beauty from decorations
 OVERLAY_BEAUTY_LEGEND,"Quanto mais forte o rosa, mais a beleza dá felicidade às casas","The stronger the pink, the more happiness beauty gives to houses"
+HUD_HINT_ROAD_STRAIGHT,em L (%s: diagonal),in an L (%s: diagonal)
+HUD_HINT_ROAD_DIAGONAL,em diagonal (%s: em L),diagonal (%s: in an L)

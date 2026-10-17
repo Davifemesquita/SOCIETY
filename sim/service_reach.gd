@@ -1,7 +1,7 @@
 class_name ServiceReach
 extends RefCounted
 ## Alcance de um serviço pela estrada: busca em largura a partir das células da frente, até o
-## raio. Serve à cobertura real (DerivedState) e à prévia de um serviço ainda não construído.
+## raio. A diagonal pura (Fase 17) conta um passo, como o lado. Serve à cobertura real (DerivedState) e à prévia de um serviço ainda não construído.
 
 
 ## Células de estrada alcançadas (índices da grade), em ordem crescente. Anda por índice da
@@ -42,6 +42,27 @@ static func road_cells(grid: IslandGrid, front: Array[Vector2i], radius: int) ->
 			queue.append(next)
 		next = index + width
 		if next < count and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		# diagonal pura (Fase 17): a célula do canto, sem estrada nas duas vizinhas em comum
+		var road_left := x > 0 and roads[index - 1] != 0
+		var road_right := x < width - 1 and roads[index + 1] != 0
+		var road_up := index - width >= 0 and roads[index - width] != 0
+		var road_down := index + width < count and roads[index + width] != 0
+		next = index - width - 1
+		if x > 0 and next >= 0 and next < count and not road_left and not road_up and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		next = index - width + 1
+		if x < width - 1 and next >= 0 and next < count and not road_right and not road_up and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		next = index + width - 1
+		if x > 0 and next >= 0 and next < count and not road_left and not road_down and roads[next] != 0 and distance[next] == -1:
+			distance[next] = steps
+			queue.append(next)
+		next = index + width + 1
+		if x < width - 1 and next >= 0 and next < count and not road_right and not road_down and roads[next] != 0 and distance[next] == -1:
 			distance[next] = steps
 			queue.append(next)
 	queue.sort()

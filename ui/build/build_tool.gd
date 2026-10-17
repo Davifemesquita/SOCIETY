@@ -27,6 +27,8 @@ var selected_ship: int = 0
 var island_id: int = Simulation.MAIN_ISLAND
 ## A estrada do modo ROAD é de paralelepípedo.
 var road_paved: bool = false
+## Traçado em diagonal (Fase 17), alternado com a tecla de girar enquanto se traça estrada.
+var road_diagonal: bool = false
 ## Prédio que está sendo mudado de lugar (modo MOVE).
 var moving_id: int = 0
 
@@ -53,6 +55,12 @@ func start_building(def: BuildingDef) -> void:
 func start_road(paved: bool = false) -> void:
 	road_paved = paved
 	_enter(Mode.ROAD)
+
+
+## Alterna o traçado da estrada entre o L e a diagonal (Fase 17).
+func toggle_road_diagonal() -> void:
+	road_diagonal = not road_diagonal
+	changed.emit()
 
 
 func start_paved_road() -> void:
@@ -165,10 +173,10 @@ func building_rect() -> Rect2i:
 	return Footprint.rect(building_origin(), building_def.size, rotation)
 
 
-## Traçado da estrada: o L do arrasto, ou só a célula sob o cursor antes de arrastar.
+## Traçado da estrada: o L (ou a diagonal) do arrasto, ou só a célula sob o cursor antes de arrastar.
 func road_cells() -> Array[Vector2i]:
 	if dragging:
-		return RoadPath.l_path(drag_start, hover_cell)
+		return RoadPath.diagonal_path(drag_start, hover_cell) if road_diagonal else RoadPath.l_path(drag_start, hover_cell)
 	return [hover_cell]
 
 
@@ -246,6 +254,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_mouse_button(button)
 	elif event.is_action_pressed(&"build_rotate") and mode in [Mode.BUILDING, Mode.MOVE]:
 		rotate_building()
+	elif event.is_action_pressed(&"build_rotate") and mode == Mode.ROAD:
+		toggle_road_diagonal()
 	elif event.is_action_pressed(&"build_cancel"):
 		cancel()
 	elif event.is_action_pressed(&"build_road"):
