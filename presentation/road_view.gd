@@ -4,7 +4,10 @@ extends MultiMeshInstance3D
 ## No relevo o ladrilho inclina com o terreno (a base tem cisalhamento, a espessura fica de pé);
 ## sobre o rio vira ponte de tábuas, plana, na altura das margens.
 ## Fase 14: a rua de paralelepípedo ganha meio-fio de pedra nos lados que não dão para outra estrada, e a de
-## terra, dois sulcos de roda na direção dela (no shader, pelo dado da instância). A ponte ganha tábuas no
+## terra, dois sulcos de roda na direção dela (no shader, pelo dado da instância). Fase 17: entre duas células
+## ligadas pela diagonal pura vai uma faixa girada 45°, do centro de uma ao da outra, com os sulcos ao longo dela;
+## a célula do meio da escada não leva ladrilho (as faixas se encontram no centro dela), a da ponta leva os sulcos
+## na diagonal, e o meio-fio não sai nos lados que a faixa corta. A ponte ganha tábuas no
 ## shader, corrimão de madeira nos lados que dão para o rio e estacas descendo até o leito.
 
 const DIRT_COLOR := Color(0.55, 0.45, 0.33)
@@ -26,7 +29,12 @@ const PILE_WIDTH_M := 0.2
 const PILE_SINK_M := 0.4
 const RAIL_COLOR := Color(0.42, 0.3, 0.19)
 ## Direção dos sulcos no dado da instância (b): nenhum, ao longo de x, ao longo de z, os dois (cruzamento).
-enum Ruts { NONE, ALONG_X, ALONG_Z, BOTH }
+## DIAGONAL_DOWN e DIAGONAL_UP (Fase 17): ao longo de (+x, +z) e de (+x, −z).
+enum Ruts { NONE, ALONG_X, ALONG_Z, BOTH, DIAGONAL_DOWN, DIAGONAL_UP }
+## Os dois sentidos da diagonal que cada célula olha (o outro par é olhado pela vizinha).
+const DIAGONALS: Array[Vector2i] = [Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]
+## A faixa da diagonal fica um pouco acima dos ladrilhos, para não brigar com eles.
+const DIAGONAL_LIFT_M := 0.01
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
 var _simulation: Simulation
@@ -97,13 +105,25 @@ func rebuild() -> void:
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
 			var paved := grid.is_paved(cell)
 			var tile := tile_transform(grid, cell)
-			tiles.append(tile)
-			colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if paved else DIRT_COLOR))
-			kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell)), 0.0))
+			var links := diagonal_links(grid, cell)
+			# no meio da escada diagonal só as faixas: o ladrilho quadrado deixava a borda serrilhada
+			if not in_diagonal_run(grid, cell, links):
+				tiles.append(tile)
+				colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if paved else DIRT_COLOR))
+				kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell)), 0.0))
 			if paved and not bridge:
 				for side: Vector2i in SIDES:
-					if not grid.has_road(cell + side):
+					if not grid.has_road(cell + side) and not _cut_by(side, links):
 						curbs.append(tile * curb_place(side, _cell_size))
+			# a faixa da diagonal: cada par uma vez, olhando só para +x
+			for link: Vector2i in links:
+				if link.x > 0:
+					var other := cell + link
+					var both_paved := paved and grid.is_paved(other)
+					var both_bridge := bridge and grid.ground_at(other) == IslandGrid.Ground.RIVER
+					tiles.append(diagonal_transform(grid, cell, link))
+					colors.append(BRIDGE_COLOR if both_bridge else (PAVED_COLOR if both_paved else DIRT_COLOR))
+					kinds.append(Color(1.0 if both_paved else 0.0, 1.0 if both_bridge else 0.0, float(Ruts.ALONG_X), 0.0))
 			if bridge:
 				_add_railing(grid, cell, tile, rails, posts)
 	multimesh.instance_count = tiles.size()
@@ -172,8 +192,8 @@ func post_count() -> int:
 	return _posts.multimesh.instance_count
 
 
-## Para onde vão os sulcos de roda da célula: ao longo da rua reta, os dois no cruzamento e na curva,
-## nenhum na célula solta.
+## Para onde vão os sulcos de roda da célula: ao longo da rua reta, os dois no cruzamento e na curva, na
+## diagonal na célula da escada diagonal (Fase 17), nenhum na célula solta.
 static func ruts(grid: IslandGrid, cell: Vector2i) -> int:
 	var along_x := grid.has_road(cell + Vector2i(1, 0)) or grid.has_road(cell + Vector2i(-1, 0))
 	var along_z := grid.has_road(cell + Vector2i(0, 1)) or grid.has_road(cell + Vector2i(0, -1))
@@ -181,7 +201,49 @@ static func ruts(grid: IslandGrid, cell: Vector2i) -> int:
 		return Ruts.BOTH
 	if along_x:
 		return Ruts.ALONG_X
-	return Ruts.ALONG_Z if along_z else Ruts.NONE
+	if along_z:
+		return Ruts.ALONG_Z
+	for link: Vector2i in diagonal_links(grid, cell):
+		return Ruts.DIAGONAL_DOWN if link.x == link.y else Ruts.DIAGONAL_UP
+	return Ruts.NONE
+
+
+## Para que lados do canto a célula se liga pela diagonal pura (Fase 17).
+static func diagonal_links(grid: IslandGrid, cell: Vector2i) -> Array[Vector2i]:
+	var links: Array[Vector2i] = []
+	for link: Vector2i in DIAGONALS:
+		if RoadNetwork.linked_diagonal(grid, cell, cell + link):
+			links.append(link)
+	return links
+
+
+## A célula está no meio de uma escada diagonal (Fase 17): duas ligações pelo canto em linha e nenhuma estrada
+## de lado. Ela não leva ladrilho quadrado; as duas faixas se encontram no centro dela.
+static func in_diagonal_run(grid: IslandGrid, cell: Vector2i, links: Array[Vector2i]) -> bool:
+	if links.size() != 2 or links[0] != -links[1]:
+		return false
+	for side: Vector2i in SIDES:
+		if grid.has_road(cell + side):
+			return false
+	return true
+
+
+## O lado side da célula é cortado por alguma das faixas diagonais dela.
+static func _cut_by(side: Vector2i, links: Array[Vector2i]) -> bool:
+	for link: Vector2i in links:
+		if (side.x != 0 and side.x == link.x) or (side.y != 0 and side.y == link.y):
+			return true
+	return false
+
+
+## A faixa da diagonal de cell até cell + link (Fase 17): o ladrilho esticado √2 em x e girado para que o x
+## dele siga a diagonal, no meio das duas células, na altura média delas.
+static func diagonal_transform(grid: IslandGrid, cell: Vector2i, link: Vector2i) -> Transform3D:
+	var a := grid.surface_world(cell)
+	var b := grid.surface_world(cell + link)
+	var center := (a + b) * 0.5 + Vector3(0.0, LIFT_M + THICKNESS_M * 0.5 + DIAGONAL_LIFT_M, 0.0)
+	var basis := Basis(Vector3.UP, -atan2(float(link.y), float(link.x))) * Basis.from_scale(Vector3(sqrt(2.0), 1.0, 1.0))
+	return Transform3D(basis, center)
 
 
 ## O meio-fio do lado side, no referencial do ladrilho: encostado na borda, de pé sobre o calçamento.

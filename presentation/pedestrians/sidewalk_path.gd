@@ -29,7 +29,8 @@ static func simplify(points: PackedVector3Array) -> PackedVector3Array:
 
 
 ## Desloca a linha para a direita de quem anda. Na esquina, o ponto é o encontro das duas
-## calçadas (soma dos dois deslocamentos, que são perpendiculares numa grade).
+## calçadas: a soma dos dois deslocamentos esticada pela meia-esquadria (2 / |soma|²), que dá a soma mesma
+## na esquina de 90° e o ponto certo na de 45° da diagonal (Fase 17).
 static func offset_polyline(points: PackedVector3Array, offset: float) -> PackedVector3Array:
 	if points.size() < 2:
 		return points
@@ -42,6 +43,11 @@ static func offset_polyline(points: PackedVector3Array, offset: float) -> Packed
 			shift += right_of(points[i + 1] - points[i])
 		if i == 0 or i == points.size() - 1:
 			shift = shift.normalized()
+		elif shift.length_squared() > 0.01:
+			shift *= 2.0 / shift.length_squared()
+		else:
+			# meia-volta: fica do lado de quem chega
+			shift = right_of(points[i] - points[i - 1])
 		result.append(points[i] + shift * offset)
 	return result
 

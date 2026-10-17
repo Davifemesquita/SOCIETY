@@ -78,3 +78,24 @@ func test_the_bridge_gets_railings_and_piles() -> void:
 	assert_bool(RoadView.railed(grid, Vector2i(8, 5), Vector2i(1, 0))).is_false()
 	assert_bool(RoadView.railed(grid, Vector2i(6, 5), Vector2i(0, 1))).is_false()
 	assert_int(view.curb_count()).is_equal(0)
+
+
+func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> void:
+	var grid := _sim.world.island(SimFixture.ISLAND)
+	for cell: Vector2i in RoadPath.diagonal_path(Vector2i(10, 10), Vector2i(14, 14)):
+		grid.set_road(cell, IslandGrid.Road.PAVED)
+	var view := _view()
+	# as duas pontas e as quatro faixas: as três células do meio da escada só têm as faixas
+	assert_int(view.tile_count()).is_equal(2 + 4)
+	assert_bool(RoadView.in_diagonal_run(grid, Vector2i(12, 12), RoadView.diagonal_links(grid, Vector2i(12, 12)))).is_true()
+	assert_bool(RoadView.in_diagonal_run(grid, Vector2i(10, 10), RoadView.diagonal_links(grid, Vector2i(10, 10)))).is_false()
+	assert_int(RoadView.ruts(grid, Vector2i(12, 12))).is_equal(RoadView.Ruts.DIAGONAL_DOWN)
+	# a faixa vai do centro de uma célula ao da outra, girada 45°
+	var band := RoadView.diagonal_transform(grid, Vector2i(10, 10), Vector2i(1, 1))
+	var a := grid.surface_world(Vector2i(10, 10))
+	var b := grid.surface_world(Vector2i(11, 11))
+	assert_float(band.origin.x).is_equal_approx((a.x + b.x) * 0.5, 0.001)
+	assert_float(band.basis.x.length()).is_equal_approx(sqrt(2.0), 0.001)
+	assert_float(absf(band.basis.x.normalized().dot(Vector3(1, 0, 1).normalized()))).is_equal_approx(1.0, 0.001)
+	# o meio-fio não corta a faixa: só os lados de fora das pontas
+	assert_int(view.curb_count()).is_equal(4)

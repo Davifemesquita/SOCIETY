@@ -1,7 +1,8 @@
 // Estradas (Fase 9): terra batida e paralelepípedo da Poly Haven (CC0), vistas de cima, no
 // MultiMesh das estradas. A camada vem do dado da instância (INSTANCE_CUSTOM.r: 0 terra,
 // 1 paralelepípedo); a ponte (INSTANCE_CUSTOM.g = 1) fica na cor da instância, de tábua. Fase 14: na
-// terra, dois sulcos de roda (INSTANCE_CUSTOM.b: 0 nenhum, 1 ao longo de x, 2 de z, 3 os dois), e na ponte,
+// terra, dois sulcos de roda (INSTANCE_CUSTOM.b: 0 nenhum, 1 ao longo de x, 2 de z, 3 os dois, 4 e 5 nas duas
+// diagonais, Fase 17), e na ponte,
 // tábuas de través pela mesma direção, cada uma num tom, com a fresta escura entre elas.
 shader_type spatial;
 render_mode cull_back;
@@ -69,6 +70,13 @@ void fragment() {
 	}
 	if (kind == 2 || kind == 3) {
 		ruts = max(ruts, rut(local_position.x));
+	}
+	// Fase 17: na célula da escada diagonal, ao longo de (+x, +z) (4) ou de (+x, −z) (5)
+	if (kind == 4) {
+		ruts = max(ruts, rut((local_position.x - local_position.y) * 0.70710678));
+	}
+	if (kind == 5) {
+		ruts = max(ruts, rut((local_position.x + local_position.y) * 0.70710678));
 	}
 	// só na terra (camada 0, fora da ponte)
 	ruts *= (1.0 - road_layer) * (1.0 - bridge);

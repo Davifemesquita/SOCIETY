@@ -8,7 +8,7 @@ extends Node
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13); plantacoes, uma fazenda de cada
 ## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14). Os pombos na rua saem
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
-## casas (Fase 16).
+## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17).
 
 var _out_dir: String
 var _game: GameScreen
@@ -44,6 +44,10 @@ func _run() -> void:
 		return
 	if OS.get_environment("CAPTURA_SO") == "detalhes":
 		await _house_trims()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "diagonal":
+		await _diagonals()
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "decoracao":
@@ -265,3 +269,21 @@ func _decorations() -> void:
 	await _shot("35_estatua_e_coreto.png", Vector3(80.0, 0.0, 87.0), 16.0, PI + 0.4, 0.4)
 	_game.hud.set_overlay(MapOverlays.Layer.BEAUTY)
 	await _shot("36_camada_beleza.png", Vector3(70.0, 0.0, 92.0), 60.0, PI + 0.3, 0.7)
+
+
+## Fase 17: uma estrada de terra que sai reta e vira diagonal, e uma de paralelepípedo em diagonal com casas.
+func _diagonals() -> void:
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(20, 40), Vector2i(30, 40))))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.diagonal_path(Vector2i(31, 41), Vector2i(45, 55))))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.diagonal_path(Vector2i(50, 40), Vector2i(64, 54)), true))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.diagonal_path(Vector2i(50, 40), Vector2i(64, 54))))
+	for i: int in 3:
+		var house := _place(&"house", Vector2i(54 + i * 4, 37 + i * 4), 0)
+		if house != 0:
+			_sim.world.building(house).tier = &"workers"
+	_game.building_view.rebuild()
+	_game.road_view.rebuild()
+	print("ladrilhos ", _game.road_view.tile_count(), " meio-fio ", _game.road_view.curb_count())
+	await _shot("37_diagonal.png", Vector3(80.0, 0.0, 92.0), 40.0, 0.3, 0.6)
+	await _shot("38_diagonal_de_perto.png", Vector3(72.0, 0.0, 96.0), 12.0, 0.6, 0.45)
+	await _shot("39_paralelepipedo_diagonal.png", Vector3(114.0, 0.0, 94.0), 12.0, 0.6, 0.45)

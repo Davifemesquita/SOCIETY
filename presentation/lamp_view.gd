@@ -114,6 +114,9 @@ func rebuild() -> void:
 		for cell: Vector2i in grid.road_cells():
 			if not grid.is_paved(cell) or posmod(cell.x + cell.y * 3, LAMP_EVERY) != 0:
 				continue
+			# na escada diagonal (Fase 17) todo lado da célula é cortado pela faixa: o poste ficaria na rua
+			if not RoadView.diagonal_links(grid, cell).is_empty():
+				continue
 			var side := _sidewalk_side(grid, cell)
 			if side == Vector2i.ZERO:
 				continue

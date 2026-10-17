@@ -837,7 +837,7 @@ Regras que já custaram investigação:
   reconhece parede e telhado pela célula da paleta na UV e põe a textura PBR, o tom, a fuligem e a chuva
   de antes; o madeiramento vira madeira escura no tom do prédio. As janelas acesas seguem as do modelo
   (`WindowLightsView.building_windows`). Campo, pasto e píer, e tudo sem o kit, continuam caixas.
-  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes` (com os pombos), `detalhes`, `plantacoes` (com os estorninhos) ou `decoracao`).
+  `tools/capture_buildings.tscn` tira as capturas (`CAPTURA_SO=casas`, `noite`, `silhuetas`, `postes` (com os pombos), `detalhes`, `plantacoes` (com os estorninhos) ou `decoracao` ou `diagonal`).
 
 ### Cidade viva (Fase 13, nossa)
 
@@ -985,6 +985,23 @@ Regras que já custaram investigação:
   infraestrutura, que segue a última (armazém e as estradas). Com dez abas a barra passava de 1920 px: as de
   produção ficaram só com o medalhão da classe (como a população na barra de cima) e "Produção: <classe>" na dica.
   O tutorial do entreposto aponta a aba Porto.
+- **Diagonal pura** (`RoadNetwork.linked_diagonal`): duas células de estrada que se tocam só pelo canto se ligam
+  quando nenhuma das duas vizinhas em comum é estrada; numa esquina em L a do meio já liga e o canto não conta (a
+  carroça não corta caminho por cima da grama). Sai do desenho da grade: **o save não mudou**. Entra nas três buscas
+  por índice (`components`, `ServiceReach.road_cells`, `WarehouseField`), sempre depois dos quatro lados, e conta
+  um passo, como o lado: o alcance de serviço e de armazém é de Chebyshev na diagonal. A carroça usa o
+  `RoadRouter.DiagonalGrid` (AStarGrid2D com `DIAGONAL_MODE_ALWAYS`, heurística octil e `_compute_cost` que dá √2
+  à diagonal pura e `BLOCKED_COST` às outras; `path` ainda descarta um caminho que passe por uma delas) e anda o
+  passo diagonal √2 vezes mais devagar em índice de caminho (`RoadRouter.step_length`), para manter a velocidade.
+- **Traçado** (`RoadPath.diagonal_path`): a escada diagonal enquanto sobram as duas distâncias e o resto em linha
+  reta. Na ferramenta de estrada a tecla de girar (`build_rotate`) alterna entre o L e a diagonal; a dica diz qual
+  está valendo e a tecla.
+- **Desenho** (`RoadView`): entre duas células ligadas pela diagonal vai uma faixa (o ladrilho esticado √2 e girado
+  45°, `diagonal_transform`) com os sulcos ao longo dela; a célula do meio da escada (`in_diagonal_run`) não leva
+  ladrilho quadrado, que deixava a borda serrilhada; a da ponta leva os sulcos na diagonal (`Ruts.DIAGONAL_DOWN`
+  e `DIAGONAL_UP`, 4 e 5 no shader). O meio-fio não sai nos lados que a faixa corta e o poste não vai na escada. A
+  calçada dos pedestres estica a esquina pela meia-esquadria (`SidewalkPath.offset_polyline`): na de 45° a soma dos
+  dois deslocamentos dava o ponto errado. Captura: `CAPTURA_SO=diagonal` no `tools/capture_buildings.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1013,7 +1030,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
-| 17 — Porto e diagonais (nossa) | em andamento desde 17/10/2026: aba Porto; depois estradas em diagonal (simulação, traçado e desenho) |
+| 17 — Porto e diagonais (nossa) | em andamento desde 17/10/2026: aba Porto, estradas em diagonal (simulação, traçado e desenho); falta a suíte e o executável |
 
 Pendências já vistas para fases futuras:
 

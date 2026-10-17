@@ -51,3 +51,14 @@ func test_single_cell_gives_nothing_to_walk() -> void:
 	var cells: Array[Vector2i] = [Vector2i(2, 5)]
 	var grid := _grid_with_road(cells)
 	assert_int(SidewalkPath.from_cells(grid, _indices(grid, cells), OFFSET).size()).is_equal(1)
+
+
+func test_a_45_degree_corner_keeps_the_sidewalk_at_the_same_distance() -> void:
+	# reto em x e depois na diagonal (Fase 17): o ponto da esquina fica a offset das duas linhas
+	var points := PackedVector3Array([Vector3(0, 0, 0), Vector3(4, 0, 0), Vector3(8, 0, 4)])
+	var shifted := SidewalkPath.offset_polyline(points, 0.6)
+	var corner := shifted[1]
+	# distância até a primeira linha (o eixo x)
+	assert_float(absf(corner.z)).is_equal_approx(0.6, 0.001)
+	# distância até a segunda linha (x − z = 4)
+	assert_float(absf(corner.x - corner.z - 4.0) / sqrt(2.0)).is_equal_approx(0.6, 0.001)
