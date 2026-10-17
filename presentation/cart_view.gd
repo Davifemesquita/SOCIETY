@@ -23,6 +23,23 @@ const MODEL_LENGTH_M := 2.6
 const MODEL_YAW := 0.0
 ## O cavalo entra entre os varais: quanto ele avança sobre a ponta da carroça.
 const HORSE_OVERLAP_M := 0.5
+## Arreio (Fase 18), no referencial da carroça e medido no cavalo do Quaternius (LENGTH_M 2,3: lombo a
+## 1,33 m do chão, meia largura 0,3 m): os varais do kit acabam na anca do cavalo e seguem até o ombro;
+## colar no pescoço, selote no lombo com a correia descendo aos varais. Distâncias a partir do meio do
+## cavalo, para a frente (−Z do cavalo).
+const SHAFT_TIP := Vector3(0.5, -0.06, -1.2)
+const SHAFT_HALF_M := 0.37
+const SHAFT_END_M := 0.6
+const COLLAR_M := 0.72
+const COLLAR_HEIGHT_M := 1.14
+## O colar deita para a frente com o pescoço (de pé, visto de lado, parecia uma tábua sobre o cavalo).
+const COLLAR_TILT := 0.5
+const COLLAR_RADIUS_M := 0.3
+const SADDLE_M := 0.15
+const BACK_M := 1.27
+const WOOD_COLOR := Color(0.4, 0.27, 0.16)
+const LEATHER_COLOR := Color(0.18, 0.1, 0.06)
+const BRASS_COLOR := Color(0.7, 0.55, 0.25)
 
 var _simulation: Simulation
 var _cell_size: float
@@ -30,8 +47,9 @@ var _bodies := MultiMeshInstance3D.new()
 var _loads := MultiMeshInstance3D.new()
 ## Uma camada por tipo de peça (GoodDef.Pile); o bem sem peça (o porco) usa a caixa colorida.
 var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
-## O cavalo de cada carroça (null sem o modelo do bicho).
+## O cavalo de cada carroça (null sem o modelo do bicho) e o arreio dele (Fase 18).
 var _horses: MultiMeshInstance3D
+var _harness: MultiMeshInstance3D
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -68,6 +86,74 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		_horses.name = "Horses"
 		_horses.multimesh.visible_instance_count = 0
 		add_child(_horses)
+		_harness = MultiMeshInstance3D.new()
+		_harness.name = "Harness"
+		_harness.multimesh = _multimesh(harness_mesh(), false)
+		_harness.multimesh.visible_instance_count = 0
+		add_child(_harness)
+
+
+## Onde fica o meio do cavalo no referencial da carroça (z; o pé no chão, y = −HEIGHT_M).
+static func horse_offset() -> float:
+	return -(MODEL_LENGTH_M * 0.5 + float(AnimalView.LENGTH_M[&"horse"]) * 0.5 - HORSE_OVERLAP_M)
+
+
+## O arreio numa malha só, no referencial da instância da carroça (a mesma transformação do corpo): os
+## varais compridos, o colar de couro com as hastes de latão, o selote e a correia que segura os varais.
+static func harness_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var horse := horse_offset()
+	var ground := -HEIGHT_M
+	var collar := Vector3(0.0, ground + COLLAR_HEIGHT_M, horse - COLLAR_M)
+	var saddle_z := horse - SADDLE_M
+	# o topo do colar vai para a frente (−Z)
+	var tilt := Basis(Vector3.RIGHT, -COLLAR_TILT)
+	for side: float in [-1.0, 1.0]:
+		var tip := Vector3(SHAFT_TIP.x * side, SHAFT_TIP.y, SHAFT_TIP.z)
+		var end := Vector3(SHAFT_HALF_M * side, collar.y - 0.32, horse - SHAFT_END_M)
+		_bar(tool, tip, end, 0.07, WOOD_COLOR)
+		# correia do selote até o varal, e o tirante do colar até a ponta do varal
+		var shaft_at := tip.lerp(end, (saddle_z - tip.z) / (end.z - tip.z))
+		_bar(tool, Vector3(0.31 * side, ground + BACK_M - 0.05, saddle_z), shaft_at, 0.05, LEATHER_COLOR)
+		_bar(tool, collar + tilt * Vector3(COLLAR_RADIUS_M * side, -0.08, 0.0), end, 0.04, LEATHER_COLOR)
+		# haste de latão na frente do colar
+		_bar(tool, collar + tilt * Vector3(COLLAR_RADIUS_M * 0.85 * side, -0.25, -0.05),
+				collar + tilt * Vector3(COLLAR_RADIUS_M * 0.6 * side, 0.3, -0.05), 0.035, BRASS_COLOR)
+	var segments := 8
+	for i: int in segments:
+		var a0 := TAU * i / segments
+		var a1 := TAU * (i + 1) / segments
+		var p0 := collar + tilt * Vector3(cos(a0), sin(a0), 0.0) * COLLAR_RADIUS_M
+		var p1 := collar + tilt * Vector3(cos(a1), sin(a1), 0.0) * COLLAR_RADIUS_M
+		_bar(tool, p0, p1, 0.09, LEATHER_COLOR)
+	_bar(tool, Vector3(-0.33, ground + BACK_M, saddle_z), Vector3(0.33, ground + BACK_M, saddle_z), 0.09, LEATHER_COLOR)
+	var mesh := tool.commit()
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	material.roughness = 0.8
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+## Barra de seção quadrada de a até b, na cor dada.
+static func _bar(tool: SurfaceTool, a: Vector3, b: Vector3, thickness: float, color: Color) -> void:
+	var along := b - a
+	if along.length_squared() < 1e-6:
+		return
+	var side := along.cross(Vector3.UP if absf(along.normalized().y) < 0.95 else Vector3.RIGHT).normalized()
+	var other := side.cross(along).normalized()
+	var box := BoxMesh.new()
+	box.size = Vector3(thickness, 1.0, thickness)
+	var arrays := box.get_mesh_arrays()
+	var colors := PackedColorArray()
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	colors.resize(vertices.size())
+	colors.fill(color)
+	arrays[Mesh.ARRAY_COLOR] = colors
+	var colored := ArrayMesh.new()
+	colored.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	tool.append_from(colored, 0, Transform3D(Basis(side, along, other), (a + b) * 0.5))
 
 
 ## As peças do modelo numa malha só, já no tamanho, no giro e com a base em y = −HEIGHT_M (a
@@ -119,6 +205,10 @@ func visible_horses() -> int:
 	return _horses.multimesh.visible_instance_count if _horses != null else 0
 
 
+func visible_harnesses() -> int:
+	return _harness.multimesh.visible_instance_count if _harness != null else 0
+
+
 ## Peças de carga à vista, de um tipo (GoodDef.Pile) ou de todos (-1).
 func cargo_items(pile: int = -1) -> int:
 	var total := 0
@@ -144,6 +234,9 @@ func _process(_delta: float) -> void:
 		if _horses.multimesh.instance_count < away.size():
 			_horses.multimesh.instance_count = away.size() + 16
 		_horses.multimesh.visible_instance_count = away.size()
+		if _harness.multimesh.instance_count < away.size():
+			_harness.multimesh.instance_count = away.size() + 16
+		_harness.multimesh.visible_instance_count = away.size()
 	var items: Dictionary[int, Array] = {}
 	for kind: int in _cargo:
 		items[kind] = []
@@ -159,9 +252,9 @@ func _process(_delta: float) -> void:
 		_bodies.multimesh.set_instance_transform(index, Transform3D(basis, place + Vector3(0.0, HEIGHT_M, 0.0)))
 		if _horses != null:
 			# o cavalo vai na frente da carroça (o −Z da base), com o pé no chão
-			var reach := MODEL_LENGTH_M * 0.5 + float(AnimalView.LENGTH_M[&"horse"]) * 0.5 - HORSE_OVERLAP_M
-			AnimalView.place(_horses.multimesh, index, &"horse", Transform3D(basis, place + basis * Vector3(0.0, 0.0, -reach)),
+			AnimalView.place(_horses.multimesh, index, &"horse", Transform3D(basis, place + basis * Vector3(0.0, 0.0, horse_offset())),
 					cart.home_id, &"walk")
+			_harness.multimesh.set_instance_transform(index, Transform3D(basis, place + Vector3(0.0, HEIGHT_M, 0.0)))
 		var tons := cart.tons()
 		var good := _cargo_good(cart)
 		var pile := good.pile if good != null else GoodDef.Pile.NONE

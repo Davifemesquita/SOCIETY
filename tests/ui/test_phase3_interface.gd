@@ -57,6 +57,8 @@ func test_cart_shows_on_the_road_while_delivering() -> void:
 	assert_int(_game.cart_view.visible_carts()).is_equal(1)
 	# um cavalo na frente da carroça (Fase 13)
 	assert_int(_game.cart_view.visible_horses()).is_equal(1)
+	# com o arreio ligando o cavalo aos varais (Fase 18)
+	assert_int(_game.cart_view.visible_harnesses()).is_equal(1)
 	# a carga vai em toras (Fase 13): uma peça por tonelada levada, nenhuma de outro tipo
 	var cart := _sim.world.cart(lumberjack)
 	assert_int(_game.cart_view.cargo_items(GoodDef.Pile.LOGS)).is_equal(mini(ceili(cart.tons() - 0.000001), 2))
@@ -94,3 +96,16 @@ func test_warehouse_panel_upgrades_the_building() -> void:
 	upgrade.pressed.emit()
 	assert_int(_sim.world.building(warehouse).level).is_equal(1)
 	assert_int(_sim.derived_state().ramps[warehouse]).is_equal(4)
+
+
+func test_the_harness_reaches_from_the_shafts_to_the_horse_collar() -> void:
+	var harness := CartView.harness_mesh().get_aabb()
+	var horse := CartView.horse_offset()
+	# dos varais do kit (na ponta da carroça) até o colar, no pescoço do cavalo
+	assert_float(harness.end.z).is_greater_equal(CartView.SHAFT_TIP.z - 0.05)
+	assert_float(harness.position.z).is_less(horse - CartView.COLLAR_M + 0.1)
+	assert_float(harness.position.z).is_greater(horse - float(AnimalView.LENGTH_M[&"horse"]) * 0.5)
+	# do varal (abaixo da caçamba) ao alto do colar, sem passar do lombo do cavalo
+	assert_float(harness.position.y).is_less(CartView.SHAFT_TIP.y)
+	assert_float(harness.end.y).is_less(-CartView.HEIGHT_M + CartView.COLLAR_HEIGHT_M + CartView.COLLAR_RADIUS_M + 0.1)
+	assert_float(harness.size.x).is_between(0.9, 1.2)

@@ -3,7 +3,8 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 res://tools/capture_phase3.tscn -- <pasta>
 ## Vila de demonstração com 10 minutos de jogo: carroças na estrada, painel do prédio com a
 ## carroça, painel e alcance do armazém, e o corte de estrada com os alertas.
-## CAPTURA_SO=animais tira só os bichos (Fase 13): ovelhas no pasto, cão na porta e o cavalo da carroça.
+## CAPTURA_SO=animais tira só os bichos (Fase 13): ovelhas no pasto, cão na porta e o cavalo da carroça
+## (e, de lado, o arreio da Fase 18).
 
 const MINUTES := 10
 
@@ -93,7 +94,8 @@ func _animals() -> void:
 	var rig := _game.camera.rig
 	for shot: Array in [["07_ovelhas.png", view.find_child("Sheep", false, false), 12.0],
 			["08_cao.png", view.find_child("Dog", false, false), 12.0],
-			["09_cavalo.png", _game.cart_view.find_child("Horses", false, false), 10.0]]:
+			["09_cavalo.png", _game.cart_view.find_child("Horses", false, false), 10.0],
+			["09b_arreio.png", _game.cart_view.find_child("Horses", false, false), 9.0]]:
 		var file_name: String = shot[0]
 		var node: Node = shot[1]
 		var distance: float = shot[2]
@@ -110,6 +112,9 @@ func _animals() -> void:
 		# a câmera fica do lado para onde o bicho olha (o −Z dele)
 		var ahead := -first.basis.z
 		rig.yaw = atan2(ahead.x, ahead.z)
+		if file_name == "09b_arreio.png":
+			# de lado, para ver o arreio (Fase 18) entre o cavalo e os varais
+			rig.yaw += PI * 0.5
 		rig.target_yaw = rig.yaw
 		rig.ground_height = 0.0
 		_game.camera.apply()

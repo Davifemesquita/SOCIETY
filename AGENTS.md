@@ -1028,6 +1028,12 @@ Regras que já custaram investigação:
   fuste de ferro fundido verde-escuro (`IRON_COLOR`) afinando, colar com a travessa de apoiar a escada do
   acendedor, assento, quatro montantes em volta do vidro aceso (o mesmo `glass_mesh`) e chapéu de quatro águas
   com remate, tudo em `LAMP_HEIGHT_M`. Captura: `CAPTURA_SO=postes`.
+- **Arreio** (`CartView.harness_mesh`, uma instância por carroça na mesma transformação do corpo): os varais do
+  kit acabam na anca do cavalo (`SHAFT_TIP`) e seguem até o ombro; colar de couro deitado com o pescoço
+  (`COLLAR_TILT`: de pé parecia uma tábua sobre o cavalo) com as hastes de latão, tirante do colar ao varal,
+  selote no lombo (`BACK_M`, medido no cavalo andando) e a correia descendo aos varais. Medidas a partir de
+  `horse_offset()`, o mesmo lugar onde o cavalo é posto. Captura: `CAPTURA_SO=animais` no
+  `tools/capture_phase3.tscn` (`09b_arreio.png`, de lado).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1057,7 +1063,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
-| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás |
+| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo |
 
 Pendências já vistas para fases futuras:
 
