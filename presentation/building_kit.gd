@@ -44,6 +44,8 @@ const UV_STONE := Vector2(7.5 / 8.0, 3.5 / 4.0)
 const UV_TIMBER := Vector2(4.5 / 8.0, 3.5 / 4.0)
 const UV_IRON := Vector2(6.5 / 8.0, 3.5 / 4.0)
 const UV_BRONZE := Vector2(4.5 / 8.0, 2.5 / 4.0)
+## Pedra clara da cornija, das vergas e do frontão (o branco da paleta, que o shader acinzenta).
+const UV_LIGHT_STONE := Vector2(2.5 / 8.0, 2.5 / 4.0)
 
 enum Walls { PLASTER, WOOD }
 enum Roof { GABLE_X, GABLE_Z, HIP, FLAT }
@@ -70,11 +72,11 @@ const BEAM := "pillar-wood"
 const STALLS: Array[String] = ["stall-red", "stall-green"]
 const BANNER := "banner-red"
 ## Detalhe das casas (Fase 13, TierDef.house_trim): cerca e portão do quintal, sebe (também a floreira),
-## frente de sacada com colunas e parapeito e coluna de pedra do pórtico.
+## coluna de pedra do pórtico e o piso da sacada (a frente de madeira do kit deu lugar à grade de ferro
+## na Fase 18).
 const FENCE := "fence"
 const GATE := "fence-gate"
 const HEDGE := "hedge"
-const BALCONY := "balcony-wall-fence"
 const PILLAR := "pillar-stone"
 const PLANKS := "planks-half"
 ## Altura da cerca, quanto a sacada e a floreira saem da parede e a altura da coluna do pórtico em
@@ -83,6 +85,17 @@ const FENCE_M := 1.0
 const BALCONY_OUT_M := 0.8
 const FLOWER_BOX_OUT_M := 0.16
 const PORTICO_HEIGHT := 0.95
+## Ornamento das casas (Fase 18), dos artesãos para cima: cornija no alto das paredes, verga de pedra
+## sobre cada janela e, nos engenheiros e investidores, a faixa entre os andares; o frontão no alto da
+## fachada, sobre a porta dos investidores; e grade de ferro (corrimão, travessa de baixo e balaústres a cada
+## RAIL_STEP_M) no lugar do parapeito de madeira das sacadas.
+const CORNICE_OUT_M := 0.16
+const CORNICE_M := 0.26
+const BAND_M := 0.1
+const LINTEL_M := 0.12
+const PEDIMENT_M := 0.7
+const RAIL_M := 0.95
+const RAIL_STEP_M := 0.19
 ## Medidas das peças do kit (caixa da peça importada): diâmetro das rodas, meio da polia, lado da viga.
 const WINDMILL_DIAMETER := 3.113
 const WATERWHEEL_DIAMETER := 1.8
@@ -398,7 +411,7 @@ static func _build(spec: Spec) -> ArrayMesh:
 	else:
 		_roof(extra, spec)
 	_silhouette(tool, extra, spec)
-	_trim(tool, spec)
+	_trim(tool, extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -576,7 +589,7 @@ static func _box_at(tool: SurfaceTool, place: Transform3D, size: Vector3, uv: Ve
 
 ## O detalhe da casa pela classe (Fase 13). As peças do kit têm a face de fora em x = 0,5, como as
 ## paredes.
-static func _trim(tool: SurfaceTool, spec: Spec) -> void:
+static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 	var hall := spec.hall()
 	var offset := Transform3D(Basis.IDENTITY, spec.hall_offset())
 	match spec.trim:
@@ -599,15 +612,21 @@ static func _trim(tool: SurfaceTool, spec: Spec) -> void:
 						_append_piece(tool, HEDGE, offset * _face_place(hall, 0, index, level,
 								Vector3(0.64, 0.9, 0.5), FLOWER_BOX_OUT_M, under))
 		TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO:
-			# sacada corrida no primeiro andar (e nos do meio, nos engenheiros): piso e frente com parapeito
+			# sacada corrida no primeiro andar (e nos do meio, nos engenheiros): piso de tábuas e grade de ferro
 			var top := hall.floors() - 1 if spec.trim == TierDef.HouseTrim.BALCONIES else mini(2, hall.floors())
 			for level: int in range(1, top):
 				for index: int in hall.cells.x:
-					_append_piece(tool, BALCONY, offset * _face_place(hall, 0, index, level,
-							Vector3(1.0, hall.floor_m(), 1.0), BALCONY_OUT_M, 0.0))
 					# o piso de tábuas vai da parede (x = 0 da peça) até a frente da sacada
 					_append_piece(tool, PLANKS, offset * _face_place(hall, 0, index, level,
 							Vector3(BALCONY_OUT_M * 2.0, 2.0, 1.0), BALCONY_OUT_M, -0.12))
+				# grade de ferro na frente e nas duas pontas da sacada corrida
+				var floor_y := level * hall.floor_m()
+				var half := hall.size_m() * 0.5
+				var wall := spec.hall_offset() + Vector3(0.0, floor_y, -half.y)
+				var out := Vector3(0.0, 0.0, -BALCONY_OUT_M)
+				_railing(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(half.x, 0.0, 0.0))
+				for end: float in [-half.x, half.x]:
+					_railing(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
 			if spec.trim == TierDef.HouseTrim.PORTICO:
 				# duas colunas de pedra dos lados da porta e sebe diante das outras células do térreo
 				var door := _wall_point(hall, 0, hall.door_index, 0)
@@ -616,10 +635,77 @@ static func _trim(tool: SurfaceTool, spec: Spec) -> void:
 					var foot := door + _face_normal(0) * 0.35 + Vector3(side * step, 0.0, 0.0)
 					_append_piece(tool, PILLAR, offset * Transform3D(Basis.from_scale(Vector3(1.7,
 							hall.floor_m() * PORTICO_HEIGHT, 2.2)), foot))
+				# o frontão fica no alto da fachada, sobre a porta: em cima do pórtico ele atravessava a sacada
+				_pediment(extra, offset * door, step * 1.4, hall.height_m)
 				for index: int in hall.cells.x:
 					if index != hall.door_index:
 						_append_piece(tool, HEDGE, offset * _face_place(hall, 0, index, 0,
 								Vector3(1.6, 3.0, 0.9), 0.45, 0.0))
+	if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]:
+		_ornament(extra, spec)
+
+
+## Cornija, vergas das janelas e (engenheiros e investidores) a faixa entre os andares, em pedra clara.
+static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	_box(tool, center + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
+			Vector3(size.x + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
+		for level: int in range(1, hall.floors()):
+			_box(tool, center + Vector3(0.0, level * hall.floor_m(), 0.0),
+					Vector3(size.x + 0.12, BAND_M, size.y + 0.12), UV_LIGHT_STONE)
+	for face: int in 4:
+		var count := hall.cells.x if face % 2 == 0 else hall.cells.y
+		var step := (size.x if face % 2 == 0 else size.y) / count
+		for level: int in hall.floors():
+			for index: int in count:
+				if slot(hall, face, index, level) != &"window":
+					continue
+				var top := hall.floor_m() * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5) + LINTEL_M
+				var at := center + _wall_point(hall, face, index, level) + Vector3(0.0, top, 0.0) \
+						+ _face_normal(face) * 0.04
+				var width := step * WINDOW_WIDTH * 1.5
+				_box(tool, at, Vector3(width, LINTEL_M, 0.1) if face % 2 == 0 else Vector3(0.1, LINTEL_M, width), UV_LIGHT_STONE)
+
+
+## Frontão: a base de pedra em "height" (o alto da parede) e o triângulo sobre ela, centrados em "front"
+## (o ponto da fachada no chão) e de frente para −Z.
+static func _pediment(tool: SurfaceTool, front: Vector3, width: float, height: float) -> void:
+	var depth := 0.7
+	_box(tool, front + Vector3(0.0, height + 0.13, 0.0), Vector3(width, 0.26, depth), UV_LIGHT_STONE)
+	var base := height + 0.26
+	var half := width * 0.5
+	var near := front.z - depth * 0.5
+	var far := front.z + depth * 0.5
+	var apex_near := Vector3(front.x, base + PEDIMENT_M, near)
+	var apex_far := Vector3(front.x, base + PEDIMENT_M, far)
+	var left_near := Vector3(front.x - half, base, near)
+	var right_near := Vector3(front.x + half, base, near)
+	var left_far := Vector3(front.x - half, base, far)
+	var right_far := Vector3(front.x + half, base, far)
+	_triangle(tool, left_near, right_near, apex_near, Vector3.FORWARD, UV_LIGHT_STONE)
+	_triangle(tool, left_far, right_far, apex_far, Vector3.BACK, UV_LIGHT_STONE)
+	_quad(tool, left_near, apex_near, apex_far, left_far, Vector3(-1.0, 1.0, 0.0), UV_LIGHT_STONE)
+	_quad(tool, right_near, apex_near, apex_far, right_far, Vector3(1.0, 1.0, 0.0), UV_LIGHT_STONE)
+
+
+## Grade de ferro de a até b (no chão da sacada, em x ou em z): corrimão, travessa de baixo e balaústres.
+static func _railing(tool: SurfaceTool, a: Vector3, b: Vector3) -> void:
+	var along := b - a
+	var length := along.length()
+	if length < 0.05:
+		return
+	var along_x := absf(along.x) > absf(along.z)
+	var middle := (a + b) * 0.5
+	for rail: Vector2 in [Vector2(RAIL_M, 0.06), Vector2(0.12, 0.04)]:
+		_box(tool, middle + Vector3(0.0, rail.x, 0.0),
+				Vector3(length, rail.y, rail.y) if along_x else Vector3(rail.y, rail.y, length), UV_IRON)
+	var count := maxi(1, roundi(length / RAIL_STEP_M))
+	for i: int in count + 1:
+		var at := a + along * (float(i) / count)
+		_box(tool, at + Vector3(0.0, RAIL_M * 0.5, 0.0), Vector3(0.03, RAIL_M, 0.03), UV_IRON)
 
 
 ## Peça presa à fachada: o meio da célula na face de fora da parede, saindo out_m dela e up_m acima do

@@ -1019,6 +1019,11 @@ Regras que já custaram investigação:
   entreabertas a `GATE_OPEN` (aberta de todo, a folha passava da área e entrava na rua). Cores novas da paleta
   do kit: `UV_TIMBER` (o madeiramento escuro), `UV_IRON` e `UV_BRONZE`. Captura: `CAPTURA_SO=epoca` no
   `tools/capture_buildings.tscn`.
+- **Ornamento das casas** (`BuildingKit._ornament`, `_pediment`, `_railing`), dos artesãos para cima: cornija de
+  pedra clara (`UV_LIGHT_STONE`) no alto das paredes, verga sobre cada janela e, nos engenheiros e investidores,
+  a faixa entre os andares. A sacada troca a frente de madeira do kit por grade de ferro (corrimão, travessa e
+  balaústres a cada `RAIL_STEP_M`) na frente e nas pontas. O frontão dos investidores fica no alto da fachada,
+  sobre a porta: em cima do pórtico ele atravessava a sacada. Captura: `CAPTURA_SO=detalhes` (`21_frontao.png`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1048,7 +1053,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
-| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas |
+| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas |
 
 Pendências já vistas para fases futuras:
 

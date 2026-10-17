@@ -273,3 +273,24 @@ func test_heavy_factories_get_a_wide_gate() -> void:
 		assert_float(BuildingKit.mesh(spec).get_aabb().position.z).is_less(-spec.size_m().y * 0.5 - 0.5)
 	# fumaça leve fica com a porta comum
 	assert_int(_spec(&"bakery").door).is_equal(BuildingKit.Door.DOOR)
+
+
+func test_upper_class_houses_get_cornice_lintels_pediment_and_iron_railings() -> void:
+	# cornija e uma verga de pedra (uma caixa, 12 triângulos) sobre cada janela, dos artesãos para cima
+	for tier: StringName in [&"artisans", &"engineers", &"investors"]:
+		var spec := _house(tier)
+		var bare := _house(tier)
+		bare.trim = TierDef.HouseTrim.NONE
+		var lintels := BuildingKit.windows(spec).size() * 12
+		assert_int(BuildingKit.triangles(spec) - BuildingKit.triangles(bare)).override_failure_message(String(tier)) \
+				.is_greater(lintels)
+	# a sacada dos engenheiros tem a grade de ferro no lugar da peça de madeira do kit
+	var engineers := _house(&"engineers")
+	var wood := _house(&"engineers")
+	wood.trim = TierDef.HouseTrim.NONE
+	var railing_triangles := BuildingKit.triangles(engineers) - BuildingKit.triangles(wood)
+	assert_int(railing_triangles).is_greater(int(engineers.size_m().x / BuildingKit.RAIL_STEP_M) * 12)
+	# o frontão dos investidores passa do alto da parede, na frente
+	var investors := _house(&"investors")
+	var pediment := BuildingKit.mesh(investors).get_aabb()
+	assert_float(pediment.end.y).is_greater_equal(investors.height_m + BuildingKit.PEDIMENT_M)
