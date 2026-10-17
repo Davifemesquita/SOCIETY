@@ -3,7 +3,7 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- <pasta>
 ## Arquipélago da semente 1840: visto de cima, a ilha principal, o litoral com a água, a floresta,
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
-## água turva perto da fundição, e a noite.
+## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14).
 
 const SEED := 1840
 
@@ -30,6 +30,10 @@ func _run() -> void:
 	var grid := _sim.world.island(0)
 	var rig := _game.camera.rig
 	_set_hour(11.0)
+	if OS.get_environment("CAPTURA_SO") == "ponte":
+		await _bridge(grid)
+		get_tree().quit()
+		return
 	# de cima: o arquipélago inteiro (fora do limite de zoom do jogador, só para a captura)
 	var bounds := _game.world_bounds()
 	await _shot("01_arquipelago.png", Vector3(bounds.get_center().x, 0.0, bounds.get_center().y), 1500.0, 0.0)
@@ -100,6 +104,35 @@ func _build_village(post_origin: Vector2i, post_rotation: int) -> void:
 		_sim.execute(PlaceBuildingCommand.new(0, &"furnace", furnace_origin, furnace_rotation))
 		var center := grid.rect_world(Footprint.rect(furnace_origin, _sim.data.building(&"furnace").size, furnace_rotation))
 		print("fundição em %s; poluição da água ali: %.2f" % [furnace_origin, _game.water_view.pollution_at(center.x, center.z)])
+
+
+## Estrada de terra atravessando o rio na primeira célula de rio do meio para fora (Fase 14).
+func _bridge(grid: IslandGrid) -> void:
+	_sim.free_build = true
+	# a célula de rio do meio da lista, atravessada de margem a margem pelo lado mais estreito
+	var rivers: Array[int] = []
+	for i: int in grid.ground.size():
+		if grid.ground[i] == IslandGrid.Ground.RIVER:
+			rivers.append(i)
+	var river := grid.cell_at(rivers[rivers.size() / 2])
+	for step: Vector2i in [Vector2i(1, 0), Vector2i(0, 1)]:
+		var a := river
+		var b := river
+		while grid.ground_at(a) == IslandGrid.Ground.RIVER:
+			a -= step
+		while grid.ground_at(b) == IslandGrid.Ground.RIVER:
+			b += step
+		if grid.ground_at(a) != IslandGrid.Ground.LAND or grid.ground_at(b) != IslandGrid.Ground.LAND:
+			continue
+		var result := _sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(a - step * 3, b + step * 3)))
+		print("ponte de %s a %s: %s" % [a, b, result.ok()])
+		if result.ok():
+			break
+	_game.road_view.rebuild()
+	print("travessas ", _game.road_view.rail_count(), " postes e estacas ", _game.road_view.post_count())
+	var focus := grid.cell_world(river)
+	await _shot("10_ponte.png", focus, 16.0, 0.5)
+	await _shot("11_ponte_de_perto.png", focus, 9.0, 2.2)
 
 
 func _first_cell(grid: IslandGrid, accepts: Callable) -> Vector2i:

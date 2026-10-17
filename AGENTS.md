@@ -44,7 +44,8 @@ tools/godot.sh planilha            # CSV de balanceamento a partir dos dados (ex
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://tools/capture_phase3.tscn -- /pasta/de/saida
 # Fase 4: céu em seis horas do dia, multidão de perto e de longe, janelas à noite
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
-# Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite)
+# Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite);
+# CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase6.tscn -- /pasta/de/saida
@@ -897,6 +898,12 @@ Regras que já custaram investigação:
   ladrilho: segue a ladeira) em cada lado que não dá para outra estrada; a terra ganha dois sulcos de roda no
   `shaders/road.gdshader`, pela direção que vai no dado da instância (`RoadView.ruts`: ao longo de x, de z, os
   dois no cruzamento e na curva, nenhum na célula solta). O poste da Fase 13 fica em cima do meio-fio.
+- **Ponte** (também na `RoadView`): tábuas de través no `shaders/road.gdshader` (pela direção dos sulcos, alinhadas
+  no mundo para emendar entre células, cada uma num tom) e, em cada lado da célula de rio que não dá para outra
+  estrada (`RoadView.railed`), corrimão de duas travessas com poste no meio e nos cantos (o canto da frente só onde
+  o corrimão acaba, para não repetir o poste da vizinha) e uma estaca do tabuleiro até `PILE_SINK_M` dentro do leito.
+  Postes e estacas são a mesma caixa de 1 m esticada, num MultiMesh só. A cor da instância chega em sRGB no
+  shader e é convertida lá (a tábua saía desbotada desde a Fase 9).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -922,7 +929,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
-| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas; depois ponte de madeira e pássaros |
+| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão; depois pássaros |
 
 Pendências já vistas para fases futuras:
 
