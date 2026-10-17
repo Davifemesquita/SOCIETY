@@ -585,7 +585,7 @@ Regras que já custaram investigação:
   material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
   cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
   `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
-- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.17.0 (0.16.0 na Fase 16, 0.15.0 na Fase 15, 0.14.0 na Fase 14, 0.13.0 na Fase 13, 0.12.0 na Fase 12, 0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
+- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.18.0 (0.17.0 na Fase 17, 0.16.0 na Fase 16, 0.15.0 na Fase 15, 0.14.0 na Fase 14, 0.13.0 na Fase 13, 0.12.0 na Fase 12, 0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
   `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
 
 ### Segunda região climática (Fase 11)
@@ -1063,7 +1063,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
-| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo |
+| 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
 
 Pendências já vistas para fases futuras:
 
