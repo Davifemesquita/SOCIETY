@@ -146,7 +146,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `core/settings.gd` | autoload `Settings`: gráficos, áudio (5 barramentos), teclas, idioma, escala e daltonismo em `user://settings.cfg` |
 | `data/game_config.gd` + `.tres` | `GameConfig`: toda constante ajustável; `validate()` lista valor inválido |
 | `core/input_actions.gd` | atalhos padrão no InputMap (tecla física), os remapeáveis e o nome da tecla no teclado do jogador |
-| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 60 prédios (`buildings/`, com as decorações da Fase 16), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) 8 especialistas (`specialists/`), 3 cenários (`scenarios/`) e 11 conquistas (`achievements/`) |
+| `data/game_data.tres` | todas as definições: 41 bens (`goods/`), 5 classes (`tiers/`), 63 prédios (`buildings/`, com as 6 decorações da Fase 16), perfis de ilha (`islands/`, temperados e tropicais), 4 navios (`ships/`: mercante, o do comerciante, a fragata e o clíper), o comerciante (`traders/`), 14 metas guiadas (`goals/`), 7 eventos (`events/`), 12 encomendas (`missions/`), 3 companhias rivais (`rivals/`) 8 especialistas (`specialists/`), 3 cenários (`scenarios/`) e 11 conquistas (`achievements/`) |
 | `data/*_def.gd` | `GoodDef`, `TierDef`, `NeedCategoryDef`, `BuildingDef`, `IslandProfileDef`, `ShipDef`, `TraderDef`, `GoalDef` |
 | `sim/island_grid.gd` | grade da ilha: ocupação (`PackedInt32Array`, id do prédio) e estradas (`PackedByteArray`) |
 | `sim/footprint.gd` | retângulo girado (rotação 0 = frente em −Z) e células da face de entrada |
@@ -968,6 +968,10 @@ Regras que já custaram investigação:
 - **Praça com chafariz** (3×3, operários 100, 900 moedas e 6 tijolos, beleza 0,45 em 7 células): lajes de pedra em
   tons, meio-fio, bacia octogonal com a coluna e a taça, dois bancos (o mesmo `_bench`, virado) e o jato, um
   `CPUParticles3D` por praça que a `DecorationView` cria e tira junto com ela.
+- **Estátua** (2×2, artesãos 100, beleza 0,35 em 6) e **coreto** (3×3, engenheiros 100, beleza 0,55 em 9): figura
+  genérica de bronze com azinhavre sobre pedestal de degraus num canteiro de grama; coreto de piso octogonal
+  elevado, oito colunas de ferro, guarda-corpo aberto na escada da frente e telhado de oito águas. Leque de
+  triângulos (piso e telhado) segue a ordem da `CarriedGoods._lump`, que é a que o Godot desenha por fora.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -995,7 +999,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
-| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco, praça com chafariz; depois estátua e coreto, camada Beleza |
+| 16 — Praças e jardins (nossa) | em andamento desde 17/10/2026: beleza na simulação, aba Decoração com árvore, canteiro e banco, praça com chafariz, estátua e coreto; depois camada Beleza e balanceamento |
 
 Pendências já vistas para fases futuras:
 

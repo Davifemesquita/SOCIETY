@@ -201,6 +201,10 @@
 			640,
 			384
 		],
+		"building_bandstand": [
+			128,
+			1920
+		],
 		"building_brewery": [
 			1536,
 			384
@@ -392,6 +396,10 @@
 		"building_soap_factory": [
 			1152,
 			384
+		],
+		"building_statue": [
+			0,
+			1920
 		],
 		"building_steel_beam_works": [
 			256,
@@ -942,19 +950,19 @@
 			1408
 		],
 		"status_bad": [
-			256,
+			512,
 			1920
 		],
 		"status_good": [
-			0,
+			256,
 			1920
 		],
 		"status_missing": [
-			384,
+			640,
 			1920
 		],
 		"status_partial": [
-			128,
+			384,
 			1920
 		],
 		"tier_artisans": [

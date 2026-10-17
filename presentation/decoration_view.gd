@@ -1,6 +1,7 @@
 class_name DecorationView
 extends Node3D
-## Decoração (Fase 16): árvore plantada, canteiro de flores, banco de praça e praça calçada com chafariz,
+## Decoração (Fase 16): árvore plantada, canteiro de flores, banco de praça, praça calçada com chafariz, estátua e
+## coreto,
 ## gerados aqui com a cor no vértice, um MultiMesh por tipo, no meio da área do prédio e girados com ele. O
 ## jato do chafariz é um CPUParticles3D por praça. Decoração sem malha própria fica numa caixa na cor do
 ## BuildingDef. Refeito quando prédio ou mundo muda. Só lê o mundo.
@@ -10,6 +11,9 @@ const SPOUT_HEIGHT_M := 2.1
 const JET_DROPS := 48
 const WATER := Color(0.45, 0.62, 0.72)
 const STONE := Color(0.62, 0.6, 0.56)
+## Bronze com azinhavre (estátua) e o branco do coreto.
+const BRONZE := Color(0.32, 0.45, 0.38)
+const PAINT := Color(0.9, 0.88, 0.82)
 
 var _simulation: Simulation
 var _layers: Dictionary[StringName, MultiMeshInstance3D] = {}
@@ -136,6 +140,10 @@ static func mesh_for(def: BuildingDef, cell_size: float) -> ArrayMesh:
 			_bench(tool, Vector3.ZERO, false)
 		&"fountain_square":
 			_fountain_square(tool, def.size.x * cell_size)
+		&"statue":
+			_statue(tool, def.size.x * cell_size)
+		&"bandstand":
+			_bandstand(tool, def.size.x * cell_size)
 		_:
 			_box(tool, Vector3(0.0, def.height_m * 0.5, 0.0), Vector3(def.size.x * cell_size * 0.4, def.height_m * 0.5,
 					def.size.y * cell_size * 0.4), def.color)
@@ -213,6 +221,82 @@ static func _fountain_square(tool: SurfaceTool, side: float) -> void:
 	_box(tool, Vector3(0.0, 1.9, 0.0), Vector3(0.06, 0.2, 0.06), STONE.darkened(0.1))
 	_bench(tool, Vector3(0.0, 0.1, -half + 0.45), true)
 	_bench(tool, Vector3(0.0, 0.1, half - 0.45), false)
+
+
+## Estátua de bronze sobre pedestal de dois degraus, num canteiro de grama: uma figura de pé, de casaca, com o
+## braço direito estendido para a frente (−Z). Figura genérica, sem personagem.
+static func _statue(tool: SurfaceTool, side: float) -> void:
+	var half := side * 0.5 - 0.1
+	_box(tool, Vector3(0.0, 0.03, 0.0), Vector3(half, 0.03, half), Color(0.33, 0.52, 0.25))
+	_box(tool, Vector3(0.0, 0.15, 0.0), Vector3(1.1, 0.15, 1.1), STONE.darkened(0.08))
+	_box(tool, Vector3(0.0, 0.4, 0.0), Vector3(0.85, 0.1, 0.85), STONE)
+	_box(tool, Vector3(0.0, 1.05, 0.0), Vector3(0.5, 0.55, 0.5), STONE.lightened(0.05))
+	_box(tool, Vector3(0.0, 1.65, 0.0), Vector3(0.6, 0.05, 0.6), STONE.darkened(0.05))
+	var base := 1.7
+	for x: float in [-0.12, 0.12]:
+		_box(tool, Vector3(x, base + 0.45, 0.0), Vector3(0.08, 0.45, 0.09), BRONZE)
+	CarriedGoods._lump(tool, Vector3(0.0, base + 1.25, 0.0), Vector3(0.3, 0.45, 0.2), BRONZE)
+	CarriedGoods._lump(tool, Vector3(0.0, base + 0.95, 0.04), Vector3(0.28, 0.3, 0.22), BRONZE.darkened(0.08))
+	CarriedGoods._lump(tool, Vector3(0.0, base + 1.85, 0.0), Vector3(0.13, 0.16, 0.13), BRONZE.lightened(0.05))
+	_box(tool, Vector3(0.24, base + 1.45, -0.28), Vector3(0.05, 0.05, 0.3), BRONZE)
+	_box(tool, Vector3(-0.24, base + 1.05, 0.0), Vector3(0.05, 0.3, 0.05), BRONZE)
+
+
+## Coreto: piso octogonal elevado com degrau, oito colunas finas de ferro, guarda-corpo baixo entre elas
+## (aberto na frente, −Z, para a escada) e telhado de oito águas com o pináculo.
+static func _bandstand(tool: SurfaceTool, side: float) -> void:
+	# o raio deixa a escada da frente dentro da área do prédio
+	var radius := side * 0.5 - 0.7
+	var floor_y := 0.6
+	var iron := Color(0.18, 0.2, 0.2)
+	for i: int in 8:
+		var angle := TAU * (i + 0.5) / 8.0
+		var out := Vector3(cos(angle), 0.0, sin(angle))
+		var tangent := radius * 0.42
+		_wall(tool, out * (radius - 0.5) + Vector3(0.0, floor_y * 0.5, 0.0), angle, Vector3(0.5, floor_y * 0.5, tangent),
+				STONE)
+		_wall(tool, out * (radius + 0.15) + Vector3(0.0, 0.15, 0.0), angle, Vector3(0.18, 0.15, tangent + 0.08),
+				STONE.darkened(0.1))
+	# piso de tábuas em oito lados, com os cantos onde as muretas se encontram
+	tool.set_color(Color(0.55, 0.42, 0.28))
+	var corner := radius / cos(PI / 8.0)
+	var deck := Vector3(0.0, floor_y + 0.02, 0.0)
+	for i: int in 8:
+		var a := TAU * i / 8.0
+		var b := TAU * (i + 1) / 8.0
+		for vertex: Vector3 in [Vector3(cos(a) * corner, deck.y, sin(a) * corner), Vector3(cos(b) * corner, deck.y, sin(b) * corner), deck]:
+			tool.add_vertex(vertex)
+	var top := floor_y + 2.6
+	for i: int in 8:
+		var angle := TAU * i / 8.0
+		var post := Vector3(cos(angle), 0.0, sin(angle)) * (radius - 0.1)
+		_box(tool, post + Vector3(0.0, (floor_y + top) * 0.5, 0.0), Vector3(0.06, (top - floor_y) * 0.5, 0.06), iron)
+		var next_angle := TAU * (i + 1) / 8.0
+		var next := Vector3(cos(next_angle), 0.0, sin(next_angle)) * (radius - 0.1)
+		var middle := (post + next) * 0.5
+		var facing := atan2(middle.z, middle.x)
+		# guarda-corpo, menos no vão da escada (o lado que olha para −Z)
+		if middle.z > -radius * 0.8:
+			_wall(tool, middle + Vector3(0.0, floor_y + 0.5, 0.0), facing, Vector3(0.03, 0.04, post.distance_to(next) * 0.5), PAINT)
+			_wall(tool, middle + Vector3(0.0, floor_y + 0.2, 0.0), facing, Vector3(0.03, 0.03, post.distance_to(next) * 0.5), PAINT)
+	# a escada da frente
+	for step: int in 3:
+		# o degrau de cima fica no nível do piso (floor_y = 3 × 0,2)
+		var rise := (step + 1) * floor_y / 3.0
+		_box(tool, Vector3(0.0, rise * 0.5, -radius - 0.6 + step * 0.3), Vector3(0.7, rise * 0.5, 0.15), STONE)
+	var roof := Color(0.32, 0.42, 0.38)
+	var eave := radius + 0.35
+	var apex := Vector3(0.0, top + 1.4, 0.0)
+	tool.set_color(roof)
+	for i: int in 8:
+		var a := TAU * i / 8.0
+		var b := TAU * (i + 1) / 8.0
+		var p := Vector3(cos(a) * eave, top, sin(a) * eave)
+		var q := Vector3(cos(b) * eave, top, sin(b) * eave)
+		for vertex: Vector3 in [p, q, apex, q, p, Vector3(0.0, top, 0.0)]:
+			tool.add_vertex(vertex)
+	_box(tool, apex + Vector3(0.0, 0.25, 0.0), Vector3(0.04, 0.3, 0.04), iron)
+	CarriedGoods._lump(tool, apex + Vector3(0.0, 0.55, 0.0), Vector3(0.08, 0.08, 0.08), Color(0.75, 0.6, 0.25))
 
 
 ## Mureta girada angle em torno de y (a meia-medida half no referencial dela, com x para fora).

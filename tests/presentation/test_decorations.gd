@@ -46,3 +46,12 @@ func test_the_fountain_square_comes_with_the_workers() -> void:
 	var def := _sim.data.building(&"fountain_square")
 	assert_str(String(def.unlock_tier)).is_equal("workers")
 	assert_float(def.beauty).is_greater(_sim.data.building(&"planted_tree").beauty * 2.0)
+
+
+func test_statue_and_bandstand_come_later_and_beautify_more() -> void:
+	var statue := _sim.data.building(&"statue")
+	var bandstand := _sim.data.building(&"bandstand")
+	assert_str(String(statue.unlock_tier)).is_equal("artisans")
+	assert_str(String(bandstand.unlock_tier)).is_equal("engineers")
+	assert_float(bandstand.beauty).is_greater(_sim.data.building(&"fountain_square").beauty)
+	assert_int(bandstand.beauty_radius_cells).is_greater(statue.beauty_radius_cells)
