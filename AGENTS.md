@@ -925,6 +925,11 @@ Regras que já custaram investigação:
   cabeços de amarração de ferro na ponta. Sem cais (píer sem estrada até um entreposto), a passarela vai para o
   mar mais perto (`seaward`, pela célula de mar: a altura não serve, a ilha plana fica no zero); antes ia para trás
   da entrada e entrava pela terra, por baixo do prédio vizinho.
+- **Cais do entreposto** (também na `HarborView`): tábuas de `QUAY_DEPTH_M` no lado do mar, na largura do prédio,
+  cabeços na beira, a carga de `QUAY_CARGO` (barris, caixotes e sacos do `CargoKit`) no fundo e dois barcos a remo
+  (`boat_mesh`, casco aberto gerado no código) amarrados de comprido; cada píer ganha um barco ao lado da
+  passarela. O barco só fica onde boia (`afloat`: célula de mar **e** fundo abaixo da quilha; a praia é célula de
+  mar e fica acima da água), andando para fora até `BOAT_SEARCH_M`; sem isso, nenhum barco.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -951,7 +956,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
-| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer; depois cais do entreposto, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos |
+| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga; depois feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos |
 
 Pendências já vistas para fases futuras:
 

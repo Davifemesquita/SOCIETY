@@ -142,6 +142,13 @@ func _harbor(grid: IslandGrid) -> void:
 	var focus := start + direction * length * 0.5
 	await _shot("12_porto.png", focus, 45.0, atan2(direction.x, direction.z) + 0.6)
 	await _shot("13_trapiche.png", focus, 18.0, atan2(direction.x, direction.z) + PI * 0.5)
+	# o cais do entreposto, com a carga e os barcos (Fase 15, parte 2)
+	var post_id := grid.building_at(post_origin)
+	var quay := HarborView.walkway(_sim, _sim.world.building(post_id))
+	var quay_start: Vector3 = quay["start"]
+	var quay_direction: Vector3 = quay["direction"]
+	print("barcos ", _game.harbor_view.boat_count(), " carga ", _game.harbor_view.cargo_count())
+	await _shot("14_cais.png", quay_start + quay_direction * 2.0, 22.0, atan2(quay_direction.x, quay_direction.z) + 0.5)
 
 
 ## Estrada de terra atravessando o rio na primeira célula de rio do meio para fora (Fase 14).

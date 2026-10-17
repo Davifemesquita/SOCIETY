@@ -39,6 +39,8 @@ func test_the_pier_has_planks_piles_and_two_bollards() -> void:
 	var depth := 4 * _sim.config.cell_size_m
 	assert_int(view.board_count()).is_equal(int(depth / step) + int(HarborView.WALK_DEFAULT_M / step))
 	assert_int(view.bollard_count()).is_equal(2)
+	# e um barco amarrado ao lado da passarela, na água
+	assert_int(view.boat_count()).is_equal(1)
 	# duas fileiras de estacas na área e na passarela
 	var area_piles := (int(depth / HarborView.PILE_STEP_M) + 1) * 2
 	var walk_piles := (int(HarborView.WALK_DEFAULT_M / HarborView.PILE_STEP_M) + 1) * 2
@@ -53,3 +55,34 @@ func test_the_building_view_draws_no_box_for_the_pier() -> void:
 	var node: Node3D = buildings.get_child(buildings.get_child_count() - 1)
 	for child: Node in node.get_children():
 		assert_bool(child is MeshInstance3D).override_failure_message("caixa no píer %d" % pier).is_false()
+
+
+func test_the_trading_post_gets_a_quay_with_cargo_and_two_boats() -> void:
+	var view := _view()
+	var post := SimFixture.place(_sim, &"trading_post", Vector2i(30, 0), 2)
+	view.rebuild()
+	var def := _sim.data.building(&"trading_post")
+	var width := def.size.x * _sim.config.cell_size_m
+	assert_int(view.bollard_count()).is_equal(maxi(int(width / HarborView.QUAY_BOLLARD_STEP_M), 1))
+	assert_int(view.boat_count()).is_equal(2)
+	assert_int(view.cargo_count()).is_equal(HarborView.QUAY_CARGO.size())
+	var plan := HarborView.walkway(_sim, _sim.world.building(post))
+	var direction: Vector3 = plan["direction"]
+	assert_vector(direction).is_equal(Vector3(0.0, 0.0, -1.0))
+
+
+func test_the_rowboat_is_an_open_hull_with_the_keel_at_zero() -> void:
+	var mesh := HarborView.boat_mesh()
+	var box := mesh.get_aabb()
+	assert_float(box.position.y).is_equal_approx(0.0, 0.001)
+	assert_float(box.size.z).is_equal_approx(HarborView.BOAT_LENGTH_M, 0.001)
+	assert_float(box.size.x).is_equal_approx(HarborView.BOAT_BEAM_M, 0.001)
+
+
+func test_a_boat_is_never_moored_on_land() -> void:
+	# píer no meio da ilha plana, longe do mar: o trapiche fica, o barco não
+	var view := _view()
+	SimFixture.place(_sim, &"pier", Vector2i(40, 18), 0)
+	view.rebuild()
+	assert_int(view.board_count()).is_greater(0)
+	assert_int(view.boat_count()).is_equal(0)

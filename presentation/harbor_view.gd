@@ -5,6 +5,8 @@ extends Node3D
 ## amarração na ponta. Sem cais (píer sem estrada até um entreposto), a passarela vai para o mar mais perto
 ## (`seaward`). Tábuas, estacas e cabeços são caixas e cilindros, um MultiMesh por peça, refeitos
 ## quando prédio, estrada ou mundo muda. Só lê o mundo.
+## Parte 2: o entreposto ganha cais de tábuas no lado do mar, com cabeços na beira, carga (barris, caixotes e sacos
+## do CargoKit) e dois barcos a remo amarrados; cada píer ganha um barco ao lado da passarela.
 
 ## Tábua: largura (ao longo da passarela), fresta, espessura e altura do tabuleiro acima do chão (ou da água).
 const BOARD_WIDTH_M := 0.3
@@ -24,6 +26,20 @@ const PILE_SINK_M := 1.5
 ## Cabeço de amarração: raio e altura acima do tabuleiro.
 const BOLLARD_RADIUS_M := 0.16
 const BOLLARD_HEIGHT_M := 0.45
+## Cais do entreposto: fundo (para o mar), espaço entre cabeços e a carga (tipo de peça por lugar, da esquerda
+## para a direita, no fundo do cais).
+const QUAY_DEPTH_M := 3.0
+const QUAY_BOLLARD_STEP_M := 3.0
+const QUAY_CARGO: Array[int] = [GoodDef.Pile.BARREL, GoodDef.Pile.BARREL, GoodDef.Pile.CRATE, GoodDef.Pile.SACK,
+		GoodDef.Pile.SACK, GoodDef.Pile.CRATE, GoodDef.Pile.BARREL]
+## Barco a remo: comprimento, boca, pontal e quanto o casco afunda na água.
+const BOAT_LENGTH_M := 4.0
+const BOAT_BEAM_M := 1.3
+const BOAT_DEPTH_M := 0.5
+const BOAT_DRAFT_M := 0.15
+const BOAT_COLOR := Color(0.36, 0.25, 0.16)
+const BOAT_SEARCH_M := 12
+const BOAT_KEEL_CLEARANCE_M := 0.2
 const WOOD_COLOR := Color(0.45, 0.33, 0.22)
 const IRON_COLOR := Color(0.16, 0.16, 0.17)
 
@@ -31,6 +47,8 @@ var _simulation: Simulation
 var _boards := MultiMeshInstance3D.new()
 var _piles := MultiMeshInstance3D.new()
 var _bollards := MultiMeshInstance3D.new()
+var _boats := MultiMeshInstance3D.new()
+var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
 var _dirty: bool = false
 
 
@@ -57,13 +75,29 @@ func setup(simulation: Simulation) -> void:
 	bollard.radial_segments = 10
 	bollard.rings = 1
 	bollard.material = iron
-	for part: Array in [[_boards, "Boards", board], [_piles, "Piles", pile], [_bollards, "Bollards", bollard]]:
+	var hull := StandardMaterial3D.new()
+	hull.albedo_color = BOAT_COLOR
+	hull.roughness = 0.8
+	hull.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var boat := boat_mesh()
+	boat.surface_set_material(0, hull)
+	var parts: Array = [[_boards, "Boards", board], [_piles, "Piles", pile], [_bollards, "Bollards", bollard],
+			[_boats, "Boats", boat]]
+	for pile_kind: int in [GoodDef.Pile.BARREL, GoodDef.Pile.CRATE, GoodDef.Pile.SACK]:
+		var piece := CargoKit.mesh(pile_kind)
+		if piece != null:
+			_cargo[pile_kind] = MultiMeshInstance3D.new()
+			parts.append([_cargo[pile_kind], "Cargo%d" % pile_kind, piece])
+	for part: Array in parts:
 		var layer: MultiMeshInstance3D = part[0]
 		layer.name = part[1]
 		layer.multimesh = MultiMesh.new()
 		layer.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		layer.multimesh.mesh = part[2]
 		add_child(layer)
+	for pile_kind: int in _cargo:
+		if CargoKit.tinted(pile_kind):
+			_cargo[pile_kind].multimesh.use_colors = true
 	EventBus.building_placed.connect(func(_building_id: int) -> void: _dirty = true)
 	EventBus.building_removed.connect(func(_building_id: int) -> void: _dirty = true)
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: _dirty = true)
@@ -83,6 +117,18 @@ func bollard_count() -> int:
 	return _bollards.multimesh.instance_count
 
 
+func boat_count() -> int:
+	return _boats.multimesh.instance_count
+
+
+## Peças de carga nos cais, de todos os tipos.
+func cargo_count() -> int:
+	var total := 0
+	for layer: MultiMeshInstance3D in _cargo.values():
+		total += layer.multimesh.instance_count
+	return total
+
+
 func _process(_delta: float) -> void:
 	if _dirty:
 		rebuild()
@@ -93,17 +139,36 @@ func rebuild() -> void:
 	var boards: Array[Transform3D] = []
 	var piles: Array[Transform3D] = []
 	var bollards: Array[Transform3D] = []
+	var boats: Array[Transform3D] = []
+	var cargo: Dictionary[int, Array] = {}
+	for pile_kind: int in _cargo:
+		cargo[pile_kind] = []
 	var world := _simulation.world
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := _simulation.def_of(record)
-		if def.kind != BuildingDef.Kind.PIER:
-			continue
-		var plan := walkway(_simulation, record)
-		_pier(plan, boards, piles, bollards)
+		if def.kind == BuildingDef.Kind.PIER:
+			var plan := walkway(_simulation, record)
+			_pier(plan, boards, piles, bollards)
+			var start: Vector3 = plan["start"]
+			var direction: Vector3 = plan["direction"]
+			var length: float = plan["length"]
+			var across := Vector3(-direction.z, 0.0, direction.x)
+			_moor(boats, start + direction * (length - BOAT_LENGTH_M * 0.6)
+					+ across * (WALK_WIDTH_M * 0.5 + BOAT_BEAM_M * 0.7), direction, direction)
+		elif def.is_trading_post:
+			_quay(walkway(_simulation, record), boards, piles, bollards, boats, cargo)
 	_fill(_boards, boards)
 	_fill(_piles, piles)
 	_fill(_bollards, bollards)
+	_fill(_boats, boats)
+	for pile_kind: int in _cargo:
+		var places: Array[Transform3D] = []
+		places.assign(cargo[pile_kind])
+		_fill(_cargo[pile_kind], places)
+		if CargoKit.tinted(pile_kind):
+			for i: int in places.size():
+				_cargo[pile_kind].multimesh.set_instance_color(i, CargoKit.SACK_COLOR)
 
 
 ## O traçado do trapiche: [começo (meio do lado do prédio virado para o mar, no chão), direção no plano
@@ -141,6 +206,93 @@ static func walkway(simulation: Simulation, record: BuildingRecord) -> Dictionar
 	}
 
 
+## Cais do entreposto: tábuas de QUAY_DEPTH_M no lado do mar, na largura do prédio, cabeços na beira, a carga
+## no fundo e dois barcos amarrados de comprido na frente.
+func _quay(plan: Dictionary, boards: Array[Transform3D], piles: Array[Transform3D], bollards: Array[Transform3D],
+		boats: Array[Transform3D], cargo: Dictionary[int, Array]) -> void:
+	var half: Vector2 = plan["half"]
+	var start: Vector3 = plan["start"]
+	var direction: Vector3 = plan["direction"]
+	var deck: float = plan["deck"]
+	var across := Vector3(-direction.z, 0.0, direction.x)
+	var width := (half.y if direction.x != 0.0 else half.x) * 2.0
+	_planks(start, direction, across, QUAY_DEPTH_M, width, deck, boards, piles)
+	var edge := start + direction * (QUAY_DEPTH_M - 0.3)
+	var count := maxi(int(width / QUAY_BOLLARD_STEP_M), 1)
+	for i: int in count:
+		var spot := edge + across * ((i + 0.5) * width / count - width * 0.5)
+		bollards.append(Transform3D(Basis.IDENTITY, Vector3(spot.x, deck + BOLLARD_HEIGHT_M * 0.5, spot.z)))
+	var facing := Basis.looking_at(-direction, Vector3.UP)
+	for i: int in QUAY_CARGO.size():
+		var pile_kind: int = QUAY_CARGO[i]
+		if not cargo.has(pile_kind):
+			continue
+		var spot := start + direction * (CargoKit.ITEM_M * 0.7) + across * ((i - QUAY_CARGO.size() * 0.5 + 0.5) * CargoKit.ITEM_M * 1.1)
+		var list: Array = cargo[pile_kind]
+		list.append(Transform3D(facing.rotated(Vector3.UP, i * 0.4), Vector3(spot.x, deck, spot.z)))
+	for side: float in [-1.0, 1.0]:
+		_moor(boats, start + direction * (QUAY_DEPTH_M + BOAT_BEAM_M * 0.8) + across * side * width * 0.25, across,
+				direction)
+
+
+## Barco a remo de comprido em along, boiando com a quilha BOAT_DRAFT_M abaixo da água. Se ali ainda é praia
+## (o cais acaba antes do mar, ou a célula é de mar mas a areia sobe acima da água), anda para o mar (outward) de metro em metro até as duas pontas boiarem; sem mar
+## em BOAT_SEARCH_M, fica sem barco.
+func _moor(boats: Array[Transform3D], spot: Vector3, along: Vector3, outward: Vector3) -> void:
+	var world := _simulation.world
+	for meters: int in BOAT_SEARCH_M + 1:
+		var place := spot + outward * meters
+		var bow := place + along * BOAT_LENGTH_M * 0.5
+		var stern := place - along * BOAT_LENGTH_M * 0.5
+		if afloat(world, place) and afloat(world, bow) and afloat(world, stern):
+			boats.append(Transform3D(Basis.looking_at(along, Vector3.UP), Vector3(place.x, -BOAT_DRAFT_M, place.z)))
+			return
+
+
+## Casco aberto de barco a remo, de frente para −Z: seções de través (proa em ponta, popa estreita), costados e
+## fundo ligando uma à outra, dois bancos. A quilha fica em y = 0.
+static func boat_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# [z, meia boca em cima, meia boca no fundo, altura da borda]
+	var sections: Array = [
+		[-BOAT_LENGTH_M * 0.5, 0.0, 0.0, BOAT_DEPTH_M * 1.25],
+		[-BOAT_LENGTH_M * 0.25, BOAT_BEAM_M * 0.42, BOAT_BEAM_M * 0.2, BOAT_DEPTH_M * 1.05],
+		[0.0, BOAT_BEAM_M * 0.5, BOAT_BEAM_M * 0.28, BOAT_DEPTH_M],
+		[BOAT_LENGTH_M * 0.3, BOAT_BEAM_M * 0.45, BOAT_BEAM_M * 0.24, BOAT_DEPTH_M],
+		[BOAT_LENGTH_M * 0.5, BOAT_BEAM_M * 0.32, BOAT_BEAM_M * 0.18, BOAT_DEPTH_M * 1.05],
+	]
+	var rings: Array[PackedVector3Array] = []
+	for section: Array in sections:
+		var z: float = section[0]
+		var top: float = section[1]
+		var bottom: float = section[2]
+		var rim: float = section[3]
+		rings.append(PackedVector3Array([Vector3(-top, rim, z), Vector3(-bottom, 0.0, z), Vector3(bottom, 0.0, z),
+				Vector3(top, rim, z)]))
+	for i: int in rings.size() - 1:
+		for k: int in 3:
+			var a := rings[i][k]
+			var b := rings[i][k + 1]
+			var c := rings[i + 1][k + 1]
+			var d := rings[i + 1][k]
+			for vertex: Vector3 in [a, b, c, a, c, d]:
+				tool.add_vertex(vertex)
+	# espelho de popa
+	var stern := rings[rings.size() - 1]
+	for vertex: Vector3 in [stern[0], stern[1], stern[2], stern[0], stern[2], stern[3]]:
+		tool.add_vertex(vertex)
+	# bancos: tábuas de través
+	for z: float in [-BOAT_LENGTH_M * 0.12, BOAT_LENGTH_M * 0.25]:
+		var half := BOAT_BEAM_M * 0.44
+		var y := BOAT_DEPTH_M * 0.7
+		for vertex: Vector3 in [Vector3(-half, y, z - 0.12), Vector3(half, y, z - 0.12), Vector3(half, y, z + 0.12),
+				Vector3(-half, y, z - 0.12), Vector3(half, y, z + 0.12), Vector3(-half, y, z + 0.12)]:
+			tool.add_vertex(vertex)
+	tool.generate_normals()
+	return tool.commit()
+
+
 ## Para onde fica o mar mais perto da área: o lado (dos quatro) em que a água aparece primeiro, andando
 ## de metro em metro a partir da borda até WALK_MAX_M. Sem água à vista, o lado oposto à entrada.
 static func seaward(world: WorldState, center: Vector3, area: Rect2i, cell_size: float, rotation: int) -> Vector3:
@@ -166,6 +318,16 @@ static func is_sea(world: WorldState, spot: Vector3) -> bool:
 	for grid: IslandGrid in world.islands:
 		if grid.world_rect().has_point(Vector2(spot.x, spot.z)):
 			return grid.ground_at(grid.world_to_cell(spot)) == IslandGrid.Ground.SEA
+	return true
+
+
+## O ponto é mar com fundo abaixo da quilha do barco (a praia é célula de mar e fica acima da água).
+static func afloat(world: WorldState, spot: Vector3) -> bool:
+	if not is_sea(world, spot):
+		return false
+	for grid: IslandGrid in world.islands:
+		if grid.world_rect().has_point(Vector2(spot.x, spot.z)) and not grid.corner_heights.is_empty():
+			return grid.height_at(spot.x, spot.z) < -BOAT_DRAFT_M - BOAT_KEEL_CLEARANCE_M
 	return true
 
 
