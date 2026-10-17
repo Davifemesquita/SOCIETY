@@ -1052,6 +1052,14 @@ Regras que já custaram investigação:
   da fazenda. Campo sem dono: leiras secas a cada `BARE_SPACING_M`. As leiras não têm alcance de
   visibilidade: o multimesh cobre todos os campos e o alcance contaria do centro dele (os campos longe do
   meio sumiam). Captura: `CAPTURA_SO=plantacoes` (`26_`, `27_` e `28_campo_sem_dono.png`).
+- **Borda da estrada** (`RoadView`, `shaders/road.gdshader`): o ladrilho inclinado leva a torção da célula
+  (`RoadView.twist`, em `INSTANCE_CUSTOM.a`) e o shader a soma nos vértices: o ladrilho passa pelos quatro
+  cantos como o terreno, sem degrau entre células na ladeira. Na terra, os lados sem estrada vizinha
+  (`open_edges`, bits de `SIDE_BITS` somados aos sulcos em `INSTANCE_CUSTOM.b` × `OPEN_SHIFT`) têm a borda
+  recortada por um ruído ao longo do lado (no mundo, emenda entre células; a face de lado some junto), a terra
+  esverdeia junto dela e `VERGE_TUFTS` touceiras de capim (`CropView.tuft_mesh`) crescem por lado aberto. A
+  cor da instância entra na cor final da estrada: nada de dado nela. Captura: `CAPTURA_SO=estrada` no
+  `tools/capture_phase5.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1082,7 +1090,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
 | 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
-| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos |
+| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira |
 
 Pendências já vistas para fases futuras:
 

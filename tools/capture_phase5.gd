@@ -5,7 +5,8 @@ extends Node
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
 ## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
 ## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15); margem, a lama na margem do
-## rio e a areia molhada da praia (Fase 19).
+## rio e a areia molhada da praia (Fase 19); estrada, a rua de terra da vila subindo o relevo, com a borda
+## recortada e o capim (Fase 19).
 
 const SEED := 1840
 
@@ -34,6 +35,17 @@ func _run() -> void:
 	_set_hour(11.0)
 	if OS.get_environment("CAPTURA_SO") == "porto":
 		await _harbor(grid)
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "estrada":
+		var site := SiteFinder.find(_sim, &"trading_post", 0, Vector2i(grid.size.x / 2, 0))
+		var site_origin: Vector2i = site[0]
+		var site_rotation: int = site[1]
+		_build_village(site_origin, site_rotation)
+		var entrance := Footprint.entrance_cell(site_origin, _sim.data.building(&"trading_post").size, site_rotation)
+		var middle := grid.cell_world(entrance + Footprint.front_direction(site_rotation) * 12)
+		await _shot("53_estrada_de_terra.png", middle, 30.0, 0.6)
+		await _shot("54_estrada_de_perto.png", middle, 13.0, 1.3)
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "margem":

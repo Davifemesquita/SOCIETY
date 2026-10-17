@@ -3,7 +3,12 @@
 // 1 paralelepípedo); a ponte (INSTANCE_CUSTOM.g = 1) fica na cor da instância, de tábua. Fase 14: na
 // terra, dois sulcos de roda (INSTANCE_CUSTOM.b: 0 nenhum, 1 ao longo de x, 2 de z, 3 os dois, 4 e 5 nas duas
 // diagonais, Fase 17), e na ponte,
-// tábuas de través pela mesma direção, cada uma num tom, com a fresta escura entre elas.
+// tábuas de través pela mesma direção, cada uma num tom, com a fresta escura entre elas. Fase 19: o
+// ladrilho inclinado leva a torção da célula (INSTANCE_CUSTOM.a, o quanto os cantos saem do plano) e passa
+// pelos quatro cantos como o terreno, sem degrau entre células na ladeira; na terra, os lados abertos (bits
+// em INSTANCE_CUSTOM.b acima dos sulcos, b = sulcos + 8 × bits; 1 +x, 2 −x, 4 +z, 8 −z) têm a borda
+// recortada, com o capim do terreno aparecendo e a terra esverdeando junto dela. (A cor da instância entra
+// na cor final; por isso nada vai nela.)
 shader_type spatial;
 render_mode cull_back;
 
@@ -20,29 +25,69 @@ uniform float rut_darken = 0.68;
 uniform float plank_width_m = 0.3;
 uniform float plank_gap = 0.08;
 uniform float plank_tone = 0.25;
+// Lado da célula, fundo da borda recortada e a faixa de terra esverdeada além dela.
+uniform float cell_m = 2.0;
+uniform float verge_m = 0.38;
+uniform float verge_tint_m = 0.3;
 
 varying vec3 world_position;
 varying flat float road_layer;
 varying flat float bridge;
 varying flat float rut_kind;
 varying vec2 local_position;
+varying flat float open_edges;
+varying vec3 local_normal;
 
 void vertex() {
-	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	road_layer = INSTANCE_CUSTOM.r;
 	bridge = INSTANCE_CUSTOM.g;
-	rut_kind = INSTANCE_CUSTOM.b;
+	rut_kind = mod(INSTANCE_CUSTOM.b, 8.0);
+	open_edges = floor(INSTANCE_CUSTOM.b / 8.0 + 0.01);
 	local_position = VERTEX.xz;
+	local_normal = NORMAL;
+	vec2 t = clamp(VERTEX.xz / cell_m, -0.5, 0.5);
+	VERTEX.y += INSTANCE_CUSTOM.a * t.x * t.y;
+	if (NORMAL.y > 0.5) {
+		NORMAL = normalize(NORMAL - vec3(INSTANCE_CUSTOM.a * t.y, 0.0, INSTANCE_CUSTOM.a * t.x) / cell_m);
+	}
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+float hash(float n) {
+	return fract(sin(n * 12.9898) * 43758.5453);
+}
+
+// Ruído de um eixo (0 a 1), suave, em duas oitavas: o recorte da borda ao longo dela.
+float edge_noise(float along) {
+	float s = along * 2.2;
+	float a = mix(hash(floor(s)), hash(floor(s) + 1.0), smoothstep(0.0, 1.0, fract(s)));
+	float t = along * 6.1 + 17.0;
+	float b = mix(hash(floor(t)), hash(floor(t) + 1.0), smoothstep(0.0, 1.0, fract(t)));
+	return a * 0.7 + b * 0.3;
+}
+
+// Quanto falta (m) até a borda recortada do lado aberto mais perto; negativo já é capim. A borda entra de
+// 0,15 a 1 × verge_m pelo ruído ao longo do lado (no mundo, para emendar de uma célula para a outra).
+float open_distance(int bits) {
+	float half_cell = cell_m * 0.5;
+	float d = 1000.0;
+	if ((bits & 1) != 0) { d = min(d, half_cell - local_position.x - verge_m * (0.15 + 0.85 * edge_noise(world_position.z))); }
+	if ((bits & 2) != 0) { d = min(d, half_cell + local_position.x - verge_m * (0.15 + 0.85 * edge_noise(world_position.z + 41.0))); }
+	if ((bits & 4) != 0) { d = min(d, half_cell - local_position.y - verge_m * (0.15 + 0.85 * edge_noise(world_position.x + 83.0))); }
+	if ((bits & 8) != 0) { d = min(d, half_cell + local_position.y - verge_m * (0.15 + 0.85 * edge_noise(world_position.x + 127.0))); }
+	return d;
+}
+
+// A face de lado do ladrilho que dá para um lado aberto (some com a borda recortada).
+bool open_side_face(int bits) {
+	return ((bits & 1) != 0 && local_normal.x > 0.5) || ((bits & 2) != 0 && local_normal.x < -0.5)
+			|| ((bits & 4) != 0 && local_normal.z > 0.5) || ((bits & 8) != 0 && local_normal.z < -0.5);
 }
 
 // 1 no meio do sulco, 0 fora dele (a distância é do meio da rua, de través)
 float rut(float across) {
 	float edge = abs(abs(across) - rut_offset_m);
 	return 1.0 - smoothstep(rut_width_m * 0.35, rut_width_m * 0.5, edge);
-}
-
-float hash(float n) {
-	return fract(sin(n * 12.9898) * 43758.5453);
 }
 
 // Fator de cor da ponte: tom da tábua e a fresta. As tábuas ficam de través da direção da rua, alinhadas
@@ -61,6 +106,19 @@ void fragment() {
 	vec3 uv = vec3(world_position.xz / texture_meters, road_layer);
 	vec4 surface = texture(albedo_rough, uv);
 	int kind = int(rut_kind + 0.5);
+	// borda recortada da terra
+	int bits = int(open_edges + 0.5) * int(road_layer < 0.5 && bridge < 0.5);
+	float verge = 0.0;
+	if (bits != 0) {
+		if (open_side_face(bits)) {
+			discard;
+		}
+		float d = open_distance(bits);
+		if (d < 0.0) {
+			discard;
+		}
+		verge = 1.0 - smoothstep(0.0, verge_tint_m, d);
+	}
 	// a cor da instância chega em sRGB (a da tábua ficava desbotada)
 	vec3 wood = pow(COLOR.rgb, vec3(2.2));
 	vec3 color = mix(surface.rgb, wood * planks(kind), bridge);
@@ -81,6 +139,7 @@ void fragment() {
 	// só na terra (camada 0, fora da ponte)
 	ruts *= (1.0 - road_layer) * (1.0 - bridge);
 	color *= mix(1.0, rut_darken, ruts);
+	color = mix(color, color * vec3(0.78, 0.9, 0.55), verge * 0.7);
 	ALBEDO = wet_albedo(color, 1.0);
 	NORMAL_MAP = mix(texture(normals, uv).rgb, vec3(0.5, 0.5, 1.0), bridge);
 	ROUGHNESS = wet_roughness(mix(mix(surface.a, 0.85, bridge), 0.6, ruts * 0.5), 1.0);

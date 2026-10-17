@@ -8,7 +8,10 @@ extends MultiMeshInstance3D
 ## ligadas pela diagonal pura vai uma faixa girada 45°, do centro de uma ao da outra, com os sulcos ao longo dela;
 ## a célula do meio da escada não leva ladrilho (as faixas se encontram no centro dela), a da ponta leva os sulcos
 ## na diagonal, e o meio-fio não sai nos lados que a faixa corta. A ponte ganha tábuas no
-## shader, corrimão de madeira nos lados que dão para o rio e estacas descendo até o leito.
+## shader, corrimão de madeira nos lados que dão para o rio e estacas descendo até o leito. Fase 19: o ladrilho
+## dobra pelos quatro cantos da célula (a altura deles relativa ao centro vai na cor da instância e o shader
+## desloca os vértices), sem degrau entre células na ladeira; a terra tem a borda recortada nos lados abertos
+## (no shader, pelos bits em INSTANCE_CUSTOM.a) e touceiras de capim ao longo deles.
 
 const DIRT_COLOR := Color(0.55, 0.45, 0.33)
 const BRIDGE_COLOR := Color(0.36, 0.26, 0.17)
@@ -36,12 +39,19 @@ const DIAGONALS: Array[Vector2i] = [Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1
 ## A faixa da diagonal fica um pouco acima dos ladrilhos, para não brigar com eles.
 const DIAGONAL_LIFT_M := 0.01
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+## Bit de cada lado de SIDES (o shader lê os bits em INSTANCE_CUSTOM.b, acima dos sulcos: b = sulcos + 8 × bits).
+const SIDE_BITS: Array[int] = [1, 2, 4, 8]
+const OPEN_SHIFT := 8
+## Touceiras de capim por lado aberto da terra, e quanto saem da borda para fora.
+const VERGE_TUFTS := 3
+const VERGE_OUT_M := 0.12
 
 var _simulation: Simulation
 var _cell_size: float
 var _curbs := MultiMeshInstance3D.new()
 var _rails := MultiMeshInstance3D.new()
 var _posts := MultiMeshInstance3D.new()
+var _verge := MultiMeshInstance3D.new()
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -54,6 +64,7 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	material.shader = load("res://shaders/road.gdshader") as Shader
 	material.set_shader_parameter(&"albedo_rough", load("res://assets/materials/roads_albedo_rough.png"))
 	material.set_shader_parameter(&"normals", load("res://assets/materials/roads_normal.png"))
+	material.set_shader_parameter(&"cell_m", cell_size)
 	tile.material = material
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -88,6 +99,16 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		holder.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		holder.multimesh.mesh = part[2]
 		add_child(holder)
+	var grass := StandardMaterial3D.new()
+	grass.vertex_color_use_as_albedo = true
+	grass.vertex_color_is_srgb = true
+	grass.roughness = 0.9
+	_verge.name = "Verge"
+	_verge.multimesh = MultiMesh.new()
+	_verge.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	_verge.multimesh.mesh = CropView.tuft_mesh()
+	_verge.material_override = grass
+	add_child(_verge)
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: rebuild())
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
@@ -100,6 +121,7 @@ func rebuild() -> void:
 	var curbs: Array[Transform3D] = []
 	var rails: Array[Transform3D] = []
 	var posts: Array[Transform3D] = []
+	var tufts: Array[Transform3D] = []
 	for grid: IslandGrid in _simulation.world.islands:
 		for cell: Vector2i in grid.road_cells():
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
@@ -108,9 +130,12 @@ func rebuild() -> void:
 			var links := diagonal_links(grid, cell)
 			# no meio da escada diagonal só as faixas: o ladrilho quadrado deixava a borda serrilhada
 			if not in_diagonal_run(grid, cell, links):
+				var open := 0 if bridge or paved else open_edges(grid, cell, links)
 				tiles.append(tile)
 				colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if paved else DIRT_COLOR))
-				kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell)), 0.0))
+				kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
+						twist(grid, cell)))
+				_add_verge(grid, cell, open, tufts)
 			if paved and not bridge:
 				for side: Vector2i in SIDES:
 					if not grid.has_road(cell + side) and not _cut_by(side, links):
@@ -140,6 +165,55 @@ func rebuild() -> void:
 	_posts.multimesh.instance_count = posts.size()
 	for i: int in posts.size():
 		_posts.multimesh.set_instance_transform(i, posts[i])
+	_verge.multimesh.instance_count = tufts.size()
+	for i: int in tufts.size():
+		_verge.multimesh.set_instance_transform(i, tufts[i])
+
+
+## Touceiras de capim ao longo dos lados abertos da terra, um pouco para fora da borda, no chão; o lugar, o
+## tamanho e o giro vêm do hash da célula (os mesmos depois de carregar).
+func _add_verge(grid: IslandGrid, cell: Vector2i, open: int, tufts: Array[Transform3D]) -> void:
+	if open == 0:
+		return
+	var center := grid.cell_world(cell)
+	var half := _cell_size * 0.5
+	for index: int in SIDES.size():
+		if open & SIDE_BITS[index] == 0:
+			continue
+		var side := SIDES[index]
+		var along := Vector3(-side.y, 0.0, side.x)
+		for k: int in VERGE_TUFTS:
+			var noise := hash([grid.origin_m, cell, index, k])
+			var t := (float(k) + 0.2 + float(noise % 600) / 1000.0) / VERGE_TUFTS * 2.0 - 1.0
+			var out := half + VERGE_OUT_M * float(noise / 1000 % 1000) / 1000.0
+			var spot := center + Vector3(side.x, 0.0, side.y) * out + along * t * half
+			spot.y = grid.height_at(spot.x, spot.z)
+			var size := 0.7 + 0.6 * float(noise / 1000000 % 1000) / 1000.0
+			tufts.append(Transform3D(Basis(Vector3.UP, float(noise % 628) / 100.0).scaled(Vector3.ONE * size), spot))
+
+
+func verge_count() -> int:
+	return _verge.multimesh.instance_count
+
+
+## Lados abertos da célula de terra (bits de SIDE_BITS): sem estrada vizinha e não cortados pela diagonal.
+static func open_edges(grid: IslandGrid, cell: Vector2i, links: Array[Vector2i]) -> int:
+	var bits := 0
+	for index: int in SIDES.size():
+		var side := SIDES[index]
+		if not grid.has_road(cell + side) and not _cut_by(side, links):
+			bits |= SIDE_BITS[index]
+	return bits
+
+
+## Torção da célula: o que o plano inclinado do ladrilho (tile_transform) não alcança nos cantos. O canto sai
+## do plano em ± torção/4 (+ nos cantos −x −z e +x +z); o shader soma torção × (x/lado) × (z/lado). Zero no rio
+## e na ilha plana.
+static func twist(grid: IslandGrid, cell: Vector2i) -> float:
+	if grid.ground_at(cell) == IslandGrid.Ground.RIVER or grid.flat:
+		return 0.0
+	return (grid.corner_height(cell.x, cell.y) + grid.corner_height(cell.x + 1, cell.y + 1)
+			- grid.corner_height(cell.x + 1, cell.y) - grid.corner_height(cell.x, cell.y + 1))
 
 
 ## Corrimão da célula de ponte: em cada lado aberto para o rio, duas travessas, um poste no meio (com a

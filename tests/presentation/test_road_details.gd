@@ -99,3 +99,51 @@ func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> v
 	assert_float(absf(band.basis.x.normalized().dot(Vector3(1, 0, 1).normalized()))).is_equal_approx(1.0, 0.001)
 	# o meio-fio não corta a faixa: só os lados de fora das pontas
 	assert_int(view.curb_count()).is_equal(4)
+
+
+## Fase 19: a terra tem a borda recortada nos lados sem estrada vizinha, com capim ao longo deles; o
+## paralelepípedo não.
+func test_dirt_streets_open_their_sides_without_road_and_grow_grass_along_them() -> void:
+	SimFixture.road(_sim, Vector2i(0, 10), Vector2i(9, 10))
+	SimFixture.road(_sim, Vector2i(5, 11), Vector2i(5, 15))
+	var grid := _sim.world.island(SimFixture.ISLAND)
+	var none: Array[Vector2i] = []
+	assert_int(RoadView.open_edges(grid, Vector2i(2, 10), none)).is_equal(4 | 8)
+	assert_int(RoadView.open_edges(grid, Vector2i(0, 10), none)).is_equal(2 | 4 | 8)
+	assert_int(RoadView.open_edges(grid, Vector2i(5, 10), none)).is_equal(8)
+	var view := _view()
+	var sides := 0
+	for cell: Vector2i in grid.road_cells():
+		for bit: int in RoadView.SIDE_BITS:
+			if RoadView.open_edges(grid, cell, none) & bit != 0:
+				sides += 1
+	assert_int(view.verge_count()).is_equal(sides * RoadView.VERGE_TUFTS)
+	for cell: Vector2i in grid.road_cells():
+		grid.set_road(cell, IslandGrid.Road.PAVED)
+	view.rebuild()
+	assert_int(view.verge_count()).is_equal(0)
+
+
+## Fase 19: na ladeira, o ladrilho inclinado mais a torção passa pelos quatro cantos da célula (os mesmos do
+## vizinho: sem degrau entre células).
+func test_tiles_pass_through_the_four_corners_of_their_cell_on_a_slope() -> void:
+	var grid := IslandGrid.new(Vector2i(6, 6))
+	grid.init_terrain()
+	grid.flat = false
+	for y: int in 7:
+		for x: int in 7:
+			grid.corner_heights[grid.corner_index(x, y)] = 2.0 + x * 0.3 + y * y * 0.08 + float((x * y) % 3) * 0.2
+	grid.invalidate_heights()
+	var half := grid.cell_size * 0.5
+	var twisted := 0
+	for cell: Vector2i in [Vector2i(1, 1), Vector2i(2, 4), Vector2i(4, 2)]:
+		var tile := RoadView.tile_transform(grid, cell)
+		var twist := RoadView.twist(grid, cell)
+		if absf(twist) > 0.05:
+			twisted += 1
+		for corner: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
+			var local := Vector3((corner.x * 2 - 1) * half, 0.0, (corner.y * 2 - 1) * half)
+			var top := (tile * local).y + twist * (corner.x - 0.5) * (corner.y - 0.5)
+			assert_float(top - RoadView.LIFT_M - RoadView.THICKNESS_M * 0.5).is_equal_approx(
+					grid.corner_height(cell.x + corner.x, cell.y + corner.y), 0.001)
+	assert_int(twisted).is_greater(0)
