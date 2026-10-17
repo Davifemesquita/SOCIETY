@@ -21,13 +21,14 @@ func test_the_kit_is_in_the_project() -> void:
 		assert_bool(ResourceLoader.exists(BuildingKit.DIR + piece + ".glb")).override_failure_message(piece).is_true()
 
 
-func test_every_building_but_fields_and_piers_gets_a_model_inside_its_area() -> void:
+func test_every_building_but_fields_piers_and_decorations_gets_a_model_inside_its_area() -> void:
 	for def: BuildingDef in _sim.data.buildings:
 		var record := BuildingRecord.new(1, def.id, 0, Vector2i(10, 10), 0)
 		if def.kind == BuildingDef.Kind.RESIDENCE:
 			record.tier = &"peasants"
 		var spec := BuildingKit.spec_for(_sim, record, 2.0)
-		if def.kind in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER]:
+		# campo, pasto e píer ficam fora do kit; a decoração (Fase 16) é da DecorationView
+		if def.kind in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
 			assert_object(spec).override_failure_message(String(def.id)).is_null()
 			continue
 		var box := BuildingKit.mesh(spec).get_aabb()
