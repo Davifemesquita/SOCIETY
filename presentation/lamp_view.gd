@@ -1,17 +1,16 @@
 class_name LampView
 extends Node3D
 ## Postes e fogueiras (seção 9, Fase 13): de noite, "janelas, postes e fogueiras acesos".
-## - Poste: o lampião do Kenney Fantasy Town Kit nas ruas de paralelepípedo, uma célula calçada a cada
-##   LAMP_EVERY (pelo desenho da grade), na beira da calçada, do lado que não é rua.
+## - Poste: o lampião a gás de ferro fundido (Fase 18, gerado no código; antes era o do Kenney Fantasy
+##   Town Kit) nas ruas de paralelepípedo, uma célula calçada a cada LAMP_EVERY (pelo desenho da grade), na
+##   beira da calçada, do lado que não é rua.
 ## - Fogueira: anel de pedras, lenha e chama atrás de uma casa de camponeses a cada BONFIRE_EVERY (pelo
 ##   id), na célula de trás se estiver livre.
 ## O vidro e a chama acendem pelo uniforme global night_light (shaders/night_glow.gdshader); a luz de
 ## verdade (OmniLight3D) só nos mais perto de onde a câmera olha, de noite. Só lê o mundo.
 
-const LAMP_PATH := "res://assets/models/props/lantern.glb"
-const LAMP_TEXTURE := "res://assets/models/props/Textures/colormap.png"
 const LAMP_HEIGHT_M := 3.2
-## O vidro do lampião, em fração da altura do poste: entre a base e o chapéu da armação do kit, e a meia
+## O vidro do lampião, em fração da altura do poste: entre o assento e o chapéu da lanterna, e a meia
 ## largura (m) que enche a armação.
 const GLASS_HEIGHT := 0.9
 const GLASS_SPAN := 0.11
@@ -24,6 +23,8 @@ const LAMP_COLOR := Color(1.0, 0.82, 0.5)
 const FIRE_COLOR := Color(1.0, 0.5, 0.15)
 const STONE_COLOR := Color(0.42, 0.4, 0.38)
 const WOOD_COLOR := Color(0.32, 0.22, 0.14)
+## Ferro fundido pintado de verde-escuro, como os postes de gás de 1840.
+const IRON_COLOR := Color(0.1, 0.13, 0.11)
 ## Luzes de verdade: quantas, até onde a câmera conta como perto e o alcance de cada uma.
 const LIGHTS := 10
 const LIGHT_CAMERA_DISTANCE_M := 90.0
@@ -232,42 +233,55 @@ static func _glow_material() -> ShaderMaterial:
 	return material
 
 
-## O poste do kit numa malha só, com LAMP_HEIGHT_M de altura e a base em y = 0; sem o modelo, uma
-## haste fina.
+## O poste de ferro fundido numa malha só, com a base em y = 0 e o chapéu em LAMP_HEIGHT_M: pedestal,
+## fuste afinando, colar com a travessa de apoiar a escada do acendedor, assento da lanterna, os quatro
+## montantes em volta do vidro (glass_mesh) e o chapéu de quatro águas com o remate.
 static func post_mesh() -> Mesh:
-	if not ResourceLoader.exists(LAMP_PATH):
-		var rod := CylinderMesh.new()
-		rod.top_radius = 0.06
-		rod.bottom_radius = 0.08
-		rod.height = LAMP_HEIGHT_M
-		var tool := SurfaceTool.new()
-		tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-		tool.append_from(rod, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, LAMP_HEIGHT_M * 0.5, 0.0)))
-		return tool.commit()
-	var root := (load(LAMP_PATH) as PackedScene).instantiate() as Node3D
-	var parts: Array[MeshInstance3D] = []
-	for node: Node in root.find_children("*", "MeshInstance3D", true, false):
-		parts.append(node as MeshInstance3D)
-	var box := AABB()
-	for i: int in parts.size():
-		var local := CargoKit._transform_to(root, parts[i]) * parts[i].get_aabb()
-		box = local if i == 0 else box.merge(local)
-	var scale := LAMP_HEIGHT_M / maxf(box.size.y, 0.001)
-	var bottom := Vector3(box.get_center().x, box.position.y, box.get_center().z)
-	var place := Transform3D(Basis.from_scale(Vector3.ONE * scale), -bottom * scale)
+	var glass_low := LAMP_HEIGHT_M * (GLASS_HEIGHT - GLASS_SPAN * 0.5)
+	var glass_high := LAMP_HEIGHT_M * (GLASS_HEIGHT + GLASS_SPAN * 0.5)
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for part: MeshInstance3D in parts:
-		for surface: int in part.mesh.get_surface_count():
-			tool.append_from(part.mesh, surface, place * CargoKit._transform_to(root, part))
-	root.free()
+	_cylinder(tool, 0.0, 0.08, 0.2, 0.2)
+	_cylinder(tool, 0.08, 0.5, 0.15, 0.12)
+	_cylinder(tool, 0.5, 0.58, 0.13, 0.08)
+	_cylinder(tool, 0.58, glass_low - 0.3, 0.065, 0.045)
+	_cylinder(tool, glass_low - 0.3, glass_low - 0.22, 0.08, 0.08)
+	var bar := BoxMesh.new()
+	bar.size = Vector3(0.62, 0.035, 0.035)
+	tool.append_from(bar, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, glass_low - 0.26, 0.0)))
+	_cylinder(tool, glass_low - 0.22, glass_low, 0.05, GLASS_HALF_M + 0.03)
+	var post := BoxMesh.new()
+	post.size = Vector3(0.025, glass_high - glass_low, 0.025)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		tool.append_from(post, 0, Transform3D(Basis.IDENTITY,
+				Vector3(corner.x * GLASS_HALF_M, (glass_low + glass_high) * 0.5, corner.y * GLASS_HALF_M)))
+	# chapéu: pirâmide de quatro faces (o cilindro de 4 lados girado 45°) e a bolinha em cima
+	var cap := CylinderMesh.new()
+	cap.top_radius = 0.0
+	cap.bottom_radius = (GLASS_HALF_M + 0.08) * sqrt(2.0)
+	cap.height = LAMP_HEIGHT_M - glass_high - 0.06
+	cap.radial_segments = 4
+	cap.rings = 1
+	tool.append_from(cap, 0, Transform3D(Basis(Vector3.UP, PI * 0.25), Vector3(0.0, glass_high + cap.height * 0.5, 0.0)))
+	_cylinder(tool, LAMP_HEIGHT_M - 0.06, LAMP_HEIGHT_M, 0.03, 0.03)
 	var mesh := tool.commit()
 	var material := StandardMaterial3D.new()
-	material.albedo_texture = load(LAMP_TEXTURE) as Texture2D
-	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	material.roughness = 0.8
+	material.albedo_color = IRON_COLOR
+	material.metallic = 0.5
+	material.roughness = 0.55
 	mesh.surface_set_material(0, material)
 	return mesh
+
+
+## Tronco de cone de oito faces de y0 a y1, raio r0 embaixo e r1 em cima.
+static func _cylinder(tool: SurfaceTool, y0: float, y1: float, r0: float, r1: float) -> void:
+	var piece := CylinderMesh.new()
+	piece.bottom_radius = r0
+	piece.top_radius = r1
+	piece.height = y1 - y0
+	piece.radial_segments = 8
+	piece.rings = 1
+	tool.append_from(piece, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, (y0 + y1) * 0.5, 0.0)))
 
 
 ## O vidro aceso do lampião: uma caixa que enche a armação aberta do modelo.

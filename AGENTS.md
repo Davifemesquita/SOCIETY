@@ -864,7 +864,7 @@ Regras que já custaram investigação:
 - **Carga da carroça** (`CartView`): as mesmas peças, uma por tonelada começada (até duas, frente e trás da
   caçamba, `CARGO_SLOTS`), num MultiMesh por tipo de peça; a caixa colorida de antes fica só para o bem sem
   peça (o porco). Volta vazia, sem peça.
-- **Postes e fogueiras** (`LampView`): o lampião do kit (`assets/models/props/lantern.glb`) numa célula
+- **Postes e fogueiras** (`LampView`): o lampião do kit (desde a Fase 18, o poste de ferro fundido gerado no código) numa célula
   calçada a cada `LAMP_EVERY` (pelo desenho da grade, `posmod(x + 3y, 4)`), deslocado para o lado da
   célula que não é rua; fogueira (pedras, lenha e chama gerados) atrás de uma casa de camponeses a cada
   `BONFIRE_EVERY` (pelo id), só com a célula de trás livre. O vidro e a chama acendem pelo `night_light`
@@ -1024,6 +1024,10 @@ Regras que já custaram investigação:
   a faixa entre os andares. A sacada troca a frente de madeira do kit por grade de ferro (corrimão, travessa e
   balaústres a cada `RAIL_STEP_M`) na frente e nas pontas. O frontão dos investidores fica no alto da fachada,
   sobre a porta: em cima do pórtico ele atravessava a sacada. Captura: `CAPTURA_SO=detalhes` (`21_frontao.png`).
+- **Poste de gás** (`LampView.post_mesh`, gerado no código; o `lantern.glb` do kit saiu do projeto): pedestal,
+  fuste de ferro fundido verde-escuro (`IRON_COLOR`) afinando, colar com a travessa de apoiar a escada do
+  acendedor, assento, quatro montantes em volta do vidro aceso (o mesmo `glass_mesh`) e chapéu de quatro águas
+  com remate, tudo em `LAMP_HEIGHT_M`. Captura: `CAPTURA_SO=postes`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1053,7 +1057,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
-| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas |
+| 18 — Detalhes de época (nossa) | em andamento (17/10/2026): campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás |
 
 Pendências já vistas para fases futuras:
 

@@ -87,3 +87,18 @@ func test_new_streets_light_up_without_rebuilding_by_hand() -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_int(view.lamp_count()).is_greater(0)
+
+
+func test_the_cast_iron_post_holds_the_glass_in_its_lantern() -> void:
+	var post := LampView.post_mesh().get_aabb()
+	assert_float(post.position.y).is_equal_approx(0.0, 0.01)
+	assert_float(post.end.y).is_equal_approx(LampView.LAMP_HEIGHT_M, 0.01)
+	# o vidro fica dentro dos montantes e debaixo do chapéu
+	var glass := LampView.glass_mesh().get_aabb()
+	assert_float(glass.position.y).is_greater(LampView.LAMP_HEIGHT_M * 0.75)
+	assert_float(glass.end.y).is_less(post.end.y)
+	assert_float(glass.size.x).is_less_equal(post.size.x)
+	# a travessa da escada é a parte mais larga do poste
+	assert_float(post.size.x).is_between(0.6, 0.7)
+	assert_int((LampView.post_mesh().surface_get_material(0) as StandardMaterial3D).albedo_color.to_rgba32()) \
+			.is_equal(LampView.IRON_COLOR.to_rgba32())
