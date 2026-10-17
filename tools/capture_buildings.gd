@@ -143,6 +143,10 @@ func _silhouettes() -> void:
 ## Fase 13: rua calçada com casas de camponeses de frente para ela (rotação 0, frente em −Z), à noite.
 func _lamps() -> void:
 	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(20, 50), Vector2i(80, 50)), true))
+	# estrada de terra com uma curva e um cruzamento (sulcos de roda, Fase 14)
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(20, 44), Vector2i(60, 44))))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(40, 44), Vector2i(40, 49))))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(60, 44), Vector2i(60, 40))))
 	for i: int in 14:
 		var house := _place(&"house", Vector2i(21 + i * 4, 51), 0)
 		if house != 0:
@@ -153,6 +157,8 @@ func _lamps() -> void:
 	_game.lamp_view.rebuild()
 	print("postes ", _game.lamp_view.lamp_count(), " fogueiras ", _game.lamp_view.bonfire_count())
 	await _shot("14_postes_de_dia.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
+	await _shot("26_estrada_de_terra.png", Vector3(90.0, 0.0, 90.0), 24.0, 0.4, 0.6)
+	await _shot("27_meio_fio.png", Vector3(70.0, 0.0, 101.0), 12.0, PI + 0.4, 0.3)
 	_set_hour(22.0)
 	_game.window_view.refresh_lit()
 	await _shot("15_postes_noite.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)

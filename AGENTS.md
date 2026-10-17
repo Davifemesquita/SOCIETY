@@ -893,6 +893,10 @@ Regras que já custaram investigação:
 - **Pastos** (também na `CropView`): todo pasto, de dono ou não, ganha cerca de madeira por dentro da borda, em
   lanços de `FENCE_STEP_M` (o lanço é esticado em x), e touceiras de capim. O lado que encosta em outro pasto
   fica aberto: pastos vizinhos viram um cercado só. As ovelhas e os porcos ficam a `PASTURE_MARGIN_M` da borda.
+- **Estradas** (`RoadView`): o paralelepípedo ganha meio-fio de pedra (um MultiMesh filho, no referencial do
+  ladrilho: segue a ladeira) em cada lado que não dá para outra estrada; a terra ganha dois sulcos de roda no
+  `shaders/road.gdshader`, pela direção que vai no dado da instância (`RoadView.ruts`: ao longo de x, de z, os
+  dois no cruzamento e na curva, nenhum na célula solta). O poste da Fase 13 fica em cima do meio-fio.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -918,7 +922,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 12 — Cenários e vitória (nossa) | 15/10/2026: objetivo e prazo no jogo novo, três cenários, conquistas e a tela de fim |
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
-| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos, cerca e capim nos pastos; depois meio-fio e emenda nas estradas, ponte de madeira e pássaros |
+| 14 — Campo e caminho (nossa) | em andamento desde 16/10/2026: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas; depois ponte de madeira e pássaros |
 
 Pendências já vistas para fases futuras:
 
