@@ -6,7 +6,8 @@ extends Node
 ## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13); postes,
 ## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13); plantacoes, uma fazenda de cada
-## planta com os campos em três pontos do ciclo (Fase 14).
+## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14). Os pombos na rua saem
+## em postes (Fase 14).
 
 var _out_dir: String
 var _game: GameScreen
@@ -159,6 +160,15 @@ func _lamps() -> void:
 	await _shot("14_postes_de_dia.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
 	await _shot("26_estrada_de_terra.png", Vector3(90.0, 0.0, 90.0), 24.0, 0.4, 0.6)
 	await _shot("27_meio_fio.png", Vector3(70.0, 0.0, 101.0), 12.0, PI + 0.4, 0.3)
+	# pombos: o jogo está pausado, então o relógio deles anda à mão até haver bando no ar (Fase 14)
+	_game.bird_view.rebuild()
+	print("pássaros ", _game.bird_view.bird_count())
+	var flock := _game.bird_view.flock_center(0)
+	await _shot("28_pombos.png", Vector3(flock.x, 0.0, flock.z), 6.0, PI + 0.3, 0.45)
+	# o mesmo bando no meio do voo
+	while BirdView.pigeon_flight(0.0, _game.bird_view.time()) < 0.4:
+		_game.bird_view.advance(0.25)
+	await _shot("28b_pombos_voando.png", Vector3(flock.x, 0.0, flock.z), 12.0, PI + 0.3, 0.3)
 	_set_hour(22.0)
 	_game.window_view.refresh_lit()
 	await _shot("15_postes_noite.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
@@ -206,3 +216,6 @@ func _crops() -> void:
 	await _shot("23_lupulo_parreira.png", Vector3(150.0, 0.0, 286.0), 30.0, 0.4, 0.5)
 	await _shot("24_cana_cafe_tabaco.png", Vector3(230.0, 0.0, 286.0), 40.0, 0.4, 0.5)
 	await _shot("25_pasto.png", Vector3(66.0, 0.0, 282.0), 26.0, 0.5, 0.5)
+	_game.bird_view.rebuild()
+	print("estorninhos ", _game.bird_view.flock_count(BirdView.Kind.STARLING))
+	await _shot("29_estorninhos.png", Vector3(110.0, 0.0, 286.0), 45.0, 0.4, 0.35)
