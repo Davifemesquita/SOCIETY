@@ -95,9 +95,10 @@ func test_match_autosaves_plays_effects_and_points_the_goal() -> void:
 	var game: GameScreen = runner.scene()
 	GameClock.set_speed(TickClock.PAUSED)
 	await runner.simulate_frames(3)
-	# tutorial: a primeira meta (o entreposto) aponta a aba da infraestrutura
+	# tutorial: a primeira meta (o entreposto) aponta a aba do porto
 	assert_str(game.hud.hinted_building()).is_equal(&"trading_post")
-	assert_int(game.hud.category_of(&"trading_post")).is_equal(game.hud._categories().size() - 1)
+	# o entreposto fica na aba Porto (Fase 17), a penúltima; as estradas, na última
+	assert_int(game.hud.category_of(&"trading_post")).is_equal(game.hud._categories().size() - 2)
 	assert_int(game.hud.category_of(&"paved_road")).is_equal(game.hud._categories().size() - 1)
 	# efeitos ligados aos eventos
 	var sim := game.simulation

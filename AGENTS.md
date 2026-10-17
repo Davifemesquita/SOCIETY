@@ -976,6 +976,16 @@ Regras que já custaram investigação:
   escolher ou selecionar uma decoração, o chão destaca o raio dela. Balanceamento em `docs/balanceamento.md`
   (beleza cheia = +12 de felicidade = +12% do imposto da casa; o robô não constrói decoração).
 
+### Porto e diagonais (Fase 17, nossa)
+
+- **Escolhida pelo dono do produto** (17/10/2026) entre as sobras da especificação: a aba **Porto** do menu (seção
+  10) e as **estradas em diagonal**, que a seção 7 deixa "para depois do jogo base". Mudança grande de arquitetura,
+  com a aprovação dele. Partes com commit próprio.
+- **Aba Porto**: entreposto, píer e estaleiro (que saiu da aba de produção dos operários), antes da
+  infraestrutura, que segue a última (armazém e as estradas). Com dez abas a barra passava de 1920 px: as de
+  produção ficaram só com o medalhão da classe (como a população na barra de cima) e "Produção: <classe>" na dica.
+  O tutorial do entreposto aponta a aba Porto.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1003,6 +1013,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
 | 15 — Porto e quintal (nossa) | **concluída em 17/10/2026**: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
+| 17 — Porto e diagonais (nossa) | em andamento desde 17/10/2026: aba Porto; depois estradas em diagonal (simulação, traçado e desenho) |
 
 Pendências já vistas para fases futuras:
 

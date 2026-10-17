@@ -118,7 +118,7 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	EventBus.settings_changed.connect(func() -> void:
 		_select_category(_category)
 		_refresh())
-	_select_category(_categories().size() - 1 if _needs_trading_post() else 0)
+	_select_category(category_of(&"trading_post") if _needs_trading_post() else 0)
 	_refresh_speed()
 	_refresh_tool()
 	_refresh()
@@ -410,18 +410,19 @@ func _build_build_menu() -> void:
 	column.add_child(_items)
 
 
-## Categorias do menu: residências, produção por classe, serviços, decoração (Fase 16) e infraestrutura (a
-## última: as estradas entram nela).
+## Categorias do menu: residências, produção por classe, serviços, decoração (Fase 16), porto (entreposto, píer e
+## estaleiro, Fase 17) e infraestrutura (a última: as estradas entram nela).
 func _categories() -> Array[Array]:
 	var data := _simulation.data
 	var groups: Array[Array] = [data.buildings.filter(func(def: BuildingDef) -> bool: return def.kind == BuildingDef.Kind.RESIDENCE)]
 	for tier: TierDef in data.tiers:
 		groups.append(data.buildings.filter(func(def: BuildingDef) -> bool:
-			return (def.is_production() and def.workforce_tier == tier.id) \
+			return (def.is_production() and def.workforce_tier == tier.id and not def.is_shipyard()) \
 					or (def.kind == BuildingDef.Kind.MODULE and def.unlock_tier == tier.id)))
 	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.kind == BuildingDef.Kind.SERVICE))
 	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_decoration()))
-	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_warehouse() or def.is_pier()))
+	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_berth() or def.is_shipyard()))
+	groups.append(data.buildings.filter(func(def: BuildingDef) -> bool: return def.is_warehouse() and not def.is_trading_post))
 	return groups
 
 
@@ -429,13 +430,15 @@ func _category_label(index: int) -> String:
 	var tiers := _simulation.data.tiers
 	if index == 0:
 		return tr("HUD_CATEGORY_RESIDENCES")
-	# a produção de cada classe vai só com o nome dela (e o ícone da classe): com a aba de decoração (Fase 16),
-	# "Produção: <classe>" em cinco abas passava de 1920 px; o nome inteiro fica na dica
+	# a produção de cada classe vai só com o medalhão dela, como a população na barra de cima: com as abas de
+	# decoração (Fase 16) e porto (Fase 17) os nomes passavam de 1920 px; "Produção: <classe>" fica na dica
 	if index <= tiers.size():
-		return tr(tiers[index - 1].name_key)
+		return ""
 	if index == tiers.size() + 1:
 		return tr("HUD_CATEGORY_SERVICES")
-	return tr("HUD_CATEGORY_DECORATION") if index == tiers.size() + 2 else tr("HUD_CATEGORY_INFRASTRUCTURE")
+	if index == tiers.size() + 2:
+		return tr("HUD_CATEGORY_DECORATION")
+	return tr("HUD_CATEGORY_HARBOR") if index == tiers.size() + 3 else tr("HUD_CATEGORY_INFRASTRUCTURE")
 
 
 func _category_tip(index: int) -> String:
@@ -453,7 +456,9 @@ func _category_icon(index: int) -> String:
 		return "tier_" + tiers[index - 1].id
 	if index == tiers.size() + 1:
 		return "building_market"
-	return "building_flower_bed" if index == tiers.size() + 2 else "building_trading_post"
+	if index == tiers.size() + 2:
+		return "building_flower_bed"
+	return "building_pier" if index == tiers.size() + 3 else "building_warehouse"
 
 
 func _select_category(index: int) -> void:

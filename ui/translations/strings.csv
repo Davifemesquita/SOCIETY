@@ -116,6 +116,7 @@ HUD_CATEGORY_RESIDENCES,Residências,Residences
 HUD_CATEGORY_SERVICES,Serviços,Services
 HUD_CATEGORY_INFRASTRUCTURE,Infraestrutura,Infrastructure
 HUD_CATEGORY_DECORATION,Decoração,Decoration
+HUD_CATEGORY_HARBOR,Porto,Harbor
 HUD_CATEGORY_PRODUCTION,Produção: %s,Production: %s
 TIP_COST,Custo: %s,Cost: %s
 TIP_COINS,%s moedas,%s coins
@@ -186,7 +187,7 @@ WAREHOUSE_SERVES,Atende %s prédios,Serves %s buildings
 PANEL_UPGRADE,Melhorar,Upgrade
 TIP_UPGRADE,Próximo nível: %s,Next level: %s
 TIP_FIRST_FREE,O primeiro é gratuito,The first one is free
-HINT_BUILD_TRADING_POST,Construa o entreposto no litoral para começar (Infraestrutura),Build the trading post on the coast to start (Infrastructure)
+HINT_BUILD_TRADING_POST,Construa o entreposto no litoral para começar (Porto),Build the trading post on the coast to start (Harbor)
 TIP_RAMPS,Rampas: %s,Ramps: %s
 TIP_STORAGE,Estoque por bem: %s t,Storage per good: %s t
 LABEL_NO_INPUT,Sem entrada,No input

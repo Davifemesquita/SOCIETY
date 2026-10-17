@@ -23,7 +23,7 @@ func _run() -> void:
 	add_child(game)
 	GameClock.set_speed(TickClock.PAUSED)
 	await _save("01_tutorial_aponta_o_entreposto.png")
-	game.hud._select_category(game.hud._categories().size() - 1)
+	game.hud._select_category(game.hud.category_of(&"trading_post"))
 	await _save("02_cartao_do_entreposto_piscando.png")
 	var options := OptionsDialog.new()
 	Modal.open(game._ui_layer, options)
