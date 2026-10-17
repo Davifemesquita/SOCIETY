@@ -7,7 +7,7 @@ extends Node
 ## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13); plantacoes, uma fazenda de cada
 ## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14). Os pombos na rua saem
-## em postes (Fase 14).
+## em postes (Fase 14), e os varais e vasos das casas (Fase 15).
 
 var _out_dir: String
 var _game: GameScreen
@@ -169,6 +169,19 @@ func _lamps() -> void:
 	while BirdView.pigeon_flight(0.0, _game.bird_view.time()) < 0.4:
 		_game.bird_view.advance(0.25)
 	await _shot("28b_pombos_voando.png", Vector3(flock.x, 0.0, flock.z), 12.0, PI + 0.3, 0.3)
+	# varais atrás e vasos na porta (Fase 15); uma casa em três vira de operários (vasos sem o quintal cercado)
+	var houses := 0
+	for building_id: int in _sim.world.building_ids():
+		var record := _sim.world.building(building_id)
+		if record.is_house():
+			if houses % 3 == 2:
+				record.tier = &"workers"
+			houses += 1
+	_game.building_view.rebuild()
+	_game.yard_view.rebuild()
+	print("varais ", _game.yard_view.clothesline_count(), " vasos ", _game.yard_view.pot_count())
+	await _shot("30_varais.png", Vector3(100.0, 0.0, 110.0), 18.0, 0.3, 0.45)
+	await _shot("31_vasos.png", Vector3(92.0, 0.0, 100.0), 11.0, PI + 0.3, 0.35)
 	_set_hour(22.0)
 	_game.window_view.refresh_lit()
 	await _shot("15_postes_noite.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)

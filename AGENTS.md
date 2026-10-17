@@ -204,6 +204,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/crop_view.gd` | plantações nos campos, crescendo com o ciclo da fazenda (Fase 14) |
 | `presentation/bird_view.gd` | pombos nas ruas e estorninhos sobre os campos (Fase 14) |
 | `presentation/harbor_view.gd`, `trader_post_model.gd` | trapiche dos píeres, cais do entreposto e feitoria do comerciante (Fase 15) |
+| `presentation/yard_view.gd` | varais atrás e vasos na porta das casas de camponeses e operários (Fase 15) |
 | `presentation/animal_view.gd`, `shaders/animal_vat.gdshader`, `tools/bake_animals.gd` | ovelhas e porcos nos pastos, cães nas portas e o cavalo da carroça, em VAT (Fase 13) |
 | `presentation/lamp_view.gd`, `shaders/night_glow.gdshader` | postes nas ruas calçadas e fogueiras atrás das casas de camponeses, acesos à noite (Fase 13) |
 | `presentation/smoke_view.gd` | chaminés com fumaça e vapor enquanto produzem, fuligem no chão |
@@ -941,6 +942,11 @@ Regras que já custaram investigação:
   mesmo dado (o shader faz a mesma conta do passo; em w vai o passo da animação, que dá o balanço), escondida em
   quem não leva aquilo. A peça fica em `HOLD_HEIGHT` da altura do corpo e `HOLD_FORWARD_M` à frente. A captura é
   `CAPTURA_SO=cestos` no `tools/capture_phase4.tscn`.
+- **Varais e vasos** (`YardView`): varal com roupa (`CLOTH_COLORS`) na célula livre de trás de uma casa de
+  camponeses ou operários a cada `CLOTHESLINE_EVERY` (resto `CLOTHESLINE_REST`: a fogueira da `LampView` usa o resto
+  0 de 3, e as duas nunca disputam o lugar, que é o mesmo `LampView.bonfire_spot`); vasos de flor dos dois lados da
+  porta em uma casa a cada `POT_EVERY`, na frente do corpo (no quintal cercado dos camponeses a casa recua uma
+  fileira, `TierDef.HouseTrim.YARD`). As capturas saem no `CAPTURA_SO=postes`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -967,7 +973,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | Depois da Fase 12 | 16/10/2026: prédios de modelo (fachadas do Kenney Fantasy Town Kit) |
 | 13 — Cidade viva (nossa) | **concluída em 16/10/2026**: silhueta por cadeia, pilhas de estoque, carga na carroça, postes e fogueiras, detalhe das casas e animais com o cavalo da carroça (os pássaros ficaram de fora) |
 | 14 — Campo e caminho (nossa) | **concluída em 16/10/2026**: plantações nos campos, cerca e capim nos pastos, meio-fio e sulcos nas estradas, ponte de madeira com corrimão e pássaros (pombos nas ruas, estorninhos nos campos) |
-| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres; depois varais e vasos |
+| 15 — Porto e quintal (nossa) | em andamento desde 16/10/2026: trapiche no píer, cais do entreposto com barcos e carga, feitoria do comerciante, cestos e sacos nos pedestres, varais e vasos nas casas |
 
 Pendências já vistas para fases futuras:
 
