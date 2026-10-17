@@ -4,7 +4,8 @@ extends Node
 ## Arquipélago da semente 1840: visto de cima, a ilha principal, o litoral com a água, a floresta,
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
 ## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
-## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15).
+## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15); margem, a lama na margem do
+## rio e a areia molhada da praia (Fase 19).
 
 const SEED := 1840
 
@@ -33,6 +34,15 @@ func _run() -> void:
 	_set_hour(11.0)
 	if OS.get_environment("CAPTURA_SO") == "porto":
 		await _harbor(grid)
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "margem":
+		var river := grid.cell_world(grid.cell_at(grid.ground.find(IslandGrid.Ground.RIVER)))
+		await _shot("50_margem_do_rio.png", river, 50.0, 0.0)
+		await _shot("51_margem_de_perto.png", river + Vector3(6.0, 0.0, 0.0), 32.0, PI)
+		var beach := SiteFinder.find(_sim, &"trading_post", 0, Vector2i(grid.size.x / 2, 0))
+		var beach_origin: Vector2i = beach[0]
+		await _shot("52_praia_molhada.png", grid.cell_world(beach_origin), 45.0, 0.6 + PI)
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "ponte":

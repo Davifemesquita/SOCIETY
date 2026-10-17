@@ -1035,6 +1035,18 @@ Regras que já custaram investigação:
   `horse_offset()`, o mesmo lugar onde o cavalo é posto. Captura: `CAPTURA_SO=animais` no
   `tools/capture_phase3.tscn` (`09b_arreio.png`, de lado).
 
+### Chão e margem (Fase 19, nossa)
+
+- **Proposta nossa** e aceita pelo dono do produto (17/10/2026): o chão entre os prédios, pelas pendências
+  do `assets/TODO_ASSETS.md` (terreno, estrada de terra, paralelepípedo, campo e pasto). Só visual; o save
+  fica na versão 15. Partes com commit próprio.
+- **Lama na margem** (`ArchipelagoGenerator.Surface.MUD`, canal azul do `surface_weights`): o leito do rio e
+  `RIVER_BANK_CELLS` de margem (`near_river`), fora da praia, viram lama no `shaders/terrain.gdshader`: a
+  textura de areia tingida de `mud_tint`, quase sem relevo e lisa, com a borda recortada pela altura da
+  textura de rocha em escala larga. A areia da praia escurece e fica lisa até `wet_sand_m` acima do mar. A
+  assinatura do terreno não muda (o tipo de chão é só desenho). Captura: `CAPTURA_SO=margem` no
+  `tools/capture_phase5.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1064,6 +1076,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
 | 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
+| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia |
 
 Pendências já vistas para fases futuras:
 

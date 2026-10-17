@@ -26,6 +26,8 @@ const CLIFF_BAND := 0.012
 const LAND_MIN_M := 0.3
 ## Sem árvores a menos disto do mar (praia).
 const BEACH_CELLS := 2
+## Largura da lama na margem do rio, em células (desenho só).
+const RIVER_BANK_CELLS := 1
 const DEPOSIT_TRIES := 600
 
 
@@ -380,6 +382,27 @@ static func near_sea(grid: IslandGrid, reach: int) -> PackedByteArray:
 	return near
 
 
+## Células de terra a até `reach` células do rio, e o próprio rio (a lama da margem).
+static func near_river(grid: IslandGrid, reach: int) -> PackedByteArray:
+	var width := grid.size.x
+	var near := PackedByteArray()
+	near.resize(grid.ground.size())
+	for i: int in grid.ground.size():
+		if grid.ground[i] == IslandGrid.Ground.RIVER:
+			near[i] = 1
+	for ring: int in reach:
+		var grown := near.duplicate()
+		for i: int in near.size():
+			if near[i] == 1:
+				continue
+			var x := i % width
+			if (i >= width and near[i - width] == 1) or (i + width < near.size() and near[i + width] == 1) \
+					or (x > 0 and near[i - 1] == 1) or (x < width - 1 and near[i + 1] == 1):
+				grown[i] = 1
+		near = grown
+	return near
+
+
 static func _shuffle(items: Array, rng: RandomNumberGenerator) -> void:
 	for i: int in range(items.size() - 1, 0, -1):
 		var j := rng.randi_range(0, i)
@@ -395,7 +418,7 @@ static func fingerprint(grid: IslandGrid) -> int:
 
 
 ## Tipos de chão do terreno desenhado (a apresentação vira textura).
-enum Surface { AUTO = 0, SAND = 1, FOREST = 2 }
+enum Surface { AUTO = 0, SAND = 1, FOREST = 2, MUD = 3 }
 
 
 ## Região do terreno de uma ilha gerada, de 2 em 2 m, cantos inclusive: {side, heights
@@ -418,6 +441,8 @@ static func region_corners(world: WorldState, index: int, config: GameConfig, da
 	var first := Vector2i(roundi((grid.origin_m.x - origin.x) / cell_m), roundi((grid.origin_m.y - origin.y) / cell_m))
 	# areia: o mar, o rio e a faixa de praia junto ao mar
 	var beach := near_sea(grid, BEACH_CELLS + 1)
+	# lama: o leito do rio e a margem dele, onde não é praia
+	var bank := near_river(grid, RIVER_BANK_CELLS)
 	var corner_heights := grid.corner_heights
 	var ground := grid.ground
 	var trees := grid.trees
@@ -440,6 +465,8 @@ static func region_corners(world: WorldState, index: int, config: GameConfig, da
 				sea = ground[cell] == IslandGrid.Ground.SEA
 				if ground[cell] == IslandGrid.Ground.LAND and beach[cell] == 0:
 					kind = Surface.FOREST if trees[cell] > 0 else Surface.AUTO
+				if bank[cell] == 1 and beach[cell] == 0:
+					kind = Surface.MUD
 			if sea and height < 0.0:
 				var x := origin.x + px * cell_m
 				var from_coast := smoothstep(shelf_start, shelf_end, _coast_metric(spec, noises, config, x, z))

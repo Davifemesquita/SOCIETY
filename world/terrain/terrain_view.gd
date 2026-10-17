@@ -112,6 +112,8 @@ static func _surface_color(kind: int) -> Color:
 			return Color(1.0, 0.0, 0.0)
 		ArchipelagoGenerator.Surface.FOREST:
 			return Color(0.0, 1.0, 0.0)
+		ArchipelagoGenerator.Surface.MUD:
+			return Color(0.0, 0.0, 1.0)
 	return Color(0.0, 0.0, 0.0)
 
 

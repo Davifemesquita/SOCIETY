@@ -63,6 +63,34 @@ func test_drawn_sea_floor_reaches_the_deep_floor_without_touching_rivers() -> vo
 			assert_int(rivers).is_greater(0)
 
 
+## A lama (Fase 19) cobre o leito do rio e a margem dele, e nunca a praia junto ao mar.
+func test_river_bed_and_bank_are_mud_but_the_beach_stays_sand() -> void:
+	var grid := _sim.world.island(0)
+	var region := ArchipelagoGenerator.region_corners(_sim.world, 0, _config, _sim.data)
+	var side: int = region["side"]
+	var origin: Vector2 = region["origin"]
+	var surface: PackedByteArray = region["surface"]
+	var first := Vector2i(((grid.origin_m - origin) / _config.cell_size_m).round())
+	var beach := ArchipelagoGenerator.near_sea(grid, ArchipelagoGenerator.BEACH_CELLS + 1)
+	var bank := ArchipelagoGenerator.near_river(grid, ArchipelagoGenerator.RIVER_BANK_CELLS)
+	var mud_bed := 0
+	var mud_bank := 0
+	for i: int in grid.ground.size():
+		var cell := grid.cell_at(i)
+		var corner := first + cell
+		var kind := surface[corner.y * side + corner.x]
+		if beach[i] == 1:
+			assert_int(kind).is_not_equal(ArchipelagoGenerator.Surface.MUD)
+		elif grid.ground[i] == IslandGrid.Ground.RIVER:
+			assert_int(kind).is_equal(ArchipelagoGenerator.Surface.MUD)
+			mud_bed += 1
+		elif bank[i] == 1:
+			assert_int(kind).is_equal(ArchipelagoGenerator.Surface.MUD)
+			mud_bank += 1
+	assert_int(mud_bed).is_greater(0)
+	assert_int(mud_bank).is_greater(mud_bed / 2)
+
+
 func test_trees_follow_the_grid_and_building_clears_them() -> void:
 	var view: TreeView = auto_free(TreeView.new())
 	add_child(view)
