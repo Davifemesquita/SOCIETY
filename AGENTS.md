@@ -1118,6 +1118,10 @@ Regras que já custaram investigação:
   (UV.x = 1); batem devagar (`GULL_BEAT_HZ`) por `GULL_FLAP` do ciclo de `GULL_CYCLE_S` e planam o resto, e
   o corpo só inclina para dentro da volta (antes ele balançava de lado). Captura: `CAPTURA_SO=porto` no
   `tools/capture_phase5.tscn` (`13c_gaivota.png` planando e `13d_gaivota_batendo.png`).
+- **Nó no cabeço** (`HarborView.hitch`, `hitch_count`): cada amarra dá `HITCH_TURNS` voltas em hélice no fuste
+  do cabeço, descendo `HITCH_PITCH_M` por volta, e sai dele do lado do barco (antes o cabo nascia no meio do
+  ferro); o segundo cabo no mesmo cabeço dá as voltas dele logo abaixo. As voltas entram na malha `Ropes`.
+  Captura: `CAPTURA_SO=porto` (`13b_amarras.png`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,

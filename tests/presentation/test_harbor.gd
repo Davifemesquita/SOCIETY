@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## Porto (Fase 15): o píer vira trapiche de tábuas sobre estacas, com a passarela saindo para o mar e os
-## cabeços de amarração na ponta; a caixa do píer sai da BuildingView.
+## cabeços de amarração na ponta; a caixa do píer sai da BuildingView. Fase 21: a volta do cabo no cabeço.
 
 var _sim: Simulation
 
@@ -110,3 +110,37 @@ func test_each_boat_is_tied_by_bow_and_stern_lines_that_sag_between_bollard_and_
 	assert_int(view.rope_count()).is_equal(6)
 	var ropes: MeshInstance3D = view.get_node("Ropes")
 	assert_object(ropes.mesh).is_not_null()
+
+
+
+func test_each_line_takes_two_turns_round_its_bollard_and_leaves_it_towards_the_boat() -> void:
+	var view := _view()
+	SimFixture.place(_sim, &"trading_post", Vector2i(30, 0), 2)
+	view.rebuild()
+	assert_int(view.hitch_count()).is_equal(view.rope_count())
+	for index: int in view.hitch_count():
+		var coil := view.hitch_points(index)
+		var rope := view.rope_points(index)
+		# o cabo começa onde a volta começa
+		assert_vector(rope[0]).is_equal(coil[0])
+		# a volta fica colada no fuste, desce e dá HITCH_TURNS voltas
+		var center := Vector2.ZERO
+		for point: Vector3 in coil:
+			center += Vector2(point.x, point.z)
+		center /= coil.size()
+		for point: Vector3 in coil:
+			var gap := Vector2(point.x, point.z).distance_to(center)
+			assert_float(gap).is_between(HarborView.BOLLARD_RADIUS_M, HarborView.BOLLARD_RADIUS_M * 1.6)
+		assert_float(coil[coil.size() - 1].y).is_less(coil[0].y)
+		assert_int(coil.size()).is_equal(int(HarborView.HITCH_TURNS * HarborView.HITCH_SEGMENTS) + 1)
+		# e sai do lado do barco: o começo é o ponto da volta mais perto da outra ponta do cabo
+		var boat_end := rope[rope.size() - 1]
+		for point: Vector3 in coil:
+			assert_float(Vector2(coil[0].x, coil[0].z).distance_to(Vector2(boat_end.x, boat_end.z))).is_less_equal(
+					Vector2(point.x, point.z).distance_to(Vector2(boat_end.x, boat_end.z)) + 0.001)
+
+
+func test_a_second_line_on_the_same_bollard_turns_below_the_first() -> void:
+	var first := HarborView.hitch(Vector3.ZERO, Vector3(3.0, 0.0, 0.0))
+	var second := HarborView.hitch(Vector3.ZERO, Vector3(0.0, 0.0, 3.0), 1)
+	assert_float(second[0].y).is_less(first[first.size() - 1].y)

@@ -10,6 +10,8 @@ extends Node3D
 ## Fase 20: as amarras. Cada barco leva um cabo da proa e outro da popa até o cabeço mais perto do mesmo píer
 ## ou cais, caindo em curva entre as pontas (`rope_span`); todos os cabos numa malha só, refeita com o resto.
 ## As tábuas e as estacas levam a madeira gasta do `shaders/plank.gdshader`.
+## Fase 21: o cabo dá duas voltas no fuste do cabeço (`hitch`) e sai dele do lado do barco, em vez de nascer
+## no meio do ferro.
 
 ## Tábua: largura (ao longo da passarela), fresta, espessura e altura do tabuleiro acima do chão (ou da água).
 const BOARD_WIDTH_M := 0.3
@@ -51,6 +53,11 @@ const ROPE_SAG := 0.12
 const ROPE_SEGMENTS := 12
 const ROPE_MAX_M := 10.0
 const ROPE_COLOR := Color(0.62, 0.53, 0.38)
+## Volta no cabeço (Fase 21): quantas voltas o cabo dá em volta do fuste, de quanto em quanto ele desce a cada
+## volta e os pedaços de cada volta. Um segundo cabo no mesmo cabeço dá as voltas dele mais abaixo.
+const HITCH_TURNS := 2.0
+const HITCH_PITCH_M := 0.05
+const HITCH_SEGMENTS := 10
 
 var _simulation: Simulation
 var _boards := MultiMeshInstance3D.new()
@@ -60,6 +67,7 @@ var _boats := MultiMeshInstance3D.new()
 var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
 var _ropes := MeshInstance3D.new()
 var _rope_spans: Array[PackedVector3Array] = []
+var _hitches: Array[PackedVector3Array] = []
 var _rope_material := StandardMaterial3D.new()
 var _dirty: bool = false
 
@@ -142,6 +150,16 @@ func rope_count() -> int:
 	return _rope_spans.size()
 
 
+## Voltas de cabo nos cabeços (uma por cabo).
+func hitch_count() -> int:
+	return _hitches.size()
+
+
+## Os pontos da volta index, de cima (onde o cabo sai para o barco) para baixo.
+func hitch_points(index: int) -> PackedVector3Array:
+	return _hitches[index]
+
+
 ## Os pontos do cabo index, da ponta no cabeço à ponta no barco.
 func rope_points(index: int) -> PackedVector3Array:
 	return _rope_spans[index]
@@ -170,6 +188,7 @@ func rebuild() -> void:
 	for pile_kind: int in _cargo:
 		cargo[pile_kind] = []
 	_rope_spans.clear()
+	_hitches.clear()
 	var world := _simulation.world
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
@@ -199,24 +218,50 @@ func rebuild() -> void:
 		if CargoKit.tinted(pile_kind):
 			for i: int in places.size():
 				_cargo[pile_kind].multimesh.set_instance_color(i, CargoKit.SACK_COLOR)
-	_ropes.mesh = rope_mesh(_rope_spans, _rope_material)
+	_ropes.mesh = rope_mesh(_rope_spans + _hitches, _rope_material)
 
 
 ## Cabos da proa e da popa de cada barco até o cabeço mais perto (do mesmo píer ou cais), dentro de ROPE_MAX_M.
+## O cabo sai da volta que ele dá no fuste (Fase 21), do lado do barco.
 func _moor_lines(bollards: Array[Transform3D], boats: Array[Transform3D]) -> void:
+	var tied: Dictionary[int, int] = {}
 	for boat: Transform3D in boats:
 		for end: Vector3 in [Vector3(0.0, BOAT_DEPTH_M * 1.2, -BOAT_LENGTH_M * 0.5 + 0.15),
 				Vector3(0.0, BOAT_DEPTH_M, BOAT_LENGTH_M * 0.5 - 0.15)]:
 			var on_boat := boat * end
-			var best := Vector3.ZERO
+			var best := -1
 			var best_m := ROPE_MAX_M
-			for bollard: Transform3D in bollards:
-				var top := bollard.origin + Vector3(0.0, BOLLARD_HEIGHT_M * 0.3, 0.0)
+			for i: int in bollards.size():
+				var top := bollards[i].origin + Vector3(0.0, BOLLARD_HEIGHT_M * 0.3, 0.0)
 				if top.distance_to(on_boat) < best_m:
 					best_m = top.distance_to(on_boat)
-					best = top
-			if best_m < ROPE_MAX_M:
-				_rope_spans.append(rope_span(best, on_boat, ROPE_SAG))
+					best = i
+			if best < 0:
+				continue
+			var below: int = tied[best] if tied.has(best) else 0
+			tied[best] = below + 1
+			var coil := hitch(bollards[best].origin, on_boat, below)
+			_hitches.append(coil)
+			_rope_spans.append(rope_span(coil[0], on_boat, ROPE_SAG))
+
+
+## A volta do cabo no cabeço de centro center: uma hélice de HITCH_TURNS voltas em volta do fuste, começando no
+## lado virado para toward (de onde o cabo sai) e descendo; below conta os cabos que já estão no cabeço (cada
+## um dá as voltas dele mais abaixo).
+static func hitch(center: Vector3, toward: Vector3, below: int = 0) -> PackedVector3Array:
+	var points := PackedVector3Array()
+	var flat := Vector2(toward.x - center.x, toward.z - center.z)
+	var start := flat.angle() if flat.length() > 0.001 else 0.0
+	var top := BOLLARD_HEIGHT_M * 0.3 - below * HITCH_PITCH_M * (HITCH_TURNS + 0.5)
+	var steps := int(HITCH_TURNS * HITCH_SEGMENTS)
+	for i: int in steps + 1:
+		var t := float(i) / HITCH_SEGMENTS
+		var angle := start + t * TAU
+		var height := top - t * HITCH_PITCH_M
+		# o fuste afina para baixo (raio de BOLLARD_RADIUS_M no pé a 1,3 × no alto)
+		var radius := BOLLARD_RADIUS_M * (1.15 + 0.3 * height / BOLLARD_HEIGHT_M) + ROPE_RADIUS_M
+		points.append(center + Vector3(cos(angle) * radius, height, sin(angle) * radius))
+	return points
 
 
 ## Os pontos de um cabo de from a to caindo em parábola: no meio, sag × o vão abaixo da reta.
