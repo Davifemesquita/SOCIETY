@@ -19,6 +19,9 @@ const ICON_SIZE := 26
 ## Papel dos painéis (Fase 9): gerado por tools/build_theme.gd; a moldura tem PAPER_FRAME_PX.
 const PAPER_TEXTURE := "res://ui/theme/paper_panel.png"
 const MENU_TEXTURE := "res://ui/theme/paper_menu.png"
+## Cantoneira gravada (Fase 21): o filete em anel e o prego, em fração do raio da chapa.
+const CORNER_RING := 0.72
+const CORNER_NAIL := 0.22
 const PAPER_FRAME_PX := 14
 
 
@@ -296,7 +299,8 @@ static func _paper_box(margin: int, path: String) -> StyleBoxTexture:
 
 
 ## Papel envelhecido (manchas e fibras por ruído, bordas mais escuras), moldura de madeira, filete
-## dourado por dentro e cantoneiras. Determinístico: a mesma imagem a cada geração.
+## dourado por dentro e cantoneiras. Determinístico: a mesma imagem a cada geração. Desde a Fase 21, o grão
+## do `PaperGrain` (vergê e ferrugem) e as cantoneiras gravadas.
 static func paper_image(side: int, frame: int, seed_value: int) -> Image:
 	var image := Image.create_empty(side, side, false, Image.FORMAT_RGBA8)
 	var stains := FastNoiseLite.new()
@@ -319,14 +323,23 @@ static func paper_image(side: int, frame: int, seed_value: int) -> Image:
 				var fiber := fibers.get_noise_2d(x, y) * 0.5 + 0.5
 				color = UiPalette.PAPER.lerp(UiPalette.PAPER_DARK, stain * 0.55 + fiber * 0.15)
 				color = color.lerp(UiPalette.PAPER_SHADE, (1.0 - smoothstep(0.0, 0.35, inside)) * 0.45)
+				# Fase 21: as linhas do vergê e as manchas de ferrugem
+				color = PaperGrain.age(color, x, y, seed_value)
 			image.set_pixel(x, y, color)
-	# cantoneiras de latão
+	# cantoneiras de latão; desde a Fase 21, gravadas: um filete em anel e o prego no meio
+	var plate := frame * 0.36
 	for corner: Vector2i in [Vector2i(0, 0), Vector2i(side - frame, 0), Vector2i(0, side - frame), Vector2i(side - frame, side - frame)]:
 		for y: int in frame:
 			for x: int in frame:
-				var local := Vector2(x, y) - Vector2(frame, frame) * 0.5
-				if local.length() < frame * 0.36:
-					image.set_pixel(corner.x + x, corner.y + y, UiPalette.GOLD_LIGHT.lerp(UiPalette.GOLD, local.length() / (frame * 0.36)))
+				var gap := (Vector2(x, y) - Vector2(frame, frame) * 0.5).length()
+				if gap >= plate:
+					continue
+				var brass := UiPalette.GOLD_LIGHT.lerp(UiPalette.GOLD, gap / plate)
+				if absf(gap - plate * CORNER_RING) < 0.75:
+					brass = UiPalette.GOLD.darkened(0.35)
+				elif gap < plate * CORNER_NAIL:
+					brass = UiPalette.WOOD.lerp(UiPalette.GOLD, gap / (plate * CORNER_NAIL) * 0.5)
+				image.set_pixel(corner.x + x, corner.y + y, brass)
 	return image
 
 

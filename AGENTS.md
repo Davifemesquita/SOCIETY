@@ -1122,6 +1122,14 @@ Regras que já custaram investigação:
   do cabeço, descendo `HITCH_PITCH_M` por volta, e sai dele do lado do barco (antes o cabo nascia no meio do
   ferro); o segundo cabo no mesmo cabeço dá as voltas dele logo abaixo. As voltas entram na malha `Ropes`.
   Captura: `CAPTURA_SO=porto` (`13b_amarras.png`).
+- **Papel envelhecido** (`ui/theme/paper_grain.gd`, `PaperGrain`): as linhas do papel vergê (as finas a cada
+  `LAID_PX`, cada uma com a força dela e falhando ao longo, e as de corrente a cada `CHAIN_PX`), manchas de
+  ferrugem redondas e mais escuras na borda (uma no máximo por quadro de `FOX_CELL_PX`, pelo hash da semente) e
+  a borda gasta recortada por ruído. O `ThemeBuilder.paper_image` passa cada pixel do papel por `age` e grava as
+  cantoneiras gravadas (filete em anel em `CORNER_RING` e prego em `CORNER_NAIL`); mudou o grão, rode
+  `tools/build_theme.gd`. A carta do arquipélago desenha a camada `PaperGrain.overlay` por cima
+  (`ArchipelagoMap.grain`, `GRAIN_PX`, feita uma vez): na própria carta gravada o grão sumiria, porque ela é
+  reduzida 3 a 5 vezes ao ser desenhada. Captura: `CAPTURA_SO=carta` no `tools/capture_phase6.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,

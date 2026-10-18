@@ -5,7 +5,7 @@ extends Control
 ## ventos e moldura. Por cima: o número das ilhas, os portos (âncora), o posto do comerciante, a
 ## rota escolhida (tracejada) e os navios. As ilhas das rivais (Fase 11) ganham um círculo na cor
 ## delas, e os navios delas também. Só desenha; a terra sai da carta náutica. Fase 20: a terra e o mar em
-## traço de gravura (`engrave`).
+## traço de gravura (`engrave`). Fase 21: o papel envelhecido por cima (`grain`, do `PaperGrain`).
 
 const SEA := Color("cdd5c4")
 const SEA_SHALLOW := Color("b9c6b4")
@@ -26,6 +26,9 @@ const HATCH_PX := 9.0
 const HATCH_INK_PX := 3.0
 ## Meia largura da linha d'água (px da carta gravada): uma célula inteira, para aparecer no mapa pequeno.
 const WATERLINE_INK_PX := 1.5
+## Grão do papel (Fase 21): o lado da camada (px, perto do tamanho do mapa na tela) e a semente.
+const GRAIN_PX := 512
+const GRAIN_SEED := 1840
 
 ## Rota destacada (0 = nenhuma).
 var route_id: int = 0
@@ -33,6 +36,9 @@ var route_id: int = 0
 var _simulation: Simulation
 var _texture: ImageTexture
 var _chart: SeaChart
+
+## O grão do papel por cima da carta (Fase 21): o mesmo para todo mapa, feito uma vez.
+static var _grain: ImageTexture
 
 
 func setup(simulation: Simulation) -> void:
@@ -50,6 +56,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.PAPER_DARK)
 	var area := _area()
 	draw_texture_rect(_texture, area, false)
+	draw_texture_rect(grain(), area, false)
 	draw_rect(area.grow(2.0), COAST, false, 2.0)
 	draw_rect(area.grow(6.0), UiPalette.GOLD, false, 3.0)
 	_compass(area.position + Vector2(area.size.x - 30.0, 30.0), 20.0)
@@ -119,6 +126,13 @@ func _to_map(point: Vector2, area: Rect2) -> Vector2:
 ## litoral (`coast_distance`, em células; + no mar) dá o litoral a tinta, as linhas d'água em volta da costa
 ## (WATERLINES, cada uma mais fraca), o mar mais escuro junto dela e a hachura em diagonal na terra perto do
 ## mar, sumindo para dentro.
+## O grão do papel da carta (vergê, ferrugem e a borda gasta), em GRAIN_PX × GRAIN_PX.
+static func grain() -> ImageTexture:
+	if _grain == null:
+		_grain = ImageTexture.create_from_image(PaperGrain.overlay(GRAIN_PX, GRAIN_SEED))
+	return _grain
+
+
 static func _bake(chart: SeaChart) -> ImageTexture:
 	return ImageTexture.create_from_image(engrave(chart))
 
