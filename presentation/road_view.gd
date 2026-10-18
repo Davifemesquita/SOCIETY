@@ -11,7 +11,8 @@ extends MultiMeshInstance3D
 ## shader, corrimão de madeira nos lados que dão para o rio e estacas descendo até o leito. Fase 19: o ladrilho
 ## dobra pelos quatro cantos da célula (a altura deles relativa ao centro vai na cor da instância e o shader
 ## desloca os vértices), sem degrau entre células na ladeira; a terra tem a borda recortada nos lados abertos
-## (no shader, pelos bits em INSTANCE_CUSTOM.a) e touceiras de capim ao longo deles.
+## (no shader, pelos bits em INSTANCE_CUSTOM.a) e touceiras de capim ao longo deles. Fase 20: pedras soltas na
+## terra, fora dos sulcos (`stone_spots`), um MultiMesh com a cor de cada pedra.
 
 const DIRT_COLOR := Color(0.55, 0.45, 0.33)
 const BRIDGE_COLOR := Color(0.36, 0.26, 0.17)
@@ -45,6 +46,14 @@ const OPEN_SHIFT := 8
 ## Touceiras de capim por lado aberto da terra, e quanto saem da borda para fora.
 const VERGE_TUFTS := 3
 const VERGE_OUT_M := 0.12
+## Pedras soltas: até STONES_MAX por célula de terra (pelo hash), o tamanho e quanto afundam na terra.
+const STONES_MAX := 3
+const STONE_SIZE_M := Vector2(0.1, 0.24)
+const STONE_SINK := 0.35
+const STONE_COLOR := Color(0.7, 0.67, 0.6)
+## Faixa de cada lado do meio da célula onde correm os sulcos (m do meio, em volta do rut_offset_m do shader):
+## pedra ali não fica.
+const RUT_LANE_M := Vector2(0.27, 0.58)
 
 var _simulation: Simulation
 var _cell_size: float
@@ -52,6 +61,7 @@ var _curbs := MultiMeshInstance3D.new()
 var _rails := MultiMeshInstance3D.new()
 var _posts := MultiMeshInstance3D.new()
 var _verge := MultiMeshInstance3D.new()
+var _stones := MultiMeshInstance3D.new()
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -111,6 +121,18 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_verge.multimesh.mesh = CropView.tuft_mesh()
 	_verge.material_override = grass
 	add_child(_verge)
+	var rock := StandardMaterial3D.new()
+	rock.vertex_color_use_as_albedo = true
+	rock.vertex_color_is_srgb = true
+	rock.roughness = 0.95
+	_stones.name = "Stones"
+	_stones.multimesh = MultiMesh.new()
+	_stones.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	_stones.multimesh.use_colors = true
+	_stones.multimesh.mesh = stone_mesh()
+	_stones.material_override = rock
+	_stones.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_stones)
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: rebuild())
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
@@ -124,6 +146,7 @@ func rebuild() -> void:
 	var rails: Array[Transform3D] = []
 	var posts: Array[Transform3D] = []
 	var tufts: Array[Transform3D] = []
+	var stones: Array[Transform3D] = []
 	for grid: IslandGrid in _simulation.world.islands:
 		for cell: Vector2i in grid.road_cells():
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
@@ -137,8 +160,14 @@ func rebuild() -> void:
 				colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if paved else DIRT_COLOR))
 				kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
 						twist(grid, cell)))
-				if not paved:
+				if not paved and not bridge:
 					_add_verge(grid, cell, open, tufts)
+					for spot: Vector3 in stone_spots(grid, cell, ruts(grid, cell)):
+						var noise := hash([grid.origin_m, cell, spot.x])
+						var size := lerpf(STONE_SIZE_M.x, STONE_SIZE_M.y, float(noise % 1000) / 1000.0)
+						var basis := Basis(Vector3.UP, float(noise / 1000 % 628) / 100.0).scaled(
+								Vector3(size, size * (0.5 + float(noise / 100000 % 10) / 20.0), size * 0.8))
+						stones.append(Transform3D(basis, spot - Vector3(0.0, size * STONE_SINK * 0.5, 0.0)))
 			if paved and not bridge:
 				for side: Vector2i in SIDES:
 					if not grid.has_road(cell + side) and not _cut_by(side, links):
@@ -171,6 +200,74 @@ func rebuild() -> void:
 	_verge.multimesh.instance_count = tufts.size()
 	for i: int in tufts.size():
 		_verge.multimesh.set_instance_transform(i, tufts[i])
+	_stones.multimesh.instance_count = stones.size()
+	for i: int in stones.size():
+		_stones.multimesh.set_instance_transform(i, stones[i])
+		var shade := 0.8 + 0.35 * fposmod(i * 0.618, 1.0)
+		_stones.multimesh.set_instance_color(i, Color(STONE_COLOR.r * shade, STONE_COLOR.g * shade, STONE_COLOR.b * shade))
+
+
+func stone_count() -> int:
+	return _stones.multimesh.instance_count
+
+
+## Onde ficam as pedras soltas da célula de terra (no topo do ladrilho): de zero a STONES_MAX pelo hash da
+## célula, num ponto da célula fora das faixas dos sulcos (RUT_LANE, conforme a direção deles) e longe da borda.
+static func stone_spots(grid: IslandGrid, cell: Vector2i, rut_kind: int) -> PackedVector3Array:
+	var spots := PackedVector3Array()
+	var count := hash([grid.origin_m, cell, 31]) % (STONES_MAX + 1)
+	var center := grid.cell_world(cell)
+	var half := grid.cell_size * 0.5
+	for k: int in count:
+		var noise := hash([grid.origin_m, cell, k, 17])
+		var offset := (Vector2(float(noise % 1000) / 1000.0, float(noise / 1000 % 1000) / 1000.0) * 1.5
+				- Vector2.ONE * 0.75) * half
+		offset = keep_off_ruts(offset, rut_kind)
+		var spot := center + Vector3(offset.x, 0.0, offset.y)
+		spot.y = grid.height_at(spot.x, spot.z) + LIFT_M + THICKNESS_M
+		spots.append(spot)
+	return spots
+
+
+## Tira o ponto (m do meio da célula) de cima dos sulcos: na faixa RUT_LANE_M do lado em que eles correm, ele
+## vai para o meio da rua ou para fora deles, o que ficar mais perto.
+static func keep_off_ruts(offset: Vector2, rut_kind: int) -> Vector2:
+	var result := offset
+	if rut_kind == Ruts.ALONG_X or rut_kind == Ruts.BOTH:
+		result.y = _off_lane(result.y)
+	if rut_kind == Ruts.ALONG_Z or rut_kind == Ruts.BOTH:
+		result.x = _off_lane(result.x)
+	return result
+
+
+static func _off_lane(value: float) -> float:
+	var lane_low := RUT_LANE_M.x
+	var lane_high := RUT_LANE_M.y
+	var size := absf(value)
+	if size < lane_low or size > lane_high:
+		return value
+	return signf(value) * (lane_low * 0.5 if size - lane_low < lane_high - size else lane_high + 0.08)
+
+
+## Pedra solta de 1 m (esticada pela transformação): um seixo baixo de seis lados em cima e embaixo, com os
+## vértices um pouco fora do círculo, de base em y = 0.
+static func stone_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var ring := PackedVector3Array()
+	for i: int in 6:
+		var angle := i * TAU / 6.0
+		var radius := 0.5 * (0.8 + 0.2 * sin(i * 2.3))
+		ring.append(Vector3(cos(angle) * radius, 0.35 + 0.1 * cos(i * 1.7), sin(angle) * radius))
+	var top := Vector3(0.05, 1.0, -0.03)
+	var bottom := Vector3(0.0, 0.0, 0.0)
+	for i: int in 6:
+		var a := ring[i]
+		var b := ring[(i + 1) % 6]
+		for vertex: Vector3 in [top, b, a, bottom, a, b]:
+			tool.add_vertex(vertex)
+	tool.generate_normals()
+	return tool.commit()
 
 
 ## Touceiras de capim ao longo dos lados abertos da terra, um pouco para fora da borda, no chão; o lugar, o

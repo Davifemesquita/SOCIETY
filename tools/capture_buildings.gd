@@ -11,7 +11,8 @@ extends Node
 ## arada, úmidas e secas, e o campo sem dono (Fase 19). Os pombos na rua saem
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
 ## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17); epoca, o
-## campanário da igreja e o portão das fábricas pesadas (Fase 18).
+## campanário da igreja e o portão das fábricas pesadas (Fase 18). Em postes também as pedras soltas na
+## terra (`26_estrada_de_terra.png`) e a asa do pombo batendo (`28c_asas.png`, Fase 20).
 
 var _out_dir: String
 var _game: GameScreen
@@ -187,6 +188,12 @@ func _lamps() -> void:
 	while BirdView.pigeon_flight(0.0, _game.bird_view.time()) < 0.4:
 		_game.bird_view.advance(0.25)
 	await _shot("28b_pombos_voando.png", Vector3(flock.x, 0.0, flock.z), 12.0, PI + 0.3, 0.3)
+	# Fase 20: a asa batendo, de perto, no começo do voo
+	while BirdView.pigeon_flight(0.0, _game.bird_view.time()) < 0.0 or BirdView.pigeon_flight(0.0, _game.bird_view.time()) > 0.25:
+		_game.bird_view.advance(0.13)
+	var bird := _game.bird_view.bird_transform(0).origin
+	print("asa ", _game.bird_view.wing_angle(0))
+	await _shot("28c_asas.png", Vector3(bird.x, bird.y - 1.0, bird.z), 3.0, PI + 0.3, 0.2)
 	# varais atrás e vasos na porta (Fase 15); uma casa em três vira de operários (vasos sem o quintal cercado)
 	var houses := 0
 	for building_id: int in _sim.world.building_ids():

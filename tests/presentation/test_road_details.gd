@@ -157,3 +157,28 @@ func test_tiles_pass_through_the_four_corners_of_their_cell_on_a_slope() -> void
 			assert_float(top - RoadView.LIFT_M - RoadView.THICKNESS_M * 0.5).is_equal_approx(
 					grid.corner_height(cell.x + corner.x, cell.y + corner.y), 0.001)
 	assert_int(twisted).is_greater(0)
+
+
+## Fase 20: pedras soltas na terra, fora dos sulcos; o paralelepípedo e a ponte não têm.
+func test_dirt_streets_get_loose_stones_off_the_ruts() -> void:
+	SimFixture.road(_sim, Vector2i(0, 10), Vector2i(19, 10))
+	var grid := _sim.world.island(SimFixture.ISLAND)
+	var view := _view()
+	var expected := 0
+	for cell: Vector2i in grid.road_cells():
+		var spots := RoadView.stone_spots(grid, cell, RoadView.ruts(grid, cell))
+		assert_int(spots.size()).is_less_equal(RoadView.STONES_MAX)
+		expected += spots.size()
+		var center := grid.cell_world(cell)
+		for spot: Vector3 in spots:
+			# a rua corre em x: os sulcos ficam em z = ±rut_offset_m
+			var across := absf(spot.z - center.z)
+			assert_bool(across < RoadView.RUT_LANE_M.x or across > RoadView.RUT_LANE_M.y) \
+					.override_failure_message("pedra no sulco em %s" % cell).is_true()
+			assert_float(absf(spot.x - center.x)).is_less_equal(grid.cell_size * 0.5)
+	assert_int(expected).is_greater(0)
+	assert_int(view.stone_count()).is_equal(expected)
+	for cell: Vector2i in grid.road_cells():
+		grid.set_road(cell, IslandGrid.Road.PAVED)
+	view.rebuild()
+	assert_int(view.stone_count()).is_equal(0)
