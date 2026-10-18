@@ -46,6 +46,7 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://too
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
 # Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite);
 # CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14); porto, o entreposto com o píer (Fase 15)
+# e a gaivota de perto (Fase 21)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas;
 # CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15)
@@ -1106,6 +1107,18 @@ Regras que já custaram investigação:
   em diagonal na terra junto do mar (`HATCH_REACH`), sumindo para dentro. Captura: `CAPTURA_SO=carta` no
   `tools/capture_phase6.tscn`.
 
+### Gaivota e papel (Fase 21, nossa)
+
+- **Proposta nossa** (18/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede nas gaivotas, no píer e no papel, tudo gerado no código. Só visual; o
+  save fica na versão 15. Partes com commit próprio. (Os prédios tropicais já saíam caiados e com telha e os
+  campos tropicais já tinham as plantas desde a Fase 14: a linha do TODO estava velha.)
+- **Gaivotas batendo asa** (`BirdView.gull_mesh`, `gull_beat`; desenhadas pelo `ShipView`): corpo branco e
+  asa longa dobrada no cotovelo (UV.x = 0,5, o shader do pássaro gira pela metade do ângulo) com a ponta preta
+  (UV.x = 1); batem devagar (`GULL_BEAT_HZ`) por `GULL_FLAP` do ciclo de `GULL_CYCLE_S` e planam o resto, e
+  o corpo só inclina para dentro da volta (antes ele balançava de lado). Captura: `CAPTURA_SO=porto` no
+  `tools/capture_phase5.tscn` (`13c_gaivota.png` planando e `13d_gaivota_batendo.png`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1137,6 +1150,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
 | 19 — Chão e margem (nossa) | **concluída em 18/10/2026**: lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
+| 21 — Gaivota e papel (nossa) | em andamento (18/10/2026): gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta |
 
 Pendências já vistas para fases futuras:
 

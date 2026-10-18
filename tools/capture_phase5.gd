@@ -167,6 +167,9 @@ func _harbor(grid: IslandGrid) -> void:
 	# as amarras do barco na ponta da passarela (Fase 20)
 	print("cabos ", _game.harbor_view.rope_count())
 	await _shot("13b_amarras.png", start + direction * (length - 2.0), 8.0, atan2(direction.x, direction.z) + PI * 0.75)
+	# a gaivota de perto, batendo a asa (Fase 21): a vista dos navios e a câmera param para ela ficar no quadro
+	await _gull_shot("13c_gaivota.png", 0, false)
+	await _gull_shot("13d_gaivota_batendo.png", 0, true)
 	# o cais do entreposto, com a carga e os barcos (Fase 15, parte 2)
 	var post_id := grid.building_at(post_origin)
 	var quay := HarborView.walkway(_sim, _sim.world.building(post_id))
@@ -228,6 +231,36 @@ func _shot(file_name: String, focus: Vector3, distance: float, yaw: float) -> vo
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(_out_dir.path_join(file_name))
 	print("capturado ", file_name)
+
+
+## A gaivota index de perto, com a vista dos navios e a câmera paradas no quadro dela; com flapping, espera
+## (até 600 quadros) ela estar batendo a asa, longe do planeio.
+func _gull_shot(file_name: String, index: int, flapping: bool) -> void:
+	var ships := _game.ship_view
+	ships.set_process(true)
+	for frame: int in 600:
+		await get_tree().process_frame
+		if frame >= 3 and (not flapping or absf(ships.gull_wing(index) - BirdView.GULL_GLIDE) > 0.3):
+			break
+	ships.set_process(false)
+	var gull := ships.gull_transform(index)
+	print("gaivota %d em %s, asa %.2f" % [index, gull.origin, ships.gull_wing(index)])
+	var rig := _game.camera.rig
+	_game.camera.set_process(false)
+	rig.focus = Vector3(gull.origin.x, 0.0, gull.origin.z)
+	rig.ground_height = gull.origin.y
+	rig.distance = 10.0
+	var side := gull.basis.x
+	rig.yaw = atan2(side.x, side.z)
+	rig.target_yaw = rig.yaw
+	_game.camera.apply()
+	for frame: int in 12:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(_out_dir.path_join(file_name))
+	print("capturado ", file_name)
+	_game.camera.set_process(true)
+	ships.set_process(true)
 
 
 func _set_hour(hour: float) -> void:

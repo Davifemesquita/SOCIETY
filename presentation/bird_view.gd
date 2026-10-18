@@ -10,6 +10,7 @@ extends Node3D
 ## Fase 20: a asa bate de verdade. A malha do voo marca as asas (UV.x = 1) e o `shaders/bird.gdshader` as gira
 ## em volta do corpo pelo ângulo que `wing_beat` dá a cada quadro (em INSTANCE_CUSTOM.r); o pombo bate rápido
 ## na subida e plana na descida, o estorninho bate em rajadas. O corpo não balança mais de lado.
+## Fase 21: a gaivota dos portos (desenhada no ShipView) usa a malha e a batida daqui: `gull_mesh` e `gull_beat`.
 
 enum Kind { PIGEON, STARLING }
 
@@ -47,6 +48,13 @@ const STARLING_BURST_S := 2.5
 const FLAP_BURST := 0.55
 ## Ângulo da asa planando (um pouco erguida, em V).
 const GLIDE := 0.15
+## Gaivota (Fase 21, no ShipView): plana quase sempre e bate devagar por GULL_FLAP do ciclo de GULL_CYCLE_S;
+## a asa planando fica no GULL_GLIDE, mais aberta que a do pombo.
+const GULL_BEAT_HZ := 2.2
+const GULL_WING_BEAT := 0.55
+const GULL_CYCLE_S := 7.0
+const GULL_FLAP := 0.3
+const GULL_GLIDE := 0.08
 
 var _simulation: Simulation
 var _birds := MultiMeshInstance3D.new()
@@ -272,6 +280,50 @@ static func wing_beat(kind: int, i: int, seed_value: float, time: float, flight:
 	if burst > FLAP_BURST:
 		return GLIDE
 	return sin(time * TAU * STARLING_BEAT_HZ + phase) * WING_BEAT
+
+
+## O ângulo da asa da gaivota i (rad, + para cima): umas batidas lentas no começo do ciclo dela e o planeio
+## no resto.
+static func gull_beat(i: int, time: float) -> float:
+	var phase := i * 2.17
+	var cycle := fposmod(time / GULL_CYCLE_S + phase * 0.31, 1.0)
+	if cycle > GULL_FLAP:
+		return GULL_GLIDE
+	return sin(time * TAU * GULL_BEAT_HZ + phase) * GULL_WING_BEAT
+
+
+## Gaivota voando, de frente para −Z: corpo branco e a asa longa e estreita, dobrada no cotovelo (UV.x = 0,5:
+## o shader a gira pela metade do ângulo, e a ponta, UV.x = 1, pelo ângulo inteiro), com a ponta preta.
+static func gull_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	tool.set_uv(Vector2.ZERO)
+	_add_lump(tool, Vector3(0.0, 0.0, -0.24), Vector3(0.0, 0.02, 0.22), 0.06, Vector2(0.07, -0.05), Color(0.96, 0.96, 0.95))
+	var white := Color(0.96, 0.96, 0.95)
+	var grey := Color(0.72, 0.74, 0.78)
+	var black := Color(0.12, 0.12, 0.13)
+	for direction: float in [-1.0, 1.0]:
+		var front := Vector3(0.0, 0.03, -0.1)
+		var back := Vector3(0.0, 0.03, 0.08)
+		var elbow_front := Vector3(direction * 0.32, 0.06, -0.08)
+		var elbow_back := Vector3(direction * 0.32, 0.06, 0.06)
+		var tip := Vector3(direction * 0.68, 0.04, 0.12)
+		var tip_mark := Vector3(direction * 0.55, 0.05, 0.02)
+		# braço: do ombro ao cotovelo, cinza por cima
+		for triangle: Array in [[front, elbow_front, back], [back, elbow_front, elbow_back]]:
+			for vertex: Vector3 in triangle:
+				tool.set_color(white if vertex.x == 0.0 else grey)
+				tool.set_uv(Vector2(0.0 if vertex.x == 0.0 else 0.5, 0.0))
+				tool.add_vertex(vertex)
+		# mão: do cotovelo à ponta, puxada para trás, com a ponta preta
+		for triangle: Array in [[elbow_front, tip_mark, elbow_back], [elbow_back, tip_mark, tip], [tip_mark, elbow_front, tip]]:
+			for vertex: Vector3 in triangle:
+				var outer := absf(vertex.x) > 0.5
+				tool.set_color(black if outer else grey)
+				tool.set_uv(Vector2(1.0 if absf(vertex.x) > 0.6 else (0.85 if outer else 0.5), 0.0))
+				tool.add_vertex(vertex)
+	tool.generate_normals()
+	return tool.commit()
 
 
 ## Pássaro voando, de frente para −Z: corpo de oito faces e duas asas, um pouco mais claras; a ponta da asa

@@ -7,6 +7,8 @@ extends Node3D
 ## Desde a Fase 9: casco de tábuas, velas enfunadas, rastro de espuma enquanto navega e gaivotas
 ## voando em volta dos portos (entrepostos e píeres). Desde a Fase 11: clarão e fumaça dos tiros,
 ## fumaça do navio avariado (casco abaixo da metade) e o navio afundado descendo devagar antes de sumir.
+## Desde a Fase 21: a gaivota bate a asa, dobrada no cotovelo, e plana quase sempre (a malha e a batida
+## estão no BirdView; o shader é o `shaders/bird.gdshader`), inclinada para dentro da volta.
 
 ## Raio do clique em volta do navio, em pixels da tela.
 const PICK_RADIUS_PX := 40.0
@@ -67,7 +69,12 @@ func setup(simulation: Simulation) -> void:
 	_gulls.name = "Gulls"
 	_gulls.multimesh = MultiMesh.new()
 	_gulls.multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	_gulls.multimesh.mesh = _gull_mesh()
+	_gulls.multimesh.use_colors = true
+	_gulls.multimesh.use_custom_data = true
+	_gulls.multimesh.mesh = BirdView.gull_mesh()
+	var gull_material := ShaderMaterial.new()
+	gull_material.shader = load("res://shaders/bird.gdshader") as Shader
+	_gulls.material_override = gull_material
 	_gulls.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_gulls)
 	EventBus.world_replaced.connect(rebuild)
@@ -235,6 +242,16 @@ func gull_count() -> int:
 	return _gulls.multimesh.instance_count
 
 
+## Onde está a gaivota index agora (capturas).
+func gull_transform(index: int) -> Transform3D:
+	return _gulls.multimesh.get_instance_transform(index)
+
+
+## O ângulo da asa da gaivota index agora.
+func gull_wing(index: int) -> float:
+	return _gulls.multimesh.get_instance_custom_data(index).r
+
+
 func _on_building_placed(building_id: int) -> void:
 	var record := _simulation.world.building(building_id)
 	if record != null and _simulation.def_of(record).is_berth():
@@ -275,27 +292,11 @@ func _fly_gulls() -> void:
 		var angle := _time * GULL_SPEED * turn * (14.0 / radius) + seed_value * TAU
 		var offset := Vector3(cos(angle) * radius, height + sin(_time * 1.3 + seed_value) * 1.2, sin(angle) * radius)
 		var forward := Vector3(-sin(angle), 0.0, cos(angle)) * turn
-		var flap := sin(_time * 9.0 + seed_value * 5.0) * 0.5
-		var basis := Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, flap * 0.3)
+		# inclina para dentro da volta; a asa bate no shader (Fase 21)
+		var basis := Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, -0.3 * turn)
 		multimesh.set_instance_transform(i, Transform3D(basis, _gull_centers[i] + offset))
-
-
-## Gaivota de longe: duas asas em V, brancas.
-static func _gull_mesh() -> ArrayMesh:
-	var tool := SurfaceTool.new()
-	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var wing := 0.75
-	for side: float in [-1.0, 1.0]:
-		tool.add_vertex(Vector3(0.0, 0.0, -0.25))
-		tool.add_vertex(Vector3(side * wing, 0.18, 0.05))
-		tool.add_vertex(Vector3(0.0, 0.0, 0.25))
-	tool.generate_normals()
-	var mesh := tool.commit()
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.95, 0.95, 0.93)
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mesh.surface_set_material(0, material)
-	return mesh
+		multimesh.set_instance_color(i, Color.WHITE)
+		multimesh.set_instance_custom_data(i, Color(BirdView.gull_beat(i, _time), 0.0, 0.0, 0.0))
 
 
 func _sail_material(color: Color) -> StandardMaterial3D:

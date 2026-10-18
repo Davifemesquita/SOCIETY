@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## Pássaros (Fase 14): bandos de pombos nas ruas, que ciscam no chão e levantam voo uma vez por ciclo, e de
-## estorninhos sobre os campos com dono; teto de pássaros e nada à noite.
+## estorninhos sobre os campos com dono; teto de pássaros e nada à noite. Fase 21: a gaivota do porto.
 
 var _sim: Simulation
 
@@ -122,3 +122,40 @@ func test_wings_beat_in_flight_glide_on_the_way_down_and_rest_on_the_ground() ->
 	var angle := view.wing_angle(0)
 	view.advance(0.07)
 	assert_float(view.wing_angle(0)).is_not_equal(angle)
+
+
+func test_gulls_beat_their_bent_wings_slowly_and_glide_most_of_the_time() -> void:
+	# a malha: corpo parado no meio, cotovelo pela metade do ângulo e a ponta, longe do corpo, pelo ângulo inteiro
+	var arrays := BirdView.gull_mesh().surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var span := 0.0
+	for i: int in vertices.size():
+		if uvs[i].x == 0.0:
+			assert_float(absf(vertices[i].x)).is_less(0.1)
+		elif uvs[i].x == 1.0:
+			span = maxf(span, absf(vertices[i].x))
+		else:
+			assert_float(absf(vertices[i].x)).is_between(0.3, 0.6)
+	assert_float(span).is_greater(0.6)
+	# a batida: oscila menos de um terço do tempo e plana no resto
+	var gliding := 0
+	var low := INF
+	var high := -INF
+	for step: int in 700:
+		var beat := BirdView.gull_beat(3, step * 0.01)
+		if beat == BirdView.GULL_GLIDE:
+			gliding += 1
+		else:
+			low = minf(low, beat)
+			high = maxf(high, beat)
+	assert_int(gliding).is_greater(700 / 2)
+	assert_float(high - low).is_greater(BirdView.GULL_WING_BEAT)
+	# o ShipView põe a batida de cada gaivota na instância
+	SimFixture.place(_sim, &"pier", Vector2i(10, 0), 0)
+	var ships: ShipView = auto_free(ShipView.new())
+	add_child(ships)
+	ships.setup(_sim)
+	assert_int(ships.gull_count()).is_equal(ShipView.GULLS_PER_PORT)
+	for i: int in ships.gull_count():
+		assert_float(ships.gull_wing(i)).is_equal_approx(BirdView.gull_beat(i, 0.0), 0.0001)
