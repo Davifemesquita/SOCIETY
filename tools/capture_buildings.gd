@@ -176,6 +176,8 @@ func _lamps() -> void:
 	await _shot("14_postes_de_dia.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
 	await _shot("26_estrada_de_terra.png", Vector3(90.0, 0.0, 90.0), 24.0, 0.4, 0.6)
 	await _shot("27_meio_fio.png", Vector3(70.0, 0.0, 101.0), 12.0, PI + 0.4, 0.3)
+	# Fase 19: a sarjeta junto do meio-fio de pedra, de perto
+	await _shot("27b_sarjeta.png", Vector3(72.0, 0.0, 101.5), 6.0, PI + 0.4, 0.55)
 	# pombos: o jogo está pausado, então o relógio deles anda à mão até haver bando no ar (Fase 14)
 	_game.bird_view.rebuild()
 	print("pássaros ", _game.bird_view.bird_count())

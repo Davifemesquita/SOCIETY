@@ -7,7 +7,8 @@
 // ladrilho inclinado leva a torção da célula (INSTANCE_CUSTOM.a, o quanto os cantos saem do plano) e passa
 // pelos quatro cantos como o terreno, sem degrau entre células na ladeira; na terra, os lados abertos (bits
 // em INSTANCE_CUSTOM.b acima dos sulcos, b = sulcos + 8 × bits; 1 +x, 2 −x, 4 +z, 8 −z) têm a borda
-// recortada, com o capim do terreno aparecendo e a terra esverdeando junto dela. (A cor da instância entra
+// recortada, com o capim do terreno aparecendo e a terra esverdeando junto dela; no paralelepípedo, os
+// mesmos lados (os do meio-fio) têm a sarjeta: canaleta rasa, escura e lisa, junto do meio-fio. (A cor da instância entra
 // na cor final; por isso nada vai nela.)
 shader_type spatial;
 render_mode cull_back;
@@ -29,6 +30,11 @@ uniform float plank_tone = 0.25;
 uniform float cell_m = 2.0;
 uniform float verge_m = 0.38;
 uniform float verge_tint_m = 0.3;
+// Sarjeta: onde começa (largura do meio-fio), a largura dela, quanto escurece e a fundura (no relevo).
+uniform float gutter_start_m = 0.22;
+uniform float gutter_width_m = 0.3;
+uniform float gutter_darken = 0.5;
+uniform float gutter_depth = 0.5;
 
 varying vec3 world_position;
 varying flat float road_layer;
@@ -78,6 +84,17 @@ float open_distance(int bits) {
 	return d;
 }
 
+// Distância (m) até o lado aberto mais perto, reta (a sarjeta segue o meio-fio), e para que lado ele fica.
+vec3 open_side(int bits) {
+	float half_cell = cell_m * 0.5;
+	vec3 best = vec3(1000.0, 0.0, 0.0);
+	if ((bits & 1) != 0 && half_cell - local_position.x < best.x) { best = vec3(half_cell - local_position.x, 1.0, 0.0); }
+	if ((bits & 2) != 0 && half_cell + local_position.x < best.x) { best = vec3(half_cell + local_position.x, -1.0, 0.0); }
+	if ((bits & 4) != 0 && half_cell - local_position.y < best.x) { best = vec3(half_cell - local_position.y, 0.0, 1.0); }
+	if ((bits & 8) != 0 && half_cell + local_position.y < best.x) { best = vec3(half_cell + local_position.y, 0.0, -1.0); }
+	return best;
+}
+
 // A face de lado do ladrilho que dá para um lado aberto (some com a borda recortada).
 bool open_side_face(int bits) {
 	return ((bits & 1) != 0 && local_normal.x > 0.5) || ((bits & 2) != 0 && local_normal.x < -0.5)
@@ -103,12 +120,25 @@ float planks(int kind) {
 }
 
 void fragment() {
-	vec3 uv = vec3(world_position.xz / texture_meters, road_layer);
+	// a face de lado do ladrilho projeta a textura de lado (de cima ela esticava em listras)
+	vec2 plane = local_normal.y > 0.5 ? world_position.xz
+			: (abs(local_normal.x) > 0.5 ? world_position.zy : world_position.xy);
+	vec3 uv = vec3(plane / texture_meters, road_layer);
 	vec4 surface = texture(albedo_rough, uv);
 	int kind = int(rut_kind + 0.5);
 	// borda recortada da terra
 	int bits = int(open_edges + 0.5) * int(road_layer < 0.5 && bridge < 0.5);
+	int curbed = int(open_edges + 0.5) * int(road_layer > 0.5 && bridge < 0.5);
 	float verge = 0.0;
+	float gutter = 0.0;
+	vec2 gutter_tilt = vec2(0.0);
+	if (curbed != 0) {
+		vec3 side = open_side(curbed);
+		float across = (side.x - gutter_start_m) / gutter_width_m;
+		gutter = step(0.0, across) * (1.0 - smoothstep(0.7, 1.0, across));
+		// a canaleta desce do calçamento para o meio-fio: a normal pende para o lado do meio-fio no fundo
+		gutter_tilt = side.yz * gutter_depth * gutter * (across < 0.5 ? -1.0 : 1.0);
+	}
 	if (bits != 0) {
 		if (open_side_face(bits)) {
 			discard;
@@ -140,7 +170,9 @@ void fragment() {
 	ruts *= (1.0 - road_layer) * (1.0 - bridge);
 	color *= mix(1.0, rut_darken, ruts);
 	color = mix(color, color * vec3(0.78, 0.9, 0.55), verge * 0.7);
+	color *= mix(1.0, gutter_darken, gutter);
 	ALBEDO = wet_albedo(color, 1.0);
-	NORMAL_MAP = mix(texture(normals, uv).rgb, vec3(0.5, 0.5, 1.0), bridge);
-	ROUGHNESS = wet_roughness(mix(mix(surface.a, 0.85, bridge), 0.6, ruts * 0.5), 1.0);
+	vec3 normal_map = mix(texture(normals, uv).rgb, vec3(0.5, 0.5, 1.0), max(bridge, gutter * 0.6));
+	NORMAL_MAP = normalize(normal_map + vec3(gutter_tilt.x, -gutter_tilt.y, 0.0) * 0.5);
+	ROUGHNESS = wet_roughness(mix(mix(mix(surface.a, 0.85, bridge), 0.6, ruts * 0.5), 0.35, gutter), 1.0);
 }

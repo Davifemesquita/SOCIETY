@@ -102,7 +102,7 @@ func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> v
 
 
 ## Fase 19: a terra tem a borda recortada nos lados sem estrada vizinha, com capim ao longo deles; o
-## paralelepípedo não.
+## paralelepípedo não tem capim, e nos mesmos lados leva a sarjeta junto do meio-fio de pedra.
 func test_dirt_streets_open_their_sides_without_road_and_grow_grass_along_them() -> void:
 	SimFixture.road(_sim, Vector2i(0, 10), Vector2i(9, 10))
 	SimFixture.road(_sim, Vector2i(5, 11), Vector2i(5, 15))
@@ -122,6 +122,16 @@ func test_dirt_streets_open_their_sides_without_road_and_grow_grass_along_them()
 		grid.set_road(cell, IslandGrid.Road.PAVED)
 	view.rebuild()
 	assert_int(view.verge_count()).is_equal(0)
+	# no paralelepípedo os mesmos lados levam a sarjeta (bits no dado da instância) e o meio-fio é de pedra
+	var gutters := 0
+	for index: int in view.multimesh.instance_count:
+		var custom := view.multimesh.get_instance_custom_data(index)
+		assert_float(custom.r).is_equal(1.0)
+		if custom.b >= RoadView.OPEN_SHIFT:
+			gutters += 1
+	assert_int(gutters).is_equal(grid.road_cells().size())
+	var curb := (view.get_node("Curbs") as MultiMeshInstance3D).multimesh.mesh.surface_get_material(0) as ShaderMaterial
+	assert_str(curb.shader.resource_path).is_equal("res://shaders/curb.gdshader")
 
 
 ## Fase 19: na ladeira, o ladrilho inclinado mais a torção passa pelos quatro cantos da célula (os mesmos do

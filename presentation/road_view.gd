@@ -19,10 +19,10 @@ const PAVED_COLOR := Color(0.3, 0.3, 0.33)
 const THICKNESS_M := 0.08
 ## O ladrilho fica um pouco acima do chão, para não brigar com o terreno.
 const LIFT_M := 0.06
-## Meio-fio: largura, altura acima do calçamento e cor da pedra.
+## Meio-fio: largura e altura acima do calçamento (a pedra é do shaders/curb.gdshader).
 const CURB_WIDTH_M := 0.22
 const CURB_HEIGHT_M := 0.1
-const CURB_COLOR := Color(0.58, 0.57, 0.54)
+
 ## Ponte: altura do corrimão sobre o tabuleiro, grossura do poste e da travessa, e quanto a estaca
 ## entra no leito do rio.
 const RAIL_HEIGHT_M := 0.9
@@ -73,9 +73,11 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	multimesh.mesh = tile
 	var curb := BoxMesh.new()
 	curb.size = Vector3(CURB_WIDTH_M, THICKNESS_M + CURB_HEIGHT_M, cell_size)
-	var stone := StandardMaterial3D.new()
-	stone.albedo_color = CURB_COLOR
-	stone.roughness = 0.9
+	# Fase 19: a pedra do meio-fio com a textura do paralelepípedo, cinza e clareada, e a junta dos blocos
+	var stone := ShaderMaterial.new()
+	stone.shader = load("res://shaders/curb.gdshader") as Shader
+	stone.set_shader_parameter(&"albedo_rough", material.get_shader_parameter(&"albedo_rough"))
+	stone.set_shader_parameter(&"normals", material.get_shader_parameter(&"normals"))
 	curb.material = stone
 	_curbs.name = "Curbs"
 	_curbs.multimesh = MultiMesh.new()
@@ -130,12 +132,13 @@ func rebuild() -> void:
 			var links := diagonal_links(grid, cell)
 			# no meio da escada diagonal só as faixas: o ladrilho quadrado deixava a borda serrilhada
 			if not in_diagonal_run(grid, cell, links):
-				var open := 0 if bridge or paved else open_edges(grid, cell, links)
+				var open := 0 if bridge else open_edges(grid, cell, links)
 				tiles.append(tile)
 				colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if paved else DIRT_COLOR))
 				kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
 						twist(grid, cell)))
-				_add_verge(grid, cell, open, tufts)
+				if not paved:
+					_add_verge(grid, cell, open, tufts)
 			if paved and not bridge:
 				for side: Vector2i in SIDES:
 					if not grid.has_road(cell + side) and not _cut_by(side, links):
