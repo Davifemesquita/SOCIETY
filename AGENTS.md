@@ -1074,6 +1074,38 @@ Regras que já custaram investigação:
   descansa olhando para a rua. Captura: `CAPTURA_SO=animais` no `tools/capture_phase3.tscn`
   (`07b_ovelha_andando.png`).
 
+### Corda e gravura (Fase 20, nossa)
+
+- **Proposta nossa** (18/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede no porto, na estrada de terra, nos pássaros e na carta, tudo gerado no
+  código. Só visual; o save fica na versão 15. Partes com commit próprio.
+- **Amarras** (`HarborView._moor_lines`, `rope_span`, `rope_mesh`): cada barco do píer e do cais leva um cabo
+  da proa e outro da popa até o cabeço mais perto do mesmo píer ou cais (até `ROPE_MAX_M`), caindo em
+  parábola (`ROPE_SAG` do vão); os cabos são tubos de quatro faces de `ROPE_RADIUS_M`, todos numa malha só
+  (`Ropes`). Captura: `CAPTURA_SO=porto` no `tools/capture_phase5.tscn` (`13b_amarras.png`).
+- **Madeira e cordame** (`shaders/plank.gdshader`, `TraderPostModel.plank_material`, `_rigging`): veio ao
+  longo da tábua e o tom de cada uma (pelo `INSTANCE_ID` na peça de uma tábua só), em metros da peça (a caixa
+  esticada do multimesh tem o veio do mesmo tamanho); com `board_m`, as tábuas em pé e as frestas da parede
+  do galpão e da porta. O convés e as estacas da feitoria e as tábuas e estacas do píer usam a mesma madeira.
+  A feitoria ganha o cordame (`Rigging`): os estais do guindaste, a adriça e os estais do mastro da bandeira
+  e as amarras dos dois barcos. Captura: `CAPTURA_SO=posto` no `tools/capture_phase6.tscn`.
+- **Pedras soltas** (`RoadView.stone_spots`, `stone_mesh`, multimesh `Stones`): de zero a `STONES_MAX` seixos
+  por célula de terra, pelo hash da célula, fora da faixa dos sulcos (`RUT_LANE_M`, `keep_off_ruts`) e longe
+  da borda, no topo do ladrilho, afundados `STONE_SINK`; a cor de cada um varia em volta de `STONE_COLOR`. O
+  paralelepípedo e a ponte não têm. Captura: `CAPTURA_SO=estrada` no `tools/capture_phase5.tscn` e
+  `CAPTURA_SO=postes` no `tools/capture_buildings.tscn` (`26_estrada_de_terra.png`).
+- **Asa batendo** (`shaders/bird.gdshader`, `BirdView.wing_beat`): a ponta da asa da malha do voo leva
+  UV.x = 1 e o shader a gira em volta do corpo pelo ângulo que o BirdView põe em `INSTANCE_CUSTOM.r` a cada
+  quadro (o relógio dos pássaros, que para na pausa). O pombo bate a `PIGEON_BEAT_HZ` e plana na descida; o
+  estorninho bate em rajadas (`STARLING_BURST_S`, `FLAP_BURST`) e plana o resto. O corpo só inclina para
+  dentro da volta (antes ele balançava de lado no lugar da asa). Captura: `CAPTURA_SO=postes` no
+  `tools/capture_buildings.tscn` (`28c_asas.png`).
+- **Carta gravada** (`ArchipelagoMap.engrave`, `coast_distance`): a carta passa a `ENGRAVE_SCALE` pixels
+  por célula, e a distância com sinal até o litoral (chanfro de duas passadas, + no mar) dá o litoral a
+  tinta, as linhas d'água em volta da costa (`WATERLINES`, cada uma mais fraca), a faixa rasa e a hachura
+  em diagonal na terra junto do mar (`HATCH_REACH`), sumindo para dentro. Captura: `CAPTURA_SO=carta` no
+  `tools/capture_phase6.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1104,6 +1136,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
 | 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
 | 19 — Chão e margem (nossa) | **concluída em 18/10/2026**: lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
+| 20 — Corda e gravura (nossa) | em andamento (18/10/2026): amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada |
 
 Pendências já vistas para fases futuras:
 

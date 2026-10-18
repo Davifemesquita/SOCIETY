@@ -4,7 +4,8 @@ extends Control
 ## papel, mar com faixa mais escura junto à costa, terra em sépia com o litoral a tinta, rosa dos
 ## ventos e moldura. Por cima: o número das ilhas, os portos (âncora), o posto do comerciante, a
 ## rota escolhida (tracejada) e os navios. As ilhas das rivais (Fase 11) ganham um círculo na cor
-## delas, e os navios delas também. Só desenha; a terra sai da carta náutica.
+## delas, e os navios delas também. Só desenha; a terra sai da carta náutica. Fase 20: a terra e o mar em
+## traço de gravura (`engrave`).
 
 const SEA := Color("cdd5c4")
 const SEA_SHALLOW := Color("b9c6b4")
@@ -14,6 +15,17 @@ const ROUTE := Color("8e2a1e")
 const SHIP := Color("2e2116")
 const TRADER := Color("8e2a1e")
 const FRAME := 10.0
+## Gravura (Fase 20): pixels por célula da carta, a tinta do litoral (meia largura, px), as linhas d'água
+## (células da costa), a faixa rasa, e a hachura da terra (alcance em células, período e tinta em px).
+const ENGRAVE_SCALE := 3
+const COAST_INK_PX := 1.6
+const WATERLINES: Array[float] = [1.6, 3.6, 6.2, 9.6]
+const SHALLOW_CELLS := 3.0
+const HATCH_REACH := 6.0
+const HATCH_PX := 9.0
+const HATCH_INK_PX := 3.0
+## Meia largura da linha d'água (px da carta gravada): uma célula inteira, para aparecer no mapa pequeno.
+const WATERLINE_INK_PX := 1.5
 
 ## Rota destacada (0 = nenhuma).
 var route_id: int = 0
@@ -103,44 +115,106 @@ func _to_map(point: Vector2, area: Rect2) -> Vector2:
 	return area.position + (point - _chart.origin_m) / (Vector2(_chart.size) * _chart.cell_m) * area.size
 
 
-## Terra em sépia (mais escura longe do mar), litoral a tinta e o mar mais escuro junto à costa.
+## A carta gravada (Fase 20), em ENGRAVE_SCALE pixels por célula da carta náutica: a distância com sinal até o
+## litoral (`coast_distance`, em células; + no mar) dá o litoral a tinta, as linhas d'água em volta da costa
+## (WATERLINES, cada uma mais fraca), o mar mais escuro junto dela e a hachura em diagonal na terra perto do
+## mar, sumindo para dentro.
 static func _bake(chart: SeaChart) -> ImageTexture:
+	return ImageTexture.create_from_image(engrave(chart))
+
+
+static func engrave(chart: SeaChart) -> Image:
+	var field := coast_distance(chart)
+	var width := chart.size.x * ENGRAVE_SCALE
+	var height := chart.size.y * ENGRAVE_SCALE
+	var data := PackedByteArray()
+	data.resize(width * height * 3)
+	var pixel_cells := 1.0 / ENGRAVE_SCALE
+	for y: int in height:
+		for x: int in width:
+			var at := Vector2((x + 0.5) * pixel_cells - 0.5, (y + 0.5) * pixel_cells - 0.5)
+			var signed := _sample(field, chart.size, at)
+			var color: Color
+			if signed < 0.0:
+				color = LAND
+				var depth := -signed
+				if depth < HATCH_REACH and fposmod(float(x + y), HATCH_PX) < HATCH_INK_PX:
+					color = color.lerp(COAST, 0.5 * (1.0 - depth / HATCH_REACH))
+			else:
+				color = SEA_SHALLOW if signed < SHALLOW_CELLS else SEA
+				for k: int in WATERLINES.size():
+					if absf(signed - WATERLINES[k]) * ENGRAVE_SCALE < WATERLINE_INK_PX:
+						color = color.lerp(COAST, 0.55 * (1.0 - float(k) / WATERLINES.size()))
+			if absf(signed) * ENGRAVE_SCALE < COAST_INK_PX:
+				color = COAST
+			var i := (y * width + x) * 3
+			data[i] = color.r8
+			data[i + 1] = color.g8
+			data[i + 2] = color.b8
+	return Image.create_from_data(width, height, false, Image.FORMAT_RGB8, data)
+
+
+## Distância de cada célula até o litoral, em células, pelo chanfro de duas passadas (vizinho 1, diagonal √2):
+## no mar, + a distância até a terra; na terra, − a distância até o mar; o litoral (entre as duas) fica no zero.
+static func coast_distance(chart: SeaChart) -> PackedFloat32Array:
 	var width := chart.size.x
 	var height := chart.size.y
-	var distance := PackedInt32Array()
+	var to_land := _chamfer(chart, 0)
+	var to_sea := _chamfer(chart, 1)
+	var field := PackedFloat32Array()
+	field.resize(width * height)
+	for i: int in field.size():
+		field[i] = to_land[i] - 0.5 if chart.navigable[i] == 1 else 0.5 - to_sea[i]
+	return field
+
+
+## Distância (chanfro) de cada célula até a célula mais perto com navigable == target.
+static func _chamfer(chart: SeaChart, target: int) -> PackedFloat32Array:
+	var width := chart.size.x
+	var height := chart.size.y
+	var far := float(width + height)
+	var distance := PackedFloat32Array()
 	distance.resize(width * height)
-	distance.fill(-1)
-	var queue := PackedInt32Array()
 	for i: int in distance.size():
-		if chart.navigable[i] == 0:
-			distance[i] = 0
-			queue.append(i)
-	var head := 0
-	while head < queue.size():
-		var index := queue[head]
-		head += 1
-		var x := index % width
-		for next: int in [index - 1 if x > 0 else -1, index + 1 if x < width - 1 else -1, index - width, index + width]:
-			if next >= 0 and next < distance.size() and distance[next] == -1 and distance[index] < 4:
-				distance[next] = distance[index] + 1
-				queue.append(next)
-	var image := Image.create_empty(width, height, false, Image.FORMAT_RGB8)
+		distance[i] = 0.0 if chart.navigable[i] == target else far
+	var diagonal := sqrt(2.0)
 	for y: int in height:
 		for x: int in width:
 			var i := y * width + x
-			var color := SEA
-			if chart.navigable[i] == 0:
-				color = COAST if _touches_sea(chart, x, y) else LAND
-			elif distance[i] >= 0 and distance[i] <= 3:
-				color = SEA_SHALLOW
-			image.set_pixel(x, y, color)
-	return ImageTexture.create_from_image(image)
+			var best := distance[i]
+			if x > 0:
+				best = minf(best, distance[i - 1] + 1.0)
+			if y > 0:
+				best = minf(best, distance[i - width] + 1.0)
+				if x > 0:
+					best = minf(best, distance[i - width - 1] + diagonal)
+				if x < width - 1:
+					best = minf(best, distance[i - width + 1] + diagonal)
+			distance[i] = best
+	for y: int in range(height - 1, -1, -1):
+		for x: int in range(width - 1, -1, -1):
+			var i := y * width + x
+			var best := distance[i]
+			if x < width - 1:
+				best = minf(best, distance[i + 1] + 1.0)
+			if y < height - 1:
+				best = minf(best, distance[i + width] + 1.0)
+				if x < width - 1:
+					best = minf(best, distance[i + width + 1] + diagonal)
+				if x > 0:
+					best = minf(best, distance[i + width - 1] + diagonal)
+			distance[i] = best
+	return distance
 
 
-static func _touches_sea(chart: SeaChart, x: int, y: int) -> bool:
-	for offset: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-		var cell := Vector2i(x, y) + offset
-		if cell.x >= 0 and cell.y >= 0 and cell.x < chart.size.x and cell.y < chart.size.y \
-				and chart.navigable[cell.y * chart.size.x + cell.x] == 1:
-			return true
-	return false
+## O campo no ponto (em células, centro da célula 0 em 0), interpolado entre as quatro células em volta.
+static func _sample(field: PackedFloat32Array, size: Vector2i, at: Vector2) -> float:
+	var clamped := at.clamp(Vector2.ZERO, Vector2(size - Vector2i.ONE))
+	var x0 := mini(int(clamped.x), size.x - 1)
+	var y0 := mini(int(clamped.y), size.y - 1)
+	var x1 := mini(x0 + 1, size.x - 1)
+	var y1 := mini(y0 + 1, size.y - 1)
+	var f := clamped - Vector2(x0, y0)
+	var top := lerpf(field[y0 * size.x + x0], field[y0 * size.x + x1], f.x)
+	var bottom := lerpf(field[y1 * size.x + x0], field[y1 * size.x + x1], f.x)
+	return lerpf(top, bottom, f.y)

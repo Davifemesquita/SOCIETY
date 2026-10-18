@@ -3,7 +3,8 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase6.tscn -- <pasta>
 ## Arquipélago da semente 1840 com a rota de tijolos (TradeDemo): o navio inicial no mar, o navio
 ## da rota no cais da colônia, navegando entre as ilhas, o posto do comerciante, o painel do navio
-## e a janela de rotas com o mapa. CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15).
+## e a janela de rotas com o mapa. CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15; o cordame, Fase 20);
+## carta, só a janela de rotas com a carta gravada (Fase 20).
 
 const SEED := 1840
 
@@ -32,6 +33,16 @@ func _run() -> void:
 		var spot := _sim.harbors().trader_post
 		await _shot("04a_feitoria.png", spot, 45.0, 0.8)
 		await _shot("04b_feitoria_de_perto.png", spot, 24.0, 2.6)
+		# Fase 20: as tábuas do galpão e o cordame do guindaste e da bandeira
+		await _shot("04c_cordame.png", spot + Vector2(4.0, -1.0), 14.0, 2.2)
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "carta":
+		var ids_chart := TradeDemo.build(_sim)
+		_game.hud.route_window.toggle()
+		var chart_route: int = ids_chart["route"]
+		_game.hud.route_window.select_route(chart_route)
+		await _shot("06_janela_de_rotas.png", _sim.world.player_ships()[0].position, 300.0, 1.2)
 		get_tree().quit()
 		return
 	var start := _sim.world.player_ships()[0]
