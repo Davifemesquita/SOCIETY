@@ -99,3 +99,39 @@ func test_new_buildings_bring_their_animals_without_rebuilding_by_hand() -> void
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_int(view.animal_count(&"sheep")).is_greater(0)
+
+
+## Fase 19: os bichos andam pelo pasto (pastam, viram e caminham até outro ponto), sempre dentro dele; o
+## cão anda ao longo da frente da casa. Sem o relógio andar, ninguém sai do lugar.
+func test_the_animals_wander_inside_their_pasture_and_the_dog_paces_by_the_door() -> void:
+	SimFixture.road(_sim, Vector2i(0, 20), Vector2i(79, 20))
+	_farm(&"sheep_farm", Vector2i(10, 21))
+	var houses: Array[int] = []
+	for i: int in 10:
+		houses.append(SimFixture.house(_sim, 2 + i * 3, 10, &"workers", 5.0))
+	var view := _view()
+	var grid := _sim.world.island(SimFixture.ISLAND)
+	var count := view.animal_count(&"sheep")
+	var start: Array[Vector3] = []
+	for i: int in count:
+		start.append(view.animal_transform(&"sheep", i).origin)
+	view.advance(0.0)
+	for i: int in count:
+		assert_vector(view.animal_transform(&"sheep", i).origin).is_equal(start[i])
+	var moved := 0
+	var pastures := {}
+	for i: int in count:
+		pastures[i] = grid.building_at(grid.world_to_cell(start[i]))
+	for second: int in 120:
+		view.advance(1.0)
+		for i: int in count:
+			var origin := view.animal_transform(&"sheep", i).origin
+			assert_int(grid.building_at(grid.world_to_cell(origin))).is_equal(pastures[i])
+	for i: int in count:
+		if view.animal_transform(&"sheep", i).origin.distance_to(start[i]) > 0.5:
+			moved += 1
+	assert_int(moved).is_greater(count / 2)
+	var dogs := view.animal_count(&"dog")
+	assert_int(dogs).is_greater(0)
+	for i: int in dogs:
+		assert_int(grid.building_at(grid.world_to_cell(view.animal_transform(&"dog", i).origin))).is_equal(0)

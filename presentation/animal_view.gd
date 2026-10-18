@@ -5,6 +5,10 @@ extends Node3D
 ## tools/bake_animals.gd, animados pelo shaders/animal_vat.gdshader (o tempo é o visual_time dos
 ## pedestres: param na pausa). Só lê o mundo; refeito quando um prédio entra ou sai.
 ## O cavalo da carroça usa as mesmas peças (layer, place), pela CartView.
+## Fase 19: os bichos andam. O pacote só traz a animação parada (e o pulo), então a caminhada é no código:
+## cada bicho pasta um tempo, vira e anda devagar até outro ponto do seu quarto do pasto (o cão, de um lado para o
+## outro ao longo da frente da casa), balançando no passo. O caminho sai do hash do bicho e do tempo visual
+## (o mesmo depois de carregar; para na pausa).
 
 const SHADER := preload("res://shaders/animal_vat.gdshader")
 const MODEL_DIR := "res://assets/vat/"
@@ -20,12 +24,28 @@ const DOG_EVERY := 5
 const DOG_SIDE_M := 1.1
 ## Variação de tom e de ritmo da animação entre os bichos.
 const SHADE_VARIATION := 0.12
+## Caminhada (Fase 19): a cada WANDER_PERIOD_S (± a variação) o bicho escolhe outro ponto; anda a
+## WALK_SPEED_M_S, gasta TURN_S virando no começo, sobe e desce STEP_BOB_M a STEP_HZ passos por segundo.
+const WANDER_PERIOD_S := 14.0
+const PERIOD_VARIATION := 0.35
+const WALK_SPEED_M_S := {&"sheep": 0.55, &"pig": 0.5, &"dog": 0.9}
+const TURN_S := 0.7
+const STEP_BOB_M := 0.035
+const STEP_HZ := 2.2
+## Folga entre os quartos do pasto (cada bicho anda no seu).
+const QUARTER_GAP_M := 0.3
+## Quanto o cão anda de cada lado do lugar dele, ao longo da frente da casa.
+const DOG_PACE_M := 0.7
 
 var _simulation: Simulation
 var _layers: Dictionary[StringName, MultiMeshInstance3D] = {}
 var _counts: Dictionary[StringName, int] = {}
 var _range_m: float = 260.0
 var _dirty: bool = false
+## Por bicho que anda: [bicho, índice na camada, semente, ilha, canto baixo (x, z), canto alto (x, z)] e, no
+## cão, o giro de descanso (olhando para a rua).
+var _walkers: Array[Array] = []
+var _time: float = 0.0
 
 static var _models: Dictionary[StringName, VatModel] = {}
 static var _scales: Dictionary[StringName, float] = {}
@@ -61,9 +81,83 @@ func animal_count(animal: StringName = &"") -> int:
 	return total
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _dirty:
 		rebuild()
+	var step := delta * GameClock.clock.speed_multiplier()
+	if step > 0.0:
+		advance(step)
+
+
+## Anda o relógio dos bichos e leva cada um ao lugar dele nesse instante.
+func advance(seconds: float) -> void:
+	_time += seconds
+	for walker: Array in _walkers:
+		var animal: StringName = walker[0]
+		var index: int = walker[1]
+		var multimesh := _layers[animal].multimesh
+		var where := wander(walker, _time)
+		multimesh.set_instance_transform(index, Transform3D(where.basis.scaled_local(Vector3.ONE * scale_of(animal)),
+				where.origin))
+
+
+## Lugar do bicho i da camada (mundo, com a escala).
+func animal_transform(animal: StringName, index: int) -> Transform3D:
+	return _layers[animal].multimesh.get_instance_transform(index)
+
+
+## Onde o bicho está no instante time: parado no ponto da volta k pastando, depois vira e anda até o ponto da
+## volta k + 1. Os pontos e a duração de cada volta vêm do hash (semente, k).
+func wander(walker: Array, time: float) -> Transform3D:
+	var animal: StringName = walker[0]
+	var seed_value: int = walker[2]
+	var low: Vector2 = walker[4]
+	var high: Vector2 = walker[5]
+	var island_id: int = walker[3]
+	var grid := _simulation.world.island(island_id)
+	# o cão começa a volta já descansado, olhando para a rua
+	var resting := walker.size() > 6
+	var phase := TURN_S * 1.5 if resting else float(seed_value % 997) / 997.0 * WANDER_PERIOD_S
+	var period := WANDER_PERIOD_S * (1.0 + PERIOD_VARIATION * (float(seed_value / 997 % 1000) / 1000.0 - 0.5))
+	var k := floori((time + phase) / period)
+	var into := time + phase - k * period
+	var here := _waypoint(seed_value, k, low, high)
+	var there := _waypoint(seed_value, k + 1, low, high)
+	var before := _waypoint(seed_value, k - 1, low, high)
+	var speed: float = WALK_SPEED_M_S.get(animal, 0.5)
+	var walk_s := minf(here.distance_to(there) / speed, period * 0.6)
+	var start := period - walk_s - TURN_S
+	var facing := _heading(before, here)
+	if resting:
+		var rest: float = walker[6]
+		facing = lerp_angle(facing, rest, clampf(into / TURN_S, 0.0, 1.0))
+	var point := here
+	var bob := 0.0
+	if into >= start:
+		var turned := clampf((into - start) / TURN_S, 0.0, 1.0)
+		facing = lerp_angle(facing, _heading(here, there), turned)
+		var walked := clampf((into - start - TURN_S) / maxf(walk_s, 0.001), 0.0, 1.0)
+		point = here.lerp(there, smoothstep(0.0, 1.0, walked))
+		if walked > 0.0 and walked < 1.0:
+			bob = absf(sin(time * STEP_HZ * PI)) * STEP_BOB_M
+	var origin := Vector3(point.x, grid.height_at(point.x, point.y) + bob, point.y)
+	return Transform3D(Basis(Vector3.UP, facing), origin)
+
+
+## O ponto da volta k: sorteado dentro do retângulo (low, high) pelo hash.
+static func _waypoint(seed_value: int, k: int, low: Vector2, high: Vector2) -> Vector2:
+	var noise := hash([seed_value, k])
+	var u := float(noise % 1000) / 1000.0
+	var v := float(noise / 1000 % 1000) / 1000.0
+	return Vector2(lerpf(low.x, high.x, u), lerpf(low.y, high.y, v))
+
+
+## Giro em y que leva o −Z do modelo (a frente dele) de a para b.
+static func _heading(a: Vector2, b: Vector2) -> float:
+	var direction := b - a
+	if direction.length_squared() < 0.0001:
+		return 0.0
+	return atan2(-direction.x, -direction.y)
 
 
 ## Refaz todos os bichos: os pastos pela fazenda dona deles e os cães pelas casas.
@@ -88,6 +182,7 @@ func rebuild() -> void:
 		elif record.is_house() and building_id % DOG_EVERY == 0 and places.has(&"dog"):
 			places[&"dog"].append(_dog(record, def))
 	_counts.clear()
+	_walkers.clear()
 	for animal: StringName in _layers:
 		var list: Array = places[animal]
 		_counts[animal] = list.size()
@@ -100,6 +195,11 @@ func rebuild() -> void:
 			var where: Transform3D = item[0]
 			var seed_value: int = item[1]
 			AnimalView.place(multimesh, i, animal, where, seed_value, &"idle")
+			if item.size() > 2:
+				var bounds: Array = item[2]
+				_walkers.append([animal, i, seed_value] + bounds)
+	# já no lugar do caminho (o sorteio de place é só o tom e o ritmo)
+	advance(0.0)
 
 
 ## Os bichos de um pasto: em células sorteadas pelo id, longe da borda, cada um virado para um lado.
@@ -121,7 +221,13 @@ func _pasture(record: BuildingRecord, def: BuildingDef, building_id: int) -> Arr
 		var high := low + Vector3(area.size.x, 0.0, area.size.y) * cell_size
 		point.x = clampf(point.x, low.x + PASTURE_MARGIN_M, high.x - PASTURE_MARGIN_M)
 		point.z = clampf(point.z, low.z + PASTURE_MARGIN_M, high.z - PASTURE_MARGIN_M)
-		result.append([Transform3D(Basis(Vector3.UP, random.randf() * TAU), point), seed_value])
+		# cada bicho anda no seu quarto do pasto (os quatro juntos no meio se atravessavam)
+		var inner_low := Vector2(low.x, low.z) + Vector2.ONE * PASTURE_MARGIN_M
+		var quarter := (Vector2(high.x, high.z) - Vector2.ONE * PASTURE_MARGIN_M - inner_low) * 0.5
+		var corner := inner_low + quarter * Vector2(i % 2, (i / 2) % 2)
+		var gap := Vector2.ONE * minf(QUARTER_GAP_M, quarter.x * 0.4)
+		var bounds := [record.island_id, corner + gap, corner + quarter - gap]
+		result.append([Transform3D(Basis(Vector3.UP, random.randf() * TAU), point), seed_value, bounds])
 	return result
 
 
@@ -134,8 +240,14 @@ func _dog(record: BuildingRecord, def: BuildingDef) -> Array:
 	var side := out.cross(Vector3.UP)
 	var cell_size := _simulation.config.cell_size_m
 	var point := grid.surface_world(entrance) - out * cell_size * 0.3 + side * DOG_SIDE_M
-	# o modelo olha para −Z: o giro leva o −Z para fora da casa
-	return [Transform3D(Basis.looking_at(out, Vector3.UP), point), hash([record.id, &"dog"])]
+	# anda só ao longo da frente: a faixa vai de um lado ao outro, sem largura para fora
+	var a := point - side * DOG_PACE_M
+	var b := point + side * DOG_PACE_M
+	# o modelo olha para −Z: o giro leva o −Z para fora da casa (e é para lá que ele olha descansando)
+	var facing := Basis.looking_at(out, Vector3.UP)
+	var bounds := [record.island_id, Vector2(minf(a.x, b.x), minf(a.z, b.z)), Vector2(maxf(a.x, b.x), maxf(a.z, b.z)),
+			facing.get_euler().y]
+	return [Transform3D(facing, point), hash([record.id, &"dog"]), bounds]
 
 
 func _apply_range() -> void:

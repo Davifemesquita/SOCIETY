@@ -4,7 +4,7 @@ extends Node
 ## Vila de demonstração com 10 minutos de jogo: carroças na estrada, painel do prédio com a
 ## carroça, painel e alcance do armazém, e o corte de estrada com os alertas.
 ## CAPTURA_SO=animais tira só os bichos (Fase 13): ovelhas no pasto, cão na porta e o cavalo da carroça
-## (e, de lado, o arreio da Fase 18).
+## (e, de lado, o arreio da Fase 18); e as ovelhas andando pelo pasto (Fase 19).
 
 const MINUTES := 10
 
@@ -125,3 +125,19 @@ func _animals() -> void:
 				rig.focus = layer.multimesh.get_instance_transform(0).origin
 				_game.camera.apply()
 		await _advance_and_capture(file_name)
+	# Fase 19: o relógio dos bichos anda até a ovelha 0 estar no meio da caminhada
+	var sheep := view.find_child("Sheep", false, false) as MultiMeshInstance3D
+	if sheep != null and sheep.multimesh.visible_instance_count > 0:
+		for step: int in 400:
+			var before := view.animal_transform(&"sheep", 0).origin
+			view.advance(0.25)
+			if view.animal_transform(&"sheep", 0).origin.distance_to(before) > 0.05:
+				break
+		var walking := view.animal_transform(&"sheep", 0)
+		rig.focus = walking.origin
+		rig.distance = 9.0
+		var ahead := -walking.basis.z
+		rig.yaw = atan2(ahead.x, ahead.z) + 0.9
+		rig.target_yaw = rig.yaw
+		_game.camera.apply()
+		await _advance_and_capture("07b_ovelha_andando.png")

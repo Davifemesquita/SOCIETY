@@ -1065,6 +1065,14 @@ Regras que já custaram investigação:
   pendendo para ele. O meio-fio troca a cor lisa por `shaders/curb.gdshader`: a textura do paralelepípedo
   quase sem cor, clareada, projetada pela face, com junta a cada `block_m`. A face de lado do ladrilho projeta
   a textura de lado (de cima ela esticava em listras). Captura: `CAPTURA_SO=postes` (`27b_sarjeta.png`).
+- **Bichos andando** (`AnimalView.wander`, `advance`): o pacote da Quaternius só traz a animação parada e o
+  pulo, então a caminhada é no código. A cada `WANDER_PERIOD_S` (± `PERIOD_VARIATION`) o bicho pasta no ponto
+  da volta, vira em `TURN_S` e anda a `WALK_SPEED_M_S` até o ponto seguinte, subindo e descendo `STEP_BOB_M`;
+  os pontos e a fase saem do hash do bicho e da volta (os mesmos depois de carregar), e o relógio é o da
+  `AnimalView`, pela velocidade do jogo (para na pausa). Cada bicho anda no seu quarto do pasto (os quatro
+  juntos no meio se atravessavam). O cão anda `DOG_PACE_M` para cada lado ao longo da frente da casa e
+  descansa olhando para a rua. Captura: `CAPTURA_SO=animais` no `tools/capture_phase3.tscn`
+  (`07b_ovelha_andando.png`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1095,7 +1103,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 16 — Praças e jardins (nossa) | **concluída em 17/10/2026**: beleza nas casas, aba Decoração com árvore, canteiro, banco, praça com chafariz, estátua e coreto, camada Beleza |
 | 17 — Porto e diagonais (nossa) | **concluída em 17/10/2026**: aba Porto e estradas em diagonal (simulação, traçado e desenho); a suíte inteira passa da memória da VM e foi conferida em duas rodadas |
 | 18 — Detalhes de época (nossa) | **concluída em 17/10/2026**: campanário com sino na igreja e portão largo nas fábricas pesadas; cornija, vergas, frontão e grade de ferro nas casas; poste de ferro fundido com lampião a gás; arreio do cavalo; a suíte inteira (82 arquivos) passou, em três rodadas por falta de memória da VM |
-| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo |
+| 19 — Chão e margem (nossa) | em andamento (17/10/2026): lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
 
 Pendências já vistas para fases futuras:
 
