@@ -7,6 +7,9 @@ extends Node3D
 ## lugares saem do desenho da grade (sem sorteio), refeitos quando estrada ou prédio muda; o voo é contado
 ## aqui a cada quadro, no tempo de jogo (para na pausa). À noite os pássaros somem (foram dormir). Só lê o
 ## mundo.
+## Fase 20: a asa bate de verdade. A malha do voo marca as asas (UV.x = 1) e o `shaders/bird.gdshader` as gira
+## em volta do corpo pelo ângulo que `wing_beat` dá a cada quadro (em INSTANCE_CUSTOM.r); o pombo bate rápido
+## na subida e plana na descida, o estorninho bate em rajadas. O corpo não balança mais de lado.
 
 enum Kind { PIGEON, STARLING }
 
@@ -35,6 +38,15 @@ const STARLING_COLOR := Color(0.16, 0.15, 0.17)
 const MAX_BIRDS := 200
 ## Acima desta noite (DayClock.night_factor) não há pássaro.
 const NIGHT_HIDE := 0.5
+## Batida da asa: o ângulo máximo (para cima e para baixo do plano) e as batidas por segundo.
+const WING_BEAT := 0.75
+const PIGEON_BEAT_HZ := 3.5
+const STARLING_BEAT_HZ := 4.5
+## O estorninho bate por FLAP_BURST da rajada e plana o resto (rajada de STARLING_BURST_S).
+const STARLING_BURST_S := 2.5
+const FLAP_BURST := 0.55
+## Ângulo da asa planando (um pouco erguida, em V).
+const GLIDE := 0.15
 
 var _simulation: Simulation
 var _birds := MultiMeshInstance3D.new()
@@ -47,17 +59,15 @@ var _dirty: bool = false
 
 func setup(simulation: Simulation) -> void:
 	_simulation = simulation
-	var material := StandardMaterial3D.new()
-	material.vertex_color_use_as_albedo = true
-	material.vertex_color_is_srgb = true
-	material.roughness = 0.9
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/bird.gdshader") as Shader
 	for part: Array in [[_birds, "Birds", bird_mesh()], [_perched, "Perched", perched_mesh()]]:
 		var layer: MultiMeshInstance3D = part[0]
 		layer.name = part[1]
 		layer.multimesh = MultiMesh.new()
 		layer.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		layer.multimesh.use_colors = true
+		layer.multimesh.use_custom_data = true
 		layer.multimesh.mesh = part[2]
 		layer.material_override = material
 		layer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -93,6 +103,11 @@ func flock_center(index: int) -> Vector3:
 func bird_transform(index: int) -> Transform3D:
 	var flying := _birds.multimesh.get_instance_transform(index)
 	return flying if flying.basis.determinant() != 0.0 else _perched.multimesh.get_instance_transform(index)
+
+
+## O ângulo da asa do pássaro index agora (0 no pousado).
+func wing_angle(index: int) -> float:
+	return _birds.multimesh.get_instance_custom_data(index).r
 
 
 ## Pássaros pousados agora.
@@ -177,16 +192,20 @@ func _fly() -> void:
 		var center: Vector3 = flock[1]
 		var seed_value: float = flock[2]
 		if flock[0] == Kind.PIGEON:
-			var on_ground := pigeon_flight(seed_value, _time) < 0.0
+			var flight := pigeon_flight(seed_value, _time)
+			var on_ground := flight < 0.0
 			for i: int in PIGEONS_PER_FLOCK:
 				var pose := pigeon_pose(center, i, seed_value, _time)
 				flying.set_instance_transform(index, hidden if on_ground else pose)
 				perched.set_instance_transform(index, pose if on_ground else hidden)
+				var beat := 0.0 if on_ground else wing_beat(Kind.PIGEON, i, seed_value, _time, flight)
+				flying.set_instance_custom_data(index, Color(beat, 0.0, 0.0, 0.0))
 				index += 1
 		else:
 			for i: int in STARLINGS_PER_FLOCK:
 				flying.set_instance_transform(index, starling_pose(center, i, seed_value, _time))
 				perched.set_instance_transform(index, hidden)
+				flying.set_instance_custom_data(index, Color(wing_beat(Kind.STARLING, i, seed_value, _time, 0.0), 0.0, 0.0, 0.0))
 				index += 1
 
 
@@ -223,8 +242,8 @@ static func pigeon_pose(center: Vector3, i: int, seed_value: float, time: float)
 	var radius := PIGEON_FLIGHT_M.x * lift
 	var offset := spot + Vector3(cos(angle) * radius, PIGEON_FLIGHT_M.y * lift + 0.05, sin(angle) * radius)
 	var forward := Vector3(-sin(angle), 0.0, cos(angle))
-	var flap := sin(time * 14.0 + i * 1.3) * 0.4
-	return Transform3D(Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, flap), center + offset)
+	# inclina um pouco para dentro da volta
+	return Transform3D(Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, -0.25 * lift), center + offset)
 
 
 ## O estorninho i: um círculo próprio (raio, altura e sentido pelo índice) em volta do meio do bando, que
@@ -238,19 +257,38 @@ static func starling_pose(center: Vector3, i: int, seed_value: float, time: floa
 	var drift := Vector3(sin(time * 0.2 + seed_value), 0.0, cos(time * 0.17 + seed_value)) * STARLING_DRIFT_M
 	var offset := drift + Vector3(cos(angle) * radius, height + sin(time * 1.1 + own) * 0.8, sin(angle) * radius)
 	var forward := Vector3(-sin(angle), 0.0, cos(angle)) * turn
-	var flap := sin(time * 16.0 + own * 5.0) * 0.4
-	return Transform3D(Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, flap), center + offset)
+	return Transform3D(Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.FORWARD, -0.2 * turn), center + offset)
 
 
-## Pássaro voando, de frente para −Z: corpo de oito faces e duas asas em V, um pouco mais claras.
+## O ângulo da asa (rad, + para cima). Pombo: bate na primeira metade do voo (subindo) e plana na segunda,
+## até a batida curta antes de pousar. Estorninho: rajadas de batida e planeio, cada um na sua fase.
+static func wing_beat(kind: int, i: int, seed_value: float, time: float, flight: float) -> float:
+	var phase := seed_value * 3.1 + i * 1.3
+	if kind == Kind.PIGEON:
+		if flight > 0.5 and flight < 0.9:
+			return GLIDE
+		return sin(time * TAU * PIGEON_BEAT_HZ + phase) * WING_BEAT
+	var burst := fposmod(time / STARLING_BURST_S + phase * 0.37, 1.0)
+	if burst > FLAP_BURST:
+		return GLIDE
+	return sin(time * TAU * STARLING_BEAT_HZ + phase) * WING_BEAT
+
+
+## Pássaro voando, de frente para −Z: corpo de oito faces e duas asas, um pouco mais claras; a ponta da asa
+## leva UV.x = 1 (o shader a gira).
 static func bird_mesh() -> ArrayMesh:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	tool.set_uv(Vector2.ZERO)
 	_add_lump(tool, Vector3(0.0, 0.0, -0.18), Vector3(0.0, 0.02, 0.16), 0.07, Vector2(0.07, -0.05), Color(0.9, 0.9, 0.9))
 	tool.set_color(Color.WHITE)
+	# asa: a raiz no ombro (UV.x = 0, fica com o corpo) e a ponta (UV.x = 1, gira no shader)
 	for direction: float in [-1.0, 1.0]:
+		tool.set_uv(Vector2.ZERO)
 		tool.add_vertex(Vector3(0.0, 0.03, -0.08))
-		tool.add_vertex(Vector3(direction * 0.34, 0.1, 0.02))
+		tool.set_uv(Vector2(1.0, 0.0))
+		tool.add_vertex(Vector3(direction * 0.34, 0.06, 0.02))
+		tool.set_uv(Vector2.ZERO)
 		tool.add_vertex(Vector3(0.0, 0.03, 0.08))
 	tool.generate_normals()
 	return tool.commit()

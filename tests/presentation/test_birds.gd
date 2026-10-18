@@ -87,3 +87,38 @@ func test_there_are_never_more_birds_than_the_budget() -> void:
 	var view := _view()
 	assert_int(view.bird_count()).is_less_equal(BirdView.MAX_BIRDS)
 	assert_int(view.bird_count()).is_greater(BirdView.MAX_BIRDS - BirdView.STARLINGS_PER_FLOCK)
+
+
+## Fase 20: a asa bate (o ângulo vai na instância para o shader), o pombo plana na descida e o pousado não bate.
+func test_wings_beat_in_flight_glide_on_the_way_down_and_rest_on_the_ground() -> void:
+	var mesh := BirdView.bird_mesh()
+	var arrays := mesh.surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var tips := 0
+	for i: int in vertices.size():
+		if uvs[i].x > 0.5:
+			tips += 1
+			assert_float(absf(vertices[i].x)).is_greater(0.3)
+		else:
+			assert_float(absf(vertices[i].x)).is_less(0.1)
+	assert_int(tips).is_equal(2)
+	var low := INF
+	var high := -INF
+	for step: int in 40:
+		var beat := BirdView.wing_beat(BirdView.Kind.PIGEON, 0, 0.0, step * 0.03, 0.2)
+		low = minf(low, beat)
+		high = maxf(high, beat)
+	assert_float(high - low).is_greater(BirdView.WING_BEAT)
+	assert_float(BirdView.wing_beat(BirdView.Kind.PIGEON, 0, 0.0, 1.0, 0.7)).is_equal(BirdView.GLIDE)
+	SimFixture.road(_sim, Vector2i(0, 10), Vector2i(60, 10))
+	var view := _view()
+	while BirdView.pigeon_flight(0.0, view.time()) >= 0.0:
+		view.advance(0.5)
+	for i: int in BirdView.PIGEONS_PER_FLOCK:
+		assert_float(view.wing_angle(i)).is_equal(0.0)
+	while BirdView.pigeon_flight(0.0, view.time()) < 0.1:
+		view.advance(0.5)
+	var angle := view.wing_angle(0)
+	view.advance(0.07)
+	assert_float(view.wing_angle(0)).is_not_equal(angle)
