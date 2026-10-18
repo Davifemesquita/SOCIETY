@@ -86,3 +86,27 @@ func test_a_boat_is_never_moored_on_land() -> void:
 	view.rebuild()
 	assert_int(view.board_count()).is_greater(0)
 	assert_int(view.boat_count()).is_equal(0)
+
+
+func test_each_boat_is_tied_by_bow_and_stern_lines_that_sag_between_bollard_and_hull() -> void:
+	var view := _view()
+	assert_int(view.rope_count()).is_equal(0)
+	SimFixture.place(_sim, &"pier", Vector2i(10, 0), 2)
+	view.rebuild()
+	assert_int(view.boat_count()).is_equal(1)
+	assert_int(view.rope_count()).is_equal(2)
+	for index: int in view.rope_count():
+		var points := view.rope_points(index)
+		var from := points[0]
+		var to := points[points.size() - 1]
+		# do alto do cabeço, acima do tabuleiro, até a borda do barco, mais baixa
+		assert_float(from.y).is_greater(to.y)
+		assert_float(from.distance_to(to)).is_less(HarborView.ROPE_MAX_M)
+		var middle := points[points.size() / 2]
+		assert_float(middle.y).is_less((from.y + to.y) * 0.5 - 0.01)
+	# o cais do entreposto amarra os dois barcos dele
+	SimFixture.place(_sim, &"trading_post", Vector2i(30, 0), 2)
+	view.rebuild()
+	assert_int(view.rope_count()).is_equal(6)
+	var ropes: MeshInstance3D = view.get_node("Ropes")
+	assert_object(ropes.mesh).is_not_null()

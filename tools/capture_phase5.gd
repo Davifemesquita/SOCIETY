@@ -4,7 +4,7 @@ extends Node
 ## Arquipélago da semente 1840: visto de cima, a ilha principal, o litoral com a água, a floresta,
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
 ## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
-## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15); margem, a lama na margem do
+## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15; as amarras, Fase 20); margem, a lama na margem do
 ## rio e a areia molhada da praia (Fase 19); estrada, a rua de terra da vila subindo o relevo, com a borda
 ## recortada e o capim (Fase 19).
 
@@ -164,6 +164,9 @@ func _harbor(grid: IslandGrid) -> void:
 	var focus := start + direction * length * 0.5
 	await _shot("12_porto.png", focus, 45.0, atan2(direction.x, direction.z) + 0.6)
 	await _shot("13_trapiche.png", focus, 18.0, atan2(direction.x, direction.z) + PI * 0.5)
+	# as amarras do barco na ponta da passarela (Fase 20)
+	print("cabos ", _game.harbor_view.rope_count())
+	await _shot("13b_amarras.png", start + direction * (length - 2.0), 8.0, atan2(direction.x, direction.z) + PI * 0.75)
 	# o cais do entreposto, com a carga e os barcos (Fase 15, parte 2)
 	var post_id := grid.building_at(post_origin)
 	var quay := HarborView.walkway(_sim, _sim.world.building(post_id))

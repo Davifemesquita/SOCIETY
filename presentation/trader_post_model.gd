@@ -4,6 +4,9 @@ extends RefCounted
 ## duas águas, um guindaste de vigas com um caixote pendurado, carga no convés (as peças do CargoKit), dois
 ## barcos a remo amarrados (HarborView.boat_mesh) e o mastro com a bandeira do comércio. Tudo gerado aqui; a
 ## ShipView só põe o nó no ponto do posto (Harbors.trader_post). O nível da água é y = 0.
+## Fase 20: a madeira ganha o veio e o tom de cada tábua (`shaders/plank.gdshader`), o galpão vira parede de
+## tábuas em pé com fresta, e o cordame (`Rigging`, os cabos do HarborView): os estais do guindaste, a adriça e
+## os estais do mastro da bandeira e as amarras dos dois barcos.
 
 ## Plataforma: tamanho (x, z), altura do convés e espessura das tábuas.
 const DECK_SIZE := Vector2(16.0, 12.0)
@@ -29,6 +32,10 @@ const WALL := Color(0.62, 0.5, 0.36)
 const ROOF := Color(0.32, 0.22, 0.17)
 const ROPE := Color(0.7, 0.62, 0.45)
 const FLAG := Color(0.75, 0.2, 0.15)
+## Tábuas da parede do galpão e da porta (largura de cada uma).
+const WALL_BOARD_M := 0.3
+const DOOR_BOARD_M := 0.2
+const FLAG_POLE_M := 8.0
 
 
 static func build() -> Node3D:
@@ -40,6 +47,7 @@ static func build() -> Node3D:
 	_cargo(root)
 	_boats(root)
 	_flag(root)
+	_rigging(root)
 	return root
 
 
@@ -49,7 +57,7 @@ static func _deck(root: Node3D) -> void:
 	boards.name = "Deck"
 	var board := BoxMesh.new()
 	board.size = Vector3(BOARD_WIDTH_M - 0.05, BOARD_THICKNESS_M, DECK_SIZE.y)
-	board.material = _material(BOARD)
+	board.material = plank_material(BOARD, 0.0, true)
 	boards.multimesh = MultiMesh.new()
 	boards.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	boards.multimesh.mesh = board
@@ -66,7 +74,7 @@ static func _deck(root: Node3D) -> void:
 	pile.bottom_radius = PILE_RADIUS_M
 	pile.height = DECK_HEIGHT_M + PILE_DEPTH_M
 	pile.radial_segments = 10
-	pile.material = _material(WOOD.darkened(0.3))
+	pile.material = plank_material(WOOD.darkened(0.3), 0.0, false)
 	var piles := MultiMeshInstance3D.new()
 	piles.name = "Piles"
 	piles.multimesh = MultiMesh.new()
@@ -91,7 +99,7 @@ static func _shed(root: Node3D) -> void:
 	var floor_y := DECK_HEIGHT_M
 	var walls := BoxMesh.new()
 	walls.size = SHED_SIZE
-	walls.material = _material(WALL)
+	walls.material = plank_material(WALL, WALL_BOARD_M, false)
 	_add(root, "Shed", walls, Vector3(SHED_CENTER.x, floor_y + SHED_SIZE.y * 0.5, SHED_CENTER.y))
 	var roof := PrismMesh.new()
 	roof.size = Vector3(SHED_SIZE.x + 0.8, ROOF_RISE_M, SHED_SIZE.z + 0.6)
@@ -100,7 +108,7 @@ static func _shed(root: Node3D) -> void:
 	_add(root, "Roof", roof, Vector3(SHED_CENTER.x, floor_y + SHED_SIZE.y + ROOF_RISE_M * 0.5, SHED_CENTER.y))
 	var door := BoxMesh.new()
 	door.size = Vector3(0.1, 2.4, 2.6)
-	door.material = _material(WOOD.darkened(0.5))
+	door.material = plank_material(WOOD.darkened(0.5), DOOR_BOARD_M, false)
 	_add(root, "Door", door, Vector3(SHED_CENTER.x + SHED_SIZE.x * 0.5 + 0.05, floor_y + 1.2, SHED_CENTER.y))
 
 
@@ -165,13 +173,53 @@ static func _flag(root: Node3D) -> void:
 	var pole := CylinderMesh.new()
 	pole.top_radius = 0.08
 	pole.bottom_radius = 0.11
-	pole.height = 8.0
+	pole.height = FLAG_POLE_M
 	pole.material = _material(WOOD.darkened(0.4))
-	_add(root, "Pole", pole, Vector3(FLAG_AT.x, DECK_HEIGHT_M + 4.0, FLAG_AT.y))
+	_add(root, "Pole", pole, Vector3(FLAG_AT.x, DECK_HEIGHT_M + FLAG_POLE_M * 0.5, FLAG_AT.y))
 	var flag := BoxMesh.new()
 	flag.size = Vector3(2.4, 1.5, 0.06)
 	flag.material = _material(FLAG)
 	_add(root, "Flag", flag, Vector3(FLAG_AT.x + 1.25, DECK_HEIGHT_M + 7.1, FLAG_AT.y))
+
+
+## Os cabos: dois estais do alto do mastro do guindaste ao convés (do lado de terra), a adriça da bandeira e
+## dois estais do mastro dela, e a proa e a popa de cada barco até a beira do convés.
+static func _rigging(root: Node3D) -> void:
+	var spans: Array[PackedVector3Array] = []
+	var crane_top := Vector3(CRANE_AT.x, DECK_HEIGHT_M + CRANE_HEIGHT_M, CRANE_AT.y)
+	for side: float in [-1.0, 1.0]:
+		spans.append(HarborView.rope_span(crane_top, Vector3(CRANE_AT.x - 2.5, DECK_HEIGHT_M, CRANE_AT.y + side * 2.2), 0.01))
+	var pole_top := Vector3(FLAG_AT.x, DECK_HEIGHT_M + FLAG_POLE_M - 0.2, FLAG_AT.y)
+	spans.append(HarborView.rope_span(pole_top + Vector3(0.12, 0.0, 0.0), Vector3(FLAG_AT.x + 0.12, DECK_HEIGHT_M + 1.0, FLAG_AT.y), 0.0))
+	for side: float in [-1.0, 1.0]:
+		spans.append(HarborView.rope_span(pole_top, Vector3(FLAG_AT.x - 1.8, DECK_HEIGHT_M, FLAG_AT.y + side * 1.8), 0.015))
+	var edge_z := -DECK_SIZE.y * 0.5
+	for child: Node in root.get_children():
+		if not child.name.begins_with("Boat"):
+			continue
+		var boat := (child as Node3D).transform
+		for end: Vector3 in [Vector3(0.0, HarborView.BOAT_DEPTH_M * 1.2, -HarborView.BOAT_LENGTH_M * 0.5 + 0.15),
+				Vector3(0.0, HarborView.BOAT_DEPTH_M, HarborView.BOAT_LENGTH_M * 0.5 - 0.15)]:
+			var on_boat := boat * end
+			var cleat := Vector3(on_boat.x + signf(on_boat.x - boat.origin.x) * 0.6, DECK_HEIGHT_M, edge_z + 0.2)
+			spans.append(HarborView.rope_span(cleat, on_boat, HarborView.ROPE_SAG))
+	var material := _material(ROPE)
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var rigging := MeshInstance3D.new()
+	rigging.name = "Rigging"
+	rigging.mesh = HarborView.rope_mesh(spans, material, HarborView.ROPE_RADIUS_M * 1.2)
+	rigging.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(rigging)
+
+
+## Madeira com o veio e o tom de cada tábua; board_m acima de zero desenha as tábuas em pé de uma parede.
+static func plank_material(color: Color, board_m: float, top_along_z: bool) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/plank.gdshader") as Shader
+	material.set_shader_parameter(&"albedo", color)
+	material.set_shader_parameter(&"board_m", board_m)
+	material.set_shader_parameter(&"top_along_z", top_along_z)
+	return material
 
 
 static func _add(root: Node3D, node_name: String, mesh: Mesh, at: Vector3) -> MeshInstance3D:

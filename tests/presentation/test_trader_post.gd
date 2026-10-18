@@ -33,3 +33,21 @@ func test_it_has_a_shed_a_crane_cargo_two_boats_and_the_flag() -> void:
 		if child is MeshInstance3D and (child as MeshInstance3D).mesh is BoxMesh:
 			reach = maxf(reach, (child as Node3D).position.x)
 	assert_float(reach).is_greater(TraderPostModel.CRANE_AT.x)
+
+
+func test_the_shed_is_planked_and_the_post_has_rigging_for_crane_flag_and_boats() -> void:
+	var post: Node3D = auto_free(TraderPostModel.build())
+	var shed := post.get_node(^"Shed") as MeshInstance3D
+	var walls := (shed.mesh as BoxMesh).material as ShaderMaterial
+	assert_str(walls.shader.resource_path).is_equal("res://shaders/plank.gdshader")
+	var board_m: float = walls.get_shader_parameter(&"board_m")
+	assert_float(board_m).is_equal(TraderPostModel.WALL_BOARD_M)
+	var rigging := post.get_node(^"Rigging") as MeshInstance3D
+	assert_object(rigging.mesh).is_not_null()
+	# dois estais do guindaste, a adriça, dois estais da bandeira e quatro amarras: 9 cabos de 12 pedaços
+	var faces := rigging.mesh.get_faces().size() / 3
+	assert_int(faces).is_equal(9 * HarborView.ROPE_SEGMENTS * 4 * 2)
+	# as amarras descem do convés até os barcos, na água
+	var box := rigging.mesh.get_aabb()
+	assert_float(box.position.y).is_less(TraderPostModel.DECK_HEIGHT_M)
+	assert_float(box.end.y).is_greater(TraderPostModel.DECK_HEIGHT_M + TraderPostModel.CRANE_HEIGHT_M - 0.5)

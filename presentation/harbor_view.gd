@@ -7,6 +7,9 @@ extends Node3D
 ## quando prédio, estrada ou mundo muda. Só lê o mundo.
 ## Parte 2: o entreposto ganha cais de tábuas no lado do mar, com cabeços na beira, carga (barris, caixotes e sacos
 ## do CargoKit) e dois barcos a remo amarrados; cada píer ganha um barco ao lado da passarela.
+## Fase 20: as amarras. Cada barco leva um cabo da proa e outro da popa até o cabeço mais perto do mesmo píer
+## ou cais, caindo em curva entre as pontas (`rope_span`); todos os cabos numa malha só, refeita com o resto.
+## As tábuas e as estacas levam a madeira gasta do `shaders/plank.gdshader`.
 
 ## Tábua: largura (ao longo da passarela), fresta, espessura e altura do tabuleiro acima do chão (ou da água).
 const BOARD_WIDTH_M := 0.3
@@ -42,6 +45,12 @@ const BOAT_SEARCH_M := 12
 const BOAT_KEEL_CLEARANCE_M := 0.2
 const WOOD_COLOR := Color(0.45, 0.33, 0.22)
 const IRON_COLOR := Color(0.16, 0.16, 0.17)
+## Cabo de amarração: raio, quanto cai no meio (fração do vão), pedaços da curva, vão máximo e a cor do cânhamo.
+const ROPE_RADIUS_M := 0.025
+const ROPE_SAG := 0.12
+const ROPE_SEGMENTS := 12
+const ROPE_MAX_M := 10.0
+const ROPE_COLOR := Color(0.62, 0.53, 0.38)
 
 var _simulation: Simulation
 var _boards := MultiMeshInstance3D.new()
@@ -49,14 +58,16 @@ var _piles := MultiMeshInstance3D.new()
 var _bollards := MultiMeshInstance3D.new()
 var _boats := MultiMeshInstance3D.new()
 var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
+var _ropes := MeshInstance3D.new()
+var _rope_spans: Array[PackedVector3Array] = []
+var _rope_material := StandardMaterial3D.new()
 var _dirty: bool = false
 
 
 func setup(simulation: Simulation) -> void:
 	_simulation = simulation
-	var wood := StandardMaterial3D.new()
-	wood.albedo_color = WOOD_COLOR
-	wood.roughness = 0.85
+	# Fase 20: a madeira gasta, com o veio e o tom de cada tábua
+	var wood := TraderPostModel.plank_material(WOOD_COLOR, 0.0, false)
 	var iron := StandardMaterial3D.new()
 	iron.albedo_color = IRON_COLOR
 	iron.metallic = 0.6
@@ -98,6 +109,12 @@ func setup(simulation: Simulation) -> void:
 	for pile_kind: int in _cargo:
 		if CargoKit.tinted(pile_kind):
 			_cargo[pile_kind].multimesh.use_colors = true
+	_rope_material.albedo_color = ROPE_COLOR
+	_rope_material.roughness = 0.95
+	_rope_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_ropes.name = "Ropes"
+	_ropes.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_ropes)
 	EventBus.building_placed.connect(func(_building_id: int) -> void: _dirty = true)
 	EventBus.building_removed.connect(func(_building_id: int) -> void: _dirty = true)
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: _dirty = true)
@@ -119,6 +136,15 @@ func bollard_count() -> int:
 
 func boat_count() -> int:
 	return _boats.multimesh.instance_count
+
+
+func rope_count() -> int:
+	return _rope_spans.size()
+
+
+## Os pontos do cabo index, da ponta no cabeço à ponta no barco.
+func rope_points(index: int) -> PackedVector3Array:
+	return _rope_spans[index]
 
 
 ## Peças de carga nos cais, de todos os tipos.
@@ -143,10 +169,13 @@ func rebuild() -> void:
 	var cargo: Dictionary[int, Array] = {}
 	for pile_kind: int in _cargo:
 		cargo[pile_kind] = []
+	_rope_spans.clear()
 	var world := _simulation.world
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := _simulation.def_of(record)
+		var first_bollard := bollards.size()
+		var first_boat := boats.size()
 		if def.kind == BuildingDef.Kind.PIER:
 			var plan := walkway(_simulation, record)
 			_pier(plan, boards, piles, bollards)
@@ -158,6 +187,7 @@ func rebuild() -> void:
 					+ across * (WALK_WIDTH_M * 0.5 + BOAT_BEAM_M * 0.7), direction, direction)
 		elif def.is_trading_post:
 			_quay(walkway(_simulation, record), boards, piles, bollards, boats, cargo)
+		_moor_lines(bollards.slice(first_bollard), boats.slice(first_boat))
 	_fill(_boards, boards)
 	_fill(_piles, piles)
 	_fill(_bollards, bollards)
@@ -169,6 +199,66 @@ func rebuild() -> void:
 		if CargoKit.tinted(pile_kind):
 			for i: int in places.size():
 				_cargo[pile_kind].multimesh.set_instance_color(i, CargoKit.SACK_COLOR)
+	_ropes.mesh = rope_mesh(_rope_spans, _rope_material)
+
+
+## Cabos da proa e da popa de cada barco até o cabeço mais perto (do mesmo píer ou cais), dentro de ROPE_MAX_M.
+func _moor_lines(bollards: Array[Transform3D], boats: Array[Transform3D]) -> void:
+	for boat: Transform3D in boats:
+		for end: Vector3 in [Vector3(0.0, BOAT_DEPTH_M * 1.2, -BOAT_LENGTH_M * 0.5 + 0.15),
+				Vector3(0.0, BOAT_DEPTH_M, BOAT_LENGTH_M * 0.5 - 0.15)]:
+			var on_boat := boat * end
+			var best := Vector3.ZERO
+			var best_m := ROPE_MAX_M
+			for bollard: Transform3D in bollards:
+				var top := bollard.origin + Vector3(0.0, BOLLARD_HEIGHT_M * 0.3, 0.0)
+				if top.distance_to(on_boat) < best_m:
+					best_m = top.distance_to(on_boat)
+					best = top
+			if best_m < ROPE_MAX_M:
+				_rope_spans.append(rope_span(best, on_boat, ROPE_SAG))
+
+
+## Os pontos de um cabo de from a to caindo em parábola: no meio, sag × o vão abaixo da reta.
+static func rope_span(from: Vector3, to: Vector3, sag: float) -> PackedVector3Array:
+	var points := PackedVector3Array()
+	var drop := from.distance_to(to) * sag
+	for i: int in ROPE_SEGMENTS + 1:
+		var t := float(i) / ROPE_SEGMENTS
+		points.append(from.lerp(to, t) - Vector3(0.0, drop * 4.0 * t * (1.0 - t), 0.0))
+	return points
+
+
+## Uma malha com todos os cabos: um tubo de quatro faces de ROPE_RADIUS_M ao longo de cada lista de pontos.
+## Sem cabo, nenhuma malha.
+static func rope_mesh(spans: Array[PackedVector3Array], material: Material, radius: float = ROPE_RADIUS_M) -> ArrayMesh:
+	if spans.is_empty():
+		return null
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for points: PackedVector3Array in spans:
+		var rings: Array[PackedVector3Array] = []
+		for i: int in points.size():
+			var along := (points[mini(i + 1, points.size() - 1)] - points[maxi(i - 1, 0)]).normalized()
+			var side := along.cross(Vector3.UP if absf(along.y) < 0.95 else Vector3.RIGHT).normalized()
+			var up := side.cross(along)
+			var ring := PackedVector3Array()
+			for k: int in 4:
+				var angle := k * PI * 0.5
+				ring.append(points[i] + (side * cos(angle) + up * sin(angle)) * radius)
+			rings.append(ring)
+		for i: int in rings.size() - 1:
+			for k: int in 4:
+				var a := rings[i][k]
+				var b := rings[i][(k + 1) % 4]
+				var c := rings[i + 1][(k + 1) % 4]
+				var d := rings[i + 1][k]
+				for vertex: Vector3 in [a, b, c, a, c, d]:
+					tool.add_vertex(vertex)
+	tool.generate_normals()
+	var mesh := tool.commit()
+	mesh.surface_set_material(0, material)
+	return mesh
 
 
 ## O traçado do trapiche: [começo (meio do lado do prédio virado para o mar, no chão), direção no plano
