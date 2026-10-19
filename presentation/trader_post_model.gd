@@ -176,10 +176,7 @@ static func _flag(root: Node3D) -> void:
 	pole.height = FLAG_POLE_M
 	pole.material = _material(WOOD.darkened(0.4))
 	_add(root, "Pole", pole, Vector3(FLAG_AT.x, DECK_HEIGHT_M + FLAG_POLE_M * 0.5, FLAG_AT.y))
-	var flag := BoxMesh.new()
-	flag.size = Vector3(2.4, 1.5, 0.06)
-	flag.material = _material(FLAG)
-	_add(root, "Flag", flag, Vector3(FLAG_AT.x + 1.25, DECK_HEIGHT_M + 7.1, FLAG_AT.y))
+	root.add_child(WindFlag.make(Vector3(2.4, 1.5, 0.06), _material(FLAG), Vector3(FLAG_AT.x + 0.05, DECK_HEIGHT_M + 7.1, FLAG_AT.y)))
 
 
 ## Os cabos: dois estais do alto do mastro do guindaste ao convés (do lado de terra), a adriça da bandeira e

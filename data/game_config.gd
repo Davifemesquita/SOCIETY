@@ -385,6 +385,15 @@ static var _default: GameConfig
 ## Densidade extra da neblina de distância e da volumétrica no auge da neblina e da chuva.
 @export var weather_mist_fog_density: float = 0.0022
 @export var weather_rain_fog_density: float = 0.0015
+## Vento (Fase 22): força de 0 a 1 no dia limpo, no nublado e no meio da chuva; cada dia sorteia um
+## fator dentro de day_factor; a direção vira até veer_rad para cada lado ao longo do dia; no auge da
+## neblina a força cai em mist_calm.
+@export var weather_wind_clear: float = 0.25
+@export var weather_wind_cloudy: float = 0.45
+@export var weather_wind_rain: float = 0.85
+@export var weather_wind_day_factor: Vector2 = Vector2(0.7, 1.15)
+@export var weather_wind_veer_rad: float = 0.5
+@export var weather_wind_mist_calm: float = 0.8
 ## Gotas de chuva no nível mais alto, a caixa em volta da câmera e a velocidade de queda.
 @export var rain_max_drops: int = 6000
 @export var rain_box_m: Vector3 = Vector3(140.0, 60.0, 140.0)

@@ -161,6 +161,7 @@ func _ready() -> void:
 	smoke_view = SmokeView.new()
 	smoke_view.name = "Smoke"
 	add_child(smoke_view)
+	smoke_view.weather = weather
 	smoke_view.setup(simulation, _config.cell_size_m)
 	graphics.add_effect(smoke_view)
 	stockpile_view = StockpileView.new()

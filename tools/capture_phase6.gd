@@ -35,6 +35,11 @@ func _run() -> void:
 		await _shot("04b_feitoria_de_perto.png", spot, 24.0, 2.6)
 		# Fase 20: as tábuas do galpão e o cordame do guindaste e da bandeira
 		await _shot("04c_cordame.png", spot + Vector2(4.0, -1.0), 14.0, 2.2)
+		# Fase 22: a bandeira aponta para onde o vento sopra (caída com o ar parado)
+		var flag := get_tree().get_nodes_in_group(WindFlag.GROUP)[0] as WindFlag
+		var air := _game.weather.sample
+		print("vento ", air.wind_direction, " força ", air.wind)
+		await _shot("04d_bandeira_ao_vento.png", flag.global_position, 26.0, 0.4)
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "carta":

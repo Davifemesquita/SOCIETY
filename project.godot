@@ -77,3 +77,11 @@ wetness={
 "type": "float",
 "value": 0.0
 }
+wind_direction={
+"type": "vec2",
+"value": Vector2(1, 0)
+}
+wind_strength={
+"type": "float",
+"value": 0.0
+}

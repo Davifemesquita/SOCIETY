@@ -49,7 +49,7 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://too
 # e a gaivota de perto (Fase 21)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas;
-# CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15)
+# CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15), com a bandeira ao vento (Fase 22)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase6.tscn -- /pasta/de/saida
 # Fase 7: menu principal, jogo novo, partida de 30 min, painéis, estatísticas, camadas, menus,
 # opções, salvar, créditos, inglês, rotas com o mapa ilustrado e comércio
@@ -202,7 +202,8 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
 | `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
 | `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
-| `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado |
+| `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado e, desde a Fase 22, o vento |
+| `presentation/wind_flag.gd` | bandeira de mastro que aponta para o vento (Fase 22) |
 | `presentation/cargo_kit.gd`, `stockpile_view.gd` | peças de carga (saco, barril, caixote, toras, monte) e as pilhas de estoque diante dos prédios (Fase 13) |
 | `presentation/crop_view.gd` | plantações nos campos, crescendo com o ciclo da fazenda (Fase 14) |
 | `presentation/bird_view.gd` | pombos nas ruas e estorninhos sobre os campos (Fase 14) |
@@ -1131,6 +1132,23 @@ Regras que já custaram investigação:
   (`ArchipelagoMap.grain`, `GRAIN_PX`, feita uma vez): na própria carta gravada o grão sumiria, porque ela é
   reduzida 3 a 5 vezes ao ser desenhada. Captura: `CAPTURA_SO=carta` no `tools/capture_phase6.tscn`.
 
+### Mata e vento (Fase 22, nossa)
+
+- **Proposta nossa** (19/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede nas árvores (espécies europeias de 1840, dois níveis de detalhe e balanço
+  ao vento), tudo gerado no código, com o vento do clima por trás. Só visual; o save fica na versão 15. Partes
+  com commit próprio. (As árvores já balançavam desde a Fase 9, num movimento fixo sem direção nem força.)
+- **Vento** (`WeatherCycle`, `weather_wind_*` no `GameConfig`): cada dia sorteia para onde ele sopra e um fator
+  de força, **depois** do resto do sorteio do dia (o céu de cada semente não mudou). A força vem do tipo do dia,
+  sobe até `weather_wind_rain` com a chuva e cai `weather_wind_mist_calm` no auge da neblina; a direção vira até
+  `weather_wind_veer_rad` ao longo do dia e troca para a do dia seguinte nas duas últimas horas, como a
+  cobertura. O `WeatherView` publica os uniformes globais `wind_direction` e `wind_strength` e vira as bandeiras
+  de mastro (`WindFlag`, grupo `wind_flags`: a da feitoria e as das rivais) a cada quadro, no relógio dele
+  (`wind_time`, que para na pausa). Com o ar parado a bandeira cai por cisalhamento (a beira fica no mastro;
+  girada, ela atravessava o mastro) e encolhe para `LIMP_WIDTH`. A fumaça das chaminés deita para o vento
+  (`SmokeView.drift`, na gravidade das partículas) e sobe reta com o ar parado. Captura: `CAPTURA_SO=posto` no
+  `tools/capture_phase6.tscn` (`04d_bandeira_ao_vento.png`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1163,6 +1181,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 19 — Chão e margem (nossa) | **concluída em 18/10/2026**: lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
+| 22 — Mata e vento (nossa) | em andamento desde 19/10/2026: vento no clima, com a fumaça e as bandeiras (parte 1) |
 
 Pendências já vistas para fases futuras:
 

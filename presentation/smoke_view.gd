@@ -3,8 +3,9 @@ extends Node3D
 ## Chaminés das fábricas (seção 11, Fase 9): cada prédio com fumaça (BuildingDef.smoke) ganha uma
 ## chaminé de tijolo e um GPUParticles3D em cima dela, que solta vapor claro, fumaça ou fumaça
 ## pesada só enquanto o prédio produz. A fumaça pesada deixa fuligem no chão em volta (Decal). O
-## nível gráfico escolhe quantas partículas, até onde elas aparecem e se há fuligem. Só lê o
-## estado; nenhuma regra aqui.
+## nível gráfico escolhe quantas partículas, até onde elas aparecem e se há fuligem. Desde a Fase 22,
+## a fumaça deita para onde o vento do WeatherView sopra (sobe reta com o ar parado). Só lê o estado;
+## nenhuma regra aqui.
 
 const REFRESH_SECONDS := 0.5
 ## Chaminé: lado e quanto passa acima do telhado.
@@ -15,6 +16,9 @@ const AMOUNTS: Array[int] = [0, 10, 16, 28]
 const LIFETIMES: Array[float] = [0.0, 3.0, 5.0, 7.0]
 const COLORS: Array[Color] = [Color.WHITE, Color(0.92, 0.92, 0.9, 0.5), Color(0.45, 0.43, 0.42, 0.55), Color(0.16, 0.15, 0.15, 0.7)]
 const SIZES: Array[float] = [0.0, 1.6, 2.2, 3.2]
+## Empuxo para cima da fumaça e o do vento cheio no plano (m/s²).
+const RISE_M_S2 := 0.35
+const WIND_PUSH_M_S2 := 1.8
 
 var _simulation: Simulation
 var _cell_size: float
@@ -28,6 +32,8 @@ var _refresh_left: float = 0.0
 var _process_materials: Array[ParticleProcessMaterial] = []
 var _draw_meshes: Array[QuadMesh] = []
 var _soot_texture: Texture2D
+## De onde vem o vento; sem ele, a fumaça sobe reta.
+var weather: WeatherView
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -77,8 +83,12 @@ func _process(delta: float) -> void:
 		refresh()
 
 
-## Liga a fumaça de quem está produzindo agora.
+## Liga a fumaça de quem está produzindo agora e deita a fumaça no vento.
 func refresh() -> void:
+	if weather != null:
+		var push := drift(weather.sample.wind_direction, weather.sample.wind)
+		for material: ParticleProcessMaterial in _process_materials:
+			material.gravity = push
 	for building_id: int in _plumes:
 		var record := _simulation.world.building(building_id)
 		_plumes[building_id].emitting = record != null and record.state == BuildingRecord.State.PRODUCING and not record.paused
@@ -147,11 +157,11 @@ func _remove(building_id: int) -> void:
 
 func _process_material(kind: int) -> ParticleProcessMaterial:
 	var material := ParticleProcessMaterial.new()
-	material.direction = Vector3(0.2, 1.0, 0.1)
+	material.direction = Vector3.UP
 	material.spread = 12.0
 	material.initial_velocity_min = 1.2
 	material.initial_velocity_max = 2.2
-	material.gravity = Vector3(0.6, 0.35, 0.2)
+	material.gravity = drift(Vector2.RIGHT, 0.0)
 	material.damping_min = 0.2
 	material.damping_max = 0.4
 	material.scale_min = 0.6
@@ -172,6 +182,11 @@ func _process_material(kind: int) -> ParticleProcessMaterial:
 	ramp.gradient = fade
 	material.color_ramp = ramp
 	return material
+
+
+## Aceleração da fumaça: sobe e deita para onde o vento sopra, mais quanto mais forte.
+static func drift(direction: Vector2, strength: float) -> Vector3:
+	return Vector3(direction.x * WIND_PUSH_M_S2 * strength, RISE_M_S2, direction.y * WIND_PUSH_M_S2 * strength)
 
 
 func _draw_mesh(kind: int) -> QuadMesh:

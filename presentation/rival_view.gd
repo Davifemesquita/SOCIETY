@@ -155,14 +155,7 @@ func _build(island_id: int, color: Color, slots: Array, count: int) -> Node3D:
 	pole.mesh = pole_mesh
 	pole.position = post_base + Vector3(0.0, 7.5, 0.0)
 	root.add_child(pole)
-	var flag := MeshInstance3D.new()
-	flag.name = "Flag"
-	var flag_mesh := BoxMesh.new()
-	flag_mesh.size = Vector3(2.2, 1.3, 0.05)
-	flag_mesh.material = _material(color)
-	flag.mesh = flag_mesh
-	flag.position = post_base + Vector3(1.15, 9.6, 0.0)
-	root.add_child(flag)
+	root.add_child(WindFlag.make(Vector3(2.2, 1.3, 0.05), _material(color), post_base + Vector3(0.05, 9.6, 0.0)))
 	return root
 
 

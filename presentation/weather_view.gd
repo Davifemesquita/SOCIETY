@@ -3,7 +3,8 @@ extends Node3D
 ## O clima na tela (Fase 9): lê o WeatherCycle na hora do GameClock e repassa às nuvens (cobertura),
 ## à neblina (de distância e volumétrica), ao chão molhado (uniforme global wetness, que os
 ## shaders de prédio, estrada e terreno usam) e à chuva (partículas em volta do ponto que a câmera
-## olha). Nenhuma regra de jogo aqui.
+## olha). Desde a Fase 22, o vento: uniformes globais wind_direction e wind_strength (a vegetação
+## balança por eles) e as bandeiras de mastro (WindFlag) giradas a cada quadro. Nenhuma regra de jogo aqui.
 
 var sample := WeatherCycle.Sample.new()
 
@@ -18,6 +19,8 @@ var _base_fog: float = 0.0
 var _base_volumetric: float = 0.0
 ## Hora fixa para capturas e testes (negativa = a do GameClock).
 var hours_override: float = -1.0
+## Relógio das bandeiras: anda com a velocidade do jogo e para na pausa.
+var wind_time: float = 0.0
 
 
 func setup(config: GameConfig, simulation: Simulation, sky: SkyAdapter, clouds: CloudsAdapter, camera: StrategyCamera) -> void:
@@ -39,8 +42,15 @@ func set_quality(preset: GraphicsPresetDef) -> void:
 	refresh()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	wind_time += delta * GameClock.clock.speed_multiplier()
 	refresh()
+	blow_flags()
+
+
+func blow_flags() -> void:
+	for node: Node in get_tree().get_nodes_in_group(WindFlag.GROUP):
+		(node as WindFlag).blow(sample.wind_direction, sample.wind, wind_time)
 
 
 func refresh() -> void:
@@ -55,6 +65,8 @@ func refresh() -> void:
 	environment.fog_density = _base_fog + haze
 	environment.volumetric_fog_density = _base_volumetric + haze * 2.0
 	RenderingServer.global_shader_parameter_set(&"wetness", sample.wetness)
+	RenderingServer.global_shader_parameter_set(&"wind_direction", sample.wind_direction)
+	RenderingServer.global_shader_parameter_set(&"wind_strength", sample.wind)
 	var drops := roundi(_config.rain_max_drops * _particles_ratio * sample.rain)
 	_rain.emitting = drops > 0
 	if drops > 0:

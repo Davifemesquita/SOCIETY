@@ -3,6 +3,8 @@ extends RefCounted
 ## Clima (seção 9, Fase 9): só visual, sem efeito na economia e fora do save. Sai da semente da
 ## partida e da hora (GameClock.total_hours): cada dia sorteia céu limpo, nublado ou com chuva, a
 ## janela da chuva e se a manhã tem neblina. A mesma semente e a mesma hora dão sempre o mesmo céu.
+## Desde a Fase 22, o vento: cada dia sorteia de onde ele sopra e um fator de força; a força sobe com
+## o tempo fechado e com a chuva e cai na neblina, e a direção vira devagar ao longo do dia.
 
 enum Kind { CLEAR, CLOUDY, RAIN }
 
@@ -14,6 +16,9 @@ class Sample:
 	var rain: float = 0.0
 	var mist: float = 0.0
 	var wetness: float = 0.0
+	## Para onde o vento sopra (no plano x/z, unitário) e a força dele, de 0 a 1.
+	var wind_direction: Vector2 = Vector2.RIGHT
+	var wind: float = 0.0
 
 
 ## O dia sorteado: tipo, começo e fim da chuva (horas do dia) e a força da neblina da manhã.
@@ -22,6 +27,9 @@ class Day:
 	var rain_start: float = 0.0
 	var rain_end: float = 0.0
 	var mist: float = 0.0
+	## Ângulo (rad) para onde o vento sopra e o fator de força do dia.
+	var wind_angle: float = 0.0
+	var wind_factor: float = 1.0
 
 
 static func day(seed_value: int, day_index: int, config: GameConfig) -> Day:
@@ -36,6 +44,9 @@ static func day(seed_value: int, day_index: int, config: GameConfig) -> Day:
 	result.rain_start = rng.randf_range(config.weather_rain_start_hours.x, config.weather_rain_start_hours.y)
 	result.rain_end = result.rain_start + rng.randf_range(config.weather_rain_duration_hours.x, config.weather_rain_duration_hours.y)
 	result.mist = rng.randf_range(0.4, 1.0) if rng.randf() < config.weather_mist_chance else 0.0
+	# o vento sai depois do resto, para não mudar o céu que cada semente já dava
+	result.wind_angle = rng.randf() * TAU
+	result.wind_factor = rng.randf_range(config.weather_wind_day_factor.x, config.weather_wind_day_factor.y)
 	return result
 
 
@@ -46,14 +57,24 @@ static func sample(seed_value: int, total_hours: float, config: GameConfig) -> S
 	var result := Sample.new()
 	result.kind = today.kind
 	result.rain = _rain_at(today, hour, config)
-	# a cobertura troca devagar nas duas últimas horas do dia, rumo à do dia seguinte
+	# a cobertura e o vento trocam devagar nas duas últimas horas do dia, rumo aos do dia seguinte
 	var base := _coverage_of(today.kind, config)
+	var wind := _wind_of(today.kind, config) * today.wind_factor
+	var angle := today.wind_angle
 	var blend := smoothstep(22.0, 24.0, hour)
 	if blend > 0.0:
-		base = lerpf(base, _coverage_of(day(seed_value, index + 1, config).kind, config), blend)
+		var tomorrow := day(seed_value, index + 1, config)
+		base = lerpf(base, _coverage_of(tomorrow.kind, config), blend)
+		wind = lerpf(wind, _wind_of(tomorrow.kind, config) * tomorrow.wind_factor, blend)
+		angle = lerp_angle(angle, tomorrow.wind_angle, blend)
 	# a chuva fecha o céu antes de chegar ao máximo
 	result.coverage = lerpf(base, config.weather_rain_coverage, smoothstep(0.0, 0.5, result.rain))
 	result.mist = today.mist * _mist_curve(hour, config)
+	# a chuva traz a rajada dela; a neblina só fica com o ar parado
+	wind = lerpf(wind, config.weather_wind_rain * today.wind_factor, result.rain)
+	result.wind = clampf(wind * (1.0 - result.mist * config.weather_wind_mist_calm), 0.0, 1.0)
+	angle += config.weather_wind_veer_rad * sin(hour / 24.0 * TAU)
+	result.wind_direction = Vector2.from_angle(angle)
 	result.wetness = maxf(_wet_after(today, hour, config), _wet_after(day(seed_value, index - 1, config), hour + 24.0, config))
 	return result
 
@@ -65,6 +86,16 @@ static func _coverage_of(kind: Kind, config: GameConfig) -> float:
 		Kind.RAIN:
 			return config.weather_cloudy_coverage
 	return config.weather_clear_coverage
+
+
+## Força do vento (0 a 1) no tipo de dia, antes do fator do dia.
+static func _wind_of(kind: Kind, config: GameConfig) -> float:
+	match kind:
+		Kind.CLOUDY:
+			return config.weather_wind_cloudy
+		Kind.RAIN:
+			return config.weather_wind_cloudy
+	return config.weather_wind_clear
 
 
 ## Intensidade da chuva na hora do dia (sobe e desce em rain_fade_hours).
