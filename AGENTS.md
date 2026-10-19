@@ -46,7 +46,7 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 3000 res://too
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 8000 res://tools/capture_phase4.tscn -- /pasta/de/saida
 # Fase 5: arquipélago da semente 1840 (de cima, litoral, floresta, rio, jazida, vila, poluição, noite);
 # CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14); porto, o entreposto com o píer (Fase 15)
-# e a gaivota de perto (Fase 21)
+# e a gaivota de perto (Fase 21); mata, a mata de carvalhos, faias e pinheiros (Fase 22)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- /pasta/de/saida
 # Fase 6: navio inicial, cais da colônia, navegando, posto do comerciante, painel do navio, rotas;
 # CAPTURA_SO=posto tira só a feitoria do comerciante (Fase 15), com a bandeira ao vento (Fase 22)
@@ -174,6 +174,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `world/terrain/terrain_view.gd` | adaptador do terreno: malha por trecho no relevo da grade e `shaders/terrain.gdshader` |
 | `world/water/water_view.gd` | adaptador da água: Ocean do Boujie com a cópia editada do shader (poluição) |
 | `presentation/tree_view.gd` | árvores e pedras em MultiMesh por trecho de 64×64 células |
+| `presentation/tree_model.gd` | carvalho, faia e pinheiro-silvestre gerados no código, perto e longe (Fase 22) |
 | `world/sky/sky_adapter.gd` | `SkyAdapter`: a única peça que conhece o Sky3D; recebe a hora do GameClock. Sem o addon, céu simples |
 | `presentation/` | caixas dos prédios, estradas em MultiMesh, prévia, grade e camadas F1/F2 |
 | `ui/build/build_tool.gd` | ferramenta de construção; a lógica trabalha em células, testável sem mouse |
@@ -386,7 +387,7 @@ Regras que já custaram investigação:
   da região (sem isso, cada região aparecia como um quadrado de água clara). A simulação continua
   com `sea_floor_m`. A leitura da tela desviada pela refração é presa dentro dela (repetia a
   profundidade do outro lado e manchava a borda de baixo).
-- **Árvores**: MultiMesh por trecho de 64×64 células e por modelo; no máximo 2 desenhadas por
+- **Árvores** (desde a Fase 22, as do `TreeModel`; ver "Mata e vento"): MultiMesh por trecho de 64×64 células e por modelo; no máximo 2 desenhadas por
   célula (a regra conta todas); derrubar refaz só o trecho. As cores do Kenney (turquesa) são
   trocadas no código. Array empacotado dentro de outro array pode ser alterado numa cópia: os
   buffers são montados em variável local.
@@ -1155,6 +1156,22 @@ Regras que já custaram investigação:
   são convertidas lá), passou para as plantações e o capim dos pastos (`CropView.plant_material`, `PLANT_SWAY`,
   `GRASS_SWAY`) e o capim da beira da estrada (`RoadView`); a cerca e as leiras continuam paradas. Captura:
   `CAPTURA_SO=plantacoes` no `tools/capture_buildings.tscn`.
+- **Árvores de época** (`TreeModel`, no lugar das cinco árvores do Kenney, que saíram do projeto; pedras e
+  palmeiras ficam): carvalho (tronco curto e grosso, quatro galhos abertos com uma massa de folhagem na ponta
+  de cada um e a do alto; copa mais larga que alta), faia (tronco liso e cinzento, copa oval) e pinheiro-
+  silvestre (tronco alto, marrom embaixo e avermelhado em cima, copa em massas achatadas só no último terço),
+  duas variantes de cada pelo sorteio. A massa de folhagem é um icosaedro subdividido esticado, cada vértice
+  amassado `CROWN_LUMP`, mais escuro embaixo (`CROWN_SHADE`), com a normal de bola; cada massa sorteia no
+  gerador dela, então os dois níveis de detalhe têm as massas no mesmo lugar. Tudo numa superfície com a cor
+  no vértice, no material da folhagem, já em metros (a `TreeView` não reescala: escala 1 vezes o sorteio de
+  0,75 a 1,25). De 330 a 460 triângulos de perto (as do Kenney tinham de 50 a 230).
+- **Dois níveis de detalhe** (`TreeModel.DETAIL_FAR`: a esfera sem subdividir, o tronco de quatro faces e
+  sem galhos, ~100 triângulos): cada trecho tem a camada de perto até `NEAR_UNTIL_M` e a de longe (`...Far`,
+  o mesmo buffer) daí até `VISIBLE_UNTIL_M`, pelo alcance de visibilidade do trecho. A captura de 260 m caiu
+  de mais de 5 min para ~70 s no llvmpipe. Refazer o trecho tira os nós antigos da árvore antes do
+  `queue_free` (o novo de mesmo nome ganhava nome gerado e perdia o "Far"). Captura: `CAPTURA_SO=mata` no
+  `tools/capture_phase5.tscn` (borda da mata, morro de pinheiros e a mata na chuva; `CAPTURA_LONGE=1` também
+  de 260 m e `CAPTURA_LONGE=so` só ela).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1188,7 +1205,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 19 — Chão e margem (nossa) | **concluída em 18/10/2026**: lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
-| 22 — Mata e vento (nossa) | em andamento desde 19/10/2026: vento no clima, com a fumaça e as bandeiras (parte 1); árvores, plantações e capim balançando pelo vento (parte 2) |
+| 22 — Mata e vento (nossa) | em andamento desde 19/10/2026: vento no clima, com a fumaça e as bandeiras (parte 1); árvores, plantações e capim balançando pelo vento (parte 2); carvalho, faia e pinheiro-silvestre gerados no código (parte 3) com o nível de detalhe de longe (parte 4) |
 
 Pendências já vistas para fases futuras:
 

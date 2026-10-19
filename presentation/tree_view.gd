@@ -4,15 +4,18 @@ extends Node3D
 ## pela semente) e são desenhadas em MultiMesh por trecho de CHUNK_CELLS × CHUNK_CELLS e por
 ## modelo. Derrubar árvores ao construir refaz só o trecho atingido (trees_changed). Posição,
 ## giro e tamanho de cada árvore saem do índice da célula: o mesmo mundo dá sempre a mesma mata.
-## Modelos do Kenney Nature Kit (CC0). Nas ilhas tropicais (Fase 11), palmeiras no lugar da mata.
+## Pedras e palmeiras do Kenney Nature Kit (CC0); nas ilhas tropicais (Fase 11), palmeiras no lugar da
+## mata. Desde a Fase 22 a mata temperada é gerada no código (`TreeModel`): carvalho e faia entre as
+## folhosas, pinheiro-silvestre entre as coníferas, duas variantes de cada, já em metros.
 
 const CHUNK_CELLS := 64
-const BROADLEAF: Array[String] = ["tree_default", "tree_oak", "tree_fat"]
-const CONIFER: Array[String] = ["tree_pineDefaultA", "tree_pineRoundA"]
+## Folhosas e coníferas: [espécie, variante] do TreeModel.
+const BROADLEAF: Array[Array] = [[TreeModel.Species.OAK, 0], [TreeModel.Species.OAK, 1], [TreeModel.Species.BEECH, 0], [TreeModel.Species.BEECH, 1]]
+const CONIFER: Array[Array] = [[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Species.SCOTS_PINE, 1]]
 const ROCKS: Array[String] = ["rock_largeA", "rock_largeB"]
 const PALMS: Array[String] = ["tree_palm", "tree_palmTall", "tree_palmBend"]
 const MODEL_DIR := "res://assets/models/nature/%s.glb"
-## Altura de uma árvore adulta e das pedras, em metros.
+## Altura de uma palmeira adulta e das pedras, em metros (as árvores do TreeModel já vêm no tamanho).
 const TREE_HEIGHT_M := 8.0
 const ROCK_SIZE_M := 1.6
 ## Acima desta altura do terreno, mais pinheiro que folhosa.
@@ -21,14 +24,13 @@ const CONIFER_HEIGHT_M := 6.0
 const ROCK_RELIEF_M := 2.5
 const ROCK_CHANCE := 0.12
 const VISIBLE_UNTIL_M := 900.0
+## Até esta distância do trecho (do meio dele) a árvore do TreeModel é a de perto; depois, a de longe
+## (Fase 22). O trecho tem 128 m: no pior caso a árvore da borda troca a ~110 m da câmera.
+const NEAR_UNTIL_M := 200.0
 ## Desenhadas no máximo tantas árvores por célula (a regra do lenhador conta todas): a copa de
 ## uma árvore de 8 m já cobre a célula de 2 m.
 const DRAWN_PER_CELL := 2
-## Cores das superfícies dos modelos (as do pacote são de desenho animado): folhagem de cada
-## família, casca e pedra.
-const BROADLEAF_COLOR := Color(0.24, 0.36, 0.16)
-const CONIFER_COLOR := Color(0.13, 0.26, 0.15)
-const BARK_COLOR := Color(0.32, 0.23, 0.16)
+## Cores das superfícies dos modelos do pacote (as dele são de desenho animado): pedra, musgo e palmeira.
 const STONE_COLOR := Color(0.47, 0.46, 0.43)
 const MOSS_COLOR := Color(0.3, 0.37, 0.22)
 const PALM_COLOR := Color(0.24, 0.42, 0.14)
@@ -36,6 +38,8 @@ const PALM_TRUNK_COLOR := Color(0.46, 0.36, 0.24)
 
 var _world: WorldState
 var _models: Array[Mesh] = []
+## A malha de longe de cada modelo (null nos que não têm: pedras e palmeiras).
+var _far_models: Array[Mesh] = []
 ## Fator de escala de cada modelo para chegar à altura certa.
 var _scales: PackedFloat32Array = []
 ## Ilhas de clima tropical (desenham palmeiras).
@@ -46,14 +50,18 @@ var _chunks: Dictionary[String, Array] = {}
 
 func setup(world: WorldState, data: GameData = GameData.get_default()) -> void:
 	_world = world
-	for name: String in BROADLEAF + CONIFER + ROCKS + PALMS:
-		var foliage := CONIFER_COLOR if CONIFER.has(name) else (MOSS_COLOR if ROCKS.has(name) else BROADLEAF_COLOR)
-		var wood := STONE_COLOR if ROCKS.has(name) else BARK_COLOR
-		if PALMS.has(name):
-			foliage = PALM_COLOR
-			wood = PALM_TRUNK_COLOR
+	for tree: Array in BROADLEAF + CONIFER:
+		var species: TreeModel.Species = tree[0]
+		var variant: int = tree[1]
+		_models.append(TreeModel.mesh(species, variant))
+		_far_models.append(TreeModel.mesh(species, variant, TreeModel.DETAIL_FAR))
+		_scales.append(1.0)
+	for name: String in ROCKS + PALMS:
+		var foliage := PALM_COLOR if PALMS.has(name) else MOSS_COLOR
+		var wood := PALM_TRUNK_COLOR if PALMS.has(name) else STONE_COLOR
 		var mesh := _recolor(_load_mesh(MODEL_DIR % name), foliage, wood, not ROCKS.has(name))
 		_models.append(mesh)
+		_far_models.append(null)
 		var height := mesh.get_aabb().size.y if mesh != null else 1.0
 		var target := ROCK_SIZE_M if ROCKS.has(name) else TREE_HEIGHT_M
 		_scales.append(target / maxf(height, 0.01))
@@ -69,12 +77,19 @@ func setup(world: WorldState, data: GameData = GameData.get_default()) -> void:
 	EventBus.trees_changed.connect(_on_trees_changed)
 
 
+## Árvores e pedras desenhadas (a camada de longe repete as de perto e não conta).
 func instance_count() -> int:
 	var total := 0
 	for instances: Array in _chunks.values():
 		for node: MultiMeshInstance3D in instances:
-			total += node.multimesh.instance_count
+			if not node.name.ends_with("Far"):
+				total += node.multimesh.instance_count
 	return total
+
+
+## As camadas de um trecho, perto e longe, para os testes do nível de detalhe.
+func chunk_layers(island_id: int, chunk: Vector2i) -> Array:
+	return _chunks.get("%d/%d/%d" % [island_id, chunk.x, chunk.y], [])
 
 
 ## Palmeiras desenhadas numa ilha (as das ilhas tropicais).
@@ -100,7 +115,9 @@ func _on_trees_changed(island_id: int, area: Rect2i) -> void:
 func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 	var key := "%d/%d/%d" % [island_id, chunk.x, chunk.y]
 	if _chunks.has(key):
+		# o antigo sai da árvore antes: o novo de mesmo nome ganharia nome gerado (sem o "Far")
 		for node: MultiMeshInstance3D in _chunks[key]:
+			remove_child(node)
 			node.queue_free()
 		_chunks.erase(key)
 	var grid := _world.island(island_id)
@@ -142,18 +159,29 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 				buffer.append_array(floats)
 		if buffer.is_empty():
 			continue
-		var multimesh := MultiMesh.new()
-		multimesh.transform_format = MultiMesh.TRANSFORM_3D
-		multimesh.mesh = _models[model]
-		multimesh.instance_count = buffer.size() / 12
-		multimesh.buffer = buffer
-		var node := MultiMeshInstance3D.new()
-		node.name = "Palm%d" % model if model >= BROADLEAF.size() + CONIFER.size() + ROCKS.size() else "Trees%d" % model
-		node.multimesh = multimesh
-		node.visibility_range_end = VISIBLE_UNTIL_M
-		add_child(node)
-		nodes.append(node)
+		var name_text := "Palm%d" % model if model >= BROADLEAF.size() + CONIFER.size() + ROCKS.size() else "Trees%d" % model
+		var far := _far_models[model]
+		var near := _layer(name_text, _models[model], buffer, 0.0, NEAR_UNTIL_M if far != null else VISIBLE_UNTIL_M)
+		nodes.append(near)
+		if far != null:
+			nodes.append(_layer(name_text + "Far", far, buffer, NEAR_UNTIL_M, VISIBLE_UNTIL_M))
 	_chunks[key] = nodes
+
+
+## Uma camada do trecho: as instâncias do buffer com a malha dada, visível entre as duas distâncias.
+func _layer(name_text: String, mesh: Mesh, buffer: PackedFloat32Array, from_m: float, until_m: float) -> MultiMeshInstance3D:
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = mesh
+	multimesh.instance_count = buffer.size() / 12
+	multimesh.buffer = buffer
+	var node := MultiMeshInstance3D.new()
+	node.name = name_text
+	node.multimesh = multimesh
+	node.visibility_range_begin = from_m
+	node.visibility_range_end = until_m
+	add_child(node)
+	return node
 
 
 ## Uma instância: num ponto sorteado da célula, no chão, girada e na escala dada (12 floats, na

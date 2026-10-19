@@ -3,7 +3,7 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- <pasta>
 ## Arquipélago da semente 1840: visto de cima, a ilha principal, o litoral com a água, a floresta,
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
-## água turva perto da fundição, e a noite. CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
+## água turva perto da fundição, e a noite. CAPTURA_SO=mata tira só a mata (Fase 22; com CAPTURA_LONGE=1, também de 260 m, lenta por software); CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
 ## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15; as amarras, Fase 20); margem, a lama na margem do
 ## rio e a areia molhada da praia (Fase 19); estrada, a rua de terra da vila subindo o relevo, com a borda
 ## recortada e o capim (Fase 19).
@@ -55,6 +55,10 @@ func _run() -> void:
 		var beach := SiteFinder.find(_sim, &"trading_post", 0, Vector2i(grid.size.x / 2, 0))
 		var beach_origin: Vector2i = beach[0]
 		await _shot("52_praia_molhada.png", grid.cell_world(beach_origin), 45.0, 0.6 + PI)
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "mata":
+		await _forest(grid)
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "ponte":
@@ -206,6 +210,36 @@ func _bridge(grid: IslandGrid) -> void:
 	var focus := grid.cell_world(river)
 	await _shot("10_ponte.png", focus, 16.0, 0.5)
 	await _shot("11_ponte_de_perto.png", focus, 9.0, 2.2)
+
+
+## Fase 22: a mata de carvalhos, faias e pinheiros de perto, de longe e no morro (mais pinheiro), e o
+## vento forte de um dia de chuva.
+func _forest(grid: IslandGrid) -> void:
+	var dense := grid.cell_world(_first_cell(grid, func(i: int) -> bool: return grid.trees[i] >= 3))
+	# a borda da mata: campo aberto aqui e mata cerrada seis células para o leste
+	var edge := grid.cell_world(_first_cell(grid, func(i: int) -> bool:
+		var cell := grid.cell_at(i)
+		var inside := cell + Vector2i(6, 0)
+		return grid.trees[i] == 0 and grid.in_bounds(inside) and grid.trees[grid.index(inside)] >= 3 and grid.ground[i] == IslandGrid.Ground.LAND))
+	if OS.get_environment("CAPTURA_LONGE") == "so":
+		await _shot("57_mata_de_longe.png", dense, 260.0, 0.3)
+		return
+	await _shot("55_mata.png", dense, 45.0, 0.3)
+	await _shot("56_mata_de_perto.png", edge, 24.0, -PI * 0.5)
+	var high := _first_cell(grid, func(i: int) -> bool: return grid.trees[i] >= 2 and grid.cell_height(grid.cell_at(i)) >= TreeView.CONIFER_HEIGHT_M)
+	await _shot("58_pinheiros_no_morro.png", grid.cell_world(high), 40.0, 0.8)
+	if OS.get_environment("CAPTURA_LONGE") == "1":
+		await _shot("57_mata_de_longe.png", dense, 260.0, 0.3)
+
+	var rainy := 0
+	while WeatherCycle.day(_sim.world.seed, rainy, _sim.config).kind != WeatherCycle.Kind.RAIN:
+		rainy += 1
+	var day := WeatherCycle.day(_sim.world.seed, rainy, _sim.config)
+	_game.weather.hours_override = rainy * 24.0 + (day.rain_start + day.rain_end) * 0.5
+	_game.weather.refresh()
+	print("vento na chuva ", _game.weather.sample.wind)
+	await _shot("59_mata_no_vento.png", edge, 24.0, -PI * 0.5)
+	_game.weather.hours_override = -1.0
 
 
 func _first_cell(grid: IslandGrid, accepts: Callable) -> Vector2i:
