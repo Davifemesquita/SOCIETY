@@ -32,6 +32,11 @@ const PASTURE := &"pasture"
 const FENCE_STEP_M := 1.0
 const FENCE_INSET_M := 0.12
 const TUFTS_PER_CELL := 5
+## Balanço ao vento (Fase 22; m por m de altura, como o das árvores) das plantas e do capim, e a
+## velocidade dele (mais curta que a da árvore).
+const PLANT_SWAY := 0.09
+const GRASS_SWAY := 0.14
+const PLANT_SWAY_SPEED := 2.1
 
 ## Por planta: espaço entre plantas na fileira e entre fileiras (m).
 const SPACING := {
@@ -75,7 +80,7 @@ func setup(simulation: Simulation) -> void:
 		var layer := MultiMeshInstance3D.new()
 		layer.name = "Crop%d" % crop
 		layer.multimesh = multimesh
-		layer.material_override = material
+		layer.material_override = plant_material(multimesh.mesh, PLANT_SWAY)
 		add_child(layer)
 		_layers[crop] = layer
 	for pair: Array in [[_fence, "Fence", fence_mesh()], [_grass, "Grass", tuft_mesh()], [_furrows, "Furrows", furrow_mesh()]]:
@@ -89,7 +94,8 @@ func setup(simulation: Simulation) -> void:
 		multimesh.visible_instance_count = 0
 		layer.name = name_text
 		layer.multimesh = multimesh
-		layer.material_override = material
+		# o capim balança ao vento; a cerca e as leiras, não
+		layer.material_override = plant_material(mesh, GRASS_SWAY) if layer == _grass else material
 		add_child(layer)
 	_apply_range()
 	EventBus.building_placed.connect(func(_building_id: int) -> void: _dirty = true)
@@ -363,6 +369,20 @@ func _apply_range() -> void:
 
 
 ## A planta de cada tipo, com a base em y = 0 e a altura cheia (cor no vértice), feita uma vez.
+## Material das plantas e do capim (Fase 22): o da folhagem das árvores, com a cor do vértice, balançando
+## ao vento do WeatherView até o alto da malha.
+static func plant_material(mesh: Mesh, sway: float) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/foliage.gdshader") as Shader
+	material.set_shader_parameter(&"albedo", Color.WHITE)
+	material.set_shader_parameter(&"use_vertex_color", true)
+	material.set_shader_parameter(&"roughness", 0.9)
+	material.set_shader_parameter(&"model_height", maxf(mesh.get_aabb().end.y, 0.05))
+	material.set_shader_parameter(&"sway", sway)
+	material.set_shader_parameter(&"sway_speed", PLANT_SWAY_SPEED)
+	return material
+
+
 static func plant_mesh(crop: int) -> ArrayMesh:
 	if _meshes.has(crop):
 		return _meshes[crop]

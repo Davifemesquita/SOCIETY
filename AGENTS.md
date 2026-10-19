@@ -1148,6 +1148,13 @@ Regras que já custaram investigação:
   girada, ela atravessava o mastro) e encolhe para `LIMP_WIDTH`. A fumaça das chaminés deita para o vento
   (`SmokeView.drift`, na gravidade das partículas) e sobe reta com o ar parado. Captura: `CAPTURA_SO=posto` no
   `tools/capture_phase6.tscn` (`04d_bandeira_ao_vento.png`).
+- **Balanço pelo vento** (`shaders/foliage.gdshader`): a planta deita a favor do vento (`lean` × força, com um
+  vaivém lento) e balança em volta disso mais forte e mais depressa quanto mais forte ele é (`hurry`); com o ar
+  parado sobra a brisa (`calm`). A direção do vento entra no espaço do modelo pela inversa da `MODEL_MATRIX` (cada
+  árvore vem girada). O mesmo shader, com `use_vertex_color` (a cor do vértice e da instância chegam em sRGB e
+  são convertidas lá), passou para as plantações e o capim dos pastos (`CropView.plant_material`, `PLANT_SWAY`,
+  `GRASS_SWAY`) e o capim da beira da estrada (`RoadView`); a cerca e as leiras continuam paradas. Captura:
+  `CAPTURA_SO=plantacoes` no `tools/capture_buildings.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1181,7 +1188,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 19 — Chão e margem (nossa) | **concluída em 18/10/2026**: lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
-| 22 — Mata e vento (nossa) | em andamento desde 19/10/2026: vento no clima, com a fumaça e as bandeiras (parte 1) |
+| 22 — Mata e vento (nossa) | em andamento desde 19/10/2026: vento no clima, com a fumaça e as bandeiras (parte 1); árvores, plantações e capim balançando pelo vento (parte 2) |
 
 Pendências já vistas para fases futuras:
 

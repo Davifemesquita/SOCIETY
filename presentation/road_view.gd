@@ -111,15 +111,11 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		holder.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		holder.multimesh.mesh = part[2]
 		add_child(holder)
-	var grass := StandardMaterial3D.new()
-	grass.vertex_color_use_as_albedo = true
-	grass.vertex_color_is_srgb = true
-	grass.roughness = 0.9
 	_verge.name = "Verge"
 	_verge.multimesh = MultiMesh.new()
 	_verge.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_verge.multimesh.mesh = CropView.tuft_mesh()
-	_verge.material_override = grass
+	_verge.material_override = CropView.plant_material(_verge.multimesh.mesh, CropView.GRASS_SWAY)
 	add_child(_verge)
 	var rock := StandardMaterial3D.new()
 	rock.vertex_color_use_as_albedo = true

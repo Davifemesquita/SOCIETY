@@ -119,3 +119,40 @@ func test_the_flag_flutters_only_with_wind() -> void:
 func test_the_trading_post_flag_is_a_wind_flag() -> void:
 	var post: Node3D = auto_free(TraderPostModel.build())
 	assert_object(post.get_node(^"Flag")).is_instanceof(WindFlag)
+
+
+func test_crops_and_grass_sway_in_the_wind_but_fences_and_furrows_do_not() -> void:
+	var sim := SimFixture.simulation(Vector2i(40, 20))
+	var view: CropView = auto_free(CropView.new())
+	add_child(view)
+	view.setup(sim)
+	var foliage := "res://shaders/foliage.gdshader"
+	for child: Node in view.get_children():
+		var layer := child as MultiMeshInstance3D
+		if layer == null:
+			continue
+		var material := layer.material_override as ShaderMaterial
+		var sways := material != null and material.shader.resource_path == foliage
+		var expected := layer.name.begins_with("Crop") or layer.name == "Grass"
+		assert_bool(sways).override_failure_message(layer.name).is_equal(expected)
+		if sways:
+			assert_bool(material.get_shader_parameter(&"use_vertex_color")).is_true()
+			var height: float = material.get_shader_parameter(&"model_height")
+			assert_float(height).is_equal_approx(layer.multimesh.mesh.get_aabb().end.y, 0.06)
+	var roads: RoadView = auto_free(RoadView.new())
+	add_child(roads)
+	roads.setup(sim, sim.config.cell_size_m)
+	var verge := (roads.get_node(^"Verge") as MultiMeshInstance3D).material_override as ShaderMaterial
+	assert_str(verge.shader.resource_path).is_equal(foliage)
+
+
+func test_the_weather_publishes_the_wind_to_the_shaders() -> void:
+	var foliage := load("res://shaders/foliage.gdshader") as Shader
+	var names: Array[StringName] = []
+	for uniform: Dictionary in foliage.get_shader_uniform_list():
+		var uniform_name: String = uniform["name"]
+		names.append(StringName(uniform_name))
+	for wanted: StringName in [&"sway", &"calm", &"lean", &"use_vertex_color"]:
+		assert_bool(names.has(wanted)).override_failure_message(wanted).is_true()
+	for global_name: String in ["wind_direction", "wind_strength"]:
+		assert_bool(ProjectSettings.has_setting("shader_globals/" + global_name)).override_failure_message(global_name).is_true()
