@@ -124,6 +124,18 @@ const BELL_RADIUS_M := 0.6
 const GATE_CELLS := 1.5
 const GATE_HEIGHT := 0.82
 const GATE_OPEN := deg_to_rad(40.0)
+## Varanda da casa de engenho (Fase 23): a fileira da frente das plantações vira alpendre de tábuas, um
+## pouco acima do chão, com esteios de madeira, guarda-corpo de balaústres e o telhado de uma água preso na
+## parede entre os dois andares; dois degraus diante da porta.
+const VERANDA_DECK_M := 0.35
+const VERANDA_STEP_M := 0.35
+const VERANDA_POST_M := 0.18
+const VERANDA_RAIL_M := 0.8
+const VERANDA_RAIL_STEP_M := 0.24
+## Altura do beiral e da água na parede, em fração do andar (a água fica abaixo das janelas de cima).
+const VERANDA_EAVE := 0.95
+const VERANDA_WALL := 1.15
+const VERANDA_OVERHANG_M := 0.25
 
 
 ## A forma de um prédio: tudo que muda a malha (e nada que só muda a cor).
@@ -248,6 +260,12 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var hall := spec.hall()
 		spec.roof = Roof.GABLE_X if hall.cells.x >= hall.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(hall.cells.x, hall.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.VERANDA and def.size.y > 2:
+		# a fileira da frente vira varanda; o telhado segue o lado curto do corpo
+		spec.court_rows = 1
+		var house := spec.hall()
+		spec.roof = Roof.GABLE_X if house.cells.x >= house.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(house.cells.x, house.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.WINDMILL:
 		# a empena fica na frente e as pás giram nela
 		spec.roof = Roof.GABLE_Z
@@ -484,6 +502,65 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 				_append_piece(tool, BANNER, place * Transform3D(Basis.IDENTITY, Vector3(0.11, 0.0, 0.0)))
 		BuildingDef.Silhouette.BELFRY:
 			_belfry(extra, spec)
+		BuildingDef.Silhouette.VERANDA:
+			if spec.court_rows > 0:
+				_veranda(extra, spec)
+
+
+## Onde fica a varanda (Fase 23): x de um lado ao outro da área, z da frente da área até a parede do corpo,
+## y do chão até o alto da água na parede.
+static func veranda_box(spec: Spec) -> AABB:
+	var size := spec.size_m()
+	var hall := spec.hall()
+	var wall_z := spec.hall_offset().z - hall.size_m().y * 0.5
+	var front := -size.y * 0.5
+	return AABB(Vector3(-size.x * 0.5, 0.0, front), Vector3(size.x, hall.floor_m() * VERANDA_WALL, wall_z - front))
+
+
+static func _veranda(tool: SurfaceTool, spec: Spec) -> void:
+	var box := veranda_box(spec)
+	var hall := spec.hall()
+	var floor_m := hall.floor_m()
+	var left := box.position.x
+	var right := box.end.x
+	var wall := box.end.z
+	# o assoalho começa VERANDA_STEP_M para dentro: na frente da porta ficam os degraus
+	var front := box.position.z + VERANDA_STEP_M
+	var deck := VERANDA_DECK_M
+	_box(tool, Vector3(0.0, (deck - 0.1) * 0.5, (front + wall) * 0.5), Vector3(right - left, deck + 0.1, wall - front), UV_TIMBER)
+	var step := (right - left) / spec.cells.x
+	var door_x := left + step * (spec.door_index + 0.5)
+	var stair := step * 0.7
+	_box(tool, Vector3(door_x, deck / 3.0, front - VERANDA_STEP_M * 0.25), Vector3(stair, deck * 2.0 / 3.0, VERANDA_STEP_M * 0.5), UV_STONE)
+	_box(tool, Vector3(door_x, deck / 6.0, front - VERANDA_STEP_M * 0.75), Vector3(stair, deck / 3.0, VERANDA_STEP_M * 0.5), UV_STONE)
+	# esteios na frente, um em cada divisa de célula, e a viga do beiral em cima deles
+	var eave := floor_m * VERANDA_EAVE
+	var post_z := front + VERANDA_POST_M * 0.5 + 0.04
+	var post_xs: Array[float] = []
+	for k: int in spec.cells.x + 1:
+		post_xs.append(clampf(left + step * k, left + VERANDA_POST_M * 0.5, right - VERANDA_POST_M * 0.5))
+	for x: float in post_xs:
+		_box(tool, Vector3(x, (deck + eave) * 0.5, post_z), Vector3(VERANDA_POST_M, eave - deck, VERANDA_POST_M), UV_TIMBER)
+		# mão-francesa: o braço do esteio até a viga
+		_box(tool, Vector3(x, eave - 0.12, post_z), Vector3(VERANDA_POST_M * 2.2, 0.08, VERANDA_POST_M * 0.8), UV_TIMBER)
+	_box(tool, Vector3(0.0, eave + 0.09, post_z), Vector3(right - left, 0.18, VERANDA_POST_M * 1.1), UV_TIMBER)
+	# guarda-corpo entre os esteios, menos no vão da porta, e nas duas pontas até a parede
+	for k: int in spec.cells.x:
+		if k == spec.door_index:
+			continue
+		_railing(tool, Vector3(post_xs[k], deck, post_z), Vector3(post_xs[k + 1], deck, post_z), UV_TIMBER,
+				VERANDA_RAIL_M, 0.06, VERANDA_RAIL_STEP_M)
+	for x: float in [post_xs[0], post_xs[post_xs.size() - 1]]:
+		_railing(tool, Vector3(x, deck, post_z), Vector3(x, deck, wall), UV_TIMBER, VERANDA_RAIL_M, 0.06, VERANDA_RAIL_STEP_M)
+	# telhado de uma água, da parede (entre os andares) até um pouco além dos esteios
+	var high := Vector3(0.0, floor_m * VERANDA_WALL, wall)
+	var low := Vector3(0.0, eave + 0.18, post_z - VERANDA_OVERHANG_M)
+	var along := (low - high).normalized()
+	var length := high.distance_to(low)
+	# x de lado a lado, z subindo a água e y para fora dela
+	var basis := Basis(Vector3.RIGHT, -along.cross(Vector3.RIGHT).normalized(), -along)
+	_box_at(tool, Transform3D(basis, (high + low) * 0.5 + basis.y * ROOF_THICKNESS_M * 0.5),
+			Vector3(right - left + VERANDA_OVERHANG_M * 2.0, ROOF_THICKNESS_M, length), UV_ROOF)
 
 
 ## Campanário (Fase 18) no canto da frente à esquerda: o fuste de parede até BELFRY_SHAFT_M acima do
@@ -691,21 +768,23 @@ static func _pediment(tool: SurfaceTool, front: Vector3, width: float, height: f
 	_quad(tool, right_near, apex_near, apex_far, right_far, Vector3(1.0, 1.0, 0.0), UV_LIGHT_STONE)
 
 
-## Grade de ferro de a até b (no chão da sacada, em x ou em z): corrimão, travessa de baixo e balaústres.
-static func _railing(tool: SurfaceTool, a: Vector3, b: Vector3) -> void:
+## Grade de ferro de a até b (no chão da sacada, em x ou em z): corrimão, travessa de baixo e balaústres. A
+## varanda da casa de engenho (Fase 23) usa a mesma, de madeira, mais baixa e de balaústre grosso.
+static func _railing(tool: SurfaceTool, a: Vector3, b: Vector3, uv := UV_IRON, height := RAIL_M, bar := 0.03,
+		step := RAIL_STEP_M) -> void:
 	var along := b - a
 	var length := along.length()
 	if length < 0.05:
 		return
 	var along_x := absf(along.x) > absf(along.z)
 	var middle := (a + b) * 0.5
-	for rail: Vector2 in [Vector2(RAIL_M, 0.06), Vector2(0.12, 0.04)]:
+	for rail: Vector2 in [Vector2(height, bar * 2.0), Vector2(0.12, bar * 1.3)]:
 		_box(tool, middle + Vector3(0.0, rail.x, 0.0),
-				Vector3(length, rail.y, rail.y) if along_x else Vector3(rail.y, rail.y, length), UV_IRON)
-	var count := maxi(1, roundi(length / RAIL_STEP_M))
+				Vector3(length, rail.y, rail.y) if along_x else Vector3(rail.y, rail.y, length), uv)
+	var count := maxi(1, roundi(length / step))
 	for i: int in count + 1:
 		var at := a + along * (float(i) / count)
-		_box(tool, at + Vector3(0.0, RAIL_M * 0.5, 0.0), Vector3(0.03, RAIL_M, 0.03), UV_IRON)
+		_box(tool, at + Vector3(0.0, height * 0.5, 0.0), Vector3(bar, height, bar), uv)
 
 
 ## Peça presa à fachada: o meio da célula na face de fora da parede, saindo out_m dela e up_m acima do

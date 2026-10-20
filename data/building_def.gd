@@ -15,8 +15,8 @@ enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 enum Hazard { NONE, FIRE, DISEASE }
 ## O que se reconhece de longe no prédio de modelo (Fase 13): moinho de vento, roda d'água, torre de
 ## mina, bancas na frente, guindaste, lanternim no telhado ou bandeiras na fachada; e, desde a Fase 18,
-## o campanário com o sino (no fim: o número fica nos .tres).
-enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS, BELFRY }
+## o campanário com o sino e, desde a Fase 23, a varanda da casa de engenho (no fim: o número fica nos .tres).
+enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS, BELFRY, VERANDA }
 ## A planta que a fazenda põe nos campos dela (Fase 14): cereal, tubérculo, lúpulo na estaca, parreira,
 ## cana, arbusto (café) ou folha larga (tabaco).
 enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }

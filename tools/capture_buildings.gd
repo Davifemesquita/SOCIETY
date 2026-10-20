@@ -12,7 +12,8 @@ extends Node
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
 ## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17); epoca, o
 ## campanário da igreja e o portão das fábricas pesadas (Fase 18). Em postes também as pedras soltas na
-## terra (`26_estrada_de_terra.png`) e a asa do pombo batendo (`28c_asas.png`, Fase 20).
+## terra (`26_estrada_de_terra.png`) e a asa do pombo batendo (`28c_asas.png`, Fase 20); galpao, a varanda da
+## casa de engenho nas plantações, o armazém com a plataforma de carga e o guindaste de porto (Fase 23).
 
 var _out_dir: String
 var _game: GameScreen
@@ -60,6 +61,10 @@ func _run() -> void:
 		return
 	if OS.get_environment("CAPTURA_SO") == "epoca":
 		await _period_details()
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_SO") == "galpao":
+		await _sheds()
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_SO") == "postes":
@@ -320,3 +325,18 @@ func _period_details() -> void:
 	await _shot("40_epoca_igreja.png", Vector3(85.0, 8.0, 205.0), 40.0, PI + 0.5, 0.25)
 	await _shot("41_epoca_sino.png", Vector3(81.5, 17.0, 201.5), 9.0, PI + 0.6, 0.15)
 	await _shot("42_epoca_portao.png", Vector3(106.0, 2.0, 200.0), 22.0, PI + 0.3, 0.3)
+
+
+## Fase 23: as três plantações com a varanda, o armazém e o estaleiro de frente (rotação 0, frente em −Z) e o
+## entreposto do começo (rotação 2, frente em +Z).
+func _sheds() -> void:
+	_place(&"sugar_cane_farm", Vector2i(40, 100), 0)
+	_place(&"coffee_plantation", Vector2i(45, 100), 0)
+	_place(&"tobacco_plantation", Vector2i(50, 100), 0)
+	_place(&"warehouse", Vector2i(56, 100), 0)
+	_place(&"shipyard", Vector2i(63, 100), 0)
+	await _shot("43_varandas.png", Vector3(92.0, 2.0, 203.0), 26.0, PI + 0.4, 0.3)
+	await _shot("44_varanda_de_perto.png", Vector3(83.0, 1.5, 201.0), 11.0, PI + 0.5, 0.2)
+	await _shot("45_armazem.png", Vector3(116.0, 2.0, 204.0), 20.0, PI + 0.5, 0.3)
+	await _shot("46_estaleiro.png", Vector3(132.0, 3.0, 205.0), 30.0, PI - 0.5, 0.3)
+	await _shot("47_entreposto.png", Vector3(406.0, 3.0, 10.0), 34.0, 0.5, 0.3)

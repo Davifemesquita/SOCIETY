@@ -1173,6 +1173,19 @@ Regras que já custaram investigação:
   `tools/capture_phase5.tscn` (borda da mata, morro de pinheiros e a mata na chuva; `CAPTURA_LONGE=1` também
   de 260 m e `CAPTURA_LONGE=so` só ela).
 
+### Varanda e galpão (Fase 23, nossa)
+
+- **Proposta nossa** (19/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede nos prédios de modelo e dá para gerar no código. Só visual; o save fica na
+  versão 15. Partes com commit próprio.
+- **Varanda da casa de engenho** (`BuildingDef.Silhouette.VERANDA`, no fim do enum, no canavial, no cafezal e
+  na plantação de tabaco): a fileira da frente vira alpendre (`court_rows = 1`, como o pátio do mercado: a casa,
+  a porta e as janelas recuam), com assoalho de tábuas a `VERANDA_DECK_M`, dois degraus de pedra diante da
+  porta, esteios de madeira com mão-francesa em cada divisa de célula, a viga do beiral, guarda-corpo de
+  balaústres de madeira (o `_railing` das sacadas, com cor, altura, balaústre e passo próprios) menos no vão da
+  porta, e o telhado de uma água preso na parede entre os dois andares, abaixo das janelas de cima
+  (`veranda_box`). Captura: `CAPTURA_SO=galpao` no `tools/capture_buildings.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1206,6 +1219,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
 | 22 — Mata e vento (nossa) | **concluída em 19/10/2026**: vento no clima, com a fumaça e as bandeiras; árvores, plantações e capim balançando pelo vento; carvalho, faia e pinheiro-silvestre gerados no código, com o nível de detalhe de longe; a suíte inteira (86 arquivos, 608 casos) passou, por pasta e depois arquivo por arquivo em primeiro plano |
+| 23 — Varanda e galpão (nossa) | em andamento desde 19/10/2026: varanda da casa de engenho nas plantações (parte 1) |
 
 Pendências já vistas para fases futuras:
 

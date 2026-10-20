@@ -294,3 +294,31 @@ func test_upper_class_houses_get_cornice_lintels_pediment_and_iron_railings() ->
 	var investors := _house(&"investors")
 	var pediment := BuildingKit.mesh(investors).get_aabb()
 	assert_float(pediment.end.y).is_greater_equal(investors.height_m + BuildingKit.PEDIMENT_M)
+
+
+func test_plantations_get_a_veranda_in_front_of_the_house() -> void:
+	for def_id: StringName in [&"sugar_cane_farm", &"coffee_plantation", &"tobacco_plantation"]:
+		var spec := _spec(def_id)
+		assert_int(spec.silhouette).override_failure_message(String(def_id)).is_equal(BuildingDef.Silhouette.VERANDA)
+		# a fileira da frente é a varanda: a casa e a porta recuam uma célula
+		assert_int(spec.court_rows).is_equal(1)
+		var size := spec.size_m()
+		assert_float(BuildingKit.door_position(spec).z).is_greater(-size.y * 0.5 + spec.cell_m * 0.8)
+		var porch := BuildingKit.veranda_box(spec)
+		assert_float(porch.position.z).is_equal_approx(-size.y * 0.5, 0.01)
+		assert_float(porch.size.z).is_greater(spec.cell_m * 0.8)
+		# a água da varanda fica entre os andares, abaixo das janelas de cima
+		var hall := spec.hall()
+		var upper_sill := hall.floor_m() * (1.0 + BuildingKit.WINDOW_CENTER - BuildingKit.WINDOW_HEIGHT * 0.5)
+		assert_float(porch.end.y).is_greater(hall.floor_m())
+		assert_float(porch.end.y).is_less(upper_sill)
+		# assoalho, esteios, guarda-corpo e telhado: bem mais que a casa sem a varanda
+		var bare := _spec(def_id)
+		bare.silhouette = BuildingDef.Silhouette.NONE
+		assert_int(BuildingKit.triangles(spec)).is_greater(BuildingKit.triangles(bare) + spec.cells.x * 60)
+		# o telhado da varanda vai até a frente da área (sem passar muito dela)
+		var box := BuildingKit.mesh(spec).get_aabb()
+		assert_float(box.position.z).is_less(-size.y * 0.5 + 0.05)
+		assert_float(box.position.z).is_greater(-size.y * 0.5 - 0.5)
+	# as outras fazendas seguem sem varanda
+	assert_int(_spec(&"wheat_farm").court_rows).is_equal(0)

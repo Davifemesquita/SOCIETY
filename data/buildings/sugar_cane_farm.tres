@@ -9,6 +9,7 @@ name_key = "BUILDING_SUGAR_CANE_FARM"
 kind = 1
 size = Vector2i(3, 3)
 height_m = 4.5
+silhouette = 9
 color = Color(0.62, 0.7, 0.32, 1)
 cost_money = 400
 cost_materials = Dictionary[StringName, int]({&"planks": 4})
