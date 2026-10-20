@@ -25,6 +25,13 @@ const STONE_COLOR := Color(0.42, 0.4, 0.38)
 const WOOD_COLOR := Color(0.32, 0.22, 0.14)
 ## Ferro fundido pintado de verde-escuro, como os postes de gás de 1840.
 const IRON_COLOR := Color(0.1, 0.13, 0.11)
+## Ornamento fundido (Fase 24): o fuste com FLUTES caneluras, cada uma FLUTE_DEPTH do raio para dentro, e as
+## duas volutas sob a travessa da escada — um braço curvo do fuste até a ponta da travessa, que termina
+## enrolado (VOLUTE_TURNS voltas), de ferro de VOLUTE_BAR_M de lado.
+const FLUTES := 8
+const FLUTE_DEPTH := 0.22
+const VOLUTE_BAR_M := 0.022
+const VOLUTE_TURNS := 0.85
 ## Luzes de verdade: quantas, até onde a câmera conta como perto e o alcance de cada uma.
 const LIGHTS := 10
 const LIGHT_CAMERA_DISTANCE_M := 90.0
@@ -244,11 +251,22 @@ static func post_mesh() -> Mesh:
 	_cylinder(tool, 0.0, 0.08, 0.2, 0.2)
 	_cylinder(tool, 0.08, 0.5, 0.15, 0.12)
 	_cylinder(tool, 0.5, 0.58, 0.13, 0.08)
-	_cylinder(tool, 0.58, glass_low - 0.3, 0.065, 0.045)
+	tool.append_from(fluted_shaft(0.58, glass_low - 0.3, 0.065, 0.045), 0, Transform3D.IDENTITY)
 	_cylinder(tool, glass_low - 0.3, glass_low - 0.22, 0.08, 0.08)
 	var bar := BoxMesh.new()
 	bar.size = Vector3(0.62, 0.035, 0.035)
 	tool.append_from(bar, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, glass_low - 0.26, 0.0)))
+	var link := BoxMesh.new()
+	link.size = Vector3(VOLUTE_BAR_M, 1.0, VOLUTE_BAR_M)
+	for side: float in [-1.0, 1.0]:
+		var points := volute_points(glass_low - 0.26 - 0.0175)
+		for k: int in points.size() - 1:
+			var a := Vector3(points[k].x * side, points[k].y, 0.0)
+			var b := Vector3(points[k + 1].x * side, points[k + 1].y, 0.0)
+			var along := b - a
+			var up := along.normalized()
+			tool.append_from(link, 0, Transform3D(Basis(up.cross(Vector3.BACK), up * along.length(), Vector3.BACK),
+					(a + b) * 0.5))
 	_cylinder(tool, glass_low - 0.22, glass_low, 0.05, GLASS_HALF_M + 0.03)
 	var post := BoxMesh.new()
 	post.size = Vector3(0.025, glass_high - glass_low, 0.025)
@@ -271,6 +289,63 @@ static func post_mesh() -> Mesh:
 	material.roughness = 0.55
 	mesh.surface_set_material(0, material)
 	return mesh
+
+
+## O fuste com caneluras (Fase 24): tronco de cone de y0 a y1 (raio r0 embaixo e r1 em cima) cuja seção
+## alterna o raio cheio e o fundo da canelura, FLUTES vezes; sem tampas (o colar e a base cobrem as pontas).
+static func fluted_shaft(y0: float, y1: float, r0: float, r1: float) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var count := FLUTES * 2
+	for k: int in count:
+		var corners: Array[Vector3] = []
+		for step: int in [k, k + 1]:
+			var angle := TAU * step / count
+			var depth := 1.0 - FLUTE_DEPTH * float(step % 2)
+			var out := Vector3(cos(angle), 0.0, sin(angle)) * depth
+			corners.append(out * r0 + Vector3.UP * y0)
+			corners.append(out * r1 + Vector3.UP * y1)
+		var outward := Vector3(cos(TAU * (k + 0.5) / count), 0.0, sin(TAU * (k + 0.5) / count))
+		var a := corners[0]
+		var b := corners[2]
+		var c := corners[3]
+		var d := corners[1]
+		var points: Array[Vector3] = [a, b, c, a, c, d]
+		if (b - a).cross(c - a).dot(outward) > 0.0:
+			points = [a, c, b, a, d, c]
+		var normal := (b - a).cross(c - a).normalized()
+		if normal.dot(outward) < 0.0:
+			normal = -normal
+		for point: Vector3 in points:
+			tool.set_normal(normal)
+			tool.set_uv(Vector2.ZERO)
+			tool.add_vertex(point)
+	# indexada, como os cilindros: no SurfaceTool indexado do poste, malha sem índice entra sem triângulo
+	tool.index()
+	return tool.commit()
+
+
+## O desenho da voluta do lado +x (x para fora do fuste, y para cima), terminando em "top", debaixo da ponta
+## da travessa: o braço sai do fuste 0,4 m abaixo e sobe em curva até lá, e a ponta se enrola para dentro
+## e para baixo em VOLUTE_TURNS voltas, fechando o raio.
+static func volute_points(top: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var start := Vector2(0.045, top - 0.4)
+	var bend := Vector2(0.06, top - 0.04)
+	var tip := Vector2(0.26, top)
+	for k: int in 9:
+		var t := k / 8.0
+		points.append(start.lerp(bend, t).lerp(bend.lerp(tip, t), t))
+	# a voluta: começa no topo do círculo e gira para fora e para baixo, o raio fechando
+	var radius := 0.045
+	var center := tip - Vector2(0.0, radius)
+	var steps := 10
+	for k: int in range(1, steps + 1):
+		var t := float(k) / steps
+		var angle := PI * 0.5 - TAU * VOLUTE_TURNS * t
+		var r := radius * (1.0 - 0.65 * t)
+		points.append(center + Vector2(cos(angle), sin(angle)) * r)
+	return points
 
 
 ## Tronco de cone de oito faces de y0 a y1, raio r0 embaixo e r1 em cima.

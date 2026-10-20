@@ -12,7 +12,7 @@ extends Node
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
 ## casas (Fase 16); diagonal, estradas em diagonal de terra e de paralelepípedo (Fase 17); epoca, o
 ## campanário da igreja e o portão das fábricas pesadas (Fase 18). Em postes também as pedras soltas na
-## terra (`26_estrada_de_terra.png`) e a asa do pombo batendo (`28c_asas.png`, Fase 20); galpao, a varanda da
+## terra (`26_estrada_de_terra.png`) e a asa do pombo batendo (`28c_asas.png`, Fase 20), e o poste de perto, com as caneluras e as volutas (`14b_poste_de_perto.png`, Fase 24); galpao, a varanda da
 ## casa de engenho nas plantações, o armazém com a plataforma de carga e o guindaste de porto (Fase 23).
 
 var _out_dir: String
@@ -180,6 +180,9 @@ func _lamps() -> void:
 	_game.lamp_view.rebuild()
 	print("postes ", _game.lamp_view.lamp_count(), " fogueiras ", _game.lamp_view.bonfire_count())
 	await _shot("14_postes_de_dia.png", Vector3(100.0, 0.0, 104.0), 34.0, PI + 0.3, 0.45)
+	# Fase 24: o poste de perto, com as caneluras do fuste e as volutas debaixo da travessa
+	var lamp := _game.lamp_view.lamp_points()[_game.lamp_view.lamp_count() / 2]
+	await _shot("14b_poste_de_perto.png", Vector3(lamp.x, lamp.y - 1.3, lamp.z), 4.0, PI + 0.5, -0.1)
 	await _shot("26_estrada_de_terra.png", Vector3(90.0, 0.0, 90.0), 24.0, 0.4, 0.6)
 	await _shot("27_meio_fio.png", Vector3(70.0, 0.0, 101.0), 12.0, PI + 0.4, 0.3)
 	# Fase 19: a sarjeta junto do meio-fio de pedra, de perto

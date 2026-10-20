@@ -102,3 +102,42 @@ func test_the_cast_iron_post_holds_the_glass_in_its_lantern() -> void:
 	assert_float(post.size.x).is_between(0.6, 0.7)
 	assert_int((LampView.post_mesh().surface_get_material(0) as StandardMaterial3D).albedo_color.to_rgba32()) \
 			.is_equal(LampView.IRON_COLOR.to_rgba32())
+
+
+## Fase 24: o ornamento fundido — caneluras no fuste e as duas volutas debaixo da travessa da escada.
+func test_the_post_has_a_fluted_shaft_and_scrolls_under_the_ladder_bar() -> void:
+	# na seção do fuste o raio alterna o cheio e o fundo da canelura
+	var radii := {}
+	for vertex: Vector3 in LampView.fluted_shaft(0.0, 1.0, 0.1, 0.1).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+		radii[snappedf(Vector2(vertex.x, vertex.z).length(), 0.001)] = true
+	assert_array(radii.keys()).contains_exactly_in_any_order([0.1, snappedf(0.1 * (1.0 - LampView.FLUTE_DEPTH), 0.001)])
+	# a voluta sai do fuste, chega debaixo da ponta da travessa e se enrola para dentro dela
+	var points := LampView.volute_points(2.0)
+	assert_float(points[0].x).is_less(0.07)
+	assert_float(points[0].y).is_less(1.7)
+	var highest := -INF
+	for point: Vector2 in points:
+		highest = maxf(highest, point.y)
+		assert_float(point.x).is_between(0.0, 0.31)
+	assert_float(highest).is_equal_approx(2.0, 0.001)
+	assert_float(points[points.size() - 1].y).is_less(2.0)
+	# as duas volutas estão no poste: há ferro debaixo da travessa, longe do fuste, dos dois lados
+	var glass_low := LampView.LAMP_HEIGHT_M * (LampView.GLASS_HEIGHT - LampView.GLASS_SPAN * 0.5)
+	var left := false
+	var right := false
+	for vertex: Vector3 in LampView.post_mesh().surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+		if vertex.y < glass_low - 0.3 and absf(vertex.x) > 0.15:
+			left = left or vertex.x < 0.0
+			right = right or vertex.x > 0.0
+	assert_bool(left and right).is_true()
+	# o fuste é desenhado: algum triângulo do poste usa o fundo de canelura do alto do fuste
+	var arrays := LampView.post_mesh().surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var groove := 0.045 * (1.0 - LampView.FLUTE_DEPTH)
+	var drawn := false
+	for index: int in arrays[Mesh.ARRAY_INDEX]:
+		var vertex := vertices[index]
+		if absf(vertex.y - (glass_low - 0.3)) < 0.01 and absf(Vector2(vertex.x, vertex.z).length() - groove) < 0.001:
+			drawn = true
+			break
+	assert_bool(drawn).is_true()
