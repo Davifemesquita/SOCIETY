@@ -1194,6 +1194,16 @@ Regras que já custaram investigação:
   a forma muda sem o prédio sair do lugar** (`building_state_changed` com a chave diferente, com andaime), e a
   `WindowLightsView` refaz os vidros do prédio de níveis. Captura: `CAPTURA_SO=galpao` (`45_armazens.png`,
   `45b_plataforma.png`).
+- **Guindaste de porto** (`BuildingKit._crane`, no lugar das vigas em forca da Fase 13) no entreposto e no
+  estaleiro: soco de pedra, mastro no canto de trás por fora da parede do lado, escora para a frente, a lança
+  saindo do mastro a `CRANE_BOOM_FOOT` da altura e subindo até `CRANE_RISE_M` acima dele, com a ponta
+  `CRANE_REACH_M` para fora (o caixote pende longe da parede), dois tirantes de ferro do topo à ponta, sarilho
+  de manivela no pé (montantes, tambor de oito faces e manivelas), o cabo do tambor à ponta, o moitão e o
+  caixote nas lingas (`crane_tip`, `crane_hook`). **O armazém com plataforma** troca o guindaste de coluna (que
+  invadia o vizinho) pelo guincho de armazém (`_hoist`): a viga sai da fachada logo abaixo do beiral, sobre a
+  porta, até `HOIST_OUT_M` além da frente da área (passa do alpendre), com a mão-francesa de ferro, e a janela
+  de cima da porta vira a porta de carga do sótão (`hoist_tip`). Capturas: `48_guindaste.png`,
+  `48b_sarilho.png` e `49_guincho.png` no `CAPTURA_SO=galpao`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1228,7 +1238,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
 | 22 — Mata e vento (nossa) | **concluída em 19/10/2026**: vento no clima, com a fumaça e as bandeiras; árvores, plantações e capim balançando pelo vento; carvalho, faia e pinheiro-silvestre gerados no código, com o nível de detalhe de longe; a suíte inteira (86 arquivos, 608 casos) passou, por pasta e depois arquivo por arquivo em primeiro plano |
-| 23 — Varanda e galpão (nossa) | em andamento desde 19/10/2026: varanda da casa de engenho nas plantações (parte 1); plataforma de carga do armazém, com alpendre e tijolo pelo nível (parte 2) |
+| 23 — Varanda e galpão (nossa) | em andamento desde 19/10/2026: varanda da casa de engenho nas plantações (parte 1); plataforma de carga do armazém, com alpendre e tijolo pelo nível (parte 2); guindaste de porto no entreposto e no estaleiro e guincho no armazém (parte 3) |
 
 Pendências já vistas para fases futuras:
 

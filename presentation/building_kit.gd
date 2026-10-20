@@ -106,6 +106,21 @@ const BEAM_SIDE := 0.16
 const HEADFRAME_M := 5.5
 const CRANE_M := 3.0
 const BEAM_M := 0.35
+## Guindaste de porto (Fase 23): a lança sai do mastro a CRANE_BOOM_FOOT da altura e sobe até CRANE_RISE_M
+## acima do topo dele, presa por tirantes de ferro; sarilho de manivela no pé, cabo, moitão e gancho com um
+## caixote pendurado a CRANE_LOAD_M do chão.
+const CRANE_BOOM_FOOT := 0.3
+const CRANE_RISE_M := 0.6
+const CRANE_LOAD_M := 1.9
+const CRANE_CRATE_M := 0.75
+const CRANE_DRUM_RADIUS_M := 0.22
+const CRANE_ROPE_M := 0.04
+## Quanto a ponta da lança sai da parede do lado (o caixote pende longe dela).
+const CRANE_REACH_M := 0.5
+## Guincho do armazém com plataforma (Fase 23): a viga sai da fachada logo abaixo do beiral, sobre a porta de
+## carga do sótão, até HOIST_OUT_M além da frente da área (passa do alpendre), e o caixote pende a HOIST_LOAD_M.
+const HOIST_OUT_M := 0.35
+const HOIST_LOAD_M := 1.5
 ## Giro das partes que andam (rad/s de jogo a 1x) enquanto o prédio produz.
 const WINDMILL_SPEED := 0.7
 const WATERWHEEL_SPEED := 0.5
@@ -328,6 +343,8 @@ static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
 		return &"arch" if spec.door in [Door.ARCH, Door.GATE] else &"door"
 	if spec.silhouette == BuildingDef.Silhouette.BANNERS and face == 0 and level == 1 and index == spec.door_index:
 		return &"plain"
+	if spec.dock and face == 0 and level >= 1 and index == spec.door_index:
+		return &"plain"
 	if spec.dock and spec.level >= DOCK_CANOPY_LEVEL and face == 0 and level == 0 \
 			and index % 2 == spec.door_index % 2:
 		# portas de carga em células alternadas, todas dando na plataforma
@@ -517,15 +534,10 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 					_append_piece(tool, STALLS[(row + column) % STALLS.size()],
 							Transform3D(Basis(Vector3.UP, PI).scaled(Vector3.ONE * scale), center))
 		BuildingDef.Silhouette.CRANE:
-			# mastro no canto de trás, lança ao longo do lado e o cabo descendo fora da parede
-			var mast := Vector3(size.x * 0.5 + 0.35, 0.0, size.y * 0.5 - 0.35)
-			var high := top + CRANE_M
-			var tip := Vector3(mast.x, high, -size.y * 0.15)
-			_beam(tool, mast, mast + Vector3(0.0, high, 0.0), BEAM_M * 1.3)
-			_beam(tool, mast + Vector3(0.0, high - 0.2, 0.0), tip, BEAM_M)
-			_beam(tool, mast + Vector3(0.0, high - 2.2, 0.0), mast.lerp(tip, 0.5) + Vector3(0.0, high * 0.5 - 0.1, 0.0), BEAM_M * 0.6)
-			_beam(tool, tip, Vector3(tip.x, 1.8, tip.z), 0.06)
-			_box(extra, Vector3(tip.x, 1.4, tip.z), Vector3(0.8, 0.8, 0.8), UV_WALL)
+			if spec.dock:
+				_hoist(tool, extra, spec)
+			else:
+				_crane(tool, extra, spec)
 		BuildingDef.Silhouette.CLERESTORY:
 			# lanternim: uma faixa de parede mais alta ao longo da cumeeira, com o seu telhado
 			var along_x := spec.roof != Roof.GABLE_Z
@@ -667,6 +679,111 @@ static func _veranda(tool: SurfaceTool, spec: Spec) -> void:
 	# telhado de uma água, da parede (entre os andares) até um pouco além dos esteios
 	_lean_to(tool, Vector3(0.0, floor_m * VERANDA_WALL, wall), Vector3(0.0, eave + 0.18, post_z - VERANDA_OVERHANG_M),
 			right - left + VERANDA_OVERHANG_M * 2.0)
+
+
+## Guindaste de porto (Fase 23): o mastro no canto de trás, por fora da parede do lado, e a lança subindo
+## para a frente ao longo dela.
+static func crane_mast(spec: Spec) -> Vector3:
+	var size := spec.size_m()
+	return Vector3(size.x * 0.5 + 0.35, 0.0, size.y * 0.5 - 0.35)
+
+
+static func crane_height(spec: Spec) -> float:
+	return spec.height_m + spec.roof_m + CRANE_M
+
+
+static func crane_tip(spec: Spec) -> Vector3:
+	var mast := crane_mast(spec)
+	return Vector3(mast.x + CRANE_REACH_M, crane_height(spec) + CRANE_RISE_M, -spec.size_m().y * 0.2)
+
+
+## Onde fica o gancho (o caixote pende logo abaixo).
+static func crane_hook(spec: Spec) -> Vector3:
+	var tip := crane_tip(spec)
+	return Vector3(tip.x, CRANE_LOAD_M + CRANE_CRATE_M + 0.45, tip.z)
+
+
+static func _crane(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
+	var mast := crane_mast(spec)
+	var high := crane_height(spec)
+	var top := mast + Vector3(0.0, high, 0.0)
+	var tip := crane_tip(spec)
+	var foot := mast + Vector3(0.0, high * CRANE_BOOM_FOOT, 0.0)
+	# soco de pedra, mastro, escora para a frente e a lança com os tirantes de ferro do topo à ponta
+	_box(extra, mast + Vector3(0.0, 0.2, 0.0), Vector3(1.0, 0.4 + FOUNDATION_DOWN_M, 1.0), UV_STONE)
+	_beam(tool, mast, top, BEAM_M * 1.3)
+	_beam(tool, mast + Vector3(0.0, 0.0, -1.5), mast + Vector3(0.0, high * 0.4, 0.0), BEAM_M * 0.7)
+	_beam(tool, foot, tip, BEAM_M)
+	for side: float in [-1.0, 1.0]:
+		var spread := Vector3(side * 0.12, 0.0, 0.0)
+		_bar(extra, top + spread, tip + spread + Vector3(0.0, 0.1, 0.0), 0.06, UV_IRON)
+	_box(extra, top + Vector3(0.0, 0.12, 0.0), Vector3(0.6, 0.24, 0.6), UV_TIMBER)
+	# sarilho no pé do mastro: dois montantes, o tambor e as manivelas de ferro
+	var drum := mast + Vector3(0.0, 0.75, -0.7)
+	for side: float in [-1.0, 1.0]:
+		_box(extra, drum + Vector3(side * 0.38, -0.38, 0.0), Vector3(0.1, 0.9, 0.5), UV_TIMBER)
+		var crank := drum + Vector3(side * 0.48, 0.0, 0.0)
+		_bar(extra, crank, crank + Vector3(0.0, 0.3, -0.12), 0.05, UV_IRON)
+		_bar(extra, crank + Vector3(0.0, 0.3, -0.12), crank + Vector3(side * 0.22, 0.3, -0.12), 0.05, UV_IRON)
+	_drum(extra, drum, CRANE_DRUM_RADIUS_M, 0.66, UV_TIMBER)
+	# cabo do tambor à ponta, moitão e o cabo descendo até o gancho, com o caixote nas lingas
+	_bar(extra, drum + Vector3(0.0, CRANE_DRUM_RADIUS_M, 0.0), tip, CRANE_ROPE_M, UV_IRON)
+	_box(extra, tip + Vector3(0.0, -0.2, 0.0), Vector3(0.22, 0.34, 0.3), UV_TIMBER)
+	_hanging_crate(extra, tip + Vector3(0.0, -0.35, 0.0), crane_hook(spec), CRANE_LOAD_M)
+
+
+## Guincho do armazém com plataforma: a ponta da viga, sobre a coluna da porta.
+static func hoist_tip(spec: Spec) -> Vector3:
+	var hall := spec.hall()
+	var size := spec.size_m()
+	var x := -size.x * 0.5 + size.x / spec.cells.x * (spec.door_index + 0.5)
+	return Vector3(x, hall.height_m - 0.3, -size.y * 0.5 - HOIST_OUT_M)
+
+
+static func _hoist(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var tip := hoist_tip(spec)
+	var wall_z := spec.hall_offset().z - hall.size_m().y * 0.5
+	# portas de carga de tábuas nos andares de cima, sobre a porta de baixo
+	for level: int in range(1, hall.floors()):
+		var bottom := level * hall.floor_m() + 0.1
+		var height := hall.floor_m() * 0.78
+		_box(extra, Vector3(tip.x, bottom + height * 0.5, wall_z - 0.05), Vector3(1.1, height, 0.1), UV_TIMBER)
+		_box(extra, Vector3(tip.x, bottom + height * 0.5, wall_z - 0.11), Vector3(0.08, height, 0.04), UV_IRON)
+	# a viga entra na parede e a mão-francesa de ferro a segura por baixo
+	var root := Vector3(tip.x, tip.y, wall_z + 0.3)
+	_beam(tool, root, tip, BEAM_M * 0.8)
+	_bar(extra, Vector3(tip.x, tip.y - 1.1, wall_z), tip.lerp(root, 0.45) + Vector3(0.0, -0.1, 0.0), 0.07, UV_IRON)
+	# moitão, cabo e o caixote nas lingas
+	_box(extra, tip + Vector3(0.0, -0.3, 0.0), Vector3(0.22, 0.34, 0.3), UV_TIMBER)
+	var hook := Vector3(tip.x, HOIST_LOAD_M + CRANE_CRATE_M + 0.45, tip.z)
+	_hanging_crate(extra, tip + Vector3(0.0, -0.45, 0.0), hook, HOIST_LOAD_M)
+
+
+## Cabo de "from" até o gancho e o caixote pendurado nele pelas lingas, com o fundo em "bottom".
+static func _hanging_crate(tool: SurfaceTool, from: Vector3, hook: Vector3, bottom: float) -> void:
+	_bar(tool, from, hook, CRANE_ROPE_M, UV_IRON)
+	_box(tool, hook + Vector3(0.0, -0.08, 0.0), Vector3(0.14, 0.16, 0.14), UV_IRON)
+	var crate := Vector3(hook.x, bottom + CRANE_CRATE_M * 0.5, hook.z)
+	_box(tool, crate, Vector3.ONE * CRANE_CRATE_M, UV_TIMBER)
+	var half := CRANE_CRATE_M * 0.5 - 0.05
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		_bar(tool, hook + Vector3(0.0, -0.16, 0.0), crate + Vector3(corner.x * half, CRANE_CRATE_M * 0.5, corner.y * half),
+				0.03, UV_TIMBER)
+
+
+## Tambor de oito faces ao longo de x, com as tampas.
+static func _drum(tool: SurfaceTool, center: Vector3, radius: float, length: float, uv: Vector2) -> void:
+	var near := center - Vector3(length * 0.5, 0.0, 0.0)
+	var far := center + Vector3(length * 0.5, 0.0, 0.0)
+	for i: int in 8:
+		var a0 := TAU * i / 8.0
+		var a1 := TAU * (i + 1) / 8.0
+		var d0 := Vector3(0.0, cos(a0), sin(a0)) * radius
+		var d1 := Vector3(0.0, cos(a1), sin(a1)) * radius
+		_quad(tool, near + d0, far + d0, far + d1, near + d1, (d0 + d1) * 0.5, uv)
+		_triangle(tool, near, near + d0, near + d1, Vector3.LEFT, uv)
+		_triangle(tool, far, far + d0, far + d1, Vector3.RIGHT, uv)
 
 
 ## Campanário (Fase 18) no canto da frente à esquerda: o fuste de parede até BELFRY_SHAFT_M acima do

@@ -346,3 +346,9 @@ func _sheds() -> void:
 	await _shot("45b_plataforma.png", Vector3(136.0, 1.0, 200.0), 13.0, PI + 0.55, 0.25)
 	await _shot("46_estaleiro.png", Vector3(150.0, 3.0, 205.0), 30.0, PI - 0.5, 0.3)
 	await _shot("47_entreposto.png", Vector3(406.0, 3.0, 10.0), 34.0, 0.5, 0.3)
+	# o guindaste de porto num estaleiro sozinho, pela diagonal da frente do lado dele, e o guincho do armazém
+	_place(&"shipyard", Vector2i(90, 130), 0)
+	_game.building_view.rebuild()
+	await _shot("48_guindaste.png", Vector3(190.0, 4.0, 264.0), 24.0, PI - 1.0, 0.3)
+	await _shot("48b_sarilho.png", Vector3(193.5, 1.0, 266.0), 7.0, PI - 1.3, 0.35)
+	await _shot("49_guincho.png", Vector3(116.0, 3.0, 200.0), 14.0, PI + 0.6, 0.25)

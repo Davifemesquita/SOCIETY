@@ -336,9 +336,13 @@ func test_the_warehouse_gets_a_loading_dock_that_grows_with_its_level() -> void:
 	assert_float(platform.end.z).is_less(-size.y * 0.5 + dock.cell_m + 0.2)
 	assert_float(platform.end.y).is_equal_approx(BuildingKit.DOCK_M, 0.001)
 	assert_float(platform.position.x - BuildingKit.DOCK_RAMP_M).is_equal_approx(-size.x * 0.5, 0.001)
+	# sem o guindaste nos dois (sem a plataforma, a silhueta seria o guindaste de coluna)
+	var platform_only := BuildingKit.spec_for(_sim, record, 2.0)
+	platform_only.silhouette = BuildingDef.Silhouette.NONE
 	var bare := BuildingKit.spec_for(_sim, record, 2.0)
+	bare.silhouette = BuildingDef.Silhouette.NONE
 	bare.dock = false
-	assert_int(BuildingKit.triangles(dock)).is_greater(BuildingKit.triangles(bare))
+	assert_int(BuildingKit.triangles(platform_only)).is_greater(BuildingKit.triangles(bare))
 	# o entreposto tem o cais (HarborView), não a plataforma
 	assert_bool(_spec(&"trading_post").dock).is_false()
 	# nível 1: alpendre e portas de carga no lugar das janelas do térreo da frente
@@ -381,3 +385,41 @@ func test_upgrading_the_warehouse_rebuilds_its_model_in_brick() -> void:
 	assert_int(_sim.world.building(warehouse).level).is_equal(2)
 	assert_float(layer.call()).is_equal(float(BuildingMaterials.Wall.BRICK))
 	assert_int(view.building_count()).is_equal(1)
+
+
+func test_harbour_buildings_get_a_jib_crane_with_a_hanging_crate() -> void:
+	for def_id: StringName in [&"trading_post", &"shipyard"]:
+		var spec := _spec(def_id)
+		assert_int(spec.silhouette).override_failure_message(String(def_id)).is_equal(BuildingDef.Silhouette.CRANE)
+		var size := spec.size_m()
+		var tip := BuildingKit.crane_tip(spec)
+		# a lança sobe acima do mastro e a ponta sai da parede do lado: o caixote não encosta nela
+		assert_float(tip.y).is_greater(BuildingKit.crane_height(spec))
+		assert_float(tip.x - BuildingKit.CRANE_CRATE_M * 0.5).is_greater(size.x * 0.5 + 0.3)
+		var hook := BuildingKit.crane_hook(spec)
+		assert_float(hook.y).is_between(BuildingKit.CRANE_LOAD_M + BuildingKit.CRANE_CRATE_M, tip.y)
+		var box := BuildingKit.mesh(spec).get_aabb()
+		assert_float(box.end.y).is_greater_equal(tip.y)
+		assert_float(box.end.x).is_less(size.x * 0.5 + 1.5)
+		# mastro, lança, tirantes, sarilho, cabo e caixote: bem mais que o prédio sem o guindaste
+		var bare := _spec(def_id)
+		bare.silhouette = BuildingDef.Silhouette.NONE
+		assert_int(BuildingKit.triangles(spec)).is_greater(BuildingKit.triangles(bare) + 200)
+
+
+func test_the_docked_warehouse_hoists_from_a_beam_over_the_loading_door() -> void:
+	var spec := _spec(&"warehouse")
+	assert_bool(spec.dock).is_true()
+	var size := spec.size_m()
+	var tip := BuildingKit.hoist_tip(spec)
+	# a viga passa da frente da área (e do alpendre), abaixo do beiral, sobre a porta
+	assert_float(tip.z).is_less(-size.y * 0.5)
+	assert_float(tip.y).is_less(spec.hall().height_m)
+	assert_float(tip.x).is_equal_approx(BuildingKit.door_position(spec).x, 0.01)
+	# a janela de cima da porta vira a porta de carga do sótão
+	for level: int in range(1, spec.hall().floors()):
+		assert_str(String(BuildingKit.slot(spec.hall(), 0, spec.door_index, level))).is_equal("plain")
+	# sem o guindaste de coluna: do lado do armazém só passa o beiral do telhado
+	var box := BuildingKit.mesh(spec).get_aabb()
+	assert_float(box.end.x).is_less_equal(size.x * 0.5 + BuildingKit.ROOF_OVERHANG_M + 0.01)
+	assert_float(box.position.z).is_less_equal(tip.z - BuildingKit.CRANE_CRATE_M * 0.5 + 0.01)
