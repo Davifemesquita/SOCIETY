@@ -333,10 +333,16 @@ func _sheds() -> void:
 	_place(&"sugar_cane_farm", Vector2i(40, 100), 0)
 	_place(&"coffee_plantation", Vector2i(45, 100), 0)
 	_place(&"tobacco_plantation", Vector2i(50, 100), 0)
-	_place(&"warehouse", Vector2i(56, 100), 0)
-	_place(&"shipyard", Vector2i(63, 100), 0)
+	# o armazém nos três níveis: a plataforma, o alpendre com as portas de carga e o tijolo
+	for level: int in 3:
+		var warehouse := _place(&"warehouse", Vector2i(56 + level * 5, 100), 0)
+		if warehouse != 0:
+			_sim.world.building(warehouse).level = level
+	_place(&"shipyard", Vector2i(72, 100), 0)
+	_game.building_view.rebuild()
 	await _shot("43_varandas.png", Vector3(92.0, 2.0, 203.0), 26.0, PI + 0.4, 0.3)
 	await _shot("44_varanda_de_perto.png", Vector3(83.0, 1.5, 201.0), 11.0, PI + 0.5, 0.2)
-	await _shot("45_armazem.png", Vector3(116.0, 2.0, 204.0), 20.0, PI + 0.5, 0.3)
-	await _shot("46_estaleiro.png", Vector3(132.0, 3.0, 205.0), 30.0, PI - 0.5, 0.3)
+	await _shot("45_armazens.png", Vector3(126.0, 2.0, 203.0), 30.0, PI + 0.35, 0.3)
+	await _shot("45b_plataforma.png", Vector3(136.0, 1.0, 200.0), 13.0, PI + 0.55, 0.25)
+	await _shot("46_estaleiro.png", Vector3(150.0, 3.0, 205.0), 30.0, PI - 0.5, 0.3)
 	await _shot("47_entreposto.png", Vector3(406.0, 3.0, 10.0), 34.0, 0.5, 0.3)

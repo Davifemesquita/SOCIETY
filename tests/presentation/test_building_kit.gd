@@ -322,3 +322,62 @@ func test_plantations_get_a_veranda_in_front_of_the_house() -> void:
 		assert_float(box.position.z).is_greater(-size.y * 0.5 - 0.5)
 	# as outras fazendas seguem sem varanda
 	assert_int(_spec(&"wheat_farm").court_rows).is_equal(0)
+
+
+func test_the_warehouse_gets_a_loading_dock_that_grows_with_its_level() -> void:
+	var record := BuildingRecord.new(6, &"warehouse", 0, Vector2i(10, 10), 0)
+	var dock := BuildingKit.spec_for(_sim, record, 2.0)
+	assert_bool(dock.dock).is_true()
+	assert_int(dock.court_rows).is_equal(1)
+	# a plataforma fica na fileira da frente, entre as rampas, na altura da caçamba
+	var size := dock.size_m()
+	var platform := BuildingKit.dock_box(dock)
+	assert_float(platform.position.z).is_greater_equal(-size.y * 0.5)
+	assert_float(platform.end.z).is_less(-size.y * 0.5 + dock.cell_m + 0.2)
+	assert_float(platform.end.y).is_equal_approx(BuildingKit.DOCK_M, 0.001)
+	assert_float(platform.position.x - BuildingKit.DOCK_RAMP_M).is_equal_approx(-size.x * 0.5, 0.001)
+	var bare := BuildingKit.spec_for(_sim, record, 2.0)
+	bare.dock = false
+	assert_int(BuildingKit.triangles(dock)).is_greater(BuildingKit.triangles(bare))
+	# o entreposto tem o cais (HarborView), não a plataforma
+	assert_bool(_spec(&"trading_post").dock).is_false()
+	# nível 1: alpendre e portas de carga no lugar das janelas do térreo da frente
+	record.level = 1
+	var canopy := BuildingKit.spec_for(_sim, record, 2.0)
+	assert_str(canopy.key()).is_not_equal(dock.key())
+	var arches := func(spec: BuildingKit.Spec) -> int:
+		var count := 0
+		for index: int in spec.hall().cells.x:
+			if BuildingKit.slot(spec.hall(), 0, index, 0) == &"arch":
+				count += 1
+		return count
+	assert_int(arches.call(dock)).is_equal(1)
+	assert_int(arches.call(canopy)).is_greater(1)
+	assert_float(BuildingKit.mesh(canopy).get_aabb().position.z).is_less(-size.y * 0.5)
+	assert_bool(BuildingKit.brick(canopy)).is_false()
+	# nível 2 (o que custa tijolo): paredes de tijolo
+	record.level = 2
+	var brick := BuildingKit.spec_for(_sim, record, 2.0)
+	assert_bool(BuildingKit.brick(brick)).is_true()
+	assert_int(brick.walls).is_equal(BuildingKit.Walls.PLASTER)
+	assert_int(dock.walls).is_equal(BuildingKit.Walls.WOOD)
+
+
+func test_upgrading_the_warehouse_rebuilds_its_model_in_brick() -> void:
+	SimFixture.road(_sim, Vector2i(0, 10), Vector2i(79, 10))
+	var warehouse := SimFixture.place(_sim, &"warehouse", Vector2i(20, 11), 0)
+	var view: BuildingView = auto_free(BuildingView.new())
+	add_child(view)
+	view.setup(_sim, _sim.config.cell_size_m)
+	var layer := func() -> float:
+		for node: Node in view.find_children("Model", "MeshInstance3D", true, false):
+			# o prédio refeito deixa o nó antigo na fila de apagar até o fim do quadro
+			if not node.get_parent().is_queued_for_deletion():
+				return (node as MeshInstance3D).get_instance_shader_parameter(&"layer")
+		return -1.0
+	assert_float(layer.call()).is_equal(float(BuildingMaterials.Wall.WOOD))
+	for i: int in 2:
+		assert_bool(_sim.execute(UpgradeBuildingCommand.new(warehouse)).ok()).is_true()
+	assert_int(_sim.world.building(warehouse).level).is_equal(2)
+	assert_float(layer.call()).is_equal(float(BuildingMaterials.Wall.BRICK))
+	assert_int(view.building_count()).is_equal(1)

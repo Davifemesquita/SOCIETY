@@ -136,6 +136,18 @@ const VERANDA_RAIL_STEP_M := 0.24
 const VERANDA_EAVE := 0.95
 const VERANDA_WALL := 1.15
 const VERANDA_OVERHANG_M := 0.25
+## Plataforma de carga do armazém (Fase 23): a fileira da frente vira plataforma na altura da caçamba da
+## carroça, de tijolo com tampo de tábuas e defensa de madeira, com uma rampa de pedra em cada ponta. Com o
+## nível 1 ganha alpendre em mãos-francesas de ferro e portas de carga em células alternadas; no 2 (o que
+## custa tijolo) as paredes passam a tijolo e o telhado a telha.
+const DOCK_M := 0.8
+const DOCK_RAMP_M := 1.7
+const DOCK_CANOPY_LEVEL := 1
+const DOCK_BRICK_LEVEL := 2
+## Altura do alpendre na parede e no beiral, em fração do andar, e quanto ele sai além da plataforma.
+const DOCK_CANOPY_WALL := 1.25
+const DOCK_CANOPY_EAVE := 1.02
+const DOCK_CANOPY_OUT_M := 0.15
 
 
 ## A forma de um prédio: tudo que muda a malha (e nada que só muda a cor).
@@ -157,10 +169,14 @@ class Spec:
 	## nas de trás.
 	var court_rows: int = 0
 	var trim: int = TierDef.HouseTrim.NONE
+	## Plataforma de carga do armazém (Fase 23) e o nível do armazém, que muda o alpendre e as portas dela.
+	var dock: bool = false
+	var level: int = 0
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
-				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette, court_rows, trim]
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
+				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette, court_rows, trim,
+				int(dock), level]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -180,6 +196,8 @@ class Spec:
 		copy.chimney = chimney
 		copy.silhouette = silhouette
 		copy.trim = trim
+		copy.dock = dock
+		copy.level = level
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -238,6 +256,11 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	if def.kind in [BuildingDef.Kind.WAREHOUSE] or def.is_shipyard():
 		spec.door = Door.ARCH
 		spec.sparse_windows = true
+		# o armazém do interior (não o entreposto, que tem o cais) ganha a plataforma de carga na frente
+		spec.dock = def.kind == BuildingDef.Kind.WAREHOUSE and not def.is_trading_post and def.size.y > 2
+		if spec.dock:
+			spec.level = record.level
+			spec.court_rows = 1
 	elif def.kind == BuildingDef.Kind.SERVICE and def.wall_material == BuildingMaterials.Wall.STONE:
 		# igreja, teatro, universidade: quatro águas, a igreja bem alta
 		spec.roof = Roof.HIP
@@ -251,8 +274,10 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	if def.height_m < 3.0 or def.deposit != &"" or def.id in [&"clay_pit", &"sand_pit"]:
 		spec.roof = Roof.FLAT
 		spec.roof_m = FLAT_ROOF_M
-	if def.wall_material == BuildingMaterials.Wall.WOOD:
+	if def.wall_material == BuildingMaterials.Wall.WOOD and not brick(spec):
 		spec.window_style = 0
+	if brick(spec):
+		spec.walls = Walls.PLASTER
 	spec.silhouette = def.silhouette
 	if def.silhouette == BuildingDef.Silhouette.STALLS:
 		# metade da frente vira pátio; o telhado segue o lado curto do corpo
@@ -269,9 +294,19 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	elif def.silhouette == BuildingDef.Silhouette.WINDMILL:
 		# a empena fica na frente e as pás giram nela
 		spec.roof = Roof.GABLE_Z
+	elif spec.dock:
+		var body := spec.hall()
+		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
 		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
 	return spec
+
+
+## O armazém de nível DOCK_BRICK_LEVEL é de tijolo (Fase 23): a BuildingView troca as camadas da parede e do
+## telhado.
+static func brick(spec: Spec) -> bool:
+	return spec.dock and spec.level >= DOCK_BRICK_LEVEL
 
 
 ## A malha da forma, feita uma vez por chave.
@@ -293,6 +328,10 @@ static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
 		return &"arch" if spec.door in [Door.ARCH, Door.GATE] else &"door"
 	if spec.silhouette == BuildingDef.Silhouette.BANNERS and face == 0 and level == 1 and index == spec.door_index:
 		return &"plain"
+	if spec.dock and spec.level >= DOCK_CANOPY_LEVEL and face == 0 and level == 0 \
+			and index % 2 == spec.door_index % 2:
+		# portas de carga em células alternadas, todas dando na plataforma
+		return &"arch"
 	if spec.sparse_windows and (index + level + face) % 2 == 1:
 		return &"plain"
 	return &"window"
@@ -505,6 +544,79 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.VERANDA:
 			if spec.court_rows > 0:
 				_veranda(extra, spec)
+	if spec.dock:
+		_dock(extra, spec)
+
+
+## Onde fica a plataforma de carga (Fase 23): x entre as rampas, z da frente da área até a parede do corpo,
+## y do chão até o tampo.
+static func dock_box(spec: Spec) -> AABB:
+	var size := spec.size_m()
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var front := -size.y * 0.5 + 0.15
+	var left := -size.x * 0.5 + DOCK_RAMP_M
+	return AABB(Vector3(left, 0.0, front), Vector3(size.x - DOCK_RAMP_M * 2.0, DOCK_M, wall_z - front))
+
+
+static func _dock(tool: SurfaceTool, spec: Spec) -> void:
+	var box := dock_box(spec)
+	var center := box.get_center()
+	var top := box.end.y
+	# corpo de tijolo, tampo de tábuas que sai um pouco e a defensa de madeira na frente
+	_box(tool, Vector3(center.x, (top - 0.1) * 0.5 - 0.05, center.z), Vector3(box.size.x, top - 0.1 + 0.1, box.size.z), UV_WALL)
+	_box(tool, Vector3(center.x, top - 0.05, center.z - 0.05), Vector3(box.size.x + 0.1, 0.1, box.size.z + 0.1), UV_TIMBER)
+	_box(tool, Vector3(center.x, top - 0.28, box.position.z - 0.08), Vector3(box.size.x, 0.22, 0.12), UV_TIMBER)
+	# as rampas descem das pontas até o chão
+	for side: float in [-1.0, 1.0]:
+		var high := box.end.x if side > 0.0 else box.position.x
+		var low := high + side * DOCK_RAMP_M
+		_ramp(tool, low, high, box.position.z + 0.1, box.end.z, top - 0.02)
+	if spec.level < DOCK_CANOPY_LEVEL:
+		return
+	# alpendre sobre a plataforma, preso na parede por mãos-francesas de ferro
+	var floor_m := spec.hall().floor_m()
+	var high_point := Vector3(0.0, floor_m * DOCK_CANOPY_WALL, box.end.z)
+	var low_point := Vector3(0.0, floor_m * DOCK_CANOPY_EAVE, box.position.z - DOCK_CANOPY_OUT_M)
+	_lean_to(tool, high_point, low_point, spec.size_m().x - 0.2)
+	var bracket_step := spec.size_m().x / spec.cells.x
+	for k: int in spec.cells.x + 1:
+		var x := clampf(-spec.size_m().x * 0.5 + bracket_step * k, -spec.size_m().x * 0.5 + 0.2, spec.size_m().x * 0.5 - 0.2)
+		var wall_foot := Vector3(x, floor_m * DOCK_CANOPY_EAVE - 0.9, box.end.z)
+		var under := Vector3(x, floor_m * DOCK_CANOPY_EAVE + 0.05, box.position.z + 0.2)
+		_bar(tool, wall_foot, under, 0.07, UV_IRON)
+		_bar(tool, Vector3(x, high_point.y - 0.05, box.end.z), under, 0.06, UV_IRON)
+
+
+## Rampa ao longo de x: do chão em low_x até "top" em high_x, de z0 a z1 (cunha: a face inclinada e os dois lados).
+static func _ramp(tool: SurfaceTool, low_x: float, high_x: float, z0: float, z1: float, top: float) -> void:
+	var away := Vector3(signf(low_x - high_x), 1.0, 0.0)
+	_quad(tool, Vector3(low_x, 0.0, z0), Vector3(low_x, 0.0, z1), Vector3(high_x, top, z1), Vector3(high_x, top, z0), away, UV_STONE)
+	for z: float in [z0, z1]:
+		_triangle(tool, Vector3(low_x, 0.0, z), Vector3(high_x, 0.0, z), Vector3(high_x, top, z),
+				Vector3(0.0, 0.0, signf(z - (z0 + z1) * 0.5)), UV_STONE)
+	# o meio-fio de madeira da beira da rampa
+	for z: float in [z0 + 0.05, z1 - 0.05]:
+		_bar(tool, Vector3(low_x, 0.05, z), Vector3(high_x, top + 0.05, z), 0.1, UV_TIMBER)
+
+
+## Barra de seção quadrada de a até b, numa caixa girada.
+static func _bar(tool: SurfaceTool, a: Vector3, b: Vector3, thickness: float, uv: Vector2) -> void:
+	var along := b - a
+	if along.length_squared() < 1e-6:
+		return
+	var z := along.normalized()
+	var x := (Vector3.UP if absf(z.y) < 0.95 else Vector3.RIGHT).cross(z).normalized()
+	var y := z.cross(x)
+	_box_at(tool, Transform3D(Basis(x, y, z), (a + b) * 0.5), Vector3(thickness, thickness, along.length()), uv)
+
+
+## Telhado de uma água de "high" (na parede) até "low" (o beiral), com a largura em x.
+static func _lean_to(tool: SurfaceTool, high: Vector3, low: Vector3, width: float) -> void:
+	var along := (low - high).normalized()
+	# x de lado a lado, z subindo a água e y para fora dela
+	var basis := Basis(Vector3.RIGHT, -along.cross(Vector3.RIGHT).normalized(), -along)
+	_box_at(tool, Transform3D(basis, (high + low) * 0.5 + basis.y * ROOF_THICKNESS_M * 0.5),
+			Vector3(width, ROOF_THICKNESS_M, high.distance_to(low)), UV_ROOF)
 
 
 ## Onde fica a varanda (Fase 23): x de um lado ao outro da área, z da frente da área até a parede do corpo,
@@ -553,14 +665,8 @@ static func _veranda(tool: SurfaceTool, spec: Spec) -> void:
 	for x: float in [post_xs[0], post_xs[post_xs.size() - 1]]:
 		_railing(tool, Vector3(x, deck, post_z), Vector3(x, deck, wall), UV_TIMBER, VERANDA_RAIL_M, 0.06, VERANDA_RAIL_STEP_M)
 	# telhado de uma água, da parede (entre os andares) até um pouco além dos esteios
-	var high := Vector3(0.0, floor_m * VERANDA_WALL, wall)
-	var low := Vector3(0.0, eave + 0.18, post_z - VERANDA_OVERHANG_M)
-	var along := (low - high).normalized()
-	var length := high.distance_to(low)
-	# x de lado a lado, z subindo a água e y para fora dela
-	var basis := Basis(Vector3.RIGHT, -along.cross(Vector3.RIGHT).normalized(), -along)
-	_box_at(tool, Transform3D(basis, (high + low) * 0.5 + basis.y * ROOF_THICKNESS_M * 0.5),
-			Vector3(right - left + VERANDA_OVERHANG_M * 2.0, ROOF_THICKNESS_M, length), UV_ROOF)
+	_lean_to(tool, Vector3(0.0, floor_m * VERANDA_WALL, wall), Vector3(0.0, eave + 0.18, post_z - VERANDA_OVERHANG_M),
+			right - left + VERANDA_OVERHANG_M * 2.0)
 
 
 ## Campanário (Fase 18) no canto da frente à esquerda: o fuste de parede até BELFRY_SHAFT_M acima do

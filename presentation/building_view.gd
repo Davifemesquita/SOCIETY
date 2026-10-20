@@ -12,6 +12,8 @@ extends Node3D
 ## - Casa em protesto: ícone de protesto. Campo e pasto não têm ícone.
 ## - Silhueta por cadeia (Fase 13): pás do moinho, roda d'água e polia da torre de mina giram enquanto
 ##   o prédio produz, no tempo de jogo (param na pausa).
+## - Desde a Fase 23 o modelo segue a forma: quando ela muda sem o prédio sair do lugar (o armazém que sobe
+##   de nível ganha o alpendre e, no último, o tijolo), ele é refeito com andaime.
 
 const DOOR_COLOR := Color(0.25, 0.18, 0.12)
 ## Tamanho do ícone na tela (Sprite3D de tamanho fixo).
@@ -48,6 +50,8 @@ var _selected_id: int = 0
 ## Partes que giram (BuildingKit.Rotor), pelo prédio, e quanto giram por segundo de jogo.
 var _rotors: Dictionary[int, Node3D] = {}
 var _rotor_speeds: Dictionary[int, float] = {}
+## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
+var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
 
 
@@ -67,7 +71,7 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(_on_building_removed)
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: refresh_labels())
-	EventBus.building_state_changed.connect(_refresh_label)
+	EventBus.building_state_changed.connect(_on_building_state_changed)
 	EventBus.house_upgraded.connect(_on_house_upgraded)
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
@@ -224,6 +228,10 @@ func _add(building_id: int) -> void:
 		var wall_layer := tier.wall_material if tier != null else def.wall_material
 		var roof_layer: int = tier.roof_material if tier != null else (BuildingMaterials.Roof.PLANKS
 				if def.wall_material == BuildingMaterials.Wall.WOOD else BuildingMaterials.Roof.TILES)
+		if BuildingKit.brick(spec):
+			wall_layer = BuildingMaterials.Wall.BRICK
+			roof_layer = BuildingMaterials.Roof.TILES
+		_spec_keys[building_id] = spec.key()
 		var color := _color(record)
 		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, color.darkened(ROOF_DARKEN).lightened(0.35),
 				root.position.y, soot)
@@ -413,6 +421,7 @@ func _remove(building_id: int) -> void:
 		_label_keys.erase(building_id)
 		_rotors.erase(building_id)
 		_rotor_speeds.erase(building_id)
+		_spec_keys.erase(building_id)
 
 
 func refresh_labels() -> void:
@@ -484,6 +493,19 @@ func _on_building_removed(building_id: int) -> void:
 	_remove(building_id)
 	if building_id == _selected_id:
 		select(0)
+
+
+func _on_building_state_changed(building_id: int) -> void:
+	var record := _simulation.world.building(building_id)
+	if record != null and _spec_keys.has(building_id) and not record.is_house():
+		var spec := BuildingKit.spec_for(_simulation, record, _cell_size)
+		if spec != null and spec.key() != _spec_keys[building_id]:
+			_remove(building_id)
+			_add(building_id)
+			_scaffold(building_id)
+			if building_id == _selected_id:
+				select(building_id)
+	_refresh_label(building_id)
 
 
 func _on_house_upgraded(building_id: int) -> void:

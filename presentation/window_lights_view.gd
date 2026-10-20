@@ -76,6 +76,12 @@ func setup(simulation: Simulation, config: GameConfig) -> void:
 	EventBus.house_upgraded.connect(func(building_id: int) -> void:
 		_remove(building_id)
 		_add(building_id))
+	# o armazém que sobe de nível troca janelas do térreo por portas de carga (Fase 23)
+	EventBus.building_state_changed.connect(func(building_id: int) -> void:
+		var record := _simulation.world.building(building_id)
+		if record != null and not _simulation.def_of(record).levels.is_empty() and _slots.has(building_id):
+			_remove(building_id)
+			_add(building_id))
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
 

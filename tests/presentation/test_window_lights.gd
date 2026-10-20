@@ -115,3 +115,15 @@ func test_piers_and_decorations_get_no_windows() -> void:
 	SimFixture.place(_sim, &"pier", Vector2i(30, 0), 2)
 	view.rebuild()
 	assert_int(view.window_count()).is_equal(before)
+
+
+func test_the_upgraded_warehouse_trades_ground_floor_windows_for_loading_doors() -> void:
+	_sim.free_build = true
+	var warehouse := SimFixture.place(_sim, &"warehouse", Vector2i(20, 11), 0)
+	var view := _view()
+	var before := view.window_count()
+	assert_int(before).is_greater(0)
+	# nível 1: portas de carga em células alternadas do térreo da frente (Fase 23)
+	assert_bool(_sim.execute(UpgradeBuildingCommand.new(warehouse)).ok()).is_true()
+	assert_int(view.window_count()).is_less(before)
+	assert_int(view.window_count()).is_equal(WindowLightsView.building_windows(_sim, _sim.world.building(warehouse)).size())
