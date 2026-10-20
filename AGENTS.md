@@ -588,7 +588,7 @@ Regras que já custaram investigação:
   material de construção), gasta até perto do limite só contra falta, pausa fábrica com o estoque
   cheio, trava o upgrade das casas pela mão de obra. Critério da fase: 3 horas sem erro no log (um
   `Logger` captura), com save e carga a cada meia hora (`tests/sim/test_phase10_criteria.gd`).
-- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.21.0 (0.20.0 na Fase 20, 0.19.0 na Fase 19, 0.18.0 na Fase 18, 0.17.0 na Fase 17, 0.16.0 na Fase 16, 0.15.0 na Fase 15, 0.14.0 na Fase 14, 0.13.0 na Fase 13, 0.12.0 na Fase 12, 0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
+- **Executável do Windows**: ícone (`assets/icon/society.ico`), versão 0.22.0 (0.21.0 na Fase 21, 0.20.0 na Fase 20, 0.19.0 na Fase 19, 0.18.0 na Fase 18, 0.17.0 na Fase 17, 0.16.0 na Fase 16, 0.15.0 na Fase 15, 0.14.0 na Fase 14, 0.13.0 na Fase 13, 0.12.0 na Fase 12, 0.11.0 na Fase 11, 0.10.0 na Fase 10), nome e descrição no
   `.exe` (`application/modify_resources`, sem rcedit). As cenas em C# dos addons ficam fora da exportação.
 
 ### Segunda região climática (Fase 11)
@@ -1205,7 +1205,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 19 — Chão e margem (nossa) | **concluída em 18/10/2026**: lama na margem do rio e areia molhada na praia; leiras da terra arada nos campos; estrada de terra com borda recortada e capim, sem degrau na ladeira; sarjeta e meio-fio de pedra no paralelepípedo; ovelhas, porcos e cães andando |
 | 20 — Corda e gravura (nossa) | **concluída em 18/10/2026**: amarras no píer e no cais; madeira gasta e cordame na feitoria; pedras soltas na terra; asa batendo nos pássaros; carta gravada; a suíte inteira (83 arquivos, 586 casos) passou, por pasta, numa rodada só |
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
-| 22 — Mata e vento (nossa) | em andamento desde 19/10/2026: vento no clima, com a fumaça e as bandeiras (parte 1); árvores, plantações e capim balançando pelo vento (parte 2); carvalho, faia e pinheiro-silvestre gerados no código (parte 3) com o nível de detalhe de longe (parte 4) |
+| 22 — Mata e vento (nossa) | **concluída em 19/10/2026**: vento no clima, com a fumaça e as bandeiras; árvores, plantações e capim balançando pelo vento; carvalho, faia e pinheiro-silvestre gerados no código, com o nível de detalhe de longe; a suíte inteira (86 arquivos, 608 casos) passou, por pasta e depois arquivo por arquivo em primeiro plano |
 
 Pendências já vistas para fases futuras:
 
