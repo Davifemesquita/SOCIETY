@@ -5,7 +5,7 @@ City builder 3D de economia e logística no estilo do gênero de Anno 1800, em *
 [`docs/especificacao.pdf`](docs/especificacao.pdf) e manda em tudo: este arquivo só
 registra como se trabalha aqui e o estado das fases.
 
-Repositório em `github.com/Davifemesquita/SOCIETY` (privado do dono do produto, fora da `CAAD-LABS`), desde
+Repositório em `github.com/Davifemesquita/SOCIETY` (**público**, da conta do dono do produto, fora da `CAAD-LABS`), desde
 20/10/2026; até ali era só local. O `exportado/` (o `Society.exe` tem ~230 MB, acima do limite de 100 MB do GitHub)
 fica fora. Ainda não há CI: o GitHub Actions com gdUnit4-action é o próximo passo.
 
