@@ -96,6 +96,21 @@ const LINTEL_M := 0.12
 const PEDIMENT_M := 0.7
 const RAIL_M := 0.95
 const RAIL_STEP_M := 0.19
+## Pedra e torno (Fase 24): a sacada dos investidores troca a grade de ferro pela balaustrada de pedra — soco,
+## balaústres torneados a cada BALUSTER_STEP_M (o perfil em BALUSTER_PROFILE, raio e altura em fração da
+## altura do balaústre, de BALUSTER_SIDES faces) e o corrimão largo por cima; sob as sacadas, consolos de
+## pedra em cada divisa de célula; e o peitoril de pedra debaixo de cada janela, junto com a verga.
+const BALUSTER_STEP_M := 0.26
+const BALUSTER_SIDES := 6
+const BALUSTER_PROFILE: Array[Vector2] = [
+	Vector2(0.06, 0.0), Vector2(0.06, 0.08), Vector2(0.035, 0.16), Vector2(0.07, 0.42), Vector2(0.045, 0.68),
+	Vector2(0.03, 0.8), Vector2(0.055, 0.88), Vector2(0.055, 1.0),
+]
+const PLINTH_M := 0.14
+const HANDRAIL_M := 0.12
+const CORBEL_M := 0.5
+const CORBEL_WIDTH_M := 0.16
+const SILL_M := 0.08
 ## Medidas das peças do kit (caixa da peça importada): diâmetro das rodas, meio da polia, lado da viga.
 const WINDMILL_DIAMETER := 3.113
 const WATERWHEEL_DIAMETER := 1.8
@@ -924,9 +939,16 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 				var half := hall.size_m() * 0.5
 				var wall := spec.hall_offset() + Vector3(0.0, floor_y, -half.y)
 				var out := Vector3(0.0, 0.0, -BALCONY_OUT_M)
-				_railing(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(half.x, 0.0, 0.0))
+				# investidores: balaustrada de pedra (Fase 24); engenheiros: a grade de ferro
+				var fence := _balustrade if spec.trim == TierDef.HouseTrim.PORTICO else _railing
+				fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(half.x, 0.0, 0.0))
 				for end: float in [-half.x, half.x]:
-					_railing(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
+					fence.call(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
+				# consolos de pedra sob a sacada, em cada divisa de célula (os das pontas um pouco para dentro)
+				var step_x := hall.size_m().x / hall.cells.x
+				for k: int in hall.cells.x + 1:
+					var x := clampf(-half.x + step_x * k, -half.x + CORBEL_WIDTH_M, half.x - CORBEL_WIDTH_M)
+					_corbel(extra, wall + Vector3(x, -0.12, 0.0), BALCONY_OUT_M * 0.85)
 			if spec.trim == TierDef.HouseTrim.PORTICO:
 				# duas colunas de pedra dos lados da porta e sebe diante das outras células do térreo
 				var door := _wall_point(hall, 0, hall.door_index, 0)
@@ -968,6 +990,12 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 						+ _face_normal(face) * 0.04
 				var width := step * WINDOW_WIDTH * 1.5
 				_box(tool, at, Vector3(width, LINTEL_M, 0.1) if face % 2 == 0 else Vector3(0.1, LINTEL_M, width), UV_LIGHT_STONE)
+				# o peitoril (Fase 24), mais estreito que a verga e saindo um pouco mais da parede
+				var sill := center + _wall_point(hall, face, index, level) + _face_normal(face) * 0.07 \
+						+ Vector3(0.0, hall.floor_m() * (WINDOW_CENTER - WINDOW_HEIGHT * 0.5) - SILL_M * 0.5, 0.0)
+				var sill_width := step * WINDOW_WIDTH * 1.2
+				_box(tool, sill, Vector3(sill_width, SILL_M, 0.16) if face % 2 == 0 else Vector3(0.16, SILL_M, sill_width),
+						UV_LIGHT_STONE)
 
 
 ## Frontão: a base de pedra em "height" (o alto da parede) e o triângulo sobre ela, centrados em "front"
@@ -1008,6 +1036,69 @@ static func _railing(tool: SurfaceTool, a: Vector3, b: Vector3, uv := UV_IRON, h
 	for i: int in count + 1:
 		var at := a + along * (float(i) / count)
 		_box(tool, at + Vector3(0.0, height * 0.5, 0.0), Vector3(bar, height, bar), uv)
+
+
+## Balaustrada de pedra de a até b (Fase 24, no chão da sacada, em x ou em z): o soco embaixo, os balaústres
+## torneados e o corrimão largo, na altura da grade de ferro.
+static func _balustrade(tool: SurfaceTool, a: Vector3, b: Vector3) -> void:
+	var along := b - a
+	var length := along.length()
+	if length < 0.05:
+		return
+	var along_x := absf(along.x) > absf(along.z)
+	var middle := (a + b) * 0.5
+	for part: Vector3 in [Vector3(PLINTH_M * 0.5, PLINTH_M, 0.2), Vector3(RAIL_M - HANDRAIL_M * 0.5, HANDRAIL_M, 0.22)]:
+		_box(tool, middle + Vector3(0.0, part.x, 0.0),
+				Vector3(length + part.z - 0.2, part.y, part.z) if along_x else Vector3(part.z, part.y, length + part.z - 0.2),
+				UV_LIGHT_STONE)
+	var height := RAIL_M - PLINTH_M - HANDRAIL_M
+	var count := maxi(1, roundi(length / BALUSTER_STEP_M))
+	for i: int in count:
+		_baluster(tool, a + along * ((i + 0.5) / count) + Vector3(0.0, PLINTH_M, 0.0), height)
+
+
+## Balaústre torneado de pé em "foot": o perfil BALUSTER_PROFILE girado em BALUSTER_SIDES faces (sem tampa: o
+## soco e o corrimão cobrem as pontas).
+static func _baluster(tool: SurfaceTool, foot: Vector3, height: float) -> void:
+	for k: int in BALUSTER_PROFILE.size() - 1:
+		var low := BALUSTER_PROFILE[k]
+		var high := BALUSTER_PROFILE[k + 1]
+		for side: int in BALUSTER_SIDES:
+			var angle_a := TAU * side / BALUSTER_SIDES
+			var angle_b := TAU * (side + 1) / BALUSTER_SIDES
+			var dir_a := Vector3(cos(angle_a), 0.0, sin(angle_a))
+			var dir_b := Vector3(cos(angle_b), 0.0, sin(angle_b))
+			_quad(tool, foot + dir_a * low.x + Vector3.UP * low.y * height, foot + dir_b * low.x + Vector3.UP * low.y * height,
+					foot + dir_b * high.x + Vector3.UP * high.y * height, foot + dir_a * high.x + Vector3.UP * high.y * height,
+					(dir_a + dir_b).normalized(), UV_LIGHT_STONE)
+
+
+## Consolo de pedra sob a sacada (Fase 24), de frente para −Z: o topo em "top" (na parede), saindo "out" dela,
+## e a face de baixo num quarto de elipse da ponta até a parede, CORBEL_M abaixo.
+static func _corbel(tool: SurfaceTool, top: Vector3, out: float) -> void:
+	var profile: Array[Vector2] = [Vector2(0.0, 0.0), Vector2(out, 0.0)]
+	for k: int in 6:
+		var angle := PI * 0.5 * k / 5.0
+		profile.append(Vector2(out * cos(angle), -0.08 - (CORBEL_M - 0.08) * sin(angle)))
+	var half := CORBEL_WIDTH_M * 0.5
+	for x: float in [-half, half]:
+		for k: int in range(1, profile.size() - 1):
+			_triangle(tool, _corbel_point(top, x, profile[0]), _corbel_point(top, x, profile[k]),
+					_corbel_point(top, x, profile[k + 1]), Vector3(signf(x), 0.0, 0.0), UV_LIGHT_STONE)
+	for k: int in range(1, profile.size() - 1):
+		var a := profile[k]
+		var b := profile[k + 1]
+		# para fora do centro da elipse
+		var away := (a + b) * 0.5 - Vector2(0.0, -0.08)
+		_quad(tool, _corbel_point(top, -half, a), _corbel_point(top, half, a), _corbel_point(top, half, b),
+				_corbel_point(top, -half, b), Vector3(0.0, away.y, -away.x), UV_LIGHT_STONE)
+	_quad(tool, _corbel_point(top, -half, profile[0]), _corbel_point(top, half, profile[0]),
+			_corbel_point(top, half, profile[1]), _corbel_point(top, -half, profile[1]), Vector3.UP, UV_LIGHT_STONE)
+
+
+## Ponto do perfil do consolo (x para fora da parede, y para cima) na largura x.
+static func _corbel_point(top: Vector3, x: float, point: Vector2) -> Vector3:
+	return top + Vector3(x, point.y, -point.x)
 
 
 ## Peça presa à fachada: o meio da célula na face de fora da parede, saindo out_m dela e up_m acima do

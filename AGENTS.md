@@ -1218,6 +1218,13 @@ Regras que já custaram investigação:
   talha-mar (`CUTWATER_M` para fora das faces) do nascimento até o leito. Tudo na pedra do meio-fio
   (`shaders/curb.gdshader`). Captura: `CAPTURA_SO=ponte_pedra` no `tools/capture_phase5.tscn`
   (`10b_ponte_de_pedra.png`, `11b_ponte_de_pedra_de_perto.png`).
+- **Balaústre, consolo e peitoril** (`BuildingKit._balustrade`, `_baluster`, `_corbel`): a sacada dos
+  investidores troca a grade de ferro pela balaustrada de pedra — soco, balaústres torneados a cada
+  `BALUSTER_STEP_M` (o perfil `BALUSTER_PROFILE` girado em `BALUSTER_SIDES` faces) e corrimão largo; a dos
+  engenheiros continua de ferro. Sob as duas, consolos de pedra em cada divisa de célula (a face de baixo num
+  quarto de elipse, `CORBEL_M` abaixo do piso). E, junto com a verga da Fase 18, o peitoril de pedra debaixo de
+  cada janela. Captura: `CAPTURA_SO=detalhes` no `tools/capture_buildings.tscn` (`21b_balaustrada.png`,
+  `21c_consolos_e_peitoril.png`).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1253,7 +1260,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
 | 22 — Mata e vento (nossa) | **concluída em 19/10/2026**: vento no clima, com a fumaça e as bandeiras; árvores, plantações e capim balançando pelo vento; carvalho, faia e pinheiro-silvestre gerados no código, com o nível de detalhe de longe; a suíte inteira (86 arquivos, 608 casos) passou, por pasta e depois arquivo por arquivo em primeiro plano |
 | 23 — Varanda e galpão (nossa) | **concluída em 20/10/2026**: varanda da casa de engenho nas plantações; plataforma de carga do armazém, com alpendre e tijolo pelo nível; guindaste de porto no entreposto e no estaleiro e guincho no armazém; a suíte inteira (86 arquivos, 614 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
-| 24 — Pedra e torno (nossa) | em andamento desde 20/10/2026: ponte de pedra em arco na rua calçada (parte 1) |
+| 24 — Pedra e torno (nossa) | em andamento desde 20/10/2026: ponte de pedra em arco na rua calçada (parte 1); balaustrada torneada, consolos e peitoris nas casas (parte 2) |
 
 Pendências já vistas para fases futuras:
 

@@ -6,7 +6,7 @@ extends Node
 ## CAPTURA_SO=casas tira só as casas; silhuetas, só os prédios com silhueta de cadeia (Fase 13); postes,
 ## a rua calçada com postes e as fogueiras atrás das casas, à noite (Fase 13); detalhes, uma casa de cada
 ## classe vista de frente (quintal, floreiras, sacadas e pórtico, Fase 13; cornija, vergas, grade de ferro e
-## frontão, Fase 18); plantacoes, uma fazenda de cada
+## frontão, Fase 18; balaustrada torneada, consolos e peitoril, Fase 24); plantacoes, uma fazenda de cada
 ## planta com os campos em três pontos do ciclo e os estorninhos sobre eles (Fase 14), e as leiras da terra
 ## arada, úmidas e secas, e o campo sem dono (Fase 19). Os pombos na rua saem
 ## em postes (Fase 14), e os varais e vasos das casas (Fase 15); decoracao, as peças de decoração entre as
@@ -234,6 +234,10 @@ func _house_trims() -> void:
 	await _shot("20_portico.png", Vector3(123.0, 3.0, 201.0), 18.0, PI + 0.3, 0.15)
 	# Fase 18: o frontão no alto da fachada dos investidores
 	await _shot("21_frontao.png", Vector3(121.0, 13.0, 201.0), 20.0, PI + 0.3, 0.25)
+	# Fase 24: a balaustrada torneada e os consolos da sacada dos investidores, a grade de ferro e os consolos
+	# dos engenheiros, e o peitoril das janelas
+	await _shot("21b_balaustrada.png", Vector3(121.0, 6.0, 199.0), 9.0, PI + 0.45, 0.05)
+	await _shot("21c_consolos_e_peitoril.png", Vector3(113.0, 5.0, 199.0), 10.0, PI + 0.6, -0.05)
 
 
 ## Fase 14: cada fazenda de campo com os campos dela, em três pontos do ciclo (começo, meio e colheita).

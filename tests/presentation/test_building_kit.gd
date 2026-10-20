@@ -296,6 +296,42 @@ func test_upper_class_houses_get_cornice_lintels_pediment_and_iron_railings() ->
 	assert_float(pediment.end.y).is_greater_equal(investors.height_m + BuildingKit.PEDIMENT_M)
 
 
+## Fase 24: a sacada dos investidores tem balaustrada de pedra com balaústres torneados no lugar da grade de
+## ferro (que fica com os engenheiros); as duas têm consolos de pedra embaixo; e toda janela com verga ganha o
+## peitoril.
+func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
+	var investors := _house(&"investors")
+	var bare := _house(&"investors")
+	bare.trim = TierDef.HouseTrim.NONE
+	# cada balaústre: os segmentos do perfil em BALUSTER_SIDES faces, dois triângulos cada, um a cada
+	# BALUSTER_STEP_M na frente da sacada
+	var baluster := (BuildingKit.BALUSTER_PROFILE.size() - 1) * BuildingKit.BALUSTER_SIDES * 2
+	var front := int(investors.size_m().x / BuildingKit.BALUSTER_STEP_M)
+	assert_int(BuildingKit.triangles(investors) - BuildingKit.triangles(bare)).is_greater(front * baluster)
+	# a dos engenheiros continua de ferro: os balaústres finos da grade, sem o perfil torneado
+	var engineers := _house(&"engineers")
+	var engineers_bare := _house(&"engineers")
+	engineers_bare.trim = TierDef.HouseTrim.NONE
+	assert_int(BuildingKit.triangles(engineers) - BuildingKit.triangles(engineers_bare)).is_less(
+			BuildingKit.triangles(investors) - BuildingKit.triangles(bare))
+	# consolos: o fundo da sacada fica CORBEL_M abaixo do piso dela
+	for tier: StringName in [&"engineers", &"investors"]:
+		var spec := _house(tier)
+		var floor_y := spec.hall().floor_m()
+		var lowest := INF
+		for vertex: Vector3 in BuildingKit.mesh(spec).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+			if vertex.z < -spec.size_m().y * 0.5 - 0.2 and vertex.y > floor_y * 0.5:
+				lowest = minf(lowest, vertex.y)
+		assert_float(lowest).override_failure_message(String(tier)).is_less(floor_y - 0.12 - BuildingKit.CORBEL_M + 0.05)
+	# verga e peitoril: duas caixas (24 triângulos) por janela, dos artesãos para cima
+	for tier: StringName in [&"artisans", &"engineers", &"investors"]:
+		var spec := _house(tier)
+		var plain := _house(tier)
+		plain.trim = TierDef.HouseTrim.NONE
+		assert_int(BuildingKit.triangles(spec) - BuildingKit.triangles(plain)).override_failure_message(String(tier)) \
+				.is_greater(BuildingKit.windows(spec).size() * 24)
+
+
 func test_plantations_get_a_veranda_in_front_of_the_house() -> void:
 	for def_id: StringName in [&"sugar_cane_farm", &"coffee_plantation", &"tobacco_plantation"]:
 		var spec := _spec(def_id)
