@@ -3,7 +3,7 @@ extends Node
 ##   tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase5.tscn -- <pasta>
 ## Arquipélago da semente 1840: visto de cima, a ilha principal, o litoral com a água, a floresta,
 ## o rio, a mina sobre a jazida (com o destaque de terreno), uma vila assentada no relevo com a
-## água turva perto da fundição, e a noite. CAPTURA_SO=mata tira só a mata (Fase 22; com CAPTURA_LONGE=1, também de 260 m, lenta por software); CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14);
+## água turva perto da fundição, e a noite. CAPTURA_SO=mata tira só a mata (Fase 22; com CAPTURA_LONGE=1, também de 260 m, lenta por software); CAPTURA_SO=ponte tira só a ponte de madeira sobre o rio (Fase 14) e ponte_pedra, a de pedra da rua calçada (Fase 24);
 ## porto, o entreposto com um píer ligado por estrada (trapiche, Fase 15; as amarras, Fase 20); margem, a lama na margem do
 ## rio e a areia molhada da praia (Fase 19); estrada, a rua de terra da vila subindo o relevo, com a borda
 ## recortada e o capim (Fase 19).
@@ -61,8 +61,8 @@ func _run() -> void:
 		await _forest(grid)
 		get_tree().quit()
 		return
-	if OS.get_environment("CAPTURA_SO") == "ponte":
-		await _bridge(grid)
+	if OS.get_environment("CAPTURA_SO") in ["ponte", "ponte_pedra"]:
+		await _bridge(grid, OS.get_environment("CAPTURA_SO") == "ponte_pedra")
 		get_tree().quit()
 		return
 	# de cima: o arquipélago inteiro (fora do limite de zoom do jogador, só para a captura)
@@ -184,7 +184,7 @@ func _harbor(grid: IslandGrid) -> void:
 
 
 ## Estrada de terra atravessando o rio na primeira célula de rio do meio para fora (Fase 14).
-func _bridge(grid: IslandGrid) -> void:
+func _bridge(grid: IslandGrid, paved := false) -> void:
 	_sim.free_build = true
 	# a célula de rio do meio da lista, atravessada de margem a margem pelo lado mais estreito
 	var rivers: Array[int] = []
@@ -201,13 +201,19 @@ func _bridge(grid: IslandGrid) -> void:
 			b += step
 		if grid.ground_at(a) != IslandGrid.Ground.LAND or grid.ground_at(b) != IslandGrid.Ground.LAND:
 			continue
-		var result := _sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(a - step * 3, b + step * 3)))
+		var result := _sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(a - step * 3, b + step * 3), paved))
 		print("ponte de %s a %s: %s" % [a, b, result.ok()])
 		if result.ok():
 			break
 	_game.road_view.rebuild()
 	print("travessas ", _game.road_view.rail_count(), " postes e estacas ", _game.road_view.post_count())
 	var focus := grid.cell_world(river)
+	if paved:
+		print("parapeitos ", _game.road_view.parapet_count(), " arcos ", _game.road_view.arch_count(),
+				" pilares ", _game.road_view.pier_count())
+		await _shot("10b_ponte_de_pedra.png", focus, 16.0, 0.5)
+		await _shot("11b_ponte_de_pedra_de_perto.png", focus, 9.0, 2.2)
+		return
 	await _shot("10_ponte.png", focus, 16.0, 0.5)
 	await _shot("11_ponte_de_perto.png", focus, 9.0, 2.2)
 

@@ -78,6 +78,42 @@ func test_the_bridge_gets_railings_and_piles() -> void:
 	assert_bool(RoadView.railed(grid, Vector2i(8, 5), Vector2i(1, 0))).is_false()
 	assert_bool(RoadView.railed(grid, Vector2i(6, 5), Vector2i(0, 1))).is_false()
 	assert_int(view.curb_count()).is_equal(0)
+	# a de terra não leva nada da ponte de pedra
+	assert_int(view.parapet_count()).is_equal(0)
+	assert_int(view.arch_count()).is_equal(0)
+
+
+## Fase 24: a rua de paralelepípedo atravessa o rio por uma ponte de pedra — calçamento por cima, parapeito
+## nos lados do rio, um arco por célula e os pilares descendo até o leito; nada de tábua, corrimão nem estaca.
+func test_a_paved_street_crosses_the_river_on_a_stone_bridge() -> void:
+	_sim = _river_simulation()
+	var grid := _sim.world.island(0)
+	for cell: Vector2i in RoadPath.l_path(Vector2i(6, 5), Vector2i(11, 5)):
+		grid.set_road(cell, IslandGrid.Road.PAVED)
+	var view := _view()
+	assert_int(view.rail_count()).is_equal(0)
+	assert_int(view.post_count()).is_equal(0)
+	# duas células de ponte, dois lados abertos cada
+	assert_int(view.parapet_count()).is_equal(2 * 2)
+	assert_int(view.arch_count()).is_equal(2)
+	# meio pilar em cada ponta do arco das duas células (o leito fica abaixo do nascimento)
+	assert_int(view.pier_count()).is_equal(2 * 2)
+	# o tabuleiro é de paralelepípedo, sem a marca de tábua
+	for i: int in view.tile_count():
+		var custom := view.multimesh.get_instance_custom_data(i)
+		assert_float(custom.r).is_equal(1.0)
+		assert_float(custom.g).is_equal(0.0)
+	# o arco: a volta abre entre os meios pilares e o fecho fica ARCH_CROWN_M abaixo do tabuleiro
+	var size := _sim.config.cell_size_m
+	var arch := RoadView.arch_mesh(size)
+	var bounds := arch.get_aabb()
+	assert_float(bounds.size.x).is_equal_approx(size, 0.001)
+	assert_float(bounds.size.y).is_equal_approx(RoadView.arch_rise(size), 0.001)
+	var lowest_inside := 0.0
+	for vertex: Vector3 in arch.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+		if absf(vertex.x) < 0.01:
+			lowest_inside = minf(lowest_inside, vertex.y)
+	assert_float(lowest_inside).is_equal_approx(-RoadView.ARCH_CROWN_M, 0.001)
 
 
 func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> void:

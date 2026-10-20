@@ -12,7 +12,9 @@ extends MultiMeshInstance3D
 ## dobra pelos quatro cantos da célula (a altura deles relativa ao centro vai na cor da instância e o shader
 ## desloca os vértices), sem degrau entre células na ladeira; a terra tem a borda recortada nos lados abertos
 ## (no shader, pelos bits em INSTANCE_CUSTOM.a) e touceiras de capim ao longo deles. Fase 20: pedras soltas na
-## terra, fora dos sulcos (`stone_spots`), um MultiMesh com a cor de cada pedra.
+## terra, fora dos sulcos (`stone_spots`), um MultiMesh com a cor de cada pedra. Fase 24: a ponte da rua de
+## paralelepípedo é de pedra — o calçamento segue por cima, parapeito com capeamento nos lados que dão para o
+## rio, um arco por célula (`arch_mesh`) e os pilares com talha-mar descendo até o leito.
 
 const DIRT_COLOR := Color(0.55, 0.45, 0.33)
 const BRIDGE_COLOR := Color(0.36, 0.26, 0.17)
@@ -32,6 +34,17 @@ const RAIL_WIDTH_M := 0.07
 const PILE_WIDTH_M := 0.2
 const PILE_SINK_M := 0.4
 const RAIL_COLOR := Color(0.42, 0.3, 0.19)
+## Ponte de pedra (Fase 24): parapeito (largura e altura sobre o tabuleiro) e o capeamento que sobra dos dois
+## lados; o arco de cada célula — meio pilar em cada ponta, o fecho a ARCH_CROWN_M abaixo do tabuleiro, oito
+## segmentos na volta — e o talha-mar, quanto o pilar sai da face da ponte rio acima e rio abaixo.
+const PARAPET_WIDTH_M := 0.26
+const PARAPET_HEIGHT_M := 0.5
+const COPING_HEIGHT_M := 0.08
+const COPING_OVERHANG_M := 0.04
+const ARCH_PIER_M := 0.25
+const ARCH_CROWN_M := 0.3
+const ARCH_SEGMENTS := 8
+const CUTWATER_M := 0.35
 ## Direção dos sulcos no dado da instância (b): nenhum, ao longo de x, ao longo de z, os dois (cruzamento).
 ## DIAGONAL_DOWN e DIAGONAL_UP (Fase 17): ao longo de (+x, +z) e de (+x, −z).
 enum Ruts { NONE, ALONG_X, ALONG_Z, BOTH, DIAGONAL_DOWN, DIAGONAL_UP }
@@ -62,6 +75,9 @@ var _rails := MultiMeshInstance3D.new()
 var _posts := MultiMeshInstance3D.new()
 var _verge := MultiMeshInstance3D.new()
 var _stones := MultiMeshInstance3D.new()
+var _parapets := MultiMeshInstance3D.new()
+var _arches := MultiMeshInstance3D.new()
+var _piers := MultiMeshInstance3D.new()
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -111,6 +127,18 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		holder.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		holder.multimesh.mesh = part[2]
 		add_child(holder)
+	# Fase 24: a ponte de pedra, na mesma pedra do meio-fio
+	var pier := BoxMesh.new()
+	pier.size = Vector3(1.0, 1.0, 1.0)
+	for part: Array in [[_parapets, "Parapets", parapet_mesh(cell_size)], [_arches, "Arches", arch_mesh(cell_size)],
+			[_piers, "Piers", pier]]:
+		var holder: MultiMeshInstance3D = part[0]
+		holder.name = part[1]
+		holder.multimesh = MultiMesh.new()
+		holder.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		holder.multimesh.mesh = part[2]
+		holder.material_override = stone
+		add_child(holder)
 	_verge.name = "Verge"
 	_verge.multimesh = MultiMesh.new()
 	_verge.multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -143,18 +171,23 @@ func rebuild() -> void:
 	var posts: Array[Transform3D] = []
 	var tufts: Array[Transform3D] = []
 	var stones: Array[Transform3D] = []
+	var parapets: Array[Transform3D] = []
+	var arches: Array[Transform3D] = []
+	var piers: Array[Transform3D] = []
 	for grid: IslandGrid in _simulation.world.islands:
 		for cell: Vector2i in grid.road_cells():
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
 			var paved := grid.is_paved(cell)
+			# a ponte de pedra (Fase 24) leva o calçamento por cima; só a de terra é de tábua
+			var planks := bridge and not paved
 			var tile := tile_transform(grid, cell)
 			var links := diagonal_links(grid, cell)
 			# no meio da escada diagonal só as faixas: o ladrilho quadrado deixava a borda serrilhada
 			if not in_diagonal_run(grid, cell, links):
 				var open := 0 if bridge else open_edges(grid, cell, links)
 				tiles.append(tile)
-				colors.append(BRIDGE_COLOR if bridge else (PAVED_COLOR if paved else DIRT_COLOR))
-				kinds.append(Color(1.0 if paved else 0.0, 1.0 if bridge else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
+				colors.append(BRIDGE_COLOR if planks else (PAVED_COLOR if paved else DIRT_COLOR))
+				kinds.append(Color(1.0 if paved else 0.0, 1.0 if planks else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
 						twist(grid, cell)))
 				if not paved and not bridge:
 					_add_verge(grid, cell, open, tufts)
@@ -173,12 +206,14 @@ func rebuild() -> void:
 				if link.x > 0:
 					var other := cell + link
 					var both_paved := paved and grid.is_paved(other)
-					var both_bridge := bridge and grid.ground_at(other) == IslandGrid.Ground.RIVER
+					var both_bridge := bridge and grid.ground_at(other) == IslandGrid.Ground.RIVER and not both_paved
 					tiles.append(diagonal_transform(grid, cell, link))
 					colors.append(BRIDGE_COLOR if both_bridge else (PAVED_COLOR if both_paved else DIRT_COLOR))
 					kinds.append(Color(1.0 if both_paved else 0.0, 1.0 if both_bridge else 0.0, float(Ruts.ALONG_X), 0.0))
-			if bridge:
+			if planks:
 				_add_railing(grid, cell, tile, rails, posts)
+			elif bridge:
+				_add_stone_bridge(grid, cell, tile, parapets, arches, piers)
 	multimesh.instance_count = tiles.size()
 	for i: int in tiles.size():
 		multimesh.set_instance_transform(i, tiles[i])
@@ -193,6 +228,12 @@ func rebuild() -> void:
 	_posts.multimesh.instance_count = posts.size()
 	for i: int in posts.size():
 		_posts.multimesh.set_instance_transform(i, posts[i])
+	for part: Array in [[_parapets, parapets], [_arches, arches], [_piers, piers]]:
+		var holder: MultiMeshInstance3D = part[0]
+		var places: Array[Transform3D] = part[1]
+		holder.multimesh.instance_count = places.size()
+		for i: int in places.size():
+			holder.multimesh.set_instance_transform(i, places[i])
 	_verge.multimesh.instance_count = tufts.size()
 	for i: int in tufts.size():
 		_verge.multimesh.set_instance_transform(i, tufts[i])
@@ -340,6 +381,112 @@ func _add_railing(grid: IslandGrid, cell: Vector2i, tile: Transform3D, rails: Ar
 		posts.append(tile * Transform3D(pile, out + Vector3(0.0, -deck - pile_height * 0.5, 0.0)))
 
 
+## Ponte de pedra da célula (Fase 24): o parapeito em cada lado aberto para o rio, o arco sob o tabuleiro na
+## direção da rua e, nas duas pontas dele, meio pilar com o talha-mar, do nascimento do arco até o leito.
+func _add_stone_bridge(grid: IslandGrid, cell: Vector2i, tile: Transform3D, parapets: Array[Transform3D],
+		arches: Array[Transform3D], piers: Array[Transform3D]) -> void:
+	var deck := THICKNESS_M * 0.5
+	for side: Vector2i in SIDES:
+		if railed(grid, cell, side):
+			var basis := Basis.IDENTITY if side.x != 0 else Basis(Vector3.UP, PI * 0.5)
+			var out := Vector3(side.x, 0.0, side.y) * (_cell_size * 0.5 - PARAPET_WIDTH_M * 0.5)
+			parapets.append(tile * Transform3D(basis, out + Vector3(0.0, deck, 0.0)))
+	# o arco é feito com a rua em x; gira quando a rua corre em z
+	var along_x := grid.has_road(cell + Vector2i(1, 0)) or grid.has_road(cell + Vector2i(-1, 0)) \
+			or not (grid.has_road(cell + Vector2i(0, 1)) or grid.has_road(cell + Vector2i(0, -1)))
+	var turn := Basis.IDENTITY if along_x else Basis(Vector3.UP, PI * 0.5)
+	arches.append(tile * Transform3D(turn, Vector3(0.0, -deck, 0.0)))
+	var springing := -deck - arch_rise(_cell_size)
+	var bottom := grid.cell_height(cell) - PILE_SINK_M - tile.origin.y
+	var height := springing - bottom
+	if height <= 0.0:
+		return
+	var size := Basis.from_scale(Vector3(ARCH_PIER_M, height, _cell_size + CUTWATER_M * 2.0))
+	for end: float in [-1.0, 1.0]:
+		var center := Vector3(end * (_cell_size * 0.5 - ARCH_PIER_M * 0.5), bottom + height * 0.5, 0.0)
+		piers.append(tile * Transform3D(turn * size, turn * center))
+
+
+## Do tabuleiro ao nascimento do arco: o fecho e o raio da volta (meia célula menos o meio pilar).
+static func arch_rise(cell_size: float) -> float:
+	return ARCH_CROWN_M + cell_size * 0.5 - ARCH_PIER_M
+
+
+## Parapeito de pedra no referencial do lado (comprimento em z, como o meio-fio), de pé a partir do tabuleiro:
+## o muro e o capeamento, um pouco mais largo, por cima.
+static func parapet_mesh(cell_size: float) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_block(tool, Vector3(0.0, PARAPET_HEIGHT_M * 0.5, 0.0), Vector3(PARAPET_WIDTH_M, PARAPET_HEIGHT_M, cell_size))
+	_block(tool, Vector3(0.0, PARAPET_HEIGHT_M + COPING_HEIGHT_M * 0.5, 0.0),
+			Vector3(PARAPET_WIDTH_M + COPING_OVERHANG_M * 2.0, COPING_HEIGHT_M, cell_size))
+	return tool.commit()
+
+
+## Arco de uma célula com a rua em x, o topo em y = 0 (embaixo do tabuleiro): as duas faces (z = ± meia
+## célula) com a volta aberta entre os meios pilares, o intradorso por baixo e as pontas; abaixo do nascimento
+## (y = −arch_rise) só os pilares.
+static func arch_mesh(cell_size: float) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var half := cell_size * 0.5
+	var radius := half - ARCH_PIER_M
+	var rise := arch_rise(cell_size)
+	for z: float in [-half, half]:
+		var face := Vector3(0.0, 0.0, signf(z))
+		for end: float in [-1.0, 1.0]:
+			_face(tool, Vector3(end * half, -rise, z), Vector3(end * radius, -rise, z), Vector3(end * radius, 0.0, z),
+					Vector3(end * half, 0.0, z), face)
+		for i: int in ARCH_SEGMENTS:
+			var a := _arch_point(radius, rise, i)
+			var b := _arch_point(radius, rise, i + 1)
+			_face(tool, Vector3(a.x, a.y, z), Vector3(b.x, b.y, z), Vector3(b.x, 0.0, z), Vector3(a.x, 0.0, z), face)
+	for i: int in ARCH_SEGMENTS:
+		var a := _arch_point(radius, rise, i)
+		var b := _arch_point(radius, rise, i + 1)
+		var middle := (a + b) * 0.5
+		_face(tool, Vector3(a.x, a.y, -half), Vector3(b.x, b.y, -half), Vector3(b.x, b.y, half), Vector3(a.x, a.y, half),
+				Vector3(-middle.x, -(middle.y + rise), 0.0))
+	for end: float in [-1.0, 1.0]:
+		_face(tool, Vector3(end * half, -rise, -half), Vector3(end * half, 0.0, -half), Vector3(end * half, 0.0, half),
+				Vector3(end * half, -rise, half), Vector3(end, 0.0, 0.0))
+		_face(tool, Vector3(end * half, -rise, -half), Vector3(end * radius, -rise, -half),
+				Vector3(end * radius, -rise, half), Vector3(end * half, -rise, half), Vector3.DOWN)
+	return tool.commit()
+
+
+## Ponto i da volta do arco, de −raio a +raio em x, em meio círculo sobre o nascimento.
+static func _arch_point(radius: float, rise: float, i: int) -> Vector2:
+	var angle := PI * (1.0 - float(i) / ARCH_SEGMENTS)
+	return Vector2(cos(angle) * radius, -rise + sin(angle) * radius)
+
+
+## Quadrilátero plano a, b, c, d (em volta), virado para "outward" (o Godot desenha como frente o sentido
+## horário visto de fora).
+static func _face(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, outward: Vector3) -> void:
+	var normal := (b - a).cross(c - a).normalized()
+	var points: Array[Vector3] = [a, b, c, a, c, d]
+	if normal.dot(outward) > 0.0:
+		points = [a, c, b, a, d, c]
+	for point: Vector3 in points:
+		tool.set_normal(outward.normalized())
+		tool.add_vertex(point)
+
+
+static func _block(tool: SurfaceTool, center: Vector3, size: Vector3) -> void:
+	var h := size * 0.5
+	for axis: int in 3:
+		for sign_value: float in [-1.0, 1.0]:
+			var normal := Vector3.ZERO
+			normal[axis] = sign_value
+			var u := Vector3.ZERO
+			u[(axis + 1) % 3] = h[(axis + 1) % 3]
+			var v := Vector3.ZERO
+			v[(axis + 2) % 3] = h[(axis + 2) % 3]
+			var face := center + normal * h[axis]
+			_face(tool, face - u - v, face + u - v, face + u + v, face - u + v, normal)
+
+
 ## O lado side da célula leva corrimão: é ponte (estrada no rio) e não dá para outra estrada.
 static func railed(grid: IslandGrid, cell: Vector2i, side: Vector2i) -> bool:
 	return grid.has_road(cell) and grid.ground_at(cell) == IslandGrid.Ground.RIVER and not grid.has_road(cell + side)
@@ -355,6 +502,18 @@ func curb_count() -> int:
 
 func rail_count() -> int:
 	return _rails.multimesh.instance_count
+
+
+func parapet_count() -> int:
+	return _parapets.multimesh.instance_count
+
+
+func arch_count() -> int:
+	return _arches.multimesh.instance_count
+
+
+func pier_count() -> int:
+	return _piers.multimesh.instance_count
 
 
 ## Postes do corrimão e estacas da ponte, juntos.
