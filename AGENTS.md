@@ -1266,7 +1266,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 21 — Gaivota e papel (nossa) | **concluída em 18/10/2026**: gaivotas batendo asa; nó no cabeço; papel envelhecido na interface e na carta; a suíte inteira (84 arquivos, 594 casos) passou, por pasta e depois arquivo por arquivo (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
 | 22 — Mata e vento (nossa) | **concluída em 19/10/2026**: vento no clima, com a fumaça e as bandeiras; árvores, plantações e capim balançando pelo vento; carvalho, faia e pinheiro-silvestre gerados no código, com o nível de detalhe de longe; a suíte inteira (86 arquivos, 608 casos) passou, por pasta e depois arquivo por arquivo em primeiro plano |
 | 23 — Varanda e galpão (nossa) | **concluída em 20/10/2026**: varanda da casa de engenho nas plantações; plataforma de carga do armazém, com alpendre e tijolo pelo nível; guindaste de porto no entreposto e no estaleiro e guincho no armazém; a suíte inteira (86 arquivos, 614 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
-| 24 — Pedra e torno (nossa) | em andamento desde 20/10/2026: ponte de pedra em arco na rua calçada (parte 1); balaustrada torneada, consolos e peitoris nas casas (parte 2); caneluras e volutas no poste de ferro fundido (parte 3) |
+| 24 — Pedra e torno (nossa) | **concluída em 20/10/2026**: ponte de pedra em arco na rua calçada; balaustrada torneada, consolos e peitoris nas casas; caneluras e volutas no poste de ferro fundido; a suíte inteira (86 arquivos, 617 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano |
 
 Pendências já vistas para fases futuras:
 
