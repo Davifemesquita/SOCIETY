@@ -139,6 +139,7 @@ func _process(delta: float) -> void:
 		var wake := node.get_node_or_null(^"Wake") as GPUParticles3D
 		if wake != null:
 			wake.emitting = ship.state == Ship.State.SAILING
+		_update_deck(node, ship)
 		var damage := node.get_node_or_null(^"Damage") as CPUParticles3D
 		if damage != null:
 			damage.emitting = ship.hp < _simulation.data.ship(ship.def_id).hull_points * 0.5
@@ -410,7 +411,76 @@ func _model(def: ShipDef, sails: Color) -> Node3D:
 	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
 		var mesh: MeshInstance3D = node
 		mesh.material_override = material
+	# Fase 26: o cordame e a carga no convés, no espaço do modelo (ShipRigging)
+	var rigging := ShipRigging.rigging(model, scale_factor, _material(ShipRigging.ROPE_COLOR))
+	if rigging != null:
+		rigging.visibility_range_end = _detail_range_m
+		var deck := Node3D.new()
+		deck.name = "DeckCargo"
+		deck.set_meta(&"main", ShipRigging.main_mast(ShipRigging.mast_tops(model)))
+		deck.set_meta(&"scale", scale_factor)
+		deck.set_meta(&"goods", "")
+		model.add_child(rigging)
+		model.add_child(deck)
 	return model
+
+
+## Os bens a bordo que aparecem no convés (Fase 26): um por porão com carga, na ordem dos porões; o bem sem
+## peça de pilha (o porco) fica de fora.
+func deck_goods(ship: Ship) -> Array[StringName]:
+	var goods: Array[StringName] = []
+	for slot: int in ship.slot_goods.size():
+		var good := _simulation.data.good(ship.slot_goods[slot]) if ship.slot_tons[slot] > 0.0 else null
+		if good != null and good.pile != GoodDef.Pile.NONE:
+			goods.append(good.id)
+	return goods
+
+
+## Refaz a carga no convés quando os bens a bordo mudam: uma peça do CargoKit por bem de deck_goods, no tamanho
+## de verdade (o modelo é esticado), num MultiMesh por tipo de peça.
+func _update_deck(node: Node3D, ship: Ship) -> void:
+	var deck := node.get_node_or_null(^"Hull/DeckCargo") as Node3D
+	if deck == null:
+		return
+	var goods := deck_goods(ship)
+	var key := ",".join(goods)
+	var shown: String = deck.get_meta(&"goods")
+	if key == shown:
+		return
+	deck.set_meta(&"goods", key)
+	for child: Node in deck.get_children():
+		deck.remove_child(child)
+		child.queue_free()
+	var main: Vector3 = deck.get_meta(&"main")
+	var scale_factor: float = deck.get_meta(&"scale")
+	var shrink := Basis.from_scale(Vector3.ONE / scale_factor)
+	var by_pile: Dictionary[int, Array] = {}
+	for index: int in goods.size():
+		var good := _simulation.data.good(goods[index])
+		if not by_pile.has(good.pile):
+			by_pile[good.pile] = []
+		by_pile[good.pile].append([index, good])
+	for pile: int in by_pile:
+		var mesh := CargoKit.mesh(pile)
+		if mesh == null:
+			continue
+		var pieces: Array = by_pile[pile]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_colors = CargoKit.tinted(pile)
+		multimesh.mesh = mesh
+		multimesh.instance_count = pieces.size()
+		for k: int in pieces.size():
+			var index: int = pieces[k][0]
+			var good: GoodDef = pieces[k][1]
+			multimesh.set_instance_transform(k, Transform3D(shrink, ShipRigging.deck_slot(main, index)))
+			if multimesh.use_colors:
+				multimesh.set_instance_color(k, CargoKit.color_of(good))
+		var instance := MultiMeshInstance3D.new()
+		instance.name = "Pile%d" % pile
+		instance.multimesh = multimesh
+		instance.visibility_range_end = _detail_range_m
+		deck.add_child(instance)
 
 
 ## Tamanho do modelo (caixa de todas as malhas, no espaço dele).

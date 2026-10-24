@@ -34,11 +34,16 @@ func _run() -> void:
 		ship.heading = 0.0
 		ship.previous_heading = 0.0
 		_sim.world.ships[ship.id] = ship
+		# Fase 26: o mercante e o clíper carregados, um bem de cada forma de pilha, para a carga no convés
+		if def_id in [&"merchant_ship", &"clipper"]:
+			_load_one_of_each_pile(ship)
 		x += 40.0
 	var focus := Vector3(100.0, 0.0, -40.0)
 	await _shot("01_navios_de_lado.png", focus, 90.0, 0.0, 0.25)
 	await _shot("02_navios_de_cima.png", focus, 140.0, 0.6, 0.9)
 	await _shot("03_mercante_de_perto.png", Vector3(40.0, 0.0, -40.0), 35.0, 0.5, 0.35)
+	await _shot("03b_cordame_e_carga.png", Vector3(40.0, 4.0, -40.0), 24.0, 0.9, 0.3)
+	await _shot("03c_cliper_de_perto.png", Vector3(160.0, 4.0, -40.0), 30.0, 0.7, 0.4)
 	DemoVillage.build(_sim)
 	GameClock.set_speed(1)
 	for frame: int in 300:
@@ -51,6 +56,15 @@ func _run() -> void:
 			await _shot("04_carroca.png", grid.cell_world(cell), 14.0, 0.6, 0.5)
 			break
 	get_tree().quit()
+
+
+func _load_one_of_each_pile(ship: Ship) -> void:
+	var piles: Dictionary[int, bool] = {}
+	for good: GoodDef in _sim.data.goods:
+		if good.pile == GoodDef.Pile.NONE or piles.has(good.pile):
+			continue
+		piles[good.pile] = true
+		ship.load_good(good.id, 10.0, 10.0)
 
 
 func _shot(file_name: String, focus: Vector3, distance: float, yaw: float, pitch: float) -> void:
