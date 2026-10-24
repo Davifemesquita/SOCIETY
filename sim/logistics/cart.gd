@@ -26,6 +26,10 @@ var blocked: bool = false
 
 # runtime: posição no tick anterior, para a apresentação interpolar
 var previous_position: float = 0.0
+## Fase 29: a velocidade relativa da célula do caminho em speed_at (o índice), guardada até a carroça mudar de
+## célula; -1 obriga a recalcular. Não vai no save: ao carregar ela recalcula e dá o mesmo valor.
+var speed_at: int = -1
+var speed: float = 1.0
 
 
 func _init(home: int) -> void:

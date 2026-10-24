@@ -46,11 +46,16 @@ static func run(world: WorldState, config: GameConfig, derived: DerivedState, dt
 ## diagonal (Fase 17), √2 mais longo, anda na mesma proporção mais devagar em índice de caminho.
 static func _road_factor(world: WorldState, config: GameConfig, entry: DerivedState.ProductionEntry, cart: Cart) -> float:
 	var at := clampi(floori(cart.position), 0, cart.path.size() - 1)
+	# Fase 29: a mesma célula dá a mesma velocidade; só recalcula ao mudar de célula (ou de caminho e estrada)
+	if at == cart.speed_at:
+		return cart.speed
 	var cell := cart.path[at]
 	var grid := world.island(entry.record.island_id)
 	var factor := 1.0 + config.paved_road_speed_bonus if grid.roads[cell] == IslandGrid.Road.PAVED else 1.0
 	if at + 1 < cart.path.size():
 		factor /= RoadRouter.step_length(grid, cell, cart.path[at + 1])
+	cart.speed_at = at
+	cart.speed = factor
 	return factor
 
 
@@ -59,6 +64,18 @@ static func _plan(world: WorldState, config: GameConfig, derived: DerivedState, 
 	if entry.warehouse_id == 0 or entry.record.paused:
 		return
 	var economy := entry.economy
+	# Fase 29: sem saída pronta, sem carga e sem entrada que caiba e que o estoque tenha, fica em casa (a maior parte
+	# das carroças, a cada tick); é o mesmo que o resto da função decide, sem montar o pedido
+	if entry.record.output_buffer < 1.0 and cart.cargo.is_empty():
+		var needs_input := false
+		for input: StringName in entry.def.inputs:
+			var held: float = entry.record.input_buffer.get(input, 0.0)
+			if held + 1.0 <= config.building_buffer_t + 0.000001 and economy.amount(input) >= 1.0:
+				needs_input = true
+				break
+		if not needs_input:
+			cart.wanted.clear()
+			return
 	var room := float(config.cart_capacity_t) - cart.tons()
 	if entry.record.output_buffer >= 1.0 and room > 0.0:
 		var taken := minf(entry.record.output_buffer, room)
@@ -87,6 +104,7 @@ static func _plan(world: WorldState, config: GameConfig, derived: DerivedState, 
 		return
 	cart.warehouse_id = entry.warehouse_id
 	cart.path = route
+	cart.speed_at = -1
 	cart.position = 0.0
 	cart.previous_position = 0.0
 	cart.blocked = false
@@ -97,9 +115,17 @@ static func _plan(world: WorldState, config: GameConfig, derived: DerivedState, 
 static func _serve_queue(world: WorldState, config: GameConfig, derived: DerivedState, queued: Array[Cart], at_ramp: Dictionary[int, int]) -> void:
 	if queued.is_empty():
 		return
-	queued.sort_custom(func(a: Cart, b: Cart) -> bool:
-		return a.queued_at < b.queued_at or (a.queued_at == b.queued_at and a.home_id < b.home_id))
+	# Fase 29: a ordem é (chegada, prédio) numa chave inteira, com o sort nativo; com ~50 carroças na fila, o
+	# sort_custom com lambda a cada tick custava 0,2 ms
+	var keys := PackedInt64Array()
+	var by_key: Dictionary[int, Cart] = {}
 	for cart: Cart in queued:
+		var key := (cart.queued_at << 32) + cart.home_id
+		keys.append(key)
+		by_key[key] = cart
+	keys.sort()
+	for key: int in keys:
+		var cart := by_key[key]
 		var busy: int = at_ramp.get(cart.warehouse_id, 0)
 		if busy >= derived.ramps.get(cart.warehouse_id, 0):
 			continue
@@ -142,6 +168,7 @@ static func _head_home(derived: DerivedState, entry: DerivedState.ProductionEntr
 		cart.blocked = true
 		return
 	cart.path = route
+	cart.speed_at = -1
 	cart.position = route.size() - 1
 	cart.previous_position = cart.position
 	cart.blocked = false
@@ -165,6 +192,8 @@ static func _arrive_home(entry: DerivedState.ProductionEntry, cart: Cart) -> voi
 static func _revalidate(world: WorldState, derived: DerivedState) -> void:
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		var cart := world.cart(entry.record.id)
+		# a estrada pode ter mudado (calçada, cortada): a velocidade guardada não vale mais
+		cart.speed_at = -1
 		if not cart.is_away():
 			continue
 		var grid := world.island(entry.record.island_id)
@@ -189,6 +218,7 @@ static func _revalidate(world: WorldState, derived: DerivedState) -> void:
 			continue
 		cart.warehouse_id = target_warehouse
 		cart.path = route
+		cart.speed_at = -1
 		cart.position = 0.0
 		cart.previous_position = 0.0
 		cart.blocked = false

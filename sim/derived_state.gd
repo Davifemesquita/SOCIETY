@@ -27,6 +27,9 @@ class ProductionEntry:
 	var powered: bool = false
 	## Especialista posto no prédio (Fase 11), ou null.
 	var specialist: Specialist
+	## Estaleiro (sem ciclo, o ShipyardSystem cuida) e a classe de quem trabalha, guardados para o tick (Fase 29).
+	var shipyard: bool = false
+	var workforce_tier: StringName
 
 var road_access: Dictionary[int, bool] = {}
 ## Casa → serviços (id do tipo) que a cobrem.
@@ -341,6 +344,8 @@ func _index_production(world: WorldState, data: GameData) -> void:
 		entry.economy = world.economy(entry.record.island_id)
 		entry.has_road = road_access[building_id]
 		entry.specialist = world.specialists_state.at(building_id)
+		entry.shipyard = entry.def.is_shipyard()
+		entry.workforce_tier = entry.def.workforce_tier
 		entry.modules_ok = module_count.get(building_id, 0) >= entry.def.modules_required
 		var grid := world.island(entry.record.island_id)
 		if entry.def.terrain == BuildingDef.Terrain.TREES and not grid.flat:

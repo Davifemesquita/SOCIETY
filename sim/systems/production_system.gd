@@ -22,12 +22,16 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 	var fires: Dictionary[int, int] = risks.fires if risks != null else {}
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		entry.powered = false
+		if entry.power_plants.is_empty():
+			continue
 		for plant: DerivedState.ProductionEntry in entry.power_plants:
 			if plant.record.state == BuildingRecord.State.PRODUCING:
 				entry.powered = true
 				break
+	# Fase 29: o que não muda dentro do tick (há especialista? há fogo?) fica fora do laço
+	var any_fire := not fires.is_empty()
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
-		if entry.def.is_shipyard():
+		if entry.shipyard:
 			continue
 		var record := entry.record
 		var previous := record.state
@@ -37,11 +41,11 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 		if entry.specialist != null and entry.specialist.def.effect == SpecialistDef.Effect.SPEED:
 			factor *= 1.0 + entry.specialist.def.amount
 		var speed := 0.0
-		if not fires.is_empty() and fires.has(record.id):
+		if any_fire and fires.has(record.id):
 			record.state = BuildingRecord.State.ON_FIRE
 		else:
 			speed = _step(entry, config, dt, factor)
-		record.productivity = lerpf(record.productivity, speed, smoothing)
+		record.productivity += (speed - record.productivity) * smoothing
 		if record.state != previous:
 			EventBus.building_state_changed.emit(record.id)
 
@@ -67,7 +71,7 @@ static func _step(entry: DerivedState.ProductionEntry, config: GameConfig, dt: f
 		return 0.0
 	if not record.in_cycle and not _start_cycle(record, def, config):
 		return 0.0
-	var speed := entry.economy.workforce(def.workforce_tier) * factor
+	var speed := entry.economy.workforce(entry.workforce_tier) * factor
 	if speed <= 0.0:
 		record.state = BuildingRecord.State.NO_WORKERS
 		return 0.0

@@ -32,50 +32,57 @@ func _init(grid: IslandGrid, sources: Array[Vector2i]) -> void:
 		var next_distance := distance[index] + 1
 		var from := owner[index]
 		# vizinhos na ordem esquerda, direita, cima, baixo (o desempate do dono depende dela),
-		# sem montar um Array por célula: era o grosso do tempo do recálculo
+		# sem montar um Array por célula: era o grosso do tempo do recálculo. Fase 29: cada vizinha é lida uma vez
 		var x := index % width
+		var has_left := x > 0
+		var has_right := x < width - 1
+		var up := index - width
+		var down := index + width
+		var road_left := has_left and roads[index - 1] != 0
+		var road_right := has_right and roads[index + 1] != 0
+		var road_up := up >= 0 and roads[up] != 0
+		var road_down := down < count and roads[down] != 0
 		var next := index - 1
-		if x > 0 and roads[next] != 0 and distance[next] == -1:
+		if road_left and distance[next] == -1:
 			distance[next] = next_distance
 			owner[next] = from
 			queue.append(next)
 		next = index + 1
-		if x < width - 1 and roads[next] != 0 and distance[next] == -1:
+		if road_right and distance[next] == -1:
 			distance[next] = next_distance
 			owner[next] = from
 			queue.append(next)
-		next = index - width
-		if next >= 0 and roads[next] != 0 and distance[next] == -1:
+		if road_up and distance[up] == -1:
+			distance[up] = next_distance
+			owner[up] = from
+			queue.append(up)
+		if road_down and distance[down] == -1:
+			distance[down] = next_distance
+			owner[down] = from
+			queue.append(down)
+		# diagonal pura (Fase 17): a célula do canto, sem estrada nas duas vizinhas em comum. Fase 29: numa rua reta
+		# (ou num cruzamento) toda dupla de vizinhas perpendiculares tem estrada e nenhum canto liga: pula os quatro
+		var free_up := not road_up and up >= 0
+		var free_down := not road_down and down < count
+		if not ((free_up or free_down) and (not road_left or not road_right)):
+			continue
+		next = up - 1
+		if has_left and free_up and not road_left and roads[next] != 0 and distance[next] == -1:
 			distance[next] = next_distance
 			owner[next] = from
 			queue.append(next)
-		next = index + width
-		if next < count and roads[next] != 0 and distance[next] == -1:
+		next = up + 1
+		if has_right and free_up and not road_right and roads[next] != 0 and distance[next] == -1:
 			distance[next] = next_distance
 			owner[next] = from
 			queue.append(next)
-		# diagonal pura (Fase 17): a célula do canto, sem estrada nas duas vizinhas em comum
-		var road_left := x > 0 and roads[index - 1] != 0
-		var road_right := x < width - 1 and roads[index + 1] != 0
-		var road_up := index - width >= 0 and roads[index - width] != 0
-		var road_down := index + width < count and roads[index + width] != 0
-		next = index - width - 1
-		if x > 0 and next >= 0 and next < count and not road_left and not road_up and roads[next] != 0 and distance[next] == -1:
+		next = down - 1
+		if has_left and free_down and not road_left and roads[next] != 0 and distance[next] == -1:
 			distance[next] = next_distance
 			owner[next] = from
 			queue.append(next)
-		next = index - width + 1
-		if x < width - 1 and next >= 0 and next < count and not road_right and not road_up and roads[next] != 0 and distance[next] == -1:
-			distance[next] = next_distance
-			owner[next] = from
-			queue.append(next)
-		next = index + width - 1
-		if x > 0 and next >= 0 and next < count and not road_left and not road_down and roads[next] != 0 and distance[next] == -1:
-			distance[next] = next_distance
-			owner[next] = from
-			queue.append(next)
-		next = index + width + 1
-		if x < width - 1 and next >= 0 and next < count and not road_right and not road_down and roads[next] != 0 and distance[next] == -1:
+		next = down + 1
+		if has_right and free_down and not road_right and roads[next] != 0 and distance[next] == -1:
 			distance[next] = next_distance
 			owner[next] = from
 			queue.append(next)

@@ -20,26 +20,51 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 	var upgraded_on: Dictionary[int, bool] = {}
 	## ilha → classe → atendimento da classe (igual para todas as casas dela na ilha)
 	var supplies: Dictionary[int, Dictionary] = {}
+	## Fase 29: a avaliação só depende do atendimento da classe na ilha e dos serviços que cobrem a casa, e muitas
+	## casas têm a mesma cobertura: atendimento → cobertura → avaliação, dentro do tick
+	var evaluations: Dictionary[HouseNeeds.TierSupply, Dictionary] = {}
+	## Fase 29: o que não muda de casa para casa sai do laço — chegada e efeito de evento por ilha, se há fogo ou
+	## doença, a felicidade do nível de imposto por classe
+	var events := world.events_state
+	var any_event := not events.events.is_empty()
+	var risks := world.risks_state
+	var any_fire := not risks.fires.is_empty()
+	var any_outbreak := not risks.outbreaks.is_empty()
+	var arrival_by_island: Dictionary[int, float] = {}
+	var event_happiness: Dictionary[int, float] = {}
+	var tax_happiness: Dictionary[StringName, float] = {}
+	var shortage_step := config.residents_lost_per_minute_on_shortage * dt_min
+	var happiness_step := config.happiness_change_per_minute * dt_min
+	var base_fraction := config.house_base_residents_fraction
 	var members: Array = derived.house_groups[group]
 	for house_id: int in members:
 		var house := world.building(house_id)
-		if not supplies.has(house.island_id):
-			supplies[house.island_id] = {}
-		var by_tier: Dictionary = supplies[house.island_id]
+		var island := house.island_id
+		if not supplies.has(island):
+			supplies[island] = {}
+			arrival_by_island[island] = config.residents_arrival_per_minute \
+					* (EventEffects.arrival(events, island) if any_event else 1.0)
+			event_happiness[island] = EventEffects.happiness(events, island) if any_event else 0.0
+		var by_tier: Dictionary = supplies[island]
 		if not by_tier.has(house.tier):
-			by_tier[house.tier] = HouseNeeds.tier_supply(world.economy(house.island_id), config, data.tier(house.tier))
+			var fresh := HouseNeeds.tier_supply(world.economy(island), config, data.tier(house.tier))
+			by_tier[house.tier] = fresh
+			evaluations[fresh] = {}
+			if not tax_happiness.has(house.tier):
+				tax_happiness[house.tier] = config.tax_level_happiness[world.tax_level(house.tier)]
 		var supply: HouseNeeds.TierSupply = by_tier[house.tier]
 		var tier := supply.tier
-		var evaluation := HouseNeeds.evaluate(derived, config, house_id, supply)
+		var covering: Array = derived.coverage.get(house_id, [])
+		var cached: Dictionary = evaluations[supply]
+		var evaluation: HouseNeeds.Evaluation = cached.get(covering)
+		if evaluation == null:
+			evaluation = HouseNeeds.evaluate(derived, config, house_id, supply)
+			cached[covering] = evaluation
 		var capacity := float(tier.residents_per_house)
-		var target := capacity * (config.house_base_residents_fraction + (1.0 - config.house_base_residents_fraction) * evaluation.basic_average)
-		var events := world.events_state
-		var arrival := config.residents_arrival_per_minute * (EventEffects.arrival(events, house.island_id) if not events.events.is_empty() else 1.0)
-		var risks := world.risks_state
-		var burning := not risks.fires.is_empty() and risks.fires.has(house_id)
-		var sick := not risks.outbreaks.is_empty() and risks.outbreaks.has(house_id)
-		var change := clampf(target - house.residents, -config.residents_lost_per_minute_on_shortage * dt_min,
-				arrival * dt_min)
+		var target := capacity * (base_fraction + (1.0 - base_fraction) * evaluation.basic_average)
+		var burning := any_fire and risks.fires.has(house_id)
+		var sick := any_outbreak and risks.outbreaks.has(house_id)
+		var change := clampf(target - house.residents, -shortage_step, arrival_by_island[island] * dt_min)
 		if burning:
 			change = minf(change, 0.0)
 		if sick:
@@ -50,16 +75,16 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 		var happiness_target: float = config.happiness_base \
 				+ config.happiness_per_luxury * evaluation.luxury_total \
 				- config.happiness_shortage_penalty * (1.0 - evaluation.basic_average) \
-				+ config.tax_level_happiness[world.tax_level(house.tier)] \
+				+ tax_happiness[house.tier] \
 				- config.happiness_pollution_penalty * pollution \
 				+ config.happiness_per_beauty * beauty \
-				+ (EventEffects.happiness(events, house.island_id) if not events.events.is_empty() else 0.0) \
+				+ event_happiness[island] \
 				- (config.disease_happiness_penalty if sick else 0.0)
-		house.happiness = move_toward(house.happiness, clampf(happiness_target, 0.0, 100.0), config.happiness_change_per_minute * dt_min)
+		house.happiness = move_toward(house.happiness, clampf(happiness_target, 0.0, 100.0), happiness_step)
 		house.tax_per_min = 0.0 if burning else HouseNeeds.tax_from(world, config, house, tier, evaluation.bonus_categories)
-		if not upgraded_on.has(house.island_id) and evaluation.all_basic_met and not burning and not sick \
+		if not upgraded_on.has(island) and evaluation.all_basic_met and not burning and not sick \
 				and _try_upgrade(world, data, house, tier, target):
-			upgraded_on[house.island_id] = true
+			upgraded_on[island] = true
 	derived.recount_group(world, group)
 
 

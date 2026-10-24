@@ -11,7 +11,7 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 	var built: Array[int] = []
 	var smoothing := 1.0 - exp(-dt / config.productivity_smoothing_seconds)
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
-		if not entry.def.is_shipyard():
+		if not entry.shipyard:
 			continue
 		var record := entry.record
 		var previous := record.state
