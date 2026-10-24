@@ -1287,6 +1287,24 @@ Regras que já custaram investigação:
   como o fuste da Fase 24. Captura: `CAPTURA_SO=postes` no `tools/capture_buildings.tscn`
   (`14b_poste_de_perto.png`).
 
+### Contas do meio da partida (Fase 27, nossa)
+
+- **Proposta nossa** (24/10/2026), com a autorização permanente de seguir pela recomendação: medir de onde vem o aperto
+  de dinheiro do meio da partida, a pendência de balanceamento que sobrou. Nada muda na simulação nem no save.
+- **Raio-x no relatório** (`tools/balance_report.gd`): além da linha do tempo, a manutenção por grupo (`upkeep_groups`:
+  bens de consumo, intermediários, material de construção, serviços, logística e navios), a parte que vai para fábricas
+  abaixo de 50% de produtividade e a renda por classe (`breakdown`), e as obras de cada intervalo por grupo, com as
+  moedas (`new_works`). Campos e pastos contam com os intermediários.
+- **Cadeia × imposto** (`tools/balance_math.gd`, `BalanceMath`): a manutenção da cadeia por tonelada, somando cada etapa,
+  e por morador, com o consumo **dividido entre os bens da categoria** (seção 4; somar cada bem inteiro dava os
+  operários e artesãos pagando menos que a cesta, o que não é verdade). A planilha das classes mostra as duas razões.
+- **Robô junta para a obra da frente** (`AutoPlayer.SAVE_FRONT_AFTER_S`): esperando só dinheiro há 90 s, as obras de
+  trás que não são urgentes esperam também. A fundição (portão do aço) esperava 45 min na frente.
+- **Conclusão** (`docs/balanceamento.md`): os números estão sãos (cada classe paga a cesta de 1,5 a 3,4 vezes) e o meio
+  da partida é lento, não quebrado; nenhum número dos dados mudou. As alavancas, se o dono do produto quiser o meio mais
+  folgado, estão no fim do documento. **`tools/godot.sh planilha` imprime erros de compilação** de scripts que usam o
+  `EventBus` (não existe pelo `--script`), mas grava os CSVs.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1324,13 +1342,14 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 24 — Pedra e torno (nossa) | **concluída em 20/10/2026**: ponte de pedra em arco na rua calçada; balaustrada torneada, consolos e peitoris nas casas; caneluras e volutas no poste de ferro fundido; a suíte inteira (86 arquivos, 617 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano |
 | 25 — Cantaria e moldura (nossa) | **concluída em 24/10/2026**: guarnição de pedra (ombreiras e pedra de fecho) nas janelas dos engenheiros e investidores; aduelas saltadas no arco da ponte de pedra; meio-fio com as quinas chanfradas; a suíte inteira (86 arquivos, 618 casos) passou, por pasta e a `ui` arquivo por arquivo (a pasta inteira passou do tempo com a memória da VM apertada) |
 | 26 — Convés e cordame (nossa) | **concluída em 24/10/2026**: ovéns e estais nos navios, lidos do próprio modelo; carga do porão no convés; base e capitel torneados no poste de gás; a suíte inteira passou no CI |
+| 27 — Contas do meio da partida (nossa) | **concluída em 24/10/2026**: raio-x da manutenção e das obras no relatório de balanceamento, cadeia × imposto na planilha, robô juntando para a obra da frente; diagnóstico em `docs/balanceamento.md`, nenhum número mudou; a suíte inteira passou no CI |
 
 Pendências já vistas para fases futuras:
 
-- Balanceamento: ver `docs/balanceamento.md`. O aperto de dinheiro do meio da partida era o defeito da
-  subida de classe (corrigido em 15/10/2026); os números da especificação e os nossos não foram mexidos.
-  O robô joga 4 h numa ilha plana de 350×350 (a terra do arquipélago, no lugar das colônias) e chega às
-  cinco classes (investidores aos ~225 min); o aperto é a entrada das fábricas dos engenheiros.
+- Balanceamento: ver `docs/balanceamento.md`. Medido na Fase 27 (24/10/2026): os números estão sãos e o meio da
+  partida é lento, não quebrado; nenhum número mudou. O robô joga 4 h numa ilha plana de 350×350 e chega às cinco
+  classes (engenheiros aos ~135 min, investidores aos ~225). Deixar o meio mais folgado é decisão do dono do produto
+  (as alavancas estão no fim do documento).
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
   volumétricas aparecem certas no ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
