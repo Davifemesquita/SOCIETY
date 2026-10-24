@@ -1,6 +1,13 @@
 # Plano da Fase 30 — Transição e retorno visual (nossa)
 
-**Estado: proposta, aguardando a confirmação do dono do produto.** Escrito em 24/10/2026 a partir do curso
+**Estado: executado em 24/10/2026 (versão 0.30.0)**, confirmado pelo dono do produto. O que mudou em relação ao
+plano: as notificações só aparecem e esmaecem (o deslizar lateral não cabe no `VBoxContainer`, que manda na posição
+dos filhos); a cortina tem `change_with`, para o teste rodá-la sem trocar a cena do executor; nos testes, a troca é
+direta pela variável `SOCIETY_SEM_TRANSICAO`, porque a suíte roda com tela; as moedas saem acima das paredes do
+entreposto (`BuildingDef.height_m`). As perguntas ficaram com as propostas daqui (500 moedas ou 5%; anima na pausa).
+Detalhes em `AGENTS.md`, "Transição e retorno visual (Fase 30, nossa)". Texto original abaixo.
+
+**Estado original: proposta, aguardando a confirmação do dono do produto.** Escrito em 24/10/2026 a partir do curso
 "CRIE SEU JOGO 3D na Godot 4.2" (playlist `PL-oJEh-N3A3QwZnrr94NHHmkkyy9LtGib`): quase tudo do curso o projeto
 já faz melhor; o que sobra de útil é retorno visual (*juice*), e o projeto não tem nenhum `Tween` até aqui.
 

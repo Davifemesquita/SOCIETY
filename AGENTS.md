@@ -94,6 +94,8 @@ tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.g
 # refaz os animais (VAT) a partir dos FBX de assets/source/quaternius/animals; a captura dos bichos é
 # CAPTURA_SO=animais no tools/capture_phase3.tscn
 tools/godot.sh godot --headless --path . --script res://tools/bake_animals.gd
+# Fase 30: moedas e "+X" sobre o entreposto e a cortina escura com o texto no meio de uma troca
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase30.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
@@ -1342,6 +1344,32 @@ Regras que já custaram investigação:
   vizinha é lida uma vez, e os quatro cantos da diagonal pura (Fase 17) ficam de fora quando nenhuma dupla de vizinhas
   perpendiculares está livre (rua reta, cruzamento). Armazéns 16,0 → 9,7 ms; a obra com a ilha cheia ~41 ms.
 
+### Transição e retorno visual (Fase 30, nossa)
+
+- **Plano** em `docs/plano_fase30.md` (escrito noutra sessão a partir de um curso de Godot), confirmado pelo dono do
+  produto em 24/10/2026. Só apresentação e interface: nada muda na simulação nem no save. As duas perguntas do plano
+  ficaram com as propostas dele: o pulso a partir de 500 moedas ou 5% do saldo, e as animações seguem com o jogo
+  pausado (são tweens de interface; a pausa é do `TickClock`).
+- **Cortina** (autoload `SceneFader`, `core/scene_fader.gd`): `change_to(path, chave)` escurece em `FADE_S`, mostra o
+  texto ("Gerando o arquipélago…", "Carregando…"), troca a cena, espera `SETTLE_FRAMES` (a cena nova entra no fim do
+  quadro e monta tudo no `_ready` seguinte) e clareia; no meio, come mouse e teclado. `change_with(callable, chave)` é
+  a cortina em volta de qualquer troca (o teste a usa sem trocar a cena do executor). **Direta** sem tela, com
+  `SOCIETY_SEM_TRANSICAO=1` ou com `instant`: o `tools/godot.sh testes` (e, com ele, o CI) liga a variável, porque a
+  suíte roda com tela no xvfb e os testes leem a cena logo depois de trocar. O benchmark continua direto.
+- **Contadores da barra** (`Hud._count_money`, `_count_population`): andam até o valor novo em `COUNT_S` com
+  `tween_method`, matando o anterior a cada `_refresh`; ganho de `BIG_GAIN` ou `BIG_GAIN_FRACTION` do saldo pulsa o
+  dinheiro (`_pulse`: escala e `self_modulate` dourado, por cima da cor de estado do `UiPalette`). Com
+  `SceneFader.is_instant()`, o texto vai direto.
+- **Notificações** (`NotificationFeed`): aparecem e esmaecem em `FADE_S`; ao sair, a chave deixa `_items`, `_ages` e
+  `_notices` na hora (o `shown()` e o limite não a veem) e só o desenho esmaece; o laço do limite procura o mais
+  antigo entre os que ainda contam. O deslizar lateral do plano ficou de fora: o feed é um `VBoxContainer`, que manda
+  na posição dos filhos.
+- **Moedas no entreposto** (`MoneyFxView`, montada pelo `GameScreen` como `money_fx_view`): no
+  `EventBus.trader_visited` com `earned > 0`, `COINS` moedas (cilindro dourado gerado no código) saltam em arco a
+  `LIFT_M` acima das paredes do entreposto (`BuildingDef.height_m`: mais baixo, saltavam dentro do telhado) e o "+X"
+  (`Label3D` em billboard, sem teste de profundidade) sobe e some. No máximo `MAX_EFFECTS` ao mesmo tempo, nós
+  reaproveitados. A encomenda entregue não traz a ilha: aparece só no pulso da barra.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1382,6 +1410,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 27 — Contas do meio da partida (nossa) | **concluída em 24/10/2026**: raio-x da manutenção e das obras no relatório de balanceamento, cadeia × imposto na planilha, robô juntando para a obra da frente; diagnóstico em `docs/balanceamento.md`, nenhum número mudou; a suíte inteira passou no CI |
 | 28 — Folga do meio da partida (nossa) | **concluída em 24/10/2026**: aviso de fábrica ociosa no saldo e no painel; teatro e universidade mais baratos de manter; fábricas dos artesãos e fundição mais baratas de construir; imposto dos operários 1,4 (decisão do dono do produto); pior saldo do robô de −7.654 para −745; a suíte inteira passou no CI |
 | 29 — Fôlego da simulação (nossa) | **concluída em 24/10/2026**: perfil do tick por etapa e `-- --so-tick` no benchmark; tick médio de 4,19 para 3,10 ms (população, logística, produção) e obra com a ilha cheia de 48,1 para 41,2 ms (buscas em largura das estradas), sem mudar o resultado; a suíte inteira passou no CI |
+| 30 — Transição e retorno visual (nossa) | **concluída em 24/10/2026**: cortina com texto na troca de tela, contadores animados e pulso de ganho na barra, notificações que aparecem e esmaecem, moedas e "+X" sobre o entreposto quando o comerciante paga; plano em `docs/plano_fase30.md`; a suíte inteira passou no CI |
 
 Pendências já vistas para fases futuras:
 
