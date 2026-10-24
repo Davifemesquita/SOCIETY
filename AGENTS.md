@@ -1305,6 +1305,20 @@ Regras que já custaram investigação:
   folgado, estão no fim do documento. **`tools/godot.sh planilha` imprime erros de compilação** de scripts que usam o
   `EventBus` (não existe pelo `--script`), mas grava os CSVs.
 
+### Folga do meio da partida (Fase 28, nossa)
+
+- **Decisão do dono do produto** (24/10/2026, "pode fazer tudo"): as quatro alavancas do diagnóstico da Fase 27, uma
+  por vez, medidas com o robô. Comparação em `docs/balanceamento.md`. O save não muda (são números dos `.tres`).
+- **Fábrica ociosa** (`GameConfig.idle_productivity`, `Simulation.is_idle`, `idle_upkeep`): produção não pausada abaixo
+  de 50% de produtividade; a dica do saldo na barra soma quantas são e o custo por minuto, e o painel da fábrica pinta a
+  manutenção de laranja com quanto ela pagaria pausada (`HUD_MONEY_IDLE`, `PANEL_UPKEEP_IDLE`).
+- **Números nossos**: teatro 90 e universidade 150 moedas/min de manutenção; vidraria 1.500, janelaria, máquinas de
+  costura e conservas 1.900, destilaria de rum 1.100 e fundição 1.200 moedas de construção (a tabela da especificação
+  só traz a manutenção).
+- **Imposto dos operários 1,4** (a especificação diz 1,2): é a única mudança num número da especificação, e o
+  `test_tiers_follow_the_spec_table` registra a decisão. Resultado no robô: pior saldo −745 (antes −7.654), a
+  fundição não espera mais na frente da fila, engenheiros aos ~120 min e investidores aos ~225.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1343,13 +1357,13 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 25 — Cantaria e moldura (nossa) | **concluída em 24/10/2026**: guarnição de pedra (ombreiras e pedra de fecho) nas janelas dos engenheiros e investidores; aduelas saltadas no arco da ponte de pedra; meio-fio com as quinas chanfradas; a suíte inteira (86 arquivos, 618 casos) passou, por pasta e a `ui` arquivo por arquivo (a pasta inteira passou do tempo com a memória da VM apertada) |
 | 26 — Convés e cordame (nossa) | **concluída em 24/10/2026**: ovéns e estais nos navios, lidos do próprio modelo; carga do porão no convés; base e capitel torneados no poste de gás; a suíte inteira passou no CI |
 | 27 — Contas do meio da partida (nossa) | **concluída em 24/10/2026**: raio-x da manutenção e das obras no relatório de balanceamento, cadeia × imposto na planilha, robô juntando para a obra da frente; diagnóstico em `docs/balanceamento.md`, nenhum número mudou; a suíte inteira passou no CI |
+| 28 — Folga do meio da partida (nossa) | **concluída em 24/10/2026**: aviso de fábrica ociosa no saldo e no painel; teatro e universidade mais baratos de manter; fábricas dos artesãos e fundição mais baratas de construir; imposto dos operários 1,4 (decisão do dono do produto); pior saldo do robô de −7.654 para −745; a suíte inteira passou no CI |
 
 Pendências já vistas para fases futuras:
 
-- Balanceamento: ver `docs/balanceamento.md`. Medido na Fase 27 (24/10/2026): os números estão sãos e o meio da
-  partida é lento, não quebrado; nenhum número mudou. O robô joga 4 h numa ilha plana de 350×350 e chega às cinco
-  classes (engenheiros aos ~135 min, investidores aos ~225). Deixar o meio mais folgado é decisão do dono do produto
-  (as alavancas estão no fim do documento).
+- Balanceamento: ver `docs/balanceamento.md`. Medido na Fase 27 e folgado na Fase 28 (24/10/2026): o robô joga 4 h
+  numa ilha plana de 350×350, o pior saldo fica em −745 e ele chega aos engenheiros aos ~120 min e aos investidores
+  aos ~225. Falta medir com gente de verdade jogando: o robô não sente a partida.
 - Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
   volumétricas aparecem certas no ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
