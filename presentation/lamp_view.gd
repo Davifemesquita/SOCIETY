@@ -32,6 +32,21 @@ const FLUTES := 8
 const FLUTE_DEPTH := 0.22
 const VOLUTE_BAR_M := 0.022
 const VOLUTE_TURNS := 0.85
+## Base e capitel moldados (Fase 26), torneados em LATHE_SIDES faces a partir do perfil (raio, altura): na base,
+## o plinto chanfrado, o toro, a escócia, o filete, o dado do pedestal afinando, a cornija dele e o pescoço até o
+## fuste; o capitel começa na altura do topo do fuste (y = 0 do perfil) com o astrágalo, abre no equino e fecha
+## no ábaco, debaixo do colar do lampião.
+const LATHE_SIDES := 12
+const BASE_PROFILE: Array[Vector2] = [
+	Vector2(0.2, 0.0), Vector2(0.2, 0.07), Vector2(0.17, 0.08), Vector2(0.165, 0.08), Vector2(0.18, 0.11),
+	Vector2(0.165, 0.14), Vector2(0.13, 0.15), Vector2(0.12, 0.17), Vector2(0.135, 0.19), Vector2(0.135, 0.21),
+	Vector2(0.12, 0.22), Vector2(0.115, 0.46), Vector2(0.13, 0.48), Vector2(0.13, 0.5), Vector2(0.09, 0.53),
+	Vector2(0.065, 0.58),
+]
+const CAPITAL_PROFILE: Array[Vector2] = [
+	Vector2(0.045, -0.02), Vector2(0.06, -0.015), Vector2(0.06, 0.0), Vector2(0.05, 0.005), Vector2(0.07, 0.04),
+	Vector2(0.095, 0.06), Vector2(0.1, 0.06), Vector2(0.1, 0.08),
+]
 ## Luzes de verdade: quantas, até onde a câmera conta como perto e o alcance de cada uma.
 const LIGHTS := 10
 const LIGHT_CAMERA_DISTANCE_M := 90.0
@@ -248,11 +263,9 @@ static func post_mesh() -> Mesh:
 	var glass_high := LAMP_HEIGHT_M * (GLASS_HEIGHT + GLASS_SPAN * 0.5)
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	_cylinder(tool, 0.0, 0.08, 0.2, 0.2)
-	_cylinder(tool, 0.08, 0.5, 0.15, 0.12)
-	_cylinder(tool, 0.5, 0.58, 0.13, 0.08)
+	tool.append_from(lathe(BASE_PROFILE), 0, Transform3D.IDENTITY)
 	tool.append_from(fluted_shaft(0.58, glass_low - 0.3, 0.065, 0.045), 0, Transform3D.IDENTITY)
-	_cylinder(tool, glass_low - 0.3, glass_low - 0.22, 0.08, 0.08)
+	tool.append_from(lathe(CAPITAL_PROFILE), 0, Transform3D(Basis.IDENTITY, Vector3(0.0, glass_low - 0.3, 0.0)))
 	var bar := BoxMesh.new()
 	bar.size = Vector3(0.62, 0.035, 0.035)
 	tool.append_from(bar, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, glass_low - 0.26, 0.0)))
@@ -321,6 +334,36 @@ static func fluted_shaft(y0: float, y1: float, r0: float, r1: float) -> ArrayMes
 			tool.set_uv(Vector2.ZERO)
 			tool.add_vertex(point)
 	# indexada, como os cilindros: no SurfaceTool indexado do poste, malha sem índice entra sem triângulo
+	tool.index()
+	return tool.commit()
+
+
+## Peça torneada (Fase 26): o perfil (raio, altura) girado em LATHE_SIDES faces, um anel de quadriláteros por
+## trecho do perfil, cada um com a normal dele; sem tampas. Indexada, como o fuste.
+static func lathe(profile: Array[Vector2]) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i: int in profile.size() - 1:
+		var low := profile[i]
+		var high := profile[i + 1]
+		# a normal do trecho no plano do perfil: para fora e para cima conforme ele fecha ou abre
+		var slope := Vector2(high.y - low.y, low.x - high.x).normalized()
+		for k: int in LATHE_SIDES:
+			var a0 := TAU * k / LATHE_SIDES
+			var a1 := TAU * (k + 1) / LATHE_SIDES
+			var mid := (a0 + a1) * 0.5
+			var normal := Vector3(cos(mid) * slope.x, slope.y, sin(mid) * slope.x)
+			var corners: Array[Vector3] = [
+				Vector3(cos(a0) * low.x, low.y, sin(a0) * low.x), Vector3(cos(a1) * low.x, low.y, sin(a1) * low.x),
+				Vector3(cos(a1) * high.x, high.y, sin(a1) * high.x), Vector3(cos(a0) * high.x, high.y, sin(a0) * high.x),
+			]
+			var points: Array[Vector3] = [corners[0], corners[1], corners[2], corners[0], corners[2], corners[3]]
+			if (corners[1] - corners[0]).cross(corners[2] - corners[0]).dot(normal) > 0.0:
+				points = [corners[0], corners[2], corners[1], corners[0], corners[3], corners[2]]
+			for point: Vector3 in points:
+				tool.set_normal(normal)
+				tool.set_uv(Vector2.ZERO)
+				tool.add_vertex(point)
 	tool.index()
 	return tool.commit()
 

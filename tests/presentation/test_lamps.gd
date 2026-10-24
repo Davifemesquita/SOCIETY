@@ -141,3 +141,34 @@ func test_the_post_has_a_fluted_shaft_and_scrolls_under_the_ladder_bar() -> void
 			drawn = true
 			break
 	assert_bool(drawn).is_true()
+
+
+## Fase 26: base e capitel torneados — o perfil girado em LATHE_SIDES faces, com o toro da base saltando sobre a
+## escócia e o equino do capitel abrindo debaixo do colar do lampião.
+func test_the_post_has_a_turned_base_and_a_capital() -> void:
+	# cada ponto do perfil vira um anel de LATHE_SIDES vértices no raio dele
+	var turned := LampView.lathe(LampView.BASE_PROFILE)
+	var rings := {}
+	for vertex: Vector3 in turned.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+		rings[Vector2(snappedf(Vector2(vertex.x, vertex.z).length(), 0.001), snappedf(vertex.y, 0.001))] = true
+	for point: Vector2 in LampView.BASE_PROFILE:
+		var key := Vector2(snappedf(point.x, 0.001), snappedf(point.y, 0.001))
+		assert_bool(rings.has(key)).override_failure_message(str(point)).is_true()
+	# o toro (o mais largo acima do plinto) passa da escócia logo acima dele
+	var torus := 0.0
+	var scotia := INF
+	for point: Vector2 in LampView.BASE_PROFILE:
+		if point.y > 0.085 and point.y < 0.145:
+			torus = maxf(torus, point.x)
+		elif point.y >= 0.145 and point.y <= 0.17:
+			scotia = minf(scotia, point.x)
+	assert_float(torus).is_greater(scotia + 0.03)
+	# no poste: a base acaba no raio do pé do fuste, e o capitel abre além do colar de antes (0,08) debaixo
+	# do colar do lampião
+	assert_float(LampView.BASE_PROFILE[LampView.BASE_PROFILE.size() - 1].x).is_equal_approx(0.065, 0.001)
+	var glass_low := LampView.LAMP_HEIGHT_M * (LampView.GLASS_HEIGHT - LampView.GLASS_SPAN * 0.5)
+	var widest := 0.0
+	for vertex: Vector3 in LampView.post_mesh().surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+		if vertex.y > glass_low - 0.32 and vertex.y < glass_low - 0.22 and absf(vertex.z) > 0.02:
+			widest = maxf(widest, Vector2(vertex.x, vertex.z).length())
+	assert_float(widest).is_greater(0.09)
