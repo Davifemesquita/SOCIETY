@@ -404,3 +404,38 @@ Desempenho depois da Fase 11 (recálculo do estado derivado), com a VM livre (ca
   simulação (sem vistas, média de 10 recálculos), o recálculo passou de 36,0 para 26,2 ms.
 - O que sobra pesando: prédios (~9 ms, acesso à estrada de cada um dos ~1.000 prédios) e serviços
   (~8 ms, o mapa das casas pela célula da frente).
+
+### 2026-10-24 16:35:30 — AMD Ryzen 7 PRO 1700 Eight-Core Processor
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| jogo novo: arquipélago, terreno, água e árvores | 11652 ms (semente 1840, 93919 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1402 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 20856 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 3.10 / 4.38 / 6.09 ms (orçamento 4.0 ms) |
+| tick por etapa (ms, da mais pesada) | logística 0.93 · produção 0.78 · população 0.70 · necessidades 0.24 · navios 0.11 · riscos 0.11 · força de trabalho 0.06 · marcos, metas e vitória 0.05 · eventos, encomendas e especialistas 0.05 · estaleiro 0.03 · combate 0.02 · rivais 0.01 · estatísticas 0.01 · economia 0.00 · estado derivado 0.00 |
+| construir um prédio com a ilha cheia | 41.2 ms (limite 50 ms): comando e vistas 41.2 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 9.6 · serviços 8.4 · módulos, poluição e beleza 0.0 · armazéns 9.6 · produção 5.7 · grupos de casas 1.4 |
+| salvar | 184 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 3101 ms |
+| quadro com tudo visível | 8146 ms (0 FPS) — llvmpipe (LLVM 20.1.2, 256 bits) |
+| pedestres | 2000 na multidão, 1900 na rua (teto 2000); 22639 janelas |
+| multidão saindo de casa (rotas novas) | 535 quadros, 4884 ms; 1422 rotas, 1.60 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.60 ms por quadro |
+| dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro) | 0.1 / 0.1 FPS / 13631 ms em 5 quadros (meta 60 FPS), a partir das 10:00 |
+
+Fase 29 (fôlego da simulação), medida antes e depois no mesmo dia e na mesma máquina. A VM agora roda num AMD Ryzen 7 PRO
+1700, e não mais no Xeon E5-2699 das medições anteriores: comparar com as datas antigas não vale.
+
+- **Tick**: média 4,19 → 3,10 ms, 95% 4,68 → 4,38 (nas rodadas só do tick, `-- --so-tick`, com a VM livre: ~3,05 ms e
+  95% em ~3,4). Por etapa, agora medidas por dentro do tick (antes o benchmark media só sete dos dezoito sistemas):
+  população 1,27 → 0,70, logística 1,28 → 0,93, produção 0,91 → 0,78. Carroças na rua depois de 2 min: 147 de 200,
+  antes e depois (o resultado da simulação não mudou).
+- **Construir com a ilha cheia**: 48,1 → 41,2 ms. Armazéns 16,0 → 9,6 ms e serviços 9,4 → 8,4: as buscas em largura das
+  estradas liam cada vizinha duas vezes e conferiam os quatro cantos da diagonal (Fase 17) em toda célula.
+- O que sobra pesando no tick: a logística (as 200 carroças a cada tick) e a produção; na obra, os prédios (~9,6 ms, o
+  acesso à estrada de cada um) e os serviços (~8,4 ms).

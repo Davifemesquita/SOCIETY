@@ -1319,6 +1319,29 @@ Regras que já custaram investigação:
   `test_tiers_follow_the_spec_table` registra a decisão. Resultado no robô: pior saldo −745 (antes −7.654), a
   fundição não espera mais na frente da fila, engenheiros aos ~120 min e investidores aos ~225.
 
+### Fôlego da simulação (Fase 29, nossa)
+
+- **Proposta nossa** (24/10/2026), com a autorização permanente de seguir pela recomendação: o tick médio do benchmark
+  tinha passado do orçamento (4,22 ms contra 4,0) e a obra com a ilha cheia estava em 48 ms (limite 50). Só desempenho:
+  nada muda no resultado da simulação nem no save. Registro em `docs/benchmark.md`.
+- **Perfil do tick** (`Simulation.profiling`, `profile`, `_lap`): cada etapa do tick soma o tempo dela com o perfil
+  ligado (desligado, um if por etapa); o benchmark mostra as etapas da mais pesada para a mais leve. O `_per_system` de
+  antes chamava só sete sistemas, e a produção pela assinatura antiga (sem eventos e riscos, dava 0,04 ms).
+  `-- --so-tick` no benchmark mede só o tick e a obra com a ilha cheia e sai (~1 min, só no terminal): é o laço de
+  medida para otimizar.
+- **População** (1,27 → 0,70 ms): a avaliação de uma casa só depende do `TierSupply` da classe na ilha e da cobertura
+  de serviços dela, e fica guardada por cobertura dentro do tick (a mesma cobertura em ordem diferente só erra o
+  cache); chegada, efeito de evento e felicidade do nível de imposto saíram do laço.
+- **Logística** (1,28 → 0,91 ms): a fila das rampas ordena por uma chave inteira (`queued_at << 32 + home_id`) no sort
+  nativo; a carroça em casa sem saída pronta, sem carga e sem entrada que caiba sai antes de montar o pedido; a
+  velocidade da célula fica na carroça (`Cart.speed_at`, `speed`, fora do save) até ela mudar de célula, e volta a -1
+  quando o caminho muda ou o estado derivado é refeito (a estrada pode ter sido calçada).
+- **Produção e estaleiro** (0,91 → 0,77 ms): `ProductionEntry.shipyard` e `workforce_tier` guardados no estado
+  derivado.
+- **Buscas em largura das estradas** (`WarehouseField`, `RoadNetwork.components`, `ServiceReach.road_cells`): cada
+  vizinha é lida uma vez, e os quatro cantos da diagonal pura (Fase 17) ficam de fora quando nenhuma dupla de vizinhas
+  perpendiculares está livre (rua reta, cruzamento). Armazéns 16,0 → 9,7 ms; a obra com a ilha cheia ~41 ms.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1358,6 +1381,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 26 — Convés e cordame (nossa) | **concluída em 24/10/2026**: ovéns e estais nos navios, lidos do próprio modelo; carga do porão no convés; base e capitel torneados no poste de gás; a suíte inteira passou no CI |
 | 27 — Contas do meio da partida (nossa) | **concluída em 24/10/2026**: raio-x da manutenção e das obras no relatório de balanceamento, cadeia × imposto na planilha, robô juntando para a obra da frente; diagnóstico em `docs/balanceamento.md`, nenhum número mudou; a suíte inteira passou no CI |
 | 28 — Folga do meio da partida (nossa) | **concluída em 24/10/2026**: aviso de fábrica ociosa no saldo e no painel; teatro e universidade mais baratos de manter; fábricas dos artesãos e fundição mais baratas de construir; imposto dos operários 1,4 (decisão do dono do produto); pior saldo do robô de −7.654 para −745; a suíte inteira passou no CI |
+| 29 — Fôlego da simulação (nossa) | **concluída em 24/10/2026**: perfil do tick por etapa e `-- --so-tick` no benchmark; tick médio de 4,19 para 3,10 ms (população, logística, produção) e obra com a ilha cheia de 48,1 para 41,2 ms (buscas em largura das estradas), sem mudar o resultado; a suíte inteira passou no CI |
 
 Pendências já vistas para fases futuras:
 
