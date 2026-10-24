@@ -193,7 +193,7 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `ui/ui_kit.gd` | botão com ícone e dica, rótulo por variação, cabeçalho de janela |
 | `presentation/map_overlays.gd` | camadas do jogador: raio de serviço, alcance de armazém, fertilidade, poluição e estradas |
 | `presentation/cart_view.gd` | carroças num MultiMesh, posição interpolada entre ticks |
-| `presentation/ship_view.gd` | navios provisórios balançando no mar, o posto do comerciante e a marca do selecionado; acha o navio sob o cursor |
+| `presentation/ship_view.gd`, `ship_rigging.gd` | navios balançando no mar (desde a Fase 26 com o cordame e a carga no convés), o posto do comerciante e a marca do selecionado; acha o navio sob o cursor |
 | `ui/build/ship_picker.gd` | clique no navio (seleciona) e no mar (destino de "navegar para"); recebe a entrada antes da `BuildTool` |
 | `ui/hud/ship_panel.gd`, `route_window.gd`, `archipelago_map.gd`, `trade_window.gd` | painel do navio, janela de rotas com o mapa, comércio passivo da ilha |
 | `ui/hud/goal_panel.gd` | meta da vez com o progresso e a fala do conselheiro (retrato, texto, continuar) |
@@ -1260,6 +1260,33 @@ Regras que já custaram investigação:
   `shaders/curb.gdshader` usa o mapa de normais. Captura: `CAPTURA_SO=postes` no `tools/capture_buildings.tscn`
   (`27b_sarjeta.png`).
 
+### Convés e cordame (Fase 26, nossa)
+
+- **Proposta nossa** (24/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede nos navios (cordame e carga no convés) e no poste (capitel e base moldados),
+  gerado no código. Só visual; o save fica na versão 15. Partes com commit próprio.
+- **Cordame** (`ShipRigging`, chamado pelo `ShipView._model`): os navios do Kenney Pirate Kit vêm só com mastros,
+  velas e bandeiras, e o cordame é lido do próprio modelo, no espaço dele (filho do nó `Hull`, que o ShipView
+  estica e gira; o raio do cabo é `ROPE_RADIUS_M` dividido pela escala). O alto de cada mastro é a origem da
+  bandeira dele (`mast_tops`, da proa para a popa); `SHROUDS` ovéns de cada lado de cada mastro, de
+  `SHROUD_DROP` abaixo da bandeira até a borda, puxando para a popa; o estai do mastro de proa ao bico de proa
+  (`bow_point`), um estai de cada mastro ao de vante (a `STAY_FOOT` da altura dele) e o brandal do último à popa.
+  **A borda é o corte do casco** (`rail_at`: as arestas dos triângulos que atravessam o plano z do pé do cabo):
+  o modelo tem poucos vértices, uma face comprida atravessa metros sem nenhum, e procurar vértice perto do pé
+  achava zero na proa. Na abertura da amurada do meio do navio médio, a borda é a do próprio convés
+  (`DECK_Y`). Os cabos vão no `HarborView.rope_mesh`, numa malha só (`Rigging`).
+- **Carga no convés** (`ShipView.deck_goods`, `_update_deck`): uma peça do `CargoKit` por porão com carga, na forma
+  de pilha do bem (o porco fica de fora), em duas filas a partir de `DECK_CARGO_AHEAD` à frente do mastro grande
+  (o mais alto), no tamanho de verdade (a transformação desfaz a escala do modelo); um MultiMesh por tipo de peça
+  no nó `DeckCargo`, refeito só quando os bens a bordo mudam. Captura: `tools/capture_ships.tscn` (carrega o
+  mercante e o clíper; `03b_cordame_e_carga.png`, `03c_cliper_de_perto.png`). A mancha escura junto da escada do
+  castelo de popa é a porta da cabine do modelo, não a carga.
+- **Base e capitel torneados** (`LampView.lathe`, `BASE_PROFILE`, `CAPITAL_PROFILE`): o pedestal de três cilindros
+  lisos vira o perfil girado em `LATHE_SIDES` faces — plinto chanfrado, toro, escócia, filete, o dado afinando, a
+  cornija e o pescoço até o fuste — e o colar sob a travessa vira o capitel (astrágalo, equino e ábaco). Indexada,
+  como o fuste da Fase 24. Captura: `CAPTURA_SO=postes` no `tools/capture_buildings.tscn`
+  (`14b_poste_de_perto.png`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1296,6 +1323,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 23 — Varanda e galpão (nossa) | **concluída em 20/10/2026**: varanda da casa de engenho nas plantações; plataforma de carga do armazém, com alpendre e tijolo pelo nível; guindaste de porto no entreposto e no estaleiro e guincho no armazém; a suíte inteira (86 arquivos, 614 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
 | 24 — Pedra e torno (nossa) | **concluída em 20/10/2026**: ponte de pedra em arco na rua calçada; balaustrada torneada, consolos e peitoris nas casas; caneluras e volutas no poste de ferro fundido; a suíte inteira (86 arquivos, 617 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano |
 | 25 — Cantaria e moldura (nossa) | **concluída em 24/10/2026**: guarnição de pedra (ombreiras e pedra de fecho) nas janelas dos engenheiros e investidores; aduelas saltadas no arco da ponte de pedra; meio-fio com as quinas chanfradas; a suíte inteira (86 arquivos, 618 casos) passou, por pasta e a `ui` arquivo por arquivo (a pasta inteira passou do tempo com a memória da VM apertada) |
+| 26 — Convés e cordame (nossa) | **concluída em 24/10/2026**: ovéns e estais nos navios, lidos do próprio modelo; carga do porão no convés; base e capitel torneados no poste de gás; a suíte inteira passou no CI |
 
 Pendências já vistas para fases futuras:
 
