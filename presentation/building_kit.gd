@@ -111,6 +111,12 @@ const HANDRAIL_M := 0.12
 const CORBEL_M := 0.5
 const CORBEL_WIDTH_M := 0.16
 const SILL_M := 0.08
+## Cantaria e moldura (Fase 25): nos engenheiros e investidores, a janela ganha a guarnição de pedra — as duas
+## ombreiras de JAMB_M entre o peitoril e a verga — e a pedra de fecho no meio da verga, KEYSTONE_M de alto
+## (passa da verga para cima) e saindo mais da parede.
+const JAMB_M := 0.07
+const KEYSTONE_M := 0.2
+const KEYSTONE_WIDTH_M := 0.12
 ## Medidas das peças do kit (caixa da peça importada): diâmetro das rodas, meio da polia, lado da viga.
 const WINDMILL_DIAMETER := 3.113
 const WATERWHEEL_DIAMETER := 1.8
@@ -996,6 +1002,27 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 				var sill_width := step * WINDOW_WIDTH * 1.2
 				_box(tool, sill, Vector3(sill_width, SILL_M, 0.16) if face % 2 == 0 else Vector3(0.16, SILL_M, sill_width),
 						UV_LIGHT_STONE)
+				if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
+					_window_frame(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m(), top)
+
+
+## Guarnição de pedra da janela (Fase 25): as ombreiras dos dois lados do vão, do peitoril à verga, e a pedra
+## de fecho no meio da verga. "wall" é o ponto da fachada no meio da célula, no chão do andar; "lintel_y", o
+## meio da verga acima dele.
+static func _window_frame(tool: SurfaceTool, wall: Vector3, face: int, step: float, floor_m: float,
+		lintel_y: float) -> void:
+	var along_x := face % 2 == 0
+	var lateral := Vector3.RIGHT if along_x else Vector3.BACK
+	var normal := _face_normal(face)
+	# a verga fica meia altura dela acima do vão: a ombreira sobe até encostar nela
+	var height := floor_m * WINDOW_HEIGHT + LINTEL_M * 0.5
+	for side: float in [-1.0, 1.0]:
+		var at := wall + lateral * side * (step * WINDOW_WIDTH * 0.5 + JAMB_M * 0.5) \
+				+ Vector3(0.0, floor_m * WINDOW_CENTER + LINTEL_M * 0.25, 0.0) + normal * 0.04
+		_box(tool, at, Vector3(JAMB_M, height, 0.08) if along_x else Vector3(0.08, height, JAMB_M), UV_LIGHT_STONE)
+	var key := wall + Vector3(0.0, lintel_y - LINTEL_M * 0.5 + KEYSTONE_M * 0.5, 0.0) + normal * 0.07
+	_box(tool, key, Vector3(KEYSTONE_WIDTH_M, KEYSTONE_M, 0.14) if along_x
+			else Vector3(0.14, KEYSTONE_M, KEYSTONE_WIDTH_M), UV_LIGHT_STONE)
 
 
 ## Frontão: a base de pedra em "height" (o alto da parede) e o triângulo sobre ela, centrados em "front"

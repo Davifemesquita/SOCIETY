@@ -332,6 +332,30 @@ func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 				.is_greater(BuildingKit.windows(spec).size() * 24)
 
 
+## Fase 25: nos engenheiros e investidores a janela ganha a guarnição de pedra (duas ombreiras e a pedra de
+## fecho, três caixas a mais por janela); os artesãos ficam só com a verga e o peitoril.
+func test_upper_houses_frame_their_windows_in_stone() -> void:
+	for tier: StringName in [&"engineers", &"investors"]:
+		var spec := _house(tier)
+		var plain := _house(tier)
+		plain.trim = TierDef.HouseTrim.NONE
+		assert_int(BuildingKit.triangles(spec) - BuildingKit.triangles(plain)).override_failure_message(String(tier)) \
+				.is_greater(BuildingKit.windows(spec).size() * 60)
+	# a pedra de fecho passa da verga para cima: há vértice na altura do alto dela (em cada andar) nos
+	# engenheiros e investidores, e não nos artesãos
+	for tier: StringName in [&"artisans", &"engineers", &"investors"]:
+		var spec := _house(tier)
+		var floor_m := spec.hall().floor_m()
+		var key_top := floor_m * (BuildingKit.WINDOW_CENTER + BuildingKit.WINDOW_HEIGHT * 0.5) \
+				+ BuildingKit.LINTEL_M * 0.5 + BuildingKit.KEYSTONE_M
+		var found := false
+		for vertex: Vector3 in BuildingKit.mesh(spec).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+			if absf(fposmod(vertex.y, floor_m) - key_top) < 0.002:
+				found = true
+				break
+		assert_bool(found).override_failure_message(String(tier)).is_equal(tier != &"artisans")
+
+
 func test_plantations_get_a_veranda_in_front_of_the_house() -> void:
 	for def_id: StringName in [&"sugar_cane_farm", &"coffee_plantation", &"tobacco_plantation"]:
 		var spec := _spec(def_id)
