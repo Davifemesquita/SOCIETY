@@ -7,7 +7,15 @@ registra como se trabalha aqui e o estado das fases.
 
 Repositório em `github.com/Davifemesquita/SOCIETY` (**público**, da conta do dono do produto, fora da `CAAD-LABS`), desde
 20/10/2026; até ali era só local. O `exportado/` (o `Society.exe` tem ~230 MB, acima do limite de 100 MB do GitHub)
-fica fora. Ainda não há CI: o GitHub Actions com gdUnit4-action é o próximo passo.
+fica fora.
+
+**CI** (desde 24/10/2026, `.github/workflows/testes.yml`): a cada push e pull request, um job compila os scripts
+(`tools/check_scripts.gd`) e, depois dele, uma pasta de `tests/` por job em paralelo, pelo próprio `tools/godot.sh
+testes` (xvfb e Vulkan por software, como na VM). Workflow próprio em vez do gdUnit4-action: os testes de
+interface precisam de tela. A preparação (pacotes, o Godot de `GODOT_VERSION` em cache em `/home/runner/godot` e a
+importação) fica na action local `.github/actions/godot`. A rodada leva ~15 min, quase tudo na pasta `ui`; o
+relatório da pasta que falhou fica como artefato `relatorio-<pasta>`. Mudou a versão do Godot, troque
+`GODOT_VERSION` e `GODOT_BIN` no workflow.
 
 ## Regras da especificação (seção 17)
 
@@ -1260,7 +1268,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 
 | Fase | Estado |
 |---|---|
-| 0 — Fundação | **concluída em 12/10/2026**, exceto o CI (sem repositório remoto) |
+| 0 — Fundação | **concluída em 12/10/2026**; o CI veio em 24/10/2026, com o repositório no GitHub |
 | 1 — Protótipo cinza | **concluída em 12/10/2026** |
 | 2 — Núcleo econômico | **concluída em 12/10/2026** |
 | 3 — Logística | **concluída em 12/10/2026** |
