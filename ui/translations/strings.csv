@@ -110,6 +110,8 @@ REASON_NOT_PRODUCTION,Só prédio de produção,Production buildings only
 REASON_NOT_HOUSE,Só casa,Houses only
 REASON_INVALID_TAX_LEVEL,Nível de imposto inválido,Invalid tax level
 HUD_MONEY,Moedas %s (%s/min),Coins %s (%s/min)
+LOADING_NEW_WORLD,Gerando o arquipélago…,Generating the archipelago…
+LOADING_SAVE,Carregando…,Loading…
 HUD_MONEY_IDLE,%s fábricas ociosas custam %s/min (pausadas pagam %s),%s idle factories cost %s/min (paused they pay %s)
 HUD_MONEY_TIP,Impostos %s/min · Manutenção %s/min · construir para abaixo de %s moedas,Taxes %s/min · Upkeep %s/min · building stops below %s coins
 HUD_STATS,Estatísticas (Tab),Statistics (Tab)

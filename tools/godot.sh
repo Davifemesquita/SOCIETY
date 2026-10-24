@@ -42,6 +42,8 @@ case "$comando" in
 		# Com tela (xvfb sem DISPLAY): os testes de entrada simulam clique e precisam dela.
 		# Nível gráfico baixo (Fase 9): os efeitos do alto por software deixavam a suíte 3x mais lenta.
 		export SOCIETY_NIVEL_GRAFICO="${SOCIETY_NIVEL_GRAFICO:-0}"
+		# Fase 30: troca de tela direta, sem a cortina (os testes leem a cena logo depois de trocar)
+		export SOCIETY_SEM_TRANSICAO="${SOCIETY_SEM_TRANSICAO:-1}"
 		alvo="${1:-res://tests}"
 		if [ -n "${DISPLAY:-}" ]; then
 			addons/gdUnit4/runtest.sh -a "$alvo"

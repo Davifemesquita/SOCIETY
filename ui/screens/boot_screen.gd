@@ -160,7 +160,8 @@ static func _latest_slot() -> String:
 
 func _start(slot: String) -> void:
 	GameScreen.load_slot_on_start = slot
-	get_tree().change_scene_to_file(GAME_SCENE)
+	# Fase 30: escurece, mostra o que está sendo montado e clareia na partida
+	SceneFader.change_to(GAME_SCENE, "LOADING_SAVE" if not slot.is_empty() else "LOADING_NEW_WORLD")
 
 
 ## Música calma no menu (Fase 10): a mesma da partida, no barramento Music.
