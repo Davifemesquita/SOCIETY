@@ -1233,6 +1233,25 @@ Regras que já custaram investigação:
   sem índice anexada a ele entra sem triângulo nenhum (o fuste sumia; o teste confere que ele é desenhado).
   Captura: `CAPTURA_SO=postes` no `tools/capture_buildings.tscn` (`14b_poste_de_perto.png`).
 
+### Cantaria e moldura (Fase 25, nossa)
+
+- **Proposta nossa** (24/10/2026), com a autorização permanente de seguir pela recomendação: o que o
+  `assets/TODO_ASSETS.md` ainda pede em cantaria e dá para gerar no código. Só visual; o save fica na versão 15.
+  Partes com commit próprio.
+- **Guarnição das janelas** (`BuildingKit._window_frame`): nos engenheiros e investidores, cada janela com verga
+  ganha as duas ombreiras de pedra de `JAMB_M` (do peitoril até encostar na verga, que fica meia altura dela acima
+  do vão) e a pedra de fecho no meio da verga, `KEYSTONE_M` de alto e saindo mais da parede. Os artesãos ficam só
+  com verga e peitoril. Captura: `CAPTURA_SO=detalhes` no `tools/capture_buildings.tscn` (`20_portico.png`,
+  `21c_consolos_e_peitoril.png`).
+- **Aduelas do arco** (`RoadView._voussoir`): a volta do arco da ponte de pedra leva `VOUSSOIRS` aduelas (ímpar,
+  o fecho no alto) em cada face, de `VOUSSOIR_M` de fundo a partir do intradorso, saltadas `VOUSSOIR_PROUD_M`
+  da face e com a junta de `VOUSSOIR_JOINT_RAD` entre elas; o fecho é reto em cima, sobe até o tabuleiro e salta
+  o dobro. Captura: `CAPTURA_SO=ponte_pedra` no `tools/capture_phase5.tscn`.
+- **Meio-fio chanfrado** (`RoadView.curb_mesh`, no lugar da `BoxMesh`): o mesmo bloco, com as duas quinas de cima
+  gastas num chanfro de `CURB_CHAMFER_M`. A malha leva UV e tangentes (`_uv_face`, `generate_tangents`): o
+  `shaders/curb.gdshader` usa o mapa de normais. Captura: `CAPTURA_SO=postes` no `tools/capture_buildings.tscn`
+  (`27b_sarjeta.png`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1268,6 +1287,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 22 — Mata e vento (nossa) | **concluída em 19/10/2026**: vento no clima, com a fumaça e as bandeiras; árvores, plantações e capim balançando pelo vento; carvalho, faia e pinheiro-silvestre gerados no código, com o nível de detalhe de longe; a suíte inteira (86 arquivos, 608 casos) passou, por pasta e depois arquivo por arquivo em primeiro plano |
 | 23 — Varanda e galpão (nossa) | **concluída em 20/10/2026**: varanda da casa de engenho nas plantações; plataforma de carga do armazém, com alpendre e tijolo pelo nível; guindaste de porto no entreposto e no estaleiro e guincho no armazém; a suíte inteira (86 arquivos, 614 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano (a memória da VM interrompeu duas vezes a rodada em segundo plano) |
 | 24 — Pedra e torno (nossa) | **concluída em 20/10/2026**: ponte de pedra em arco na rua calçada; balaustrada torneada, consolos e peitoris nas casas; caneluras e volutas no poste de ferro fundido; a suíte inteira (86 arquivos, 617 casos) passou, por pasta e a `ui` arquivo por arquivo em primeiro plano |
+| 25 — Cantaria e moldura (nossa) | **concluída em 24/10/2026**: guarnição de pedra (ombreiras e pedra de fecho) nas janelas dos engenheiros e investidores; aduelas saltadas no arco da ponte de pedra; meio-fio com as quinas chanfradas; a suíte inteira (86 arquivos, 618 casos) passou, por pasta e a `ui` arquivo por arquivo (a pasta inteira passou do tempo com a memória da VM apertada) |
 
 Pendências já vistas para fases futuras:
 
