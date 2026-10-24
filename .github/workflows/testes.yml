@@ -1,0 +1,51 @@
+# Suíte gdUnit4 a cada push e pull request. Roda como na VM de desenvolvimento: tools/godot.sh testes,
+# com tela no xvfb (os testes de interface simulam mouse e teclado) e Vulkan por software (lavapipe),
+# no nível gráfico baixo. Uma pasta de testes por job, em paralelo: a suíte inteira num job só leva
+# mais de 20 minutos e aperta a memória.
+name: Testes
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7.2
+  GODOT_BIN: ${{ github.workspace }}/../godot/Godot_v4.7.2-stable_linux.x86_64
+
+jobs:
+  scripts:
+    name: Compilar os scripts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/godot
+      - name: Compilar todos os scripts
+        run: tools/godot.sh godot --headless --path . --script res://tools/check_scripts.gd
+
+  testes:
+    name: Testes (${{ matrix.pasta }})
+    needs: scripts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        pasta: [core, data, sim, world, tools, presentation, ui]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/godot
+      - name: Rodar a suíte da pasta
+        run: tools/godot.sh testes res://tests/${{ matrix.pasta }}
+      - name: Guardar o relatório
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-${{ matrix.pasta }}
+          path: reports/
+          if-no-files-found: ignore
