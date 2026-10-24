@@ -47,13 +47,20 @@ func _goods(data: GameData, path: String) -> void:
 
 func _tiers(data: GameData, path: String) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	file.store_csv_line(["id", "moradores_por_casa", "imposto_min_por_morador", "materiais_upgrade", "basicas", "luxo"])
+	# Fase 27: a manutenção da cadeia que abastece um morador (BalanceMath) e quantas vezes o imposto a paga
+	file.store_csv_line(["id", "moradores_por_casa", "imposto_min_por_morador", "materiais_upgrade", "basicas", "luxo",
+			"cadeia_basica_min_por_morador", "imposto_sobre_cadeia_basica", "cadeia_com_luxo_min_por_morador",
+			"imposto_sobre_cadeia_com_luxo"])
 	for tier: TierDef in data.tiers:
 		var materials: PackedStringArray = []
 		for material: StringName in tier.upgrade_materials:
 			materials.append("%d %s" % [tier.upgrade_materials[material], material])
+		var basic := BalanceMath.needs_upkeep_per_resident(data, tier.basic_needs)
+		var full := basic + BalanceMath.needs_upkeep_per_resident(data, tier.luxury_needs)
 		file.store_csv_line([tier.id, str(tier.residents_per_house), str(tier.tax_per_resident_min), " + ".join(materials),
-				" | ".join(tier.basic_needs.map(_need)), " | ".join(tier.luxury_needs.map(_need))])
+				" | ".join(tier.basic_needs.map(_need)), " | ".join(tier.luxury_needs.map(_need)), "%.2f" % basic,
+				"%.2f" % (tier.tax_per_resident_min / basic) if basic > 0.0 else "", "%.2f" % full,
+				"%.2f" % (tier.tax_per_resident_min / full) if full > 0.0 else ""])
 
 
 func _need(need: NeedCategoryDef) -> String:
