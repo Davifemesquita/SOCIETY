@@ -25,6 +25,8 @@ const LIFT_M := 0.06
 ## Meio-fio: largura e altura acima do calçamento (a pedra é do shaders/curb.gdshader).
 const CURB_WIDTH_M := 0.22
 const CURB_HEIGHT_M := 0.1
+## Cantaria e moldura (Fase 25): as duas quinas de cima do meio-fio gastas num chanfro de CURB_CHAMFER_M.
+const CURB_CHAMFER_M := 0.035
 
 ## Ponte: altura do corrimão sobre o tabuleiro, grossura do poste e da travessa, e quanto a estaca
 ## entra no leito do rio.
@@ -45,6 +47,13 @@ const ARCH_PIER_M := 0.25
 const ARCH_CROWN_M := 0.3
 const ARCH_SEGMENTS := 8
 const CUTWATER_M := 0.35
+## Cantaria e moldura (Fase 25): a volta do arco em VOUSSOIRS aduelas (ímpar: o fecho fica no alto), cada uma
+## VOUSSOIR_M de fundo a partir do intradorso e saltada VOUSSOIR_PROUD_M da face, com a junta de
+## VOUSSOIR_JOINT_RAD entre elas; o fecho sobe até o tabuleiro e salta o dobro.
+const VOUSSOIRS := 9
+const VOUSSOIR_M := 0.22
+const VOUSSOIR_PROUD_M := 0.03
+const VOUSSOIR_JOINT_RAD := 0.02
 ## Direção dos sulcos no dado da instância (b): nenhum, ao longo de x, ao longo de z, os dois (cruzamento).
 ## DIAGONAL_DOWN e DIAGONAL_UP (Fase 17): ao longo de (+x, +z) e de (+x, −z).
 enum Ruts { NONE, ALONG_X, ALONG_Z, BOTH, DIAGONAL_DOWN, DIAGONAL_UP }
@@ -97,14 +106,13 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	multimesh.use_colors = true
 	multimesh.use_custom_data = true
 	multimesh.mesh = tile
-	var curb := BoxMesh.new()
-	curb.size = Vector3(CURB_WIDTH_M, THICKNESS_M + CURB_HEIGHT_M, cell_size)
+	var curb := curb_mesh(cell_size)
 	# Fase 19: a pedra do meio-fio com a textura do paralelepípedo, cinza e clareada, e a junta dos blocos
 	var stone := ShaderMaterial.new()
 	stone.shader = load("res://shaders/curb.gdshader") as Shader
 	stone.set_shader_parameter(&"albedo_rough", material.get_shader_parameter(&"albedo_rough"))
 	stone.set_shader_parameter(&"normals", material.get_shader_parameter(&"normals"))
-	curb.material = stone
+	curb.surface_set_material(0, stone)
 	_curbs.name = "Curbs"
 	_curbs.multimesh = MultiMesh.new()
 	_curbs.multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -423,6 +431,50 @@ static func parapet_mesh(cell_size: float) -> ArrayMesh:
 	return tool.commit()
 
 
+## Meio-fio de uma célula (Fase 25, no lugar da BoxMesh): o bloco de CURB_WIDTH_M centrado na origem, ao longo
+## de z, com as duas quinas de cima chanfradas. Leva UV (a altura e o comprimento) e tangentes: o
+## shaders/curb.gdshader usa o mapa de normais.
+static func curb_mesh(cell_size: float) -> ArrayMesh:
+	var w := CURB_WIDTH_M * 0.5
+	var h := (THICKNESS_M + CURB_HEIGHT_M) * 0.5
+	var c := CURB_CHAMFER_M
+	var profile: Array[Vector2] = [Vector2(-w, -h), Vector2(w, -h), Vector2(w, h - c), Vector2(w - c, h),
+			Vector2(-w + c, h), Vector2(-w, h - c)]
+	var half := cell_size * 0.5
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for k: int in profile.size():
+		var a := profile[k]
+		var b := profile[(k + 1) % profile.size()]
+		# o perfil anda no sentido anti-horário: a normal de fora do lado é ele girado para a direita
+		var edge := b - a
+		var side: Array[Vector3] = [Vector3(a.x, a.y, -half), Vector3(b.x, b.y, -half), Vector3(b.x, b.y, half),
+				Vector3(a.x, a.y, half)]
+		_uv_face(tool, side, Vector3(edge.y, -edge.x, 0.0).normalized())
+	for z: float in [-half, half]:
+		var cap: Array[Vector3] = []
+		for point: Vector2 in profile:
+			cap.append(Vector3(point.x, point.y, z))
+		_uv_face(tool, cap, Vector3(0.0, 0.0, signf(z)))
+	tool.generate_tangents()
+	return tool.commit()
+
+
+## Polígono plano e convexo em leque, virado para "outward", com a UV pela posição (o comprimento em z e a
+## altura em y, ou x nas pontas).
+static func _uv_face(tool: SurfaceTool, points: Array[Vector3], outward: Vector3) -> void:
+	var a := points[0]
+	var flip := (points[1] - a).cross(points[2] - a).dot(outward) > 0.0
+	for i: int in range(1, points.size() - 1):
+		var triangle: Array[Vector3] = [a, points[i], points[i + 1]]
+		if flip:
+			triangle = [a, points[i + 1], points[i]]
+		for point: Vector3 in triangle:
+			tool.set_normal(outward)
+			tool.set_uv(Vector2(point.x if absf(outward.z) > 0.5 else point.z, point.y))
+			tool.add_vertex(point)
+
+
 ## Arco de uma célula com a rua em x, o topo em y = 0 (embaixo do tabuleiro): as duas faces (z = ± meia
 ## célula) com a volta aberta entre os meios pilares, o intradorso por baixo e as pontas; abaixo do nascimento
 ## (y = −arch_rise) só os pilares.
@@ -452,7 +504,41 @@ static func arch_mesh(cell_size: float) -> ArrayMesh:
 				Vector3(end * half, -rise, half), Vector3(end, 0.0, 0.0))
 		_face(tool, Vector3(end * half, -rise, -half), Vector3(end * radius, -rise, -half),
 				Vector3(end * radius, -rise, half), Vector3(end * half, -rise, half), Vector3.DOWN)
+	for z: float in [-half, half]:
+		for i: int in VOUSSOIRS:
+			_voussoir(tool, radius, rise, i, signf(z), half)
 	return tool.commit()
+
+
+## Aduela i da volta (Fase 25), na face do lado "side" (z = side × half): o bloco entre o intradorso e
+## VOUSSOIR_M para fora, saltado da face; o fecho (a do meio) vai até o tabuleiro e salta o dobro.
+static func _voussoir(tool: SurfaceTool, radius: float, rise: float, i: int, side: float, half: float) -> void:
+	var span := PI / VOUSSOIRS
+	var from := PI - span * i - VOUSSOIR_JOINT_RAD * 0.5
+	var to := PI - span * (i + 1) + VOUSSOIR_JOINT_RAD * 0.5
+	var key := 2 * i + 1 == VOUSSOIRS
+	var proud := VOUSSOIR_PROUD_M * (2.0 if key else 1.0)
+	var outer := radius + VOUSSOIR_M
+	var inner_a := Vector2(cos(from), sin(from)) * radius + Vector2(0.0, -rise)
+	var inner_b := Vector2(cos(to), sin(to)) * radius + Vector2(0.0, -rise)
+	var outer_a := Vector2(cos(from), sin(from)) * outer + Vector2(0.0, -rise)
+	var outer_b := Vector2(cos(to), sin(to)) * outer + Vector2(0.0, -rise)
+	if key:
+		# o fecho é reto em cima, encostado no tabuleiro
+		outer_a.y = 0.0
+		outer_b.y = 0.0
+	var back := side * half
+	var front := side * (half + proud)
+	var corners: Array[Vector2] = [inner_a, outer_a, outer_b, inner_b]
+	var center := (inner_a + inner_b + outer_a + outer_b) * 0.25
+	_face(tool, Vector3(inner_a.x, inner_a.y, front), Vector3(outer_a.x, outer_a.y, front),
+			Vector3(outer_b.x, outer_b.y, front), Vector3(inner_b.x, inner_b.y, front), Vector3(0.0, 0.0, side))
+	for k: int in 4:
+		var a := corners[k]
+		var b := corners[(k + 1) % 4]
+		var middle := (a + b) * 0.5 - center
+		_face(tool, Vector3(a.x, a.y, back), Vector3(b.x, b.y, back), Vector3(b.x, b.y, front),
+				Vector3(a.x, a.y, front), Vector3(middle.x, middle.y, 0.0))
 
 
 ## Ponto i da volta do arco, de −raio a +raio em x, em meio círculo sobre o nascimento.

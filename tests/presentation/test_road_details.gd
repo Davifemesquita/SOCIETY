@@ -31,6 +31,26 @@ func test_paved_streets_get_curbs_on_their_open_sides() -> void:
 	# o meio-fio fica na borda da célula, dentro dela
 	var place := RoadView.curb_place(Vector2i(0, 1), _sim.config.cell_size_m)
 	assert_float(place.origin.z).is_equal_approx(_sim.config.cell_size_m * 0.5 - RoadView.CURB_WIDTH_M * 0.5, 0.001)
+	# Fase 25: o meio-fio tem a largura e a altura da caixa de antes, com as quinas de cima chanfradas
+	var curb := RoadView.curb_mesh(_sim.config.cell_size_m)
+	var bounds := curb.get_aabb()
+	assert_vector(bounds.size).is_equal_approx(Vector3(RoadView.CURB_WIDTH_M,
+			RoadView.THICKNESS_M + RoadView.CURB_HEIGHT_M, _sim.config.cell_size_m), Vector3.ONE * 0.001)
+	var top_width := 0.0
+	var chamfer_normals := 0
+	var arrays := curb.surface_get_arrays(0)
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	for vertex: Vector3 in arrays[Mesh.ARRAY_VERTEX]:
+		if is_equal_approx(vertex.y, bounds.end.y):
+			top_width = maxf(top_width, absf(vertex.x) * 2.0)
+	for normal: Vector3 in normals:
+		if absf(normal.x) > 0.3 and normal.y > 0.3:
+			chamfer_normals += 1
+	assert_float(top_width).is_equal_approx(RoadView.CURB_WIDTH_M - RoadView.CURB_CHAMFER_M * 2.0, 0.001)
+	assert_int(chamfer_normals).is_greater(0)
+	# o shader do meio-fio usa o mapa de normais: a malha tem tangentes
+	var tangents: PackedFloat32Array = arrays[Mesh.ARRAY_TANGENT]
+	assert_int(tangents.size()).is_greater(0)
 
 
 func test_dirt_ruts_follow_the_street() -> void:
@@ -114,6 +134,17 @@ func test_a_paved_street_crosses_the_river_on_a_stone_bridge() -> void:
 		if absf(vertex.x) < 0.01:
 			lowest_inside = minf(lowest_inside, vertex.y)
 	assert_float(lowest_inside).is_equal_approx(-RoadView.ARCH_CROWN_M, 0.001)
+	# Fase 25: as aduelas saltam da face, nas duas faces, e o fecho salta o dobro e vai até o tabuleiro
+	var proud := 0
+	var key_proud := 0
+	for vertex: Vector3 in arch.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+		var out := absf(vertex.z) - size * 0.5
+		if absf(out - RoadView.VOUSSOIR_PROUD_M) < 0.001:
+			proud += 1
+		elif absf(out - RoadView.VOUSSOIR_PROUD_M * 2.0) < 0.001 and absf(vertex.y) < 0.001:
+			key_proud += 1
+	assert_int(proud).is_greater_equal((RoadView.VOUSSOIRS - 1) * 2 * 4)
+	assert_int(key_proud).is_greater(0)
 
 
 func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> void:
