@@ -330,8 +330,15 @@ func _refresh_production(record: BuildingRecord, def: BuildingDef) -> void:
 	var workforce := _simulation.world.economy(record.island_id).workforce(def.workforce_tier)
 	_lines[index + 1].text = tr("PANEL_WORKERS") % [def.workers, tr(data.tier(def.workforce_tier).name_key), Fmt.percent(workforce)]
 	var specialist := _simulation.world.specialists_state.at(record.id)
-	_lines[index + 2].text = tr("PANEL_UPKEEP") % Fmt.integer(def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0)
+	var upkeep := Fmt.integer(def.upkeep_per_min * (config.paused_upkeep_factor if record.paused else 1.0)
 			* DerivedState.upkeep_factor(specialist))
+	# Fase 28: a fábrica ociosa avisa que paga a manutenção inteira por pouco
+	if _simulation.is_idle(record):
+		_lines[index + 2].text = tr("PANEL_UPKEEP_IDLE") % [upkeep, Fmt.percent(config.paused_upkeep_factor)]
+		UiPalette.paint(_lines[index + 2], UiPalette.Status.PARTIAL)
+	else:
+		_lines[index + 2].text = tr("PANEL_UPKEEP") % upkeep
+		UiPalette.unpaint(_lines[index + 2])
 	_refresh_logistics(record, index + 3)
 	_lines[index + 5].text = _electricity_text(def, entry)
 	_lines[index + 5].visible = not _lines[index + 5].text.is_empty()

@@ -180,6 +180,22 @@ func def_of(record: BuildingRecord) -> BuildingDef:
 	return data.building(record.def_id)
 
 
+## Fábrica ociosa (Fase 28): produção que não está pausada, com a produtividade média abaixo de
+## config.idle_productivity. Paga a manutenção inteira por pouco; pausada pagaria a fração de pausa.
+func is_idle(record: BuildingRecord) -> bool:
+	return def_of(record).is_production() and not record.paused and record.productivity < config.idle_productivity
+
+
+## Quantas fábricas estão ociosas (x) e quanto custam de manutenção por minuto (y), no mundo todo.
+func idle_upkeep() -> Vector2:
+	var total := Vector2.ZERO
+	for record: BuildingRecord in world.buildings.values():
+		if is_idle(record):
+			total += Vector2(1.0, def_of(record).upkeep_per_min
+					* DerivedState.upkeep_factor(world.specialists_state.at(record.id)))
+	return total
+
+
 func has_road_access(building_id: int) -> bool:
 	return derived_state().has_road(building_id)
 

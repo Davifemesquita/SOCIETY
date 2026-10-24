@@ -110,6 +110,7 @@ REASON_NOT_PRODUCTION,Só prédio de produção,Production buildings only
 REASON_NOT_HOUSE,Só casa,Houses only
 REASON_INVALID_TAX_LEVEL,Nível de imposto inválido,Invalid tax level
 HUD_MONEY,Moedas %s (%s/min),Coins %s (%s/min)
+HUD_MONEY_IDLE,%s fábricas ociosas custam %s/min (pausadas pagam %s),%s idle factories cost %s/min (paused they pay %s)
 HUD_MONEY_TIP,Impostos %s/min · Manutenção %s/min · construir para abaixo de %s moedas,Taxes %s/min · Upkeep %s/min · building stops below %s coins
 HUD_STATS,Estatísticas (Tab),Statistics (Tab)
 HUD_CATEGORY_RESIDENCES,Residências,Residences
@@ -132,6 +133,7 @@ PANEL_CYCLE,Ciclo de %s s,%s s cycle
 PANEL_BUFFER,%s: %s / %s t,%s: %s / %s t
 PANEL_WORKERS,Trabalhadores: %s %s (%s),Workers: %s %s (%s)
 PANEL_UPKEEP,Manutenção %s/min,Upkeep %s/min
+PANEL_UPKEEP_IDLE,Manutenção %s/min · ociosa: pausada paga %s,Upkeep %s/min · idle: paused it pays %s
 PANEL_PAUSE,Pausar,Pause
 PANEL_RESUME,Retomar,Resume
 PANEL_COPY,Copiar,Copy

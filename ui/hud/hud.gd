@@ -226,6 +226,11 @@ func _refresh() -> void:
 		UiPalette.unpaint(_money_label)
 	_money_label.tooltip_text = tr("HUD_MONEY_TIP") % [Fmt.integer(world.income_per_min), Fmt.integer(world.upkeep_per_min),
 			Fmt.integer(_simulation.config.min_balance_for(world.difficulty))]
+	# Fase 28: o que as fábricas ociosas custam, para o jogador pausar ou demolir
+	var idle := _simulation.idle_upkeep()
+	if idle.x > 0.0:
+		_money_label.tooltip_text += "\n" + tr("HUD_MONEY_IDLE") % [Fmt.integer(idle.x), Fmt.integer(idle.y),
+				Fmt.percent(_simulation.config.paused_upkeep_factor)]
 	for tier: TierDef in _simulation.data.tiers:
 		if _population_labels.has(tier.id):
 			_population_labels[tier.id].text = Fmt.integer(world.population(tier.id))

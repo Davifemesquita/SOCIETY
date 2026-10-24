@@ -63,6 +63,9 @@ static var _default: GameConfig
 @export var residents_lost_per_minute_on_shortage: int = 1
 ## Fração da manutenção cobrada com o prédio pausado.
 @export var paused_upkeep_factor: float = 0.5
+## Fábrica ociosa (Fase 28): produção não pausada abaixo desta produtividade média paga a manutenção inteira por
+## pouco; a dica do saldo soma o que elas custam e o painel avisa (pausada, paga paused_upkeep_factor).
+@export var idle_productivity: float = 0.5
 @export var trader_price_variation: float = 0.10
 ## Carga do navio inicial (Fase 6): descarregada no estoque ao construir o primeiro entreposto.
 ## Sem navio inicial (starting_ship vazio), vai direto para o estoque da ilha principal.
@@ -621,7 +624,7 @@ func validate() -> PackedStringArray:
 		problems.append("ships_by_milestone e islands_by_milestone têm um valor a mais que population_milestones")
 	if sea_chart_cell_m <= 0.0 or ship_min_depth_m >= 0.0 or ship_seconds_per_ton < 0.0:
 		problems.append("sea_chart_cell_m positivo, ship_min_depth_m abaixo do mar e ship_seconds_per_ton não negativo")
-	for fraction: float in [demolish_refund, paused_upkeep_factor, trader_price_variation]:
+	for fraction: float in [demolish_refund, paused_upkeep_factor, trader_price_variation, idle_productivity]:
 		if fraction < 0.0 or fraction > 1.0:
 			problems.append("frações (devolução, manutenção pausada, variação de preço) ficam entre 0 e 1")
 			break
