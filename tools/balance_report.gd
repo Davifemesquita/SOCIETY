@@ -27,6 +27,10 @@ func _ready() -> void:
 	xray.append("| min | " + " | ".join(UPKEEP_COLUMNS) + " | ociosas (<50%) | " \
 			+ " | ".join(tiers.map(func(tier: TierDef) -> String: return "renda " + tr(tier.name_key))) + " |")
 	xray.append("|" + "---|".repeat(UPKEEP_COLUMNS.size() + tiers.size() + 2))
+	var works: PackedStringArray = []
+	works.append("| min | casas | " + " | ".join(UPKEEP_COLUMNS) + " | total |")
+	works.append("|" + "---|".repeat(UPKEEP_COLUMNS.size() + 3))
+	var seen: Dictionary[int, bool] = {}
 	var elapsed := 0.0
 	while elapsed < DURATION_S:
 		player.play(STEP_S)
@@ -51,6 +55,15 @@ func _ready() -> void:
 		for tier: TierDef in tiers:
 			xcells.append("%.0f" % income.get(tier.id, 0.0))
 		xray.append("| " + " | ".join(xcells) + " |")
+		var spent := new_works(sim, groups, seen)
+		var wcells: Array[String] = ["%.0f" % (elapsed / 60.0)]
+		var total := 0.0
+		for column: int in UPKEEP_COLUMNS.size() + 1:
+			var count: int = spent[column].x
+			wcells.append("%d (%.0f)" % [count, spent[column].y])
+			total += spent[column].y
+		wcells.append("%.0f" % total)
+		works.append("| " + " | ".join(wcells) + " |")
 	var text := """# Balanceamento — partida do jogador-robô
 
 Gerado por `tools/balance_report.tscn` em %s. O robô (`tools/auto_player.gd`) joga 4 h numa ilha plana de
@@ -70,9 +83,16 @@ construção (custo de prédio ou de subir de classe); os serviços; armazéns, 
 parte da manutenção da produção que vai para fábricas abaixo de 50%% de produtividade (já contada nas colunas).
 
 %s
+
+## Obras de cada intervalo
+
+Prédios novos nos 15 min até a linha, pelo mesmo grupo da manutenção, e as moedas que custaram (quantos (moedas));
+as casas à parte (a subida de classe paga material, não moedas).
+
+%s
 """ % [Time.get_datetime_string_from_system(), player.lowest_money, player.lowest_at / 60.0,
 			sim.config.min_balance_for(sim.world.difficulty), sim.world.buildings.size(), player.houses.size(), "\n".join(rows),
-			"\n".join(xray)]
+			"\n".join(xray), "\n".join(works)]
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(text)
 	file.close()
@@ -96,6 +116,9 @@ static func upkeep_groups(data: GameData) -> Dictionary[StringName, int]:
 			groups[def.id] = Group.SERVICE
 		elif def.kind in [BuildingDef.Kind.WAREHOUSE, BuildingDef.Kind.PIER]:
 			groups[def.id] = Group.LOGISTICS
+		elif def.kind == BuildingDef.Kind.MODULE:
+			# campos e pastos não têm manutenção; nas obras contam com as cadeias, como matéria-prima
+			groups[def.id] = Group.INTERMEDIATE
 		elif def.is_production():
 			var good := data.good(def.output) if def.output != &"" else null
 			if good != null and good.consumption_per_resident_t_min > 0.0:
@@ -105,6 +128,23 @@ static func upkeep_groups(data: GameData) -> Dictionary[StringName, int]:
 			else:
 				groups[def.id] = Group.INTERMEDIATE
 	return groups
+
+
+## Os prédios que apareceram desde a última conferência (os já vistos ficam em "seen"): por grupo, quantos (x) e
+## as moedas que custaram (y); a coluna 0 são as casas e as do Group vêm deslocadas de 1.
+static func new_works(sim: Simulation, groups: Dictionary[StringName, int], seen: Dictionary[int, bool]) -> Array[Vector2]:
+	var spent: Array[Vector2] = []
+	spent.resize(UPKEEP_COLUMNS.size() + 1)
+	spent.fill(Vector2.ZERO)
+	for record: BuildingRecord in sim.world.buildings.values():
+		if seen.has(record.id):
+			continue
+		seen[record.id] = true
+		var def := sim.data.building(record.def_id)
+		var column := 0 if def.kind == BuildingDef.Kind.RESIDENCE else (groups[def.id] + 1 if groups.has(def.id) else -1)
+		if column >= 0:
+			spent[column] += Vector2(1.0, def.cost_money)
+	return spent
 
 
 ## A manutenção por grupo (e, no fim, a das fábricas abaixo de 50%) e a renda por classe, agora.

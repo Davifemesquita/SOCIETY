@@ -46,6 +46,10 @@ const QUEUE_LOOKAHEAD := 8
 ## Depois de erguer um produtor, a falta do bem dele não pede outro antes disto (s de jogo): a fábrica
 ## nova leva uns ciclos e uma viagem de carroça para aparecer no estoque.
 const PRODUCER_RAMP_S := 120.0
+## Obra da frente da fila esperando só dinheiro há mais que isto (s de jogo): as de trás que não são urgentes
+## esperam também, e o caixa junta para ela (Fase 27). Sem isso as obras baratas de trás levavam cada moeda e a
+## fundição, o portão do aço e dos engenheiros, esperou 45 min na frente.
+const SAVE_FRONT_AFTER_S := 90.0
 ## Obra urgente (contra uma falta) gasta até esta folga acima do limite do saldo negativo.
 const URGENT_MARGIN := 2000.0
 ## Pausa a fábrica com o estoque do produto acima desta fração e volta abaixo desta outra.
@@ -89,6 +93,8 @@ var _warehouses: Dictionary[String, bool] = {}
 var _coast_cursor: int = 10
 var _farm_cursor: Dictionary[int, int] = {}
 var _blocked_reason: StringName = &""
+## Desde quando (s de jogo) a obra da frente espera só dinheiro; -1 se não espera.
+var _front_waiting_since: float = -1.0
 ## Bem → quando pode ser julgado de novo (s de jogo).
 var _next_fix_at: Dictionary[StringName, float] = {}
 var _urgent: Dictionary[StringName, bool] = {}
@@ -349,14 +355,23 @@ func _next_production() -> void:
 	for build: int in BUILDS_PER_ROUND:
 		var built := false
 		for index: int in mini(QUEUE_LOOKAHEAD, _queue.size()):
+			if index > 0 and _saving_for_front() and not _urgent.has(_queue[index]):
+				continue
 			var reason := _try_queue_item(index)
 			if index == 0:
 				_blocked_reason = reason
+				_front_waiting_since = (_front_waiting_since if _front_waiting_since >= 0.0 else seconds) \
+						if reason == &"RESERVE" else -1.0
 			if reason == &"":
 				built = true
 				break
 		if not built or _queue.is_empty():
 			return
+
+
+## A obra da frente espera só dinheiro há SAVE_FRONT_AFTER_S ou mais: é hora de juntar para ela.
+func _saving_for_front() -> bool:
+	return _front_waiting_since >= 0.0 and seconds - _front_waiting_since >= SAVE_FRONT_AFTER_S
 
 
 ## Tenta a obra da posição index da fila; devolve vazio se construiu, senão o motivo da espera.
