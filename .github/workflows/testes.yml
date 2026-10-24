@@ -15,7 +15,8 @@ concurrency:
 
 env:
   GODOT_VERSION: 4.7.2
-  GODOT_BIN: ${{ github.workspace }}/../godot/Godot_v4.7.2-stable_linux.x86_64
+  # fora do checkout e sem ".." no caminho: o actions/cache recusa caminho relativo
+  GODOT_BIN: /home/runner/godot/Godot_v4.7.2-stable_linux.x86_64
 
 jobs:
   scripts:
@@ -23,7 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/godot
       - name: Compilar todos os scripts
         run: tools/godot.sh godot --headless --path . --script res://tools/check_scripts.gd
@@ -38,13 +39,13 @@ jobs:
       matrix:
         pasta: [core, data, sim, world, tools, presentation, ui]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/godot
       - name: Rodar a suíte da pasta
         run: tools/godot.sh testes res://tests/${{ matrix.pasta }}
       - name: Guardar o relatório
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: relatorio-${{ matrix.pasta }}
           path: reports/
