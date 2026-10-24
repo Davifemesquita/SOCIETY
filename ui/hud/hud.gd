@@ -15,6 +15,14 @@ signal overlay_changed(layer: MapOverlays.Layer)
 const MESSAGE_SECONDS := 3.0
 const REFRESH_SECONDS := 0.5
 const CARD_WIDTH := 112
+## Fase 30: o dinheiro e a população andam até o valor novo em COUNT_S; um ganho grande (BIG_GAIN moedas ou
+## BIG_GAIN_FRACTION do saldo) pulsa o dinheiro em GAIN_COLOR. Com as animações desligadas (SceneFader.is_instant:
+## testes, headless) o texto vai direto ao valor final.
+const COUNT_S := 0.4
+const BIG_GAIN := 500.0
+const BIG_GAIN_FRACTION := 0.05
+const GAIN_COLOR := Color(1.0, 0.82, 0.35)
+const PULSE_SCALE := 1.15
 
 var selection_panel: SelectionPanel
 var statistics_window: StatisticsWindow
@@ -34,6 +42,12 @@ var _clock_label := Label.new()
 var _money_label := Label.new()
 var _population := HBoxContainer.new()
 var _population_labels: Dictionary[StringName, Label] = {}
+## Fase 30: o valor que cada contador mostra agora (NAN antes do primeiro) e a animação dele.
+var _money_shown: float = NAN
+var _money_balance: float = 0.0
+var _money_tween: Tween
+var _population_shown: Dictionary[StringName, float] = {}
+var _population_tweens: Dictionary[StringName, Tween] = {}
 ## Selos dos eventos em andamento (Fase 11) e o botão das encomendas, com quantas estão abertas.
 var _event_chips := HBoxContainer.new()
 var _missions_button: Button
@@ -219,7 +233,8 @@ func _pulse_hint(delta: float) -> void:
 func _refresh() -> void:
 	var world := _simulation.world
 	var balance := world.income_per_min - world.upkeep_per_min
-	_money_label.text = tr("HUD_MONEY") % [Fmt.integer(world.money), Fmt.signed(balance)]
+	_money_balance = balance
+	_count_money(world.money)
 	if world.money < _simulation.config.min_balance_for(world.difficulty):
 		UiPalette.paint(_money_label, UiPalette.Status.BAD)
 	else:
@@ -233,7 +248,7 @@ func _refresh() -> void:
 				Fmt.percent(_simulation.config.paused_upkeep_factor)]
 	for tier: TierDef in _simulation.data.tiers:
 		if _population_labels.has(tier.id):
-			_population_labels[tier.id].text = Fmt.integer(world.population(tier.id))
+			_count_population(tier.id, float(world.population(tier.id)))
 	if _tool.mode == BuildTool.Mode.NONE:
 		_refresh_tool()
 	for def_id: StringName in _item_buttons:
@@ -244,6 +259,57 @@ func _refresh() -> void:
 		var config := _simulation.config
 		_paved_button.disabled = not _simulation.free_build \
 				and world.population(config.paved_road_unlock_tier) < config.paved_road_unlock_residents
+
+
+## Leva o dinheiro mostrado até "target" (Fase 30), com o pulso dourado num ganho grande.
+func _count_money(target: float) -> void:
+	var from := _money_shown
+	if _money_tween != null:
+		_money_tween.kill()
+		_money_tween = null
+	if is_nan(from) or SceneFader.is_instant() or absf(target - from) < 0.5:
+		_show_money(target)
+		return
+	_money_tween = create_tween()
+	_money_tween.tween_method(_show_money, from, target, COUNT_S)
+	var gain := target - from
+	if gain >= BIG_GAIN or (from > 0.0 and gain >= from * BIG_GAIN_FRACTION):
+		_pulse(_money_label)
+
+
+func _show_money(value: float) -> void:
+	_money_shown = value
+	_money_label.text = tr("HUD_MONEY") % [Fmt.integer(value), Fmt.signed(_money_balance)]
+
+
+func _count_population(tier_id: StringName, target: float) -> void:
+	var from: float = _population_shown.get(tier_id, NAN)
+	var running: Tween = _population_tweens.get(tier_id)
+	if running != null:
+		running.kill()
+		_population_tweens.erase(tier_id)
+	if is_nan(from) or SceneFader.is_instant() or absf(target - from) < 0.5:
+		_show_population(tier_id, target)
+		return
+	var tween := create_tween()
+	tween.tween_method(func(value: float) -> void: _show_population(tier_id, value), from, target, COUNT_S)
+	_population_tweens[tier_id] = tween
+
+
+func _show_population(tier_id: StringName, value: float) -> void:
+	_population_shown[tier_id] = value
+	_population_labels[tier_id].text = Fmt.integer(roundf(value))
+
+
+## Pulso de ganho (Fase 30): cresce e doura e volta. O dourado vai no self_modulate, por cima da cor de estado
+## (UiPalette.paint), que fica intacta quando ele volta ao branco.
+func _pulse(label: Label) -> void:
+	label.pivot_offset = label.size * 0.5
+	var pulse := create_tween()
+	pulse.tween_property(label, ^"scale", Vector2.ONE * PULSE_SCALE, 0.12)
+	pulse.parallel().tween_property(label, ^"self_modulate", GAIN_COLOR, 0.12)
+	pulse.tween_property(label, ^"scale", Vector2.ONE, 0.25)
+	pulse.parallel().tween_property(label, ^"self_modulate", Color.WHITE, 0.25)
 
 
 func _build_top_bar() -> void:

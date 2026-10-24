@@ -50,6 +50,8 @@ var sky: SkyAdapter
 var pedestrian_view: PedestrianView
 var window_view: WindowLightsView
 var ship_view: ShipView
+## Fase 30: moedas e o "+X" sobre o entreposto quando o comerciante paga.
+var money_fx_view: MoneyFxView
 var rival_view: RivalView
 var ship_picker: ShipPicker
 ## Nível gráfico aplicado ao ambiente, à câmera e aos efeitos (Fase 9).
@@ -129,6 +131,10 @@ func _ready() -> void:
 	ship_view = ShipView.new()
 	add_child(ship_view)
 	ship_view.setup(simulation)
+	money_fx_view = MoneyFxView.new()
+	money_fx_view.name = "MoneyFx"
+	add_child(money_fx_view)
+	money_fx_view.setup(simulation)
 	rival_view = RivalView.new()
 	add_child(rival_view)
 	rival_view.setup(simulation)
@@ -431,7 +437,7 @@ func open_menu() -> GameMenu:
 	menu.save_requested.connect(open_save_dialog)
 	menu.load_requested.connect(open_load_dialog)
 	menu.options_requested.connect(func() -> void: Modal.open(_ui_layer, OptionsDialog.new()))
-	menu.main_menu_requested.connect(func() -> void: get_tree().change_scene_to_file.call_deferred(MAIN_MENU))
+	menu.main_menu_requested.connect(func() -> void: SceneFader.change_to.call_deferred(MAIN_MENU))
 	menu.quit_requested.connect(func() -> void: get_tree().quit())
 	return menu
 
@@ -447,7 +453,7 @@ func open_victory() -> VictoryDialog:
 		modal.close()
 		if not modal_open():
 			GameClock.set_speed(_speed_before_menu))
-	dialog.menu_requested.connect(func() -> void: get_tree().change_scene_to_file.call_deferred(MAIN_MENU))
+	dialog.menu_requested.connect(func() -> void: SceneFader.change_to.call_deferred(MAIN_MENU))
 	return dialog
 
 

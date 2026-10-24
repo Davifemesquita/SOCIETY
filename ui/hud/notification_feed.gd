@@ -7,6 +7,9 @@ extends VBoxContainer
 ## O jogador clicou: a partida leva a câmera até o lugar.
 signal go_to(notice: NoticeWatcher.Notice)
 
+## Fase 30: quanto a notificação leva para aparecer e para esmaecer.
+const FADE_S := 0.25
+
 var watcher: NoticeWatcher
 
 var _config: GameConfig
@@ -92,15 +95,25 @@ func push(notice: NoticeWatcher.Notice) -> void:
 		_remove(notice.key))
 	add_child(button)
 	move_child(button, 0)
+	# Fase 30: aparece em FADE_S (com as animações desligadas, já inteira)
+	if not SceneFader.is_instant():
+		button.modulate.a = 0.0
+		create_tween().tween_property(button, ^"modulate:a", 1.0, FADE_S)
 	EventBus.notice_shown.emit(notice.icon)
 	_items[notice.key] = button
 	_ages[notice.key] = _config.notice_seconds
 	_notices[notice.key] = notice
 	while _items.size() > _config.notice_max_visible:
-		var oldest := get_child(get_child_count() - 1) as Button
-		for key: String in _items:
-			if _items[key] == oldest:
-				_remove(key)
+		# o mais antigo que ainda conta: os que estão esmaecendo (Fase 30) já saíram de _items
+		for index: int in range(get_child_count() - 1, -1, -1):
+			var oldest := get_child(index)
+			var found := ""
+			for key: String in _items:
+				if _items[key] == oldest:
+					found = key
+					break
+			if not found.is_empty():
+				_remove(found)
 				break
 
 
@@ -122,8 +135,16 @@ func _remove(key: String) -> void:
 	if not _items.has(key):
 		return
 	var button := _items[key]
-	remove_child(button)
-	button.queue_free()
 	_items.erase(key)
 	_ages.erase(key)
 	_notices.erase(key)
+	if SceneFader.is_instant():
+		remove_child(button)
+		button.queue_free()
+		return
+	# Fase 30: sai das contas na hora (shown() e o limite não a veem mais) e só o desenho esmaece antes de sumir
+	button.disabled = true
+	button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fade := create_tween()
+	fade.tween_property(button, ^"modulate:a", 0.0, FADE_S)
+	fade.tween_callback(button.queue_free)
