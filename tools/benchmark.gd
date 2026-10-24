@@ -12,6 +12,7 @@ extends Node
 ## Fase 9: roda no nível gráfico alto (o do critério), ou no de `-- --nivel N`, com fumaça,
 ## clima, materiais PBR e o resto dos gráficos finais.
 ##   tools/godot.sh godot --path . res://tools/benchmark.tscn -- [arquivo.md]
+## Fase 29: `-- --so-tick` mede só o tick por etapa e a obra com a ilha cheia e sai, sem gravar (~1 min).
 ## No executável: Society.exe -- --benchmark (mostra o resultado na tela e grava em
 ## user://benchmark.md). Sem GPU (esta VM), o tempo de quadro não vale como meta.
 
@@ -120,6 +121,8 @@ func _run() -> void:
 	var sailing := sim.world.player_ships().filter(func(ship: Ship) -> bool: return ship.state == Ship.State.SAILING).size()
 	_report("navios navegando depois de 2 min", "%d de %d em rota" % [sailing, on_routes])
 	var times := PackedFloat64Array()
+	sim.profiling = true
+	sim.profile.clear()
 	started = Time.get_ticks_usec()
 	for tick: int in TICKS:
 		var one := Time.get_ticks_usec()
@@ -129,7 +132,8 @@ func _run() -> void:
 	times.sort()
 	_report("tick de simulação (média / 95% / pior)", "%.2f / %.2f / %.2f ms (orçamento %.1f ms)" % [tick_ms,
 			times[int(times.size() * 0.95)], times[times.size() - 1], config.tick_budget_ms])
-	_report("tick por sistema", _per_system(sim))
+	sim.profiling = false
+	_report("tick por etapa (ms, da mais pesada)", _per_step(sim))
 	started = Time.get_ticks_usec()
 	sim.free_build = true
 	sim.execute(PlaceBuildingCommand.new(Simulation.MAIN_ISLAND, &"market", Vector2i(200, 200), 0))
@@ -141,6 +145,10 @@ func _run() -> void:
 	for step: String in sim.derived_state().last_rebuild_ms:
 		steps.append("%s %.1f" % [step, sim.derived_state().last_rebuild_ms[step]])
 	_report("recálculo por etapa (ms)", " · ".join(steps))
+	# Fase 29: `-- --so-tick` para aqui (o tick e a obra com a ilha cheia, sem salvar nem desenhar), só no terminal
+	if "--so-tick" in OS.get_cmdline_user_args():
+		get_tree().quit()
+		return
 	started = Time.get_ticks_usec()
 	SaveSystem.save_game(SLOT, game.game_state())
 	_report("salvar", "%.0f ms (%.0f KB)" % [(Time.get_ticks_usec() - started) / 1000.0, FileAccess.get_file_as_bytes(SaveSystem.slot_path(SLOT)).size() / 1024.0])
@@ -272,24 +280,13 @@ func _production_streets(sim: Simulation, y: int) -> Array[int]:
 
 
 ## Média de cada sistema em ms por tick, na ordem do tick.
-func _per_system(sim: Simulation) -> String:
-	var dt := sim.config.tick_interval()
-	var derived := sim.derived_state()
-	var steps: Dictionary[String, Callable] = {
-		"força de trabalho": func() -> void: WorkforceSystem.run(sim.world, derived),
-		"produção": func() -> void: ProductionSystem.run(sim.config, derived, dt),
-		"logística": func() -> void: LogisticsSystem.run(sim.world, sim.config, derived, dt),
-		"necessidades": func() -> void: NeedsSystem.run(sim.world, sim.data, sim.config, derived, dt),
-		"população": func() -> void: PopulationSystem.run(sim.world, sim.data, sim.config, derived, dt),
-		"economia": func() -> void: EconomySystem.run(sim.world, derived, dt),
-		"navios": func() -> void: ShipSystem.run(sim.world, sim.data, sim.config, derived, sim.harbors(), dt),
-	}
+## As etapas do tick medidas por dentro (Simulation.profile, Fase 29), em ms por tick, da mais pesada para a mais leve.
+func _per_step(sim: Simulation) -> String:
+	var steps := sim.profile.keys()
+	steps.sort_custom(func(a: StringName, b: StringName) -> bool: return sim.profile[a] > sim.profile[b])
 	var parts: PackedStringArray = []
-	for name: String in steps:
-		var started := Time.get_ticks_usec()
-		for i: int in 50:
-			steps[name].call()
-		parts.append("%s %.2f" % [name, (Time.get_ticks_usec() - started) / 1000.0 / 50])
+	for step: StringName in steps:
+		parts.append("%s %.2f" % [step, sim.profile[step] / 1000.0 / TICKS])
 	return " · ".join(parts)
 
 

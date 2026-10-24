@@ -19,6 +19,11 @@ var free_build: bool = false
 ## Só para o benchmark: construir sem olhar o terreno.
 var ignore_terrain: bool = false
 
+## Tempo de cada etapa do tick (Fase 29), em µs somados desde o último clear(), com profiling ligado: o benchmark
+## liga, o jogo não (custa um if por etapa).
+var profiling: bool = false
+var profile: Dictionary[StringName, int] = {}
+var _lap_at: int = 0
 var _derived := DerivedState.new()
 var _dirty: bool = true
 ## Carta náutica e portos do mundo atual (refeitos quando o mundo é trocado).
@@ -89,10 +94,15 @@ func execute(command: Command) -> CommandResult:
 ## população e upgrades (e marcos, metas e objetivo) → economia → comércio, navios e combate → eventos e encomendas → oferta de especialistas → riscos → rivais →
 ## estatísticas (a amostra do histórico; o retrato atual é calculado sob pedido).
 func tick(_tick_index: int) -> void:
+	if profiling:
+		_lap_at = Time.get_ticks_usec()
 	var dt := config.tick_interval()
 	var derived := derived_state()
+	_lap(&"estado derivado")
 	WorkforceSystem.run(world, derived)
+	_lap(&"força de trabalho")
 	ProductionSystem.run(config, derived, dt, world.events_state, world.risks_state)
+	_lap(&"produção")
 	var built := ShipyardSystem.run(world, data, config, derived, dt)
 	if not built.is_empty():
 		_dirty = true
@@ -100,30 +110,51 @@ func tick(_tick_index: int) -> void:
 		EventBus.ships_changed.emit()
 		for ship_id: int in built:
 			EventBus.ship_built.emit(ship_id)
+	_lap(&"estaleiro")
 	if config.instant_logistics:
 		DirectTransferSystem.run(world, config, derived)
 	else:
 		LogisticsSystem.run(world, config, derived, dt)
+	_lap(&"logística")
 	NeedsSystem.run(world, data, config, derived, dt)
+	_lap(&"necessidades")
 	PopulationSystem.run(world, data, config, derived, dt)
+	_lap(&"população")
 	MilestoneSystem.run(world, config, derived)
 	GoalSystem.run(world, data, config, derived)
 	VictorySystem.run(world, data, config, derived)
+	_lap(&"marcos, metas e vitória")
 	EconomySystem.run(world, derived, dt)
+	_lap(&"economia")
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
+		_lap(&"navios")
 		CombatSystem.run(world, data, config, dt)
+		_lap(&"combate")
 	EventSystem.run(world, data, config)
 	MissionSystem.run(world, data, config)
 	SpecialistSystem.run(world, data, config)
+	_lap(&"eventos, encomendas e especialistas")
 	if world.risks_state.enabled:
 		_remove_lost(RiskSystem.run(world, data, config, derived))
+	_lap(&"riscos")
 	if world.rivals_state.enabled:
 		RivalSystem.run(world, data, config, harbors(), dt)
 	else:
 		world.treaty_income_per_min = 0.0
+	_lap(&"rivais")
 	world.tick += 1
 	StatisticsSystem.run(world, data, config, derived)
+	_lap(&"estatísticas")
+
+
+## Soma ao perfil o tempo desde a etapa anterior (Fase 29), com profiling ligado.
+func _lap(step: StringName) -> void:
+	if not profiling:
+		return
+	var now := Time.get_ticks_usec()
+	profile[step] = profile.get(step, 0) + now - _lap_at
+	_lap_at = now
 
 
 ## Prédios perdidos no fogo saem do mundo como na demolição, sem devolver material.
