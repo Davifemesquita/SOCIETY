@@ -98,7 +98,8 @@ func test_tiers_follow_the_spec_table() -> void:
 	assert_int(peasants.residents_per_house).is_equal(10)
 	assert_float(peasants.tax_per_resident_min).is_equal(0.6)
 	assert_int(workers.residents_per_house).is_equal(20)
-	assert_float(workers.tax_per_resident_min).is_equal(1.2)
+	# a especificação diz 1,2; o dono do produto subiu para 1,4 (Fase 28, 24/10/2026) para folgar o meio da partida
+	assert_float(workers.tax_per_resident_min).is_equal(1.4)
 	assert_dict(workers.upgrade_materials).is_equal({&"planks": 2})
 	assert_object(_data.next_tier(&"peasants")).is_same(workers)
 	assert_object(_data.next_tier(&"workers")).is_same(_data.tier(&"artisans"))
