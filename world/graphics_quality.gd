@@ -2,7 +2,7 @@ class_name GraphicsQuality
 extends Node
 ## Aplica o nível gráfico escolhido nas opções (Settings.preset()) ao que se vê: efeitos do
 ## ambiente (SSAO, SSIL, glow, neblina volumétrica), sombra do sol, profundidade de campo da
-## câmera, pedestres, luzes de área, nuvens e partículas. A janela (MSAA, LOD, atlas de sombras)
+## câmera, pedestres, luzes de área, nuvens e partículas. A janela (antisserrilhado, FSR, LOD, atlas de sombras)
 ## fica com o Settings.apply(). Refaz tudo quando as opções mudam.
 
 var preset: GraphicsPresetDef

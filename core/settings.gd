@@ -19,7 +19,7 @@ var edge_pan: bool = true
 var colorblind: bool = false
 var fullscreen: bool = false
 var vsync: bool = true
-## Escala da resolução 3D: abaixo de 1 usa o FSR 2.
+## Escala da resolução 3D: abaixo de 1 usa o FSR 2.2.
 var render_scale: float = 1.0
 ## Nível de qualidade gráfica (índice em GameConfig.graphics_presets).
 var graphics_preset: int = 2
@@ -120,9 +120,12 @@ func apply() -> void:
 	if is_inside_tree():
 		var root := get_tree().root
 		root.content_scale_factor = ui_scale
-		root.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR2 if render_scale < 0.999 else Viewport.SCALING_3D_MODE_BILINEAR
+		# Fase 32: o FSR 2.2 (abaixo de 100% ou, no ultra, na cheia) já é o AA; sem ele, o AA de tela do nível
+		root.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR2 if preset().uses_temporal(render_scale) else Viewport.SCALING_3D_MODE_BILINEAR
 		root.scaling_3d_scale = render_scale
-		root.msaa_3d = preset().msaa as Viewport.MSAA
+		root.fsr_sharpness = preset().fsr_sharpness
+		root.screen_space_aa = preset().screen_aa_for(render_scale)
+		root.msaa_3d = Viewport.MSAA_DISABLED
 		root.mesh_lod_threshold = preset().mesh_lod_threshold
 		RenderingServer.directional_shadow_atlas_set_size(preset().shadow_atlas_size, true)
 		RenderingServer.directional_soft_shadow_filter_set_quality(preset().soft_shadow_quality as RenderingServer.ShadowQuality)

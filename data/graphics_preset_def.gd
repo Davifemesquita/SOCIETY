@@ -34,9 +34,17 @@ extends Resource
 ## Fração do teto de pedestres (max_visible_pedestrians) e as luzes de área das janelas.
 @export var pedestrian_ratio: float = 1.0
 @export var area_lights: int = 12
-## Antisserrilhado (Viewport.MSAA) e a escala de resolução sugerida (abaixo de 1 usa o FSR 2).
-@export var msaa: int = 0
+## Escala de resolução sugerida (abaixo de 1 usa o FSR 2.2, que também é o antisserrilhado).
 @export var render_scale: float = 1.0
+
+@export_group("Antisserrilhado")
+## Fase 32: AA de tela (Viewport.ScreenSpaceAA: 0 nenhum, 1 FXAA, 2 SMAA), usado quando o FSR 2.2 está desligado. O
+## MSAA saiu: trocá-lo em jogo recompila pipelines, e ele não pega a borda recortada do alpha (cercas, folhas).
+@export var screen_space_aa: int = Viewport.SCREEN_SPACE_AA_SMAA
+## FSR 2.2 também na resolução cheia, como AA temporal (no lugar do AA de tela).
+@export var temporal_native: bool = false
+## Nitidez do FSR (0 = a mais nítida, 2 = a mais suave; Viewport.fsr_sharpness).
+@export var fsr_sharpness: float = 0.2
 
 
 ## Lista o que está fora do intervalo. Vazia quando o nível é válido.
@@ -48,6 +56,21 @@ func validate() -> PackedStringArray:
 		problems.append("%s: frações de partículas e pedestres entre 0 e 1" % id)
 	if visibility_scale <= 0.0 or mesh_lod_threshold <= 0.0 or area_lights < 0:
 		problems.append("%s: detalhe com valores positivos" % id)
-	if render_scale <= 0.0 or render_scale > 1.0 or msaa < 0 or msaa > 3:
-		problems.append("%s: escala entre 0 e 1 e MSAA de 0 a 3" % id)
+	if render_scale <= 0.0 or render_scale > 1.0:
+		problems.append("%s: escala entre 0 e 1" % id)
+	if screen_space_aa < Viewport.SCREEN_SPACE_AA_DISABLED or screen_space_aa >= Viewport.SCREEN_SPACE_AA_MAX \
+			or fsr_sharpness < 0.0 or fsr_sharpness > 2.0:
+		problems.append("%s: AA de tela de 0 a %d e nitidez do FSR de 0 a 2" % [id, Viewport.SCREEN_SPACE_AA_MAX - 1])
+	if not uses_temporal(render_scale) and screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED:
+		problems.append("%s: sem antisserrilhado (nem AA de tela nem FSR)" % id)
 	return problems
+
+
+## O FSR 2.2 fica ligado com esta escala? Abaixo de 100% sempre; na cheia, só com temporal_native.
+func uses_temporal(scale: float) -> bool:
+	return scale < 0.999 or temporal_native
+
+
+## O AA de tela que vale com esta escala: nenhum quando o FSR já faz o papel.
+func screen_aa_for(scale: float) -> Viewport.ScreenSpaceAA:
+	return Viewport.SCREEN_SPACE_AA_DISABLED if uses_temporal(scale) else screen_space_aa as Viewport.ScreenSpaceAA

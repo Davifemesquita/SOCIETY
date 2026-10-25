@@ -83,12 +83,14 @@ func _graphics() -> Control:
 			func(value: float) -> void: Settings.set_render_scale(value))
 	scale.name = "RenderScale"
 	grid.add_child(scale)
-	# o nível sugere a escala: o controle acompanha
+	# o nível sugere a escala: o controle acompanha. Fase 32: a troca recompila pipelines e cai no escuro da cortina
 	quality.item_selected.connect(func(index: int) -> void:
-		Settings.set_graphics_preset(index)
-		var slider := scale.get_child(0) as HSlider
-		slider.value = Settings.render_scale
-		Settings.apply())
+		await SceneFader.change_with(func() -> void:
+			Settings.set_graphics_preset(index)
+			Settings.apply(), "LOADING_GRAPHICS")
+		if is_instance_valid(scale):
+			var slider := scale.get_child(0) as HSlider
+			slider.value = Settings.render_scale)
 	grid.add_child(UiKit.label("OPTIONS_MAX_FPS"))
 	var fps := OptionButton.new()
 	fps.name = "MaxFps"
