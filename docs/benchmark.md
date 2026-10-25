@@ -452,6 +452,20 @@ ao lado do `.md` (`benchmark_quadros.json`, `format` 1; no executável, `user://
 primeira vez de cada material atrás da cortina (`WarmUp`), e o benchmark conta as pipelines compiladas montando e
 desenhando a cidade de teste depois disso.
 
+### Primeira vez atrás da cortina, na VM (25/10/2026)
+
+Partida na ilha plana, nível baixo, um prédio de cada tipo (67) construído na partida depois de montada, medindo os dois
+quadros seguintes a cada um. Lavapipe: o tempo absoluto não vale, só a comparação.
+
+| | Montar a partida | Pipelines compiladas (malha / superfície / desenho / especialização) | Média / p95 / pior dos dois quadros |
+|---|---|---|---|
+| sem o `WarmUp` | 3,0 s | 4 / 12 / 0 / 3 | 1856 / 2045 / 3889 ms |
+| com o `WarmUp` | 7,2 s | 0 / 6 / 0 / 1 | 1821 / 1970 / 3107 ms |
+
+O rascunho tira as compilações de malha, metade das de superfície e o pior quadro cai ~20%; a média quase não muda
+porque no lavapipe o desenho domina cada quadro. O preço são ~4 s a mais atrás da cortina na VM (na placa deve ser
+bem menos). As 6 de superfície que sobram ainda pedem a medição na RTX 3060.
+
 ### Como medir no PC com a RTX 3060
 
 O que fecha a Fase 32 é esta tabela, que ainda não existe (todo número de quadro até aqui é da VM, sem GPU). Com o
