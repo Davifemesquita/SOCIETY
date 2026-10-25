@@ -602,3 +602,64 @@ As duas rodadas, como o benchmark grava:
 | quadro no Ultra (p50 / p95 / p99) | 35.4 / 39.9 / 42.9 ms; GPU média 32.4 ms (p99 42.6); CPU do render média 2.3 ms |
 | tick por quadro no Ultra (média / p99 / pior) | 0.28 / 2.27 / 48.65 ms |
 | pipelines compiladas no dia, Ultra (desenho / superfície / malha / especialização) | 2 / 31 / 0 / 53 |
+
+## Fase 33 — Por cima do mundo
+
+Mesma carga e mesmo PC da medição da Fase 32 (RTX 5060, 1080p, VSync ligado, Vulkan, `-- --benchmark
+--todos-os-niveis`), com a grade no chão, a prévia com o modelo e os ícones de estado agregados de longe.
+
+| Nível | FPS médio (Fase 32 → 33) | 1% low | GPU média | CPU do render |
+|---|---|---|---|---|
+| baixo | 114,1 → 147,1 | 62,1 → 60,3 | 8,3 → 5,6 ms | 0,9 → 0,5 ms |
+| médio | 68,9 → 91,5 | 47,2 → 54,2 | 14,0 → 10,3 ms | 1,4 → 0,6 ms |
+| alto | 48,6 → **62,2** | 39,4 → 49,3 | 20,1 → 15,6 ms | 1,6 → 0,7 ms |
+| ultra | 29,8 → 37,1 | 8,5 → 23,8 | 32,3 → 26,4 ms | 2,3 → 0,8 ms |
+
+- **O alto passou dos 60 FPS de média** (p50 de 17,8 ms, ainda acima dos 16,6 ms da meta). A causa provável, não
+  isolada: a cidade do benchmark tem centenas de prédios parados, e cada ícone de estado era um `Sprite3D`
+  transparente sem teste de profundidade, desenhado por cima de tudo; de longe, agora, a maioria vira um só por
+  quadrado. A queda junta da CPU do render (menos chamadas de desenho) aponta para isso.
+- **Tick**: 1,09 ms de média (1,07 na Fase 32): a regra dos ícones é da apresentação e não toca na simulação. Obra com
+  a ilha cheia em 14,2 ms (13,6).
+- **Ultra**: o pior quadro caiu para 141 ms (de 154 a 1.964 ms), mas o pior tick ainda chegou a 131 ms; a travada
+  continua sem investigação.
+
+### 2026-10-25 18:22:08 — AMD Ryzen 7 5700X 8-Core Processor
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| placa e driver | NVIDIA GeForce RTX 5060 · vulkan · (1920, 1080) · VSync ligado |
+| jogo novo: arquipélago, terreno, água e árvores | 3815 ms (semente 1840, 93919 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 471 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 7601 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 1.09 / 1.44 / 2.19 ms (orçamento 4.0 ms) |
+| tick por etapa (ms, da mais pesada) | logística 0.33 · produção 0.28 · população 0.23 · necessidades 0.09 · navios 0.04 · riscos 0.04 · força de trabalho 0.03 · marcos, metas e vitória 0.02 · estaleiro 0.01 · eventos, encomendas e especialistas 0.01 · combate 0.01 · rivais 0.00 · estatísticas 0.00 · economia 0.00 · estado derivado 0.00 |
+| construir um prédio com a ilha cheia | 14.2 ms (limite 50 ms): comando e vistas 14.2 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 2.8 · serviços 2.9 · módulos, poluição e beleza 0.0 · armazéns 2.8 · produção 2.0 · grupos de casas 0.4 |
+| salvar | 68 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 1316 ms |
+| quadro com tudo visível | 6 ms (163 FPS) — NVIDIA GeForce RTX 5060 |
+| pipelines compiladas montando e desenhando a cidade (desenho / superfície / malha / especialização) | 0 / 5 / 0 / 13 (primeira vez atrás da cortina: ligada) |
+| pedestres | 2000 na multidão, 1900 na rua (teto 2000); 22639 janelas |
+| multidão saindo de casa (rotas novas) | 249 quadros, 1227 ms; 1381 rotas, 0.53 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.29 ms por quadro |
+| dia inteiro em 60 s a 1x, Baixa, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 147.1 / 60.3 / 47.4 FPS / 35 ms em 8829 quadros (meta 60 FPS), a partir das 10:00 |
+| quadro no Baixa (p50 / p95 / p99) | 6.0 / 9.0 / 14.9 ms; GPU média 5.6 ms (p99 8.4); CPU do render média 0.5 ms |
+| tick por quadro no Baixa (média / p99 / pior) | 0.05 / 1.49 / 11.03 ms |
+| pipelines compiladas no dia, Baixa (desenho / superfície / malha / especialização) | 0 / 0 / 0 / 28 |
+| dia inteiro em 60 s a 1x, Média, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 91.5 / 54.2 / 43.8 FPS / 33 ms em 5490 quadros (meta 60 FPS), a partir das 10:59 |
+| quadro no Média (p50 / p95 / p99) | 10.0 / 15.2 / 16.6 ms; GPU média 10.3 ms (p99 15.1); CPU do render média 0.6 ms |
+| tick por quadro no Média (média / p99 / pior) | 0.08 / 1.56 / 2.71 ms |
+| pipelines compiladas no dia, Média (desenho / superfície / malha / especialização) | 5 / 13 / 0 / 24 |
+| dia inteiro em 60 s a 1x, Alta, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 62.2 / 49.3 / 44.2 FPS / 23 ms em 3730 quadros (meta 60 FPS), a partir das 12:00 |
+| quadro no Alta (p50 / p95 / p99) | 17.8 / 18.8 / 19.5 ms; GPU média 15.6 ms (p99 18.8); CPU do render média 0.7 ms |
+| tick por quadro no Alta (média / p99 / pior) | 0.12 / 1.59 / 3.09 ms |
+| pipelines compiladas no dia, Alta (desenho / superfície / malha / especialização) | 7 / 13 / 0 / 22 |
+| dia inteiro em 60 s a 1x, Ultra, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 37.1 / 23.8 / 10.8 FPS / 141 ms em 2228 quadros (meta 60 FPS), a partir das 13:00 |
+| quadro no Ultra (p50 / p95 / p99) | 29.0 / 33.5 / 36.0 ms; GPU média 26.4 ms (p99 35.2); CPU do render média 0.8 ms |
+| tick por quadro no Ultra (média / p99 / pior) | 0.26 / 1.70 / 131.29 ms |
+| pipelines compiladas no dia, Ultra (desenho / superfície / malha / especialização) | 7 / 14 / 0 / 24 |

@@ -4,6 +4,9 @@ extends MeshInstance3D
 ## F1 grade e ocupação, F2 rede de estradas colorida por trecho conectado.
 ## Também mostra um destaque pedido pela partida (raio de serviço, área dos campos, terreno).
 ## Desde a Fase 5 é uma malha que acompanha o relevo da ilha da ferramenta (set_island).
+## Desde a Fase 33 são duas passadas: as linhas, sempre com teste de profundidade e só em volta do cursor (set_focus),
+## e as células destacadas por cima de tudo (material_overlay, sem linhas). Antes o destaque trocava a malha inteira
+## para o raio-X e a grade da ilha toda aparecia sobre as copas e os prédios.
 
 enum Layer { NONE, OCCUPANCY, ROADS }
 
@@ -27,13 +30,16 @@ var _material := ShaderMaterial.new()
 var _xray_material := ShaderMaterial.new()
 
 
-func setup(simulation: Simulation, cell_size: float) -> void:
+## grid_radius_m: até onde do cursor as linhas aparecem (0: a ilha toda).
+func setup(simulation: Simulation, cell_size: float, grid_radius_m: float = 0.0) -> void:
 	_simulation = simulation
 	_material.shader = preload("res://shaders/grid_overlay.gdshader")
 	_xray_material.shader = preload("res://shaders/grid_overlay_xray.gdshader")
 	for material: ShaderMaterial in [_material, _xray_material]:
 		material.set_shader_parameter(&"cell_size", cell_size)
+	_material.set_shader_parameter(&"focus_radius_m", grid_radius_m)
 	_xray_material.set_shader_parameter(&"show_cells", true)
+	_xray_material.set_shader_parameter(&"show_lines", false)
 	material_override = _material
 	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	EventBus.building_placed.connect(func(_id: int) -> void: _update())
@@ -61,6 +67,20 @@ func set_island(island_id: int) -> void:
 
 func island_id() -> int:
 	return _island_id
+
+
+## Ponto do mundo em volta do qual as linhas aparecem (o cursor).
+func set_focus(point: Vector3) -> void:
+	_material.set_shader_parameter(&"focus_point", Vector2(point.x, point.z))
+
+
+## Material das linhas e o das células destacadas (testes).
+func lines_material() -> ShaderMaterial:
+	return _material
+
+
+func cells_material() -> ShaderMaterial:
+	return _xray_material
 
 
 ## Malha de um vértice por canto de célula, na altura do terreno mais a folga dada.
@@ -111,7 +131,9 @@ func _update() -> void:
 		return
 	visible = grid_visible or layer != Layer.NONE or _custom != null
 	var cells: Image = _layer_image() if layer != Layer.NONE else _custom
-	material_override = _material if cells == null else _xray_material
+	_material.set_shader_parameter(&"show_lines", grid_visible)
+	material_override = _material
+	material_overlay = _xray_material if cells != null else null
 	if visible and cells != null:
 		_xray_material.set_shader_parameter(&"cell_data", ImageTexture.create_from_image(cells))
 

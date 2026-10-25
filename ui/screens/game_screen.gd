@@ -142,7 +142,7 @@ func _ready() -> void:
 	pedestrian_view.setup(simulation, _config)
 	add_child(pedestrian_view)
 	overlay = DebugOverlay.new()
-	overlay.setup(simulation, _config.cell_size_m)
+	overlay.setup(simulation, _config.cell_size_m, _config.build_grid_radius_m)
 	add_child(overlay)
 	camera = StrategyCamera.new()
 	add_child(camera)
@@ -240,7 +240,7 @@ func _ready() -> void:
 	ship_picker.setup(simulation, tool, camera, ship_view)
 	add_child(ship_picker)
 	var preview := BuildPreviewView.new()
-	preview.setup(tool, _config.cell_size_m)
+	preview.setup(tool, _config.cell_size_m, simulation)
 	add_child(preview)
 	_ui_layer = CanvasLayer.new()
 	_ui_layer.name = "Interface"
@@ -251,13 +251,18 @@ func _ready() -> void:
 	hud.save_requested.connect(open_save_dialog)
 	hud.load_requested.connect(open_load_dialog)
 	hud.menu_requested.connect(open_menu)
-	hud.overlay_changed.connect(func(_layer: MapOverlays.Layer) -> void: update_highlight())
+	hud.overlay_changed.connect(func(layer: MapOverlays.Layer) -> void:
+		# Fase 33: com uma camada do mapa ligada, todos os ícones de estado aparecem
+		building_view.show_all_icons = layer != MapOverlays.Layer.NONE
+		update_highlight())
 	hud.notifications.go_to.connect(go_to)
 	hud.selection_panel.center_requested.connect(center_on_selected)
 	hud.ship_panel.center_requested.connect(center_on_selected)
 	tool.changed.connect(func() -> void:
 		overlay.grid_visible = tool.mode != BuildTool.Mode.NONE
 		overlay.set_island(tool.island_id)
+		overlay.set_focus(tool.grid().cell_world(tool.hover_cell))
+		building_view.hovered_id = tool.grid().building_at(tool.hover_cell) if tool.grid().in_bounds(tool.hover_cell) else 0
 		update_highlight())
 	tool.selection_changed.connect(func(building_id: int) -> void:
 		building_view.select(building_id)

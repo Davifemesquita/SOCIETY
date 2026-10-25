@@ -467,6 +467,14 @@ static var _default: GameConfig
 @export var building_detail_range_m: float = 260.0
 ## Quanto tempo (s reais) o andaime e a poeira ficam na casa que subiu de classe.
 @export var upgrade_scaffold_seconds: float = 6.0
+## Fase 33: as linhas da grade de construção só aparecem até esta distância do cursor (some aos poucos nos últimos 45%).
+@export var build_grid_radius_m: float = 30.0
+## Fase 33: ícones de estado sobre os prédios. Até full_m da câmera aparece cada um; mais longe, os iguais no mesmo
+## quadrado de cluster_m viram um só, que esmaece até min_alpha em fade_end_m.
+@export var status_icon_full_m: float = 90.0
+@export var status_icon_fade_end_m: float = 400.0
+@export var status_icon_cluster_m: float = 48.0
+@export var status_icon_min_alpha: float = 0.45
 ## Até onde a fumaça das chaminés aparece no nível alto, e a força da fuligem no chão.
 @export var smoke_visibility_range_m: float = 450.0
 @export var soot_decal_alpha: float = 0.55
@@ -610,6 +618,11 @@ func validate() -> PackedStringArray:
 		problems.append("camera_min_distance_m deve ser positivo e menor que camera_max_distance_m")
 	if camera_rotate_seconds <= 0.0 or camera_center_seconds <= 0.0 or camera_zoom_seconds <= 0.0:
 		problems.append("as durações da câmera devem ser maiores que zero")
+	if build_grid_radius_m <= 0.0:
+		problems.append("build_grid_radius_m deve ser maior que zero")
+	if status_icon_full_m <= 0.0 or status_icon_fade_end_m <= status_icon_full_m or status_icon_cluster_m <= 0.0 \
+			or status_icon_min_alpha <= 0.0 or status_icon_min_alpha > 1.0:
+		problems.append("ícones de estado: 0 < full_m < fade_end_m, cluster_m > 0 e min_alpha em (0, 1]")
 	if tax_level_multipliers.size() != 3 or tax_level_happiness.size() != 3:
 		problems.append("os níveis de imposto são três: baixo, normal e alto")
 	if need_partial_threshold > need_met_threshold:

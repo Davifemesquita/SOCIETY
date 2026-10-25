@@ -8,7 +8,8 @@ extends Node3D
 ##   pelo id, um de HOUSE_VARIANTS modelos (telhado de duas águas de frente ou de lado, ou telhado
 ##   plano com chaminé) e um tom da cor da classe: a rua deixa de ser fileira de caixas iguais.
 ## - Prédio parado: ícone do motivo flutuando em cima (sem estrada, sem entrada, saída cheia…);
-##   o texto do motivo fica na dica do painel. Desde a Fase 7 é ícone, não texto.
+##   o texto do motivo fica na dica do painel. Desde a Fase 7 é ícone, não texto. Desde a Fase 33 quem
+##   aparece e com que opacidade é do StatusIconRule (longe, os iguais vizinhos viram um só).
 ## - Casa em protesto: ícone de protesto. Campo e pasto não têm ícone.
 ## - Silhueta por cadeia (Fase 13): pás do moinho, roda d'água e polia da torre de mina giram enquanto
 ##   o prédio produz, no tempo de jogo (param na pausa).
@@ -68,6 +69,9 @@ var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
 ## Prédios demolidos que ainda estão afundando (já fora de _nodes).
 var _demolishing: Array[Node3D] = []
+## Fase 33: o prédio sob o cursor sempre mostra o ícone; com uma camada do mapa ligada, todos mostram.
+var hovered_id: int = 0
+var show_all_icons: bool = false
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -155,6 +159,33 @@ func _process(delta: float) -> void:
 	if _refresh_left <= 0.0:
 		_refresh_left = REFRESH_SECONDS
 		refresh_labels()
+	var camera := get_viewport().get_camera_3d()
+	if camera != null:
+		apply_icon_rule(to_local(camera.global_position))
+
+
+## Mostra os ícones de estado pela regra da distância (StatusIconRule), com a câmera no referencial da vista.
+func apply_icon_rule(camera_position: Vector3) -> void:
+	var points: Dictionary[int, Vector3] = {}
+	var keys: Dictionary[int, String] = {}
+	for building_id: int in _label_keys:
+		var key := _label_keys[building_id]
+		if key.is_empty() or not _labels.has(building_id):
+			continue
+		points[building_id] = _nodes[building_id].position + _labels[building_id].position
+		keys[building_id] = key
+	var shown := StatusIconRule.alphas(points, keys, camera_position, _simulation.config, [hovered_id, _selected_id],
+			show_all_icons)
+	for building_id: int in points:
+		var label := _labels[building_id]
+		label.visible = shown.has(building_id)
+		label.modulate.a = shown.get(building_id, 1.0)
+
+
+## Ícone de estado do prédio, se estiver aparecendo (testes).
+func status_icon(building_id: int) -> Sprite3D:
+	var label: Sprite3D = _labels.get(building_id)
+	return label if label != null and label.visible else null
 
 
 ## Gira as partes dos prédios que estão produzindo por "game_seconds" segundos de jogo.
@@ -574,7 +605,9 @@ func _refresh_label(building_id: int) -> void:
 			label.texture = icon.atlas
 			label.region_enabled = true
 			label.region_rect = icon.region
-	label.visible = not key.is_empty()
+	# quem aparece é do apply_icon_rule (no quadro seguinte); aqui só some o que perdeu o motivo
+	if key.is_empty():
+		label.visible = false
 
 
 ## Ícone do motivo: LABEL_NO_ROAD → state_no_road.

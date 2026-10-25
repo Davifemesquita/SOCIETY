@@ -1447,6 +1447,24 @@ Regras que já custaram investigação:
 - **Export**: `shader_baker/enabled=true` no preset do Windows. O baker só roda com um renderer de verdade no editor:
   o export pelo `--headless` (CI, esta VM) sai sem ele, e o de release sai do editor, no Windows.
 
+### Por cima do mundo (Fase 33, nossa)
+
+- **Plano** em `docs/plano_fase33.md`, a segunda fase do roteiro de `docs/plano_melhorias.md`, começada em 25/10/2026
+  com a confirmação do dono do produto. Só apresentação: nada muda na simulação nem no save.
+- **Grade no chão** (`DebugOverlay`): duas passadas na mesma malha. As linhas ficam no `material_override`, sempre com
+  teste de profundidade e só até `build_grid_radius_m` do cursor (`set_focus`, com fade nos últimos 45%); as células
+  destacadas vão no `material_overlay` (raio-X, `show_lines` desligado). Antes, qualquer destaque (jazida, mata,
+  alcance, camada do mapa) trocava a malha inteira para o raio-X e a grade da ilha toda aparecia sobre as copas.
+- **Prévia com o prédio** (`BuildPreviewView`, `shaders/build_ghost.gdshader`): o fantasma é a malha do `BuildingKit`
+  montada por um `BuildingRecord` de mentira (id 0, a primeira classe na casa; ao mover, o id, a classe e o nível do
+  prédio de verdade), na rotação da ferramenta; a caixa fica para quem não tem modelo. Borda clara por fresnel, e
+  **listras** quando não pode e na demolição (nada depende só da cor). `render_priority` 20, acima da água e da fumaça.
+- **Ícones de estado** (`StatusIconRule`, `BuildingView.apply_icon_rule`, a cada quadro com a câmera): até
+  `status_icon_full_m` cada um; mais longe, os de mesmo motivo no mesmo quadrado de `status_icon_cluster_m` viram um só
+  (o de menor id), esmaecendo até `status_icon_min_alpha` em `status_icon_fade_end_m`. O prédio sob o cursor
+  (`hovered_id`) e o selecionado sempre mostram; com uma camada do mapa ligada (`show_all_icons`), todos. O
+  `_refresh_label` só esconde o que perdeu o motivo: quem aparece é da regra.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1490,6 +1508,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 30 — Transição e retorno visual (nossa) | **concluída em 24/10/2026**: cortina com texto na troca de tela, contadores animados e pulso de ganho na barra, notificações que aparecem e esmaecem, moedas e "+X" sobre o entreposto quando o comerciante paga; plano em `docs/plano_fase30.md`; a suíte inteira passou no CI |
 | 31 — Obra e combate (nossa) | **concluída em 25/10/2026**: prédio subindo com squash & stretch e poeira, demolido afundando na poeira, balas em arco com respingo e o alvo adernando no combate naval, zoom suave no cursor; plano em `docs/plano_fase31.md` |
 | 32 — Medida e nitidez (nossa) | **concluída em 25/10/2026** (fechada pelo dono do produto): teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; primeira medição numa GPU (RTX 5060, 1080p, Vulkan e D3D12): fica o Vulkan, alto a ~48 FPS, ultra com travadas; plano em `docs/plano_fase32.md` |
+| 33 — Por cima do mundo (nossa) | **concluída em 25/10/2026** (a regra dos ícones espera a aprovação do dono do produto): grade de construção com teste de profundidade e só em volta do cursor (o destaque é que atravessa), prévia com o modelo do prédio e listras quando não pode, ícones de estado iguais agregados de longe; no benchmark da RTX 5060 o alto passou de 48,6 para 62,2 FPS; a suíte inteira passou no Windows, menos o `test_colorblind_option_repaints_the_house_needs`, que já falhava ali antes da fase; plano em `docs/plano_fase33.md` |
 
 Pendências já vistas para fases futuras:
 
@@ -1502,3 +1521,5 @@ Pendências já vistas para fases futuras:
   ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).
+- No Windows do dono (25/10/2026), `tests/ui/test_menus.gd` → `test_colorblind_option_repaints_the_house_needs` falha
+  (linha 154, a cor do marcador não muda), também no commit de antes da Fase 33; no CI passava. Não investigado.
