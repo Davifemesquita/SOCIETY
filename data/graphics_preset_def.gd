@@ -36,6 +36,8 @@ extends Resource
 @export var area_lights: int = 12
 ## Escala de resolução sugerida (abaixo de 1 usa o FSR 2.2, que também é o antisserrilhado).
 @export var render_scale: float = 1.0
+## Fase 34: hex-tiling na grama e no chão de floresta (três leituras por textura em vez de uma).
+@export var terrain_hex_tiling: bool = true
 
 @export_group("Antisserrilhado")
 ## Fase 32: AA de tela (Viewport.ScreenSpaceAA: 0 nenhum, 1 FXAA, 2 SMAA), usado quando o FSR 2.2 está desligado. O

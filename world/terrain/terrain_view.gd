@@ -6,6 +6,8 @@ extends Node3D
 ## versão estável compatível, o terreno é próprio — uma malha por trecho de cada região, de 2 em
 ## 2 m (os cantos da grade, os mesmos que a simulação usa), e o shader de terreno com as texturas
 ## da Poly Haven. Trocar de volta mexe só aqui.
+## Desde a Fase 34 cada ilha leva também as texturas de dados do TerrainBake (inclinação, curvatura, água, umidade),
+## e o hex-tiling da grama e da floresta segue o nível gráfico (terrain_hex_tiling).
 
 const TEXTURES: Array[String] = ["grass", "rock", "sand", "forest"]
 const SHADER := preload("res://shaders/terrain.gdshader")
@@ -19,6 +21,10 @@ var _data: GameData
 var _surfaces: Dictionary[int, ImageTexture] = {}
 var _surface_images: Dictionary[int, Image] = {}
 var _chunks: int = 0
+## Por ilha: a textura de dados (Fase 34) e o material do terreno.
+var _data_images: Dictionary[int, Image] = {}
+var _materials: Array[ShaderMaterial] = []
+var _hex_tiling: bool = true
 
 
 func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
@@ -29,14 +35,32 @@ func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
 	for name: String in TEXTURES:
 		textures[name + "_albedo"] = load("res://assets/terrain/%s_albedo_height.png" % name)
 		textures[name + "_normal"] = load("res://assets/terrain/%s_normal_roughness.png" % name)
+	_hex_tiling = Settings.preset().terrain_hex_tiling
 	for index: int in world.islands.size():
 		if not world.island(index).flat:
 			_build_island(index, textures)
 	EventBus.trees_changed.connect(_on_trees_changed)
+	EventBus.settings_changed.connect(func() -> void: set_hex_tiling(Settings.preset().terrain_hex_tiling))
 
 
 func chunk_count() -> int:
 	return _chunks
+
+
+## Textura de dados da ilha (testes).
+func data_image(index: int) -> Image:
+	return _data_images.get(index)
+
+
+## Liga ou desliga o hex-tiling (pelo nível gráfico).
+func set_hex_tiling(enabled: bool) -> void:
+	_hex_tiling = enabled
+	for material: ShaderMaterial in _materials:
+		material.set_shader_parameter(&"hex_tiling", enabled)
+
+
+func hex_tiling() -> bool:
+	return _hex_tiling
 
 
 ## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade.
@@ -62,6 +86,11 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	material.set_shader_parameter(&"surface_weights", _surfaces[index])
 	var size := (side - 1) * _config.cell_size_m
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
+	_data_images[index] = TerrainBake.bake(heights, side, _config.cell_size_m, _config.terrain_water_distance_m)
+	material.set_shader_parameter(&"terrain_data", ImageTexture.create_from_image(_data_images[index]))
+	material.set_shader_parameter(&"hex_distance_m", _config.terrain_hex_distance_m)
+	material.set_shader_parameter(&"hex_tiling", _hex_tiling)
+	_materials.append(material)
 	for cy: int in range(0, side - 1, CHUNK_VERTICES):
 		for cx: int in range(0, side - 1, CHUNK_VERTICES):
 			var instance := MeshInstance3D.new()

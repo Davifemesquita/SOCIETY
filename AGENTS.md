@@ -1465,6 +1465,25 @@ Regras que já custaram investigação:
   (`hovered_id`) e o selecionado sempre mostram; com uma camada do mapa ligada (`show_all_icons`), todos. O
   `_refresh_label` só esconde o que perdeu o motivo: quem aparece é da regra.
 
+### Chão sem xadrez (Fase 34, nossa)
+
+- **Plano** em `docs/plano_fase34.md`, começada em 25/10/2026 com a confirmação do dono do produto. Só apresentação:
+  nenhuma altura nem assinatura muda (o `test_terrain_golden` segue passando).
+- **Texturas de dados** (`TerrainBake.bake`, função pura): por ilha, das alturas do `region_corners`, uma RGBA8 de 2 em
+  2 m com inclinação (r), curvatura (g, vale acima de 0,5, laplaciano a 4 m), distância da água por chanfro (b, satura
+  em `terrain_water_distance_m`) e umidade (a). Escrita direto num `PackedByteArray`; a semente 1840 inteira (8 ilhas)
+  assa em ~0,5 s no PC do dono.
+- **Shader** (`shaders/terrain.gdshader`): bordas de areia, floresta e lama com ruído de 2 e 4 m e height-blend pelo
+  alfa das texturas; macro-variação em 40, 150 e 500 m; grama seca nas cristas e verde junto da água, terra úmida nos
+  vales (das texturas de dados); hex-tiling próprio (Mikkelsen, JCGT 2022) na grama e na floresta até
+  `terrain_hex_distance_m`, só com `GraphicsPresetDef.terrain_hex_tiling` (desligado no baixo; a `TerrainView` ouve o
+  `settings_changed`); **reamostragem por distância** (de 60 a 320 m a textura se mistura com ela mesma 8× maior e o
+  normal map aplaina: sem isso o xadrez de 12 m continuava a 420 m, onde o hex-tiling já não vale); triplanar na rocha
+  só onde ela aparece.
+- **Testes sem tela**: o `tests/world/test_phase34_ground.gd` confere o bake; o shader só compila com GPU, então quem o
+  confere são as capturas (`tools/capture_phase5.tscn`, que no PC do dono roda com a janela fora do monitor,
+  `--position -6000,0`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1509,6 +1528,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 31 — Obra e combate (nossa) | **concluída em 25/10/2026**: prédio subindo com squash & stretch e poeira, demolido afundando na poeira, balas em arco com respingo e o alvo adernando no combate naval, zoom suave no cursor; plano em `docs/plano_fase31.md` |
 | 32 — Medida e nitidez (nossa) | **concluída em 25/10/2026** (fechada pelo dono do produto): teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; primeira medição numa GPU (RTX 5060, 1080p, Vulkan e D3D12): fica o Vulkan, alto a ~48 FPS, ultra com travadas; plano em `docs/plano_fase32.md` |
 | 33 — Por cima do mundo (nossa) | **concluída em 25/10/2026** (a regra dos ícones espera a aprovação do dono do produto): grade de construção com teste de profundidade e só em volta do cursor (o destaque é que atravessa), prévia com o modelo do prédio e listras quando não pode, ícones de estado iguais agregados de longe; no benchmark da RTX 5060 o alto passou de 48,6 para 62,2 FPS; a suíte inteira passou no Windows, menos o `test_colorblind_option_repaints_the_house_needs`, que já falhava ali antes da fase; plano em `docs/plano_fase33.md` |
+| 34 — Chão sem xadrez (nossa) | **em andamento desde 25/10/2026**: texturas de dados do terreno (inclinação, curvatura, água, umidade), bordas com ruído e height-blend, macro-variação, hex-tiling perto da câmera e reamostragem por distância (o xadrez de 12 m sumiu a 420 m), triplanar na rocha; as pastas sem tela da suíte passaram; falta o benchmark de FPS na tela do dono e a aprovação das capturas; plano em `docs/plano_fase34.md` |
 
 Pendências já vistas para fases futuras:
 
