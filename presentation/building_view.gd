@@ -14,6 +14,9 @@ extends Node3D
 ##   o prédio produz, no tempo de jogo (param na pausa).
 ## - Desde a Fase 23 o modelo segue a forma: quando ela muda sem o prédio sair do lugar (o armazém que sobe
 ##   de nível ganha o alpendre e, no último, o tijolo), ele é refeito com andaime.
+## - Obra e demolição (Fase 31): o prédio construído nasce achatado e sobe com squash & stretch, soltando poeira na
+##   base; o demolido sai das contas na hora e afunda no chão com poeira antes de sumir. Direto com
+##   SceneFader.is_instant() (testes); a animação é de interface e segue com o jogo pausado.
 
 const DOOR_COLOR := Color(0.25, 0.18, 0.12)
 ## Tamanho do ícone na tela (Sprite3D de tamanho fixo).
@@ -32,6 +35,16 @@ const ROOF_DARKEN := 0.45
 const SCAFFOLD_COLOR := Color(0.52, 0.4, 0.28)
 ## Só prédio a partir desta altura esconde o que está atrás (ocultador, Fase 9).
 const OCCLUDER_MIN_HEIGHT_M := 5.0
+## Obra (Fase 31): quanto dura o crescimento, de que altura (fração) ele parte e quanto passa do ponto; ao passar, o
+## prédio afina em xz para manter o volume.
+const BUILD_POP_S := 0.45
+const BUILD_START_Y := 0.05
+const BUILD_OVERSHOOT_Y := 1.12
+const BUILD_OVERSHOOT_XZ := 0.94
+## Demolição: quanto leva para afundar a altura do prédio e quantos afundam ao mesmo tempo (o resto some na hora).
+const DEMOLISH_S := 0.9
+const MAX_DEMOLISHING := 12
+const DUST_COLOR := Color(0.72, 0.64, 0.52, 0.45)
 
 var _simulation: Simulation
 var _cell_size: float
@@ -53,6 +66,8 @@ var _rotor_speeds: Dictionary[int, float] = {}
 ## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
 var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
+## Prédios demolidos que ainda estão afundando (já fora de _nodes).
+var _demolishing: Array[Node3D] = []
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -80,6 +95,10 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 func rebuild() -> void:
 	for building_id: int in _nodes.keys():
 		_remove(building_id)
+	for node: Node3D in _demolishing:
+		if is_instance_valid(node):
+			node.queue_free()
+	_demolishing.clear()
 	for building_id: int in _simulation.world.building_ids():
 		_add(building_id)
 	refresh_labels()
@@ -88,6 +107,17 @@ func rebuild() -> void:
 
 func building_count() -> int:
 	return _nodes.size()
+
+
+## Prédios demolidos ainda afundando (testes).
+func demolishing_count() -> int:
+	_demolishing.assign(_demolishing.filter(func(node: Node3D) -> bool: return is_instance_valid(node)))
+	return _demolishing.size()
+
+
+## Nó do prédio (testes).
+func building_node(building_id: int) -> Node3D:
+	return _nodes.get(building_id)
 
 
 func label_text(building_id: int) -> String:
@@ -339,10 +369,19 @@ func _scaffold(building_id: int) -> void:
 				var center := Vector3(0.0, size.y * level, sign_value * size.z * 0.5) if along_x \
 						else Vector3(sign_value * size.x * 0.5, size.y * level, 0.0)
 				frame.add_child(_beam(Vector3(length, 0.12, 0.12) if along_x else Vector3(0.12, 0.12, length), center, wood))
+	var dust := _dust(size, 24, 2.5)
+	frame.add_child(dust)
+	root.add_child(frame)
+	get_tree().create_timer(_simulation.config.upgrade_scaffold_seconds).timeout.connect(frame.queue_free)
+
+
+## Nuvem de poeira de uma vez só, numa caixa do tamanho de "size" assentada no chão do prédio.
+static func _dust(size: Vector3, amount: int, lifetime: float) -> GPUParticles3D:
 	var dust := GPUParticles3D.new()
+	dust.name = "Dust"
 	dust.one_shot = true
-	dust.amount = 24
-	dust.lifetime = 2.5
+	dust.amount = amount
+	dust.lifetime = lifetime
 	dust.explosiveness = 0.8
 	var process := ParticleProcessMaterial.new()
 	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
@@ -358,14 +397,55 @@ func _scaffold(building_id: int) -> void:
 	var material := StandardMaterial3D.new()
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-	material.albedo_color = Color(0.72, 0.64, 0.52, 0.45)
+	material.albedo_color = DUST_COLOR
 	material.albedo_texture = SmokeView._puff_texture()
 	puff.material = material
 	dust.draw_pass_1 = puff
 	dust.emitting = true
-	frame.add_child(dust)
-	root.add_child(frame)
-	get_tree().create_timer(_simulation.config.upgrade_scaffold_seconds).timeout.connect(frame.queue_free)
+	return dust
+
+
+## Obra (Fase 31): o prédio recém-construído nasce achatado, passa do ponto e assenta, com poeira na base.
+func _pop(building_id: int) -> void:
+	var root: Node3D = _nodes.get(building_id)
+	if root == null or SceneFader.is_instant():
+		return
+	var record := _simulation.world.building(building_id)
+	var area := _area(record)
+	var footprint := Vector3(area.size.x * _cell_size, 1.0, area.size.y * _cell_size)
+	root.scale = Vector3(1.0, BUILD_START_Y, 1.0)
+	var tween := root.create_tween()
+	tween.tween_property(root, ^"scale", Vector3(BUILD_OVERSHOOT_XZ, BUILD_OVERSHOOT_Y, BUILD_OVERSHOOT_XZ),
+			BUILD_POP_S * 0.6).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(root, ^"scale", Vector3.ONE, BUILD_POP_S * 0.4).set_ease(Tween.EASE_IN_OUT) \
+			.set_trans(Tween.TRANS_SINE)
+	var dust := _dust(footprint, 10, 1.4)
+	add_child(dust)
+	dust.global_position = root.global_position
+	get_tree().create_timer(1.6).timeout.connect(dust.queue_free)
+
+
+## Demolição (Fase 31): o nó, já fora das contas, afunda a altura dele com poeira e some. Sem o ocultador e sem o
+## ícone. Com o teto cheio (ou nos testes), some na hora.
+func _sink(root: Node3D, height: float, footprint: Vector3) -> void:
+	_demolishing.assign(_demolishing.filter(func(node: Node3D) -> bool: return is_instance_valid(node)))
+	if SceneFader.is_instant() or _demolishing.size() >= MAX_DEMOLISHING:
+		root.queue_free()
+		return
+	for child: Node in root.get_children():
+		if child is OccluderInstance3D or child is Sprite3D:
+			child.queue_free()
+	_demolishing.append(root)
+	var dust := _dust(Vector3(footprint.x, height * 0.5, footprint.z), 28, 2.0)
+	add_child(dust)
+	dust.global_position = root.global_position + Vector3.UP * height * 0.25
+	var tween := root.create_tween()
+	tween.tween_property(root, ^"position:y", root.position.y - height - FOUNDATION_M, DEMOLISH_S) \
+			.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tween.parallel().tween_property(root, ^"scale", Vector3(1.04, 1.0, 1.04), DEMOLISH_S)
+	tween.tween_callback(root.queue_free)
+	tween.tween_callback(func() -> void: _demolishing.erase(root))
+	get_tree().create_timer(2.4).timeout.connect(dust.queue_free)
 
 
 static func _beam(size: Vector3, center: Vector3, material: Material) -> MeshInstance3D:
@@ -413,9 +493,22 @@ func _material_for(color: Color) -> StandardMaterial3D:
 	return _materials[key]
 
 
-func _remove(building_id: int) -> void:
+func _remove(building_id: int, sink: bool = false) -> void:
 	if _nodes.has(building_id):
-		_nodes[building_id].queue_free()
+		if sink:
+			var root := _nodes[building_id]
+			var aabb := Vector3(4.0, 4.0, 4.0)
+			var body := root.get_node_or_null(^"Model") as MeshInstance3D
+			if body == null:
+				for child: Node in root.get_children():
+					if child is MeshInstance3D:
+						body = child
+						break
+			if body != null and body.mesh != null:
+				aabb = body.mesh.get_aabb().size
+			_sink(root, aabb.y, aabb)
+		else:
+			_nodes[building_id].queue_free()
 		_nodes.erase(building_id)
 		_labels.erase(building_id)
 		_label_keys.erase(building_id)
@@ -487,10 +580,11 @@ static func _icon_for(key: String) -> String:
 func _on_building_placed(building_id: int) -> void:
 	_add(building_id)
 	_refresh_label(building_id)
+	_pop(building_id)
 
 
 func _on_building_removed(building_id: int) -> void:
-	_remove(building_id)
+	_remove(building_id, true)
 	if building_id == _selected_id:
 		select(0)
 

@@ -10,6 +10,8 @@ var focus: Vector3 = Vector3.ZERO
 var yaw: float = 0.0
 var target_yaw: float = 0.0
 var distance: float
+## Distância aonde o zoom suave da roda vai (Fase 31); só vale enquanto is_zooming().
+var target_distance: float
 
 ## Altura do chão sob o foco (o foco fica no plano y = 0; a câmera sobe com o relevo). Suavizada.
 var ground_height: float = 0.0
@@ -17,6 +19,7 @@ var _config: GameConfig
 var _bounds: Rect2
 var _center_target: Vector3
 var _centering: bool = false
+var _zooming: bool = false
 
 
 ## bounds_m é a área da ilha em metros no plano XZ (x = X, y = Z).
@@ -24,6 +27,7 @@ func _init(config: GameConfig, bounds_m: Rect2) -> void:
 	_config = config
 	_bounds = bounds_m.grow(config.camera_bounds_margin_m)
 	distance = config.camera_start_distance_m
+	target_distance = distance
 	focus = Vector3(bounds_m.get_center().x, 0.0, bounds_m.get_center().y)
 
 
@@ -88,6 +92,30 @@ func shift_focus(offset: Vector3) -> void:
 func zoom(steps: float) -> void:
 	var factor := pow(1.0 - _config.camera_zoom_step, steps)
 	distance = clampf(distance * factor, _config.camera_min_distance_m, _config.camera_max_distance_m)
+	target_distance = distance
+	_zooming = false
+
+
+## Zoom suave (Fase 31): o alvo anda o passo, e ease_zoom leva a distância até ele. Toques seguidos somam no alvo.
+func zoom_toward(steps: float) -> void:
+	var start := target_distance if _zooming else distance
+	var factor := pow(1.0 - _config.camera_zoom_step, steps)
+	target_distance = clampf(start * factor, _config.camera_min_distance_m, _config.camera_max_distance_m)
+	_zooming = target_distance != distance
+
+
+func is_zooming() -> bool:
+	return _zooming
+
+
+## Aproxima a distância do alvo do zoom suave; termina exatamente nele.
+func ease_zoom(delta: float) -> void:
+	if not _zooming:
+		return
+	distance = lerpf(distance, target_distance, 1.0 - exp(-delta / _config.camera_zoom_seconds))
+	if absf(distance - target_distance) < target_distance * 0.001:
+		distance = target_distance
+		_zooming = false
 
 
 ## Q/E: gira 90° a partir de onde o giro vai parar, para toques seguidos somarem.
@@ -147,4 +175,6 @@ func load_dict(data: Dictionary) -> void:
 	if raw_distance is float:
 		var saved_distance: float = raw_distance
 		distance = clampf(saved_distance, _config.camera_min_distance_m, _config.camera_max_distance_m)
+	target_distance = distance
 	_centering = false
+	_zooming = false

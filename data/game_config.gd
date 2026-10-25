@@ -327,6 +327,8 @@ static var _default: GameConfig
 @export var camera_pan_speed: float = 1.2
 ## Quanto cada passo da roda aproxima ou afasta (0,15 = 15%).
 @export var camera_zoom_step: float = 0.15
+## Constante de tempo do zoom da roda indo até a distância-alvo (Fase 31).
+@export var camera_zoom_seconds: float = 0.12
 ## Duração do giro de 90° do Q/E.
 @export var camera_rotate_seconds: float = 0.25
 @export var camera_free_rotate_deg_per_px: float = 0.3
@@ -606,7 +608,7 @@ func validate() -> PackedStringArray:
 		problems.append("cell_size_m deve ser maior que zero")
 	if camera_min_distance_m <= 0.0 or camera_min_distance_m >= camera_max_distance_m:
 		problems.append("camera_min_distance_m deve ser positivo e menor que camera_max_distance_m")
-	if camera_rotate_seconds <= 0.0 or camera_center_seconds <= 0.0:
+	if camera_rotate_seconds <= 0.0 or camera_center_seconds <= 0.0 or camera_zoom_seconds <= 0.0:
 		problems.append("as durações da câmera devem ser maiores que zero")
 	if tax_level_multipliers.size() != 3 or tax_level_happiness.size() != 3:
 		problems.append("os níveis de imposto são três: baixo, normal e alto")

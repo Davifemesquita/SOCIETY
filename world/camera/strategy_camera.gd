@@ -21,6 +21,8 @@ var _middle_anchor: Vector3
 var _middle_dragging: bool = false
 var _right_pressed: bool = false
 var _right_travel: float = 0.0
+## Ponto da tela que o zoom suave mantém parado sobre o chão (Fase 31).
+var _zoom_anchor: Vector2
 
 
 func setup(config: GameConfig, bounds_m: Rect2) -> void:
@@ -80,6 +82,8 @@ func _process(delta: float) -> void:
 		input = _edge_input()
 	rig.pan(input, delta)
 	rig.update(delta)
+	if rig.is_zooming():
+		_keep_under(_zoom_anchor, func() -> void: rig.ease_zoom(delta))
 	if height_at.is_valid():
 		var ground: float = height_at.call(rig.focus.x, rig.focus.z)
 		rig.follow_ground(ground, delta)
@@ -155,10 +159,20 @@ func _on_mouse_motion(event: InputEventMouseMotion) -> void:
 			apply()
 
 
-## Zoom no cursor: o ponto do chão sob o mouse continua sob o mouse depois do zoom.
+## Zoom no cursor: o ponto do chão sob o mouse continua sob o mouse depois do zoom. Desde a Fase 31 a distância vai
+## até o alvo em camera_zoom_seconds, mantendo o ponto quadro a quadro; direto com SceneFader.is_instant() (testes).
 func _zoom_at(screen_position: Vector2, steps: float) -> void:
+	if not SceneFader.is_instant():
+		_zoom_anchor = screen_position
+		rig.zoom_toward(steps)
+		return
+	_keep_under(screen_position, func() -> void: rig.zoom(steps))
+
+
+## Faz a mudança de distância em "change" e desloca o foco para o ponto do chão sob "screen_position" ficar lá.
+func _keep_under(screen_position: Vector2, change: Callable) -> void:
 	var before: Variant = ground_point(screen_position)
-	rig.zoom(steps)
+	change.call()
 	apply()
 	var after: Variant = ground_point(screen_position)
 	if before is Vector3 and after is Vector3:

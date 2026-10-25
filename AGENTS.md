@@ -96,6 +96,8 @@ tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.g
 tools/godot.sh godot --headless --path . --script res://tools/bake_animals.gd
 # Fase 30: moedas e "+X" sobre o entreposto e a cortina escura com o texto no meio de uma troca
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase30.tscn -- /pasta/de/saida
+# Fase 31: casa subindo, casa demolida afundando na poeira, balas de uma salva no ar e os respingos com o alvo adernado
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase31.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
@@ -1370,6 +1372,33 @@ Regras que já custaram investigação:
   (`Label3D` em billboard, sem teste de profundidade) sobe e some. No máximo `MAX_EFFECTS` ao mesmo tempo, nós
   reaproveitados. A encomenda entregue não traz a ilha: aparece só no pulso da barra.
 
+### Obra e combate (Fase 31, nossa)
+
+- **Plano** em `docs/plano_fase31.md`: três das candidatas que a Fase 30 deixou, pela autorização permanente de seguir
+  pela recomendação (25/10/2026). Só apresentação: nada muda na simulação nem no save. Como na Fase 30, tudo é direto
+  com `SceneFader.is_instant()` (a suíte liga `SOCIETY_SEM_TRANSICAO`) e anda com o jogo pausado.
+- **Obra** (`BuildingView._pop`, só no `building_placed`: o `rebuild` do carregamento e a casa que sobe de classe não
+  pulam): o nó nasce com `BUILD_START_Y` de altura, passa do ponto (`BUILD_OVERSHOOT_Y`, afinando para
+  `BUILD_OVERSHOOT_XZ`) e assenta em `BUILD_POP_S`, com poeira na base (`_dust`, a mesma nuvem do andaime da Fase 9).
+  Mover um prédio dá as duas coisas: o velho afunda e o novo sobe.
+- **Demolição** (`_sink`, no `building_removed`, também o prédio perdido no fogo): o nó sai de `_nodes` na hora
+  (`building_count()` não o vê), perde o ocultador e o ícone e afunda a altura da malha mais o alicerce em `DEMOLISH_S`,
+  com poeira, antes do `queue_free`. No máximo `MAX_DEMOLISHING` afundando (`demolishing_count()`); demolir uma rua
+  inteira faz o resto sumir na hora. O `rebuild` apaga os que estiverem afundando.
+- **Balas** (`ShipView._fire_salvo`, no `ship_fired` com o alvo desenhado): `BALLS_PER_SALVO` balas, uma a cada
+  `BALL_STAGGER_S`, saem do costado do atacante e voam `BALL_FLIGHT_S` num arco de `BALL_ARC_M` até um ponto até
+  `BALL_SHORT_M` antes do alvo na linha do tiro e até `BALL_SPREAD_M` para cada lado (com menos, caíam debaixo do casco
+  da fragata e o respingo não aparecia). Pool de `MAX_BALLS` (`Ball`, classe interna).
+- **Respingo** (`_build_splash`): coluna de espuma `one_shot` onde a bala cai, com `ABOVE_WATER` como o rastro (a água
+  transparente apagava o que vem antes); no máximo `MAX_SPLASHES`.
+- **Adernar** (`heel`): a bala que cai faz o alvo adernar para longe do tiro, `HEEL_RAD` × `exp(-t/HEEL_DECAY_S)` ×
+  `sin(t·HEEL_HZ)`, somado ao balanço das ondas no `_process`. Com o cosseno ele começava no máximo e já estava quase
+  no prumo meio segundo depois.
+- **Zoom suave** (`CameraRig.zoom_toward`, `ease_zoom`, `target_distance`; `StrategyCamera._keep_under`): a roda anda o
+  alvo e a distância vai até ele em `camera_zoom_seconds` (`GameConfig`, 0,12 s, validado), com o ponto do chão sob o
+  cursor parado quadro a quadro; toques seguidos somam no alvo. `CameraRig.zoom()` continua direto e cancela o suave
+  (testes, ferramentas, carregar). Nos testes a roda é direta.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1411,6 +1440,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 28 — Folga do meio da partida (nossa) | **concluída em 24/10/2026**: aviso de fábrica ociosa no saldo e no painel; teatro e universidade mais baratos de manter; fábricas dos artesãos e fundição mais baratas de construir; imposto dos operários 1,4 (decisão do dono do produto); pior saldo do robô de −7.654 para −745; a suíte inteira passou no CI |
 | 29 — Fôlego da simulação (nossa) | **concluída em 24/10/2026**: perfil do tick por etapa e `-- --so-tick` no benchmark; tick médio de 4,19 para 3,10 ms (população, logística, produção) e obra com a ilha cheia de 48,1 para 41,2 ms (buscas em largura das estradas), sem mudar o resultado; a suíte inteira passou no CI |
 | 30 — Transição e retorno visual (nossa) | **concluída em 24/10/2026**: cortina com texto na troca de tela, contadores animados e pulso de ganho na barra, notificações que aparecem e esmaecem, moedas e "+X" sobre o entreposto quando o comerciante paga; plano em `docs/plano_fase30.md`; a suíte inteira passou no CI |
+| 31 — Obra e combate (nossa) | **concluída em 25/10/2026**: prédio subindo com squash & stretch e poeira, demolido afundando na poeira, balas em arco com respingo e o alvo adernando no combate naval, zoom suave no cursor; plano em `docs/plano_fase31.md` |
 
 Pendências já vistas para fases futuras:
 

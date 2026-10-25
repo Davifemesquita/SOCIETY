@@ -9,6 +9,9 @@ extends Node3D
 ## fumaça do navio avariado (casco abaixo da metade) e o navio afundado descendo devagar antes de sumir.
 ## Desde a Fase 21: a gaivota bate a asa, dobrada no cotovelo, e plana quase sempre (a malha e a batida
 ## estão no BirdView; o shader é o `shaders/bird.gdshader`), inclinada para dentro da volta.
+## Desde a Fase 31: cada salva lança balas em arco do atacante até o alvo, que caem espalhadas em volta dele com um
+## respingo de espuma, e o navio atingido aderna para longe do tiro e volta balançando. Direto (sem bala) com
+## SceneFader.is_instant(); a animação é de interface e segue com o jogo pausado.
 
 ## Raio do clique em volta do navio, em pixels da tela.
 const PICK_RADIUS_PX := 40.0
@@ -36,6 +39,36 @@ const ABOVE_WATER := 1
 const DAMAGE_SMOKE_COLOR := Color(0.12, 0.11, 0.1, 1.0)
 const SINK_SECONDS := 5.0
 const FLASH_COLOR := Color(1.0, 0.85, 0.45)
+## Balas (Fase 31): quantas por salva, o intervalo entre elas, o tempo de voo, a altura do arco, quanto se espalham em
+## volta do alvo (m: até BALL_SHORT_M antes dele, na linha do tiro, e BALL_SPREAD_M para cada lado; menos que isso
+## caíam debaixo do casco da fragata) e quantas no ar ao mesmo tempo (as do pool; a que passa do teto não sai).
+const BALLS_PER_SALVO := 3
+const BALL_STAGGER_S := 0.09
+const BALL_FLIGHT_S := 0.7
+const BALL_ARC_M := 7.0
+const BALL_SPREAD_M := 14.0
+const BALL_SHORT_M := 12.0
+const BALL_RADIUS_M := 0.45
+const MAX_BALLS := 24
+const BALL_COLOR := Color(0.08, 0.08, 0.09)
+## Respingo onde a bala cai: quanto dura e quantos ao mesmo tempo.
+const SPLASH_S := 1.2
+const MAX_SPLASHES := 12
+## Navio atingido: quanto aderna, quanto leva para acalmar e quantas vezes balança por segundo.
+const HEEL_RAD := 0.15
+const HEEL_DECAY_S := 0.6
+const HEEL_HZ := 0.9
+
+
+## Uma bala no ar: de onde sai, onde cai, quanto falta (antes de BALL_FLIGHT_S ela ainda espera a vez dela na salva) e
+## o navio que ela atinge.
+class Ball:
+	var node: MeshInstance3D
+	var from: Vector3
+	var to: Vector3
+	var left: float = 0.0
+	var target_id: int = 0
+	var side: float = 1.0
 
 var selected_ship: int = 0
 
@@ -55,6 +88,13 @@ var _berths: Dictionary[int, bool] = {}
 ## Clarões dos tiros (nó → segundos que faltam) e navios afundando (nó → segundos que faltam).
 var _flashes: Dictionary[Node3D, float] = {}
 var _sinking: Dictionary[Node3D, float] = {}
+## Balas (pool), respingos vivos (nó → segundos que faltam) e o adernamento dos navios atingidos (id → segundos desde
+## o golpe e o lado).
+var _balls: Array[Ball] = []
+var _splashes: Dictionary[Node3D, float] = {}
+var _heels: Dictionary[int, Vector2] = {}
+var _ball_mesh: SphereMesh
+var _splash_material: StandardMaterial3D
 
 
 func setup(simulation: Simulation) -> void:
@@ -90,10 +130,15 @@ func rebuild() -> void:
 	for node: Node3D in _nodes.values():
 		node.queue_free()
 	_nodes.clear()
-	for node: Node3D in _flashes.keys() + _sinking.keys():
+	for node: Node3D in _flashes.keys() + _sinking.keys() + _splashes.keys():
 		node.queue_free()
 	_flashes.clear()
 	_sinking.clear()
+	_splashes.clear()
+	_heels.clear()
+	for ball: Ball in _balls:
+		ball.left = 0.0
+		ball.node.visible = false
 	if _post != null:
 		_post.queue_free()
 		_post = null
@@ -135,7 +180,7 @@ func _process(delta: float) -> void:
 		var heading := lerp_angle(ship.previous_heading, ship.heading, alpha)
 		var phase := _time * BOB_SPEED + ship.id * 1.7
 		node.position = Vector3(place.x, sin(phase) * BOB_AMPLITUDE_M, place.y)
-		node.basis = Basis(Vector3.UP, -heading) * Basis(Vector3.RIGHT, sin(phase * 0.8) * ROLL_RAD)
+		node.basis = Basis(Vector3.UP, -heading) * Basis(Vector3.RIGHT, sin(phase * 0.8) * ROLL_RAD + heel(ship.id))
 		var wake := node.get_node_or_null(^"Wake") as GPUParticles3D
 		if wake != null:
 			wake.emitting = ship.state == Ship.State.SAILING
@@ -160,6 +205,23 @@ func flash_count() -> int:
 	return _flashes.size()
 
 
+## Balas no ar e respingos agora (testes).
+func ball_count() -> int:
+	return _balls.filter(func(ball: Ball) -> bool: return ball.left > 0.0).size()
+
+
+func splash_count() -> int:
+	return _splashes.size()
+
+
+## Quanto o navio está adernado pelo último golpe (rad; 0 sem golpe).
+func heel(ship_id: int) -> float:
+	if not _heels.has(ship_id):
+		return 0.0
+	var hit := _heels[ship_id]
+	return hit.y * HEEL_RAD * exp(-hit.x / HEEL_DECAY_S) * sin(hit.x * TAU * HEEL_HZ)
+
+
 func _on_ship_fired(attacker_id: int, target_id: int) -> void:
 	var attacker: Node3D = _nodes.get(attacker_id)
 	var target: Node3D = _nodes.get(target_id)
@@ -177,6 +239,110 @@ func _on_ship_fired(attacker_id: int, target_id: int) -> void:
 	flash.position = attacker.position + toward + Vector3(0.0, HULL_HEIGHT_M + 2.5, 0.0)
 	add_child(flash)
 	_flashes[flash] = FLASH_SECONDS
+	if target != null and not SceneFader.is_instant():
+		_fire_salvo(attacker, target, target_id)
+
+
+## Lança as balas da salva, uma atrás da outra, do costado do atacante para pontos espalhados em volta do alvo. O
+## lado do golpe (para onde o alvo aderna) é o lado de onde o tiro vem, no referencial do alvo.
+func _fire_salvo(attacker: Node3D, target: Node3D, target_id: int) -> void:
+	var toward := target.position - attacker.position
+	toward.y = 0.0
+	var local := target.basis.inverse() * toward
+	var side := -1.0 if local.z > 0.0 else 1.0
+	var spread := RandomNumberGenerator.new()
+	spread.seed = hash([attacker.get_instance_id(), target_id, Time.get_ticks_msec()])
+	for index: int in BALLS_PER_SALVO:
+		var ball := _free_ball()
+		if ball == null:
+			return
+		ball.from = attacker.position + toward.normalized() * 3.0 + Vector3.UP * HULL_HEIGHT_M
+		var aim := toward.normalized()
+		var across := Vector3(-aim.z, 0.0, aim.x)
+		ball.to = target.position - aim * spread.randf_range(0.0, BALL_SHORT_M) \
+				+ across * spread.randf_range(-BALL_SPREAD_M, BALL_SPREAD_M)
+		ball.to.y = 0.0
+		ball.left = BALL_FLIGHT_S + index * BALL_STAGGER_S
+		ball.target_id = target_id
+		ball.side = side
+		ball.node.visible = false
+
+
+## Uma bala parada para reaproveitar, ou uma nova até o teto; null com o teto cheio.
+func _free_ball() -> Ball:
+	for ball: Ball in _balls:
+		if ball.left <= 0.0:
+			return ball
+	if _balls.size() >= MAX_BALLS:
+		return null
+	if _ball_mesh == null:
+		_ball_mesh = SphereMesh.new()
+		_ball_mesh.radius = BALL_RADIUS_M
+		_ball_mesh.height = BALL_RADIUS_M * 2.0
+		_ball_mesh.radial_segments = 8
+		_ball_mesh.rings = 4
+		_ball_mesh.material = _material(BALL_COLOR)
+	var ball := Ball.new()
+	ball.node = MeshInstance3D.new()
+	ball.node.name = "Ball%d" % _balls.size()
+	ball.node.mesh = _ball_mesh
+	ball.node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ball.node.visible = false
+	add_child(ball.node)
+	_balls.append(ball)
+	return ball
+
+
+## A bala caiu: respingo no ponto e, se ela caiu no navio que sobrou, o golpe que o faz adernar.
+func _land(ball: Ball) -> void:
+	ball.node.visible = false
+	if _splashes.size() < MAX_SPLASHES:
+		var splash := _build_splash()
+		splash.position = Vector3(ball.to.x, 0.1, ball.to.z)
+		add_child(splash)
+		_splashes[splash] = SPLASH_S
+	if _nodes.has(ball.target_id):
+		_heels[ball.target_id] = Vector2(0.0, ball.side)
+
+
+## Coluna de espuma que sobe e cai de uma vez, desenhada depois da água (ABOVE_WATER).
+func _build_splash() -> GPUParticles3D:
+	var splash := GPUParticles3D.new()
+	splash.one_shot = true
+	splash.explosiveness = 0.9
+	splash.amount = maxi(6, roundi(20 * _particles_ratio))
+	splash.lifetime = SPLASH_S
+	var process := ParticleProcessMaterial.new()
+	process.direction = Vector3.UP
+	process.spread = 18.0
+	process.initial_velocity_min = 6.0
+	process.initial_velocity_max = 10.0
+	process.gravity = Vector3(0.0, -12.0, 0.0)
+	process.scale_min = 0.6
+	process.scale_max = 1.3
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0.85))
+	fade.set_color(1, Color(1, 1, 1, 0.0))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = fade
+	process.color_ramp = ramp
+	splash.process_material = process
+	if _splash_material == null:
+		_splash_material = StandardMaterial3D.new()
+		_splash_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_splash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_splash_material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+		_splash_material.vertex_color_use_as_albedo = true
+		_splash_material.albedo_texture = SmokeView._puff_texture()
+		_splash_material.render_priority = ABOVE_WATER
+	var puff := QuadMesh.new()
+	puff.size = Vector2(2.6, 2.6)
+	puff.material = _splash_material
+	splash.draw_pass_1 = puff
+	splash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	splash.visibility_aabb = AABB(Vector3(-6, -1, -6), Vector3(12, 14, 12))
+	splash.emitting = true
+	return splash
 
 
 ## Clarão do tiro: bolota macia virada para a câmera, somando luz ao que está atrás.
@@ -223,6 +389,29 @@ func _animate_combat(delta: float) -> void:
 		if _sinking[node] <= 0.0:
 			_sinking.erase(node)
 			node.queue_free()
+	for ball: Ball in _balls:
+		if ball.left <= 0.0:
+			continue
+		ball.left -= delta
+		var t := 1.0 - ball.left / BALL_FLIGHT_S
+		ball.node.visible = t >= 0.0 and ball.left > 0.0
+		if ball.node.visible:
+			ball.node.position = ball.from.lerp(ball.to, t) + Vector3.UP * BALL_ARC_M * 4.0 * t * (1.0 - t)
+		if ball.left <= 0.0:
+			ball.left = 0.0
+			_land(ball)
+	for splash: Node3D in _splashes.keys():
+		_splashes[splash] -= delta
+		if _splashes[splash] <= 0.0:
+			_splashes.erase(splash)
+			splash.queue_free()
+	for ship_id: int in _heels.keys():
+		var hit := _heels[ship_id]
+		hit.x += delta
+		if hit.x >= HEEL_DECAY_S * 5.0 or not _nodes.has(ship_id):
+			_heels.erase(ship_id)
+		else:
+			_heels[ship_id] = hit
 
 
 func select(ship_id: int) -> void:
