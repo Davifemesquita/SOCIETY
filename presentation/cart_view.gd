@@ -84,6 +84,7 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_horses = AnimalView.layer(&"horse")
 	if _horses != null:
 		_horses.name = "Horses"
+		_horses.multimesh.custom_aabb = WorldBounds.of(_simulation.config)
 		_horses.multimesh.visible_instance_count = 0
 		add_child(_horses)
 		_harness = MultiMeshInstance3D.new()
@@ -194,6 +195,8 @@ func _multimesh(mesh: Mesh, colored: bool) -> MultiMesh:
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = colored
 	multimesh.mesh = mesh
+	# Fase 32: caixa fixa, senão cada quadro refaz a caixa percorrendo as carroças na CPU
+	multimesh.custom_aabb = WorldBounds.of(_simulation.config)
 	return multimesh
 
 

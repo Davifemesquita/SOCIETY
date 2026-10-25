@@ -375,6 +375,11 @@ func _scaffold(building_id: int) -> void:
 	get_tree().create_timer(_simulation.config.upgrade_scaffold_seconds).timeout.connect(frame.queue_free)
 
 
+## Fase 32 (WarmUp): o andaime e a poeira num prédio já desenhado, para o primeiro desenho deles cair atrás da cortina.
+func show_scaffold(building_id: int) -> void:
+	_scaffold(building_id)
+
+
 ## Nuvem de poeira de uma vez só, numa caixa do tamanho de "size" assentada no chão do prédio.
 static func _dust(size: Vector3, amount: int, lifetime: float) -> GPUParticles3D:
 	var dust := GPUParticles3D.new()

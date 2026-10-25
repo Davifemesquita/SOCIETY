@@ -13,6 +13,10 @@ extends Node
 ## clima, materiais PBR e o resto dos gráficos finais.
 ##   tools/godot.sh godot --path . res://tools/benchmark.tscn -- [arquivo.md]
 ## Fase 29: `-- --so-tick` mede só o tick por etapa e a obra com a ilha cheia e sai, sem gravar (~1 min).
+## Fase 32: o dia inteiro anda num trajeto de câmera fixo (três distâncias, uma volta inteira) e mede cada quadro em
+## bruto (o relógio, não o delta suavizado), com a CPU e a GPU do viewport, o tick que caiu nele e os contadores de
+## compilação de pipeline; o resumo tem p50, p95, p99 e os lows de 1% e 0,1%. `-- --todos-os-niveis` repete o dia nos
+## quatro níveis. Os quadros brutos vão num JSON ao lado do .md (`<nome>_quadros.json`, `format` 1).
 ## No executável: Society.exe -- --benchmark (mostra o resultado na tela e grava em
 ## user://benchmark.md). Sem GPU (esta VM), o tempo de quadro não vale como meta.
 
@@ -33,9 +37,13 @@ const DAY_SECONDS := 60.0
 const DAY_DISTANCES: Array[float] = [40.0, 120.0, 300.0]
 const SLOT := "benchmark"
 const RESULT_PATH := "user://benchmark.md"
+## Versão do JSON dos quadros: mudou o formato, some 1.
+const FRAMES_FORMAT := 1
 const SEED := 1840
 
 var _lines: PackedStringArray = []
+## O que vai no JSON: a máquina e, por nível medido, o resumo e os quadros brutos.
+var _frames_doc: Dictionary = {}
 ## Aberto pelo executável (-- --benchmark): mostra o resultado em vez de fechar.
 var _from_game: bool = false
 
@@ -77,6 +85,14 @@ func _run() -> void:
 	Settings.apply()
 	_report("nível gráfico", "%s (nuvens volumétricas %s)" % [tr(Settings.preset().name_key),
 			"ligadas" if Settings.preset().clouds and not CloudsAdapter.software_renderer() else "desligadas"])
+	_report("placa e driver", "%s · %s · %s · VSync %s" % [RenderingServer.get_video_adapter_name(),
+			RenderingServer.get_current_rendering_driver_name(), DisplayServer.window_get_size(),
+			"ligado" if DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED else "desligado"])
+	_frames_doc = {"format": FRAMES_FORMAT, "date": Time.get_datetime_string_from_system(false, true),
+			"version": str(ProjectSettings.get_setting("application/config/version", "")), "cpu": OS.get_processor_name(),
+			"gpu": RenderingServer.get_video_adapter_name(), "driver": RenderingServer.get_current_rendering_driver_name(),
+			"window": [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
+			"vsync": DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED, "runs": []}
 	GameScreen.flat_world = false
 	GameScreen.world_seed = SEED
 	var started := Time.get_ticks_usec()
@@ -85,6 +101,10 @@ func _run() -> void:
 	_report("jogo novo: arquipélago, terreno, água e árvores", "%.0f ms (semente %d, %d árvores desenhadas)" % [
 			(Time.get_ticks_usec() - started) / 1000.0, SEED, game.tree_view.instance_count()])
 	GameClock.set_speed(TickClock.PAUSED)
+	# Fase 32: o que se compila depois do jogo novo (com o WarmUp, deveria ser pouco)
+	for frame: int in WarmUp.FRAMES + 2:
+		await get_tree().process_frame
+	var pipelines_city := _pipelines()
 	var sim := game.simulation
 	started = Time.get_ticks_usec()
 	sim.free_build = true
@@ -165,7 +185,17 @@ func _run() -> void:
 		await get_tree().process_frame
 	var frame_ms := (Time.get_ticks_usec() - started) / 1000.0 / FRAMES
 	_report("quadro com tudo visível", "%.0f ms (%.0f FPS) — %s" % [frame_ms, 1000.0 / frame_ms, RenderingServer.get_video_adapter_name()])
-	await _day_cycle(game, config)
+	var city := _pipelines()
+	_report("pipelines compiladas montando e desenhando a cidade (desenho / superfície / malha / especialização)",
+			"%d / %d / %d / %d (primeira vez atrás da cortina: %s)" % [city.draw - pipelines_city.draw, city.surface - pipelines_city.surface,
+			city.mesh - pipelines_city.mesh, city.specialization - pipelines_city.specialization,
+			"ligada" if WarmUp.enabled() else "desligada"])
+	await _crowd_out(game, config)
+	var levels: Array[int] = [level]
+	if "--todos-os-niveis" in args:
+		levels.assign(range(config.graphics_presets.size()))
+	for each: int in levels:
+		await _day_cycle(game, config, each)
 	_write()
 	if _from_game:
 		_show_results()
@@ -173,9 +203,8 @@ func _run() -> void:
 		get_tree().quit()
 
 
-## Fase 4: todos os pedestres na rua (o teto de 2.000), o custo da multidão na CPU e um dia inteiro
-## renderizado com a partida rodando a 1x.
-func _day_cycle(game: GameScreen, config: GameConfig) -> void:
+## Fase 4: todos os pedestres na rua (o teto de 2.000) e o custo da multidão na CPU.
+func _crowd_out(game: GameScreen, config: GameConfig) -> void:
 	var view := game.pedestrian_view
 	var crowd := view.crowd
 	# a população do benchmark cai sem comida durante os minutos de simulação: volta aos 10 mil
@@ -200,32 +229,90 @@ func _day_cycle(game: GameScreen, config: GameConfig) -> void:
 		crowd.update(1.0 / 60.0, 12.0)
 		view.apply()
 	_report("multidão na CPU depois de sair (rotina + instâncias)", "%.2f ms por quadro" % [(Time.get_ticks_usec() - started) / 1000.0 / 300])
-	GameClock.set_speed(0)
+
+
+## Um dia inteiro renderizado em DAY_SECONDS, com a partida rodando a 1x, no nível gráfico "level", pelo trajeto fixo
+## (Fase 32): um terço em cada distância de DAY_DISTANCES e uma volta inteira em torno do mesmo ponto. Cada quadro
+## guarda o tempo bruto, a CPU e a GPU do viewport e o tick que caiu nele.
+func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
+	Settings.set_graphics_preset(level)
+	Settings.apply()
+	var preset := Settings.preset()
+	var viewport := get_viewport().get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(viewport, true)
+	# alguns quadros para o nível novo assentar (pipelines, sombras) antes de medir
+	for frame: int in 30:
+		await get_tree().process_frame
+	var sim := game.simulation
+	sim.profiling = true
+	sim.profile.clear()
+	var pipelines_before := _pipelines()
 	var frames := PackedFloat64Array()
+	var cpu := PackedFloat64Array()
+	var gpu := PackedFloat64Array()
+	var ticks := PackedFloat64Array()
+	GameClock.set_speed(0)
 	var start := Time.get_ticks_usec()
 	var last := start
+	var last_tick_usec := 0
 	var start_hour := GameClock.clock.hour()
 	var progress := 0.0
+	var start_yaw := game.camera.rig.yaw
 	while progress < 1.0:
 		game.camera.rig.distance = DAY_DISTANCES[mini(floori(progress * DAY_DISTANCES.size()), DAY_DISTANCES.size() - 1)]
+		game.camera.rig.target_distance = game.camera.rig.distance
+		game.camera.rig.yaw = start_yaw + TAU * progress
+		game.camera.rig.target_yaw = game.camera.rig.yaw
 		game.camera.apply()
 		GameClock.clock.extra_hours = 24.0 * progress
 		await get_tree().process_frame
 		var now := Time.get_ticks_usec()
 		frames.append((now - last) / 1000.0)
+		cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(viewport))
+		gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(viewport))
+		var tick_usec := 0
+		for step: StringName in sim.profile:
+			tick_usec += sim.profile[step]
+		ticks.append((tick_usec - last_tick_usec) / 1000.0)
+		last_tick_usec = tick_usec
 		last = now
 		progress = (now - start) / 1000000.0 / DAY_SECONDS
 	GameClock.set_speed(TickClock.PAUSED)
 	GameClock.clock.extra_hours = 0.0
-	var total := 0.0
-	for ms: float in frames:
-		total += ms
-	frames.sort()
-	var average := total / frames.size()
-	var worst_percent := frames[int(frames.size() * 0.99)]
-	_report("dia inteiro em 60 s a 1x, câmera a 40/120/300 m (FPS médio / 1% pior / pior quadro)",
-			"%.1f / %.1f FPS / %.0f ms em %d quadros (meta 60 FPS), a partir das %s" % [1000.0 / average,
-			1000.0 / worst_percent, frames[frames.size() - 1], frames.size(), DayClock.clock_text(start_hour)])
+	game.camera.rig.yaw = start_yaw
+	game.camera.rig.target_yaw = start_yaw
+	sim.profiling = false
+	var pipelines := _pipelines()
+	for key: String in pipelines:
+		pipelines[key] -= pipelines_before[key]
+	var stats := FrameStats.summary(frames)
+	var gpu_stats := FrameStats.summary(gpu)
+	var tick_stats := FrameStats.summary(ticks)
+	var name := tr(preset.name_key)
+	_report("dia inteiro em 60 s a 1x, %s, câmera a 40/120/300 m dando a volta (FPS médio / 1%% low / 0,1%% low / pior quadro)" % name,
+			"%.1f / %.1f / %.1f FPS / %.0f ms em %d quadros (meta 60 FPS), a partir das %s" % [stats.average_fps,
+			stats.low_1_fps, stats.low_01_fps, stats.worst_ms, stats.count, DayClock.clock_text(start_hour)])
+	_report("quadro no %s (p50 / p95 / p99)" % name, "%.1f / %.1f / %.1f ms; GPU média %.1f ms (p99 %.1f); CPU do render média %.1f ms" % [
+			stats.p50_ms, stats.p95_ms, stats.p99_ms, gpu_stats.average_ms, gpu_stats.p99_ms, FrameStats.summary(cpu).average_ms])
+	_report("tick por quadro no %s (média / p99 / pior)" % name, "%.2f / %.2f / %.2f ms" % [tick_stats.average_ms,
+			tick_stats.p99_ms, tick_stats.worst_ms])
+	_report("pipelines compiladas no dia, %s (desenho / superfície / malha / especialização)" % name, "%d / %d / %d / %d" % [
+			pipelines.draw, pipelines.surface, pipelines.mesh, pipelines.specialization])
+	var runs: Array = _frames_doc.get("runs", [])
+	runs.append({"level": String(preset.id), "render_scale": Settings.render_scale,
+			"aa": "fsr2" if preset.uses_temporal(Settings.render_scale) else ["none", "fxaa", "smaa"][preset.screen_aa_for(Settings.render_scale)],
+			"summary": stats, "gpu_summary": gpu_stats, "tick_summary": tick_stats, "pipelines": pipelines,
+			"frames_ms": frames, "cpu_ms": cpu, "gpu_ms": gpu, "tick_ms": ticks})
+	_frames_doc["runs"] = runs
+
+
+## Os contadores de compilação de pipeline do motor (acumulados desde o início do jogo).
+static func _pipelines() -> Dictionary:
+	return {"canvas": int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_CANVAS)),
+			"mesh": int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_MESH)),
+			"surface": int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_SURFACE)),
+			"draw": int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_DRAW)),
+			"specialization": int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_SPECIALIZATION))}
 
 
 ## Fase 6: entreposto no litoral de verdade de cada outra ilha (SiteFinder) e uma rota da
@@ -311,3 +398,10 @@ func _write() -> void:
 	file.seek_end()
 	file.store_string(text)
 	file.close()
+	# Fase 32: os quadros brutos ao lado, sempre o da última rodada (o .md guarda o histórico)
+	var frames_path := path.get_basename() + "_quadros.json"
+	var frames_file := FileAccess.open(frames_path, FileAccess.WRITE)
+	if frames_file != null:
+		frames_file.store_string(JSON.stringify(_frames_doc, "\t"))
+		frames_file.close()
+		_lines.append("Quadros brutos em %s" % ProjectSettings.globalize_path(frames_path))

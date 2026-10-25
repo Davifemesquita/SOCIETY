@@ -98,7 +98,11 @@ tools/godot.sh godot --headless --path . --script res://tools/bake_animals.gd
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 9000 res://tools/capture_phase30.tscn -- /pasta/de/saida
 # Fase 31: casa subindo, casa demolida afundando na poeira, balas de uma salva no ar e os respingos com o alvo adernado
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://tools/capture_phase31.tscn -- /pasta/de/saida
-# benchmark da fase, anexado ao registro
+# Fase 32: o conjunto padrão do roteiro (arquipélago, ilha, vila no relevo, litoral, jazida e vila de perto) em cada
+# nível gráfico, para comparar o antisserrilhado; CAPTURA_NIVEIS=0,2 escolhe os níveis
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 400000 res://tools/capture_phase32.tscn -- /pasta/de/saida
+# benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
+# outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
 ```
 
@@ -214,6 +218,9 @@ A **simulação** roda em ticks fixos sobre dados puros e nunca toca na árvore 
 | `presentation/fire_view.gd` | labaredas, fumaça escura e luz laranja no prédio em chamas |
 | `ui/hud/mission_window.gd` | encomendas (aceitar, recusar, entregue e prazo) e os eventos em andamento; os selos dos eventos ficam na barra (`Hud`) |
 | `data/graphics/*.tres`, `data/graphics_preset_def.gd` | níveis gráficos baixo, médio, alto e ultra (Fase 9) |
+| `presentation/warm_up.gd` | `WarmUp` (Fase 32): a primeira vez de cada material, num mundo de rascunho, atrás da cortina |
+| `presentation/world_bounds.gd` | `WorldBounds` (Fase 32): a caixa fixa do arquipélago para os MultiMeshes que mudam a cada quadro |
+| `tools/frame_stats.gd` | `FrameStats` (Fase 32): p50, p95, p99 e os lows de 1% e 0,1% dos quadros do benchmark |
 | `world/graphics_quality.gd` | aplica o nível ao ambiente, ao sol, à câmera (miniatura), aos pedestres, às luzes de área e aos efeitos |
 | `world/sky/clouds_adapter.gd` | adaptador do SunshineClouds2 (nuvens volumétricas) |
 | `presentation/weather_cycle.gd`, `weather_view.gd` | clima só visual: sorteio por dia pela semente, chuva, neblina, chão molhado e, desde a Fase 22, o vento |
@@ -545,8 +552,8 @@ Regras que já custaram investigação:
 
 - **Níveis gráficos** em `data/graphics/` (`GraphicsPresetDef`), lidos pelo `GameConfig.graphics_presets`:
   sombra, SSAO, SSIL, glow, neblina volumétrica, nuvens, miniatura, partículas, fuligem, LOD, alcance
-  dos detalhes, pedestres, luzes de área, MSAA e a escala FSR sugerida. O padrão é o **alto** (o do
-  critério). `Settings.apply()` faz a janela (MSAA, LOD, atlas e filtro de sombra); o
+  dos detalhes, pedestres, luzes de área, o antisserrilhado (desde a Fase 32; antes, MSAA) e a escala FSR sugerida. O padrão é o **alto** (o do
+  critério). `Settings.apply()` faz a janela (AA, FSR, LOD, atlas e filtro de sombra); o
   `GraphicsQuality` faz o resto e repassa `set_quality(preset)` a quem se registrou com `add_effect`.
 - **Nuvens volumétricas (SunshineClouds2) só no ultra**: no Vulkan por software o efeito escurece a
   tela inteira fora das nuvens (cena mínima confirmou), e não há como saber aqui se é limitação do
@@ -1399,6 +1406,40 @@ Regras que já custaram investigação:
   cursor parado quadro a quadro; toques seguidos somam no alvo. `CameraRig.zoom()` continua direto e cancela o suave
   (testes, ferramentas, carregar). Nos testes a roda é direta.
 
+### Medida e nitidez (Fase 32, nossa)
+
+- **Plano** em `docs/plano_fase32.md`, a primeira fase do roteiro de `docs/plano_melhorias.md`; o dono do produto pediu
+  para retomá-la em 25/10/2026. Só configuração e ferramentas: nada muda na simulação nem no save. **Fecha no PC com a
+  RTX 3060**: a primeira tabela de FPS por nível, em 1080p e 4K, Vulkan e D3D12 (roteiro em `docs/benchmark.md`), as
+  nuvens volumétricas na placa e o export com o shader baker.
+- **Teste dourado do terreno** (`tests/sim/test_terrain_golden.gd`): as assinaturas do v1 (semente 1840 e quatro
+  arquipélagos pequenos) e da ilha plana (v0) gravadas como número. Falhou, o terreno que os saves refazem mudou: o
+  gerador sem subir `VERSION`, um ajuste dos patamares no `GameConfig` (o v1 lê `terrace_levels_m` e
+  `terrace_flat_fraction`) ou o motor (o `FastNoiseLite` ou o `hash()` na subida à 4.8). Mudança de propósito vira
+  versão nova, com as assinaturas dela à parte.
+- **Antisserrilhado** (`GraphicsPresetDef.screen_space_aa`, `temporal_native`, `fsr_sharpness`): FXAA no baixo, SMAA no
+  médio e no alto, FSR 2.2 na resolução cheia no ultra (nitidez 0,2). O **MSAA saiu** de todos (trocá-lo em jogo recompila
+  pipelines e ele não pega a borda do alpha). Com o FSR ligado (escala abaixo de 100% ou o ultra) o AA de tela desliga
+  (`uses_temporal`, `screen_aa_for`); o `validate` recusa nível sem nenhum AA. Trocar o nível nas opções acontece atrás
+  da cortina (`SceneFader.change_with`, "Aplicando os gráficos…").
+- **Primeira vez atrás da cortina** (`WarmUp`): no `_ready` da `GameScreen` (jogo novo e carregar), um mundo de rascunho
+  (`WarmUp.scratch`: ilha plana, um de cada prédio, uma casa por classe, rua de terra e calçada) desenhado pelas mesmas
+  vistas da partida, encolhido a `SHRINK` na frente da câmera por `FRAMES` quadros, com o andaime e a poeira numa casa.
+  **O rascunho é construído pelos comandos direto**, sem o `Simulation.execute` (que avisaria o `EventBus` e as vistas da
+  partida receberiam ids de outro mundo), e cada vista de rascunho sai do `EventBus` logo depois do `setup`
+  (`disconnect_from_bus`). A cortina espera o grupo `HOLD_GROUP` (até `SceneFader.MAX_HOLD_FRAMES`). Sem tela ou com
+  `SOCIETY_SEM_WARMUP=1` (posto pelo `tools/godot.sh testes`) não roda. Montar o rascunho leva ~1,5 s na VM; as malhas
+  dos prédios ficam no cache do `BuildingKit` e o primeiro prédio de cada tipo da partida sai mais rápido.
+- **Caixa fixa** (`WorldBounds.of`): carroças, cavalos, pilhas de estoque e gaivotas, que mudam a cada quadro, levam o
+  `MultiMesh.custom_aabb` do arquipélago inteiro (sem ela, cada atualização percorre as instâncias na CPU). **A caixa
+  dos pedestres não cobria as ilhas tropicais** (parava em x = 2 regiões; elas ficam em x = 3): os pedestres de lá
+  podiam sumir com a câmera olhando para elas. Agora usam a mesma caixa.
+- **Benchmark** (`tools/benchmark.gd`, `FrameStats`): trajeto de câmera fixo, quadro bruto, CPU e GPU do viewport, tick
+  por quadro, pipelines compiladas, p50/p95/p99 e lows de 1% e 0,1%, os quadros num JSON (`FRAMES_FORMAT`) ao lado do
+  `.md`, `-- --todos-os-niveis` e a placa, o driver, a janela e o VSync no topo.
+- **Export**: `shader_baker/enabled=true` no preset do Windows. O baker só roda com um renderer de verdade no editor:
+  o export pelo `--headless` (CI, esta VM) sai sem ele, e o de release sai do editor, no Windows.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1441,6 +1482,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 29 — Fôlego da simulação (nossa) | **concluída em 24/10/2026**: perfil do tick por etapa e `-- --so-tick` no benchmark; tick médio de 4,19 para 3,10 ms (população, logística, produção) e obra com a ilha cheia de 48,1 para 41,2 ms (buscas em largura das estradas), sem mudar o resultado; a suíte inteira passou no CI |
 | 30 — Transição e retorno visual (nossa) | **concluída em 24/10/2026**: cortina com texto na troca de tela, contadores animados e pulso de ganho na barra, notificações que aparecem e esmaecem, moedas e "+X" sobre o entreposto quando o comerciante paga; plano em `docs/plano_fase30.md`; a suíte inteira passou no CI |
 | 31 — Obra e combate (nossa) | **concluída em 25/10/2026**: prédio subindo com squash & stretch e poeira, demolido afundando na poeira, balas em arco com respingo e o alvo adernando no combate naval, zoom suave no cursor; plano em `docs/plano_fase31.md` |
+| 32 — Medida e nitidez (nossa) | **em andamento desde 25/10/2026**: teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; falta a medição na RTX 3060; plano em `docs/plano_fase32.md` |
 
 Pendências já vistas para fases futuras:
 

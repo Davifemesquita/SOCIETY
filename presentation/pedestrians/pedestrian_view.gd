@@ -43,9 +43,9 @@ func setup(simulation: Simulation, config: GameConfig, seed_value: int = 1) -> v
 		_models.append(model)
 		strides.append(model.clip_strides_m)
 	crowd = Crowd.new(simulation, config, strides, seed_value)
-	# a principal e as regiões vizinhas (onde o gerador põe as outras ilhas), para qualquer semente
-	var region := config.terrain_region_m
-	var bounds := AABB(Vector3(-region, -10.0, -region), Vector3(region * 3.0, 60.0, region * 3.0))
+	# o arquipélago inteiro, para qualquer semente (até a Fase 31 ficavam de fora as regiões tropicais, e os
+	# pedestres de lá sumiam com a câmera olhando para elas)
+	var bounds := WorldBounds.of(config)
 	for group: Crowd.Group in crowd.groups:
 		var model := _models[group.body]
 		var material := ShaderMaterial.new()

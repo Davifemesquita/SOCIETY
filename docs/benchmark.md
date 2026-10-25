@@ -439,3 +439,41 @@ Fase 29 (fôlego da simulação), medida antes e depois no mesmo dia e na mesma 
   estradas liam cada vizinha duas vezes e conferiam os quatro cantos da diagonal (Fase 17) em toda célula.
 - O que sobra pesando no tick: a logística (as 200 carroças a cada tick) e a produção; na obra, os prédios (~9,6 ms, o
   acesso à estrada de cada um) e os serviços (~8,4 ms).
+
+## Fase 32 — medida e nitidez
+
+A partir desta fase o dia inteiro anda num **trajeto de câmera fixo** (um terço a 40, 120 e 300 m, dando uma volta
+inteira em torno do mesmo ponto) e mede cada quadro em bruto: o relógio entre dois quadros (não o `delta`, que é
+suavizado), a CPU e a GPU do viewport (`viewport_set_measure_render_time`, que vale também com VSync), o tick da
+simulação que caiu em cada quadro e as pipelines compiladas no caminho. O resumo traz FPS médio, **1% low e 0,1% low**
+(a média do 1% e do 0,1% de quadros mais lentos, em FPS), p50, p95, p99 e o pior quadro. Os quadros brutos vão num JSON
+ao lado do `.md` (`benchmark_quadros.json`, `format` 1; no executável, `user://benchmark_quadros.json`), sempre o da
+última rodada. `-- --todos-os-niveis` repete o dia nos quatro níveis gráficos. Desde esta fase o jogo também desenha a
+primeira vez de cada material atrás da cortina (`WarmUp`), e o benchmark conta as pipelines compiladas montando e
+desenhando a cidade de teste depois disso.
+
+### Como medir no PC com a RTX 3060
+
+O que fecha a Fase 32 é esta tabela, que ainda não existe (todo número de quadro até aqui é da VM, sem GPU). Com o
+`Society.exe` desta versão, no Windows, feche o resto e rode, em 1080p e depois em 4K (resolução da área de trabalho, tela
+cheia nas opções):
+
+```bat
+Society.exe -- --benchmark --todos-os-niveis
+Society.exe --rendering-driver d3d12 -- --benchmark --todos-os-niveis
+```
+
+Cada rodada leva ~10 min (a montagem da cidade e quatro dias de 60 s) e mostra o resultado na tela; o `.md` e o JSON
+ficam em `%APPDATA%\Godot\app_userdata\Society\` (o caminho aparece no fim). Repita uma vez com o VSync desligado nas
+opções. Mande os dois arquivos de cada rodada: a tabela abaixo sai deles.
+
+| Driver | Resolução | Nível | FPS médio | 1% low | Pior quadro | GPU média |
+|---|---|---|---|---|---|---|
+| Vulkan | 1080p | baixo / médio / alto / ultra | — | — | — | — |
+| D3D12 | 1080p | baixo / médio / alto / ultra | — | — | — | — |
+| Vulkan | 4K | baixo / médio / alto / ultra | — | — | — | — |
+| D3D12 | 4K | baixo / médio / alto / ultra | — | — | — | — |
+
+Na mesma sessão, confira no ultra se as **nuvens volumétricas** aparecem certas (no Vulkan por software elas escurecem a
+tela inteira) e se o FSR 2.2 do ultra deixa rastro nos pedestres e na água. A decisão do driver (Vulkan, o de hoje, ou
+D3D12, sem cache de pipeline na 4.7.2 mas que costuma dar mais FPS) fica registrada aqui com os números.

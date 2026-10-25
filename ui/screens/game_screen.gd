@@ -281,6 +281,11 @@ func _ready() -> void:
 	if not load_slot_on_start.is_empty():
 		load_game(load_slot_on_start)
 		load_slot_on_start = ""
+	# Fase 32: a primeira vez de cada material cai atrás da cortina, não no primeiro prédio da partida
+	if WarmUp.enabled():
+		var warm := WarmUp.new()
+		add_child(warm)
+		warm.start(_config, simulation.data, camera.camera)
 
 
 ## Céu e luzes seguem a hora do GameClock, lisa entre os ticks. As conquistas de estado são

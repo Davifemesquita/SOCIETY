@@ -11,6 +11,8 @@ signal finished
 const FADE_S := 0.35
 ## Quadros depois da troca antes de clarear: a cena nova entra no fim do quadro da troca e faz o _ready no seguinte.
 const SETTLE_FRAMES := 2
+## Fase 32: no máximo tantos quadros a mais esperando quem segura a cortina (grupo WarmUp.HOLD_GROUP).
+const MAX_HOLD_FRAMES := 60
 const TEXT_COLOR := Color(0.93, 0.87, 0.72)
 
 ## Troca sempre direta (testes que montam telas por conta própria).
@@ -71,6 +73,11 @@ func change_with(swap: Callable, message_key: String = "") -> void:
 	swap.call()
 	for frame: int in SETTLE_FRAMES:
 		await get_tree().process_frame
+	# Fase 32: a primeira vez de cada material (WarmUp) termina no escuro
+	var held := 0
+	while held < MAX_HOLD_FRAMES and get_tree().get_first_node_in_group(WarmUp.HOLD_GROUP) != null:
+		await get_tree().process_frame
+		held += 1
 	_label.visible = false
 	var lighten := create_tween()
 	lighten.tween_property(_curtain, ^"color:a", 0.0, FADE_S)

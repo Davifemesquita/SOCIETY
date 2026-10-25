@@ -39,6 +39,8 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.use_colors = CargoKit.tinted(pile)
 		multimesh.mesh = mesh
+		# Fase 32: caixa fixa (as pilhas mudam a toda hora; o alcance de visibilidade é por camada, não por pilha)
+		multimesh.custom_aabb = WorldBounds.of(simulation.config)
 		layer.multimesh = multimesh
 		add_child(layer)
 		_layers[pile] = layer

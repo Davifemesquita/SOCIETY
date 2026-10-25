@@ -44,6 +44,8 @@ case "$comando" in
 		export SOCIETY_NIVEL_GRAFICO="${SOCIETY_NIVEL_GRAFICO:-0}"
 		# Fase 30: troca de tela direta, sem a cortina (os testes leem a cena logo depois de trocar)
 		export SOCIETY_SEM_TRANSICAO="${SOCIETY_SEM_TRANSICAO:-1}"
+		# Fase 32: sem o rascunho da primeira vez (cada partida dos testes o pagaria inteiro)
+		export SOCIETY_SEM_WARMUP="${SOCIETY_SEM_WARMUP:-1}"
 		alvo="${1:-res://tests}"
 		if [ -n "${DISPLAY:-}" ]; then
 			addons/gdUnit4/runtest.sh -a "$alvo"

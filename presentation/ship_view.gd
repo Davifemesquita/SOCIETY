@@ -112,6 +112,8 @@ func setup(simulation: Simulation) -> void:
 	_gulls.multimesh.use_colors = true
 	_gulls.multimesh.use_custom_data = true
 	_gulls.multimesh.mesh = BirdView.gull_mesh()
+	# Fase 32: as gaivotas mudam a cada quadro; caixa fixa em vez de refazê-la percorrendo as instâncias
+	_gulls.multimesh.custom_aabb = WorldBounds.of(simulation.config)
 	var gull_material := ShaderMaterial.new()
 	gull_material.shader = load("res://shaders/bird.gdshader") as Shader
 	_gulls.material_override = gull_material
