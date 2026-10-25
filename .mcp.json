@@ -4,7 +4,7 @@
       "command": "npx",
       "args": ["-y", "@coding-solo/godot-mcp@0.1.1"],
       "env": {
-        "GODOT_PATH": "/home/perseus/SOCIETY/tools/godot-mcp.sh"
+        "GODOT_PATH": "/home/perseus/github/SOCIETY/tools/godot-mcp.sh"
       }
     }
   }
