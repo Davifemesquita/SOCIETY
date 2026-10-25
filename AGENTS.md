@@ -1409,9 +1409,16 @@ Regras que já custaram investigação:
 ### Medida e nitidez (Fase 32, nossa)
 
 - **Plano** em `docs/plano_fase32.md`, a primeira fase do roteiro de `docs/plano_melhorias.md`; o dono do produto pediu
-  para retomá-la em 25/10/2026. Só configuração e ferramentas: nada muda na simulação nem no save. **Fecha no PC com a
-  RTX 3060**: a primeira tabela de FPS por nível, em 1080p e 4K, Vulkan e D3D12 (roteiro em `docs/benchmark.md`), as
-  nuvens volumétricas na placa e o export com o shader baker.
+  para retomá-la em 25/10/2026. Só configuração e ferramentas: nada muda na simulação nem no save. **Fechada pelo dono
+  do produto em 25/10/2026 com a medição no PC dele (RTX 5060, não a 3060)**, só em 1080p (tabela em
+  `docs/benchmark.md`): Vulkan e D3D12 empatam e fica o Vulkan; o alto dá ~48 FPS (GPU ~20 ms por quadro, abaixo da
+  meta de 60); o ultra trava (pior quadro de até ~2 s). Ficaram para depois: 4K, VSync desligado, o export com o shader
+  baker e as nuvens volumétricas conferidas no olho.
+- **No PC do dono (Windows)**: o Godot 4.7.2 fica em `F:\ferramentas\godot` em modo autocontido (`._sc_`, com os
+  modelos de exportação em `editor_data/`), o clone em `F:\repos\society`, e o `Society.exe` sai pelo
+  `--export-release "Windows"` do binário `_console`. **Nada grande vai para o disco C** (está quase cheio). O benchmark
+  aberto pelo executável espera o Esc no fim: para automatizar, espere o `benchmark_quadros.json` de
+  `%APPDATA%\Godot\app_userdata\Society\` mudar e feche o processo.
 - **Teste dourado do terreno** (`tests/sim/test_terrain_golden.gd`): as assinaturas do v1 (semente 1840 e quatro
   arquipélagos pequenos) e da ilha plana (v0) gravadas como número. Falhou, o terreno que os saves refazem mudou: o
   gerador sem subir `VERSION`, um ajuste dos patamares no `GameConfig` (o v1 lê `terrace_levels_m` e
@@ -1482,14 +1489,16 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 29 — Fôlego da simulação (nossa) | **concluída em 24/10/2026**: perfil do tick por etapa e `-- --so-tick` no benchmark; tick médio de 4,19 para 3,10 ms (população, logística, produção) e obra com a ilha cheia de 48,1 para 41,2 ms (buscas em largura das estradas), sem mudar o resultado; a suíte inteira passou no CI |
 | 30 — Transição e retorno visual (nossa) | **concluída em 24/10/2026**: cortina com texto na troca de tela, contadores animados e pulso de ganho na barra, notificações que aparecem e esmaecem, moedas e "+X" sobre o entreposto quando o comerciante paga; plano em `docs/plano_fase30.md`; a suíte inteira passou no CI |
 | 31 — Obra e combate (nossa) | **concluída em 25/10/2026**: prédio subindo com squash & stretch e poeira, demolido afundando na poeira, balas em arco com respingo e o alvo adernando no combate naval, zoom suave no cursor; plano em `docs/plano_fase31.md` |
-| 32 — Medida e nitidez (nossa) | **em andamento desde 25/10/2026**: teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; falta a medição na RTX 3060; plano em `docs/plano_fase32.md` |
+| 32 — Medida e nitidez (nossa) | **concluída em 25/10/2026** (fechada pelo dono do produto): teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; primeira medição numa GPU (RTX 5060, 1080p, Vulkan e D3D12): fica o Vulkan, alto a ~48 FPS, ultra com travadas; plano em `docs/plano_fase32.md` |
 
 Pendências já vistas para fases futuras:
 
 - Balanceamento: ver `docs/balanceamento.md`. Medido na Fase 27 e folgado na Fase 28 (24/10/2026): o robô joga 4 h
   numa ilha plana de 350×350, o pior saldo fica em −745 e ele chega aos engenheiros aos ~120 min e aos investidores
   aos ~225. Falta medir com gente de verdade jogando: o robô não sente a partida.
-- Fase 9 na RTX 3060: o benchmark no nível alto (`Society.exe -- --benchmark`) e se as nuvens
-  volumétricas aparecem certas no ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
+- Desempenho gráfico (medido na RTX 5060 em 25/10/2026, `docs/benchmark.md`): o alto fica em ~48 FPS em 1080p, com
+  a GPU em ~20 ms por quadro, e o ultra tem travadas de até ~2 s (pior tick de até 122 ms no mesmo dia). Falta medir
+  4K, VSync desligado e o build com o shader baker, e conferir no olho as nuvens volumétricas e o rastro do FSR no
+  ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).

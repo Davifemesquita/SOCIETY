@@ -1,6 +1,7 @@
 # Plano da Fase 32 — Medida e nitidez (nossa)
 
-**Estado: em andamento desde 25/10/2026.** Primeira fase do roteiro de `docs/plano_melhorias.md` ("Fase 32 — Medida e
+**Estado: concluída em 25/10/2026**, fechada pelo dono do produto com a medição no PC dele (RTX 5060, 1080p, Vulkan e
+D3D12; `docs/benchmark.md`); 4K, VSync desligado, o export com o baker e as nuvens no olho ficaram para depois. Primeira fase do roteiro de `docs/plano_melhorias.md` ("Fase 32 — Medida e
 nitidez"); o dono do produto pediu para retomá-la em 25/10/2026, depois que a sessão que fazia o levantamento fechou
 antes de escrever este plano.
 
