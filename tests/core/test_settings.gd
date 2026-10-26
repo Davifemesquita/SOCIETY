@@ -16,8 +16,9 @@ func after_test() -> void:
 
 
 func test_ui_scale_is_clamped_to_spec_range() -> void:
+	# até 200% desde a Fase 43 (a escala aplicada ainda é limitada pela largura da janela)
 	_settings.set_ui_scale(3.0)
-	assert_float(_settings.ui_scale).is_equal(1.5)
+	assert_float(_settings.ui_scale).is_equal(2.0)
 	_settings.set_ui_scale(0.1)
 	assert_float(_settings.ui_scale).is_equal(0.8)
 
