@@ -185,6 +185,11 @@ func _run() -> void:
 		await get_tree().process_frame
 	var frame_ms := (Time.get_ticks_usec() - started) / 1000.0 / FRAMES
 	_report("quadro com tudo visível", "%.0f ms (%.0f FPS) — %s" % [frame_ms, 1000.0 / frame_ms, RenderingServer.get_video_adapter_name()])
+	# Fase 39: o custo de desenho da cidade (instance uniform e malhas novas pesam aqui)
+	_report("objetos, draw calls e primitivas no quadro com tudo visível", "%d · %d · %d" % [
+			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME)])
 	var city := _pipelines()
 	_report("pipelines compiladas montando e desenhando a cidade (desenho / superfície / malha / especialização)",
 			"%d / %d / %d / %d (primeira vez atrás da cortina: %s)" % [city.draw - pipelines_city.draw, city.surface - pipelines_city.surface,

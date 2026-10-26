@@ -101,6 +101,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://to
 # Fase 32: o conjunto padrão do roteiro (arquipélago, ilha, vila no relevo, litoral, jazida e vila de perto) em cada
 # nível gráfico, para comparar o antisserrilhado; CAPTURA_NIVEIS=0,2 escolhe os níveis
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 400000 res://tools/capture_phase32.tscn -- /pasta/de/saida
+# Fase 39: uma rua de casas por classe, o entreposto e a casa no barranco, de perto, às 10h
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase39.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
@@ -1555,6 +1557,32 @@ Regras que já custaram investigação:
   paralelepípedo (até a Fase 46), as pontes, as touceiras e as pedras soltas (no chão). Na ilha plana tudo segue
   ladrilho. `GameConfig.road_paint` desligado volta o ladrilho (para comparar).
 
+### Prédios assentados (Fase 39, nossa)
+
+- **Plano** em `docs/plano_fase39.md`, começada em 26/10/2026 pelo pedido do dono do produto de fazer todas as fases que
+  faltam. Só apresentação. **GPU sem tela**: o benchmark e as capturas rodam numa área de trabalho escondida do Windows
+  (`F:\ferramentas\desktop_oculto.ps1 -Exe <godot _console> -Arguments "..."`; a lógica do `CreateDesktop` fica em C#,
+  porque a estrutura montada no PowerShell dava erro 3). Os números assim só valem comparados entre si (ver
+  `docs/benchmark.md`); a referência de antes da fase sai de um worktree no commit anterior (`F:\repos\society_base`).
+- **Variação** (`BuildingKit.variation_hash`: id, tipo e rotação): nunca muda lote, porta nem andares. Cumeeira e beiral
+  em três degraus (`RIDGE_SCALES`, `OVERHANGS_M`) pelo resto do id por 3 — casas em fila (ids seguidos) nunca ficam com
+  o telhado na mesma altura —, chaminé no degrau do meio e lucarnas no alto (`lucarne_fits`: o telhadinho abaixo da
+  cumeeira). Cada malha nova custa ~18 ms: 3 telhados × 3 degraus × 2 janelas por classe. O tipo que não é casa tira o
+  beiral pelo tipo. Paletas (`BuildingView.palette_of`, quatro, a 0 é o tom de antes), a invertida (`inverted`,
+  `trim_paint`) e um desvio de 1 cm e 0,5° no modelo: **proposta à espera do dono**.
+- **Assentar**: o piso do prédio de modelo fica no canto mais alto do lote (`BuildingKit.seat`, `seat_lift`; a
+  `WindowLightsView` e a prévia usam o mesmo). Plinto e degraus (`BuildingKit.plinth`, `steps_for`) só no lote em
+  barranco, **todos numa malha só** (`BuildingView` nó `Plinths`, `plinth_of`, `rebuild_plinths` no quadro seguinte):
+  como nó por prédio eram ~600 objetos a mais no benchmark.
+- **Forma por tipo**: o entreposto é armazém (`Spec.storehouse`: empena na frente, portas de carga alternadas, as do
+  sótão e o guincho); a casa de camponeses recua `YARD_SIDE_GAP_M` das divisas dos lados (`hall_side_gap_m`, só no
+  `hall()`).
+- **Shader do kit**: vidro e caixilho em cada janela (`_glazing`, célula (0, 1) da paleta, que o kit não usa; Fresnel com
+  o céu), sombra de contato pela fachada (`instance uniform side_shade`, de `BuildingView.side_shade`, refeita nos
+  vizinhos quando um prédio entra ou sai), musgo na faixa de baixo. **`return` no `fragment` não compila** (o renderer
+  falso dos testes sem tela pega o erro: "Shader compilation failed" no log).
+- **Capturas**: `tools/capture_phase39.tscn` (uma rua por classe, o entreposto e a casa no barranco, às 10h).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1604,6 +1632,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 36 — Encostas de pedra (nossa) | **em andamento desde 25/10/2026**, feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
 | 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
 | 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); a suíte inteira passou no CI; faltam, com tela, as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
+| 39 — Prédios assentados (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
 
 Pendências já vistas para fases futuras:
 

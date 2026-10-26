@@ -117,7 +117,8 @@ static func building_windows(simulation: Simulation, record: BuildingRecord) -> 
 	var height := simulation.data.tier(record.tier).house_height_m if record.is_house() else def.height_m
 	if spec == null:
 		return windows_of(grid, record, def, height)
-	var center := grid.rect_world(Footprint.rect(record.origin, def.size, record.rotation))
+	# o piso do modelo fica no canto mais alto do lote (Fase 39)
+	var center := BuildingKit.seat(grid, Footprint.rect(record.origin, def.size, record.rotation))
 	var place := Transform3D(Basis(Vector3.UP, -PI * 0.5 * posmod(record.rotation, 4)), center)
 	var result: Array[Transform3D] = []
 	for window: Transform3D in BuildingKit.windows(spec):

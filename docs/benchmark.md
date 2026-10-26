@@ -740,3 +740,57 @@ céu simples, câmera a 55° olhando o centro da ilha principal; `antigo` é o s
 | quadro no Ultra (p50 / p95 / p99) | 36.7 / 41.3 / 42.8 ms; GPU média 33.7 ms (p99 42.3); CPU do render média 1.5 ms |
 | tick por quadro no Ultra (média / p99 / pior) | 0.34 / 1.72 / 127.55 ms |
 | pipelines compiladas no dia, Ultra (desenho / superfície / malha / especialização) | 2 / 30 / 0 / 52 |
+
+## Fase 39 — prédios assentados (26/10/2026)
+
+**Medido no PC do dono sem nada na tela dele**: o Godot roda numa área de trabalho escondida do Windows
+(`F:\ferramentas\desktop_oculto.ps1`, `CreateDesktop`): a RTX 5060 desenha a janela de 1920 × 1080, que nunca
+aparece. Os números desse jeito saem bem acima dos da tela de verdade (o alto a ~85 FPS e a GPU em ~11 ms, contra ~46
+FPS e ~21 ms na Fase 34, medidos na tela, com o dono olhando): **só valem comparados entre si**, antes e depois da fase,
+no mesmo método. Por isso a referência foi medida de novo, no commit anterior à fase (num worktree), com o mesmo
+benchmark.
+
+O benchmark ganhou a linha de objetos, draw calls e primitivas no quadro com tudo visível (o roteiro pede medir as draw
+calls na Fase 39).
+
+| Medida (alto, área de trabalho escondida) | Antes (a044b03) | Fase 39 |
+|---|---|---|
+| objetos · draw calls · primitivas | 2.904 · 1.101 · 20,38 M | 2.914 · 1.248 · 20,71 M |
+| dia inteiro: FPS médio / 1% low / 0,1% low / pior quadro | 86,2 / 43,3 / 35,1 / 32 ms | 85,0 / 44,3 / 38,6 / 27 ms |
+| quadro p50 / p95 / p99; GPU média; CPU do render | 11,0 / 15,6 / 21,2 ms; 10,8; 1,2 ms | 11,1 / 15,9 / 21,0 ms; 11,1; 1,2 ms |
+| construir um prédio com a ilha cheia | 17,7 ms | 17,9 ms |
+| montar tudo / carregar | 9.146 / 1.595 ms | 9.535 / 1.943 ms |
+
+- O plinto de cada prédio no barranco como nó próprio somava ~585 objetos e ~710 draw calls (o benchmark monta a cidade
+  no relevo da semente 1840): agora todos os plintos vão numa malha só.
+- Montar e carregar sobem ~0,4 s: as variações de telhado (3 × 3 × 2 por classe, 74 malhas para 600 casas, ~18 ms cada
+  na primeira vez). Construir com a ilha cheia não mudou.
+
+### 2026-10-26 06:07:02 — AMD Ryzen 7 5700X 8-Core Processor
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| placa e driver | NVIDIA GeForce RTX 5060 · vulkan · (1920, 1080) · VSync ligado |
+| jogo novo: arquipélago, terreno, água e árvores | 5666 ms (semente 1840, 94484 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 582 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 9535 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 1.29 / 1.50 / 2.51 ms (orçamento 4.0 ms) |
+| tick por etapa (ms, da mais pesada) | logística 0.39 · produção 0.33 · população 0.27 · necessidades 0.11 · navios 0.04 · riscos 0.04 · força de trabalho 0.03 · marcos, metas e vitória 0.03 · estaleiro 0.02 · combate 0.01 · eventos, encomendas e especialistas 0.01 · rivais 0.01 · estatísticas 0.00 · economia 0.00 · estado derivado 0.00 |
+| construir um prédio com a ilha cheia | 17.9 ms (limite 50 ms): comando e vistas 17.9 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 3.6 · serviços 3.7 · módulos, poluição e beleza 0.0 · armazéns 3.2 · produção 2.6 · grupos de casas 0.5 |
+| salvar | 77 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 1943 ms |
+| quadro com tudo visível | 11 ms (87 FPS) — NVIDIA GeForce RTX 5060 |
+| objetos, draw calls e primitivas no quadro com tudo visível | 2914 · 1248 · 20710120 |
+| pipelines compiladas montando e desenhando a cidade (desenho / superfície / malha / especialização) | 0 / 5 / 0 / 11 (primeira vez atrás da cortina: ligada) |
+| pedestres | 2000 na multidão, 1901 na rua (teto 2000); 22629 janelas |
+| multidão saindo de casa (rotas novas) | 312 quadros, 1524 ms; 1410 rotas, 0.68 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.28 ms por quadro |
+| dia inteiro em 60 s a 1x, Alta, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 85.0 / 44.3 / 38.6 FPS / 27 ms em 5099 quadros (meta 60 FPS), a partir das 10:00 |
+| quadro no Alta (p50 / p95 / p99) | 11.1 / 15.9 / 21.0 ms; GPU média 11.1 ms (p99 15.9); CPU do render média 1.2 ms |
+| tick por quadro no Alta (média / p99 / pior) | 0.11 / 1.92 / 13.67 ms |
+| pipelines compiladas no dia, Alta (desenho / superfície / malha / especialização) | 10 / 11 / 0 / 51 |

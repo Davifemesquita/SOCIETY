@@ -46,6 +46,23 @@ const BUILD_OVERSHOOT_XZ := 0.94
 const DEMOLISH_S := 0.9
 const MAX_DEMOLISHING := 12
 const DUST_COLOR := Color(0.72, 0.64, 0.52, 0.45)
+## Prédios assentados (Fase 39), tudo pela variação do BuildingKit (o mesmo id, tipo e rotação dão sempre o mesmo):
+## quatro paletas por tipo — a 0 é o tom de antes; as outras puxam a matiz, a saturação e o brilho da parede e trocam o
+## telhado por outro do mesmo material —, a "invertida" (caixilho claro) numa casa de reboco ou tijolo a cada
+## INVERTED_EVERY, e um desvio de até JITTER_M e JITTER_DEG no modelo. Proposta à espera do dono.
+const PALETTES := 4
+const WALL_SHIFTS: Array[Vector3] = [Vector3(0.0, 1.0, 1.0), Vector3(-0.03, 0.85, 0.93), Vector3(0.025, 1.12, 1.05),
+		Vector3(0.05, 0.9, 0.97)]
+const ROOF_TINTS := {
+	BuildingMaterials.Roof.TILES: [Color(0.0, 0.0, 0.0, 0.0), Color(0.6, 0.28, 0.2), Color(0.45, 0.33, 0.27),
+			Color(0.38, 0.4, 0.45)],
+	BuildingMaterials.Roof.PLANKS: [Color(0.0, 0.0, 0.0, 0.0), Color(0.45, 0.35, 0.25), Color(0.36, 0.31, 0.25),
+			Color(0.52, 0.44, 0.32)],
+}
+const NON_HOUSE_SHIFT := 0.35
+const INVERTED_EVERY := 5
+const JITTER_M := 0.01
+const JITTER_DEG := 0.5
 
 var _simulation: Simulation
 var _cell_size: float
@@ -69,6 +86,13 @@ var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
 ## Prédios demolidos que ainda estão afundando (já fora de _nodes).
 var _demolishing: Array[Node3D] = []
+## Fase 39: ilha e lote de cada prédio de modelo, para refazer a sombra de contato dos vizinhos quando um sai.
+var _lots: Dictionary[int, Array] = {}
+## Plintos dos prédios no barranco: [malha, lugar] por prédio, todos juntos numa malha só (um objeto e uma draw call em
+## vez de um por prédio: separados, eram ~600 a mais no benchmark), refeita no quadro seguinte quando um muda.
+var _plinths: Dictionary[int, Array] = {}
+var _plinth_layer := MeshInstance3D.new()
+var _plinths_queued: bool = false
 ## Fase 33: o prédio sob o cursor sempre mostra o ícone; com uma camada do mapa ligada, todos mostram.
 var hovered_id: int = 0
 var show_all_icons: bool = false
@@ -87,6 +111,12 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_selection.material_override = selection_material
 	_selection.visible = false
 	add_child(_selection)
+	_plinth_layer.name = "Plinths"
+	_plinth_layer.material_override = BuildingMaterials.kit()
+	# sem a faixa de sujeira e musgo da base (a base varia de prédio para prédio; a malha é uma só)
+	BuildingMaterials.dress_kit(_plinth_layer, BuildingMaterials.Wall.STONE, Color.WHITE, BuildingMaterials.Roof.TILES,
+			Color.WHITE, -100.0)
+	add_child(_plinth_layer)
 	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(_on_building_removed)
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: refresh_labels())
@@ -231,6 +261,138 @@ static func house_variant(building_id: int) -> int:
 	return house_hash(building_id) % HOUSE_VARIANTS
 
 
+## Fase 39: a paleta do prédio (0 a PALETTES - 1) pela variação.
+static func palette_of(record: BuildingRecord) -> int:
+	return BuildingKit.variation_hash(record) / 2187 % PALETTES
+
+
+## O tom da parede na paleta: matiz, saturação e brilho puxados (no prédio que não é casa, só NON_HOUSE_SHIFT disso).
+static func palette_wall(color: Color, palette: int, house: bool) -> Color:
+	var shift := WALL_SHIFTS[palette]
+	var amount := 1.0 if house else NON_HOUSE_SHIFT
+	var result := Color.from_hsv(fposmod(color.h + shift.x * amount, 1.0), clampf(color.s * lerpf(1.0, shift.y, amount), 0.0, 1.0),
+			clampf(color.v * lerpf(1.0, shift.z, amount), 0.0, 1.0), color.a)
+	return result
+
+
+## O tom do telhado na paleta: a 0 fica o de antes; as outras trocam pelo do material (só nas casas; o resto fica).
+static func palette_roof(color: Color, roof_layer: int, palette: int, house: bool) -> Color:
+	if not house or palette == 0 or not ROOF_TINTS.has(roof_layer):
+		return color
+	var tints: Array = ROOF_TINTS[roof_layer]
+	var tint: Color = tints[palette]
+	return tint
+
+
+## A paleta "invertida": caixilho e madeiramento claros, numa casa de reboco ou tijolo a cada INVERTED_EVERY.
+static func inverted(record: BuildingRecord, wall_layer: int) -> bool:
+	return record.is_house() and wall_layer in [BuildingMaterials.Wall.PLASTER, BuildingMaterials.Wall.BRICK] \
+			and BuildingKit.variation_hash(record) / 8748 % INVERTED_EVERY == 0
+
+
+## Sombra de contato (Fase 39): para cada fachada do referencial canônico (frente, +X, fundo, −X), a parte da divisa de
+## fora dela ocupada por prédio de verdade (campo, píer e decoração não contam).
+static func side_shade(simulation: Simulation, record: BuildingRecord) -> Vector4:
+	var grid := simulation.world.island(record.island_id)
+	var def := simulation.def_of(record)
+	var area := Footprint.rect(record.origin, def.size, record.rotation)
+	var turn := Basis(Vector3.UP, -PI * 0.5 * posmod(record.rotation, 4))
+	var result := Vector4.ZERO
+	for face: int in 4:
+		var normal := turn * BuildingKit.FACE_NORMALS[face]
+		var step := Vector2i(roundi(normal.x), roundi(normal.z))
+		var cells: Array[Vector2i] = []
+		if step.x != 0:
+			var x := area.end.x if step.x > 0 else area.position.x - 1
+			for y: int in range(area.position.y, area.end.y):
+				cells.append(Vector2i(x, y))
+		else:
+			var y := area.end.y if step.y > 0 else area.position.y - 1
+			for x: int in range(area.position.x, area.end.x):
+				cells.append(Vector2i(x, y))
+		var touching := 0
+		for cell: Vector2i in cells:
+			var other := grid.building_at(cell)
+			if other == 0 or other == record.id:
+				continue
+			var neighbor := simulation.world.building(other)
+			if neighbor != null and simulation.def_of(neighbor).kind not in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER,
+					BuildingDef.Kind.DECORATION]:
+				touching += 1
+		result[face] = float(touching) / maxi(cells.size(), 1)
+	return result
+
+
+## Plinto e degraus (Fase 39), só no lote em barranco: quando a pedra precisa descer mais que o alicerce do kit ou a
+## porta fica alta sobre o chão da frente. No lugar do modelo (com o desvio e o giro dele), na malha comum.
+func _add_plinth(body: MeshInstance3D, record: BuildingRecord, spec: BuildingKit.Spec, area: Rect2i) -> void:
+	var grid := _grid(record)
+	if grid.corner_heights.is_empty():
+		return
+	var seat := BuildingKit.seat(grid, area)
+	var corners := BuildingKit.corner_range(grid, area)
+	var depth := seat.y - corners.x + BuildingKit.PLINTH_BELOW_M
+	var size := spec.size_m()
+	var door := BuildingKit.door_position(spec)
+	var front_z := (-size.y * 0.5 if spec.court_rows > 0 else door.z) - 0.45
+	var outside := seat + Basis(Vector3.UP, -PI * 0.5 * posmod(record.rotation, 4)) * Vector3(door.x, 0.0, front_z)
+	var drop := seat.y - grid.height_at(outside.x, outside.z)
+	if spec.court_rows > 0 and spec.trim != TierDef.HouseTrim.YARD:
+		# a varanda, as bancas e a plataforma de carga têm os degraus e as rampas delas
+		drop = 0.0
+	if depth <= BuildingKit.FOUNDATION_DOWN_M + 0.02 and BuildingKit.steps_for(drop) == 0:
+		return
+	_plinths[record.id] = [BuildingKit.plinth(spec, depth, drop), Transform3D(Basis(Vector3.UP, body.rotation.y),
+			seat + body.position)]
+	_queue_plinths()
+
+
+## Plinto de um prédio, [malha, lugar], ou vazio (testes).
+func plinth_of(building_id: int) -> Array:
+	return _plinths.get(building_id, [])
+
+
+func plinth_count() -> int:
+	return _plinths.size()
+
+
+func _queue_plinths() -> void:
+	if not _plinths_queued:
+		_plinths_queued = true
+		rebuild_plinths.call_deferred()
+
+
+## Junta os plintos numa malha só.
+func rebuild_plinths() -> void:
+	_plinths_queued = false
+	if _plinths.is_empty():
+		_plinth_layer.mesh = null
+		return
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for part: Array in _plinths.values():
+		var mesh: ArrayMesh = part[0]
+		var place: Transform3D = part[1]
+		tool.append_from(mesh, 0, place)
+	_plinth_layer.mesh = tool.commit()
+
+
+## Refaz a sombra de contato dos prédios de modelo em volta do lote (prédio novo ou demolido).
+func _refresh_contacts(island_id: int, area: Rect2i, except_id: int) -> void:
+	var grid := _simulation.world.island(island_id)
+	var seen: Dictionary[int, bool] = {}
+	var ring := area.grow(1)
+	for y: int in range(ring.position.y, ring.end.y):
+		for x: int in range(ring.position.x, ring.end.x):
+			var other := grid.building_at(Vector2i(x, y))
+			if other == 0 or other == except_id or seen.has(other) or not _lots.has(other):
+				continue
+			seen[other] = true
+			var model := _nodes[other].get_node_or_null(^"Model") as MeshInstance3D
+			if model != null:
+				model.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, _simulation.world.building(other)))
+
+
 ## Telhado da casa pelo modelo: duas águas com a cumeeira de lado a lado (0) ou de frente para
 ## trás (1), ou plano com chaminé (2).
 func _add_roof(root: Node3D, record: BuildingRecord, body_size: Vector3, height: float) -> void:
@@ -283,7 +445,11 @@ func _add(building_id: int) -> void:
 	if spec != null:
 		body.name = "Model"
 		body.mesh = BuildingKit.mesh(spec)
-		body.rotation.y = -PI * 0.5 * posmod(record.rotation, 4)
+		# Fase 39: o piso no canto mais alto do lote, com um desvio mínimo de posição e giro pela variação
+		root.position = BuildingKit.seat(_grid(record), area)
+		var pick := BuildingKit.variation_hash(record)
+		body.position = Vector3(pick / 81 % 3 - 1, 0.0, pick / 243 % 3 - 1) * JITTER_M
+		body.rotation.y = -PI * 0.5 * posmod(record.rotation, 4) + deg_to_rad(JITTER_DEG) * (pick / 729 % 3 - 1)
 		body.material_override = BuildingMaterials.kit()
 		var tier := _simulation.data.tier(record.tier) if record.is_house() else null
 		var wall_layer := tier.wall_material if tier != null else def.wall_material
@@ -293,9 +459,14 @@ func _add(building_id: int) -> void:
 			wall_layer = BuildingMaterials.Wall.BRICK
 			roof_layer = BuildingMaterials.Roof.TILES
 		_spec_keys[building_id] = spec.key()
-		var color := _color(record)
-		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, color.darkened(ROOF_DARKEN).lightened(0.35),
-				root.position.y, soot)
+		var palette := palette_of(record)
+		var color := palette_wall(_color(record), palette, record.is_house())
+		var roof_color := palette_roof(color.darkened(ROOF_DARKEN).lightened(0.35), roof_layer, palette, record.is_house())
+		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, roof_color, root.position.y, soot)
+		body.set_instance_shader_parameter(&"trim_paint", 1.0 if inverted(record, wall_layer) else 0.0)
+		body.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, record))
+		_lots[building_id] = [record.island_id, area]
+		_add_plinth(body, record, spec, area)
 		var rotor := BuildingKit.rotor(spec)
 		if rotor != null:
 			var pivot := Node3D.new()
@@ -304,8 +475,7 @@ func _add(building_id: int) -> void:
 			var blades := MeshInstance3D.new()
 			blades.mesh = rotor.mesh
 			blades.material_override = BuildingMaterials.kit()
-			BuildingMaterials.dress_kit(blades, wall_layer, color, roof_layer, color.darkened(ROOF_DARKEN).lightened(0.35),
-					root.position.y, soot)
+			BuildingMaterials.dress_kit(blades, wall_layer, color, roof_layer, roof_color, root.position.y, soot)
 			_detail(blades)
 			pivot.add_child(blades)
 			body.add_child(pivot)
@@ -551,6 +721,9 @@ func _remove(building_id: int, sink: bool = false) -> void:
 		_rotors.erase(building_id)
 		_rotor_speeds.erase(building_id)
 		_spec_keys.erase(building_id)
+		_lots.erase(building_id)
+		if _plinths.erase(building_id):
+			_queue_plinths()
 
 
 func refresh_labels() -> void:
@@ -619,10 +792,17 @@ func _on_building_placed(building_id: int) -> void:
 	_add(building_id)
 	_refresh_label(building_id)
 	_pop(building_id)
+	var record := _simulation.world.building(building_id)
+	_refresh_contacts(record.island_id, _area(record), building_id)
 
 
 func _on_building_removed(building_id: int) -> void:
+	var lot: Array = _lots.get(building_id, [])
 	_remove(building_id, true)
+	if not lot.is_empty():
+		var island_id: int = lot[0]
+		var area: Rect2i = lot[1]
+		_refresh_contacts(island_id, area, building_id)
 	if building_id == _selected_id:
 		select(0)
 

@@ -184,6 +184,35 @@ const DOCK_BRICK_LEVEL := 2
 const DOCK_CANOPY_WALL := 1.25
 const DOCK_CANOPY_EAVE := 1.02
 const DOCK_CANOPY_OUT_M := 0.15
+## Prédios assentados (Fase 39). Beiral e cumeeira variam em três degraus, pelo resto do id por 3 (casas construídas em
+## fila têm ids seguidos, e as vizinhas nunca ficam da mesma altura). O tipo de prédio que não é casa tira o beiral pelo
+## tipo, igual em todos os dele.
+const OVERHANGS_M: Array[float] = [0.3, 0.4, 0.5]
+const RIDGE_SCALES: Array[float] = [0.85, 1.0, 1.18]
+## A casa com quintal (camponeses) recua das divisas dos lados: as vizinhas deixam de se colar.
+const YARD_SIDE_GAP_M := 0.6
+## Lucarna no telhado de duas águas das casas, de LUCARNE_W de largura e LUCARNE_H de parede, com a frente a LUCARNE_AT
+## da meia largura da água e o telhadinho LUCARNE_PEAK_M acima dela: só onde ele fica abaixo da cumeeira
+## (lucarne_fits; nos camponeses a água é baixa demais).
+const LUCARNE_W := 0.9
+const LUCARNE_H := 0.75
+const LUCARNE_AT := 0.62
+const LUCARNE_PEAK_M := 0.32
+## Vidro e caixilho nas janelas: o kit só tem o vão. O vidro fica na espessura da parede (x da peça), o caixilho em
+## cruz logo à frente dele, MULLION_M de largura.
+const UV_GLASS := Vector2(0.5 / 8.0, 1.5 / 4.0)
+const GLASS_X := 0.44
+const MULLION_X := 0.452
+const MULLION_M := 0.05
+## Plinto e degraus no barranco: o piso fica no canto mais alto do lote (seat_lift), a pedra desce até PLINTH_BELOW_M
+## abaixo do canto mais baixo e a porta alta ganha degraus de STEP_RISE_M até o chão da frente, STEP_TREAD_M cada.
+const PLINTH_BELOW_M := 0.3
+const PLINTH_OUT_M := 0.07
+const STEP_RISE_M := 0.18
+const STEP_TREAD_M := 0.28
+const MAX_STEPS := 4
+## Armazém do entreposto: empena na frente, mais íngreme.
+const STOREHOUSE_SLOPE := 0.42
 
 
 ## A forma de um prédio: tudo que muda a malha (e nada que só muda a cor).
@@ -208,11 +237,18 @@ class Spec:
 	## Plataforma de carga do armazém (Fase 23) e o nível do armazém, que muda o alpendre e as portas dela.
 	var dock: bool = false
 	var level: int = 0
+	## Fase 39: beiral, recuo dos lados do corpo (o quintal dos camponeses; só no hall()), lucarnas e o armazém do
+	## entreposto (portas de carga alternadas no térreo e as do sótão sobre a porta).
+	var overhang_m: float = ROOF_OVERHANG_M
+	var side_gap_m: float = 0.0
+	var hall_side_gap_m: float = 0.0
+	var lucarnes: int = 0
+	var storehouse: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m, height_m, walls, roof,
-				roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette, court_rows, trim,
-				int(dock), level]
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d" % [cells.x, cells.y, cell_m,
+				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -234,13 +270,17 @@ class Spec:
 		copy.trim = trim
 		copy.dock = dock
 		copy.level = level
+		copy.overhang_m = overhang_m
+		copy.side_gap_m = hall_side_gap_m
+		copy.lucarnes = lucarnes
+		copy.storehouse = storehouse
 		return copy
 
 	func hall_offset() -> Vector3:
 		return Vector3(0.0, 0.0, court_rows * cell_m * 0.5)
 
 	func size_m() -> Vector2:
-		return Vector2(cells.x * cell_m - INSET_M, cells.y * cell_m - INSET_M)
+		return Vector2(cells.x * cell_m - INSET_M - side_gap_m * 2.0, cells.y * cell_m - INSET_M)
 
 	func floors() -> int:
 		return maxi(1, roundi(height_m / FLOOR_TARGET_M))
@@ -274,24 +314,39 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var variant := BuildingView.house_variant(record.id)
 		spec.height_m = tier.house_height_m
 		spec.walls = Walls.WOOD if tier.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
+		# cada malha nova custa ~18 ms: o beiral e o que vai no telhado seguem o degrau da cumeeira (3 × 3 telhados × 2
+		# janelas por classe, em vez de centenas)
+		var step := posmod(record.id, RIDGE_SCALES.size())
 		spec.roof = [Roof.GABLE_X, Roof.GABLE_Z, Roof.FLAT][variant]
-		spec.roof_m = tier.house_height_m * HOUSE_ROOF_FRACTION
-		spec.chimney = variant == 2
+		spec.roof_m = tier.house_height_m * HOUSE_ROOF_FRACTION * RIDGE_SCALES[step]
+		spec.overhang_m = OVERHANGS_M[step]
+		# o telhado de duas águas tira chaminé (degrau do meio), lucarnas (o mais alto) ou nada; o plano tem a chaminé
+		spec.chimney = variant == 2 or step == 1
+		if variant != 2 and step == 2 and lucarne_fits(spec.roof_m):
+			spec.lucarnes = 1 if spec.cells.x <= 3 else 2
 		spec.window_style = BuildingView.house_hash(record.id) / 3 % 2
 		spec.trim = tier.house_trim
 		if spec.trim == TierDef.HouseTrim.YARD and spec.cells.y > 2:
-			# a fileira da frente vira quintal cercado; a casa fica nas de trás
+			# a fileira da frente vira quintal cercado; a casa fica nas de trás, recuada das divisas dos lados
 			spec.court_rows = 1
+			spec.hall_side_gap_m = YARD_SIDE_GAP_M
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
 	var short := minf(def.size.x, def.size.y) * cell_size
 	spec.roof_m = short * ROOF_SLOPE
 	spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
+	spec.overhang_m = OVERHANGS_M[absi(hash(String(def.id))) % OVERHANGS_M.size()]
 	spec.window_style = 1
 	if def.kind in [BuildingDef.Kind.WAREHOUSE] or def.is_shipyard():
 		spec.door = Door.ARCH
 		spec.sparse_windows = true
+		if def.is_trading_post:
+			# o entreposto lê como armazém (Fase 39): empena alta na frente, portas de carga no térreo, janela pequena
+			spec.storehouse = true
+			spec.roof = Roof.GABLE_Z
+			spec.roof_m = minf(def.size.x, def.size.y) * cell_size * STOREHOUSE_SLOPE
+			spec.window_style = 2
 		# o armazém do interior (não o entreposto, que tem o cais) ganha a plataforma de carga na frente
 		spec.dock = def.kind == BuildingDef.Kind.WAREHOUSE and not def.is_trading_post and def.size.y > 2
 		if spec.dock:
@@ -310,7 +365,7 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	if def.height_m < 3.0 or def.deposit != &"" or def.id in [&"clay_pit", &"sand_pit"]:
 		spec.roof = Roof.FLAT
 		spec.roof_m = FLAT_ROOF_M
-	if def.wall_material == BuildingMaterials.Wall.WOOD and not brick(spec):
+	if def.wall_material == BuildingMaterials.Wall.WOOD and not brick(spec) and not spec.storehouse:
 		spec.window_style = 0
 	if brick(spec):
 		spec.walls = Walls.PLASTER
@@ -337,6 +392,36 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
 		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
 	return spec
+
+
+## Fase 39: número estável da variação visual do prédio. O mesmo id, tipo e rotação dão sempre a mesma; ela nunca
+## muda o lote, a porta nem o número de andares.
+static func variation_hash(record: BuildingRecord) -> int:
+	return absi(hash("%d|%s|%d" % [record.id, record.def_id, posmod(record.rotation, 4)]))
+
+
+## Quanto o piso sobe da altura média do lote até o canto mais alto (Fase 39): a casa no barranco não afunda a parede de
+## cima; embaixo aparece o plinto.
+static func seat_lift(grid: IslandGrid, area: Rect2i) -> float:
+	var corners := corner_range(grid, area)
+	return maxf(corners.y - grid.area_height(area), 0.0)
+
+
+## Menor e maior altura dos cantos do lote.
+static func corner_range(grid: IslandGrid, area: Rect2i) -> Vector2:
+	var low := INF
+	var high := -INF
+	for y: int in range(area.position.y, area.end.y + 1):
+		for x: int in range(area.position.x, area.end.x + 1):
+			var height := grid.corner_height(x, y)
+			low = minf(low, height)
+			high = maxf(high, height)
+	return Vector2(low, high)
+
+
+## O ponto do piso do prédio de modelo: o meio do lote, na altura do canto mais alto.
+static func seat(grid: IslandGrid, area: Rect2i) -> Vector3:
+	return grid.rect_world(area) + Vector3(0.0, seat_lift(grid, area), 0.0)
 
 
 ## O armazém de nível DOCK_BRICK_LEVEL é de tijolo (Fase 23): a BuildingView troca as camadas da parede e do
@@ -370,6 +455,12 @@ static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
 			and index % 2 == spec.door_index % 2:
 		# portas de carga em células alternadas, todas dando na plataforma
 		return &"arch"
+	if spec.storehouse and face == 0:
+		# armazém do entreposto: portas de carga alternadas no térreo; sobre a porta, as do sótão (no lugar da janela)
+		if level == 0 and index % 2 == spec.door_index % 2:
+			return &"arch"
+		if level >= 1 and index == spec.door_index:
+			return &"plain"
 	if spec.sparse_windows and (index + level + face) % 2 == 1:
 		return &"plain"
 	return &"window"
@@ -502,9 +593,12 @@ static func _build(spec: Spec) -> ArrayMesh:
 		var roof := SurfaceTool.new()
 		roof.begin(Mesh.PRIMITIVE_TRIANGLES)
 		_roof(roof, hall)
+		_lucarnes(roof, hall)
 		extra.append_from(roof.commit(), 0, offset)
 	else:
 		_roof(extra, spec)
+		_lucarnes(extra, spec)
+	_glazing(extra, hall, offset)
 	_silhouette(tool, extra, spec)
 	_trim(tool, extra, spec)
 	if spec.door == Door.GATE:
@@ -559,6 +653,9 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 				_hoist(tool, extra, spec)
 			else:
 				_crane(tool, extra, spec)
+				if spec.storehouse:
+					# o armazém do entreposto: portas do sótão e o guincho sob a empena da frente
+					_hoist(tool, extra, spec)
 		BuildingDef.Silhouette.CLERESTORY:
 			# lanternim: uma faixa de parede mais alta ao longo da cumeeira, com o seu telhado
 			var along_x := spec.roof != Roof.GABLE_Z
@@ -1218,7 +1315,7 @@ static func rotor(spec: Spec) -> Rotor:
 static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 	var size := spec.size_m()
 	var top := spec.height_m
-	var o := ROOF_OVERHANG_M
+	var o := spec.overhang_m
 	match spec.roof:
 		Roof.FLAT:
 			_box(tool, Vector3(0.0, top + spec.roof_m * 0.5, 0.0), Vector3(size.x + 0.2, spec.roof_m, size.y + 0.2), UV_ROOF)
@@ -1269,6 +1366,134 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				var tip := _uv_point(along_x, end * (hu + o), ridge, 0.0)
 				_quad(tool, side_a, side_a + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
 				_quad(tool, side_b, side_b + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
+
+
+## Lucarnas (Fase 39) na água da frente do telhado de duas águas (na de cumeeira em z a frente é a empena: vão na água
+## de +x). Caixa de parede enterrada no telhado, com a frente de pé a LUCARNE_AT da meia largura da água, telhadinho de
+## duas águas, empena, vidro e caixilho.
+static func lucarne_fits(roof_m: float) -> bool:
+	return roof_m * LUCARNE_AT >= LUCARNE_H + LUCARNE_PEAK_M + 0.1
+
+
+static func _lucarnes(tool: SurfaceTool, spec: Spec) -> void:
+	if spec.lucarnes <= 0 or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z] or not lucarne_fits(spec.roof_m):
+		return
+	var size := spec.size_m()
+	var along_x := spec.roof == Roof.GABLE_X
+	var hu := (size.x if along_x else size.y) * 0.5
+	var hv := (size.y if along_x else size.x) * 0.5
+	var ridge := spec.height_m + spec.roof_m
+	var side := -1.0 if along_x else 1.0
+	var slope := spec.roof_m / hv
+	var front := hv * LUCARNE_AT
+	var base := ridge - slope * front
+	var crown := base + LUCARNE_H
+	var back := (ridge - crown) / slope
+	var half := LUCARNE_W * 0.5
+	var out := _uv_point(along_x, 0.0, 0.0, side)
+	for k: int in spec.lucarnes:
+		var u := ((k + 0.5) / spec.lucarnes * 2.0 - 1.0) * hu * 0.5
+		var bottom := base - 0.4
+		_box(tool, _uv_point(along_x, u, (crown + bottom) * 0.5, side * (front + back) * 0.5),
+				_uv_point(along_x, LUCARNE_W, crown - bottom, front - back).abs(), UV_WALL)
+		var peak := crown + LUCARNE_PEAK_M
+		var eave := half + 0.08
+		for s: float in [-1.0, 1.0]:
+			_quad(tool, _uv_point(along_x, u + s * eave, crown - 0.03, side * (front + 0.1)),
+					_uv_point(along_x, u + s * eave, crown - 0.03, side * back),
+					_uv_point(along_x, u, peak, side * back), _uv_point(along_x, u, peak, side * (front + 0.1)),
+					_uv_point(along_x, s, 1.0, 0.0), UV_ROOF)
+		_triangle(tool, _uv_point(along_x, u - half, crown, side * front), _uv_point(along_x, u + half, crown, side * front),
+				_uv_point(along_x, u, peak - 0.04, side * front), out, UV_WALL)
+		var glass_v := side * (front + 0.01)
+		var low := base + 0.1
+		var high := low + LUCARNE_H * 0.62
+		var glass_u := LUCARNE_W * 0.28
+		_quad(tool, _uv_point(along_x, u - glass_u, low, glass_v), _uv_point(along_x, u + glass_u, low, glass_v),
+				_uv_point(along_x, u + glass_u, high, glass_v), _uv_point(along_x, u - glass_u, high, glass_v), out, UV_GLASS)
+		var bar_v := side * (front + 0.02)
+		_quad(tool, _uv_point(along_x, u - MULLION_M * 0.5, low, bar_v), _uv_point(along_x, u + MULLION_M * 0.5, low, bar_v),
+				_uv_point(along_x, u + MULLION_M * 0.5, high, bar_v), _uv_point(along_x, u - MULLION_M * 0.5, high, bar_v), out,
+				UV_TIMBER)
+
+
+## Vidro e caixilho em cada janela (Fase 39): o kit só tem o vão, que de dia lia como buraco preto. O vidro fica na
+## espessura da parede e a cruz de madeira logo à frente dele.
+static func _glazing(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
+	var half_w := WINDOW_WIDTH * 0.52
+	var half_h := WINDOW_HEIGHT * 0.52
+	var middle := WINDOW_CENTER
+	for face: int in 4:
+		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
+		for level: int in spec.floors():
+			for index: int in count:
+				if slot(spec, face, index, level) != &"window":
+					continue
+				var place := offset * _cell_transform(spec, face, index, level)
+				var out := place.basis.x.normalized()
+				_quad(tool, place * Vector3(GLASS_X, middle - half_h, -half_w), place * Vector3(GLASS_X, middle - half_h, half_w),
+						place * Vector3(GLASS_X, middle + half_h, half_w), place * Vector3(GLASS_X, middle + half_h, -half_w), out,
+						UV_GLASS)
+				var bar_z := MULLION_M * 0.5 / place.basis.z.length()
+				var bar_y := MULLION_M * 0.5 / place.basis.y.length()
+				_quad(tool, place * Vector3(MULLION_X, middle - half_h, -bar_z), place * Vector3(MULLION_X, middle - half_h, bar_z),
+						place * Vector3(MULLION_X, middle + half_h, bar_z), place * Vector3(MULLION_X, middle + half_h, -bar_z), out,
+						UV_TIMBER)
+				_quad(tool, place * Vector3(MULLION_X, middle - bar_y, -half_w), place * Vector3(MULLION_X, middle - bar_y, half_w),
+						place * Vector3(MULLION_X, middle + bar_y, half_w), place * Vector3(MULLION_X, middle + bar_y, -half_w), out,
+						UV_TIMBER)
+
+
+## Plinto e degraus do prédio no barranco (Fase 39), no referencial canônico: a pedra desce do piso até "depth" abaixo
+## dele, um pouco maior que o alicerce do kit (cobre-o); o pátio da frente fica no nível do piso, como um terraço. Se a
+## porta fica "drop" acima do chão da frente, os degraus descem da soleira até ele. Malha em cache pela forma e pelas
+## medidas arredondadas a 5 cm.
+static var _plinths: Dictionary[String, ArrayMesh] = {}
+
+
+static func plinth(spec: Spec, depth: float, drop: float) -> ArrayMesh:
+	var depth_q := snappedf(maxf(depth, FOUNDATION_DOWN_M), 0.05)
+	var steps := steps_for(drop)
+	var drop_q := snappedf(drop, 0.05) if steps > 0 else 0.0
+	var key := "%s|%.2f|%.2f" % [spec.key(), depth_q, drop_q]
+	if _plinths.has(key):
+		return _plinths[key]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var size := spec.size_m() + Vector2(PLINTH_OUT_M, PLINTH_OUT_M) * 2.0
+	var hall := spec.hall()
+	var hall_size := hall.size_m() + Vector2(PLINTH_OUT_M, PLINTH_OUT_M) * 2.0
+	var hall_center := spec.hall_offset()
+	var lip := FOUNDATION_UP_M + 0.01
+	_box(tool, hall_center + Vector3(0.0, (lip - depth_q) * 0.5, 0.0), Vector3(hall_size.x, lip + depth_q, hall_size.y), UV_STONE)
+	var front := -size.y * 0.5
+	if spec.court_rows > 0:
+		# o pátio é terraço de pedra no nível do piso, com o muro de arrimo em volta
+		var court_back := hall_center.z - hall_size.y * 0.5
+		_box(tool, Vector3(0.0, -depth_q * 0.5, (front + court_back) * 0.5), Vector3(size.x, depth_q, court_back - front), UV_STONE)
+	if steps > 0:
+		var door_x := door_position(spec).x
+		var face := front if spec.court_rows > 0 else hall_center.z - hall_size.y * 0.5
+		var top := lip if spec.court_rows == 0 else 0.0
+		var rise := (drop_q + top) / (steps + 1)
+		var width := minf(spec.size_m().x / spec.cells.x * 0.8, 1.4)
+		for k: int in range(1, steps + 1):
+			var step_top := top - rise * k
+			var bottom := -drop_q - 0.25
+			_box(tool, Vector3(door_x, (step_top + bottom) * 0.5, face - STEP_TREAD_M * (k - 0.5)),
+					Vector3(width, step_top - bottom, STEP_TREAD_M), UV_STONE)
+	tool.index()
+	tool.generate_tangents()
+	var mesh := tool.commit()
+	_plinths[key] = mesh
+	return mesh
+
+
+## Quantos degraus pede a porta "drop" acima do chão da frente (até MAX_STEPS; o resto o chão engole).
+static func steps_for(drop: float) -> int:
+	if drop + FOUNDATION_UP_M < STEP_RISE_M * 1.6:
+		return 0
+	return clampi(ceili((drop + FOUNDATION_UP_M) / STEP_RISE_M) - 1, 1, MAX_STEPS)
 
 
 static func _uv_point(along_x: bool, u: float, y: float, v: float) -> Vector3:

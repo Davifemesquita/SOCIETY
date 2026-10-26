@@ -481,5 +481,5 @@ func test_the_docked_warehouse_hoists_from_a_beam_over_the_loading_door() -> voi
 		assert_str(String(BuildingKit.slot(spec.hall(), 0, spec.door_index, level))).is_equal("plain")
 	# sem o guindaste de coluna: do lado do armazém só passa o beiral do telhado
 	var box := BuildingKit.mesh(spec).get_aabb()
-	assert_float(box.end.x).is_less_equal(size.x * 0.5 + BuildingKit.ROOF_OVERHANG_M + 0.01)
+	assert_float(box.end.x).is_less_equal(size.x * 0.5 + spec.overhang_m + 0.01)
 	assert_float(box.position.z).is_less_equal(tip.z - BuildingKit.CRANE_CRATE_M * 0.5 + 0.01)

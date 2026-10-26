@@ -116,7 +116,11 @@ func _show_model() -> bool:
 	var inside := area.intersection(Rect2i(Vector2i.ZERO, grid.size))
 	var center := grid.rect_world(area)
 	_model.mesh = BuildingKit.mesh(spec)
-	_model.position = Vector3(center.x, grid.area_height(inside) if inside.has_area() else 0.0, center.z)
+	# como o prédio construído (Fase 39): o piso no canto mais alto do lote
+	var base := 0.0
+	if inside.has_area():
+		base = grid.area_height(inside) + BuildingKit.seat_lift(grid, inside)
+	_model.position = Vector3(center.x, base, center.z)
 	_model.rotation.y = -PI * 0.5 * posmod(_tool.rotation, 4)
 	_model.visible = true
 	return true

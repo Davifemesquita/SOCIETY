@@ -30,13 +30,49 @@ instance uniform vec4 roof_tint : source_color = vec4(0.5, 0.3, 0.25, 1.0);
 instance uniform float roof_layer = 0.0;
 instance uniform float base_height = 0.0;
 instance uniform float soot = 0.0;
+// Fase 39: caixilho e madeiramento pintados de claro (a paleta "invertida") e a sombra de contato de cada fachada do
+// referencial canônico (frente −Z, +X, fundo +Z, −X), de 0 a 1 pela parte da divisa ocupada por prédio vizinho
+instance uniform float trim_paint = 0.0;
+instance uniform vec4 side_shade = vec4(0.0);
+
+// Fase 39: vidro (célula (0, 1), que o kit não usa): escuro, liso, com o céu refletido no ângulo raso
+uniform vec4 glass_color : source_color = vec4(0.17, 0.21, 0.25, 1.0);
+uniform vec4 glass_sky : source_color = vec4(0.62, 0.72, 0.82, 1.0);
+uniform vec4 trim_paint_color : source_color = vec4(0.86, 0.83, 0.74, 1.0);
+uniform float contact_height = 2.4;
+uniform float contact_strength = 0.4;
+// musgo e limo na faixa de baixo das paredes e do alicerce, em manchas pelo ruído
+uniform vec4 moss_color : source_color = vec4(0.27, 0.31, 0.16, 1.0);
+uniform float moss_height = 0.9;
+uniform float moss_strength = 0.45;
 
 varying vec3 world_position;
 varying vec3 world_normal;
+varying float contact;
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	// a fachada pela normal no referencial do prédio
+	contact = 0.0;
+	if (abs(NORMAL.y) < 0.5) {
+		if (abs(NORMAL.z) >= abs(NORMAL.x)) {
+			contact = NORMAL.z < 0.0 ? side_shade.x : side_shade.z;
+		} else {
+			contact = NORMAL.x > 0.0 ? side_shade.y : side_shade.w;
+		}
+	}
+}
+
+float moss_noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = fract(sin(dot(i, vec2(127.1, 311.7))) * 43758.5453);
+	float b = fract(sin(dot(i + vec2(1.0, 0.0), vec2(127.1, 311.7))) * 43758.5453);
+	float c = fract(sin(dot(i + vec2(0.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
+	float d = fract(sin(dot(i + vec2(1.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
 vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, float index) {
@@ -57,8 +93,11 @@ void fragment() {
 	// madeiramento e caixilhos (célula (4, 3)): a paleta do kit é viva demais; vira madeira escura
 	// puxada para o tom do prédio. As outras cores do kit (vidro, porta) só perdem um pouco da cor.
 	float kit_luma = dot(color, vec3(0.299, 0.587, 0.114));
-	if (cell == ivec2(4, 3)) {
-		color = kit_luma / 0.55 * mix(trim_wood.rgb, tint.rgb * 0.6, 0.35);
+	bool glass = cell == ivec2(0, 1);
+	if (glass) {
+		color = glass_color.rgb;
+	} else if (cell == ivec2(4, 3)) {
+		color = kit_luma / 0.55 * mix(mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), trim_paint_color.rgb, trim_paint);
 	} else if (cell == ivec2(3, 3)) {
 		// um sorteio por bolinha de ~12 cm, pela posição no mundo: folha mais clara ou mais escura, ou flor
 		vec3 blob = floor(world_position * 8.0);
@@ -86,9 +125,24 @@ void fragment() {
 				: triplanar(roof_normals, world_position, weights, roof_meters, roof_layer).rgb;
 	}
 	float above = world_position.y - base_height;
-	color *= 1.0 - (1.0 - smoothstep(0.0, grime_height, above)) * grime_strength;
-	color *= 1.0 - soot * 0.55;
-	float exposure = clamp(world_normal.y * 0.5 + 0.6, 0.0, 1.0);
-	ALBEDO = wet_albedo(color, exposure);
-	ROUGHNESS = wet_roughness(roughness, exposure);
+	if (glass) {
+		// de dia o vão não é buraco preto: no ângulo raso o vidro mostra o céu
+		float facing = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
+		float fresnel = 0.3 + 0.7 * pow(1.0 - facing, 3.0);
+		ALBEDO = mix(color, glass_sky.rgb * 0.75, fresnel);
+		ROUGHNESS = 0.06;
+		SPECULAR = 0.9;
+	} else {
+		color *= 1.0 - (1.0 - smoothstep(0.0, grime_height, above)) * grime_strength;
+		// musgo em manchas na faixa de baixo das paredes viradas para o lado (não no telhado)
+		float moss = (1.0 - smoothstep(0.0, moss_height, above)) * smoothstep(0.45, 0.75,
+				moss_noise(world_position.xz * 1.7 + world_position.y * 0.9)) * (1.0 - abs(world_normal.y));
+		color = mix(color, moss_color.rgb * (0.7 + 0.6 * kit_luma), moss * moss_strength);
+		// sombra de contato: a fachada que dá para o prédio vizinho escurece de baixo para cima
+		color *= 1.0 - contact * contact_strength * (1.0 - smoothstep(0.0, contact_height, above));
+		color *= 1.0 - soot * 0.55;
+		float exposure = clamp(world_normal.y * 0.5 + 0.6, 0.0, 1.0);
+		ALBEDO = wet_albedo(color, exposure);
+		ROUGHNESS = wet_roughness(roughness, exposure);
+	}
 }

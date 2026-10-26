@@ -189,7 +189,9 @@ func test_buildings_share_the_pbr_material_by_tier_and_type() -> void:
 	var bodies := view.find_children("*", "MeshInstance3D", true, false)
 	# desde os prédios de modelo, as paredes da casa estão no material do kit (mesma camada)
 	var shared := BuildingMaterials.kit() if BuildingKit.available() else BuildingMaterials.walls()
-	var walls := bodies.filter(func(node: MeshInstance3D) -> bool: return node.material_override == shared)
+	# (a camada dos plintos, Fase 39, usa o mesmo material com a pedra)
+	var walls := bodies.filter(func(node: MeshInstance3D) -> bool: return node.material_override == shared \
+			and node.name != &"Plinths")
 	assert_bool(walls.is_empty()).is_false()
 	var body: MeshInstance3D = walls[0]
 	assert_float(body.get_instance_shader_parameter(&"layer")).is_equal(float(BuildingMaterials.Wall.WOOD))
