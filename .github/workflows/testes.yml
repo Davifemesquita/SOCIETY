@@ -47,7 +47,13 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/godot
       - name: Rodar a suíte da pasta
-        run: tools/godot.sh testes res://tests/${{ matrix.pasta }}
+        # os testes que falharem viram anotações do run (a API pública mostra sem login; o log do job pede login)
+        run: |
+          set +e
+          tools/godot.sh testes res://tests/${{ matrix.pasta }} 2>&1 | tee saida.txt
+          status=${PIPESTATUS[0]}
+          sed 's/\x1b\[[0-9;]*m//g' saida.txt | grep -E '> test_.* FAILED|Expecting|but was' | head -40 | while read -r linha; do echo "::error::$linha"; done
+          exit $status
       - name: Guardar o relatório
         if: failure()
         uses: actions/upload-artifact@v5
