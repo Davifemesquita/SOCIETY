@@ -90,6 +90,16 @@ var _parapets := MultiMeshInstance3D.new()
 var _arches := MultiMeshInstance3D.new()
 var _piers := MultiMeshInstance3D.new()
 var _painted: int = 0
+## Fase 46: o calçamento em grade dual, uma malha por ilha; a geometria de cada canto e a cópia das estradas de quando
+## ela foi feita (para refazer só os cantos atingidos).
+var _dual_nodes: Dictionary[int, MeshInstance3D] = {}
+var _dual_parts: Dictionary[int, Dictionary] = {}
+var _dual_roads: Dictionary[int, PackedByteArray] = {}
+var _dual_material: ShaderMaterial
+## Cantos refeitos na última atualização (testes).
+var dual_corners_rebuilt: int = 0
+## Lado do trecho da malha do calçamento, em cantos.
+const DUAL_CHUNK := 32
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -168,8 +178,14 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_stones.material_override = rock
 	_stones.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_stones)
+	_dual_material = ShaderMaterial.new()
+	_dual_material.shader = load("res://shaders/paved_dual.gdshader") as Shader
+	_dual_material.set_shader_parameter(&"albedo_rough", material.get_shader_parameter(&"albedo_rough"))
+	_dual_material.set_shader_parameter(&"normals", material.get_shader_parameter(&"normals"))
 	EventBus.roads_changed.connect(func(_island_id: int) -> void: rebuild())
-	EventBus.world_replaced.connect(rebuild)
+	EventBus.world_replaced.connect(func() -> void:
+		_dual_roads.clear()
+		rebuild())
 	rebuild()
 
 
@@ -186,6 +202,9 @@ func rebuild() -> void:
 	var arches: Array[Transform3D] = []
 	var piers: Array[Transform3D] = []
 	_painted = 0
+	dual_corners_rebuilt = 0
+	for index: int in _simulation.world.islands.size():
+		_rebuild_dual(index)
 	for grid: IslandGrid in _simulation.world.islands:
 		# Fase 38: na ilha com relevo a terra é pintada no terreno (RoadMask); ficam o paralelepípedo e as pontes
 		var painted := RoadMask.paints(grid, _simulation.config)
@@ -196,8 +215,10 @@ func rebuild() -> void:
 			var planks := bridge and not paved
 			var tile := tile_transform(grid, cell)
 			var links := diagonal_links(grid, cell)
+			# Fase 46: o paralelepípedo fora da ponte é da grade dual (PavedDual), com o meio-fio dentro das peças
+			var dual := paved and not bridge
 			# no meio da escada diagonal só as faixas: o ladrilho quadrado deixava a borda serrilhada
-			if not in_diagonal_run(grid, cell, links):
+			if not in_diagonal_run(grid, cell, links) and not dual:
 				var open := 0 if bridge else open_edges(grid, cell, links)
 				if painted and not paved and not bridge:
 					_painted += 1
@@ -214,16 +235,14 @@ func rebuild() -> void:
 						var basis := Basis(Vector3.UP, float(noise / 1000 % 628) / 100.0).scaled(
 								Vector3(size, size * (0.5 + float(noise / 100000 % 10) / 20.0), size * 0.8))
 						stones.append(Transform3D(basis, spot - Vector3(0.0, size * STONE_SINK * 0.5, 0.0)))
-			if paved and not bridge:
-				for side: Vector2i in SIDES:
-					if not grid.has_road(cell + side) and not _cut_by(side, links):
-						curbs.append(tile * curb_place(side, _cell_size))
-			# a faixa da diagonal: cada par uma vez, olhando só para +x
+			# a faixa da diagonal: cada par uma vez, olhando só para +x (a de paralelepípedo é a sela da grade dual)
 			for link: Vector2i in links:
 				if link.x > 0:
 					var other := cell + link
 					var both_paved := paved and grid.is_paved(other)
 					var both_bridge := bridge and grid.ground_at(other) == IslandGrid.Ground.RIVER and not both_paved
+					if both_paved and not bridge and grid.ground_at(other) != IslandGrid.Ground.RIVER:
+						continue
 					if painted and not both_paved and not both_bridge:
 						continue
 					tiles.append(diagonal_transform(grid, cell, link))
@@ -265,6 +284,93 @@ func rebuild() -> void:
 
 func stone_count() -> int:
 	return _stones.multimesh.instance_count
+
+
+## Fase 46: o calçamento da ilha em grade dual. Na primeira vez (ou mundo novo) todos os cantos; depois só os cantos em
+## volta das células cujas estradas mudaram (com uma célula de folga: a sela e a escada olham as vizinhas).
+func _rebuild_dual(index: int) -> void:
+	var grid := _simulation.world.island(index)
+	var roads := grid.roads
+	var parts: Dictionary = _dual_parts.get(index, {})
+	var corners: Dictionary[Vector2i, bool] = {}
+	if not _dual_roads.has(index) or _dual_roads[index].size() != roads.size():
+		parts = {}
+		# tudo de novo (mundo novo): os trechos velhos saem
+		if _dual_nodes.has(index):
+			for old: Node in _dual_nodes[index].get_children():
+				old.queue_free()
+		for cell: Vector2i in grid.road_cells():
+			if grid.is_paved(cell):
+				for dy: int in 2:
+					for dx: int in 2:
+						corners[cell + Vector2i(dx, dy)] = true
+	else:
+		var before := _dual_roads[index]
+		var width := grid.size.x
+		for y: int in grid.size.y:
+			var row := y * width
+			if roads.slice(row, row + width) == before.slice(row, row + width):
+				continue
+			for x: int in width:
+				if roads[row + x] != before[row + x]:
+					for dy: int in range(-1, 3):
+						for dx: int in range(-1, 3):
+							corners[Vector2i(x + dx, y + dy)] = true
+	_dual_roads[index] = roads.duplicate()
+	# a geometria fica por trecho de DUAL_CHUNK × DUAL_CHUNK cantos: uma rua nova refaz só a malha do trecho dela
+	var touched: Dictionary[Vector2i, bool] = {}
+	for corner: Vector2i in corners:
+		var chunk := Vector2i(floori(corner.x / float(DUAL_CHUNK)), floori(corner.y / float(DUAL_CHUNK)))
+		if not parts.has(chunk):
+			parts[chunk] = {}
+		var chunk_parts: Dictionary = parts[chunk]
+		var part := PavedDual.corner_geometry(grid, corner)
+		var vertices: PackedVector3Array = part[0]
+		if vertices.is_empty():
+			chunk_parts.erase(corner)
+		else:
+			chunk_parts[corner] = part
+		touched[chunk] = true
+		dual_corners_rebuilt += 1
+	_dual_parts[index] = parts
+	if not _dual_nodes.has(index):
+		var holder := MeshInstance3D.new()
+		holder.name = "Paved_%d" % index
+		holder.material_override = _dual_material
+		add_child(holder)
+		_dual_nodes[index] = holder
+	var island_node := _dual_nodes[index]
+	for chunk: Vector2i in touched:
+		var name_text := "Chunk_%d_%d" % [chunk.x, chunk.y]
+		var node := island_node.get_node_or_null(name_text) as MeshInstance3D
+		if node == null:
+			node = MeshInstance3D.new()
+			node.name = name_text
+			node.material_override = _dual_material
+			island_node.add_child(node)
+		var chunk_parts: Dictionary = parts[chunk]
+		node.mesh = PavedDual.build_mesh(chunk_parts)
+
+
+## A malha do calçamento dual de uma ilha, juntando os trechos (testes).
+func dual_mesh(island_id: int) -> ArrayMesh:
+	if not _dual_nodes.has(island_id):
+		return null
+	var all := {}
+	var parts: Dictionary = _dual_parts.get(island_id, {})
+	for chunk: Vector2i in parts:
+		var chunk_parts: Dictionary = parts[chunk]
+		all.merge(chunk_parts)
+	return PavedDual.build_mesh(all)
+
+
+func dual_corner_count(island_id: int) -> int:
+	var total := 0
+	var parts: Dictionary = _dual_parts.get(island_id, {})
+	for chunk: Vector2i in parts:
+		var chunk_parts: Dictionary = parts[chunk]
+		total += chunk_parts.size()
+	return total
 
 
 ## Células de terra pintadas no terreno (Fase 38), que não levam ladrilho.

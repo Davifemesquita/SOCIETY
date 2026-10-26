@@ -217,6 +217,7 @@ func _run() -> void:
 		levels.assign(range(config.graphics_presets.size()))
 	for each: int in levels:
 		await _day_cycle(game, config, each)
+	await _paved_city(game, config)
 	_write()
 	if _from_game:
 		_show_results()
@@ -250,6 +251,36 @@ func _crowd_out(game: GameScreen, config: GameConfig) -> void:
 		crowd.update(1.0 / 60.0, 12.0)
 		view.apply()
 	_report("multidão na CPU depois de sair (rotina + instâncias)", "%.2f ms por quadro" % [(Time.get_ticks_usec() - started) / 1000.0 / 300])
+
+
+## Fase 46: as ruas da cidade calçadas de uma vez (por último, sem mexer nas medidas de antes): o tempo de refazer as
+## estradas, uma rua nova de paralelepípedo e o custo de desenho com o calçamento (a grade dual no lugar dos ladrilhos).
+func _paved_city(game: GameScreen, config: GameConfig) -> void:
+	var grid := game.simulation.world.island(Simulation.MAIN_ISLAND)
+	var cells := grid.road_cells()
+	for cell: Vector2i in cells:
+		grid.set_road(cell, IslandGrid.Road.PAVED)
+	var started := Time.get_ticks_usec()
+	EventBus.roads_changed.emit(Simulation.MAIN_ISLAND)
+	var all_ms := (Time.get_ticks_usec() - started) / 1000.0
+	grid.set_road(Vector2i(200, 197), IslandGrid.Road.PAVED)
+	started = Time.get_ticks_usec()
+	EventBus.roads_changed.emit(Simulation.MAIN_ISLAND)
+	var one_ms := (Time.get_ticks_usec() - started) / 1000.0
+	game.camera.rig.distance = config.camera_max_distance_m * 0.6
+	game.camera.rig.target_distance = game.camera.rig.distance
+	game.camera.apply()
+	for frame: int in 20:
+		await get_tree().process_frame
+	started = Time.get_ticks_usec()
+	for frame: int in FRAMES:
+		await get_tree().process_frame
+	var frame_ms := (Time.get_ticks_usec() - started) / 1000.0 / FRAMES
+	_report("calçar as ruas da cidade (todas / mais uma) e o quadro com tudo visível", "%d células: %.0f / %.0f ms; %.1f ms (%d objetos · %d draw calls · %d primitivas)" % [
+			cells.size(), all_ms, one_ms, frame_ms,
+			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+			RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME)])
 
 
 ## Um dia inteiro renderizado em DAY_SECONDS, com a partida rodando a 1x, no nível gráfico "level", pelo trajeto fixo

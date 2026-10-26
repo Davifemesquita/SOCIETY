@@ -1554,7 +1554,7 @@ Regras que já custaram investigação:
   abaixo de `road_half_width_m` mais o ruído de 1 e 4 m, misturada pela altura da grama; sulcos pela distância (somem
   depois de `road_rut_far_m`), capim pisado na beira, poças lisas e o chão batido das portas.
 - **RoadView**: na ilha com relevo (`RoadMask.paints`) a terra não leva ladrilho (`painted_count`); ficam o
-  paralelepípedo (até a Fase 46), as pontes, as touceiras e as pedras soltas (no chão). Na ilha plana tudo segue
+  paralelepípedo da ponte de pedra (o resto é da grade dual desde a Fase 46), as pontes, as touceiras e as pedras soltas (no chão). Na ilha plana tudo segue
   ladrilho. `GameConfig.road_paint` desligado volta o ladrilho (para comparar).
 
 ### Prédios assentados (Fase 39, nossa)
@@ -1685,6 +1685,23 @@ Regras que já custaram investigação:
   do `TerrainV2Params` muda o terreno dos saves v2.
 - **Capturas**: `tools/capture_phase45.tscn` (v1 e v2 lado a lado e as cartas).
 
+### Calçamento e esquinas (Fase 46, nossa)
+
+- **Plano** em `docs/plano_fase46.md`, começada em 26/10/2026. Grade dual (plano A); a escolha contra o grafo e as peças
+  esperam a aprovação do dono pelas capturas.
+- **`PavedDual`** (`presentation/paved_dual.gd`): máscara de 4 bits por canto (`mask_at`, bits em `AROUND`),
+  `case_of` → peça (`Piece`: vazio, canto de fora, borda, sela, canto de dentro, cheio) e giro; sela vira faixa só se
+  `RoadNetwork.linked_diagonal` liga as duas (`saddle_linked`); canto de fora de célula ligada na diagonal ao lado vira
+  chanfro (`in_side_diagonal`, `_chamfer`), senão arredonda (`ROUND`). Meio-fio e sarjeta dentro da peça;
+  `corner_geometry` devolve [vértices, cores, normais] no mundo; `build_mesh` só junta. Ponte de pedra conta como
+  calçada (`paved_for_dual`). Shader `shaders/paved_dual.gdshader` (a cor do vértice escolhe a pedra).
+- **RoadView**: o paralelepípedo fora da ponte saiu do MultiMesh (sem ladrilho, sem meio-fio, sem faixa diagonal);
+  `_rebuild_dual` refaz só os cantos em volta da diferença das estradas (folga de -1 a 2 células: o chanfro olha duas
+  adiante) em trechos de `DUAL_CHUNK` (`Paved_<ilha>/Chunk_x_y`); `dual_mesh`, `dual_corner_count`, `dual_corners_rebuilt`.
+- **Benchmark**: a linha "calçar as ruas da cidade" (no fim, sem mexer nas outras) mede calçar tudo, mais uma rua e o
+  quadro com o calçamento.
+- **Capturas**: `tools/capture_phase46.tscn` (roda igual numa cópia anterior, para o antes e depois).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1741,6 +1758,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 43 — Interface enxuta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: contraste WCAG provado em teste (estados e foco corrigidos), Playfair só nos títulos grandes e números tabulares, escala até 200% com aviso abaixo de 18 px, fonte legível e reduzir movimento, avisos com contador, categorias silenciáveis, pausa no alerta e duração, painel dos prédios do tamanho do conteúdo, sons de interface em toda tela, créditos dos ícones por autor; DPITexture e a barra de cima reorganizada ficaram de fora; falta o teste com uma pessoa de fora e o dono aprovar as fontes; plano em `docs/plano_fase43.md` |
 | 44 — Primeira tela (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: fundo do menu sem a grade, com a carta gravada de um arquipélago numa thread e deriva lenta; botões entrando; prévia do jogo novo com as mesmas alturas da partida, numa thread cancelável (~1,7 s); som de vitória e derrota; o diorama 3D e a pré-carga ficaram de fora; falta o dono aprovar a gravura e o som; plano em `docs/plano_fase44.md` |
 | 45 — Ilhas novas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
+| 46 — Calçamento e esquinas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
 
 Pendências já vistas para fases futuras:
 

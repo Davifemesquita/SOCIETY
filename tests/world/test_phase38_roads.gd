@@ -176,8 +176,9 @@ func test_the_road_view_drops_dirt_tiles_where_the_terrain_paints_them() -> void
 	var view: RoadView = auto_free(RoadView.new())
 	add_child(view)
 	view.setup(sim, sim.config.cell_size_m)
-	# só o paralelepípedo fica em ladrilho; as pedras soltas descem para o chão
-	assert_int(view.tile_count()).is_equal(8)
+	# a terra não tem ladrilho; o paralelepípedo, desde a Fase 46, é da grade dual; as pedras soltas descem para o chão
+	assert_int(view.tile_count()).is_equal(0)
+	assert_int(view.dual_corner_count(0)).is_equal(9 * 2)
 	assert_int(view.painted_count()).is_equal(8)
 	var grid := _world.island(0)
 	for spot: Vector3 in RoadView.stone_spots(grid, Vector2i(4, 10), RoadView.Ruts.ALONG_X, false):
@@ -185,7 +186,7 @@ func test_the_road_view_drops_dirt_tiles_where_the_terrain_paints_them() -> void
 	# desligada a pintura, a terra volta ao ladrilho
 	sim.config.road_paint = false
 	view.rebuild()
-	assert_int(view.tile_count()).is_equal(16)
+	assert_int(view.tile_count()).is_equal(8)
 	assert_int(view.painted_count()).is_equal(0)
 	remove_child(view)
 

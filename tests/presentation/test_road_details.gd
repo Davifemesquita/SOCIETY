@@ -26,8 +26,11 @@ func test_paved_streets_get_curbs_on_their_open_sides() -> void:
 	for cell: Vector2i in RoadPath.l_path(Vector2i(0, 20), Vector2i(9, 20)):
 		grid.set_road(cell, IslandGrid.Road.PAVED)
 	view.rebuild()
-	# dez células retas: dois lados cada, mais as duas pontas
-	assert_int(view.curb_count()).is_equal(10 * 2 + 2)
+	# Fase 46: o paralelepípedo é da grade dual — o meio-fio vai dentro das peças, não no MultiMesh; dez células retas
+	# têm os 11 × 2 cantos com peça
+	assert_int(view.curb_count()).is_equal(0)
+	assert_int(view.dual_corner_count(SimFixture.ISLAND)).is_equal(11 * 2)
+	assert_object(view.dual_mesh(SimFixture.ISLAND)).is_not_null()
 	# o meio-fio fica na borda da célula, dentro dela
 	var place := RoadView.curb_place(Vector2i(0, 1), _sim.config.cell_size_m)
 	assert_float(place.origin.z).is_equal_approx(_sim.config.cell_size_m * 0.5 - RoadView.CURB_WIDTH_M * 0.5, 0.001)
@@ -152,8 +155,9 @@ func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> v
 	for cell: Vector2i in RoadPath.diagonal_path(Vector2i(10, 10), Vector2i(14, 14)):
 		grid.set_road(cell, IslandGrid.Road.PAVED)
 	var view := _view()
-	# as duas pontas e as quatro faixas: as três células do meio da escada só têm as faixas
-	assert_int(view.tile_count()).is_equal(2 + 4)
+	# Fase 46: o paralelepípedo (pontas e faixas) é da grade dual; a sela liga as células da diagonal
+	assert_int(view.tile_count()).is_equal(0)
+	assert_object(view.dual_mesh(SimFixture.ISLAND)).is_not_null()
 	assert_bool(RoadView.in_diagonal_run(grid, Vector2i(12, 12), RoadView.diagonal_links(grid, Vector2i(12, 12)))).is_true()
 	assert_bool(RoadView.in_diagonal_run(grid, Vector2i(10, 10), RoadView.diagonal_links(grid, Vector2i(10, 10)))).is_false()
 	assert_int(RoadView.ruts(grid, Vector2i(12, 12))).is_equal(RoadView.Ruts.DIAGONAL_DOWN)
@@ -164,8 +168,8 @@ func test_a_diagonal_road_gets_a_band_between_the_cells_and_diagonal_ruts() -> v
 	assert_float(band.origin.x).is_equal_approx((a.x + b.x) * 0.5, 0.001)
 	assert_float(band.basis.x.length()).is_equal_approx(sqrt(2.0), 0.001)
 	assert_float(absf(band.basis.x.normalized().dot(Vector3(1, 0, 1).normalized()))).is_equal_approx(1.0, 0.001)
-	# o meio-fio não corta a faixa: só os lados de fora das pontas
-	assert_int(view.curb_count()).is_equal(4)
+	# o meio-fio do MultiMesh não aparece mais no paralelepípedo
+	assert_int(view.curb_count()).is_equal(0)
 
 
 ## Fase 19: a terra tem a borda recortada nos lados sem estrada vizinha, com capim ao longo deles; o
@@ -189,14 +193,10 @@ func test_dirt_streets_open_their_sides_without_road_and_grow_grass_along_them()
 		grid.set_road(cell, IslandGrid.Road.PAVED)
 	view.rebuild()
 	assert_int(view.verge_count()).is_equal(0)
-	# no paralelepípedo os mesmos lados levam a sarjeta (bits no dado da instância) e o meio-fio é de pedra
-	var gutters := 0
-	for index: int in view.multimesh.instance_count:
-		var custom := view.multimesh.get_instance_custom_data(index)
-		assert_float(custom.r).is_equal(1.0)
-		if custom.b >= RoadView.OPEN_SHIFT:
-			gutters += 1
-	assert_int(gutters).is_equal(grid.road_cells().size())
+	# Fase 46: no paralelepípedo a sarjeta e o meio-fio são da grade dual (sem ladrilho); o meio-fio das pontes e o
+	# material de pedra seguem no MultiMesh
+	assert_int(view.tile_count()).is_equal(0)
+	assert_object(view.dual_mesh(SimFixture.ISLAND)).is_not_null()
 	var curb := (view.get_node("Curbs") as MultiMeshInstance3D).multimesh.mesh.surface_get_material(0) as ShaderMaterial
 	assert_str(curb.shader.resource_path).is_equal("res://shaders/curb.gdshader")
 
