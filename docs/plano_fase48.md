@@ -43,6 +43,10 @@ para o `main`. Nada apareceu na tela do dono (testes sem janela; benchmark e cap
   borda cancelava a centralização e mexia no zoom — os testes que simulam mouse desligam o pan pela borda, como o da
   Fase 5 já fazia.
 
+- **No Linux** (CI do ramo, lavapipe, e o Godot 4.8 de Linux no WSL): tudo verde depois de o teste do aviso esperar a
+  câmera chegar com teto de 15 s (em 3 s, no lavapipe da beta, ela ainda estava a 27 m; o CI agora publica o nome do
+  teste que falha como anotação).
+
 ## 4. Achados no ensaio, consertados no `main`
 
 - **Pan pela borda sem mouse**: na área de trabalho escondida a 4.8 lê o mouse num canto, e a câmera saía andando (o
