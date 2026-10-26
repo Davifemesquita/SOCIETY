@@ -179,9 +179,10 @@ func test_clicking_a_notice_selects_the_building_and_moves_the_camera() -> void:
 	assert_int(game.tool.selected_id).is_equal(post)
 	var record := sim.world.building(post)
 	var center := sim.world.island(0).rect_world(Footprint.rect(record.origin, sim.def_of(record).size, record.rotation))
-	# a centralização é suavizada pelo tempo (camera_center_seconds): espera ela chegar, com teto de 3 s de tempo real
+	# a centralização é suavizada pelo tempo (camera_center_seconds): espera ela chegar, com teto de 15 s de tempo real
+	# (o lavapipe do CI na 4.8-beta1 desenha poucos quadros por segundo; para assim que chega)
 	# (um número fixo de quadros passa em 0,2 s na GPU, em segundos no lavapipe do CI, e a 4.8-beta1 mede outro delta)
-	var deadline := Time.get_ticks_msec() + 3000
+	var deadline := Time.get_ticks_msec() + 15000
 	while Vector2(game.camera.rig.focus.x, game.camera.rig.focus.z).distance_to(Vector2(center.x, center.z)) >= 5.0 \
 			and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
