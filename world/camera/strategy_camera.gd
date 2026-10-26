@@ -160,9 +160,10 @@ func _on_mouse_motion(event: InputEventMouseMotion) -> void:
 
 
 ## Zoom no cursor: o ponto do chão sob o mouse continua sob o mouse depois do zoom. Desde a Fase 31 a distância vai
-## até o alvo em camera_zoom_seconds, mantendo o ponto quadro a quadro; direto com SceneFader.is_instant() (testes).
+## até o alvo em camera_zoom_seconds, mantendo o ponto quadro a quadro; direto sem tela (testes) e, desde a Fase 43, com
+## "reduzir movimento" (SceneFader.still()).
 func _zoom_at(screen_position: Vector2, steps: float) -> void:
-	if not SceneFader.is_instant():
+	if not SceneFader.still():
 		_zoom_anchor = screen_position
 		rig.zoom_toward(steps)
 		return

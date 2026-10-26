@@ -1633,6 +1633,28 @@ Regras que já custaram investigação:
 - **Benchmark**: a linha "gerar o arquipélago: em série / em threads (pior quadro durante)" (semente 1840: ~980 / ~430
   ms, pior quadro ~15 ms com 16 núcleos). Montar as vistas (~5 s) segue na thread principal: ficou de fora.
 
+### Interface enxuta (Fase 43, nossa)
+
+- **Plano** em `docs/plano_fase43.md`, começada em 26/10/2026. Nada na simulação nem no save.
+- **Contraste**: teste WCAG com a luminância relativa de verdade (`srgb_to_linear`; o `Color.get_luminance()` do Godot
+  não lineariza e dá números errados). Indicadores escurecidos (`UiPalette.STATUS_*`) e `UiPalette.FOCUS` no contorno do
+  foco. Mudou o `ThemeBuilder`, rode `tools/build_theme.gd` (o `society_theme.tres` é gravado).
+- **Fontes**: Playfair só em TitleLabel, BigLabel e PeriodTitle; HeaderLabel e MenuButtonLarge na Old Standard Bold;
+  `NumberLabel` (algarismos tabulares) no dinheiro e na população; variações PlainCard e MedallionButton.
+- **Settings** novos: `reduce_motion` (`SceneFader.still()` no lugar de `is_instant()` nas animações de interface e de
+  obra e no zoom suave), `readable_font` (troca o `default_font` do Theme do projeto por uma `SystemFont`),
+  `notice_duration` (`Settings.notice_seconds()`), `muted_notices` e `pause_on_alert`; escala até 200%
+  (`ui_scale_max`) com o aviso de texto pequeno (`OptionsDialog.small_text`). A escala aplicada é
+  `Settings.effective_ui_scale(largura)`: a HUD pede `UI_LOGICAL_WIDTH` (1.920) px lógicos, então 200% só vale a partir
+  de 4K (em 1080p fica em 100%, com o aviso `OptionsDialog.limited`); refeita quando a janela muda de tamanho.
+  Capturas: `tools/capture_phase43.tscn` (a HUD em 80/100/150/200% na resolução da janela).
+- **Avisos**: categoria pela chave (`NotificationFeed.category_of`, `CATEGORIES`), contador "×N" na repetição
+  (`count_of`), silenciar por categoria, pausa num alerta grave.
+- **Menu de construção**: os cartões num painel próprio (`BuildItems`) do tamanho deles (`ITEMS_PER_ROW`); a aba de
+  produção escolhida mostra o nome da classe.
+- **`UiSfx`** (autoload): o clique e o toque ao passar o mouse em todo botão de qualquer tela; a `SoundEffects` não liga
+  mais o clique dos botões.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1686,6 +1708,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 40 — Campos em colcha (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: terra lavrada com contorno ondulado igual dos dois lados da divisa, sem a caixa; fileiras em x ou z (vizinhos sempre diferentes) com cabeceira; tom por campo; sebe (muro de pedra na encosta) em volta de cada fazenda com porteira, nada nas tropicais; pasto sem caixa, com trilhas no terreno; GPU igual no bairro rural medido; falta o dono escolher sebe ou muro por região e o tratamento das tropicais; plano em `docs/plano_fase40.md` |
 | 41 — Mata e recheio (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copas fofas (normais da copa inteira, tufos, luz de trás) e histerese na troca de detalhe; recheio determinístico fora do save (arbustos, capim, flores, pedrinhas, barris, caixotes e lenha pela vizinhança), refeito só nos trechos atingidos; GPU de 11,1 para 11,4 ms no alto, jogo novo e carregar ~0,4 s a mais; folha recortada e impostor ficaram de fora; falta o dono aprovar a densidade e escolher a textura de folha; plano em `docs/plano_fase41.md` |
 | 42 — Quadro estável e carregamento real (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: o jogo novo gera uma ilha por thread (idêntico ao direto, teste em três sementes) com porcentagem, barra e dicas na cortina; geração de ~980 para ~430 ms com pior quadro de 15 ms; tick p95 1,5 ms, obra 18 ms, o 4× limitado por quadro; montar as vistas (~5 s) segue na thread principal (fica de fora, medido); falta o dono medir no PC e aprovar as metas de quadro; plano em `docs/plano_fase42.md` |
+| 43 — Interface enxuta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: contraste WCAG provado em teste (estados e foco corrigidos), Playfair só nos títulos grandes e números tabulares, escala até 200% com aviso abaixo de 18 px, fonte legível e reduzir movimento, avisos com contador, categorias silenciáveis, pausa no alerta e duração, painel dos prédios do tamanho do conteúdo, sons de interface em toda tela, créditos dos ícones por autor; DPITexture e a barra de cima reorganizada ficaram de fora; falta o teste com uma pessoa de fora e o dono aprovar as fontes; plano em `docs/plano_fase43.md` |
 
 Pendências já vistas para fases futuras:
 

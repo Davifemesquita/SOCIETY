@@ -84,8 +84,7 @@ func setup(config: GameConfig, simulation: Simulation, camera: StrategyCamera) -
 	EventBus.ship_fired.connect(func(_attacker: int, _target: int) -> void: play(&"cannon"))
 	EventBus.notice_shown.connect(_on_notice)
 	EventBus.world_replaced.connect(_clear_voices)
-	# todo botão que entra na árvore ganha o clique (a interface não precisa saber do áudio)
-	get_tree().node_added.connect(_on_node_added)
+	# o clique dos botões é do autoload UiSfx desde a Fase 43 (vale no menu também)
 	_rng.seed = 1840
 
 
@@ -122,16 +121,6 @@ func _on_notice(icon: String) -> void:
 	var key: StringName = NOTICE_SOUNDS.get(icon, &"")
 	if key != &"":
 		play(key)
-
-
-func _on_node_added(node: Node) -> void:
-	var button := node as BaseButton
-	if button != null and not button.pressed.is_connected(_on_button_pressed):
-		button.pressed.connect(_on_button_pressed)
-
-
-func _on_button_pressed() -> void:
-	play(&"click")
 
 
 func _process(delta: float) -> void:

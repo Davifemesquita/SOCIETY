@@ -6,7 +6,8 @@ extends RefCounted
 ## (gui/theme/custom). Mudou alguma coisa aqui, rode a ferramenta de novo (há teste que confere).
 ##
 ## Variações (theme_type_variation): TitleLabel, HeaderLabel, DimLabel, BigLabel, TopBar,
-## MenuPanel, NoticePanel, ToastPanel, IconButton, MenuButtonLarge, CardButton, NoticeButton.
+## MenuPanel, NoticePanel, ToastPanel, IconButton, MenuButtonLarge, CardButton, NoticeButton; desde a Fase 43,
+## PeriodTitle (título de época), NumberLabel (algarismos tabulares), PlainCard (cartela lisa) e MedallionButton.
 
 const FONT_REGULAR := "res://assets/fonts/OldStandard-Regular.ttf"
 const FONT_BOLD := "res://assets/fonts/OldStandard-Bold.ttf"
@@ -57,10 +58,25 @@ static func _labels(theme: Theme, bold: Font, italic: Font, title: Font) -> void
 	theme.set_font(&"font", &"TitleLabel", title)
 	theme.set_font_size(&"font_size", &"TitleLabel", 28)
 	theme.set_color(&"font_color", &"TitleLabel", UiPalette.WOOD)
+	# Fase 43: a Playfair fica só nos títulos grandes (TitleLabel, BigLabel, PeriodTitle); o cabeçalho é a Old Standard
+	# em negrito, mais firme no tamanho pequeno
 	_variation(theme, &"HeaderLabel", &"Label")
-	theme.set_font(&"font", &"HeaderLabel", title)
+	theme.set_font(&"font", &"HeaderLabel", bold)
 	theme.set_font_size(&"font_size", &"HeaderLabel", 21)
 	theme.set_color(&"font_color", &"HeaderLabel", UiPalette.WOOD)
+	_variation(theme, &"PeriodTitle", &"Label")
+	theme.set_font(&"font", &"PeriodTitle", title)
+	theme.set_font_size(&"font_size", &"PeriodTitle", 40)
+	theme.set_color(&"font_color", &"PeriodTitle", UiPalette.WOOD)
+	theme.set_color(&"font_shadow_color", &"PeriodTitle", Color(UiPalette.GOLD, 0.35))
+	theme.set_constant(&"shadow_offset_x", &"PeriodTitle", 2)
+	theme.set_constant(&"shadow_offset_y", &"PeriodTitle", 2)
+	# números alinhados em colunas (algarismos tabulares, quando a fonte tem; sem eles, a Old Standard de sempre)
+	var tabular := FontVariation.new()
+	tabular.base_font = theme.default_font
+	tabular.opentype_features = {TextServerManager.get_primary_interface().name_to_tag("tnum"): 1}
+	_variation(theme, &"NumberLabel", &"Label")
+	theme.set_font(&"font", &"NumberLabel", tabular)
 	_variation(theme, &"BigLabel", &"Label")
 	theme.set_font(&"font", &"BigLabel", title)
 	theme.set_font_size(&"font_size", &"BigLabel", 72)
@@ -116,6 +132,11 @@ static func _panels(theme: Theme) -> void:
 	var toast := _box(UiPalette.WOOD, UiPalette.GOLD, 2, 4)
 	toast.set_content_margin_all(10)
 	theme.set_stylebox(&"panel", &"ToastPanel", toast)
+	# Fase 43: a cartela lisa (sem o grão do papel) por baixo de números e listas, para o texto não brigar com o fundo
+	_variation(theme, &"PlainCard", &"PanelContainer")
+	var card := _box(Color("f7eed6"), UiPalette.PAPER_SHADE, 1, 3)
+	card.set_content_margin_all(6)
+	theme.set_stylebox(&"panel", &"PlainCard", card)
 	var line := StyleBoxLine.new()
 	line.color = UiPalette.PAPER_SHADE
 	line.thickness = 2
@@ -136,7 +157,7 @@ static func _buttons(theme: Theme, title: Font) -> void:
 	var disabled := _button_box(UiPalette.PAPER, UiPalette.PAPER_SHADE)
 	var focus := StyleBoxFlat.new()
 	focus.draw_center = false
-	focus.border_color = UiPalette.GOLD
+	focus.border_color = UiPalette.FOCUS
 	focus.set_border_width_all(2)
 	focus.set_corner_radius_all(3)
 	for type: StringName in [&"Button", &"OptionButton", &"MenuButton"]:
@@ -161,7 +182,7 @@ static func _buttons(theme: Theme, title: Font) -> void:
 		box.set_content_margin_all(4)
 		theme.set_stylebox(state, &"IconButton", box)
 	_variation(theme, &"MenuButtonLarge", &"Button")
-	theme.set_font(&"font", &"MenuButtonLarge", title)
+	theme.set_font(&"font", &"MenuButtonLarge", load(FONT_BOLD) as Font)
 	theme.set_font_size(&"font_size", &"MenuButtonLarge", 24)
 	theme.set_constant(&"icon_max_width", &"MenuButtonLarge", 36)
 	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
@@ -178,6 +199,15 @@ static func _buttons(theme: Theme, title: Font) -> void:
 		var card: StyleBoxFlat = theme.get_stylebox(state, &"Button").duplicate()
 		card.set_content_margin_all(4)
 		theme.set_stylebox(state, &"CardButton", card)
+	# Fase 43: o botão-medalhão (só o ícone, num disco de papel com o aro de madeira)
+	_variation(theme, &"MedallionButton", &"Button")
+	theme.set_constant(&"icon_max_width", &"MedallionButton", 32)
+	for state: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed", &"disabled"]:
+		var disc: StyleBoxFlat = theme.get_stylebox(state, &"Button").duplicate()
+		disc.set_corner_radius_all(22)
+		disc.set_border_width_all(2)
+		disc.set_content_margin_all(6)
+		theme.set_stylebox(state, &"MedallionButton", disc)
 	_variation(theme, &"NoticeButton", &"Button")
 	theme.set_constant(&"icon_max_width", &"NoticeButton", 34)
 	theme.set_font_size(&"font_size", &"NoticeButton", 16)
@@ -210,7 +240,7 @@ static func _buttons(theme: Theme, title: Font) -> void:
 static func _inputs(theme: Theme) -> void:
 	var field := _box(Color("fbf4e2"), UiPalette.INK_SOFT, 1, 2)
 	field.set_content_margin_all(5)
-	var field_focus := _box(Color("fbf4e2"), UiPalette.GOLD, 2, 2)
+	var field_focus := _box(Color("fbf4e2"), UiPalette.FOCUS, 2, 2)
 	field_focus.set_content_margin_all(5)
 	theme.set_stylebox(&"normal", &"LineEdit", field)
 	theme.set_stylebox(&"focus", &"LineEdit", field_focus)

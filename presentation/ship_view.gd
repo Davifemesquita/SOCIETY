@@ -241,7 +241,7 @@ func _on_ship_fired(attacker_id: int, target_id: int) -> void:
 	flash.position = attacker.position + toward + Vector3(0.0, HULL_HEIGHT_M + 2.5, 0.0)
 	add_child(flash)
 	_flashes[flash] = FLASH_SECONDS
-	if target != null and not SceneFader.is_instant():
+	if target != null and not SceneFader.still():
 		_fire_salvo(attacker, target, target_id)
 
 

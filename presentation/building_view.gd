@@ -614,7 +614,7 @@ static func _dust(size: Vector3, amount: int, lifetime: float) -> GPUParticles3D
 ## Obra (Fase 31): o prédio recém-construído nasce achatado, passa do ponto e assenta, com poeira na base.
 func _pop(building_id: int) -> void:
 	var root: Node3D = _nodes.get(building_id)
-	if root == null or SceneFader.is_instant():
+	if root == null or SceneFader.still():
 		return
 	var record := _simulation.world.building(building_id)
 	var area := _area(record)
@@ -635,7 +635,7 @@ func _pop(building_id: int) -> void:
 ## ícone. Com o teto cheio (ou nos testes), some na hora.
 func _sink(root: Node3D, height: float, footprint: Vector3) -> void:
 	_demolishing.assign(_demolishing.filter(func(node: Node3D) -> bool: return is_instance_valid(node)))
-	if SceneFader.is_instant() or _demolishing.size() >= MAX_DEMOLISHING:
+	if SceneFader.still() or _demolishing.size() >= MAX_DEMOLISHING:
 		root.queue_free()
 		return
 	for child: Node in root.get_children():

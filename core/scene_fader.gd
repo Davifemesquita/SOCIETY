@@ -70,6 +70,12 @@ func is_instant() -> bool:
 	return instant or DisplayServer.get_name() == "headless" or OS.get_environment("SOCIETY_SEM_TRANSICAO") == "1"
 
 
+## Fase 43: as animações de interface e de obra ficam paradas — sem tela (como is_instant) ou com "reduzir movimento"
+## nas opções (contadores, pulso de ganho, squash da obra, afundar da demolição, esmaecer dos avisos, zoom suave).
+func still() -> bool:
+	return is_instant() or Settings.reduce_motion
+
+
 ## Troca para a cena em "path", escurecendo antes e clareando depois; "message_key" é a chave do texto que aparece no
 ## escuro (vazio, nenhum).
 func change_to(path: String, message_key: String = "") -> void:

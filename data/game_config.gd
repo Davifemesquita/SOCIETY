@@ -434,7 +434,7 @@ static var _default: GameConfig
 
 @export_group("Interface")
 @export var ui_scale_min: float = 0.8
-@export var ui_scale_max: float = 1.5
+@export var ui_scale_max: float = 2.0
 ## Idiomas oferecidos, na ordem do menu. O primeiro é o padrão.
 @export var supported_locales: PackedStringArray = PackedStringArray(["pt_BR", "en"])
 ## Gráficos históricos das estatísticas: uma amostra a cada tantos segundos de jogo, guardando as

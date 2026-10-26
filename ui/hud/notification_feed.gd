@@ -9,6 +9,17 @@ signal go_to(notice: NoticeWatcher.Notice)
 
 ## Fase 30: quanto a notificação leva para aparecer e para esmaecer.
 const FADE_S := 0.25
+## Fase 43: as categorias do aviso (pelo começo da chave), que as opções silenciam uma a uma; "alert" com o estado ruim
+## pausa o jogo se a opção estiver ligada.
+const CATEGORIES: Array[String] = ["economy", "alert", "fleet", "diplomacy", "missions", "progress"]
+const PREFIXES := {
+	"stopped": "economy", "full": "economy", "shortage": "economy", "trader": "economy",
+	"fire": "alert", "disease": "alert", "sunk": "alert", "attack": "alert",
+	"ship": "fleet", "ship_built": "fleet",
+	"rival": "diplomacy",
+	"mission": "missions", "event": "missions",
+	"milestone": "progress", "colony": "progress", "achievement": "progress",
+}
 
 var watcher: NoticeWatcher
 
@@ -16,6 +27,8 @@ var _config: GameConfig
 var _items: Dictionary[String, Button] = {}
 var _ages: Dictionary[String, float] = {}
 var _notices: Dictionary[String, NoticeWatcher.Notice] = {}
+## Fase 43: quantas vezes a mesma situação se repetiu com o aviso na tela (o bloco mostra "×N").
+var _counts: Dictionary[String, int] = {}
 var _check_left: float = 0.0
 
 
@@ -73,10 +86,33 @@ func _process(delta: float) -> void:
 			_remove(key)
 
 
-## Mostra a notificação (ou renova a mesma, se já está na tela).
+## A categoria do aviso pelo começo da chave ("fire/12" → "alert").
+static func category_of(key: String) -> String:
+	var found: String = PREFIXES.get(key.get_slice("/", 0), "progress")
+	return found
+
+
+## Repetições do aviso na tela (testes).
+func count_of(key: String) -> int:
+	return _counts.get(key, 0)
+
+
+## Mostra a notificação; a mesma situação com o aviso ainda na tela vira um bloco com contador (Fase 43), renovado e
+## levado para cima. Categoria silenciada nas opções não aparece.
 func push(notice: NoticeWatcher.Notice) -> void:
+	var category := category_of(notice.key)
+	if Settings.is_notice_muted(category):
+		return
+	if category == "alert" and notice.status == UiPalette.Status.BAD and Settings.pause_on_alert:
+		GameClock.set_speed(TickClock.PAUSED)
 	if _items.has(notice.key):
-		_remove(notice.key)
+		_counts[notice.key] += 1
+		var again := _items[notice.key]
+		again.text = "%s  ×%d" % [notice.text(), _counts[notice.key]]
+		move_child(again, 0)
+		_ages[notice.key] = Settings.notice_seconds()
+		_notices[notice.key] = notice
+		return
 	var button := Button.new()
 	button.name = "Notice_" + notice.key.validate_node_name().replace("/", "_")
 	button.theme_type_variation = &"NoticeButton"
@@ -96,13 +132,14 @@ func push(notice: NoticeWatcher.Notice) -> void:
 	add_child(button)
 	move_child(button, 0)
 	# Fase 30: aparece em FADE_S (com as animações desligadas, já inteira)
-	if not SceneFader.is_instant():
+	if not SceneFader.still():
 		button.modulate.a = 0.0
 		create_tween().tween_property(button, ^"modulate:a", 1.0, FADE_S)
 	EventBus.notice_shown.emit(notice.icon)
 	_items[notice.key] = button
-	_ages[notice.key] = _config.notice_seconds
+	_ages[notice.key] = Settings.notice_seconds()
 	_notices[notice.key] = notice
+	_counts[notice.key] = 1
 	while _items.size() > _config.notice_max_visible:
 		# o mais antigo que ainda conta: os que estão esmaecendo (Fase 30) já saíram de _items
 		for index: int in range(get_child_count() - 1, -1, -1):
@@ -138,7 +175,8 @@ func _remove(key: String) -> void:
 	_items.erase(key)
 	_ages.erase(key)
 	_notices.erase(key)
-	if SceneFader.is_instant():
+	_counts.erase(key)
+	if SceneFader.still():
 		remove_child(button)
 		button.queue_free()
 		return

@@ -2,7 +2,8 @@ class_name OptionsDialog
 extends PanelContainer
 ## Opções (seção 10): gráficos (tela cheia, vsync, escala 3D com FSR 2, limite de FPS), áudio (os
 ## cinco barramentos), controles (pan pela borda e as teclas, remapeáveis), idioma e interface
-## (escala de 80% a 150% e modo para daltonismo). Cada mudança vale na hora; fechar grava.
+## (escala de 80% a 200%, com aviso abaixo de 18 px, modo para daltonismo e, desde a Fase 43, fonte legível, reduzir
+## movimento, a duração dos avisos, a pausa no alerta e as categorias de aviso). Cada mudança vale na hora; fechar grava.
 
 signal closed()
 
@@ -13,6 +14,18 @@ var tabs := TabContainer.new()
 var waiting_action: StringName = &""
 var _key_buttons: Dictionary[StringName, Button] = {}
 var _sample := HBoxContainer.new()
+var _small_text_warning: Label
+var _limited_warning: Label
+
+
+## A escala escolhida passa da que cabe na janela?
+static func limited(chosen: float, effective: float) -> bool:
+	return chosen > effective + 0.001
+
+
+## Fase 43: o corpo do texto (ThemeBuilder.FONT_SIZE) fica abaixo de 18 px nesta escala?
+static func small_text(scale: float) -> bool:
+	return ThemeBuilder.FONT_SIZE * scale < 18.0 - 0.001
 
 
 func _init() -> void:
@@ -202,7 +215,58 @@ func _interface() -> Control:
 	var grid := _grid()
 	grid.add_child(UiKit.label("OPTIONS_UI_SCALE"))
 	grid.add_child(_slider("OPTIONS_UI_SCALE_TIP", config.ui_scale_min, config.ui_scale_max, 0.05, Settings.ui_scale,
-			func(value: float) -> void: Settings.set_ui_scale(value)))
+			func(value: float) -> void:
+				Settings.set_ui_scale(value)
+				_small_text_warning.visible = small_text(Settings.ui_scale)
+				_limited_warning.visible = limited(Settings.ui_scale, Settings.effective_ui_scale(Settings.window_width()))))
+	# Fase 43: numa janela estreita a escala é limitada (a HUD não cabe): o aviso diz até quanto vale
+	grid.add_child(Control.new())
+	_limited_warning = UiKit.label("OPTIONS_SCALE_LIMITED", &"DimLabel")
+	_limited_warning.name = "ScaleLimitedWarning"
+	_limited_warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_limited_warning.custom_minimum_size.x = 320
+	_limited_warning.visible = limited(Settings.ui_scale, Settings.effective_ui_scale(Settings.window_width()))
+	grid.add_child(_limited_warning)
+	# Fase 43: abaixo de 18 px o corpo do texto fica pequeno para ler: o aviso aparece
+	grid.add_child(Control.new())
+	_small_text_warning = UiKit.label("OPTIONS_SMALL_TEXT", &"DimLabel")
+	_small_text_warning.name = "SmallTextWarning"
+	_small_text_warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_small_text_warning.custom_minimum_size.x = 320
+	UiPalette.paint(_small_text_warning, UiPalette.Status.BAD)
+	_small_text_warning.visible = small_text(Settings.ui_scale)
+	grid.add_child(_small_text_warning)
+	grid.add_child(UiKit.label("OPTIONS_READABLE_FONT"))
+	var readable := _check("OPTIONS_READABLE_FONT_TIP", Settings.readable_font, func(on: bool) -> void: Settings.readable_font = on)
+	readable.name = "ReadableFont"
+	grid.add_child(readable)
+	grid.add_child(UiKit.label("OPTIONS_REDUCE_MOTION"))
+	var motion := _check("OPTIONS_REDUCE_MOTION_TIP", Settings.reduce_motion, func(on: bool) -> void: Settings.reduce_motion = on)
+	motion.name = "ReduceMotion"
+	grid.add_child(motion)
+	grid.add_child(UiKit.label("OPTIONS_NOTICE_DURATION"))
+	var duration := OptionButton.new()
+	duration.name = "NoticeDuration"
+	duration.tooltip_text = "OPTIONS_NOTICE_DURATION_TIP"
+	duration.focus_mode = Control.FOCUS_NONE
+	for factor: float in Settings.NOTICE_DURATIONS:
+		duration.add_item(tr("OPTIONS_SECONDS") % Fmt.integer(config.notice_seconds * factor))
+	duration.select(maxi(0, Settings.NOTICE_DURATIONS.find(Settings.notice_duration)))
+	duration.item_selected.connect(func(index: int) -> void:
+		Settings.notice_duration = Settings.NOTICE_DURATIONS[index]
+		Settings.apply())
+	grid.add_child(duration)
+	grid.add_child(UiKit.label("OPTIONS_PAUSE_ON_ALERT"))
+	var pause := _check("OPTIONS_PAUSE_ON_ALERT_TIP", Settings.pause_on_alert, func(on: bool) -> void: Settings.pause_on_alert = on)
+	pause.name = "PauseOnAlert"
+	grid.add_child(pause)
+	# uma caixa por categoria de aviso: marcada mostra
+	for category: String in NotificationFeed.CATEGORIES:
+		grid.add_child(UiKit.label("NOTICE_CATEGORY_" + category.to_upper()))
+		var shown := _check("OPTIONS_NOTICE_CATEGORY_TIP", not Settings.is_notice_muted(category),
+				func(on: bool) -> void: Settings.mute_notice(category, not on))
+		shown.name = "Notices_" + category
+		grid.add_child(shown)
 	grid.add_child(UiKit.label("OPTIONS_COLORBLIND"))
 	var colorblind := _check("OPTIONS_COLORBLIND_TIP", Settings.colorblind, func(on: bool) -> void: Settings.colorblind = on)
 	colorblind.name = "Colorblind"

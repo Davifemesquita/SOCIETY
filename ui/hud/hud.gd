@@ -15,6 +15,9 @@ signal overlay_changed(layer: MapOverlays.Layer)
 const MESSAGE_SECONDS := 3.0
 const REFRESH_SECONDS := 0.5
 const CARD_WIDTH := 112
+## Fase 43: no máximo tantos cartões por linha no painel dos prédios, e o espaço entre eles.
+const ITEMS_PER_ROW := 8
+const ITEM_GAP := 6
 ## Fase 30: o dinheiro e a população andam até o valor novo em COUNT_S; um ganho grande (BIG_GAIN moedas ou
 ## BIG_GAIN_FRACTION do saldo) pulsa o dinheiro em GAIN_COLOR. Com as animações desligadas (SceneFader.is_instant:
 ## testes, headless) o texto vai direto ao valor final.
@@ -267,7 +270,7 @@ func _count_money(target: float) -> void:
 	if _money_tween != null:
 		_money_tween.kill()
 		_money_tween = null
-	if is_nan(from) or SceneFader.is_instant() or absf(target - from) < 0.5:
+	if is_nan(from) or SceneFader.still() or absf(target - from) < 0.5:
 		_show_money(target)
 		return
 	_money_tween = create_tween()
@@ -288,7 +291,7 @@ func _count_population(tier_id: StringName, target: float) -> void:
 	if running != null:
 		running.kill()
 		_population_tweens.erase(tier_id)
-	if is_nan(from) or SceneFader.is_instant() or absf(target - from) < 0.5:
+	if is_nan(from) or SceneFader.still() or absf(target - from) < 0.5:
 		_show_population(tier_id, target)
 		return
 	var tween := create_tween()
@@ -304,6 +307,8 @@ func _show_population(tier_id: StringName, value: float) -> void:
 ## Pulso de ganho (Fase 30): cresce e doura e volta. O dourado vai no self_modulate, por cima da cor de estado
 ## (UiPalette.paint), que fica intacta quando ele volta ao branco.
 func _pulse(label: Label) -> void:
+	if SceneFader.still():
+		return
 	label.pivot_offset = label.size * 0.5
 	var pulse := create_tween()
 	pulse.tween_property(label, ^"scale", Vector2.ONE * PULSE_SCALE, 0.12)
@@ -342,6 +347,8 @@ func _build_top_bar() -> void:
 	row.add_child(VSeparator.new())
 	row.add_child(UiKit.icon_rect(Icons.get_icon("hud_money"), 28))
 	_money_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	# Fase 43: algarismos tabulares (o número não dança enquanto o contador anda)
+	_money_label.theme_type_variation = &"NumberLabel"
 	row.add_child(_money_label)
 	row.add_child(VSeparator.new())
 	_population.add_theme_constant_override(&"separation", 6)
@@ -355,6 +362,7 @@ func _build_top_bar() -> void:
 		count.tooltip_text = tier.name_key
 		count.mouse_filter = Control.MOUSE_FILTER_STOP
 		count.custom_minimum_size.x = 56
+		count.theme_type_variation = &"NumberLabel"
 		_population.add_child(count)
 		_population_labels[tier.id] = count
 	row.add_child(_population)
@@ -474,11 +482,16 @@ func _build_build_menu() -> void:
 		button.pressed.connect(func() -> void: set_overlay(MapOverlays.Layer.NONE if overlay_layer == layer else layer))
 		top.add_child(button)
 		_overlay_buttons[layer] = button
-	_items.custom_minimum_size.x = 1000
+	# Fase 43: os prédios da categoria num painel próprio, que encolhe ao conteúdo (o porto, com três, não fica num painel
+	# de 1.000 px quase vazio); a largura é a de ITEMS_PER_ROW cartões no máximo
+	var items_panel := PanelContainer.new()
+	items_panel.name = "BuildItems"
+	items_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_bottom.add_child(items_panel)
 	_items.alignment = FlowContainer.ALIGNMENT_CENTER
-	_items.add_theme_constant_override(&"h_separation", 6)
-	_items.add_theme_constant_override(&"v_separation", 6)
-	column.add_child(_items)
+	_items.add_theme_constant_override(&"h_separation", ITEM_GAP)
+	_items.add_theme_constant_override(&"v_separation", ITEM_GAP)
+	items_panel.add_child(_items)
 
 
 ## Categorias do menu: residências, produção por classe, serviços, decoração (Fase 16), porto (entreposto, píer e
@@ -502,9 +515,10 @@ func _category_label(index: int) -> String:
 	if index == 0:
 		return tr("HUD_CATEGORY_RESIDENCES")
 	# a produção de cada classe vai só com o medalhão dela, como a população na barra de cima: com as abas de
-	# decoração (Fase 16) e porto (Fase 17) os nomes passavam de 1920 px; "Produção: <classe>" fica na dica
+	# decoração (Fase 16) e porto (Fase 17) os nomes passavam de 1920 px; "Produção: <classe>" fica na dica. Fase 43: a
+	# aba escolhida mostra o nome da classe ao lado do medalhão
 	if index <= tiers.size():
-		return ""
+		return tr(tiers[index - 1].name_key) if index == _category else ""
 	if index == tiers.size() + 1:
 		return tr("HUD_CATEGORY_SERVICES")
 	if index == tiers.size() + 2:
@@ -565,6 +579,8 @@ func _select_category(index: int) -> void:
 		demolish.tooltip_text = tr("HUD_DEMOLISH_TIP") % Fmt.percent(_simulation.config.demolish_refund)
 		demolish.pressed.connect(_tool.start_demolish)
 		_items.add_child(demolish)
+	var columns := mini(_items.get_child_count(), ITEMS_PER_ROW)
+	_items.custom_minimum_size.x = columns * CARD_WIDTH + maxi(columns - 1, 0) * ITEM_GAP
 	_refresh()
 
 

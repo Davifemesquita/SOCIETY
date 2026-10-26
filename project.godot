@@ -25,6 +25,7 @@ Settings="*res://core/settings.gd"
 GameClock="*res://core/game_clock.gd"
 SaveSystem="*res://core/save_system.gd"
 SceneFader="*res://core/scene_fader.gd"
+UiSfx="*res://core/ui_sfx.gd"
 DialogueManager="*res://addons/dialogue_manager/dialogue_manager.gd"
 
 [debug]

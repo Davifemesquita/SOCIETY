@@ -454,6 +454,24 @@ CHART_BALANCE,Saldo por minuto,Balance per minute
 CHART_SPAN,Últimos %s min,Last %s min
 CHART_NO_DATA,O gráfico começa no primeiro minuto de jogo,The chart starts after the first minute of play
 NOTICE_CLICK_TIP,Clique para ir até lá,Click to go there
+OPTIONS_SMALL_TEXT,Nesta escala o texto fica abaixo de 18 px e pode ficar difícil de ler.,At this scale text is below 18 px and may be hard to read.
+OPTIONS_SCALE_LIMITED,Nesta janela a interface não cabe nessa escala: ela fica no máximo que cabe (200% pede uma tela de 4K).,The interface does not fit at this scale in this window: it stays at the largest that fits (200% needs a 4K screen).
+OPTIONS_READABLE_FONT,Fonte legível,Readable font
+OPTIONS_READABLE_FONT_TIP,Troca a fonte de época por uma sem serifa do sistema,Replaces the period font with a sans-serif system font
+OPTIONS_REDUCE_MOTION,Reduzir movimento,Reduce motion
+OPTIONS_REDUCE_MOTION_TIP,"Sem contadores andando, pulsos, prédios subindo ou afundando, avisos esmaecendo e zoom suave","No rolling counters, pulses, rising or sinking buildings, fading notices or smooth zoom"
+OPTIONS_NOTICE_DURATION,Duração dos avisos,Notice duration
+OPTIONS_NOTICE_DURATION_TIP,Quanto tempo cada aviso fica na tela,How long each notice stays on screen
+OPTIONS_SECONDS,%s s,%s s
+OPTIONS_PAUSE_ON_ALERT,Pausar nos alertas,Pause on alerts
+OPTIONS_PAUSE_ON_ALERT_TIP,"Incêndio, ataque, navio afundado ou prédio perdido pausam o jogo","A fire, an attack, a sunk ship or a lost building pauses the game"
+OPTIONS_NOTICE_CATEGORY_TIP,Marcado: os avisos desta categoria aparecem,Checked: notices of this category are shown
+NOTICE_CATEGORY_ECONOMY,Avisos de economia,Economy notices
+NOTICE_CATEGORY_ALERT,Alertas,Alerts
+NOTICE_CATEGORY_FLEET,Avisos da frota,Fleet notices
+NOTICE_CATEGORY_DIPLOMACY,Avisos de diplomacia,Diplomacy notices
+NOTICE_CATEGORY_MISSIONS,Encomendas e eventos,Orders and events
+NOTICE_CATEGORY_PROGRESS,Marcos e conquistas,Milestones and achievements
 NOTICE_SHORTAGE,Falta %s em %s,Running out of %s on %s
 NOTICE_STOPPED,%s parado: %s,%s stopped: %s
 NOTICE_STORAGE_FULL,Estoque cheio de %s em %s,Storage full of %s on %s

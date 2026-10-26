@@ -36,6 +36,15 @@ var period_look: bool = false
 var volumes: Dictionary[StringName, float] = {}
 ## Teclas trocadas pelo jogador: ação → teclas físicas. Ação ausente = a tecla padrão.
 var key_bindings: Dictionary[StringName, PackedInt32Array] = {}
+## Fase 43: reduzir movimento (sem os contadores andando, o pulso, o squash da obra e o esmaecer dos avisos), fonte
+## legível (uma sem serifa do sistema no lugar da Old Standard), a duração dos avisos (multiplica notice_seconds), as
+## categorias de aviso silenciadas e a pausa automática num alerta (incêndio, ataque, navio afundado, prédio perdido).
+var reduce_motion: bool = false
+var readable_font: bool = false
+var notice_duration: float = 1.0
+var muted_notices: PackedStringArray = []
+var pause_on_alert: bool = false
+const NOTICE_DURATIONS: Array[float] = [0.5, 1.0, 2.0, 4.0]
 
 var _config: GameConfig = GameConfig.get_default()
 
@@ -119,9 +128,12 @@ func apply() -> void:
 			AudioServer.set_bus_volume_db(index, linear_to_db(maxf(volume(bus), 0.0001)))
 			AudioServer.set_bus_mute(index, volume(bus) <= 0.0)
 	Engine.max_fps = max_fps
+	_apply_font()
 	if is_inside_tree():
 		var root := get_tree().root
-		root.content_scale_factor = ui_scale
+		root.content_scale_factor = effective_ui_scale(window_width())
+		if not root.size_changed.is_connected(_on_window_resized):
+			root.size_changed.connect(_on_window_resized)
 		# Fase 32: o FSR 2.2 (abaixo de 100% ou, no ultra, na cheia) já é o AA; sem ele, o AA de tela do nível
 		root.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR2 if preset().uses_temporal(render_scale) else Viewport.SCALING_3D_MODE_BILINEAR
 		root.scaling_3d_scale = render_scale
@@ -133,6 +145,62 @@ func apply() -> void:
 		RenderingServer.directional_soft_shadow_filter_set_quality(preset().soft_shadow_quality as RenderingServer.ShadowQuality)
 		_apply_window()
 	EventBus.settings_changed.emit()
+
+
+## A fonte do Theme do projeto: a Old Standard, ou (fonte legível) a sem serifa do sistema, com a Old Standard de reserva.
+var _period_font: Font
+
+
+func _apply_font() -> void:
+	var theme := ThemeDB.get_project_theme()
+	if theme == null:
+		return
+	if _period_font == null:
+		_period_font = theme.default_font
+	if readable_font:
+		var plain := SystemFont.new()
+		plain.font_names = PackedStringArray(["Segoe UI", "Noto Sans", "DejaVu Sans", "Arial", "sans-serif"])
+		plain.fallbacks = [_period_font]
+		theme.default_font = plain
+	else:
+		theme.default_font = _period_font
+
+
+## Fase 43: a escala de verdade na janela. A HUD precisa de UI_LOGICAL_WIDTH px lógicos (a barra de cima e o menu de
+## construção): numa janela estreita a escala escolhida é limitada para nada passar da borda (200% vale a partir de 4K;
+## em 1080p fica em 100%). Abaixo de 100% não há limite.
+const UI_LOGICAL_WIDTH := 1920.0
+
+
+func effective_ui_scale(width: float) -> float:
+	return minf(ui_scale, maxf(1.0, width / UI_LOGICAL_WIDTH))
+
+
+func window_width() -> float:
+	if DisplayServer.get_name() == "headless":
+		return UI_LOGICAL_WIDTH
+	return float(DisplayServer.window_get_size().x)
+
+
+func _on_window_resized() -> void:
+	if is_inside_tree():
+		get_tree().root.content_scale_factor = effective_ui_scale(window_width())
+
+
+## Quanto o aviso fica na tela (s).
+func notice_seconds() -> float:
+	return _config.notice_seconds * notice_duration
+
+
+func is_notice_muted(category: String) -> bool:
+	return muted_notices.has(category)
+
+
+func mute_notice(category: String, muted: bool) -> void:
+	if muted and not muted_notices.has(category):
+		muted_notices.append(category)
+	elif not muted and muted_notices.has(category):
+		muted_notices.remove_at(muted_notices.find(category))
 
 
 ## Janela e vsync só com tela de verdade (os testes rodam sem).
@@ -156,6 +224,11 @@ func save_to(path: String) -> Error:
 	file.set_value("interface", "locale", locale)
 	file.set_value("interface", "ui_scale", ui_scale)
 	file.set_value("interface", "colorblind", colorblind)
+	file.set_value("interface", "reduce_motion", reduce_motion)
+	file.set_value("interface", "readable_font", readable_font)
+	file.set_value("interface", "notice_duration", notice_duration)
+	file.set_value("interface", "muted_notices", muted_notices)
+	file.set_value("interface", "pause_on_alert", pause_on_alert)
 	file.set_value("controls", "edge_pan", edge_pan)
 	file.set_value("graphics", "fullscreen", fullscreen)
 	file.set_value("graphics", "vsync", vsync)
@@ -180,6 +253,13 @@ func load_from(path: String) -> void:
 	set_locale(str(file.get_value("interface", "locale", "")))
 	set_ui_scale(_number(file.get_value("interface", "ui_scale", 1.0), 1.0))
 	colorblind = _flag(file.get_value("interface", "colorblind", false), false)
+	reduce_motion = _flag(file.get_value("interface", "reduce_motion", false), false)
+	readable_font = _flag(file.get_value("interface", "readable_font", false), false)
+	pause_on_alert = _flag(file.get_value("interface", "pause_on_alert", false), false)
+	var raw_duration := _number(file.get_value("interface", "notice_duration", 1.0), 1.0)
+	notice_duration = raw_duration if NOTICE_DURATIONS.has(raw_duration) else 1.0
+	var raw_muted: Variant = file.get_value("interface", "muted_notices", PackedStringArray())
+	muted_notices = raw_muted if raw_muted is PackedStringArray else PackedStringArray()
 	edge_pan = _flag(file.get_value("controls", "edge_pan", true), true)
 	camera_speed = clampf(_number(file.get_value("controls", "camera_speed", 1.0), 1.0), CAMERA_SPEED_RANGE.x, CAMERA_SPEED_RANGE.y)
 	var raw_autosave := _number(file.get_value("game", "autosave_minutes", _config.autosave_interval_minutes), _config.autosave_interval_minutes)

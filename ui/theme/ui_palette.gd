@@ -22,8 +22,12 @@ const SEA := Color("5d7f8c")
 const ALERT := Color("c8641e")
 const PROTEST := Color("a8281e")
 
-const STATUS_NORMAL: Array[Color] = [Color("2f7a32"), Color("a86a00"), Color("b0281c"), Color("5c4a36")]
-const STATUS_COLORBLIND: Array[Color] = [Color("0b5fa0"), Color("d08a00"), Color("c0480a"), Color("5c4a36")]
+## Fase 43: os indicadores passam de 4,5:1 sobre o papel (WCAG para texto); o verde, o âmbar e, no modo para
+## daltonismo, o laranja e o vermelhão escureceram o mínimo para isso (o teste de contraste confere).
+const STATUS_NORMAL: Array[Color] = [Color("236326"), Color("8a5600"), Color("b0281c"), Color("5c4a36")]
+const STATUS_COLORBLIND: Array[Color] = [Color("0b5fa0"), Color("8c5200"), Color("9c3a08"), Color("5c4a36")]
+## Fase 43: o contorno do foco (3:1 sobre o botão, WCAG para componentes): o dourado não chegava lá.
+const FOCUS := Color("7a4f12")
 
 ## Modo para daltonismo nos indicadores (opção da interface, gravada pelo Settings).
 static var colorblind: bool = false

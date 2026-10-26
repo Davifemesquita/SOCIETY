@@ -56,3 +56,4 @@ Esta VM não tem GPU: estes itens só se confirmam no PC alvo (RTX 3060).
 | nuvens volumétricas (SunshineClouds2) | no Vulkan por software o efeito escurece a tela inteira fora das nuvens; por isso estão só no nível ultra e desligadas no llvmpipe. Na RTX 3060: o céu e o chão aparecem com as nuvens? Se sim, voltam para o nível alto (`data/graphics/high.tres`, `clouds = true`) |
 | benchmark no nível alto | `Society.exe -- --benchmark` (ou `-- --benchmark --nivel 3` para o ultra): o quadro tem de ficar em até 16,6 ms em 1080p |
 
+| selos de ícone | `assets/source/game-icons/badges/` (happy, minus, plus): círculos simples sem autor registrado; conferir a origem ou redesenhar (Fase 43) | — | — | 43 |

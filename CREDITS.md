@@ -38,3 +38,20 @@ código GPL dentro do jogo.
 | Flea market in the rain.ogg | stephan (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Flea_market_in_the_rain.ogg | Public domain | `assets/audio/ambience/ambience_city_market.ogg` |
 | Steam engine.ogg | aradlaw (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Steam_engine.ogg | Public domain | `assets/audio/ambience/ambience_factory_steam.ogg` |
 | Corner of a sheep field in summer.ogg | earthcalling (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Corner_of_a_sheep_field_in_summer.ogg | Public domain | `assets/audio/ambience/ambience_field_sheep.ogg` |
+
+## Ícones do game-icons.net por autor (Fase 43)
+
+Cada desenho de `assets/source/game-icons/<autor>/` é de https://game-icons.net, licença CC BY 3.0, recolorido e emoldurado por `tools/build_icons.gd`. Crédito por autor:
+
+| Autor | Desenhos | Arquivos |
+|---|---|---|
+| Caro Asercion | 2 | sewing-machine, spinning-wheel |
+| Delapouite | 139 | abacus, anticlockwise-rotation, barn, barrel, bathtub, beer-bottle, blacksmith, boat-fishing, bread, brick-pile, brick-wall, candles, canned-fish, cargo-crate, cargo-ship, cellar-barrels, champagne-cork, chart, check-mark, chicken-oven, chimney, church, cigar, cigarette, clockwise-rotation, clothes, coal-pile, coffee-beans, coffee-pot, coins, contract, cooking-pot, crossroad, cuckoo-clock, diamond-ring, dice-six-faces-five, dig-hole, double-fish, emerald-necklace, empty-wood-bucket, exit-door, eye-target, factory, family-house, farmer, farm-tractor, fast-forward-button, fire-extinguisher, flag-objective, flour, forest, fork-knife-spoon, full-wood-bucket, furnace, glass-ball, glass-celebration, gold-mine, gold-nuggets, graduate-cap, grain, grain-bundle, hamburger-menu, hand-saw, hand-truck, harbor-dock, hiking, hole-ladder, hops, hospital, house, i-beam, info, keyboard, laurels-trophy, liquid-soap, load, mine-wagon, mining-helmet, move, old-wagon, opened-food-can, pagoda, paint-brush, paint-roller, park-bench, party-flags, pay-money, person, planks, plant-seed, plow, podium-winner, potato, power-generator, present, price-tag, receive-money, resize, ring-mould, road, sailboat, sand-castle, sausage, save, scroll-quill, sewing-string, shaking-hands, sheep, ship-bow, ship-wheel, shop, shopping-bag, sinking-ship, soap, speaker, stone-bust, stone-path, stop-sign, sugar-cane, sun-cloud, tavern-sign, teacher, team-idea, theater, trash-can, upgrade, uprising, village, warehouse, watch, wheelbarrow, windmill, window, window-bars, wine-bottle, wooden-crate, wooden-pier, wood-pile, wool |
+| Faithtoken | 1 | ore |
+| Guard13007 | 2 | pause-button, play-button |
+| Lorc | 70 | anchor, anvil, axe-in-stump, beer-stein, bottle-vapors, brandy-bottle, candle-holder, cannon, cash, clockwork, coffee-mug, cog, compass, conversation, cracked-glass, crossed-sabres, crossed-swords, crystal-growth, demolish, desk-lamp, dove, fire-ring, firework-rocket, flower-pot, flowers, flying-flag, fountain, galleon, gear-hammer, gears, globe, grapes, hammer-nails, hazard-sign, hourglass, laurel-crown, light-bulb, lightning-storm, magnifying-glass, meat-cleaver, medal, metal-bar, mining, oak, open-book, pig-face, power-lightning, quill, radar-sweep, return-arrow, round-bottom-flask, scales, scroll-unfurled, scythe, spade, spectacles, sprout, square-bottle, stone-block, sunrise, three-leaves, top-hat, treasure-map, trophy, vine-leaf, virus, wheat, whirlwind, wood-axe, wooden-fence |
+| Pierre Leducq | 2 | shooner-sailboat, small-fishing-sailboat |
+| Sbed | 2 | cancel, fire |
+| Skoll | 3 | breaking-chain, pig, pocket-watch |
+
+Os três selos de `assets/source/game-icons/badges/` (happy, minus, plus) são círculos simples sem autor registrado na pasta: a origem fica a conferir em `assets/TODO_ASSETS.md`.
