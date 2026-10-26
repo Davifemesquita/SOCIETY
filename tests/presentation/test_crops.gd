@@ -105,7 +105,8 @@ func test_fields_get_furrows_that_dry_out_until_the_harvest() -> void:
 		var place := view.furrow_transform(index)
 		var id := grid.building_at(grid.world_to_cell(place.origin))
 		assert_str(String(_sim.def_of(_sim.world.building(id)).id)).is_equal("field")
-		assert_float(place.basis.get_scale().x).is_greater(5.0)
+		# de ponta a ponta, menos a cabeceira (Fase 40)
+		assert_float(place.basis.get_scale().x).is_greater(4.0)
 	farm.progress = 0.0
 	view.refresh()
 	view.rebuild()

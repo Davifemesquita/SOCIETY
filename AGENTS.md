@@ -1583,6 +1583,29 @@ Regras que já custaram investigação:
   falso dos testes sem tela pega o erro: "Shader compilation failed" no log).
 - **Capturas**: `tools/capture_phase39.tscn` (uma rua por classe, o entreposto e a casa no barranco, às 10h).
 
+### Campos em colcha (Fase 40, nossa)
+
+- **Plano** em `docs/plano_fase40.md`, começada em 26/10/2026. Só apresentação: o campo e o pasto seguem 3 × 3 na
+  simulação. **A `BuildingView` não desenha mais caixa para módulo** (campo e pasto): a terra lavrada é da `CropView`, e
+  o pasto é o capim do terreno com a cerca e as touceiras no chão.
+- **Contorno** (`CropView.field_outline`, `border_inset`): recuo de `FIELD_INSET_M` a mais `FIELD_WIGGLE_M`, com ruído
+  semeado pela linha da divisa (x ou z no mundo) e pela posição ao longo dela — os dois campos de uma divisa recuam
+  igual. A terra de todos os campos numa malha só (`Soil`), em três anéis seguindo o terreno, normal para cima; os
+  triângulos de cada campo, os lugares das plantas e das leiras ficam em cache pelo lote (`_soil_cache`,
+  `_place_cache`, limpos no `world_replaced`): refazer a vista a cada obra custa ~7 ms para 39 campos (5,5 antes), a
+  primeira vez ~27.
+- **Fileiras** em x ou em z pela posição na grade de 3 células (`rows_along_x`: vizinhos alinhados sempre diferentes),
+  cabeceira de `HEADLAND_M` com uma leira de través em cada ponta, plantas e leiras na altura do chão (a leira inclina
+  com o terreno). Tom da terra e da planta por campo (`field_soil`, `field_shade`, pela cor da instância; o
+  `INSTANCE_CUSTOM` ficou de fora).
+- **Divisas** (`_add_borders`): sebe (`hedge_mesh`) ou, no lote com mais de `WALL_RELIEF_M` de desnível, muro de pedra seca
+  (`wall_mesh`), uma vez por aresta de célula; sem peça na porteira (a célula da entrada), para outro pasto, para a
+  água, entre campos da mesma fazenda (um cercado só) e entre o campo e a fazenda; nada nas ilhas tropicais. Sem sombra.
+- **Trilhas no pasto** (`RoadMask.trails`, canal b): porteira → meio → um canto pelo id, refeitas com o pasto.
+- **Medida**: `tools/fields_cost.tscn` monta um bairro rural, mede a `CropView`, o quadro, a GPU e as draw calls a 110 e
+  420 m e fotografa (`docs/benchmark.md`). Sem tela, o MultiMesh devolve transformações zeradas: os testes leem os lugares
+  das funções (`_furrow_places`, `_add_borders`), não do MultiMesh.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1633,6 +1656,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
 | 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); a suíte inteira passou no CI; faltam, com tela, as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
 | 39 — Prédios assentados (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
+| 40 — Campos em colcha (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: terra lavrada com contorno ondulado igual dos dois lados da divisa, sem a caixa; fileiras em x ou z (vizinhos sempre diferentes) com cabeceira; tom por campo; sebe (muro de pedra na encosta) em volta de cada fazenda com porteira, nada nas tropicais; pasto sem caixa, com trilhas no terreno; GPU igual no bairro rural medido; falta o dono escolher sebe ou muro por região e o tratamento das tropicais; plano em `docs/plano_fase40.md` |
 
 Pendências já vistas para fases futuras:
 

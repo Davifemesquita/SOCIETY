@@ -794,3 +794,21 @@ calls na Fase 39).
 | quadro no Alta (p50 / p95 / p99) | 11.1 / 15.9 / 21.0 ms; GPU média 11.1 ms (p99 15.9); CPU do render média 1.2 ms |
 | tick por quadro no Alta (média / p99 / pior) | 0.11 / 1.92 / 13.67 ms |
 | pipelines compiladas no dia, Alta (desenho / superfície / malha / especialização) | 10 / 11 / 0 / 51 |
+
+## Fase 40 — campos em colcha (26/10/2026)
+
+O benchmark principal não tem fazendas: a medida é a de `tools/fields_cost.tscn` (um bairro rural de 7 fazendas com 39
+campos e pastos na semente 1840, alto, área de trabalho escondida), no commit da Fase 39 (num worktree) e com a fase.
+
+| Medida | Antes (2426982) | Fase 40 |
+|---|---|---|
+| montar a CropView / refazer depois de uma obra | 4,6 / — ms | 27,0 / 6,9 ms |
+| a 110 m: quadro / GPU | 9,33 / 8,98 ms | 9,28 / 8,94 ms |
+| a 110 m: objetos · draw calls | 1.126 · 878 | 1.014 · 766 |
+| a 420 m: quadro / GPU | 6,38 / 6,04 ms | 6,36 / 6,02 ms |
+| a 420 m: objetos · draw calls | 875 · 631 | 839 · 595 |
+
+- As caixas do campo e do pasto saíram (menos objetos); a terra de todos os campos é uma malha só, e as sebes e os muros
+  vão em MultiMesh sem sombra.
+- A primeira montagem calcula o terreno sob cada planta e leira (~27 ms); depois fica em cache pelo lote, e refazer a
+  vista a cada obra custa ~7 ms (sem tela, antes da fase: 5,5 ms).

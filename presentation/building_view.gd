@@ -497,9 +497,9 @@ func _add(building_id: int) -> void:
 			BuildingMaterials.dress(body, layer, _color(record), root.position.y, soot)
 			if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
 				root.add_child(_occluder(box.size, body.position))
-		# o píer é o trapiche da HarborView (Fase 15) e a decoração é da DecorationView (Fase 16): aqui fica só a
-		# etiqueta
-		if def.kind not in [BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
+		# o píer é o trapiche da HarborView (Fase 15), a decoração é da DecorationView (Fase 16) e o campo e o pasto são
+		# da CropView (Fase 40: a terra lavrada com contorno, o capim do terreno): aqui fica só a etiqueta
+		if def.kind not in [BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION, BuildingDef.Kind.MODULE]:
 			root.add_child(body)
 		else:
 			body.free()
