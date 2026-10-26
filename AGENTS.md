@@ -1655,6 +1655,19 @@ Regras que já custaram investigação:
 - **`UiSfx`** (autoload): o clique e o toque ao passar o mouse em todo botão de qualquer tela; a `SoundEffects` não liga
   mais o clique dos botões.
 
+### Primeira tela (Fase 44, nossa)
+
+- **Plano** em `docs/plano_fase44.md`, começada em 26/10/2026.
+- **`ArchipelagoPreview`** (`ui/screens/archipelago_preview.gd`): o mundo da semente pelo `new_world` da partida e a
+  carta gravada (`ArchipelagoMap.engrave(chart, escala)`, a escala virou parâmetro) numa tarefa do `WorkerThreadPool`;
+  `cancel()` descarta, `poll()` recolhe; quem sai da tela com uma no meio passa para `adopt()`, e o `SceneFader._process`
+  chama `reap()`. ~1,7 s (médio, escala 1).
+- **Jogo novo**: a carta ao lado das opções, refeita `PREVIEW_DELAY_S` depois de trocar semente ou tamanho
+  (`start_preview`, `current_preview`).
+- **Menu**: `MenuBackground` sem a grade, com a carta gravada da semente 1840 (escala cheia, numa thread, deriva lenta,
+  parada com `SceneFader.still()`); os botões entram esmaecendo. `UiSfx.end_of_game` toca no `VictoryDialog`.
+- **Capturas**: `tools/capture_phase44.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1709,6 +1722,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 41 — Mata e recheio (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copas fofas (normais da copa inteira, tufos, luz de trás) e histerese na troca de detalhe; recheio determinístico fora do save (arbustos, capim, flores, pedrinhas, barris, caixotes e lenha pela vizinhança), refeito só nos trechos atingidos; GPU de 11,1 para 11,4 ms no alto, jogo novo e carregar ~0,4 s a mais; folha recortada e impostor ficaram de fora; falta o dono aprovar a densidade e escolher a textura de folha; plano em `docs/plano_fase41.md` |
 | 42 — Quadro estável e carregamento real (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: o jogo novo gera uma ilha por thread (idêntico ao direto, teste em três sementes) com porcentagem, barra e dicas na cortina; geração de ~980 para ~430 ms com pior quadro de 15 ms; tick p95 1,5 ms, obra 18 ms, o 4× limitado por quadro; montar as vistas (~5 s) segue na thread principal (fica de fora, medido); falta o dono medir no PC e aprovar as metas de quadro; plano em `docs/plano_fase42.md` |
 | 43 — Interface enxuta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: contraste WCAG provado em teste (estados e foco corrigidos), Playfair só nos títulos grandes e números tabulares, escala até 200% com aviso abaixo de 18 px, fonte legível e reduzir movimento, avisos com contador, categorias silenciáveis, pausa no alerta e duração, painel dos prédios do tamanho do conteúdo, sons de interface em toda tela, créditos dos ícones por autor; DPITexture e a barra de cima reorganizada ficaram de fora; falta o teste com uma pessoa de fora e o dono aprovar as fontes; plano em `docs/plano_fase43.md` |
+| 44 — Primeira tela (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: fundo do menu sem a grade, com a carta gravada de um arquipélago numa thread e deriva lenta; botões entrando; prévia do jogo novo com as mesmas alturas da partida, numa thread cancelável (~1,7 s); som de vitória e derrota; o diorama 3D e a pré-carga ficaram de fora; falta o dono aprovar a gravura e o som; plano em `docs/plano_fase44.md` |
 
 Pendências já vistas para fases futuras:
 

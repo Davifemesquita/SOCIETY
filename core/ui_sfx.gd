@@ -46,6 +46,30 @@ func click() -> void:
 		_player.play()
 
 
+## Fase 44: o fim da partida — a fanfarra do marco na vitória; na derrota, o alerta mais grave e lento.
+const VICTORY := "res://assets/audio/sfx/milestone.ogg"
+const DEFEAT := "res://assets/audio/sfx/alert.ogg"
+const DEFEAT_PITCH := 0.7
+
+var _cue_player := AudioStreamPlayer.new()
+
+
+func end_of_game(won: bool) -> void:
+	var key := &"victory" if won else &"defeat"
+	played[key] = played.get(key, 0) + 1
+	if not _audible:
+		return
+	var path := VICTORY if won else DEFEAT
+	if not ResourceLoader.exists(path):
+		return
+	if _cue_player.get_parent() == null:
+		_cue_player.bus = &"Interface"
+		add_child(_cue_player)
+	_cue_player.stream = load(path) as AudioStream
+	_cue_player.pitch_scale = 1.0 if won else DEFEAT_PITCH
+	_cue_player.play()
+
+
 func hover(button: BaseButton) -> void:
 	if button.disabled:
 		return

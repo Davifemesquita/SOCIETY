@@ -21,6 +21,14 @@ var risks_check := CheckBox.new()
 ## Objetivo (Fase 12): 0 = partida livre, depois os de GameConfig.victory_kinds; e o prazo.
 var objective_option := OptionButton.new()
 var deadline_option := OptionButton.new()
+## Fase 44: a carta do arquipélago da semente, gerada numa thread a cada troca (com um respiro de PREVIEW_DELAY_S para
+## não gerar a cada dígito), e o texto enquanto ela não sai. As prévias velhas ficam aqui até a tarefa ser recolhida.
+const PREVIEW_DELAY_S := 0.35
+var preview := TextureRect.new()
+var preview_label := Label.new()
+var _current: ArchipelagoPreview
+var _pending: Array[ArchipelagoPreview] = []
+var _preview_wait: float = -1.0
 
 
 func _init() -> void:
@@ -35,7 +43,27 @@ func _init() -> void:
 	grid.columns = 3
 	grid.add_theme_constant_override(&"h_separation", 14)
 	grid.add_theme_constant_override(&"v_separation", 12)
-	column.add_child(grid)
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override(&"separation", 24)
+	column.add_child(body)
+	body.add_child(grid)
+	# Fase 44: a prévia da carta, à direita
+	var chart_column := VBoxContainer.new()
+	chart_column.add_theme_constant_override(&"separation", 6)
+	body.add_child(chart_column)
+	var frame := PanelContainer.new()
+	frame.theme_type_variation = &"PlainCard"
+	chart_column.add_child(frame)
+	preview.name = "Preview"
+	preview.custom_minimum_size = Vector2(340, 340)
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.tooltip_text = "NEW_GAME_PREVIEW_TIP"
+	frame.add_child(preview)
+	preview_label.name = "PreviewLabel"
+	preview_label.theme_type_variation = &"DimLabel"
+	preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	chart_column.add_child(preview_label)
 	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_seed"), 30))
 	grid.add_child(UiKit.label("NEW_GAME_SEED"))
 	var seed_row := HBoxContainer.new()
@@ -49,7 +77,8 @@ func _init() -> void:
 				digits += character
 		if digits != text:
 			seed_edit.text = digits
-			seed_edit.caret_column = digits.length())
+			seed_edit.caret_column = digits.length()
+		_ask_preview())
 	seed_row.add_child(seed_edit)
 	var dice := UiKit.icon_button("action_dice", "NEW_GAME_RANDOM_TIP", roll)
 	dice.name = "Dice"
@@ -61,6 +90,7 @@ func _init() -> void:
 		size_option.add_icon_item(Icons.get_icon("hud_island"), tr(SIZE_KEYS[index]) % (config.island_count_for(index) - 1))
 	size_option.tooltip_text = "NEW_GAME_SIZE_TIP"
 	size_option.select(mini(1, SIZE_KEYS.size() - 1))
+	size_option.item_selected.connect(func(_index: int) -> void: _ask_preview())
 	grid.add_child(size_option)
 	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_money"), 30))
 	grid.add_child(UiKit.label("NEW_GAME_DIFFICULTY"))
@@ -124,6 +154,70 @@ func _init() -> void:
 
 func roll() -> void:
 	seed_edit.text = str(randi() % 1_000_000)
+	_ask_preview()
+
+
+## A semente ou o tamanho mudou: a prévia de agora é cancelada e uma nova sai depois do respiro.
+func _ask_preview() -> void:
+	if _current != null:
+		_current.cancel()
+		_pending.append(_current)
+		_current = null
+	_preview_wait = PREVIEW_DELAY_S
+	preview_label.text = tr("NEW_GAME_PREVIEW_WORKING")
+
+
+## A semente que o campo pede agora (a mesma conta do confirm()).
+func chosen_seed() -> int:
+	return clampi(seed_edit.text.to_int(), 0, MAX_SEED) if seed_edit.text.is_valid_int() else -1
+
+
+func _process(delta: float) -> void:
+	if _preview_wait >= 0.0:
+		_preview_wait -= delta
+		if _preview_wait < 0.0:
+			start_preview()
+	if _current != null and _current.poll() and preview.texture == null:
+		var image := _current.image()
+		if image != null:
+			preview.texture = ImageTexture.create_from_image(image)
+			preview_label.text = tr("NEW_GAME_PREVIEW_DONE") % _current.seed_value
+	for old: ArchipelagoPreview in _pending.duplicate():
+		if old.poll():
+			_pending.erase(old)
+
+
+## Começa a prévia da semente e do tamanho de agora (sem esperar o respiro: testes).
+func start_preview(threaded: bool = true) -> void:
+	_preview_wait = -1.0
+	var seed_value := chosen_seed()
+	if seed_value < 0:
+		preview_label.text = ""
+		return
+	preview.texture = null
+	_current = ArchipelagoPreview.new(seed_value, size_option.selected, GameConfig.get_default(), GameData.get_default())
+	_current.start(threaded)
+	preview_label.text = tr("NEW_GAME_PREVIEW_WORKING")
+
+
+## A prévia de agora e as velhas ainda esperando (testes).
+func current_preview() -> ArchipelagoPreview:
+	return _current
+
+
+func pending_previews() -> int:
+	return _pending.size()
+
+
+## Fechar com uma prévia no meio: as tarefas vão para ArchipelagoPreview.adopt (recolhidas sem travar a tela).
+func _exit_tree() -> void:
+	if _current != null:
+		_current.cancel()
+		_pending.append(_current)
+		_current = null
+	for old: ArchipelagoPreview in _pending:
+		ArchipelagoPreview.adopt(old)
+	_pending.clear()
 
 
 func confirm() -> void:

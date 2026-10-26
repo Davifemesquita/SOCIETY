@@ -8,6 +8,9 @@ extends Control
 ## resultado e `-- --semente 1234` escolhe o arquipélago do jogo novo.
 
 const GAME_SCENE := "res://ui/screens/game_screen.tscn"
+## Fase 44: quanto cada botão do menu leva para entrar e o intervalo entre um e outro.
+const ENTER_S := 0.3
+const ENTER_STEP_S := 0.05
 
 var continue_button: Button
 var load_button: Button
@@ -84,6 +87,12 @@ func _build() -> void:
 	_menu_button(column, "BOOT_CREDITS", "action_credits", func() -> void: Modal.open(_layer, CreditsDialog.new()))
 	_menu_button(column, "BOOT_QUIT", "action_exit", func() -> void: get_tree().quit())
 	new_game.grab_focus()
+	# Fase 44: os botões entram um a um, esmaecendo (parados com "reduzir movimento")
+	if not SceneFader.still():
+		for index: int in column.get_child_count():
+			var item := column.get_child(index) as CanvasItem
+			item.modulate.a = 0.0
+			create_tween().tween_property(item, ^"modulate:a", 1.0, ENTER_S).set_delay(index * ENTER_STEP_S)
 	var footer := Label.new()
 	footer.name = "Footer"
 	footer.text = tr("BOOT_VERSION") % str(ProjectSettings.get_setting("application/config/version", ""))

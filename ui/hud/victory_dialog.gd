@@ -35,6 +35,8 @@ func _init(simulation: Simulation) -> void:
 	var keep := UiKit.button("VICTORY_CONTINUE", "action_continue", func() -> void: continue_requested.emit(), "VICTORY_CONTINUE_TIP")
 	keep.name = "Continue"
 	buttons.add_child(keep)
+	# Fase 44: o som do fim da partida
+	UiSfx.end_of_game(won)
 
 
 ## As linhas do resumo, já traduzidas.

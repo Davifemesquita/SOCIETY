@@ -137,13 +137,14 @@ static func _bake(chart: SeaChart) -> ImageTexture:
 	return ImageTexture.create_from_image(engrave(chart))
 
 
-static func engrave(chart: SeaChart) -> Image:
+## Fase 44: a escala (pixels por célula) pode ser menor na prévia do jogo novo, que precisa sair em poucos segundos.
+static func engrave(chart: SeaChart, engrave_scale: int = ENGRAVE_SCALE) -> Image:
 	var field := coast_distance(chart)
-	var width := chart.size.x * ENGRAVE_SCALE
-	var height := chart.size.y * ENGRAVE_SCALE
+	var width := chart.size.x * engrave_scale
+	var height := chart.size.y * engrave_scale
 	var data := PackedByteArray()
 	data.resize(width * height * 3)
-	var pixel_cells := 1.0 / ENGRAVE_SCALE
+	var pixel_cells := 1.0 / engrave_scale
 	for y: int in height:
 		for x: int in width:
 			var at := Vector2((x + 0.5) * pixel_cells - 0.5, (y + 0.5) * pixel_cells - 0.5)
@@ -157,9 +158,9 @@ static func engrave(chart: SeaChart) -> Image:
 			else:
 				color = SEA_SHALLOW if signed < SHALLOW_CELLS else SEA
 				for k: int in WATERLINES.size():
-					if absf(signed - WATERLINES[k]) * ENGRAVE_SCALE < WATERLINE_INK_PX:
+					if absf(signed - WATERLINES[k]) * engrave_scale < WATERLINE_INK_PX:
 						color = color.lerp(COAST, 0.55 * (1.0 - float(k) / WATERLINES.size()))
-			if absf(signed) * ENGRAVE_SCALE < COAST_INK_PX:
+			if absf(signed) * engrave_scale < COAST_INK_PX:
 				color = COAST
 			var i := (y * width + x) * 3
 			data[i] = color.r8

@@ -197,6 +197,11 @@ func blocks_input() -> bool:
 	return _curtain.mouse_filter == Control.MOUSE_FILTER_STOP
 
 
+## Fase 44: recolhe as prévias do jogo novo que ficaram rodando depois que o diálogo fechou.
+func _process(_delta: float) -> void:
+	ArchipelagoPreview.reap()
+
+
 func _input(event: InputEvent) -> void:
 	if busy and (event is InputEventKey or event is InputEventMouseButton):
 		get_viewport().set_input_as_handled()

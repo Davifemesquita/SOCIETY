@@ -1,27 +1,64 @@
 class_name MenuBackground
 extends Control
-## Fundo do menu principal: papel de carta náutica com a grade de latitudes, uma moldura de
-## madeira e dourado e a rosa dos ventos. Só desenha.
+## Fundo do menu principal: papel de carta náutica, moldura de madeira e dourado e a rosa dos ventos. Desde a Fase 44
+## sem a grade de latitudes a cada 96 px (lia como papel milimetrado): a carta gravada de um arquipélago de semente fixa
+## (a mesma gravura da janela de rotas), desbotada no papel, derivando devagar — parada com "reduzir movimento". A carta
+## sai de uma thread (ArchipelagoPreview) enquanto o menu já está na tela; até lá, só o papel. Sem tela (testes), só o
+## papel.
 
-const LINE := Color(0.29, 0.19, 0.13, 0.12)
+const CHART_SEED := 1840
+const CHART_SIZE := 0
+const CHART_ALPHA := 0.32
+## A deriva: amplitude (fração do lado) e período (s).
+const DRIFT := 0.015
+const DRIFT_S := 90.0
+
+var _preview: ArchipelagoPreview
+var _chart: ImageTexture
+var _time: float = 0.0
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	resized.connect(queue_redraw)
+	if not SceneFader.is_instant():
+		_preview = ArchipelagoPreview.new(CHART_SEED, CHART_SIZE, GameConfig.get_default(), GameData.get_default(),
+				ArchipelagoMap.ENGRAVE_SCALE)
+		_preview.start(true)
+
+
+func _process(delta: float) -> void:
+	if _preview != null and _chart == null and _preview.poll():
+		var image := _preview.image()
+		if image != null:
+			_chart = ImageTexture.create_from_image(image)
+			queue_redraw()
+	if _chart != null and not SceneFader.still():
+		_time += delta
+		queue_redraw()
+
+
+func _exit_tree() -> void:
+	if _preview != null:
+		ArchipelagoPreview.adopt(_preview)
+
+
+## A carta já está pronta (testes).
+func has_chart() -> bool:
+	return _chart != null
 
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), UiPalette.PAPER)
-	var step := 96.0
-	var x := fmod(size.x * 0.5, step)
-	while x < size.x:
-		draw_line(Vector2(x, 0), Vector2(x, size.y), LINE, 1.0)
-		x += step
-	var y := fmod(size.y * 0.5, step)
-	while y < size.y:
-		draw_line(Vector2(0, y), Vector2(size.x, y), LINE, 1.0)
-		y += step
+	if _chart != null:
+		var chart_size := Vector2(_chart.get_size())
+		# o arquipélago inteiro, um pouco além da tela (a deriva não mostra a borda da carta)
+		var cover := minf(size.x / chart_size.x, size.y / chart_size.y) * 1.25
+		var drawn := chart_size * cover
+		var drift := Vector2(sin(_time * TAU / DRIFT_S), cos(_time * TAU / (DRIFT_S * 1.3))) * size * DRIFT
+		draw_texture_rect(_chart, Rect2((size - drawn) * 0.5 + drift, drawn), false, Color(1.0, 1.0, 1.0, CHART_ALPHA))
+		draw_texture_rect(ArchipelagoMap.grain(), Rect2(Vector2.ZERO, size), false, Color(1.0, 1.0, 1.0, 0.5))
 	var center := Vector2(size.x * 0.78, size.y * 0.74)
 	var radius := minf(size.x, size.y) * 0.22
 	draw_arc(center, radius, 0.0, TAU, 96, Color(UiPalette.WOOD, 0.25), 2.0)
