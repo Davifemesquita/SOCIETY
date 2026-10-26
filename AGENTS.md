@@ -1683,6 +1683,10 @@ Regras que já custaram investigação:
   sem lugar plano aplaina o lote menos acidentado (`_place_deposits(..., flatten)`; o sorteio do v1 é o mesmo).
 - **Teste dourado**: as assinaturas do v2 (`V2_SEED_1840`, `V2_SMALL`) são provisórias até a aprovação; mudar um número
   do `TerrainV2Params` muda o terreno dos saves v2.
+- **Igual em toda plataforma**: no caminho das alturas do v2, nada de `sin`, `cos`, `pow`, `exp`, `log` nem `rotated`
+  (a biblioteca do sistema erra o último bit diferente no Windows e no Linux, e a assinatura é o hash das alturas cruas):
+  use `DetMath` (`sim/world/det_math.gd`) e a tabela `_rise`. Conferir no Linux: Godot de Linux no WSL
+  (`F:\ferramentas\godot_linux`), num worktree próprio (o cache de importação não se mistura).
 - **Capturas**: `tools/capture_phase45.tscn` (v1 e v2 lado a lado e as cartas).
 
 ### Calçamento e esquinas (Fase 46, nossa)

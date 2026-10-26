@@ -59,13 +59,15 @@ func test_v0_flat_island_keeps_its_fingerprint() -> void:
 
 ## Fase 45: o v2, gravado na fase em que entrou — provisório até o dono aprovar a forma pela prévia. Mudou de propósito
 ## (um número do TerrainV2Params ou o algoritmo), regrave e diga no registro que os saves v2 de antes refazem outro mapa.
-const V2_SEED_1840: Array[int] = [2409095670, 4222075352, 4277908654, 3580615791, 2243869395, 3990515282, 4035060792,
-		937806066]
+## Regravadas na Fase 47: o seno, o cosseno e a potência do v2 passaram ao DetMath (as de antes só valiam no Windows; o
+## CI, no Linux, achava outras). Conferidas iguais no Windows e no Linux (WSL).
+const V2_SEED_1840: Array[int] = [2416620335, 1269248779, 133699629, 2547657075, 1997851754, 3452346283, 1737728329,
+		1469169662]
 const V2_SMALL: Dictionary[int, Array] = {
-	1: [3511237411, 30628214, 1465100942, 2476775559, 734819947],
-	7: [3208226675, 2426017334, 3651189902, 3709190932, 615352780],
-	2026: [2335374263, 4195011330, 2229339616, 2265720335, 1217821143],
-	999999: [3947777897, 1874430524, 1423973131, 3082559818, 1762131700],
+	1: [1498920321, 3013886534, 1543284774, 1891576992, 4135802540],
+	7: [1263080395, 3798312591, 2885263031, 3872454351, 3844956388],
+	2026: [4023742354, 2818023564, 1461733098, 3234505744, 3792402598],
+	999999: [2614906438, 150869837, 320615659, 4008049540, 1490233757],
 }
 
 

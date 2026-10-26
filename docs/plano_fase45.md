@@ -45,6 +45,15 @@ escondida).
 
 - Balanceamento (menos terra construível); cenários de semente fixa (seguem no v1 enquanto o padrão for 1).
 - `FastNoiseLite` e `hash()` numa versão nova do motor: o teste dourado do v2 pega (Fase 48).
+- **Achado depois do commit (26/10/2026)**: o CI, no Linux, reprovou as assinaturas do v2. O giro das elipses
+  (`Vector2.rotated`, seno e cosseno) e o `pow` da subida do interior vêm da biblioteca matemática do sistema, que erra
+  o último bit de um jeito no Windows e de outro no Linux: 190 dos 63 mil cantos da ilha principal mudavam (até 2e-5 m), e
+  a assinatura é o hash das alturas cruas — um save v2 feito no Windows abriria com `terrain_mismatch` no Linux. Agora o v2
+  usa `DetMath` (`sim/world/det_math.gd`: seno, cosseno, logaritmo, exponencial e potência só com soma, multiplicação,
+  divisão e `fposmod`, que o IEEE arredonda igual em toda máquina), o giro de cada elipse é feito uma vez e a potência sai
+  de uma tabela de 1.025 pontos interpolada. As assinaturas do v2 foram regravadas e conferidas iguais no Windows e no
+  Linux (Godot 4.7.2 de Linux no WSL, em `F:\ferramentas\godot_linux`). O v1 não usa essas funções nos cantos e não
+  mudou. Regra para quem mexer no gerador: nada de `sin`, `cos`, `pow`, `exp`, `log` ou `rotated` no caminho das alturas.
 
 ## Como testar
 

@@ -257,12 +257,17 @@ class NoisesV2:
 class Lobe:
 	var center: Vector2
 	var radii: Vector2
-	var angle: float
+	var angle: float:
+		set(value):
+			angle = value
+			_undo = DetMath.sin_cos(-value)
 	var islet: bool
+	## Vector2(cos, sin) de −angle, feito uma vez (DetMath: o mesmo bit a bit no Windows e no Linux).
+	var _undo := Vector2(1.0, 0.0)
 
 	## 1 na borda da elipse, menos dentro, mais fora.
 	func metric(point: Vector2) -> float:
-		var local := (point - center).rotated(-angle)
+		var local := DetMath.rotate(point - center, _undo)
 		return Vector2(local.x / radii.x, local.y / radii.y).length()
 
 
@@ -279,7 +284,7 @@ static func lobes_v2(spec: IslandSpec, params: TerrainV2Params) -> Array[Lobe]:
 		# a primeira no meio; as outras em volta, em ângulos espaçados com folga: a união enche o círculo sem ser um
 		var reach := 0.0 if k == 0 else params.lobe_spread * rng.randf_range(0.7, 1.0)
 		var angle := turn + TAU * k / maxf(count - 1, 1) + rng.randf_range(-0.35, 0.35)
-		lobe.center = Vector2.from_angle(angle) * reach
+		lobe.center = DetMath.sin_cos(angle) * reach
 		var radius := rng.randf_range(params.lobe_radius.x, params.lobe_radius.y) * (1.15 if k == 0 else 1.0)
 		var stretch := rng.randf_range(1.0, params.lobe_stretch)
 		lobe.radii = Vector2(radius * sqrt(stretch), radius / sqrt(stretch))
@@ -289,9 +294,10 @@ static func lobes_v2(spec: IslandSpec, params: TerrainV2Params) -> Array[Lobe]:
 	var farthest := 0.0
 	for lobe: Lobe in result:
 		# o ponto da borda mais longe do meio (a elipse de lado não chega tão longe quanto o raio maior)
+		var spin := DetMath.sin_cos(lobe.angle)
 		for step: int in 32:
-			var angle := TAU * step / 32.0
-			var edge := lobe.center + Vector2(cos(angle) * lobe.radii.x, sin(angle) * lobe.radii.y).rotated(lobe.angle)
+			var around := DetMath.sin_cos(TAU * step / 32.0)
+			var edge := lobe.center + DetMath.rotate(Vector2(around.x * lobe.radii.x, around.y * lobe.radii.y), spin)
 			farthest = maxf(farthest, edge.length())
 	var fit := params.shore / maxf(farthest, 0.01)
 	for lobe: Lobe in result:
@@ -304,7 +310,7 @@ static func lobes_v2(spec: IslandSpec, params: TerrainV2Params) -> Array[Lobe]:
 		var radius := rng.randf_range(params.islet_radius.x, params.islet_radius.y)
 		lobe.radii = Vector2(radius, radius * rng.randf_range(0.6, 1.0))
 		lobe.angle = rng.randf() * PI
-		lobe.center = Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(0.6, params.shore - radius)
+		lobe.center = DetMath.sin_cos(rng.randf() * TAU) * rng.randf_range(0.6, params.shore - radius)
 		result.append(lobe)
 	return result
 
@@ -313,6 +319,28 @@ static func lobes_v2(spec: IslandSpec, params: TerrainV2Params) -> Array[Lobe]:
 const EDGE_SEA := 0.93
 ## v2: quanto (m) o lugar de leitura dos patamares é torcido (as divisas das regiões deixam de ser retas).
 const PLATEAU_BEND_M := 28.0
+
+
+## core^exponent (core de 0 a 1) por tabela: feita uma vez por expoente com DetMath.power e interpolada só com soma e
+## multiplicação (o pow do C muda o último bit entre Windows e Linux; a série do DetMath em todo canto custaria caro).
+const RISE_STEPS := 1024
+static var _rise_tables: Dictionary[float, PackedFloat64Array] = {}
+static var _rise_mutex := Mutex.new()
+
+
+static func _rise(core: float, exponent: float) -> float:
+	_rise_mutex.lock()
+	if not _rise_tables.has(exponent):
+		var table := PackedFloat64Array()
+		table.resize(RISE_STEPS + 1)
+		for i: int in RISE_STEPS + 1:
+			table[i] = DetMath.power(float(i) / RISE_STEPS, exponent)
+		_rise_tables[exponent] = table
+	var values := _rise_tables[exponent]
+	_rise_mutex.unlock()
+	var at := clampf(core, 0.0, 1.0) * RISE_STEPS
+	var index := mini(floori(at), RISE_STEPS - 1)
+	return lerpf(values[index], values[index + 1], at - index)
 
 
 ## União suave (smooth min polinomial).
@@ -372,7 +400,7 @@ static func height_at_v2(spec: IslandSpec, noises: NoisesV2, lobes: Array[Lobe],
 	var bent := world + Vector2(noises.warp_c.get_noise_2d(x, z), noises.warp_d.get_noise_2d(z, x)) * PLATEAU_BEND_M
 	var region := noises.plateau.get_noise_2d(bent.x, bent.y) * 0.5 + 0.5
 	var core := clampf(1.0 - d, 0.0, 1.0)
-	var lift := lerpf(region, pow(core, params.inland_rise), 0.35)
+	var lift := lerpf(region, _rise(core, params.inland_rise), 0.35)
 	var raw := top * spec.profile.relief * lift + (region - 0.5) * params.plateau_jitter_m
 	# a planície do litoral fica no primeiro patamar até uma borda irregular (não um anel), e de lá sobe numa encosta curta
 	var edge := lerpf(0.35, 0.9, noises.rough.get_noise_2d(x * 1.7, z * 1.7) * 0.5 + 0.5)
