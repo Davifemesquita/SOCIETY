@@ -29,3 +29,4 @@ sun_angular_distance_deg = 0.5
 screen_space_aa = 2
 temporal_native = true
 fsr_sharpness = 0.2
+contact_shadows = true

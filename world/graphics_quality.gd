@@ -49,6 +49,8 @@ func apply(chosen: GraphicsPresetDef) -> void:
 			sun.directional_shadow_max_distance = chosen.shadow_distance_m
 			# Fase 37: sol com tamanho de verdade liga a sombra suave de contato (PCSS), só no ultra
 			sun.light_angular_distance = chosen.sun_angular_distance_deg
+			# Fase 48 (Godot 4.8): as sombras de contato do sol, no alto e no ultra
+			sun.shadow_contact_shadows_allow = chosen.contact_shadows
 	# a meia resolução do SSR é global no RenderingServer (não do Environment)
 	RenderingServer.environment_set_ssr_half_size(chosen.ssr_half_size)
 	if _crowd != null:

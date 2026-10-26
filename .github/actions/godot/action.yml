@@ -26,7 +26,7 @@ runs:
         pasta="$(dirname "$GODOT_BIN")"
         mkdir -p "$pasta"
         curl -fsSL -o /tmp/godot.zip \
-          "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          "${GODOT_RELEASES}/$(basename "$GODOT_BIN").zip"
         unzip -q /tmp/godot.zip -d "$pasta"
         chmod +x "$GODOT_BIN"
 

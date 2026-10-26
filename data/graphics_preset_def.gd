@@ -44,6 +44,8 @@ extends Resource
 @export var ssr: bool = false
 @export var ssr_half_size: bool = true
 @export var sun_angular_distance_deg: float = 0.0
+## Fase 48 (Godot 4.8): sombras de contato em espaço de tela do sol (assentam cercas, carroças e pés de prédio).
+@export var contact_shadows: bool = false
 
 @export_group("Antisserrilhado")
 ## Fase 32: AA de tela (Viewport.ScreenSpaceAA: 0 nenhum, 1 FXAA, 2 SMAA), usado quando o FSR 2.2 está desligado. O

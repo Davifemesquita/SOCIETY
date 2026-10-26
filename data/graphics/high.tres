@@ -25,3 +25,4 @@ render_scale = 1.0
 screen_space_aa = 2
 temporal_native = false
 fsr_sharpness = 0.2
+contact_shadows = true

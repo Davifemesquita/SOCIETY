@@ -14,9 +14,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GODOT_VERSION: 4.7.2
+  # Fase 48 (ramo godot-4.8): a beta vem do godotengine/godot-builds; na estável, volta ao padrão de sempre
+  GODOT_VERSION: 4.8-beta1
+  GODOT_RELEASES: https://github.com/godotengine/godot-builds/releases/download/4.8-beta1
   # fora do checkout e sem ".." no caminho: o actions/cache recusa caminho relativo
-  GODOT_BIN: /home/runner/godot/Godot_v4.7.2-stable_linux.x86_64
+  GODOT_BIN: /home/runner/godot/Godot_v4.8-beta1_linux.x86_64
 
 jobs:
   scripts:
