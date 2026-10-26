@@ -1,4 +1,4 @@
-# AGENTS.md — Society
+﻿# AGENTS.md — Society
 
 City builder 3D de economia e logística no estilo do gênero de Anno 1800, em **Godot 4.7.2
 (Forward+)**, GDScript com tipagem estática, para PC Windows. A especificação completa é
@@ -1603,7 +1603,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 35 — Costa viva (nossa) | **em andamento desde 25/10/2026**, feita sem tela: distância até a costa com sinal (por região e no arquipélago), plataforma rasa, espuma andando para a praia e ondas calmas na água; fundo raso pela distância, cáusticas, espraiado e detritos no terreno; as pastas sem tela passaram e o CI compilou os shaders (pasta `world`); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase35.md` |
 | 36 — Encostas de pedra (nossa) | **em andamento desde 25/10/2026**, feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
 | 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
-| 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); as pastas sem tela passaram; faltam o CI, e com tela as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
+| 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); a suíte inteira passou no CI; faltam, com tela, as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
 
 Pendências já vistas para fases futuras:
 
