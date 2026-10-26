@@ -9,6 +9,9 @@ var world: WorldState:
 	set(value):
 		world = value
 		_dirty = true
+		# o histórico de desfazer é do mundo de antes (não vai para o save: zera ao carregar)
+		if undo != null:
+			undo.clear()
 		if _harbors != null:
 			_harbors.chart.finish()
 		_harbors = null
@@ -16,6 +19,8 @@ var data: GameData
 var config: GameConfig
 ## Trapaça de desenvolvimento: construir sem custo e sem desbloqueio (testes, benchmark).
 var free_build: bool = false
+## Fase 49: desfazer e refazer (fora do save).
+var undo := UndoHistory.new()
 ## Só para o benchmark: construir sem olhar o terreno.
 var ignore_terrain: bool = false
 
@@ -87,6 +92,44 @@ func execute(command: Command) -> CommandResult:
 	if result.specialists_changed:
 		_dirty = true
 		EventBus.specialists_changed.emit()
+	if result.plans_changed:
+		EventBus.plans_changed.emit()
+	return result
+
+
+## Fase 49: um comando que entra no histórico de desfazer (obra, estrada, demolição, substituição e plantas). O que ele
+## muda é guardado antes e depois; uma ação nova apaga o que havia para refazer.
+func execute_undoable(command: Command) -> CommandResult:
+	var entry := undo.begin(self, command)
+	var result := execute(command)
+	if result.ok() and entry != null:
+		undo.commit(self, entry, result)
+	return result
+
+
+## Desfaz a última ação do histórico (dentro da janela de config.undo_window_s): o comando reverso.
+func undo_last() -> CommandResult:
+	var entry := undo.last(self)
+	if entry == null:
+		return CommandResult.refused(UndoHistory.NOTHING)
+	var result := execute(UndoCommand.new(entry))
+	if result.ok():
+		undo.moved_to_redo(entry)
+	elif result.reason == UndoHistory.EXPIRED:
+		undo.expire()
+	return result
+
+
+## Refaz a última ação desfeita (o mesmo comando de novo, que volta para o histórico).
+func redo_last() -> CommandResult:
+	var entry := undo.next_redo(self)
+	if entry == null:
+		return CommandResult.refused(UndoHistory.NOTHING)
+	var start := undo.begin(self, entry.command)
+	var result := execute(entry.command)
+	if result.ok():
+		undo.redone(entry)
+		undo.commit(self, start, result, false)
 	return result
 
 

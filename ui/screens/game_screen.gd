@@ -49,6 +49,8 @@ var tool: BuildTool
 var hud: Hud
 ## Fase 47: interface escondida, hora e inclinação para fotos.
 var photo_mode: PhotoMode
+## Fase 49: os fantasmas das plantas.
+var plan_view: PlanView
 var building_view: BuildingView
 var road_view: RoadView
 var cart_view: CartView
@@ -254,6 +256,9 @@ func _ready() -> void:
 	var preview := BuildPreviewView.new()
 	preview.setup(tool, _config.cell_size_m, simulation)
 	add_child(preview)
+	plan_view = PlanView.new()
+	plan_view.setup(simulation, _config.cell_size_m)
+	add_child(plan_view)
 	_ui_layer = CanvasLayer.new()
 	_ui_layer.name = "Interface"
 	add_child(_ui_layer)

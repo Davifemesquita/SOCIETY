@@ -76,6 +76,9 @@ var _cursor_label := Label.new()
 ## Fase 47: o campo da busca no menu de construção e o texto que filtra (vazio: a aba de sempre).
 var _search := LineEdit.new()
 var _search_text: String = ""
+var _plan_button: Button
+var _undo_button: Button
+var _redo_button: Button
 var _message_left: float = 0.0
 var _refresh_left: float = 0.0
 var _category: int = 0
@@ -292,6 +295,7 @@ func _pulse_hint(delta: float) -> void:
 
 
 func _refresh() -> void:
+	_refresh_history()
 	var world := _simulation.world
 	var balance := world.income_per_min - world.upkeep_per_min
 	_money_balance = balance
@@ -554,6 +558,20 @@ func _build_build_menu() -> void:
 			_tool.start_building(found[0])
 		_search.release_focus())
 	top.add_child(_search)
+	# Fase 49: planta (liga e desliga), construir as plantas, desfazer e refazer
+	_plan_button = UiKit.icon_button("action_scenarios", "HUD_PLAN_TIP", func() -> void: _tool.toggle_plan_mode())
+	_plan_button.name = "PlanToggle"
+	_plan_button.toggle_mode = true
+	top.add_child(_plan_button)
+	var build_plans := UiKit.icon_button("action_confirm", "HUD_BUILD_PLANS_TIP", func() -> void: _tool.build_plans())
+	build_plans.name = "BuildPlans"
+	top.add_child(build_plans)
+	_undo_button = UiKit.icon_button("action_back", "HUD_UNDO_TIP", func() -> void: _tool.undo())
+	_undo_button.name = "Undo"
+	top.add_child(_undo_button)
+	_redo_button = UiKit.icon_button("action_continue", "HUD_REDO_TIP", func() -> void: _tool.redo())
+	_redo_button.name = "Redo"
+	top.add_child(_redo_button)
 	top.add_child(VSeparator.new())
 	for layer: MapOverlays.Layer in MapOverlays.ICONS:
 		var button := UiKit.icon_button(MapOverlays.ICONS[layer], MapOverlays.KEYS[layer] + "_TIP")
@@ -796,9 +814,13 @@ func _needs_trading_post() -> bool:
 
 
 func _refresh_tool() -> void:
+	_refresh_history()
 	match _tool.mode:
 		BuildTool.Mode.BUILDING:
-			_hint.text = tr("HUD_HINT_BUILDING")
+			if _tool.dragging:
+				_hint.text = tr("HUD_HINT_REPLACE")
+			else:
+				_hint.text = tr("HUD_HINT_PLAN") if _tool.plan_mode else tr("HUD_HINT_BUILDING")
 		BuildTool.Mode.ROAD:
 			_hint.text = tr("HUD_HINT_PAVED_ROAD") if _tool.road_paved else tr("HUD_HINT_ROAD")
 			# o traçado da vez e a tecla que troca (Fase 17)
@@ -816,6 +838,15 @@ func _refresh_tool() -> void:
 		_:
 			_hint.text = tr("HINT_BUILD_TRADING_POST") if _needs_trading_post() else _overlay_hint()
 	_hint_panel.visible = not _hint.text.is_empty()
+
+
+## Fase 49: o botão da planta acompanha o modo; desfazer e refazer só acesos com o que fazer.
+func _refresh_history() -> void:
+	if _plan_button == null:
+		return
+	_plan_button.set_pressed_no_signal(_tool.plan_mode)
+	_undo_button.disabled = not _simulation.undo.can_undo(_simulation)
+	_redo_button.disabled = not _simulation.undo.can_redo(_simulation)
 
 
 ## Legenda da camada de mapa ligada (a fertilidade diz as culturas da ilha).

@@ -56,6 +56,13 @@ func refresh() -> void:
 	var valid := _tool.preview_reason() == PlacementRules.OK
 	_set_look(VALID_COLOR if valid else INVALID_COLOR, not valid)
 	match _tool.mode:
+		BuildTool.Mode.BUILDING when _tool.dragging:
+			# Fase 49: o retângulo de substituir
+			_set_look(DEMOLISH_COLOR, true)
+			_show_box(_tool.demolish_rect(), 3.0)
+		BuildTool.Mode.BUILDING when _tool.plan_mode and valid:
+			_set_look(PlanView.PLAN_COLOR, false)
+			_show_building()
 		BuildTool.Mode.BUILDING, BuildTool.Mode.MOVE:
 			_show_building()
 		BuildTool.Mode.ROAD:

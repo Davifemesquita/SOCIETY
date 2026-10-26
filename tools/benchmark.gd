@@ -181,6 +181,17 @@ func _run() -> void:
 	for step: String in sim.derived_state().last_rebuild_ms:
 		steps.append("%s %.1f" % [step, sim.derived_state().last_rebuild_ms[step]])
 	_report("recálculo por etapa (ms)", " · ".join(steps))
+	# Fase 49: a obra pelo histórico de desfazer (o que o jogador faz) e o desfazer dela, com a ilha cheia
+	started = Time.get_ticks_usec()
+	var undoable := sim.execute_undoable(PlaceBuildingCommand.new(Simulation.MAIN_ISLAND, &"market", Vector2i(200, 210), 0))
+	var built_us := Time.get_ticks_usec() - started
+	sim.derived_state()
+	started = Time.get_ticks_usec()
+	var undone := sim.undo_last()
+	var undo_us := Time.get_ticks_usec() - started
+	sim.derived_state()
+	_report("obra pelo histórico e o desfazer dela (ilha cheia)", "%.1f / %.1f ms (%s)" % [built_us / 1000.0, undo_us / 1000.0,
+			"ok" if undoable.ok() and undone.ok() else "recusado: %s %s" % [undoable.reason, undone.reason]])
 	# Fase 47: a dica que decompõe o número é montada no hover; o pior caso é o dinheiro e cada bem de todas as ilhas
 	started = Time.get_ticks_usec()
 	var goods_count := 0

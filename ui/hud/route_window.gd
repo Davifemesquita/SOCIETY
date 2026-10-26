@@ -16,6 +16,9 @@ var _simulation: Simulation
 var _tool: BuildTool
 var _routes := ItemList.new()
 var _filter := OptionButton.new()
+## Fase 49: nome e grupo da rota escolhida.
+var _name := LineEdit.new()
+var _group := LineEdit.new()
 var _stops := VBoxContainer.new()
 var _ships := VBoxContainer.new()
 var _editor := VBoxContainer.new()
@@ -70,6 +73,21 @@ func setup(simulation: Simulation, tool: BuildTool) -> void:
 			_simulation.execute(DeleteRouteCommand.new(_route_id))))
 	_editor.custom_minimum_size.x = 470
 	body.add_child(_editor)
+	var naming := HBoxContainer.new()
+	naming.add_theme_constant_override(&"separation", 6)
+	_editor.add_child(naming)
+	for pair: Array in [[_name, "RouteName", "ROUTES_NAME"], [_group, "RouteGroup", "ROUTES_GROUP"]]:
+		var field: LineEdit = pair[0]
+		var field_name: String = pair[1]
+		var key: String = pair[2]
+		field.name = field_name
+		field.placeholder_text = key
+		field.tooltip_text = key + "_TIP"
+		field.max_length = RenameRouteCommand.MAX_LENGTH
+		field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		field.text_submitted.connect(func(_text: String) -> void: rename_route(_name.text, _group.text))
+		field.focus_exited.connect(func() -> void: rename_route(_name.text, _group.text))
+		naming.add_child(field)
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(470, 300)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -109,6 +127,32 @@ func _process(delta: float) -> void:
 func create_route() -> void:
 	var result := _simulation.execute(CreateRouteCommand.new())
 	select_route(result.created_id)
+
+
+## Nome e grupo da rota escolhida (Fase 49); sem mudança, nada.
+func rename_route(route_name: String, route_group: String) -> void:
+	var route: TradeRoute = _simulation.world.routes.get(_route_id)
+	if route == null or (route.name == route_name.strip_edges() and route.group == route_group.strip_edges()):
+		return
+	_simulation.execute(RenameRouteCommand.new(_route_id, route_name, route_group))
+
+
+## O que a lista mostra: o nome dado (ou "Rota N"), com o grupo na frente.
+static func display_name(route: TradeRoute) -> String:
+	var shown := route.name if route.name != "" else TranslationServer.translate("ROUTE_NAME") % route.id
+	return ("[%s] %s" % [route.group, shown]) if route.group != "" else shown
+
+
+## As rotas na ordem da lista: por grupo (sem grupo por último) e depois por id.
+static func ordered(world: WorldState) -> Array[int]:
+	var ids := world.route_ids()
+	ids.sort_custom(func(a: int, b: int) -> bool:
+		var group_a := world.routes[a].group
+		var group_b := world.routes[b].group
+		if group_a != group_b:
+			return group_b == "" or (group_a != "" and group_a < group_b)
+		return a < b)
+	return ids
 
 
 ## Duplica a rota escolhida (Fase 47): uma rota nova com cópias das paradas e das ordens (sem os navios).
@@ -164,6 +208,8 @@ func select_route(route_id: int) -> void:
 	map.route_id = route_id
 	var route: TradeRoute = _simulation.world.routes.get(route_id)
 	_working.clear()
+	_name.text = route.name if route != null else ""
+	_group.text = route.group if route != null else ""
 	if route != null:
 		for stop: TradeRoute.Stop in route.stops:
 			_working.append(stop.duplicate())
@@ -214,10 +260,10 @@ func _on_routes_changed() -> void:
 func _fill_list() -> void:
 	_fill_filter()
 	_routes.clear()
-	for route_id: int in _simulation.world.route_ids():
+	for route_id: int in ordered(_simulation.world):
 		if not passes_filter(_simulation.world.routes[route_id], Settings.route_filter):
 			continue
-		var index := _routes.add_item(tr("ROUTE_NAME") % route_id, Icons.action("routes"))
+		var index := _routes.add_item(display_name(_simulation.world.routes[route_id]), Icons.action("routes"))
 		_routes.set_item_metadata(index, route_id)
 		if route_id == _route_id:
 			_routes.select(index)

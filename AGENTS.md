@@ -1735,6 +1735,23 @@ Regras que já custaram investigação:
   área de trabalho escondida liam o mouse num canto); filtro de nós que podem ter sido liberados usa parâmetro `Variant`
   (a 4.8 recusa objeto liberado em parâmetro tipado).
 
+### Desfazer e planta (Fase 49, nossa)
+
+- **Plano** em `docs/plano_fase49.md`, começada em 26/10/2026. **Save na versão 16** (`SaveMigrations.from_15_to_16`:
+  `plans` vazio, `next_plan_id` 1).
+- **Desfazer**: `Simulation.execute_undoable` (a ferramenta usa sempre), `undo_last`, `redo_last`, `undo` (`UndoHistory`,
+  fora do save, zerado no setter de `world`). `UndoHistory.Entry` guarda dinheiro e estoque (antes e depois), estradas,
+  árvores e `cleared_trees` do retângulo (`area_of`), prédios criados e tirados (o registro) e as plantas;
+  `UndoCommand` volta (exato no mesmo tick, diferença depois). `GameConfig.undo_window_s` e `undo_max_entries`. Comando
+  novo que deva entrar no histórico: um caso em `UndoHistory.area_of` e `_island_of`.
+- **Plantas**: `PlanRecord`, `WorldState.plans`, `PlacePlanCommand`, `RemovePlansCommand`, `BuildPlansCommand`,
+  `CommandResult.plans_changed` → `EventBus.plans_changed`; `PlanView` (`GameScreen.plan_view`). A planta não reserva
+  a célula.
+- **Substituir**: `ReplaceCommand` (Ctrl+arrastar na obra, `BuildTool.replace_drag`).
+- **Rotas**: `TradeRoute.name` e `group` (no save), `RenameRouteCommand`, `RouteWindow.display_name` e `ordered`.
+- **Teclas**: `InputActions.CTRL_KEYS` (`game_undo` Ctrl+Z, `game_redo` Ctrl+Shift+Z e Ctrl+Y, fixas); `build_plan` sem
+  tecla.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1794,6 +1811,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 46 — Calçamento e esquinas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
 | 47 — QoL de interface (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
 | 48 — Godot 4.8 (nossa) | **ensaio feito em 26/10/2026, à espera da 4.8 estável**, sem nada na tela do dono: a estável não saiu; a 4.8-beta1 roda o projeto no ramo `godot-4.8` (378 scripts sem erro, suíte sem janela verde, testes dourados iguais, benchmark com GPU +0,4 ms com sombras de contato e AO de vários quiques ligados no alto e no ultra); nomes reais das opções novas registrados; dois consertos achados medindo vieram para o main (pan pela borda sem mouse e filtro de nós liberados); falta a estável, o dono decidir quando subir e medir na 3060; plano em `docs/plano_fase48.md` |
+| 49 — Desfazer e planta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
 
 Pendências já vistas para fases futuras:
 

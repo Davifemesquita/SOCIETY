@@ -44,6 +44,9 @@ class Stop:
 
 var id: int
 var stops: Array[Stop] = []
+## Fase 49 (a Fase 47 pediu): o nome que o jogador deu (vazio: "Rota N") e o grupo, para ordenar a lista.
+var name: String = ""
+var group: String = ""
 
 
 func _init(route_id: int) -> void:
@@ -58,19 +61,23 @@ func to_dict() -> Dictionary:
 	var list: Array[Dictionary] = []
 	for item: Stop in stops:
 		list.append(item.to_dict())
-	return {"id": id, "stops": list}
+	return {"id": id, "stops": list, "name": name, "group": group}
 
 
 ## Lê uma rota do save; null se algo vier com tipo errado ou apontar para o que não existe.
 static func from_dict(data: Dictionary, island_count: int, game_data: GameData) -> TradeRoute:
 	var raw_id: Variant = data.get("id")
 	var raw_stops: Variant = data.get("stops")
-	if not (raw_id is int and raw_stops is Array):
+	var raw_name: Variant = data.get("name")
+	var raw_group: Variant = data.get("group")
+	if not (raw_id is int and raw_stops is Array and raw_name is String and raw_group is String):
 		return null
 	var route_id: int = raw_id
 	if route_id <= 0:
 		return null
 	var route := TradeRoute.new(route_id)
+	route.name = raw_name
+	route.group = raw_group
 	var stop_list: Array = raw_stops
 	for raw_stop: Variant in stop_list:
 		if not raw_stop is Dictionary:
