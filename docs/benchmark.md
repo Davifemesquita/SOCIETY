@@ -812,3 +812,46 @@ campos e pastos na semente 1840, alto, área de trabalho escondida), no commit d
   vão em MultiMesh sem sombra.
 - A primeira montagem calcula o terreno sob cada planta e leira (~27 ms); depois fica em cache pelo lote, e refazer a
   vista a cada obra custa ~7 ms (sem tela, antes da fase: 5,5 ms).
+
+## Fase 41 — mata e recheio (26/10/2026)
+
+Área de trabalho escondida, alto, comparado com a Fase 39 (a 40 não mexe na carga do benchmark: ele não tem fazendas).
+
+| Medida | Fase 39 | Fase 41 |
+|---|---|---|
+| jogo novo / carregar | 5.666 / 1.943 ms | 6.062 / 2.433 ms |
+| construir um prédio com a ilha cheia | 17,9 ms | 17,8 ms |
+| dia inteiro: FPS médio / 1% low / 0,1% low / pior quadro | 85,0 / 44,3 / 38,6 / 27 ms | 82,9 / 44,0 / 37,1 / 28 ms |
+| quadro p50 / p95 / p99; GPU média | 11,1 / 15,9 / 21,0; 11,1 ms | 11,6 / 16,1 / 21,2; 11,4 ms |
+
+- O recheio do arquipélago (28.564 peças) custa ~0,45 s no jogo novo e no carregar; a GPU sobe ~0,3 ms (as copas com
+  tufos e o recheio perto da câmera).
+
+### 2026-10-26 06:49:32 — AMD Ryzen 7 5700X 8-Core Processor
+
+| Medida | Resultado |
+|---|---|
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| placa e driver | NVIDIA GeForce RTX 5060 · vulkan · (1920, 1080) · VSync ligado |
+| jogo novo: arquipélago, terreno, água e árvores | 6062 ms (semente 1840, 94484 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 582 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 9535 ms |
+| carroças na rua depois de 2 min | 147 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 1.29 / 1.45 / 2.40 ms (orçamento 4.0 ms) |
+| tick por etapa (ms, da mais pesada) | logística 0.39 · produção 0.33 · população 0.27 · necessidades 0.11 · navios 0.04 · riscos 0.04 · força de trabalho 0.03 · marcos, metas e vitória 0.03 · estaleiro 0.02 · combate 0.01 · eventos, encomendas e especialistas 0.01 · rivais 0.01 · estatísticas 0.00 · economia 0.00 · estado derivado 0.00 |
+| construir um prédio com a ilha cheia | 17.8 ms (limite 50 ms): comando e vistas 17.8 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 3.6 · serviços 3.7 · módulos, poluição e beleza 0.0 · armazéns 3.2 · produção 2.5 · grupos de casas 0.5 |
+| salvar | 79 ms (56 KB) |
+| carregar (inclui refazer as vistas) | 2433 ms |
+| quadro com tudo visível | 11 ms (87 FPS) — NVIDIA GeForce RTX 5060 |
+| objetos, draw calls e primitivas no quadro com tudo visível | 2876 · 1210 · 17748740 |
+| pipelines compiladas montando e desenhando a cidade (desenho / superfície / malha / especialização) | 0 / 5 / 0 / 11 (primeira vez atrás da cortina: ligada) |
+| pedestres | 2000 na multidão, 1900 na rua (teto 2000); 22629 janelas |
+| multidão saindo de casa (rotas novas) | 320 quadros, 1528 ms; 1389 rotas, 0.69 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.30 ms por quadro |
+| dia inteiro em 60 s a 1x, Alta, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 82.9 / 44.0 / 37.1 FPS / 28 ms em 4974 quadros (meta 60 FPS), a partir das 10:00 |
+| quadro no Alta (p50 / p95 / p99) | 11.6 / 16.1 / 21.2 ms; GPU média 11.4 ms (p99 16.1); CPU do render média 1.2 ms |
+| tick por quadro no Alta (média / p99 / pior) | 0.11 / 1.89 / 13.86 ms |
+| pipelines compiladas no dia, Alta (desenho / superfície / malha / especialização) | 12 / 11 / 0 / 57 |

@@ -1606,6 +1606,20 @@ Regras que já custaram investigação:
   420 m e fotografa (`docs/benchmark.md`). Sem tela, o MultiMesh devolve transformações zeradas: os testes leem os lugares
   das funções (`_furrow_places`, `_add_borders`), não do MultiMesh.
 
+### Mata e recheio (Fase 41, nossa)
+
+- **Plano** em `docs/plano_fase41.md`, começada em 26/10/2026 (41a e 41b juntas). Só apresentação.
+- **Árvores**: normais da folhagem puxadas para a da copa inteira (`TreeModel.CROWN_ROUND`, o `hull` de cada espécie) e
+  tufos pequenos (`_puffs`, só no nível de perto, depois de todas as massas: o sorteio do nível de longe não muda);
+  `BACKLIGHT` no `foliage.gdshader` onde a cor puxa para o verde; histerese de `TreeView.LOD_MARGIN_M` nas margens do
+  alcance. Folha recortada e impostor ficaram de fora (pedem arte e spike de GPU).
+- **Recheio** (`ScatterView`, criada pela `GameScreen._build_ground` com as árvores): `places()` é função pura do mundo
+  (por trecho de `CHUNK_CELLS`, com `island_context` das portas e dos tipos calculado uma vez por ilha); regras por
+  vizinhança (`NEAR_HOUSE`, `NEAR_WORKS`, `NEAR_FOREST`, `NEAR_ROAD`, `NEAR_SEA`, `OPEN`); MultiMesh por trecho e peça
+  até `VISIBLE_UNTIL_M`; refaz só os trechos marcados (obra pela área; demolição pela diferença da ocupação; estrada pela
+  diferença das linhas; árvores pela área). Ao carregar segue o `simulation.world`; não refaz duas vezes no mesmo quadro.
+  O laço por célula indexa os arrays direto (0,75 → 0,45 s no arquipélago da semente 1840).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1655,8 +1669,9 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 36 — Encostas de pedra (nossa) | **em andamento desde 25/10/2026**, feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
 | 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
 | 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); a suíte inteira passou no CI; faltam, com tela, as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
-| 39 — Prédios assentados (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
+| 39 — Prédios assentados (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); a suíte inteira passou no CI; falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
 | 40 — Campos em colcha (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: terra lavrada com contorno ondulado igual dos dois lados da divisa, sem a caixa; fileiras em x ou z (vizinhos sempre diferentes) com cabeceira; tom por campo; sebe (muro de pedra na encosta) em volta de cada fazenda com porteira, nada nas tropicais; pasto sem caixa, com trilhas no terreno; GPU igual no bairro rural medido; falta o dono escolher sebe ou muro por região e o tratamento das tropicais; plano em `docs/plano_fase40.md` |
+| 41 — Mata e recheio (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copas fofas (normais da copa inteira, tufos, luz de trás) e histerese na troca de detalhe; recheio determinístico fora do save (arbustos, capim, flores, pedrinhas, barris, caixotes e lenha pela vizinhança), refeito só nos trechos atingidos; GPU de 11,1 para 11,4 ms no alto, jogo novo e carregar ~0,4 s a mais; folha recortada e impostor ficaram de fora; falta o dono aprovar a densidade e escolher a textura de folha; plano em `docs/plano_fase41.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -37,6 +37,9 @@ const VISIBLE_UNTIL_M := 900.0
 ## Até esta distância do trecho (do meio dele) a árvore do TreeModel é a de perto; depois, a de longe
 ## (Fase 22). O trecho tem 128 m: no pior caso a árvore da borda troca a ~110 m da câmera.
 const NEAR_UNTIL_M := 200.0
+## Histerese da troca (Fase 41): a árvore que passou para a de longe só volta à de perto LOD_MARGIN_M antes, e
+## vice-versa — a câmera parada na divisa não fica piscando entre as duas.
+const LOD_MARGIN_M := 24.0
 ## Desenhadas no máximo tantas árvores por célula (a regra do lenhador conta todas): a copa de
 ## uma árvore de 8 m já cobre a célula de 2 m.
 const DRAWN_PER_CELL := 2
@@ -196,6 +199,10 @@ func _layer(name_text: String, mesh: Mesh, buffer: PackedFloat32Array, from_m: f
 	node.multimesh = multimesh
 	node.visibility_range_begin = from_m
 	node.visibility_range_end = until_m
+	if from_m > 0.0:
+		node.visibility_range_begin_margin = LOD_MARGIN_M
+	if until_m < VISIBLE_UNTIL_M:
+		node.visibility_range_end_margin = LOD_MARGIN_M
 	add_child(node)
 	return node
 

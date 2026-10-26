@@ -25,6 +25,8 @@ uniform float model_height = 6.0;
 uniform float calm = 0.3;
 uniform float lean = 1.4;
 uniform float hurry = 0.8;
+// Fase 41: luz de trás nas folhas (o sol atravessando a copa); a madeira (cor sem predomínio do verde) não ganha
+uniform float backlight = 0.35;
 
 void vertex() {
 	vec3 origin = MODEL_MATRIX[3].xyz;
@@ -58,4 +60,6 @@ void fragment() {
 	}
 	ALBEDO = wet_albedo(base, 1.0);
 	ROUGHNESS = wet_roughness(roughness, 1.0);
+	float leafy = smoothstep(1.05, 1.35, base.g / max(base.r, 0.001));
+	BACKLIGHT = base * backlight * leafy;
 }

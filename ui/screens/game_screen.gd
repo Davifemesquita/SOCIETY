@@ -77,6 +77,7 @@ var autosave: Autosave
 var terrain_view: TerrainView
 var water_view: WaterView
 var tree_view: TreeView
+var scatter_view: ScatterView
 var _ground: Node3D
 ## Destaque de terreno por ilha e prédio (percorre a ilha inteira: guardado até árvores caírem).
 var _terrain_highlights: Dictionary[String, Image] = {}
@@ -316,13 +317,14 @@ func _exit_tree() -> void:
 ## O chão do mundo atual: a ilha plana de antes ou o terreno, a água e as árvores do arquipélago.
 ## Refeito ao carregar um save de outro mundo.
 func _build_ground() -> void:
-	for node: Node in [_ground, terrain_view, water_view, tree_view]:
+	for node: Node in [_ground, terrain_view, water_view, tree_view, scatter_view]:
 		if node != null:
 			node.queue_free()
 	_ground = null
 	terrain_view = null
 	water_view = null
 	tree_view = null
+	scatter_view = null
 	var world := simulation.world
 	if world.terrain_version == 0:
 		var island := FlatIsland.new()
@@ -339,6 +341,10 @@ func _build_ground() -> void:
 	tree_view = TreeView.new()
 	add_child(tree_view)
 	tree_view.setup(world, simulation.data, _config)
+	# Fase 41: o recheio entre as casas, na beira da mata, da estrada e do mar
+	scatter_view = ScatterView.new()
+	add_child(scatter_view)
+	scatter_view.setup(world, simulation.data, _config, simulation)
 
 
 ## Área que a câmera alcança: todas as ilhas.
