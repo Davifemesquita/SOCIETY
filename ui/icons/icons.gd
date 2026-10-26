@@ -90,6 +90,15 @@ static func status(value: UiPalette.Status) -> Texture2D:
 	return get_icon(names[value])
 
 
+## Fase 51: a foto do prédio (tools/bake_building_photos.tscn, os nossos modelos fotografados com o acabamento de
+## pintura), ou null se não há (o píer, um prédio novo antes de refazer as fotos): quem pede cai no ícone. A casa tem uma
+## por classe (house_<classe>).
+static func photo(def_id: StringName, tier: StringName = &"") -> Texture2D:
+	var name := "house_%s" % tier if tier != &"" else "building_%s" % def_id
+	var path := "res://ui/photos/%s.png" % name
+	return load(path) if ResourceLoader.exists(path) else null
+
+
 ## Retrato (placeholder até a arte final): tier_<id>, advisor ou trader.
 static func portrait(id: String) -> Texture2D:
 	var path := "res://ui/portraits/portrait_%s.png" % id

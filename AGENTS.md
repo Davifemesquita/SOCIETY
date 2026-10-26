@@ -1767,6 +1767,17 @@ Regras que já custaram investigação:
 - **Gancho**: `BuildingKit.kit_root`, `asset_path`, `asset_mesh`, `Spec.asset`: a peça `<prédio>[_<classe>].glb` entra no
   lugar da forma procedural em `BuildingKit.mesh`; `forget_assets` nos testes.
 
+### Fotos e retratos nos menus (Fase 51, nossa)
+
+- **Plano** em `docs/plano_fase51.md`. Ideias de apresentação do Anno 1800, nenhum arquivo dele.
+- **Fotos**: `tools/bake_building_photos.tscn` fotografa os nossos modelos (`ui/photos/building_<id>.png`,
+  `house_<classe>.png`, 320 × 240) com o acabamento de `PhotoGrade` (`ui/photo_grade.gd`); `Icons.photo(prédio, classe)`,
+  null sem foto (cai no ícone). Prédio novo: refazer as fotos.
+- **Retratos**: pinturas CC0 do Art Institute of Chicago (`assets/source/portraits/aic_<id>.jpg`), recortadas por
+  `tools/build_portraits.gd` em `ui/portraits/`; crédito de cada obra no `CREDITS.md`. O `build_icons.gd` não gera mais
+  retratos.
+- **Interface**: cartões do menu com a foto (`Hud.PHOTO_CARD_HEIGHT`); faixa `Photo` no topo do painel do selecionado.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1828,6 +1839,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 48 — Godot 4.8 (nossa) | **ensaio feito em 26/10/2026, à espera da 4.8 estável**, sem nada na tela do dono: a estável não saiu; a 4.8-beta1 roda o projeto no ramo `godot-4.8` (378 scripts sem erro, suíte sem janela verde, testes dourados iguais, benchmark com GPU +0,4 ms com sombras de contato e AO de vários quiques ligados no alto e no ultra); nomes reais das opções novas registrados; dois consertos achados medindo vieram para o main (pan pela borda sem mouse e filtro de nós liberados); falta a estável, o dono decidir quando subir e medir na 3060; plano em `docs/plano_fase48.md` |
 | 49 — Desfazer e planta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
 | 50 — Kit de época (nossa) | **caminho pronto em 26/10/2026, à espera da arte**, sem nada na tela do dono: regras de importação com teste (orçamento de triângulos por categoria, uma malha, frente em −Z, pivô e tamanho no lote, LOD, nome, crédito), validação no CI, o BuildingKit pondo a peça no lugar da forma procedural sem quebrar a montagem por célula (sem peça, nada muda; benchmark igual), lista do que falta no `assets/TODO_ASSETS.md`; falta a arte (modelar, gerar ou comprar as peças) e as aprovações do dono; plano em `docs/plano_fase50.md` |
+| 51 — Fotos e retratos nos menus (nossa) | **feita em 26/10/2026, a pedido do dono**, sem nada na tela dele: ideias do Anno 1800 (cartões ilustrados, painel com a imagem do prédio, retratos pintados), nenhum arquivo dele; 64 fotos dos nossos próprios modelos com acabamento de pintura nos cartões do menu de construção e no painel; retratos de pinturas do século XIX em domínio público (Pissarro, Renoir, Manet e outros, Art Institute of Chicago, CC0) nas classes, no conselheiro e no comerciante; quadro igual; plano em `docs/plano_fase51.md` |
 
 Pendências já vistas para fases futuras:
 

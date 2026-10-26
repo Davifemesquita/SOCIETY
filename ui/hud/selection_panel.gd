@@ -17,6 +17,8 @@ signal specialists_requested(building_id: int)
 signal statistics_requested(good: StringName, island_id: int)
 
 const REFRESH_SECONDS := 0.25
+## Fase 51: altura da faixa da foto (a largura é a do painel; a foto é cortada para cobrir).
+const PHOTO_HEIGHT := 150
 ## Produtividade média a partir da qual o prédio aparece como produzindo.
 const SHOWN_PRODUCING := 0.9
 
@@ -25,6 +27,8 @@ var _simulation: Simulation
 var _title := Label.new()
 var _title_icon := TextureRect.new()
 var _portrait := TextureRect.new()
+## Fase 51: a foto do prédio numa faixa larga no topo (a da classe, na casa), como o painel ilustrado do Anno 1800.
+var _photo := TextureRect.new()
 var _body := VBoxContainer.new()
 ## Botões do bloco numa linha, que quebra quando não cabe (estaleiro com vários navios).
 var _buttons := HFlowContainer.new()
@@ -55,6 +59,12 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	head.add_child(_title)
 	head.add_child(UiKit.icon_button("action_center", "INFO_CENTER_HINT", func() -> void: center_requested.emit()))
 	head.add_child(UiKit.icon_button("action_close", "UI_CLOSE", func() -> void: tool.select(0)))
+	_photo.name = "Photo"
+	_photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_photo.custom_minimum_size = Vector2(0, PHOTO_HEIGHT)
+	_photo.visible = false
+	column.add_child(_photo)
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_portrait.custom_minimum_size = Vector2(96, 120)
@@ -122,6 +132,8 @@ func show_building(building_id: int) -> void:
 		return
 	var def := _simulation.def_of(record)
 	_title_icon.texture = Icons.building(def.id)
+	_photo.texture = Icons.photo(def.id, record.tier if record.is_house() else &"")
+	_photo.visible = _photo.texture != null
 	match def.kind:
 		BuildingDef.Kind.PRODUCTION:
 			_build_production(record, def)

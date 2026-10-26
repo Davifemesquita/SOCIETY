@@ -1136,3 +1136,8 @@ monitor até 75: 60 FPS em 180 Hz), cada quadro fica sempre 3 batidas:
 | automático (60) | 16,7 ms | 1,1 ms | 1,1% |
 
 O benchmark mede sem limite como sempre (os números das fases seguem comparáveis); `-- --limite N` mede com um.
+
+## Fase 51 — fotos e retratos nos menus (26/10/2026)
+
+Área de trabalho escondida, alto: só interface (64 fotos de 320 × 240 e 7 retratos carregados sob demanda) — 81,9 FPS,
+GPU 11,5 ms, obra 18,3 ms e carregar 2,46 s, dentro do ruído das fases anteriores.

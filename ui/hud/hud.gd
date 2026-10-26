@@ -15,6 +15,8 @@ signal overlay_changed(layer: MapOverlays.Layer)
 const MESSAGE_SECONDS := 3.0
 const REFRESH_SECONDS := 0.5
 const CARD_WIDTH := 112
+## Fase 51: o cartão com foto (104 × 78) e o nome embaixo.
+const PHOTO_CARD_HEIGHT := 128
 ## Fase 43: no máximo tantos cartões por linha no painel dos prédios, e o espaço entre eles.
 const ITEMS_PER_ROW := 8
 const ITEM_GAP := 6
@@ -660,7 +662,9 @@ func _select_category(index: int) -> void:
 		var def_id := _simulation.world.building(building_id).def_id
 		counts[def_id] = counts.get(def_id, 0) + 1
 	for def: BuildingDef in defs:
-		var button := _card(def.name_key, Icons.building(def.id))
+		# Fase 51: a foto do prédio (a casa, a dos camponeses), como os cartões ilustrados; sem foto, o ícone
+		var photo := Icons.photo(def.id, _simulation.data.tiers[0].id if def.kind == BuildingDef.Kind.RESIDENCE else &"")
+		var button := _card(def.name_key, photo if photo != null else Icons.building(def.id), photo != null)
 		button.name = "Item_" + def.id
 		button.tooltip_text = _tooltip(def)
 		# Fase 47: quantos já existem (a lista dos existentes passa pelo "Próximo igual" do painel)
@@ -696,8 +700,8 @@ func _select_category(index: int) -> void:
 	_refresh()
 
 
-## Cartão do menu de construção: o ícone em cima e o nome embaixo.
-func _card(text_key: String, icon: Texture2D) -> Button:
+## Cartão do menu de construção: o ícone (ou a foto, Fase 51) em cima e o nome embaixo.
+func _card(text_key: String, icon: Texture2D, photo: bool = false) -> Button:
 	var button := Button.new()
 	button.theme_type_variation = &"CardButton"
 	button.text = text_key
@@ -705,7 +709,10 @@ func _card(text_key: String, icon: Texture2D) -> Button:
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	button.custom_minimum_size = Vector2(CARD_WIDTH, 92)
+	button.custom_minimum_size = Vector2(CARD_WIDTH, PHOTO_CARD_HEIGHT if photo else 92)
+	if photo:
+		# a foto 4:3 na largura do cartão (o ícone fica no tamanho dele)
+		button.add_theme_constant_override(&"icon_max_width", CARD_WIDTH - 8)
 	button.focus_mode = Control.FOCUS_NONE
 	return button
 

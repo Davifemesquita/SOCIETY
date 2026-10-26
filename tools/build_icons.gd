@@ -3,17 +3,15 @@ extends SceneTree
 ## recolorido e emoldurado no estilo do jogo, em 128 px, e todos vão para ui/icons/icons.png, com o
 ## índice em ui/icons/icons.json. A lista (nome padronizado, origem, estilo) está em
 ## tools/icons/icon_list.csv; os SVGs se baixam com tools/icons/fetch_icons.sh.
-## Gera também os retratos placeholder (ui/portraits/) e os indicadores de estado.
+## Gera também os indicadores de estado. Os retratos saíram daqui na Fase 51 (tools/build_portraits.gd, pinturas).
 ##   tools/godot.sh godot --headless --path . --script res://tools/build_icons.gd
 
 const LIST := "res://tools/icons/icon_list.csv"
 const SOURCES := "res://assets/source/game-icons/"
 const ATLAS := "res://ui/icons/icons.png"
 const INDEX := "res://ui/icons/icons.json"
-const PORTRAITS := "res://ui/portraits/"
 const CELL := 128
 const COLUMNS := 16
-const PORTRAIT_SIZE := Vector2i(256, 320)
 
 ## Moldura e cores de cada estilo: fundo, aro, contorno, tinta do desenho e a forma.
 const STYLES := {
@@ -25,17 +23,6 @@ const STYLES := {
 	"notice": {"fill": UiPalette.WOOD, "rim": UiPalette.GOLD, "edge": UiPalette.INK, "ink": UiPalette.GOLD_LIGHT, "shape": "circle"},
 	"action": {"ink": UiPalette.INK, "shape": "none"},
 	"hud": {"ink": UiPalette.INK, "shape": "none"},
-}
-
-## Retratos placeholder: o desenho de fundo (do atlas) e a cor do fundo.
-const PORTRAIT_LIST := {
-	"tier_peasants": ["delapouite/farmer", Color("7a5a36")],
-	"tier_workers": ["delapouite/blacksmith", Color("5a4a3e")],
-	"tier_artisans": ["lorc/gear-hammer", Color("4f5a3a")],
-	"tier_engineers": ["lorc/compass", Color("3a4a5e")],
-	"tier_investors": ["lorc/top-hat", Color("5e3a4a")],
-	"advisor": ["delapouite/scroll-quill", Color("4e3b2c")],
-	"trader": ["lorc/scales", Color("6e2a26")],
 }
 
 
@@ -63,7 +50,6 @@ func _init() -> void:
 	var file := FileAccess.open(INDEX, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"cell": CELL, "icons": index}, "\t", true))
 	file.close()
-	_portraits()
 	print("build_icons: %d ícones em %s" % [index.size(), ATLAS])
 	quit()
 
@@ -202,33 +188,3 @@ static func _triangle(p: Vector2, r: float) -> float:
 	q.x -= clampf(q.x, -2.0 * r, 0.0)
 	return -q.length() * signf(q.y)
 
-
-## Retratos placeholder (seção 14: forma simples na cor da categoria; o nome aparece na tela):
-## moldura oval dourada, fundo de óleo escuro e o desenho do personagem em tom de papel.
-func _portraits() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PORTRAITS))
-	for portrait: String in PORTRAIT_LIST:
-		var source: String = PORTRAIT_LIST[portrait][0]
-		var background: Color = PORTRAIT_LIST[portrait][1]
-		var image := Image.create_empty(PORTRAIT_SIZE.x, PORTRAIT_SIZE.y, false, Image.FORMAT_RGBA8)
-		var center := Vector2(PORTRAIT_SIZE) * 0.5
-		var radii := center - Vector2(6, 6)
-		for y: int in PORTRAIT_SIZE.y:
-			for x: int in PORTRAIT_SIZE.x:
-				var p := (Vector2(x + 0.5, y + 0.5) - center) / radii
-				var r := p.length()
-				var d := (r - 1.0) * radii.x
-				var shade: Color = background.lerp(Color.BLACK, clampf(r * 0.55, 0.0, 0.6))
-				var color := shade.lerp(UiPalette.GOLD_LIGHT, clampf(0.35 - (p + Vector2(0.4, 0.5)).length() * 0.4, 0.0, 0.3))
-				if d > -5.0:
-					color = UiPalette.WOOD
-				elif d > -14.0:
-					color = UiPalette.GOLD
-				var alpha := clampf(0.5 - d, 0.0, 1.0)
-				if alpha > 0.0:
-					image.set_pixel(x, y, Color(color, alpha))
-		var paper: Color = UiPalette.PAPER_DARK
-		var drawn := glyph(source, paper, 170)
-		if drawn != null:
-			image.blend_rect(drawn, Rect2i(Vector2i.ZERO, drawn.get_size()), (PORTRAIT_SIZE - drawn.get_size()) / 2 + Vector2i(0, 16))
-		image.save_png(PORTRAITS + "portrait_%s.png" % portrait)

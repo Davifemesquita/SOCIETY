@@ -25,7 +25,7 @@ código GPL dentro do jogo.
 | Fantasy Town Kit 2.0 | Kenney | https://kenney.nl/assets/fantasy-town-kit | CC0 | `assets/models/props/cart.glb` (a carroça, juntada numa malha só pela `CartView`) e as 21 peças de `assets/models/buildings/`: parede e chaminé (fachadas dos prédios, montadas pelo `BuildingKit`) e, desde a Fase 13, moinho de vento, roda d'água, roda, viga de madeira, bancas e bandeira (silhueta por cadeia) e cerca, portão, sebe, sacada, coluna de pedra e tábuas (detalhe das casas) |
 | Old Standard TT 3.0 | Alexey Kryukov (The Old Standard Project Authors) | https://fonts.google.com/specimen/Old+Standard+TT | OFL 1.1 | `assets/fonts/OldStandard-{Regular,Bold,Italic}.ttf` (textos e números da interface; licença em `assets/fonts/OFL-OldStandard.txt`) |
 | Playfair Display | Claus Eggers Sørensen | https://fonts.google.com/specimen/Playfair+Display | OFL 1.1 | `assets/fonts/PlayfairDisplay.ttf` (títulos; licença em `assets/fonts/OFL-PlayfairDisplay.txt`) |
-| Ícones do game-icons.net | Delapouite, Lorc, Skoll, Guard13007, Pierre Leducq, Caro Asercion, Faithtoken e Sbed | https://game-icons.net | CC BY 3.0 | 225 SVGs em `assets/source/game-icons/<autor>/` (lista em `tools/icons/icon_list.csv`), recoloridos e emoldurados por `tools/build_icons.gd` no atlas `ui/icons/icons.png`; os retratos placeholder de `ui/portraits/` usam os mesmos desenhos |
+| Ícones do game-icons.net | Delapouite, Lorc, Skoll, Guard13007, Pierre Leducq, Caro Asercion, Faithtoken e Sbed | https://game-icons.net | CC BY 3.0 | 225 SVGs em `assets/source/game-icons/<autor>/` (lista em `tools/icons/icon_list.csv`), recoloridos e emoldurados por `tools/build_icons.gd` no atlas `ui/icons/icons.png` |
 | Sons de interface, impacto e RPG (Interface Sounds, Impact Sounds, RPG Audio) | Kenney | https://kenney.nl/assets/interface-sounds, https://kenney.nl/assets/impact-sounds, https://kenney.nl/assets/rpg-audio | CC0 | 18 efeitos em `assets/audio/sfx/` (licença em `assets/audio/LICENSE_kenney.txt`) |
 | Tiro de canhão (`cannon_1.wav`, `cannon_2.wav`) | gerado por `tools/build_cannon_sound.py` (este projeto) | — | próprio | 2 efeitos em `assets/audio/sfx/`: ruído filtrado e um ronco grave, sem arquivo de terceiros |
 | Erik Satie - gymnopedies - la 1 ere. lent et douloureux.ogg | Robin Alciatore (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg | Public domain | `assets/audio/music/music_calm_satie.ogg` |
@@ -55,3 +55,25 @@ Cada desenho de `assets/source/game-icons/<autor>/` é de https://game-icons.net
 | Skoll | 3 | breaking-chain, pig, pocket-watch |
 
 Os três selos de `assets/source/game-icons/badges/` (happy, minus, plus) são círculos simples sem autor registrado na pasta: a origem fica a conferir em `assets/TODO_ASSETS.md`.
+
+## Retratos (Fase 51)
+
+Pinturas do século XIX em domínio público do Art Institute of Chicago (https://www.artic.edu), imagens CC0
+(https://www.artic.edu/open-access/open-access-images). Os originais, reduzidos a 843 px, ficam em
+`assets/source/portraits/aic_<id>.jpg`; `tools/build_portraits.gd` recorta e dá o acabamento dos retratos em
+`ui/portraits/` (os desenhos do game-icons.net que estavam ali saíram).
+
+| Retrato | Obra | Pintor | Data | AIC |
+|---|---|---|---|---|
+| `portrait_tier_peasants.png` | Young Peasant Having Her Coffee | Camille Pissarro | 1881 | 81548 |
+| `portrait_tier_workers.png` | The Laundress | Pierre-Auguste Renoir | 1877–79 | 59944 |
+| `portrait_tier_artisans.png` | Self-Portrait | Walter Shirlaw | 1878 | 11 |
+| `portrait_tier_engineers.png` | Portrait of a Gentleman | T. Wheeler | 1822 | 11704 |
+| `portrait_tier_investors.png` | Portrait of a Gentleman | William Mineard Bennett | 1800/50 | 7175 |
+| `portrait_advisor.png` | Portrait of a Gentleman | John Jackson | c. 1810 | 95108 |
+| `portrait_trader.png` | Beggar with a Duffle Coat (Philosopher) | Édouard Manet | 1865–67 | 95183 |
+
+## Fotos dos prédios (Fase 51)
+
+`ui/photos/` são os modelos do próprio jogo fotografados por `tools/bake_building_photos.tscn` (com o acabamento de
+`ui/photo_grade.gd`): nada de fora além do que os prédios já usam (Kenney Fantasy Town Kit e texturas listadas acima).
