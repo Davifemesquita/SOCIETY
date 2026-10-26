@@ -96,6 +96,8 @@ var _plinths_queued: bool = false
 ## Fase 33: o prédio sob o cursor sempre mostra o ícone; com uma camada do mapa ligada, todos mostram.
 var hovered_id: int = 0
 var show_all_icons: bool = false
+## Fase 47: o modo foto esconde todos os ícones de estado (eles são interface, não cidade).
+var hide_icons: bool = false
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -206,6 +208,8 @@ func apply_icon_rule(camera_position: Vector3) -> void:
 		keys[building_id] = key
 	var shown := StatusIconRule.alphas(points, keys, camera_position, _simulation.config, [hovered_id, _selected_id],
 			show_all_icons)
+	if hide_icons:
+		shown.clear()
 	for building_id: int in points:
 		var label := _labels[building_id]
 		label.visible = shown.has(building_id)

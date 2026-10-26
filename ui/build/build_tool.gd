@@ -31,6 +31,10 @@ var road_paved: bool = false
 var road_diagonal: bool = false
 ## Prédio que está sendo mudado de lugar (modo MOVE).
 var moving_id: int = 0
+## Fase 47: a obra é uma cópia (tipo e rotação do original, e a configuração dele vai para cada prédio novo).
+var copying: bool = false
+var copy_paused: bool = false
+var copy_upgrade_blocked: bool = false
 
 var _simulation: Simulation
 var _camera: StrategyCamera
@@ -50,6 +54,21 @@ func setup(simulation: Simulation, camera: StrategyCamera, cell_size: float) -> 
 func start_building(def: BuildingDef) -> void:
 	building_def = def
 	_enter(Mode.BUILDING)
+
+
+## Copiar o prédio (Fase 47): a obra do mesmo tipo, com a rotação dele; cada cópia sai com a configuração do original
+## (pausado e o bloqueio de subida de classe). Devolve se havia o que copiar.
+func copy_building(building_id: int) -> bool:
+	var record := _simulation.world.building(building_id)
+	if record == null:
+		return false
+	start_building(_simulation.def_of(record))
+	rotation = record.rotation
+	copying = true
+	copy_paused = record.paused
+	copy_upgrade_blocked = record.upgrade_blocked
+	changed.emit()
+	return true
 
 
 func start_road(paved: bool = false) -> void:
@@ -140,7 +159,15 @@ func press(cell: Vector2i) -> void:
 		Mode.NONE:
 			select(grid().building_at(cell))
 		Mode.BUILDING:
-			_run(PlaceBuildingCommand.new(island_id, building_def.id, building_origin(), rotation))
+			var result := _simulation.execute(PlaceBuildingCommand.new(island_id, building_def.id, building_origin(), rotation))
+			if not result.ok():
+				refused.emit(result.reason)
+			elif copying:
+				for placed: int in result.placed:
+					if copy_paused:
+						_simulation.execute(SetPausedCommand.new(placed, true))
+					if copy_upgrade_blocked:
+						_simulation.execute(SetUpgradeBlockedCommand.new(placed, true))
 		Mode.MOVE:
 			var moved := moving_id
 			if _run(MoveBuildingCommand.new(moved, building_origin(), rotation)):
@@ -221,6 +248,7 @@ func road_materials() -> Dictionary[StringName, int]:
 func _enter(new_mode: Mode) -> void:
 	mode = new_mode
 	moving_id = 0
+	copying = false
 	dragging = false
 	select(0)
 	select_ship(0)
@@ -262,6 +290,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		start_road()
 	elif event.is_action_pressed(&"build_demolish"):
 		start_demolish()
+	elif event.is_action_pressed(&"build_copy"):
+		# o selecionado, ou o prédio sob o cursor
+		if not copy_building(selected_id):
+			copy_building(grid().building_at(hover_cell))
 
 
 func _on_mouse_button(event: InputEventMouseButton) -> void:

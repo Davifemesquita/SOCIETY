@@ -242,3 +242,4 @@ building_fountain_square,lorc/fountain,building
 building_statue,delapouite/stone-bust,building
 building_bandstand,delapouite/pagoda,building
 overlay_beauty,lorc/flowers,hud
+action_photo,delapouite/photo-camera,action

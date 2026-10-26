@@ -45,6 +45,8 @@ var notice_duration: float = 1.0
 var muted_notices: PackedStringArray = []
 var pause_on_alert: bool = false
 const NOTICE_DURATIONS: Array[float] = [0.5, 1.0, 2.0, 4.0]
+## Fase 47: o filtro da lista de rotas (a ilha por onde a rota passa; -1 = todas), que fica entre as partidas.
+var route_filter: int = -1
 
 var _config: GameConfig = GameConfig.get_default()
 
@@ -229,6 +231,7 @@ func save_to(path: String) -> Error:
 	file.set_value("interface", "notice_duration", notice_duration)
 	file.set_value("interface", "muted_notices", muted_notices)
 	file.set_value("interface", "pause_on_alert", pause_on_alert)
+	file.set_value("interface", "route_filter", route_filter)
 	file.set_value("controls", "edge_pan", edge_pan)
 	file.set_value("graphics", "fullscreen", fullscreen)
 	file.set_value("graphics", "vsync", vsync)
@@ -260,6 +263,8 @@ func load_from(path: String) -> void:
 	notice_duration = raw_duration if NOTICE_DURATIONS.has(raw_duration) else 1.0
 	var raw_muted: Variant = file.get_value("interface", "muted_notices", PackedStringArray())
 	muted_notices = raw_muted if raw_muted is PackedStringArray else PackedStringArray()
+	var raw_filter: Variant = file.get_value("interface", "route_filter", -1)
+	route_filter = raw_filter if raw_filter is int and raw_filter >= -1 else -1
 	edge_pan = _flag(file.get_value("controls", "edge_pan", true), true)
 	camera_speed = clampf(_number(file.get_value("controls", "camera_speed", 1.0), 1.0), CAMERA_SPEED_RANGE.x, CAMERA_SPEED_RANGE.y)
 	var raw_autosave := _number(file.get_value("game", "autosave_minutes", _config.autosave_interval_minutes), _config.autosave_interval_minutes)

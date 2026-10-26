@@ -27,6 +27,10 @@ const KEYS: Dictionary[StringName, Array] = {
 	&"game_missions": [KEY_J],
 	&"game_rivals": [KEY_K],
 	&"game_specialists": [KEY_L],
+	# Fase 47: atalhos novos sem tecla padrão (não roubam tecla de ninguém); o jogador escolhe nas opções
+	&"build_copy": [],
+	&"build_search": [],
+	&"photo_mode": [],
 	&"game_menu": [KEY_ESCAPE],
 	&"debug_grid": [KEY_F1],
 	&"debug_roads": [KEY_F2],

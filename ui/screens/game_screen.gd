@@ -47,6 +47,8 @@ var simulation: Simulation
 var camera: StrategyCamera
 var tool: BuildTool
 var hud: Hud
+## Fase 47: interface escondida, hora e inclinação para fotos.
+var photo_mode: PhotoMode
 var building_view: BuildingView
 var road_view: RoadView
 var cart_view: CartView
@@ -266,6 +268,9 @@ func _ready() -> void:
 		building_view.show_all_icons = layer != MapOverlays.Layer.NONE
 		update_highlight())
 	hud.notifications.go_to.connect(go_to)
+	photo_mode = PhotoMode.new()
+	_ui_layer.add_child(photo_mode)
+	photo_mode.setup(self)
 	hud.selection_panel.center_requested.connect(center_on_selected)
 	hud.ship_panel.center_requested.connect(center_on_selected)
 	tool.changed.connect(func() -> void:
@@ -464,6 +469,10 @@ func open_menu() -> GameMenu:
 	menu.options_requested.connect(func() -> void: Modal.open(_ui_layer, OptionsDialog.new()))
 	menu.main_menu_requested.connect(func() -> void: SceneFader.change_to.call_deferred(MAIN_MENU))
 	menu.quit_requested.connect(func() -> void: get_tree().quit())
+	# Fase 47: o menu fecha (a velocidade volta) e o modo foto guarda essa velocidade para devolver na saída
+	menu.photo_requested.connect(func() -> void:
+		modal.close()
+		photo_mode.toggle())
 	return menu
 
 

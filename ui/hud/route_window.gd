@@ -3,7 +3,9 @@ extends PanelContainer
 ## Rotas comerciais (seção 6 e 10): a lista de rotas, as paradas da escolhida (ilha ou posto do
 ## comerciante) com as ordens de carga de cada uma, os navios que fazem a rota e o mapa do
 ## arquipélago. Cada mudança vira um EditRouteCommand; a janela guarda uma cópia das paradas para
-## não refazer os campos enquanto o jogador digita.
+## não refazer os campos enquanto o jogador digita. Fase 47: duplicar a rota (os comandos que já existem), Shift ao
+## pôr uma ordem enche a vaga do navio, o mouse sobre uma rota da lista a destaca no mapa, e o filtro por ilha fica
+## guardado nas opções (Settings.route_filter). Nome e grupo da rota pedem campo novo no save: ficam para a Fase 49.
 
 const MAX_TONS := 200
 const MAP_REFRESH_SECONDS := 0.5
@@ -13,6 +15,7 @@ var map := ArchipelagoMap.new()
 var _simulation: Simulation
 var _tool: BuildTool
 var _routes := ItemList.new()
+var _filter := OptionButton.new()
 var _stops := VBoxContainer.new()
 var _ships := VBoxContainer.new()
 var _editor := VBoxContainer.new()
@@ -35,16 +38,33 @@ func setup(simulation: Simulation, tool: BuildTool) -> void:
 	var left := VBoxContainer.new()
 	left.custom_minimum_size.x = 160
 	body.add_child(left)
+	_filter.name = "RouteFilter"
+	_filter.focus_mode = Control.FOCUS_NONE
+	_filter.tooltip_text = "ROUTES_FILTER_TIP"
+	_filter.item_selected.connect(func(index: int) -> void:
+		Settings.route_filter = _filter.get_item_id(index) - 1
+		Settings.save()
+		_fill_list())
+	left.add_child(_filter)
 	_routes.custom_minimum_size = Vector2(160, 220)
 	_routes.focus_mode = Control.FOCUS_NONE
 	_routes.fixed_icon_size = Vector2i(24, 24)
 	_routes.item_selected.connect(func(index: int) -> void:
 		var picked: int = _routes.get_item_metadata(index)
 		select_route(picked))
+	# o mouse sobre uma rota da lista a destaca no mapa (sem escolher)
+	_routes.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseMotion:
+			var motion: InputEventMouseMotion = event
+			hover_route(route_at(motion.position)))
+	_routes.mouse_exited.connect(func() -> void: hover_route(0))
 	left.add_child(_routes)
 	var new_route := _button("ROUTES_NEW", "action_add", create_route)
 	new_route.name = "NewRoute"
 	left.add_child(new_route)
+	var copy_route := _button("ROUTES_DUPLICATE", "action_copy", duplicate_route)
+	copy_route.name = "DuplicateRoute"
+	left.add_child(copy_route)
 	left.add_child(_button("ROUTES_DELETE", "action_delete", func() -> void:
 		if _route_id != 0:
 			_simulation.execute(DeleteRouteCommand.new(_route_id))))
@@ -89,6 +109,54 @@ func _process(delta: float) -> void:
 func create_route() -> void:
 	var result := _simulation.execute(CreateRouteCommand.new())
 	select_route(result.created_id)
+
+
+## Duplica a rota escolhida (Fase 47): uma rota nova com cópias das paradas e das ordens (sem os navios).
+func duplicate_route() -> void:
+	var route: TradeRoute = _simulation.world.routes.get(_route_id)
+	if route == null:
+		return
+	var copies: Array[TradeRoute.Stop] = []
+	for stop: TradeRoute.Stop in route.stops:
+		copies.append(stop.duplicate())
+	var created := _simulation.execute(CreateRouteCommand.new()).created_id
+	_simulation.execute(EditRouteCommand.new(created, copies))
+	select_route(created)
+
+
+## A rota sob o ponto da lista (0 se nenhuma).
+func route_at(point: Vector2) -> int:
+	var index := _routes.get_item_at_position(point, true)
+	if index < 0:
+		return 0
+	var route_id: int = _routes.get_item_metadata(index)
+	return route_id
+
+
+func hover_route(route_id: int) -> void:
+	if map.hover_route_id != route_id:
+		map.hover_route_id = route_id
+		map.queue_redraw()
+
+
+## Toneladas de uma vaga cheia: a menor vaga dos navios da rota (cabe em todos), ou a do navio mercante.
+func slot_tons() -> int:
+	var tons := 0
+	for ship: Ship in _simulation.world.player_ships():
+		if ship.route_id == _route_id and _route_id != 0:
+			var capacity := _simulation.data.ship(ship.def_id).slot_capacity_t
+			tons = capacity if tons == 0 else mini(tons, capacity)
+	if tons == 0:
+		var merchant := _simulation.data.ship(&"merchant_ship")
+		tons = merchant.slot_capacity_t if merchant != null else 50
+	return clampi(tons, 1, MAX_TONS)
+
+
+## Uma ordem nova na parada; "full" (Shift no botão) enche a vaga do navio.
+func add_order(stop: TradeRoute.Stop, full: bool) -> void:
+	stop.orders.append(TradeRoute.Order.new(_simulation.data.goods[0].id, true, slot_tons() if full else 50))
+	_commit()
+	_build_stops()
 
 
 func select_route(route_id: int) -> void:
@@ -144,13 +212,37 @@ func _on_routes_changed() -> void:
 
 
 func _fill_list() -> void:
+	_fill_filter()
 	_routes.clear()
 	for route_id: int in _simulation.world.route_ids():
+		if not passes_filter(_simulation.world.routes[route_id], Settings.route_filter):
+			continue
 		var index := _routes.add_item(tr("ROUTE_NAME") % route_id, Icons.action("routes"))
 		_routes.set_item_metadata(index, route_id)
 		if route_id == _route_id:
 			_routes.select(index)
 	_editor.visible = _route_id != 0
+
+
+## O filtro da lista: todas as ilhas (-1) ou a rota passa pela ilha.
+static func passes_filter(route: TradeRoute, island_id: int) -> bool:
+	if island_id < 0:
+		return true
+	for stop: TradeRoute.Stop in route.stops:
+		if stop.target == island_id:
+			return true
+	return false
+
+
+## "Todas" e as ilhas com entreposto (o id do item é a ilha + 1); a escolha guardada fica marcada.
+func _fill_filter() -> void:
+	_filter.clear()
+	_filter.add_item(tr("ROUTES_FILTER_ALL"), 0)
+	for island_id: int in _simulation.world.islands.size():
+		if _simulation.world.has_trading_post(island_id, _simulation.data) or island_id == Settings.route_filter:
+			_filter.add_item(Fmt.place(island_id), island_id + 1)
+	var at := _filter.get_item_index(Settings.route_filter + 1)
+	_filter.select(at if at >= 0 else 0)
 
 
 func _build_stops() -> void:
@@ -194,12 +286,10 @@ func _stop_box(index: int) -> Control:
 		_build_stops()))
 	for order: TradeRoute.Order in stop.orders:
 		box.add_child(_order_row(stop, order))
-	var add_order := _button("ROUTES_ADD_ORDER", "action_add", func() -> void:
-		stop.orders.append(TradeRoute.Order.new(_simulation.data.goods[0].id, true, 50))
-		_commit()
-		_build_stops())
-	add_order.name = "AddOrder"
-	box.add_child(add_order)
+	var order_button := _button("ROUTES_ADD_ORDER", "action_add", func() -> void:
+		add_order(stop, Input.is_key_pressed(KEY_SHIFT)))
+	order_button.name = "AddOrder"
+	box.add_child(order_button)
 	box.add_child(HSeparator.new())
 	return box
 

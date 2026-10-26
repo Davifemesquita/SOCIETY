@@ -1,11 +1,12 @@
 class_name GameMenu
 extends PanelContainer
-## Menu da partida (Esc ou o botão da barra): continuar, salvar, carregar, opções, voltar ao menu
-## principal e sair do jogo. A partida fica pausada enquanto ele está aberto.
+## Menu da partida (Esc ou o botão da barra): continuar, salvar, carregar, modo foto (Fase 47), opções, voltar ao
+## menu principal e sair do jogo. A partida fica pausada enquanto ele está aberto.
 
 signal closed()
 signal save_requested()
 signal load_requested()
+signal photo_requested()
 signal options_requested()
 signal main_menu_requested()
 signal quit_requested()
@@ -20,8 +21,9 @@ func _init() -> void:
 	add_child(column)
 	column.add_child(UiKit.header("MENU_TITLE", func() -> void: closed.emit()))
 	for entry: Array in [["MENU_CONTINUE", "action_play", closed], ["MENU_SAVE", "action_save", save_requested],
-			["MENU_LOAD", "action_load", load_requested], ["MENU_OPTIONS", "action_options", options_requested],
-			["MENU_MAIN_MENU", "action_back", main_menu_requested], ["MENU_QUIT", "action_exit", quit_requested]]:
+			["MENU_LOAD", "action_load", load_requested], ["MENU_PHOTO", "action_photo", photo_requested],
+			["MENU_OPTIONS", "action_options", options_requested], ["MENU_MAIN_MENU", "action_back", main_menu_requested],
+			["MENU_QUIT", "action_exit", quit_requested]]:
 		var text_key: String = entry[0]
 		var icon_name: String = entry[1]
 		var target: Signal = entry[2]

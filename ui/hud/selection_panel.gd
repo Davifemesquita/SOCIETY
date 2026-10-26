@@ -13,6 +13,8 @@ signal trade_requested(island_id: int)
 signal center_requested()
 ## Especialistas (Fase 11): abrir a janela para designar alguém a este prédio.
 signal specialists_requested(building_id: int)
+## Fase 47: abrir as estatísticas no bem que o prédio produz, na ilha dele.
+signal statistics_requested(good: StringName, island_id: int)
 
 const REFRESH_SECONDS := 0.25
 ## Produtividade média a partir da qual o prédio aparece como produzindo.
@@ -76,6 +78,27 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	show_building(0)
 
 
+## Os prédios do tipo dado, em ordem de id (todas as ilhas): a lista dos que existem.
+static func same_kind(world: WorldState, def_id: StringName) -> Array[int]:
+	var ids: Array[int] = []
+	for building_id: int in world.building_ids():
+		if world.building(building_id).def_id == def_id:
+			ids.append(building_id)
+	ids.sort()
+	return ids
+
+
+## O próximo prédio do mesmo tipo depois deste (volta ao primeiro), ou 0 se ele é o único.
+static func next_same(world: WorldState, building_id: int) -> int:
+	var record := world.building(building_id)
+	if record == null:
+		return 0
+	var ids := same_kind(world, record.def_id)
+	if ids.size() < 2:
+		return 0
+	return ids[(ids.find(building_id) + 1) % ids.size()]
+
+
 func shows_missing_road() -> bool:
 	return visible and _road.visible
 
@@ -104,6 +127,16 @@ func show_building(building_id: int) -> void:
 			_build_warehouse(record, def)
 		_:
 			_add_lines(1)
+	# Fase 47: copiar (tipo, rotação e configuração) e passar pelos prédios do mesmo tipo
+	var copy := _add_button("PANEL_COPY", "action_copy", func() -> void: _tool.copy_building(record.id))
+	copy.name = "Copy"
+	var next := _add_button("PANEL_NEXT_SAME", "action_center", func() -> void:
+		var other := next_same(_simulation.world, record.id)
+		if other != 0:
+			_tool.select(other)
+			center_requested.emit())
+	next.name = "NextSame"
+	next.tooltip_text = tr("PANEL_NEXT_SAME_TIP") % Fmt.integer(same_kind(_simulation.world, record.def_id).size())
 	_add_button("PANEL_MOVE", "action_move", func() -> void: _tool.start_move(record.id))
 	if def.kind != BuildingDef.Kind.RESIDENCE:
 		_add_button("PANEL_DEMOLISH", "action_demolish", func() -> void:
@@ -176,7 +209,10 @@ func _build_production(record: BuildingRecord, def: BuildingDef) -> void:
 	_pause = _add_button("PANEL_PAUSE", "action_pause", func() -> void:
 		_simulation.execute(SetPausedCommand.new(record.id, not _simulation.world.building(record.id).paused))
 		_refresh())
-	_add_button("PANEL_COPY", "action_copy", func() -> void: _tool.start_building(def))
+	if def.output != &"":
+		var statistics := _add_button("PANEL_STATISTICS", "action_statistics", func() -> void:
+			statistics_requested.emit(def.output, record.island_id))
+		statistics.name = "Statistics"
 	if def.is_shipyard():
 		_build_shipyard(record, def)
 	if _simulation.data.specialists.any(func(specialist: SpecialistDef) -> bool: return specialist.covers(def)):

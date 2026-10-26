@@ -423,7 +423,7 @@ PANEL_UPGRADE_TIP,Mais rampas e estoque,More ramps and storage
 PANEL_BUY_SHIP_TIP,Compra um navio neste entreposto,Buys a ship at this trading post
 PANEL_TRADE_TIP,O que esta ilha vende e compra do comerciante,What this island sells to and buys from the trader
 PANEL_PAUSE_TIP,Para o prédio (manutenção pela metade),Stops the building (half upkeep)
-PANEL_COPY_TIP,Construir outro igual,Build another one like it
+PANEL_COPY_TIP,"Construir outro igual: o mesmo tipo, a rotação e a configuração (pausado, subida de classe bloqueada)","Build another one like it: same type, rotation and settings (paused, class upgrade blocked)"
 SHIP_SAIL_TO_TIP,Escolha no mapa para onde o navio vai,Pick on the map where the ship goes
 SHIP_ROUTE_TIP,Rota que o navio repete,Route the ship repeats
 SHIP_UNLOAD_ALL_TIP,Descarrega tudo deste bem no estoque da ilha,Unloads all of this good into the island's stock
@@ -436,7 +436,7 @@ PORTRAIT_TRADER,O comerciante,The trader
 ROUTES_NEW_TIP,Cria uma rota vazia,Creates an empty route
 ROUTES_DELETE_TIP,Apaga a rota escolhida (os navios dela param),Deletes the chosen route (its ships stop)
 ROUTES_ADD_STOP_TIP,Acrescenta uma parada no fim da rota,Adds a stop at the end of the route
-ROUTES_ADD_ORDER_TIP,Acrescenta uma ordem de carga nesta parada,Adds a cargo order at this stop
+ROUTES_ADD_ORDER_TIP,Acrescenta uma ordem de carga nesta parada (com Shift: a vaga cheia do navio),Adds a cargo order at this stop (with Shift: a full ship slot)
 ROUTES_MAP_TIP,"Ilhas, portos, posto do comerciante, a rota escolhida e os navios","Islands, ports, the trader's post, the chosen route and the ships"
 STATS_TAB_PRODUCTION,Produção,Production
 STATS_TAB_POPULATION,População,Population
@@ -889,3 +889,35 @@ OVERLAY_BEAUTY_TIP,Camada: beleza das decorações,Layer: beauty from decoration
 OVERLAY_BEAUTY_LEGEND,"Quanto mais forte o rosa, mais a beleza dá felicidade às casas","The stronger the pink, the more happiness beauty gives to houses"
 HUD_HINT_ROAD_STRAIGHT,em L (%s: diagonal),in an L (%s: diagonal)
 HUD_HINT_ROAD_DIAGONAL,em diagonal (%s: em L),diagonal (%s: in an L)
+BREAKDOWN_NOTHING,Nada entra nem sai,Nothing comes in or goes out
+BREAKDOWN_PER_MIN,por minuto,per minute
+BREAKDOWN_BUILDINGS,Prédios,Buildings
+BREAKDOWN_SHIPS,Navios (%d),Ships (%d)
+BREAKDOWN_SALARIES,Salários dos especialistas,Specialist salaries
+BREAKDOWN_TREATY,Acordos comerciais,Trade agreements
+BREAKDOWN_MONEY,"De onde vem e para onde vai o dinheiro, por minuto","Where the money comes from and goes, per minute"
+BREAKDOWN_GOOD,"%s: o que produz e o que consome, em t/min","%s: what produces and consumes it, in t/min"
+STATS_PRODUCERS_TIP,Ir ao próximo prédio que produz este bem,Go to the next building that produces this good
+PANEL_NEXT_SAME,Próximo igual,Next alike
+PANEL_NEXT_SAME_TIP,Ir ao próximo prédio deste tipo (%s no arquipélago),Go to the next building of this type (%s in the archipelago)
+PANEL_STATISTICS,Estatística,Statistics
+PANEL_STATISTICS_TIP,Abrir as estatísticas no bem que este prédio produz,Open the statistics on the good this building produces
+HUD_SEARCH,Buscar prédio,Find building
+HUD_SEARCH_TIP,"Digite parte do nome: a lista mostra os prédios de todas as abas (Enter escolhe o primeiro, Esc limpa)","Type part of the name: the list shows buildings from every tab (Enter picks the first, Esc clears)"
+HUD_SEARCH_NONE,Nenhum prédio com esse nome,No building with that name
+TIP_EXISTING,Você tem %s,You have %s
+ACTION_BUILD_COPY,Copiar o prédio,Copy building
+ACTION_BUILD_SEARCH,Buscar prédio,Find building
+ACTION_PHOTO_MODE,Modo foto,Photo mode
+PHOTO_HOUR,Hora,Hour
+PHOTO_HOUR_TIP,A hora do dia na foto (a partida fica pausada),The time of day in the photo (the game stays paused)
+PHOTO_TILT,Inclinação,Tilt
+PHOTO_TILT_TIP,Inclinar a câmera para cima ou para baixo,Tilt the camera up or down
+PHOTO_EXIT,Sair,Exit
+PHOTO_EXIT_TIP,Voltar ao jogo (Esc),Back to the game (Esc)
+MENU_PHOTO,Modo foto,Photo mode
+MENU_PHOTO_TIP,"Esconde a interface e pausa, com a hora do dia e a inclinação da câmera","Hides the interface and pauses, with the time of day and the camera tilt"
+ROUTES_FILTER_TIP,Mostrar só as rotas que passam por esta ilha,Show only the routes that call at this island
+ROUTES_FILTER_ALL,Todas as ilhas,All islands
+ROUTES_DUPLICATE,Duplicar,Duplicate
+ROUTES_DUPLICATE_TIP,"Cria uma rota igual a esta, sem os navios","Creates a route like this one, without the ships"

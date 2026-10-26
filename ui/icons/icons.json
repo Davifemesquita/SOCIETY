@@ -129,6 +129,10 @@
 			1408,
 			1536
 		],
+		"action_photo": [
+			384,
+			1920
+		],
 		"action_play": [
 			128,
 			896
@@ -954,19 +958,19 @@
 			1408
 		],
 		"status_bad": [
-			640,
-			1920
-		],
-		"status_good": [
-			384,
-			1920
-		],
-		"status_missing": [
 			768,
 			1920
 		],
-		"status_partial": [
+		"status_good": [
 			512,
+			1920
+		],
+		"status_missing": [
+			896,
+			1920
+		],
+		"status_partial": [
+			640,
 			1920
 		],
 		"tier_artisans": [

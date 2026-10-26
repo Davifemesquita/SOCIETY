@@ -4,7 +4,11 @@ extends PanelContainer
 ## estoque em t/min, na ilha escolhida (ou todas), e o gráfico histórico do bem escolhido.
 ## População: moradores por classe, com retrato, e o gráfico. Finanças: receita, manutenção e
 ## saldo por minuto, o nível de imposto de cada classe e o gráfico do dinheiro e do saldo.
-## Mostra só os bens com alguma atividade.
+## Mostra só os bens com alguma atividade. Fase 47: o nome do bem e as finanças decompõem o número na dica
+## (Breakdown, montado só no hover); um botão por bem vai ao próximo produtor dele; show_good abre direto num bem.
+
+## O jogador pediu para ir ao próximo prédio que produz o bem (na ilha escolhida, ou em todas).
+signal producer_requested(good: StringName, island_id: int)
 
 const REFRESH_SECONDS := 0.5
 ## Ilha "todas" no seletor.
@@ -23,7 +27,7 @@ var _good_chart := LineChart.new()
 var _chart_good: StringName = &""
 var _population_rows := GridContainer.new()
 var _population_chart := LineChart.new()
-var _finances := Label.new()
+var _finances := BreakdownLabel.new()
 var _finance_chart := LineChart.new()
 ## O saldo por minuto (centenas) some na escala do dinheiro (dezenas de milhares): gráfico próprio.
 var _balance_chart := LineChart.new()
@@ -60,6 +64,22 @@ func toggle() -> void:
 		refresh()
 
 
+## Abre na aba de produção com o gráfico do bem, na ilha dada (atalho do prédio e do bem, Fase 47).
+func show_good(good: StringName, island_id: int) -> void:
+	visible = true
+	_fill_islands()
+	var at := _island.get_item_index(island_id)
+	if at >= 0:
+		_island.select(at)
+	_tabs.current_tab = 0
+	_chart_good = good
+	refresh()
+
+
+func chart_good() -> StringName:
+	return _chart_good
+
+
 func _name_tabs() -> void:
 	var tabs: Array[Array] = [["STATS_TAB_PRODUCTION", "action_statistics"], ["STATS_TAB_POPULATION", "hud_population"],
 			["STATS_TAB_FINANCES", "hud_money"]]
@@ -90,7 +110,7 @@ func _production_tab() -> Control:
 	scroll.custom_minimum_size = Vector2(780, 300)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	page.add_child(scroll)
-	_grid.columns = 7
+	_grid.columns = 8
 	_grid.add_theme_constant_override(&"h_separation", 22)
 	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(_grid)
@@ -114,6 +134,12 @@ func _finance_tab() -> Control:
 	var page := VBoxContainer.new()
 	page.name = "Finances"
 	page.add_theme_constant_override(&"separation", 10)
+	_finances.name = "FinanceLine"
+	_finances.data = _simulation.data
+	_finances.places = 0
+	_finances.title_key = "BREAKDOWN_MONEY"
+	_finances.provider = func() -> Array[Breakdown.Source]:
+		return Breakdown.money(_simulation.world, _simulation.data, _simulation.config, _simulation.derived_state())
 	page.add_child(_finances)
 	var taxes := GridContainer.new()
 	taxes.columns = 3
@@ -194,28 +220,42 @@ func _report() -> Statistics:
 func _refresh_goods() -> void:
 	var report := _report()
 	UiKit.clear(_grid)
-	for key: String in ["", "STATS_GOOD", "STATS_PRODUCED", "STATS_POTENTIAL", "STATS_CONSUMED", "STATS_STOCK", ""]:
+	for key: String in ["", "STATS_GOOD", "STATS_PRODUCED", "STATS_POTENTIAL", "STATS_CONSUMED", "STATS_STOCK", "", ""]:
 		_grid.add_child(UiKit.label(key, &"DimLabel"))
+	var island := selected_island()
 	for line: Statistics.GoodLine in report.goods:
 		if line.potential <= 0.0 and line.consumed() <= 0.0 and line.stock <= 0.0:
 			continue
 		if _chart_good == &"":
 			_chart_good = line.good
-		_grid.add_child(UiKit.icon_rect(Icons.good(line.good), 24))
-		_cell(tr(_simulation.data.good(line.good).name_key))
+		var good := line.good
+		_grid.add_child(UiKit.icon_rect(Icons.good(good), 24))
+		var label := BreakdownLabel.new()
+		label.name = "Good_" + good
+		label.text = tr(_simulation.data.good(good).name_key)
+		label.data = _simulation.data
+		label.title_key = "BREAKDOWN_GOOD"
+		label.title_arg = label.text
+		label.provider = func() -> Array[Breakdown.Source]:
+			return Breakdown.good(_simulation.world, _simulation.data, _simulation.derived_state(), island, good)
+		_grid.add_child(label)
 		_cell(Fmt.decimal(line.produced, 2))
 		_cell(Fmt.decimal(line.potential, 2))
 		var consumed := _cell(Fmt.decimal(line.consumed(), 2))
 		if line.consumed() > line.produced + 0.001:
 			UiPalette.paint(consumed, UiPalette.Status.BAD)
 		_cell(Fmt.decimal(line.stock))
-		var good := line.good
 		var chart := UiKit.icon_button("action_statistics", "STATS_CHART_TIP", func() -> void:
 			_chart_good = good
 			_refresh_goods())
 		chart.toggle_mode = true
 		chart.set_pressed_no_signal(good == _chart_good)
 		_grid.add_child(chart)
+		var producers := UiKit.icon_button("action_center", "STATS_PRODUCERS_TIP", func() -> void:
+			producer_requested.emit(good, island))
+		producers.name = "Producers_" + good
+		producers.disabled = line.potential <= 0.0
+		_grid.add_child(producers)
 	_refresh_good_chart()
 
 

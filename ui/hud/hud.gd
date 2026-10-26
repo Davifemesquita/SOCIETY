@@ -73,6 +73,9 @@ var _hint_panel := PanelContainer.new()
 var _hint := Label.new()
 var _cursor_panel := PanelContainer.new()
 var _cursor_label := Label.new()
+## Fase 47: o campo da busca no menu de construção e o texto que filtra (vazio: a aba de sempre).
+var _search := LineEdit.new()
+var _search_text: String = ""
 var _message_left: float = 0.0
 var _refresh_left: float = 0.0
 var _category: int = 0
@@ -128,6 +131,13 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	add_child(specialist_window)
 	specialist_window.setup(simulation)
 	selection_panel.specialists_requested.connect(specialist_window.open)
+	# Fase 47: do prédio para a estatística do bem, e da estatística para os produtores
+	selection_panel.statistics_requested.connect(statistics_window.show_good)
+	statistics_window.producer_requested.connect(func(good: StringName, island_id: int) -> void:
+		var next := next_producer(good, island_id)
+		if next != 0:
+			_tool.select(next)
+			selection_panel.center_requested.emit())
 	_build_labels()
 	tool.changed.connect(_refresh_tool)
 	tool.refused.connect(func(reason: StringName) -> void: show_message(tr(reason)))
@@ -174,6 +184,54 @@ func close_top_window() -> bool:
 			window.visible = false
 			return true
 	return false
+
+
+## O próximo prédio que produz o bem (na ilha, ou em todas com island_id < 0) depois do selecionado, ou 0.
+func next_producer(good: StringName, island_id: int) -> int:
+	var ids: Array[int] = []
+	for building_id: int in _simulation.world.building_ids():
+		var record := _simulation.world.building(building_id)
+		if (island_id < 0 or record.island_id == island_id) and _simulation.def_of(record).output == good:
+			ids.append(building_id)
+	if ids.is_empty():
+		return 0
+	ids.sort()
+	return ids[(ids.find(_tool.selected_id) + 1) % ids.size()]
+
+
+## Busca no menu de construção (Fase 47): o texto vira a lista dos prédios de todas as abas cujo nome o contém
+## (sem diferença de maiúsculas e acentos); vazio volta à aba.
+func search(text: String) -> void:
+	if _search.text != text:
+		_search.text = text
+	_search_text = text.strip_edges()
+	_select_category(_category)
+
+
+func focus_search() -> void:
+	_search.grab_focus()
+
+
+## Os prédios que a busca acha, na ordem das abas (vazio sem busca).
+func search_results(text: String) -> Array[BuildingDef]:
+	var found: Array[BuildingDef] = []
+	var wanted := folded(text)
+	if wanted.is_empty():
+		return found
+	for group: Array in _categories():
+		for def: BuildingDef in group:
+			if folded(tr(def.name_key)).contains(wanted) and not found.has(def):
+				found.append(def)
+	return found
+
+
+## Minúsculas e sem acento, para a busca.
+static func folded(text: String) -> String:
+	var plain := text.strip_edges().to_lower()
+	for pair: String in ["áa", "àa", "âa", "ãa", "äa", "ée", "êe", "èe", "ëe", "íi", "îi", "ìi", "ïi", "óo", "ôo", "õo",
+			"òo", "öo", "úu", "ûu", "ùu", "üu", "çc", "ñn"]:
+		plain = plain.replace(pair[0], pair[1])
+	return plain
 
 
 func set_overlay(layer: MapOverlays.Layer) -> void:
@@ -468,12 +526,34 @@ func _build_build_menu() -> void:
 	for index: int in _categories().size():
 		var button := UiKit.button(_category_label(index), _category_icon(index), Callable(), _category_tip(index))
 		button.toggle_mode = true
-		button.pressed.connect(_select_category.bind(index))
+		# a aba escolhida desfaz a busca (Fase 47)
+		button.pressed.connect(func() -> void:
+			_search.text = ""
+			_search_text = ""
+			_select_category(index))
 		top.add_child(button)
 		_category_buttons.append(button)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(spacer)
+	_search.name = "BuildSearch"
+	_search.placeholder_text = "HUD_SEARCH"
+	_search.tooltip_text = "HUD_SEARCH_TIP"
+	_search.custom_minimum_size.x = 160
+	_search.clear_button_enabled = true
+	_search.text_changed.connect(search)
+	# Esc sai da busca (o foco volta para o jogo); Enter escolhe o primeiro achado
+	_search.gui_input.connect(func(event: InputEvent) -> void:
+		if event.is_action_pressed(&"ui_cancel"):
+			search("")
+			_search.release_focus()
+			accept_event())
+	_search.text_submitted.connect(func(_text: String) -> void:
+		var found := search_results(_search_text)
+		if not found.is_empty():
+			_tool.start_building(found[0])
+		_search.release_focus())
+	top.add_child(_search)
 	top.add_child(VSeparator.new())
 	for layer: MapOverlays.Layer in MapOverlays.ICONS:
 		var button := UiKit.icon_button(MapOverlays.ICONS[layer], MapOverlays.KEYS[layer] + "_TIP")
@@ -555,14 +635,28 @@ func _select_category(index: int) -> void:
 	UiKit.clear(_items)
 	_item_buttons.clear()
 	_paved_button = null
-	var defs: Array = _categories()[index]
+	var searching := not _search_text.is_empty()
+	var defs: Array = search_results(_search_text) if searching else _categories()[index]
+	var counts: Dictionary[StringName, int] = {}
+	for building_id: int in _simulation.world.building_ids():
+		var def_id := _simulation.world.building(building_id).def_id
+		counts[def_id] = counts.get(def_id, 0) + 1
 	for def: BuildingDef in defs:
 		var button := _card(def.name_key, Icons.building(def.id))
+		button.name = "Item_" + def.id
 		button.tooltip_text = _tooltip(def)
+		# Fase 47: quantos já existem (a lista dos existentes passa pelo "Próximo igual" do painel)
+		var existing: int = counts.get(def.id, 0)
+		if existing > 0:
+			button.tooltip_text += "\n" + tr("TIP_EXISTING") % Fmt.integer(existing)
 		button.pressed.connect(func() -> void: _tool.start_building(def))
 		_items.add_child(button)
 		_item_buttons[def.id] = button
-	if index == _categories().size() - 1:
+	if searching and defs.is_empty():
+		var none := UiKit.label("HUD_SEARCH_NONE", &"DimLabel")
+		none.name = "SearchNone"
+		_items.add_child(none)
+	if index == _categories().size() - 1 and not searching:
 		var road := _card("HUD_ROAD", Icons.action("road"))
 		road.tooltip_text = tr("HUD_ROAD_TIP") % Fmt.integer(_simulation.config.road_cost_per_cell)
 		road.pressed.connect(_tool.start_road)

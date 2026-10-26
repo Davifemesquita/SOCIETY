@@ -12,6 +12,7 @@ const SEA_SHALLOW := Color("b9c6b4")
 const LAND := Color("dcc391")
 const COAST := Color("4a3020")
 const ROUTE := Color("8e2a1e")
+const HOVER_ROUTE := Color(0.56, 0.16, 0.12, 0.45)
 const SHIP := Color("2e2116")
 const TRADER := Color("8e2a1e")
 const FRAME := 10.0
@@ -32,6 +33,8 @@ const GRAIN_SEED := 1840
 
 ## Rota destacada (0 = nenhuma).
 var route_id: int = 0
+## Rota sob o mouse na lista da janela de rotas (Fase 47), desenhada em destaque.
+var hover_route_id: int = 0
 
 var _simulation: Simulation
 var _texture: ImageTexture
@@ -72,6 +75,15 @@ func _draw() -> void:
 		if _simulation.world.has_trading_post(island_id, _simulation.data):
 			_icon(Icons.get_icon("notice_ship_arrived"), _to_map(harbors.roadstead(island_id), area), 18.0)
 	_icon(Icons.get_icon("notice_trader"), _to_map(harbors.trader_post, area), 22.0)
+	# Fase 47: a rota sob o mouse na lista, mais clara e mais grossa, por baixo da escolhida
+	var hovered: TradeRoute = _simulation.world.routes.get(hover_route_id) if hover_route_id != route_id else null
+	if hovered != null and hovered.stops.size() > 1:
+		var path := PackedVector2Array()
+		for stop: TradeRoute.Stop in hovered.stops:
+			path.append(_to_map(harbors.target_point(stop.target), area))
+		path.append(path[0])
+		for i: int in path.size() - 1:
+			draw_line(path[i], path[i + 1], HOVER_ROUTE, 5.0, true)
 	var route: TradeRoute = _simulation.world.routes.get(route_id)
 	if route != null and route.stops.size() > 1:
 		var points := PackedVector2Array()

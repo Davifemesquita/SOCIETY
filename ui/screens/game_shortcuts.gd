@@ -12,7 +12,8 @@ func setup(game: GameScreen) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _game.modal_open():
+	# no modo foto (Fase 47) só ele responde (Esc sai): nada de tirar a pausa ou abrir janela
+	if _game.modal_open() or _game.photo_mode.active:
 		return
 	if event.is_action_pressed(&"game_menu"):
 		# Esc: fecha a janela de cima; sem janela, cancela a ferramenta (BuildTool) ou abre o menu
@@ -51,6 +52,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_game.center_on_selected()
 	elif event.is_action_pressed(&"game_statistics"):
 		_game.hud.toggle_statistics()
+	elif event.is_action_pressed(&"build_search"):
+		_game.hud.focus_search()
+	elif event.is_action_pressed(&"photo_mode"):
+		_game.photo_mode.toggle()
 	elif event.is_action_pressed(&"debug_advance_hours"):
 		_game.advance_day_hours()
 	elif event.is_action_pressed(&"debug_cheat_resources"):

@@ -1706,6 +1706,26 @@ Regras que já custaram investigação:
   quadro com o calçamento.
 - **Capturas**: `tools/capture_phase46.tscn` (roda igual numa cópia anterior, para o antes e depois).
 
+### QoL de interface (Fase 47, nossa)
+
+- **Plano** em `docs/plano_fase47.md`, começada em 26/10/2026. Sem campo novo no save (nome e grupo da rota: Fase 49).
+- **Copiar**: `BuildTool.copy_building` (tipo, rotação; `copy_paused` e `copy_upgrade_blocked` vão para cada cópia pelos
+  comandos de sempre; qualquer obra nova zera `copying`). Botão em todo prédio; ação `build_copy`.
+- **Busca**: `Hud.search`, `search_results`, `folded` (sem acento e maiúscula), campo `BuildSearch`; ação `build_search`.
+  `SelectionPanel.same_kind` e `next_same` ("Próximo igual"); a dica do cartão diz quantos existem.
+- **Estatística e produtores**: `SelectionPanel.statistics_requested` → `StatisticsWindow.show_good`;
+  `StatisticsWindow.producer_requested` → `Hud.next_producer`.
+- **Decompor**: `Breakdown` (`sim/breakdown.gd`, só leitura, sob demanda): `good(world, data, derived, ilha, bem)` e
+  `money(...)`, parcelas `Source` (tipo, id, quantos, por minuto) que fecham exatamente com a tela. `BreakdownLabel`
+  monta a dica no hover (`_make_custom_tooltip`); `text_of` é estático para os testes.
+- **Rotas**: `RouteWindow.duplicate_route`, `add_order(parada, cheia)` (Shift), `slot_tons`, `hover_route` →
+  `ArchipelagoMap.hover_route_id`, filtro `RouteFilter` em `Settings.route_filter`.
+- **Modo foto**: `PhotoMode` (`GameScreen.photo_mode`): HUD e ícones (`BuildingView.hide_icons`) escondidos, pausa,
+  ferramenta e seletor de navio sem input; hora (`set_hour`, só o deslocamento visual) e `CameraRig.pitch_offset_deg`
+  (`PITCH_RANGE_DEG`); `MENU_PHOTO` no menu da partida; ação `photo_mode`. Os três atalhos novos nascem sem tecla.
+- **Benchmark**: a linha "dica que decompõe" mede o pior caso no hover.
+- **Capturas**: `tools/capture_phase47.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1763,6 +1783,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 44 — Primeira tela (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: fundo do menu sem a grade, com a carta gravada de um arquipélago numa thread e deriva lenta; botões entrando; prévia do jogo novo com as mesmas alturas da partida, numa thread cancelável (~1,7 s); som de vitória e derrota; o diorama 3D e a pré-carga ficaram de fora; falta o dono aprovar a gravura e o som; plano em `docs/plano_fase44.md` |
 | 45 — Ilhas novas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
 | 46 — Calçamento e esquinas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
+| 47 — QoL de interface (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
 
 Pendências já vistas para fases futuras:
 

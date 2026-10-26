@@ -15,6 +15,8 @@ var target_distance: float
 
 ## Altura do chão sob o foco (o foco fica no plano y = 0; a câmera sobe com o relevo). Suavizada.
 var ground_height: float = 0.0
+## Inclinação a mais (graus) sobre a do zoom: o modo foto (Fase 47) mexe nela, dentro do limite dele.
+var pitch_offset_deg: float = 0.0
 var _config: GameConfig
 var _bounds: Rect2
 var _center_target: Vector3
@@ -34,7 +36,8 @@ func _init(config: GameConfig, bounds_m: Rect2) -> void:
 ## Ângulo abaixo do horizonte, em radianos.
 func pitch() -> float:
 	var t := inverse_lerp(_config.camera_min_distance_m, _config.camera_max_distance_m, distance)
-	return deg_to_rad(lerpf(_config.camera_pitch_near_deg, _config.camera_pitch_far_deg, clampf(t, 0.0, 1.0)))
+	var degrees := lerpf(_config.camera_pitch_near_deg, _config.camera_pitch_far_deg, clampf(t, 0.0, 1.0)) + pitch_offset_deg
+	return deg_to_rad(clampf(degrees, 5.0, 89.0))
 
 
 ## Ponto para onde a câmera olha: o foco na altura do chão.

@@ -181,6 +181,17 @@ func _run() -> void:
 	for step: String in sim.derived_state().last_rebuild_ms:
 		steps.append("%s %.1f" % [step, sim.derived_state().last_rebuild_ms[step]])
 	_report("recálculo por etapa (ms)", " · ".join(steps))
+	# Fase 47: a dica que decompõe o número é montada no hover; o pior caso é o dinheiro e cada bem de todas as ilhas
+	started = Time.get_ticks_usec()
+	var goods_count := 0
+	for good_def: GoodDef in sim.data.goods:
+		Breakdown.good(sim.world, sim.data, sim.derived_state(), -1, good_def.id)
+		goods_count += 1
+	var goods_us := Time.get_ticks_usec() - started
+	started = Time.get_ticks_usec()
+	Breakdown.money(sim.world, sim.data, sim.config, sim.derived_state())
+	_report("dica que decompõe (um bem, todas as ilhas / o dinheiro)", "%.2f / %.2f ms" % [goods_us / 1000.0 / goods_count,
+			(Time.get_ticks_usec() - started) / 1000.0])
 	# Fase 29: `-- --so-tick` para aqui (o tick e a obra com a ilha cheia, sem salvar nem desenhar), só no terminal
 	if "--so-tick" in OS.get_cmdline_user_args():
 		get_tree().quit()
