@@ -9,6 +9,8 @@ var _seed: int
 var _config: GameConfig
 var _data: GameData
 var _difficulty: int
+## Fase 45: o gerador (1 ou 2).
+var _version: int
 var _specs: Array[ArchipelagoGenerator.IslandSpec] = []
 var _grids: Array[IslandGrid] = []
 var _tasks: PackedInt64Array = []
@@ -20,8 +22,10 @@ var _started: bool = false
 var _world: WorldState
 
 
-func _init(seed_value: int, config: GameConfig, data: GameData, archipelago_size: int = -1, difficulty: int = -1) -> void:
+func _init(seed_value: int, config: GameConfig, data: GameData, archipelago_size: int = -1, difficulty: int = -1,
+		version: int = -1) -> void:
 	_seed = seed_value
+	_version = version if version > 0 else config.new_game_terrain_version
 	_config = config
 	_data = data
 	_difficulty = difficulty
@@ -96,9 +100,9 @@ func result() -> WorldState:
 	if _world != null:
 		return _world
 	assert(is_done(), "ArchipelagoJob.result() antes de terminar")
-	_world = ArchipelagoGenerator.assemble(_seed, _config, _data, _specs, _grids, _difficulty)
+	_world = ArchipelagoGenerator.assemble(_seed, _config, _data, _specs, _grids, _difficulty, _version)
 	return _world
 
 
 func _build(index: int) -> void:
-	_grids[index] = ArchipelagoGenerator.build_island(_specs[index], _config)
+	_grids[index] = ArchipelagoGenerator.build_island(_specs[index], _config, _version)

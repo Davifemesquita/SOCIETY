@@ -35,6 +35,8 @@ static var flat_world: bool = false
 ## Fase 42: o arquipélago já gerado atrás da cortina (ArchipelagoJob, pelo menu); usado uma vez e esquecido. Sem ele (testes,
 ## ferramentas, benchmark), a partida gera o mundo aqui, de forma síncrona, como antes.
 static var prepared_world: WorldState = null
+## Fase 45: o gerador do jogo novo (-1: o do GameConfig; 1 ou 2, a escolha do diálogo).
+static var terrain_version: int = -1
 
 const QUICK_SLOT := "rapido"
 const MAIN_MENU := "res://ui/screens/boot_screen.tscn"
@@ -110,7 +112,7 @@ func _ready() -> void:
 		prepared_world = null
 		if world == null:
 			var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
-			world = ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty)
+			world = ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty, terrain_version)
 		simulation = Simulation.new(_config, data, world)
 		simulation.world.events_state.enabled = events_enabled
 		simulation.world.risks_state.enabled = risks_enabled

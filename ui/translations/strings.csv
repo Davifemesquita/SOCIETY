@@ -456,6 +456,10 @@ CHART_NO_DATA,O gráfico começa no primeiro minuto de jogo,The chart starts aft
 NOTICE_CLICK_TIP,Clique para ir até lá,Click to go there
 OPTIONS_SMALL_TEXT,Nesta escala o texto fica abaixo de 18 px e pode ficar difícil de ler.,At this scale text is below 18 px and may be hard to read.
 OPTIONS_SCALE_LIMITED,Nesta janela a interface não cabe nessa escala: ela fica no máximo que cabe (200% pede uma tela de 4K).,The interface does not fit at this scale in this window: it stays at the largest that fits (200% needs a 4K screen).
+NEW_GAME_TERRAIN,Ilhas,Islands
+NEW_GAME_TERRAIN_TIP,O gerador das ilhas: o clássico ou o novo (contorno orgânico e patamares em regiões; experimental),The island generator: the classic one or the new one (organic outline and regional plateaus; experimental)
+NEW_GAME_TERRAIN_CLASSIC,Clássicas,Classic
+NEW_GAME_TERRAIN_ORGANIC,Orgânicas (experimental),Organic (experimental)
 NEW_GAME_PREVIEW_TIP,A carta do arquipélago desta semente,The chart of this seed's archipelago
 NEW_GAME_PREVIEW_WORKING,Desenhando a carta…,Drawing the chart…
 NEW_GAME_PREVIEW_DONE,Semente %d,Seed %d

@@ -39,7 +39,7 @@ func test_generator_version_is_still_one() -> void:
 
 
 func test_v1_seed_1840_keeps_its_fingerprints() -> void:
-	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default())
+	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default(), -1, -1, 1)
 	assert_array(_fingerprints(world)).is_equal(V1_SEED_1840)
 
 
@@ -47,7 +47,7 @@ func test_v1_small_archipelagos_keep_their_fingerprints() -> void:
 	var config := _small_config()
 	var data := GameData.get_default()
 	for seed_value: int in V1_SMALL:
-		var world := ArchipelagoGenerator.new_world(seed_value, config, data)
+		var world := ArchipelagoGenerator.new_world(seed_value, config, data, -1, -1, 1)
 		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V1_SMALL[seed_value])
 
 
@@ -55,3 +55,27 @@ func test_v0_flat_island_keeps_its_fingerprint() -> void:
 	var simulation := Simulation.new(GameConfig.get_default(), GameData.get_default())
 	assert_int(simulation.world.terrain_version).is_equal(0)
 	assert_int(ArchipelagoGenerator.fingerprint(simulation.world.island(0))).is_equal(V0_FLAT)
+
+
+## Fase 45: o v2, gravado na fase em que entrou — provisório até o dono aprovar a forma pela prévia. Mudou de propósito
+## (um número do TerrainV2Params ou o algoritmo), regrave e diga no registro que os saves v2 de antes refazem outro mapa.
+const V2_SEED_1840: Array[int] = [2409095670, 4222075352, 4277908654, 3580615791, 2243869395, 3990515282, 4035060792,
+		937806066]
+const V2_SMALL: Dictionary[int, Array] = {
+	1: [3511237411, 30628214, 1465100942, 2476775559, 734819947],
+	7: [3208226675, 2426017334, 3651189902, 3709190932, 615352780],
+	2026: [2335374263, 4195011330, 2229339616, 2265720335, 1217821143],
+	999999: [3947777897, 1874430524, 1423973131, 3082559818, 1762131700],
+}
+
+
+func test_v2_seed_1840_keeps_its_fingerprints() -> void:
+	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default(), -1, -1, 2)
+	assert_array(_fingerprints(world)).is_equal(V2_SEED_1840)
+
+
+func test_v2_small_archipelagos_keep_their_fingerprints() -> void:
+	var config := _small_config()
+	for seed_value: int in V2_SMALL:
+		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 2)
+		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V2_SMALL[seed_value])

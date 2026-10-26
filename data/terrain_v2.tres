@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="TerrainV2Params" format=3]
+
+[ext_resource type="Script" path="res://data/terrain_v2_params.gd" id="1_params"]
+
+[resource]
+script = ExtResource("1_params")

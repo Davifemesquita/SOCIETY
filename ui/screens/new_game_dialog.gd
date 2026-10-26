@@ -24,6 +24,9 @@ var deadline_option := OptionButton.new()
 ## Fase 44: a carta do arquipélago da semente, gerada numa thread a cada troca (com um respiro de PREVIEW_DELAY_S para
 ## não gerar a cada dígito), e o texto enquanto ela não sai. As prévias velhas ficam aqui até a tarefa ser recolhida.
 const PREVIEW_DELAY_S := 0.35
+## Fase 45: o gerador das ilhas, na ordem das versões (1, 2).
+const TERRAIN_KEYS: Array[String] = ["NEW_GAME_TERRAIN_CLASSIC", "NEW_GAME_TERRAIN_ORGANIC"]
+var terrain_option := OptionButton.new()
 var preview := TextureRect.new()
 var preview_label := Label.new()
 var _current: ArchipelagoPreview
@@ -92,6 +95,17 @@ func _init() -> void:
 	size_option.select(mini(1, SIZE_KEYS.size() - 1))
 	size_option.item_selected.connect(func(_index: int) -> void: _ask_preview())
 	grid.add_child(size_option)
+	# Fase 45: o gerador das ilhas (o clássico, v1, ou o orgânico, v2): a prévia mostra a diferença
+	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_island"), 30))
+	grid.add_child(UiKit.label("NEW_GAME_TERRAIN"))
+	terrain_option.name = "Terrain"
+	terrain_option.tooltip_text = "NEW_GAME_TERRAIN_TIP"
+	terrain_option.focus_mode = Control.FOCUS_NONE
+	for key: String in TERRAIN_KEYS:
+		terrain_option.add_item(tr(key))
+	terrain_option.select(clampi(config.new_game_terrain_version - 1, 0, TERRAIN_KEYS.size() - 1))
+	terrain_option.item_selected.connect(func(_index: int) -> void: _ask_preview())
+	grid.add_child(terrain_option)
 	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_money"), 30))
 	grid.add_child(UiKit.label("NEW_GAME_DIFFICULTY"))
 	for index: int in DIFFICULTY_KEYS.size():
@@ -167,6 +181,11 @@ func _ask_preview() -> void:
 	preview_label.text = tr("NEW_GAME_PREVIEW_WORKING")
 
 
+## O gerador escolhido (1 ou 2).
+func chosen_terrain() -> int:
+	return terrain_option.selected + 1
+
+
 ## A semente que o campo pede agora (a mesma conta do confirm()).
 func chosen_seed() -> int:
 	return clampi(seed_edit.text.to_int(), 0, MAX_SEED) if seed_edit.text.is_valid_int() else -1
@@ -195,7 +214,8 @@ func start_preview(threaded: bool = true) -> void:
 		preview_label.text = ""
 		return
 	preview.texture = null
-	_current = ArchipelagoPreview.new(seed_value, size_option.selected, GameConfig.get_default(), GameData.get_default())
+	_current = ArchipelagoPreview.new(seed_value, size_option.selected, GameConfig.get_default(), GameData.get_default(),
+			ArchipelagoPreview.SCALE, chosen_terrain())
 	_current.start(threaded)
 	preview_label.text = tr("NEW_GAME_PREVIEW_WORKING")
 

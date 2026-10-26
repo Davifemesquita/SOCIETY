@@ -7,8 +7,13 @@ extends RefCounted
 ## dá sempre o mesmo arquipélago, e o save guarda só a semente e o que a construção mudou.
 ## Simulação pura: a apresentação (TerrainView) lê as alturas daqui.
 
-## Versão do gerador: vai no save. Mudou o algoritmo, some 1 (saves antigos refariam outro mapa).
+## Versão do gerador: vai no save. Mudou o algoritmo, some 1 (saves antigos refariam outro mapa). O v1 fica congelado
+## (o teste dourado confere); desde a Fase 45 existe o v2 (contorno orgânico e patamares não concêntricos, parâmetros em
+## TerrainV2Params), escolhido para os jogos novos por GameConfig.new_game_terrain_version.
 const VERSION := 1
+const VERSION_V2 := 2
+## As versões que um save pode ter (além do 0, a ilha plana de antes).
+const VERSIONS: Array[int] = [VERSION, VERSION_V2]
 ## Regiões vizinhas da principal, onde ficam as outras ilhas (sorteadas pela semente).
 const REGION_SLOTS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(-1, 0),
 		Vector2i(0, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
@@ -61,23 +66,25 @@ class Noises:
 
 ## Mundo novo: o arquipélago da semente, com o dinheiro e o navio inicial (com os materiais) na
 ## principal. Tamanho do arquipélago e dificuldade negativos = os padrões do GameConfig.
-static func new_world(seed_value: int, config: GameConfig, data: GameData, archipelago_size: int = -1, difficulty: int = -1) -> WorldState:
+static func new_world(seed_value: int, config: GameConfig, data: GameData, archipelago_size: int = -1, difficulty: int = -1,
+		version: int = -1) -> WorldState:
+	var terrain := version if version > 0 else config.new_game_terrain_version
 	var size_index := archipelago_size if archipelago_size >= 0 else config.default_archipelago_size
 	var specs := layout(seed_value, config, data, config.island_count_for(size_index))
 	specs.append_array(tropical_layout(seed_value, config, data, specs.size()))
 	var grids: Array[IslandGrid] = []
 	for spec: IslandSpec in specs:
-		grids.append(build_island(spec, config))
-	return assemble(seed_value, config, data, specs, grids, difficulty)
+		grids.append(build_island(spec, config, terrain))
+	return assemble(seed_value, config, data, specs, grids, difficulty, terrain)
 
 
 ## O mundo a partir das ilhas já geradas, na ordem das specs (Fase 42: o ArchipelagoJob gera as ilhas em threads e monta
 ## aqui, igual ao caminho direto).
 static func assemble(seed_value: int, config: GameConfig, data: GameData, specs: Array[IslandSpec], grids: Array[IslandGrid],
-		difficulty: int = -1) -> WorldState:
+		difficulty: int = -1, version: int = VERSION) -> WorldState:
 	var world := WorldState.new()
 	world.seed = seed_value
-	world.terrain_version = VERSION
+	world.terrain_version = version
 	world.difficulty = difficulty if difficulty >= 0 else config.default_difficulty
 	world.money = config.starting_money_for(world.difficulty)
 	for index: int in specs.size():
@@ -160,23 +167,27 @@ static func world_specs(world: WorldState, config: GameConfig, data: GameData) -
 	return specs
 
 
-## Gera uma ilha inteira: alturas dos cantos, chão, rios, floresta e jazidas.
-static func build_island(spec: IslandSpec, config: GameConfig) -> IslandGrid:
+## Gera uma ilha inteira: alturas dos cantos, chão, rios, floresta e jazidas. Desde a Fase 45 as alturas saem do v1 ou do
+## v2 pela versão; chão, rios, jazidas e floresta são os mesmos nas duas.
+static func build_island(spec: IslandSpec, config: GameConfig, version: int = VERSION) -> IslandGrid:
 	var grid := IslandGrid.new(Vector2i(spec.size, spec.size))
 	grid.origin_m = spec.origin_m
 	grid.cell_size = config.cell_size_m
 	grid.init_terrain()
 	var noises := Noises.new(spec.seed_value)
-	for y: int in spec.size + 1:
-		for x: int in spec.size + 1:
-			grid.corner_heights[grid.corner_index(x, y)] = height_at(spec, noises, config,
-					spec.origin_m.x + x * config.cell_size_m, spec.origin_m.y + y * config.cell_size_m)
+	if version == VERSION_V2:
+		_heights_v2(grid, spec, config, TerrainV2Params.get_default())
+	else:
+		for y: int in spec.size + 1:
+			for x: int in spec.size + 1:
+				grid.corner_heights[grid.corner_index(x, y)] = height_at(spec, noises, config,
+						spec.origin_m.x + x * config.cell_size_m, spec.origin_m.y + y * config.cell_size_m)
 	_classify_ground(grid)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([spec.seed_value, "features"])
 	for river: int in spec.profile.rivers:
 		_carve_river(grid, config, rng)
-	_place_deposits(grid, spec.profile, config, rng)
+	_place_deposits(grid, spec.profile, config, rng, version == VERSION_V2)
 	_grow_forest(grid, spec.profile, noises, config)
 	grid.invalidate_heights()
 	grid.fingerprint = fingerprint(grid)
@@ -204,6 +215,200 @@ static func _coast_metric(spec: IslandSpec, noises: Noises, config: GameConfig, 
 	var cx := absf(((x - spec.origin_m.x) / side - 0.5) * 2.0)
 	var cz := absf(((z - spec.origin_m.y) / side - 0.5) * 2.0)
 	return pow(cx * cx * cx * cx + cz * cz * cz * cz, 0.25) + noises.coast.get_noise_2d(x, z) * COAST_NOISE
+
+
+## ---------------------------------------------------------------------------------------------------------------------
+## Gerador v2 (Fase 45). Ruídos próprios, derivados da semente da ilha (que já é hash(semente, índice)).
+class NoisesV2:
+	var warp_a := FastNoiseLite.new()
+	var warp_b := FastNoiseLite.new()
+	var warp_c := FastNoiseLite.new()
+	var warp_d := FastNoiseLite.new()
+	var coast := FastNoiseLite.new()
+	var rough := FastNoiseLite.new()
+	var cliff := FastNoiseLite.new()
+	var plateau := FastNoiseLite.new()
+	var undulate := FastNoiseLite.new()
+	var sand := FastNoiseLite.new()
+
+	func _init(seed_value: int, params: TerrainV2Params) -> void:
+		var simplex: Array[Array] = [[warp_a, 10, params.warp_frequency.x, 3], [warp_b, 11, params.warp_frequency.x, 3],
+				[warp_c, 12, params.warp_frequency.y, 2], [warp_d, 13, params.warp_frequency.y, 2],
+				[coast, 14, params.coast_frequency, 5], [rough, 15, 1.0 / 180.0, 2], [cliff, 16, 1.0 / 170.0, 2],
+				[undulate, 17, params.undulation_frequency, 2], [sand, 18, 1.0 / 60.0, 2]]
+		for item: Array in simplex:
+			var noise: FastNoiseLite = item[0]
+			var salt: int = item[1]
+			noise.seed = hash([seed_value, "v2", salt]) & 0x7fffffff
+			noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+			noise.frequency = item[2]
+			noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+			noise.fractal_octaves = item[3]
+		# os patamares por região: o valor da célula de Voronoi desloca o nível de cada uma (não concêntricos)
+		plateau.seed = hash([seed_value, "v2", 19]) & 0x7fffffff
+		plateau.noise_type = FastNoiseLite.TYPE_CELLULAR
+		plateau.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
+		plateau.cellular_jitter = 0.9
+		plateau.frequency = params.plateau_frequency
+		plateau.fractal_type = FastNoiseLite.FRACTAL_NONE
+
+
+## Uma elipse da ilha v2, nas coordenadas da ilha (−1 a 1): centro, raios, giro; ilhota é pequena e baixa.
+class Lobe:
+	var center: Vector2
+	var radii: Vector2
+	var angle: float
+	var islet: bool
+
+	## 1 na borda da elipse, menos dentro, mais fora.
+	func metric(point: Vector2) -> float:
+		var local := (point - center).rotated(-angle)
+		return Vector2(local.x / radii.x, local.y / radii.y).length()
+
+
+## As elipses da ilha v2, pela semente dela: a primeira perto do meio, as outras espalhadas, todas dentro de
+## params.shore; e as ilhotas em volta.
+static func lobes_v2(spec: IslandSpec, params: TerrainV2Params) -> Array[Lobe]:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([spec.seed_value, "v2 lobes"])
+	var result: Array[Lobe] = []
+	var count := rng.randi_range(params.lobes_min, params.lobes_max)
+	var turn := rng.randf() * TAU
+	for k: int in count:
+		var lobe := Lobe.new()
+		# a primeira no meio; as outras em volta, em ângulos espaçados com folga: a união enche o círculo sem ser um
+		var reach := 0.0 if k == 0 else params.lobe_spread * rng.randf_range(0.7, 1.0)
+		var angle := turn + TAU * k / maxf(count - 1, 1) + rng.randf_range(-0.35, 0.35)
+		lobe.center = Vector2.from_angle(angle) * reach
+		var radius := rng.randf_range(params.lobe_radius.x, params.lobe_radius.y) * (1.15 if k == 0 else 1.0)
+		var stretch := rng.randf_range(1.0, params.lobe_stretch)
+		lobe.radii = Vector2(radius * sqrt(stretch), radius / sqrt(stretch))
+		lobe.angle = rng.randf() * PI
+		result.append(lobe)
+	# a ilha chega até shore (nem mais, nem menos): o conjunto é esticado ou encolhido para a elipse mais longe tocar lá
+	var farthest := 0.0
+	for lobe: Lobe in result:
+		# o ponto da borda mais longe do meio (a elipse de lado não chega tão longe quanto o raio maior)
+		for step: int in 32:
+			var angle := TAU * step / 32.0
+			var edge := lobe.center + Vector2(cos(angle) * lobe.radii.x, sin(angle) * lobe.radii.y).rotated(lobe.angle)
+			farthest = maxf(farthest, edge.length())
+	var fit := params.shore / maxf(farthest, 0.01)
+	for lobe: Lobe in result:
+		lobe.center *= fit
+		lobe.radii *= fit
+	var islets := rng.randi_range(0, params.islets_max)
+	for k: int in islets:
+		var lobe := Lobe.new()
+		lobe.islet = true
+		var radius := rng.randf_range(params.islet_radius.x, params.islet_radius.y)
+		lobe.radii = Vector2(radius, radius * rng.randf_range(0.6, 1.0))
+		lobe.angle = rng.randf() * PI
+		lobe.center = Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(0.6, params.shore - radius)
+		result.append(lobe)
+	return result
+
+
+## v2: a partir desta fração da meia largura o terreno é empurrado para o mar (a borda da grade é sempre mar).
+const EDGE_SEA := 0.93
+## v2: quanto (m) o lugar de leitura dos patamares é torcido (as divisas das regiões deixam de ser retas).
+const PLATEAU_BEND_M := 28.0
+
+
+## União suave (smooth min polinomial).
+static func _smooth_min(a: float, b: float, k: float) -> float:
+	var h := maxf(k - absf(a - b), 0.0) / k
+	return minf(a, b) - h * h * k * 0.25
+
+
+## As alturas dos cantos da ilha v2, e depois o limite de degrau entre cantos vizinhos (risers suaves).
+static func _heights_v2(grid: IslandGrid, spec: IslandSpec, config: GameConfig, params: TerrainV2Params) -> void:
+	var noises := NoisesV2.new(spec.seed_value, params)
+	var lobes := lobes_v2(spec, params)
+	for y: int in spec.size + 1:
+		for x: int in spec.size + 1:
+			grid.corner_heights[grid.corner_index(x, y)] = height_at_v2(spec, noises, lobes, params, config,
+					spec.origin_m.x + x * config.cell_size_m, spec.origin_m.y + y * config.cell_size_m)
+	_limit_steps(grid, params.max_corner_step_m)
+
+
+## Altura v2 num ponto do mundo: a métrica da união das elipses no domínio torcido (warp em dois níveis), com a costa
+## fractal; dentro dela os patamares (o nível de cada região deslocado pelo ruído celular, subindo para o interior) e a
+## ondulação; fora, o fundo do mar, ou o banco de areia raso junto à costa.
+static func height_at_v2(spec: IslandSpec, noises: NoisesV2, lobes: Array[Lobe], params: TerrainV2Params, config: GameConfig,
+		x: float, z: float) -> float:
+	var side := spec.size * config.cell_size_m
+	var point := Vector2((x - spec.origin_m.x) / side - 0.5, (z - spec.origin_m.y) / side - 0.5) * 2.0
+	var first := Vector2(noises.warp_a.get_noise_2d(x, z), noises.warp_b.get_noise_2d(x, z)) * params.warp_amount.x
+	var warped := point + first
+	var world := Vector2(x, z) + first * side * 0.5
+	warped += Vector2(noises.warp_c.get_noise_2d(world.x, world.y), noises.warp_d.get_noise_2d(world.x, world.y)) \
+			* params.warp_amount.y
+	var main := INF
+	var islet := INF
+	for lobe: Lobe in lobes:
+		var value := lobe.metric(warped)
+		if lobe.islet:
+			islet = minf(islet, value)
+		else:
+			main = value if main == INF else _smooth_min(main, value, params.lobe_blend)
+	var rough := lerpf(params.coast_roughness.x, params.coast_roughness.y, noises.rough.get_noise_2d(x, z) * 0.5 + 0.5)
+	var coast := noises.coast.get_noise_2d(world.x, world.y) * rough
+	var on_islet := islet < main
+	var d := minf(main, islet) + coast
+	# a borda da grade é sempre mar: perto dela a métrica sobe à força (o v1 garante isso pela folga do SHORE)
+	var border := maxf(absf(point.x), absf(point.y))
+	if border > EDGE_SEA:
+		d = maxf(d, 1.0 + (border - EDGE_SEA) * 12.0)
+	var cliff := smoothstep(0.12, 0.4, noises.cliff.get_noise_2d(x, z))
+	var band := lerpf(params.beach_band, params.cliff_band, cliff)
+	var inland := clampf((1.0 - d) / params.plain_width, 0.0, 1.0)
+	var levels := params.terrace_levels_m
+	var top := levels[levels.size() - 1] + 1.5
+	# o nível de cada região (célula de Voronoi) sai do valor dela, puxado um pouco para cima no miolo: os patamares
+	# são regiões, não anéis em volta do centro; a distância da costa só faz a planície do litoral (o "inland")
+	# as divisas das regiões são bordas de Voronoi (retas): o lugar onde o ruído celular é lido também é torcido, e elas
+	# curvam como encostas de verdade
+	var bent := world + Vector2(noises.warp_c.get_noise_2d(x, z), noises.warp_d.get_noise_2d(z, x)) * PLATEAU_BEND_M
+	var region := noises.plateau.get_noise_2d(bent.x, bent.y) * 0.5 + 0.5
+	var core := clampf(1.0 - d, 0.0, 1.0)
+	var lift := lerpf(region, pow(core, params.inland_rise), 0.35)
+	var raw := top * spec.profile.relief * lift + (region - 0.5) * params.plateau_jitter_m
+	# a planície do litoral fica no primeiro patamar até uma borda irregular (não um anel), e de lá sobe numa encosta curta
+	var edge := lerpf(0.35, 0.9, noises.rough.get_noise_2d(x * 1.7, z * 1.7) * 0.5 + 0.5)
+	var land := lerpf(levels[0], terrace(raw, levels, params.terrace_flat_fraction), smoothstep(edge, edge + 0.12, inland))
+	land += noises.undulate.get_noise_2d(x, z) * params.undulation_m * smoothstep(0.0, 0.5, inland)
+	if on_islet:
+		land = minf(land, params.islet_height_m)
+	var sea := config.sea_floor_m
+	if d > 1.0 and noises.sand.get_noise_2d(x, z) > 1.0 - 2.0 * params.sandbank_chance:
+		# banco de areia: raso logo depois da costa, sumindo para o fundo
+		sea = lerpf(params.sandbank_depth_m, config.sea_floor_m, smoothstep(1.0, 1.14, d))
+	return lerpf(land, sea, smoothstep(1.0 - band, 1.0 + 0.005, d))
+
+
+## Nenhum canto fica mais que "step" acima de um vizinho de lado: o degrau entre patamares vira encosta (três passadas,
+## só baixando os picos, então a terra não sobe sobre o mar).
+static func _limit_steps(grid: IslandGrid, step: float) -> void:
+	var width := grid.size.x + 1
+	var height := grid.size.y + 1
+	var heights := grid.corner_heights
+	for pass_number: int in 3:
+		for y: int in height:
+			for x: int in width:
+				var i := y * width + x
+				var low := heights[i]
+				if x > 0:
+					low = minf(low, heights[i - 1])
+				if x < width - 1:
+					low = minf(low, heights[i + 1])
+				if y > 0:
+					low = minf(low, heights[i - width])
+				if y < height - 1:
+					low = minf(low, heights[i + width])
+				if heights[i] - low > step and low > LAND_MIN_M:
+					heights[i] = low + step
+	grid.corner_heights = heights
 
 
 ## Degraus: cada faixa entre dois patamares fica plana em terrace_flat_fraction e sobe no resto.
@@ -306,26 +511,41 @@ static func _carve(grid: IslandGrid, path: Array[Vector2i], config: GameConfig) 
 				grid.corner_heights[grid.corner_index(corner.x, corner.y)] = config.river_bed_m
 
 
-## Manchas quadradas de jazida em lugar plano, de preferência nos morros.
-static func _place_deposits(grid: IslandGrid, profile: IslandProfileDef, config: GameConfig, rng: RandomNumberGenerator) -> void:
+## Manchas quadradas de jazida em lugar plano, de preferência nos morros. No v2 (flatten), sem lugar plano o bastante o
+## lote de terra menos acidentado é aplainado (os cantos na média dele): a mina sempre cabe onde o perfil pede jazida.
+static func _place_deposits(grid: IslandGrid, profile: IslandProfileDef, config: GameConfig, rng: RandomNumberGenerator,
+		flatten: bool = false) -> void:
 	grid.deposit_goods = profile.deposits.duplicate()
 	var spot := config.deposit_spot_cells
 	for good_index: int in profile.deposits.size():
 		for spot_number: int in profile.deposit_spots:
 			var best := Rect2i()
 			var best_height := -INF
+			var smoothest := Rect2i()
+			var smoothest_relief := INF
 			for attempt: int in DEPOSIT_TRIES:
 				var area := Rect2i(rng.randi_range(2, grid.size.x - spot - 2), rng.randi_range(2, grid.size.y - spot - 2), spot, spot)
-				if not grid.area_is_land(area) or grid.area_relief(area) > config.max_build_height_delta_m:
+				if not grid.area_is_land(area) or _has_deposit(grid, area.grow(2)):
 					continue
-				if _has_deposit(grid, area.grow(2)):
+				var relief := grid.area_relief(area)
+				if relief < smoothest_relief:
+					smoothest = area
+					smoothest_relief = relief
+				if relief > config.max_build_height_delta_m:
 					continue
 				var height := grid.area_height(area)
 				if height > best_height:
 					best = area
 					best_height = height
 			if best_height == -INF:
-				continue
+				if not flatten or smoothest_relief == INF:
+					continue
+				best = smoothest
+				var level := grid.area_height(best)
+				for y: int in range(best.position.y, best.end.y + 1):
+					for x: int in range(best.position.x, best.end.x + 1):
+						grid.corner_heights[grid.corner_index(x, y)] = level
+				grid.invalidate_heights()
 			for y: int in range(best.position.y, best.end.y):
 				for x: int in range(best.position.x, best.end.x):
 					grid.deposits[y * grid.size.x + x] = good_index + 1

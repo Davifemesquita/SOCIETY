@@ -233,7 +233,8 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 		return null
 	world.seed = raw_seed
 	world.terrain_version = raw_version
-	if world.terrain_version != 0 and world.terrain_version != ArchipelagoGenerator.VERSION:
+	# versão desconhecida (de um jogo mais novo, ou corrompida): recusado
+	if world.terrain_version != 0 and world.terrain_version not in ArchipelagoGenerator.VERSIONS:
 		return null
 	var raw_islands: Variant = data.get("islands")
 	if not raw_islands is Array:
@@ -251,7 +252,7 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 		var specs := ArchipelagoGenerator.layout(world.seed, game_config, game_data, temperate)
 		specs.append_array(ArchipelagoGenerator.tropical_layout(world.seed, game_config, game_data, specs.size(), tropical))
 		for spec: ArchipelagoGenerator.IslandSpec in specs:
-			generated.append(ArchipelagoGenerator.build_island(spec, game_config))
+			generated.append(ArchipelagoGenerator.build_island(spec, game_config, world.terrain_version))
 	var raw_buildings: Variant = data.get("buildings")
 	var raw_next: Variant = data.get("next_building_id")
 	var raw_money: Variant = data.get("money")

@@ -1668,6 +1668,23 @@ Regras que já custaram investigação:
   parada com `SceneFader.still()`); os botões entram esmaecendo. `UiSfx.end_of_game` toca no `VictoryDialog`.
 - **Capturas**: `tools/capture_phase44.tscn`.
 
+### Ilhas novas (Fase 45, nossa)
+
+- **Plano** em `docs/plano_fase45.md`, começada em 26/10/2026. **O v1 é congelado e continua o padrão**
+  (`GameConfig.new_game_terrain_version = 1`) até o dono aprovar o v2; o diálogo de jogo novo já deixa escolher
+  ("Orgânicas (experimental)", `NewGameDialog.chosen_terrain`, `GameScreen.terrain_version`).
+- **Versões**: `ArchipelagoGenerator.VERSION` (1) e `VERSION_V2` (2), `VERSIONS` aceitas no save; `build_island`,
+  `new_world`, `assemble`, `ArchipelagoJob` e `ArchipelagoPreview` recebem a versão. Teste que gera terreno do v1 pede a
+  versão 1 explicitamente (o padrão pode mudar).
+- **v2** (`_heights_v2`, `height_at_v2`, `lobes_v2`, `NoisesV2`, `Lobe`, `_limit_steps`; parâmetros em `TerrainV2Params`,
+  `data/terrain_v2.tres`): elipses em volta do meio enquadradas até `shore`, warp em dois níveis, costa fractal,
+  ilhotas, bancos de areia, borda da grade sempre mar (`EDGE_SEA`), patamares por região de Voronoi com a leitura torcida
+  (`PLATEAU_BEND_M`), planície do litoral até uma borda irregular, ondulação, degrau máximo entre cantos. No v2 a jazida
+  sem lugar plano aplaina o lote menos acidentado (`_place_deposits(..., flatten)`; o sorteio do v1 é o mesmo).
+- **Teste dourado**: as assinaturas do v2 (`V2_SEED_1840`, `V2_SMALL`) são provisórias até a aprovação; mudar um número
+  do `TerrainV2Params` muda o terreno dos saves v2.
+- **Capturas**: `tools/capture_phase45.tscn` (v1 e v2 lado a lado e as cartas).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1723,6 +1740,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 42 — Quadro estável e carregamento real (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: o jogo novo gera uma ilha por thread (idêntico ao direto, teste em três sementes) com porcentagem, barra e dicas na cortina; geração de ~980 para ~430 ms com pior quadro de 15 ms; tick p95 1,5 ms, obra 18 ms, o 4× limitado por quadro; montar as vistas (~5 s) segue na thread principal (fica de fora, medido); falta o dono medir no PC e aprovar as metas de quadro; plano em `docs/plano_fase42.md` |
 | 43 — Interface enxuta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: contraste WCAG provado em teste (estados e foco corrigidos), Playfair só nos títulos grandes e números tabulares, escala até 200% com aviso abaixo de 18 px, fonte legível e reduzir movimento, avisos com contador, categorias silenciáveis, pausa no alerta e duração, painel dos prédios do tamanho do conteúdo, sons de interface em toda tela, créditos dos ícones por autor; DPITexture e a barra de cima reorganizada ficaram de fora; falta o teste com uma pessoa de fora e o dono aprovar as fontes; plano em `docs/plano_fase43.md` |
 | 44 — Primeira tela (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: fundo do menu sem a grade, com a carta gravada de um arquipélago numa thread e deriva lenta; botões entrando; prévia do jogo novo com as mesmas alturas da partida, numa thread cancelável (~1,7 s); som de vitória e derrota; o diorama 3D e a pré-carga ficaram de fora; falta o dono aprovar a gravura e o som; plano em `docs/plano_fase44.md` |
+| 45 — Ilhas novas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
 
 Pendências já vistas para fases futuras:
 

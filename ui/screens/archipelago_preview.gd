@@ -12,6 +12,8 @@ var seed_value: int
 var archipelago_size: int
 ## Pixels por célula da carta gravada (o diálogo usa SCALE; o fundo do menu, mais).
 var engrave_scale: int = SCALE
+## Fase 45: o gerador da prévia (o mesmo que a partida vai usar).
+var terrain_version: int = -1
 var _config: GameConfig
 var _data: GameData
 var _task: int = -1
@@ -22,8 +24,10 @@ var _world: WorldState
 var _image: Image
 
 
-func _init(seed_number: int, size_index: int, config: GameConfig, data: GameData, scale: int = SCALE) -> void:
+func _init(seed_number: int, size_index: int, config: GameConfig, data: GameData, scale: int = SCALE,
+		version: int = -1) -> void:
 	seed_value = seed_number
+	terrain_version = version
 	engrave_scale = scale
 	archipelago_size = size_index
 	_config = config
@@ -89,7 +93,7 @@ static func orphan_count() -> int:
 
 
 func _build() -> void:
-	_world = ArchipelagoGenerator.new_world(seed_value, _config, _data, archipelago_size)
+	_world = ArchipelagoGenerator.new_world(seed_value, _config, _data, archipelago_size, -1, terrain_version)
 	if _cancelled:
 		return
 	_image = ArchipelagoMap.engrave(SeaChart.new(_world, _config), engrave_scale)

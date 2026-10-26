@@ -132,6 +132,7 @@ func open_new_game() -> NewGameDialog:
 		GameScreen.events_enabled = dialog.events_check.button_pressed
 		GameScreen.rivals_enabled = dialog.rivals_check.button_pressed
 		GameScreen.risks_enabled = dialog.risks_check.button_pressed
+		GameScreen.terrain_version = dialog.chosen_terrain()
 		dialog.apply_objective()
 		_start(""))
 	Modal.open(_layer, dialog)
@@ -177,7 +178,7 @@ func _start(slot: String) -> void:
 	# pronto (GameScreen.prepared_world), com a semente sorteada aqui
 	var seed_value := GameScreen.world_seed if GameScreen.world_seed >= 0 else randi() % 1_000_000
 	var job := ArchipelagoJob.new(seed_value, GameConfig.get_default(), GameData.get_default(), GameScreen.archipelago_size,
-			GameScreen.difficulty)
+			GameScreen.difficulty, GameScreen.terrain_version)
 	SceneFader.change_with_job(job, func() -> void:
 		GameScreen.prepared_world = job.result()
 		get_tree().change_scene_to_file(GAME_SCENE), "LOADING_NEW_WORLD")
