@@ -39,6 +39,11 @@ extends Resource
 ## Fase 34: hex-tiling na grama e no chão de floresta (três leituras por textura em vez de uma). Só no ultra (decisão
 ## do dono do produto, 25/10/2026): custa ~1,2 ms de GPU na RTX 5060, e a reamostragem de longe já tira o xadrez.
 @export var terrain_hex_tiling: bool = false
+## Fase 37: reflexos de tela (SSR), em meia resolução ou cheia, e o tamanho angular do sol (acima de 0 liga a sombra
+## suave de contato, PCSS). Só no ultra por padrão: o alto já fica abaixo dos 60 FPS na RTX 5060.
+@export var ssr: bool = false
+@export var ssr_half_size: bool = true
+@export var sun_angular_distance_deg: float = 0.0
 
 @export_group("Antisserrilhado")
 ## Fase 32: AA de tela (Viewport.ScreenSpaceAA: 0 nenhum, 1 FXAA, 2 SMAA), usado quando o FSR 2.2 está desligado. O
@@ -66,6 +71,8 @@ func validate() -> PackedStringArray:
 		problems.append("%s: AA de tela de 0 a %d e nitidez do FSR de 0 a 2" % [id, Viewport.SCREEN_SPACE_AA_MAX - 1])
 	if not uses_temporal(render_scale) and screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED:
 		problems.append("%s: sem antisserrilhado (nem AA de tela nem FSR)" % id)
+	if sun_angular_distance_deg < 0.0 or sun_angular_distance_deg > 5.0:
+		problems.append("%s: tamanho angular do sol entre 0 e 5 graus" % id)
 	return problems
 
 

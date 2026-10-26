@@ -1522,6 +1522,22 @@ Regras que já custaram investigação:
   com o detalhe (`ROCK_SINK_M`). A `TreeView.setup` recebe o config.
 - Custo: ~0,13 s a mais no jogo novo (o `TerrainView.setup` da semente 1840 foi de ~1,9 para ~2,0 s no PC do dono).
 
+### Luz e cor de época (Fase 37, nossa)
+
+- **Plano** em `docs/plano_fase37.md`, começada em 25/10/2026 com a confirmação do dono do produto, feita sem tela: o
+  visual novo fica atrás de uma opção desligada, para o dono comparar quando liberar a tela.
+- **Cor de época** (`PeriodGrade`, `Settings.period_look`, Opções → Gráficos, "Cor de época"): LUT 3D de 33³ gerado no
+  código (realces âmbar, sombras frias, verdes e azuis ~15% menos saturados, preto erguido) no
+  `adjustment_color_correction`, e o AgX com `period_agx_white`/`period_agx_contrast`. Desligada, o `Environment` volta
+  aos valores do motor (`GraphicsQuality._environment_defaults`).
+- **SSR e PCSS só no ultra** (`GraphicsPresetDef.ssr`, `ssr_half_size`, `sun_angular_distance_deg`; o plano pedia também
+  no alto, que já está abaixo dos 60 FPS). A meia resolução do SSR é global
+  (`RenderingServer.environment_set_ssr_half_size`).
+- **Luzes noturnas**: todas sem sombra; no pior caso 24 de área + 10 lampiões + incêndios + decals de fuligem, longe dos
+  512 elementos por tela.
+- **Para comparar**: `tools/capture_phase37.tscn` (ilha e litoral em quatro horas, com e sem a cor de época; precisa
+  de GPU). Névoa aérea, sol, câmera e navios ficaram para uma rodada com tela (ver o plano).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1569,6 +1585,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 34 — Chão sem xadrez (nossa) | **concluída em 25/10/2026** (capturas aprovadas; hex-tiling só no ultra, decisão do dono do produto): texturas de dados do terreno (inclinação, curvatura, água, umidade), bordas com ruído e height-blend, macro-variação, hex-tiling perto da câmera e reamostragem por distância (o xadrez de 12 m sumiu a 420 m), triplanar na rocha; a suíte inteira passou no CI; no benchmark da RTX 5060 a GPU subiu 0,4 ms no baixo e ~1,2 ms nos outros (o hex-tiling, medido à parte no `tools/terrain_cost.tscn`); plano em `docs/plano_fase34.md` |
 | 35 — Costa viva (nossa) | **em andamento desde 25/10/2026**, feita sem tela: distância até a costa com sinal (por região e no arquipélago), plataforma rasa, espuma andando para a praia e ondas calmas na água; fundo raso pela distância, cáusticas, espraiado e detritos no terreno; as pastas sem tela passaram e o CI compilou os shaders (pasta `world`); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase35.md` |
 | 36 — Encostas de pedra (nossa) | **em andamento desde 25/10/2026**, feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
+| 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); as pastas sem tela passaram; faltam o CI e, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
 
 Pendências já vistas para fases futuras:
 

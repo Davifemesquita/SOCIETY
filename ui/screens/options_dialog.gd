@@ -78,6 +78,11 @@ func _graphics() -> Control:
 	grid.add_child(_check("OPTIONS_FULLSCREEN_TIP", Settings.fullscreen, func(on: bool) -> void: Settings.fullscreen = on))
 	grid.add_child(UiKit.label("OPTIONS_VSYNC"))
 	grid.add_child(_check("OPTIONS_VSYNC_TIP", Settings.vsync, func(on: bool) -> void: Settings.vsync = on))
+	# Fase 37: a gradação de cor de época, para comparar com o visual de antes
+	grid.add_child(UiKit.label("OPTIONS_PERIOD_LOOK"))
+	var period := _check("OPTIONS_PERIOD_LOOK_TIP", Settings.period_look, func(on: bool) -> void: Settings.period_look = on)
+	period.name = "PeriodLook"
+	grid.add_child(period)
 	grid.add_child(UiKit.label("OPTIONS_RENDER_SCALE"))
 	var scale := _slider("OPTIONS_RENDER_SCALE_TIP", GameConfig.get_default().render_scale_min, 1.0, 0.05, Settings.render_scale,
 			func(value: float) -> void: Settings.set_render_scale(value))

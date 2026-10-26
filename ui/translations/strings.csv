@@ -345,6 +345,8 @@ OPTIONS_FULLSCREEN,Tela cheia,Fullscreen
 OPTIONS_FULLSCREEN_TIP,Ocupa a tela inteira,Fills the whole screen
 OPTIONS_VSYNC,Sincronia vertical,Vertical sync
 OPTIONS_VSYNC_TIP,Acompanha a taxa do monitor (sem cortes na imagem),Follows the monitor's refresh rate (no tearing)
+OPTIONS_PERIOD_LOOK,Cor de época,Period colour grade
+OPTIONS_PERIOD_LOOK_TIP,"Realces âmbar, sombras frias e verdes mais contidos, como numa gravura colorida do século XIX","Amber highlights, cool shadows and quieter greens, like a hand-coloured 19th-century print"
 OPTIONS_RENDER_SCALE,Escala da imagem 3D,3D image scale
 OPTIONS_RENDER_SCALE_TIP,Abaixo de 100% usa o FSR 2: mais leve para placas mais fracas,Below 100% uses FSR 2: lighter on weaker graphics cards
 OPTIONS_MAX_FPS,Limite de quadros,Frame limit

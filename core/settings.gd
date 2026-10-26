@@ -30,6 +30,8 @@ var advisor: bool = true
 var camera_speed: float = 1.0
 ## Limite de quadros por segundo (0 = sem limite).
 var max_fps: int = 0
+## Fase 37: gradação de cor de época (LUT) e o AgX ajustado. Desligada por padrão, para comparar com o visual de antes.
+var period_look: bool = false
 ## Volume de cada barramento, de 0 a 1.
 var volumes: Dictionary[StringName, float] = {}
 ## Teclas trocadas pelo jogador: ação → teclas físicas. Ação ausente = a tecla padrão.
@@ -160,6 +162,7 @@ func save_to(path: String) -> Error:
 	file.set_value("graphics", "render_scale", render_scale)
 	file.set_value("graphics", "max_fps", max_fps)
 	file.set_value("graphics", "preset", graphics_preset)
+	file.set_value("graphics", "period_look", period_look)
 	file.set_value("game", "autosave_minutes", autosave_minutes)
 	file.set_value("game", "advisor", advisor)
 	file.set_value("controls", "camera_speed", camera_speed)
@@ -184,6 +187,7 @@ func load_from(path: String) -> void:
 	advisor = _flag(file.get_value("game", "advisor", true), true)
 	fullscreen = _flag(file.get_value("graphics", "fullscreen", false), false)
 	vsync = _flag(file.get_value("graphics", "vsync", true), true)
+	period_look = _flag(file.get_value("graphics", "period_look", false), false)
 	var raw_preset: Variant = file.get_value("graphics", "preset", _config.default_graphics_preset)
 	graphics_preset = raw_preset if raw_preset is int and raw_preset >= 0 and raw_preset < _config.graphics_presets.size() \
 			else _config.default_graphics_preset

@@ -43,10 +43,14 @@ func apply_current() -> void:
 func apply(chosen: GraphicsPresetDef) -> void:
 	preset = chosen
 	if _sky != null:
-		apply_to_environment(_sky.environment(), chosen, _config)
+		apply_to_environment(_sky.environment(), chosen, _config, Settings.period_look)
 		var sun := _sky.sun()
 		if sun != null:
 			sun.directional_shadow_max_distance = chosen.shadow_distance_m
+			# Fase 37: sol com tamanho de verdade liga a sombra suave de contato (PCSS), só no ultra
+			sun.light_angular_distance = chosen.sun_angular_distance_deg
+	# a meia resolução do SSR é global no RenderingServer (não do Environment)
+	RenderingServer.environment_set_ssr_half_size(chosen.ssr_half_size)
 	if _crowd != null:
 		_crowd.pedestrian_ratio = chosen.pedestrian_ratio
 		_crowd.mark_structure_changed()
@@ -58,9 +62,17 @@ func apply(chosen: GraphicsPresetDef) -> void:
 	_update_depth_of_field()
 
 
-## Os efeitos do ambiente de um nível (estático para os testes).
-static func apply_to_environment(environment: Environment, chosen: GraphicsPresetDef, config: GameConfig) -> void:
+## Os efeitos do ambiente de um nível (estático para os testes). period: a "Cor de época" (Fase 37), o LUT e o AgX
+## ajustado; desligada, o Environment volta ao de antes.
+static func apply_to_environment(environment: Environment, chosen: GraphicsPresetDef, config: GameConfig,
+		period: bool = false) -> void:
 	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
+	environment.ssr_enabled = chosen.ssr
+	environment.adjustment_enabled = period
+	environment.adjustment_color_correction = PeriodGrade.texture() if period else null
+	var defaults := _environment_defaults()
+	environment.tonemap_agx_white = config.period_agx_white if period else defaults.tonemap_agx_white
+	environment.tonemap_agx_contrast = config.period_agx_contrast if period else defaults.tonemap_agx_contrast
 	environment.ssao_enabled = chosen.ssao
 	environment.ssao_intensity = config.ssao_intensity
 	environment.ssil_enabled = chosen.ssil
@@ -71,6 +83,16 @@ static func apply_to_environment(environment: Environment, chosen: GraphicsPrese
 	environment.volumetric_fog_enabled = chosen.volumetric_fog
 	environment.volumetric_fog_density = config.volumetric_fog_density
 	environment.volumetric_fog_length = config.volumetric_fog_length_m
+
+
+static var _defaults: Environment
+
+
+## Um Environment novo, para voltar aos valores do motor quando a cor de época desliga.
+static func _environment_defaults() -> Environment:
+	if _defaults == null:
+		_defaults = Environment.new()
+	return _defaults
 
 
 func _process(_delta: float) -> void:

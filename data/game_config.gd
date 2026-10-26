@@ -491,6 +491,9 @@ static var _default: GameConfig
 @export var glow_hdr_threshold: float = 1.1
 @export var volumetric_fog_density: float = 0.004
 @export var volumetric_fog_length_m: float = 220.0
+## Fase 37: com a "Cor de época" ligada, o branco e o contraste do AgX (6 a 8 é a faixa das cenas realistas).
+@export var period_agx_white: float = 7.0
+@export var period_agx_contrast: float = 1.1
 ## Efeito miniatura (tilt-shift): só com a câmera até esta distância; o desfoque longe começa em
 ## distância × far_factor e o de perto termina em distância × near_factor.
 @export var tilt_shift_max_distance_m: float = 90.0
