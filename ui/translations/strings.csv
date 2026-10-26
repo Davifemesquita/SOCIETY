@@ -359,7 +359,7 @@ OPTIONS_PERIOD_LOOK_TIP,"Realces âmbar, sombras frias e verdes mais contidos, c
 OPTIONS_RENDER_SCALE,Escala da imagem 3D,3D image scale
 OPTIONS_RENDER_SCALE_TIP,Abaixo de 100% usa o FSR 2: mais leve para placas mais fracas,Below 100% uses FSR 2: lighter on weaker graphics cards
 OPTIONS_MAX_FPS,Limite de quadros,Frame limit
-OPTIONS_MAX_FPS_TIP,Quadros por segundo no máximo,Maximum frames per second
+OPTIONS_MAX_FPS_TIP,"Quadros por segundo no máximo. O automático segue o monitor (o maior divisor da taxa dele até 75: 60 num de 180 Hz, 72 num de 144 Hz): um ritmo que divide a taxa do monitor não treme com o VSync","Maximum frames per second. Automatic follows the monitor (the largest divisor of its rate up to 75: 60 on 180 Hz, 72 on 144 Hz): a pace that divides the monitor rate does not judder with VSync"
 OPTIONS_FPS_UNLIMITED,Sem limite,Unlimited
 OPTIONS_GRAPHICS_NOTE,A simulação é a mesma em qualquer nível,The simulation is the same at every level
 OPTIONS_VOLUME_TIP,Volume deste canal,Volume of this channel
@@ -938,3 +938,4 @@ ROUTES_NAME,Nome da rota,Route name
 ROUTES_NAME_TIP,"Um nome para achar a rota na lista (Enter guarda)","A name to find the route in the list (Enter saves)"
 ROUTES_GROUP,Grupo,Group
 ROUTES_GROUP_TIP,"As rotas do mesmo grupo ficam juntas na lista","Routes in the same group stay together in the list"
+OPTIONS_FPS_AUTO,"Automático (%s, pelo monitor)","Automatic (%s, from the monitor)"

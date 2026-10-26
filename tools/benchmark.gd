@@ -82,7 +82,12 @@ func _run() -> void:
 	if at >= 0 and at + 1 < args.size() and args[at + 1].is_valid_int():
 		level = args[at + 1].to_int()
 	Settings.set_graphics_preset(level)
+	# mede sem limite de quadros (o automático, pelo monitor, prenderia o FPS na taxa dele); `-- --limite N` mede com um
+	# (N = -1: o automático), para ver o ritmo dos quadros como o jogador vê
+	var limit_at := args.find("--limite")
+	Settings.max_fps = args[limit_at + 1].to_int() if limit_at >= 0 and limit_at + 1 < args.size() else 0
 	Settings.apply()
+	_report("limite de quadros", "%d FPS (%s)" % [Settings.effective_max_fps(), "escolhido" if limit_at >= 0 else "sem limite"])
 	_report("nível gráfico", "%s (nuvens volumétricas %s)" % [tr(Settings.preset().name_key),
 			"ligadas" if Settings.preset().clouds and not CloudsAdapter.software_renderer() else "desligadas"])
 	_report("placa e driver", "%s · %s · %s · VSync %s" % [RenderingServer.get_video_adapter_name(),

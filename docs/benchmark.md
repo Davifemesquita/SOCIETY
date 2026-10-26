@@ -1121,3 +1121,18 @@ aos da Fase 49.
 | tick por quadro no Alta (média / p99 / pior) | 0.11 / 1.85 / 12.91 ms |
 | pipelines compiladas no dia, Alta (desenho / superfície / malha / especialização) | 12 / 11 / 0 / 57 |
 | calçar as ruas da cidade (todas / mais uma) e o quadro com tudo visível | 2812 células: 452 / 39 ms; 14.3 ms (2985 objetos · 1204 draw calls · 60190658 primitivas) |
+
+## Travamento no monitor do dono: ritmo dos quadros (26/10/2026)
+
+O dono sentiu o jogo travando. Benchmark do jogo exportado na tela de verdade (monitor principal de 180 Hz, VSync ligado,
+alto): nenhuma congelada (pior quadro 26 ms, tick ~0 nos picos), mas o ritmo irregular — a ~77 FPS cada quadro fica 2 ou
+3 batidas do monitor na tela, sem padrão, e o movimento treme. Com o limite automático novo (o maior divisor da taxa do
+monitor até 75: 60 FPS em 180 Hz), cada quadro fica sempre 3 batidas:
+
+| Na tela de 180 Hz, alto | média | desvio | quadros 25% acima da média |
+|---|---|---|---|
+| sem limite | 12,9 ms | 2,6 ms | 12,3% |
+| limite 90 (metade de 180) | 13,1 ms | 2,4 ms | 10,6% |
+| automático (60) | 16,7 ms | 1,1 ms | 1,1% |
+
+O benchmark mede sem limite como sempre (os números das fases seguem comparáveis); `-- --limite N` mede com um.

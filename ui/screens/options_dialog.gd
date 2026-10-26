@@ -28,6 +28,16 @@ static func small_text(scale: float) -> bool:
 	return ThemeBuilder.FONT_SIZE * scale < 18.0 - 0.001
 
 
+## O nome de um limite de quadros: sem limite, o automático (com o valor que ele dá neste monitor) ou o número.
+static func fps_label(limit: int) -> String:
+	if limit == 0:
+		return TranslationServer.translate("OPTIONS_FPS_UNLIMITED")
+	if limit == Settings.FPS_AUTO:
+		var auto := Settings.auto_fps(DisplayServer.screen_get_refresh_rate())
+		return TranslationServer.translate("OPTIONS_FPS_AUTO") % (str(auto) if auto > 0 else "—")
+	return str(limit)
+
+
 func _init() -> void:
 	name = "Options"
 	theme_type_variation = &"MenuPanel"
@@ -114,11 +124,14 @@ func _graphics() -> Control:
 	fps.name = "MaxFps"
 	fps.tooltip_text = "OPTIONS_MAX_FPS_TIP"
 	fps.focus_mode = Control.FOCUS_NONE
+	# o limite vai no metadado (o id -1 do OptionButton quer dizer "use o índice")
 	for limit: int in Settings.FPS_LIMITS:
-		fps.add_item(tr("OPTIONS_FPS_UNLIMITED") if limit == 0 else str(limit), limit)
-	fps.select(maxi(0, fps.get_item_index(Settings.max_fps)))
+		fps.add_item(fps_label(limit))
+		fps.set_item_metadata(fps.item_count - 1, limit)
+	fps.select(maxi(0, Settings.FPS_LIMITS.find(Settings.max_fps)))
 	fps.item_selected.connect(func(index: int) -> void:
-		Settings.max_fps = fps.get_item_id(index)
+		var chosen: int = fps.get_item_metadata(index)
+		Settings.max_fps = chosen
 		Settings.apply())
 	grid.add_child(fps)
 	var note := UiKit.label("OPTIONS_GRAPHICS_NOTE", &"DimLabel")
