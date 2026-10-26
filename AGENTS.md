@@ -1726,6 +1726,15 @@ Regras que já custaram investigação:
 - **Benchmark**: a linha "dica que decompõe" mede o pior caso no hover.
 - **Capturas**: `tools/capture_phase47.tscn`.
 
+### Godot 4.8 (Fase 48, nossa)
+
+- **Plano** em `docs/plano_fase48.md`. A 4.8 estável não saiu (26/10/2026); o ensaio com a 4.8-beta1 está no ramo
+  `godot-4.8` (sem merge), com a beta em `F:\ferramentas\godot48` e o worktree em `F:\repos\society_48`. Os nomes das
+  opções novas estão na tabela do plano.
+- **No `main`**: o pan pela borda só vale depois de um movimento real do mouse (`StrategyCamera.mouse_seen`; o xvfb e a
+  área de trabalho escondida liam o mouse num canto); filtro de nós que podem ter sido liberados usa parâmetro `Variant`
+  (a 4.8 recusa objeto liberado em parâmetro tipado).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1784,6 +1793,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 45 — Ilhas novas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
 | 46 — Calçamento e esquinas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
 | 47 — QoL de interface (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
+| 48 — Godot 4.8 (nossa) | **ensaio feito em 26/10/2026, à espera da 4.8 estável**, sem nada na tela do dono: a estável não saiu; a 4.8-beta1 roda o projeto no ramo `godot-4.8` (378 scripts sem erro, suíte sem janela verde, testes dourados iguais, benchmark com GPU +0,4 ms com sombras de contato e AO de vários quiques ligados no alto e no ultra); nomes reais das opções novas registrados; dois consertos achados medindo vieram para o main (pan pela borda sem mouse e filtro de nós liberados); falta a estável, o dono decidir quando subir e medir na 3060; plano em `docs/plano_fase48.md` |
 
 Pendências já vistas para fases futuras:
 

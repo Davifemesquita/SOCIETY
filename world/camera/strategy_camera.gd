@@ -23,6 +23,10 @@ var _right_pressed: bool = false
 var _right_travel: float = 0.0
 ## Ponto da tela que o zoom suave mantém parado sobre o chão (Fase 31).
 var _zoom_anchor: Vector2
+## Fase 48: o pan pela borda só vale depois de um movimento de verdade do mouse na janela. Sem ele (janela recém-aberta
+## com o mouse em outro lugar, o xvfb do CI, a área de trabalho escondida das medidas) a posição do mouse lida pelo
+## motor pode ser um canto, e a câmera saía andando sozinha.
+var mouse_seen: bool = false
 
 
 func setup(config: GameConfig, bounds_m: Rect2) -> void:
@@ -92,7 +96,7 @@ func _process(delta: float) -> void:
 
 func _edge_input() -> Vector2:
 	var viewport := get_viewport()
-	if not viewport.get_window().has_focus():
+	if not mouse_seen or not viewport.get_window().has_focus():
 		return Vector2.ZERO
 	var mouse := viewport.get_mouse_position()
 	var size := viewport.get_visible_rect().size
@@ -109,6 +113,11 @@ func _edge_input() -> Vector2:
 	elif mouse.y >= size.y - margin:
 		input.y = -1.0
 	return input
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		mouse_seen = true
 
 
 func _unhandled_input(event: InputEvent) -> void:

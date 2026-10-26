@@ -147,7 +147,7 @@ func building_count() -> int:
 
 ## Prédios demolidos ainda afundando (testes).
 func demolishing_count() -> int:
-	_demolishing.assign(_demolishing.filter(func(node: Node3D) -> bool: return is_instance_valid(node)))
+	_demolishing.assign(_demolishing.filter(func(node: Variant) -> bool: return is_instance_valid(node)))
 	return _demolishing.size()
 
 
@@ -536,7 +536,8 @@ func _add(building_id: int) -> void:
 func set_quality(preset: GraphicsPresetDef) -> void:
 	_detail_range_m = _simulation.config.building_detail_range_m * preset.visibility_scale
 	var occluders := preset.visibility_scale >= 0.75
-	_details.assign(_details.filter(func(node: GeometryInstance3D) -> bool: return is_instance_valid(node)))
+	# Variant: na 4.8 um parâmetro tipado recusa o objeto já liberado (justo o que o filtro tira)
+	_details.assign(_details.filter(func(node: Variant) -> bool: return is_instance_valid(node)))
 	for node: GeometryInstance3D in _details:
 		node.visibility_range_end = _detail_range_m
 	if occluders != _occluders:
@@ -638,7 +639,7 @@ func _pop(building_id: int) -> void:
 ## Demolição (Fase 31): o nó, já fora das contas, afunda a altura dele com poeira e some. Sem o ocultador e sem o
 ## ícone. Com o teto cheio (ou nos testes), some na hora.
 func _sink(root: Node3D, height: float, footprint: Vector3) -> void:
-	_demolishing.assign(_demolishing.filter(func(node: Node3D) -> bool: return is_instance_valid(node)))
+	_demolishing.assign(_demolishing.filter(func(node: Variant) -> bool: return is_instance_valid(node)))
 	if SceneFader.still() or _demolishing.size() >= MAX_DEMOLISHING:
 		root.queue_free()
 		return
