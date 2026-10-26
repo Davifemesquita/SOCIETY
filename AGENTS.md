@@ -42,6 +42,12 @@ Texto de interface só por chave de tradução, em `ui/translations/strings.csv`
 tools/godot.sh importar            # importa os recursos; obrigatório num clone novo
 tools/godot.sh testes              # suíte gdUnit4 no xvfb (res://tests), ~15 a 25 min nesta VM
 tools/godot.sh testes res://tests/core/test_tick_clock.gd   # um arquivo
+# no PC do dono (Windows), nada na tela dele: core/data/sim/tools/world sem janela, presentation e ui COM janela numa
+# área de trabalho escondida (ambos fora do repositório, em F:\ferramentas)
+#   powershell -File F:\ferramentas\testes_society.ps1
+#   powershell -File F:\ferramentas\testes_janela_oculta.ps1 [res://tests/ui/x.gd]
+# teste que espera animação suavizada pelo tempo (câmera, contadores) espera tempo (simulate_frames(n, ms)), não quadros:
+# na GPU os quadros passam rápido demais, no lavapipe do CI devagar demais
 tools/godot.sh rodar               # abre o jogo
 tools/godot.sh editor              # abre o editor
 tools/godot.sh captura saida.png 180   # grava o quadro 180 do jogo em PNG

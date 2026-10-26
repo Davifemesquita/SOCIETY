@@ -172,7 +172,9 @@ func test_clicking_a_notice_selects_the_building_and_moves_the_camera() -> void:
 	var button: Button = feed.get_child(0)
 	assert_object(button.icon).is_not_null()
 	button.pressed.emit()
-	await runner.simulate_frames(30)
+	# a centralização é suavizada pelo tempo (camera_center_seconds): 1,5 s, não um número de quadros (na GPU 30 quadros
+	# passam em 0,2 s; no lavapipe do CI, em segundos)
+	await runner.simulate_frames(30, 50)
 	assert_int(game.tool.selected_id).is_equal(post)
 	var record := sim.world.building(post)
 	var center := sim.world.island(0).rect_world(Footprint.rect(record.origin, sim.def_of(record).size, record.rotation))
