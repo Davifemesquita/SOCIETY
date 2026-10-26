@@ -14,7 +14,9 @@ extends MultiMeshInstance3D
 ## (no shader, pelos bits em INSTANCE_CUSTOM.a) e touceiras de capim ao longo deles. Fase 20: pedras soltas na
 ## terra, fora dos sulcos (`stone_spots`), um MultiMesh com a cor de cada pedra. Fase 24: a ponte da rua de
 ## paralelepípedo é de pedra — o calçamento segue por cima, parapeito com capeamento nos lados que dão para o
-## rio, um arco por célula (`arch_mesh`) e os pilares com talha-mar descendo até o leito.
+## rio, um arco por célula (`arch_mesh`) e os pilares com talha-mar descendo até o leito. Fase 38: na ilha com relevo a
+## terra sai do ladrilho e é pintada no terreno (RoadMask e shaders/terrain.gdshader); ficam aqui o paralelepípedo, as
+## pontes, as touceiras da beira e as pedras soltas (no chão). Na ilha plana a terra continua ladrilho.
 
 const DIRT_COLOR := Color(0.55, 0.45, 0.33)
 const BRIDGE_COLOR := Color(0.36, 0.26, 0.17)
@@ -87,6 +89,7 @@ var _stones := MultiMeshInstance3D.new()
 var _parapets := MultiMeshInstance3D.new()
 var _arches := MultiMeshInstance3D.new()
 var _piers := MultiMeshInstance3D.new()
+var _painted: int = 0
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -182,7 +185,10 @@ func rebuild() -> void:
 	var parapets: Array[Transform3D] = []
 	var arches: Array[Transform3D] = []
 	var piers: Array[Transform3D] = []
+	_painted = 0
 	for grid: IslandGrid in _simulation.world.islands:
+		# Fase 38: na ilha com relevo a terra é pintada no terreno (RoadMask); ficam o paralelepípedo e as pontes
+		var painted := RoadMask.paints(grid, _simulation.config)
 		for cell: Vector2i in grid.road_cells():
 			var bridge := grid.ground_at(cell) == IslandGrid.Ground.RIVER
 			var paved := grid.is_paved(cell)
@@ -193,13 +199,16 @@ func rebuild() -> void:
 			# no meio da escada diagonal só as faixas: o ladrilho quadrado deixava a borda serrilhada
 			if not in_diagonal_run(grid, cell, links):
 				var open := 0 if bridge else open_edges(grid, cell, links)
-				tiles.append(tile)
-				colors.append(BRIDGE_COLOR if planks else (PAVED_COLOR if paved else DIRT_COLOR))
-				kinds.append(Color(1.0 if paved else 0.0, 1.0 if planks else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
-						twist(grid, cell)))
+				if painted and not paved and not bridge:
+					_painted += 1
+				else:
+					tiles.append(tile)
+					colors.append(BRIDGE_COLOR if planks else (PAVED_COLOR if paved else DIRT_COLOR))
+					kinds.append(Color(1.0 if paved else 0.0, 1.0 if planks else 0.0, float(ruts(grid, cell) + OPEN_SHIFT * open),
+							twist(grid, cell)))
 				if not paved and not bridge:
 					_add_verge(grid, cell, open, tufts)
-					for spot: Vector3 in stone_spots(grid, cell, ruts(grid, cell)):
+					for spot: Vector3 in stone_spots(grid, cell, ruts(grid, cell), not painted):
 						var noise := hash([grid.origin_m, cell, spot.x])
 						var size := lerpf(STONE_SIZE_M.x, STONE_SIZE_M.y, float(noise % 1000) / 1000.0)
 						var basis := Basis(Vector3.UP, float(noise / 1000 % 628) / 100.0).scaled(
@@ -215,6 +224,8 @@ func rebuild() -> void:
 					var other := cell + link
 					var both_paved := paved and grid.is_paved(other)
 					var both_bridge := bridge and grid.ground_at(other) == IslandGrid.Ground.RIVER and not both_paved
+					if painted and not both_paved and not both_bridge:
+						continue
 					tiles.append(diagonal_transform(grid, cell, link))
 					colors.append(BRIDGE_COLOR if both_bridge else (PAVED_COLOR if both_paved else DIRT_COLOR))
 					kinds.append(Color(1.0 if both_paved else 0.0, 1.0 if both_bridge else 0.0, float(Ruts.ALONG_X), 0.0))
@@ -256,9 +267,15 @@ func stone_count() -> int:
 	return _stones.multimesh.instance_count
 
 
-## Onde ficam as pedras soltas da célula de terra (no topo do ladrilho): de zero a STONES_MAX pelo hash da
-## célula, num ponto da célula fora das faixas dos sulcos (RUT_LANE, conforme a direção deles) e longe da borda.
-static func stone_spots(grid: IslandGrid, cell: Vector2i, rut_kind: int) -> PackedVector3Array:
+## Células de terra pintadas no terreno (Fase 38), que não levam ladrilho.
+func painted_count() -> int:
+	return _painted
+
+
+## Onde ficam as pedras soltas da célula de terra (no topo do ladrilho, ou no chão onde a terra é pintada): de zero a
+## STONES_MAX pelo hash da célula, num ponto da célula fora das faixas dos sulcos (RUT_LANE, conforme a direção deles) e
+## longe da borda.
+static func stone_spots(grid: IslandGrid, cell: Vector2i, rut_kind: int, on_tile: bool = true) -> PackedVector3Array:
 	var spots := PackedVector3Array()
 	var count := hash([grid.origin_m, cell, 31]) % (STONES_MAX + 1)
 	var center := grid.cell_world(cell)
@@ -269,7 +286,7 @@ static func stone_spots(grid: IslandGrid, cell: Vector2i, rut_kind: int) -> Pack
 				- Vector2.ONE * 0.75) * half
 		offset = keep_off_ruts(offset, rut_kind)
 		var spot := center + Vector3(offset.x, 0.0, offset.y)
-		spot.y = grid.height_at(spot.x, spot.z) + LIFT_M + THICKNESS_M
+		spot.y = grid.height_at(spot.x, spot.z) + (LIFT_M + THICKNESS_M if on_tile else 0.0)
 		spots.append(spot)
 	return spots
 

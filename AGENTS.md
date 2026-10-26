@@ -1538,6 +1538,23 @@ Regras que já custaram investigação:
 - **Para comparar**: `tools/capture_phase37.tscn` (ilha e litoral em quatro horas, com e sem a cor de época; precisa
   de GPU). Névoa aérea, sol, câmera e navios ficaram para uma rodada com tela (ver o plano).
 
+### Estradas no chão (Fase 38, nossa)
+
+- **Plano** em `docs/plano_fase38.md`, começada em 25/10/2026 com a confirmação do dono do produto, feita sem tela.
+- **Máscara das estradas** (`world/terrain/road_mask.gd`, `RoadMask`): uma imagem RGBA8 por ilha com relevo, do tamanho
+  da grade, a `road_mask_px_per_cell` (4) pixels por célula. r: distância (até `road_mask_max_m`) ao grafo de segmentos
+  da terra (centro a centro, a diagonal pura a 45°, um segmento que arredonda o L, ponto na célula solta; o trecho entre
+  dois paralelepípedos não entra); g: calçamento; b: chão batido das portas (`RoadMask.doors`); a: poças. Função pura
+  do estado (nada no save); `refresh()` refaz só o retângulo do que mudou (estradas e portas) com `MARGIN_CELLS` de
+  margem. A `TerrainView` agrupa os `roads_changed`, `building_placed` e `building_removed` e refaz uma vez no quadro
+  seguinte (`flush_road_masks`). Custo: 6.000 células de estrada em ~0,25 s; uma estrada nova em ~2 ms.
+- **Terreno** (`shaders/terrain.gdshader`): a terra batida (camada 0 das texturas das estradas) onde a distância fica
+  abaixo de `road_half_width_m` mais o ruído de 1 e 4 m, misturada pela altura da grama; sulcos pela distância (somem
+  depois de `road_rut_far_m`), capim pisado na beira, poças lisas e o chão batido das portas.
+- **RoadView**: na ilha com relevo (`RoadMask.paints`) a terra não leva ladrilho (`painted_count`); ficam o
+  paralelepípedo (até a Fase 46), as pontes, as touceiras e as pedras soltas (no chão). Na ilha plana tudo segue
+  ladrilho. `GameConfig.road_paint` desligado volta o ladrilho (para comparar).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1586,6 +1603,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 35 — Costa viva (nossa) | **em andamento desde 25/10/2026**, feita sem tela: distância até a costa com sinal (por região e no arquipélago), plataforma rasa, espuma andando para a praia e ondas calmas na água; fundo raso pela distância, cáusticas, espraiado e detritos no terreno; as pastas sem tela passaram e o CI compilou os shaders (pasta `world`); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase35.md` |
 | 36 — Encostas de pedra (nossa) | **em andamento desde 25/10/2026**, feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
 | 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
+| 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); as pastas sem tela passaram; faltam o CI, e com tela as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
 
 Pendências já vistas para fases futuras:
 

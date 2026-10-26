@@ -8,11 +8,16 @@ extends Node3D
 ## da Poly Haven. Trocar de volta mexe só aqui.
 ## Desde a Fase 34 cada ilha leva também as texturas de dados do TerrainBake (inclinação, curvatura, água, umidade),
 ## e o hex-tiling da grama e da floresta segue o nível gráfico (terrain_hex_tiling).
+## Fase 38: a estrada de terra é pintada no terreno pela máscara das estradas (RoadMask), refeita quando a rede ou as
+## portas mudam.
 
 const TEXTURES: Array[String] = ["grass", "rock", "sand", "forest"]
 const SHADER := preload("res://shaders/terrain.gdshader")
 ## Vértices de lado em cada trecho de malha (recorte por câmera trecho a trecho).
 const CHUNK_VERTICES := 64
+## Fase 38: a terra batida das estradas (camada 0 das texturas das estradas) pintada no terreno.
+const ROAD_ALBEDO := preload("res://assets/materials/roads_albedo_rough.png")
+const ROAD_NORMAL := preload("res://assets/materials/roads_normal.png")
 
 var _world: WorldState
 var _config: GameConfig
@@ -33,6 +38,9 @@ var _coast: CoastField
 var _regions: Dictionary[int, Dictionary] = {}
 var _detail_cells: Dictionary[int, PackedInt32Array] = {}
 var _chunk_nodes: Dictionary[int, Dictionary] = {}
+## Fase 38: por ilha, a máscara das estradas (RoadMask); as que mudaram são refeitas uma vez, no quadro seguinte.
+var _road_masks: Dictionary[int, RoadMask] = {}
+var _dirty_masks: Dictionary[int, bool] = {}
 
 
 func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
@@ -52,10 +60,38 @@ func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
 	EventBus.trees_changed.connect(_on_trees_changed)
 	EventBus.roads_changed.connect(_on_roads_changed)
 	EventBus.settings_changed.connect(func() -> void: set_hex_tiling(Settings.preset().terrain_hex_tiling))
+	# a porta de um prédio novo (ou demolido) gasta (ou deixa crescer) o chão em frente dela
+	EventBus.building_placed.connect(func(_id: int) -> void: _mark_all_masks())
+	EventBus.building_removed.connect(func(_id: int) -> void: _mark_all_masks())
 
 
 func chunk_count() -> int:
 	return _chunks
+
+
+## Máscara das estradas da ilha (Fase 38), ou null onde a terra continua ladrilho.
+func road_mask(index: int) -> RoadMask:
+	return _road_masks.get(index)
+
+
+## Refaz já as máscaras marcadas (o normal é no quadro seguinte; os testes chamam direto).
+func flush_road_masks() -> void:
+	for index: int in _dirty_masks:
+		_road_masks[index].refresh()
+	_dirty_masks.clear()
+
+
+func _mark_mask(index: int) -> void:
+	if not _road_masks.has(index):
+		return
+	if _dirty_masks.is_empty():
+		flush_road_masks.call_deferred()
+	_dirty_masks[index] = true
+
+
+func _mark_all_masks() -> void:
+	for index: int in _road_masks:
+		_mark_mask(index)
 
 
 ## Textura de dados da ilha (testes).
@@ -121,6 +157,16 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	material.set_shader_parameter(&"coast_distance", ImageTexture.create_from_image(
 			Image.create_from_data(side, side, false, Image.FORMAT_RF, coast.to_byte_array())))
 	material.set_shader_parameter(&"has_coast", true)
+	var grid := _world.island(index)
+	if RoadMask.paints(grid, _config):
+		var mask := RoadMask.new(_world, _data, index, _config.road_mask_px_per_cell, _config.road_mask_max_m)
+		_road_masks[index] = mask
+		material.set_shader_parameter(&"has_roads", true)
+		material.set_shader_parameter(&"road_mask", mask.texture)
+		material.set_shader_parameter(&"road_bounds", mask.bounds())
+		material.set_shader_parameter(&"road_mask_max_m", _config.road_mask_max_m)
+		material.set_shader_parameter(&"road_albedo", ROAD_ALBEDO)
+		material.set_shader_parameter(&"road_normal", ROAD_NORMAL)
 	_coast_regions.append({"origin": origin, "side": side, "coast": coast})
 	_materials.append(material)
 	_regions[index] = {"heights": heights, "side": side, "origin": origin}
@@ -156,6 +202,7 @@ func _cells_with_detail(index: int) -> PackedInt32Array:
 
 ## Estrada nova (ou prédio) numa célula com detalhe: os cantos dela voltam à altura da simulação e o trecho é refeito.
 func _on_roads_changed(island_id: int) -> void:
+	_mark_mask(island_id)
 	if not _detail_cells.has(island_id):
 		return
 	var grid := _world.island(island_id)

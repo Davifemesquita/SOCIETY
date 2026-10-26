@@ -71,7 +71,8 @@ func test_drag_with_road_tool_builds_the_road() -> void:
 	assert_bool(grid.has_road(start)).is_true()
 	assert_bool(grid.has_road(finish)).is_true()
 	assert_int(grid.road_cells().size()).is_equal(RoadPath.l_path(start, finish).size())
-	assert_int(_game.road_view.tile_count()).is_equal(grid.road_cells().size())
+	# Fase 38: na ilha com relevo a terra é pintada no terreno, sem ladrilho
+	assert_int(_game.road_view.tile_count() + _game.road_view.painted_count()).is_equal(grid.road_cells().size())
 
 
 func test_wheel_zooms_toward_the_point_under_the_cursor() -> void:

@@ -19,6 +19,11 @@
 // - cáusticas no fundo raso;
 // - a areia molhada sobe e desce com as ondas (shaders/coast_waves.gdshaderinc, o mesmo ritmo da espuma da água) e
 //   deixa uma linha de detritos acima do espraiado.
+//
+// Fase 38 (estradas no chão), pela máscara das estradas (road_mask, do RoadMask):
+// - a estrada de terra é pintada onde a distância até a linha do meio fica abaixo da meia largura mais um ruído de 1 e
+//   4 m, misturada pela altura da grama; o cruzamento vira uma mancha contínua e a diagonal, um segmento a 45°;
+// - dois sulcos pela mesma distância (somem de longe), capim pisado na beira, poças lisas e o chão batido das portas.
 shader_type spatial;
 render_mode cull_back;
 
@@ -72,6 +77,24 @@ uniform vec3 seabed_shallow = vec3(1.08, 1.04, 0.92);
 uniform vec3 seabed_deep = vec3(0.5, 0.6, 0.58);
 uniform float seabed_deep_m = 30.0;
 uniform float caustics_strength = 0.22;
+// Fase 38: máscara das estradas (RoadMask: r distância até a linha do meio da terra, até road_mask_max_m; g calçamento;
+// b desgaste das portas; a poças), o canto e o tamanho da grade da ilha no mundo, e a terra batida das estradas
+uniform bool has_roads = false;
+uniform sampler2D road_mask : filter_linear, repeat_disable;
+uniform vec4 road_bounds = vec4(0.0, 0.0, 1.0, 1.0);
+uniform float road_mask_max_m = 1.6;
+uniform sampler2DArray road_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2DArray road_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform float road_texture_m = 4.0;
+// meia largura da terra (o ruído de 1 e 4 m mexe na borda), a faixa de capim pisado além dela e os sulcos (distância do
+// meio, largura, quanto escurecem e até onde da câmera aparecem)
+uniform float road_half_width_m = 0.8;
+uniform float road_edge_noise_m = 0.3;
+uniform float road_trampled_m = 0.5;
+uniform float road_rut_offset_m = 0.42;
+uniform float road_rut_width_m = 0.14;
+uniform float road_rut_darken = 0.68;
+uniform float road_rut_far_m = 160.0;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
 
@@ -242,8 +265,39 @@ void fragment() {
 	// lama alisada: o relevo da areia some quase todo
 	ground_n = mix(ground_n, vec4(mix(sand_n.rgb, vec3(0.5, 0.5, 1.0), 0.75), 0.3), mud * (1.0 - rock));
 
-	// terra úmida nos vales e macro-variação de claro e escuro (40, 150 e 500 m), só acima do mar
 	float land = step(0.0, world_position.y);
+	// Fase 38: a estrada de terra pela distância até a linha do meio, com borda de ruído misturada pela altura do chão
+	if (has_roads) {
+		vec2 road_uv = (world_position.xz - road_bounds.xy) / road_bounds.zw;
+		if (road_uv.x >= 0.0 && road_uv.y >= 0.0 && road_uv.x <= 1.0 && road_uv.y <= 1.0) {
+			vec4 roads = texture(road_mask, road_uv);
+			float d = roads.r * road_mask_max_m;
+			float width = road_half_width_m + ((value_noise(world_position.xz * 1.1) - 0.5)
+					+ (value_noise(world_position.xz * 4.0) - 0.5) * 0.4) * road_edge_noise_m;
+			if (d < width + road_trampled_m || roads.b > 0.0) {
+				vec3 road_uvw = vec3(world_position.xz / road_texture_m, 0.0);
+				vec4 dirt_a = texture(road_albedo, road_uvw);
+				vec3 dirt_n = texture(road_normal, road_uvw).rgb;
+				float on_road = 1.0 - smoothstep(width - 0.15, width + 0.05, d);
+				float cover = max(on_road, smoothstep(0.2, 0.8, roads.b));
+				// a grama alta fura a borda; a meio caminho do capim pisado a terra já é a do chão
+				float road = height_blend(cover, ground_a.a, 0.5) * land;
+				float trampled = (1.0 - smoothstep(width, width + road_trampled_m, d)) * (1.0 - road);
+				ground_a.rgb *= mix(vec3(1.0), vec3(0.9, 0.88, 0.74), trampled * 0.6);
+				float rut_edge = abs(d - road_rut_offset_m);
+				float ruts = (1.0 - smoothstep(road_rut_width_m * 0.35, road_rut_width_m * 0.5, rut_edge)) * on_road
+						* (1.0 - smoothstep(road_rut_far_m * 0.5, road_rut_far_m, camera_distance));
+				float puddle = smoothstep(0.25, 0.6, roads.a + (value_noise(world_position.xz * 3.0) - 0.5) * 0.35) * road;
+				vec3 dirt = dirt_a.rgb * mix(1.0, road_rut_darken, ruts) * mix(1.0, 0.55, puddle);
+				ground_a.rgb = mix(ground_a.rgb, dirt, road);
+				vec3 road_normal_map = mix(dirt_n, vec3(0.5, 0.5, 1.0), max(ruts * 0.5, puddle));
+				ground_n.rgb = mix(ground_n.rgb, road_normal_map, road);
+				ground_n.a = mix(ground_n.a, mix(mix(dirt_a.a, 0.6, ruts * 0.5), 0.08, puddle), road);
+			}
+		}
+	}
+
+	// terra úmida nos vales e macro-variação de claro e escuro (40, 150 e 500 m), só acima do mar
 	float valley = clamp((data.g - 0.55) * 4.0, 0.0, 1.0) * data.a * (1.0 - sand);
 	ground_a.rgb *= mix(1.0, 0.82, valley * land);
 	if (use_macro) {
