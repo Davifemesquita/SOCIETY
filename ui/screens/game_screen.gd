@@ -338,7 +338,7 @@ func _build_ground() -> void:
 	water_view.setup(simulation, terrain_view.coast_field())
 	tree_view = TreeView.new()
 	add_child(tree_view)
-	tree_view.setup(world, simulation.data)
+	tree_view.setup(world, simulation.data, _config)
 
 
 ## Área que a câmera alcança: todas as ilhas.

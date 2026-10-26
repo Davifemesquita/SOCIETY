@@ -7,6 +7,9 @@ extends Node3D
 ## Pedras e palmeiras do Kenney Nature Kit (CC0); nas ilhas tropicais (Fase 11), palmeiras no lugar da
 ## mata. Desde a Fase 22 a mata temperada é gerada no código (`TreeModel`): carvalho e faia entre as
 ## folhosas, pinheiro-silvestre entre as coníferas, duas variantes de cada, já em metros.
+## Desde a Fase 36 as pedras são de rocha de verdade (a textura de rocha do terreno, triplanar, sem o musgo verde
+## recolorido), aparecem mais nos barrancos altos e no litoral rochoso e sentam na malha com o detalhe visual
+## (TerrainDetail), não na altura lisa da simulação.
 
 const CHUNK_CELLS := 64
 ## Folhosas e coníferas: [espécie, variante] do TreeModel.
@@ -22,7 +25,14 @@ const ROCK_SIZE_M := 1.6
 const CONIFER_HEIGHT_M := 6.0
 ## Célula mais íngreme que isto (diferença entre cantos) ganha pedra de vez em quando.
 const ROCK_RELIEF_M := 2.5
-const ROCK_CHANCE := 0.12
+const ROCK_CHANCE := 0.25
+## Litoral rochoso (Fase 36): célula de terra encostada no mar com pelo menos este desnível ganha pedra mais vezes.
+const COAST_ROCK_RELIEF_M := 1.2
+const COAST_ROCK_CHANCE := 0.35
+## As pedras afundam isto no chão (a malha tem detalhe e a base da pedra não pode aparecer flutuando).
+const ROCK_SINK_M := 0.3
+## Textura de rocha do terreno nas pedras, em metros por repetição.
+const ROCK_TEXTURE_M := 3.0
 const VISIBLE_UNTIL_M := 900.0
 ## Até esta distância do trecho (do meio dele) a árvore do TreeModel é a de perto; depois, a de longe
 ## (Fase 22). O trecho tem 128 m: no pior caso a árvore da borda troca a ~110 m da câmera.
@@ -46,10 +56,12 @@ var _scales: PackedFloat32Array = []
 var _tropical: Dictionary[int, bool] = {}
 ## chave "ilha/cx/cy" → os MultiMeshInstance3D do trecho, um por modelo.
 var _chunks: Dictionary[String, Array] = {}
+var _config: GameConfig
 
 
-func setup(world: WorldState, data: GameData = GameData.get_default()) -> void:
+func setup(world: WorldState, data: GameData = GameData.get_default(), config: GameConfig = null) -> void:
 	_world = world
+	_config = config if config != null else GameConfig.get_default()
 	for tree: Array in BROADLEAF + CONIFER:
 		var species: TreeModel.Species = tree[0]
 		var variant: int = tree[1]
@@ -59,7 +71,7 @@ func setup(world: WorldState, data: GameData = GameData.get_default()) -> void:
 	for name: String in ROCKS + PALMS:
 		var foliage := PALM_COLOR if PALMS.has(name) else MOSS_COLOR
 		var wood := PALM_TRUNK_COLOR if PALMS.has(name) else STONE_COLOR
-		var mesh := _recolor(_load_mesh(MODEL_DIR % name), foliage, wood, not ROCKS.has(name))
+		var mesh := _stone(_load_mesh(MODEL_DIR % name)) if ROCKS.has(name) else _recolor(_load_mesh(MODEL_DIR % name), foliage, wood)
 		_models.append(mesh)
 		_far_models.append(null)
 		var height := mesh.get_aabb().size.y if mesh != null else 1.0
@@ -143,11 +155,15 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 					var family := CONIFER if conifer else BROADLEAF
 					var model := (0 if not conifer else BROADLEAF.size()) + (seed_value / 7) % family.size()
 					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * (0.75 + (seed_value / 13 % 50) / 100.0))])
-			elif grid.ground[index] == IslandGrid.Ground.LAND and grid.area_relief(Rect2i(cell, Vector2i.ONE)) > ROCK_RELIEF_M:
+			elif grid.ground[index] == IslandGrid.Ground.LAND:
+				var chance := rock_chance(grid, cell)
 				var seed_value := hash([island_id, index, "pedra"])
-				if (seed_value % 1000) < ROCK_CHANCE * 1000.0:
+				if chance > 0.0 and (seed_value % 1000) < chance * 1000.0:
 					var model := BROADLEAF.size() + CONIFER.size() + seed_value % ROCKS.size()
-					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * (0.7 + (seed_value / 11 % 60) / 100.0))])
+					var placed := _transform(grid, cell, seed_value, _scales[model] * (0.7 + (seed_value / 11 % 60) / 100.0))
+					# em cima da malha desenhada (com o detalhe das encostas), afundada um pouco
+					placed[7] += TerrainDetail.offset_at(grid, _config, placed[3], placed[11]) - ROCK_SINK_M
+					entries.append([model, placed])
 	var nodes: Array = []
 	for model: int in _models.size():
 		if _models[model] == null:
@@ -216,6 +232,44 @@ static func _recolor(mesh: Mesh, foliage: Color, wood: Color, sways: bool = true
 		if array_mesh != null:
 			array_mesh.surface_set_material(surface, material)
 	return copy
+
+
+## Chance de pedra na célula de terra sem árvore: barranco alto, ou litoral rochoso (terra encostada no mar com
+## desnível). Zero no resto.
+static func rock_chance(grid: IslandGrid, cell: Vector2i) -> float:
+	var relief := grid.area_relief(Rect2i(cell, Vector2i.ONE))
+	if relief > ROCK_RELIEF_M:
+		return ROCK_CHANCE
+	if relief > COAST_ROCK_RELIEF_M and grid.area_touches(Rect2i(cell, Vector2i.ONE), IslandGrid.Ground.SEA):
+		return COAST_ROCK_CHANCE
+	return 0.0
+
+
+## Cópia da malha da pedra com o material de rocha (a textura de rocha do terreno, triplanar no mundo: não estica em
+## pedra nenhuma e casa com a falésia em volta). Sem o recolorido verde-cinza de antes.
+static func _stone(mesh: Mesh) -> Mesh:
+	if mesh == null:
+		return null
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = load("res://assets/terrain/rock_albedo_height.png")
+	material.normal_enabled = true
+	material.normal_texture = load("res://assets/terrain/rock_normal_roughness.png")
+	material.uv1_triplanar = true
+	material.uv1_world_triplanar = true
+	material.uv1_scale = Vector3.ONE / ROCK_TEXTURE_M
+	material.roughness = 0.9
+	var copy := mesh.duplicate() as ArrayMesh
+	if copy == null:
+		return mesh
+	for surface: int in copy.get_surface_count():
+		copy.surface_set_material(surface, material)
+	return copy
+
+
+## Material da primeira superfície da pedra (testes).
+func rock_material() -> Material:
+	var model := _models[BROADLEAF.size() + CONIFER.size()]
+	return model.surface_get_material(0) if model != null else null
 
 
 ## Malha do primeiro MeshInstance3D da cena .glb (os materiais vêm junto, por superfície).

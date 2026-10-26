@@ -30,7 +30,9 @@ func test_terrain_mesh_sits_on_the_simulation_heights() -> void:
 			if grid.in_bounds(cell) and grid.in_bounds(cell - Vector2i.ONE):
 				var simulated := grid.height_at(vertex.x, vertex.z)
 				if simulated >= 0.0:
-					assert_float(vertex.y).is_equal_approx(simulated, 0.001)
+					# Fase 36: a malha leva o detalhe visual das encostas, zero onde a simulação manda
+					# (tests/world/test_phase36_slopes.gd confere onde ele pode ser diferente de zero)
+					assert_float(vertex.y).is_equal_approx(simulated + TerrainDetail.offset_at(grid, _config, vertex.x, vertex.z), 0.001)
 					checked += 1
 				else:
 					# no mar o fundo desenhado só desce

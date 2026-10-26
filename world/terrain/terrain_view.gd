@@ -28,6 +28,11 @@ var _hex_tiling: bool = true
 ## Fase 35: a distância até a costa com sinal de cada região e o mapa do arquipélago que a água lê.
 var _coast_regions: Array[Dictionary] = []
 var _coast: CoastField
+## Fase 36: por ilha, o que refazer quando uma estrada nova cai num barranco com detalhe: as alturas da região, o canto
+## dela, as células com algum canto mexido e os trechos de malha (por Vector2i do trecho).
+var _regions: Dictionary[int, Dictionary] = {}
+var _detail_cells: Dictionary[int, PackedInt32Array] = {}
+var _chunk_nodes: Dictionary[int, Dictionary] = {}
 
 
 func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
@@ -45,6 +50,7 @@ func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
 	_coast = CoastField.compose(_coast_regions, config.cell_size_m, config.coast_field_max_m)
 	_coast_regions.clear()
 	EventBus.trees_changed.connect(_on_trees_changed)
+	EventBus.roads_changed.connect(_on_roads_changed)
 	EventBus.settings_changed.connect(func() -> void: set_hex_tiling(Settings.preset().terrain_hex_tiling))
 
 
@@ -78,8 +84,12 @@ func coast_field() -> CoastField:
 	return _coast
 
 
-## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade.
+## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade, mais o detalhe visual
+## das encostas (Fase 36, zero onde a simulação manda).
 func shown_height(x: float, z: float) -> float:
+	for grid: IslandGrid in _world.islands:
+		if grid.world_rect().has_point(Vector2(x, z)):
+			return _world.surface_height(x, z) + TerrainDetail.offset_at(grid, _config, x, z)
 	return _world.surface_height(x, z)
 
 
@@ -113,13 +123,86 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	material.set_shader_parameter(&"has_coast", true)
 	_coast_regions.append({"origin": origin, "side": side, "coast": coast})
 	_materials.append(material)
+	_regions[index] = {"heights": heights, "side": side, "origin": origin}
+	_detail_cells[index] = _cells_with_detail(index)
+	_chunk_nodes[index] = {}
+	var shown := _with_detail(index, heights, side, origin)
 	for cy: int in range(0, side - 1, CHUNK_VERTICES):
 		for cx: int in range(0, side - 1, CHUNK_VERTICES):
 			var instance := MeshInstance3D.new()
-			instance.mesh = _chunk_mesh(heights, side, origin, cx, cy)
+			instance.mesh = _chunk_mesh(shown, side, origin, cx, cy)
 			instance.material_override = material
 			add_child(instance)
+			_chunk_nodes[index][Vector2i(cx, cy)] = instance
 			_chunks += 1
+
+
+## Células da ilha com algum canto mexido pelo detalhe das encostas (só elas podem precisar de conserto).
+func _cells_with_detail(index: int) -> PackedInt32Array:
+	var grid := _world.island(index)
+	var offsets := TerrainDetail.offsets(grid, _config)
+	var width := grid.size.x + 1
+	var marked: Dictionary[int, bool] = {}
+	for corner: int in offsets.size():
+		if offsets[corner] == 0.0:
+			continue
+		var x := corner % width
+		var y := corner / width
+		for cell: Vector2i in [Vector2i(x - 1, y - 1), Vector2i(x, y - 1), Vector2i(x - 1, y), Vector2i(x, y)]:
+			if grid.in_bounds(cell):
+				marked[grid.index(cell)] = true
+	return PackedInt32Array(marked.keys())
+
+
+## Estrada nova (ou prédio) numa célula com detalhe: os cantos dela voltam à altura da simulação e o trecho é refeito.
+func _on_roads_changed(island_id: int) -> void:
+	if not _detail_cells.has(island_id):
+		return
+	var grid := _world.island(island_id)
+	var region: Dictionary = _regions[island_id]
+	var origin: Vector2 = region["origin"]
+	var first := Vector2i(roundi((grid.origin_m.x - origin.x) / _config.cell_size_m),
+			roundi((grid.origin_m.y - origin.y) / _config.cell_size_m))
+	var dirty: Dictionary[Vector2i, bool] = {}
+	var remaining := PackedInt32Array()
+	for index: int in _detail_cells[island_id]:
+		if grid.roads[index] == IslandGrid.Road.NONE and grid.occupancy[index] == 0:
+			remaining.append(index)
+			continue
+		var cell := grid.cell_at(index)
+		if TerrainDetail.zero_cell(grid, cell):
+			# o trecho de cada canto da célula (um canto na borda pertence a dois trechos)
+			for corner: Vector2i in [cell, cell + Vector2i(1, 0), cell + Vector2i(0, 1), cell + Vector2i.ONE]:
+				var at := first + corner
+				for chunk_x: int in [at.x / CHUNK_VERTICES * CHUNK_VERTICES, (at.x - 1) / CHUNK_VERTICES * CHUNK_VERTICES]:
+					for chunk_y: int in [at.y / CHUNK_VERTICES * CHUNK_VERTICES, (at.y - 1) / CHUNK_VERTICES * CHUNK_VERTICES]:
+						dirty[Vector2i(chunk_x, chunk_y)] = true
+	_detail_cells[island_id] = remaining
+	if dirty.is_empty():
+		return
+	var heights: PackedFloat32Array = region["heights"]
+	var side: int = region["side"]
+	var shown := _with_detail(island_id, heights, side, origin)
+	for chunk: Vector2i in dirty:
+		var node: MeshInstance3D = _chunk_nodes[island_id].get(chunk)
+		if node != null:
+			node.mesh = _chunk_mesh(shown, side, origin, chunk.x, chunk.y)
+
+
+## As alturas da região com o detalhe visual das encostas (TerrainDetail) nos cantos que caem na grade da ilha.
+func _with_detail(index: int, heights: PackedFloat32Array, side: int, origin: Vector2) -> PackedFloat32Array:
+	var grid := _world.island(index)
+	var offsets := TerrainDetail.offsets(grid, _config)
+	var shown := heights.duplicate()
+	var first := Vector2i(roundi((grid.origin_m.x - origin.x) / _config.cell_size_m),
+			roundi((grid.origin_m.y - origin.y) / _config.cell_size_m))
+	var width := grid.size.x + 1
+	for gy: int in grid.size.y + 1:
+		for gx: int in width:
+			var offset := offsets[gy * width + gx]
+			if offset != 0.0:
+				shown[(first.y + gy) * side + first.x + gx] += offset
+	return shown
 
 
 ## Malha de um trecho: vértices nos cantos (x, z de 2 em 2 m) com a normal pelas alturas vizinhas.
