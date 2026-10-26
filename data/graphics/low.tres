@@ -22,7 +22,6 @@ visibility_scale = 0.5
 pedestrian_ratio = 0.35
 area_lights = 0
 render_scale = 0.75
-terrain_hex_tiling = false
 screen_space_aa = 1
 temporal_native = false
 fsr_sharpness = 0.2

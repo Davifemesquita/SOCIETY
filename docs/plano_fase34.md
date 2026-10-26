@@ -1,6 +1,8 @@
 # Plano da Fase 34 — Chão sem xadrez (nossa)
 
-**Estado: em andamento desde 25/10/2026**, com a confirmação do dono do produto ("pode ir para a próxima fase").
+**Estado: concluída em 25/10/2026**, começada com a confirmação do dono do produto ("pode ir para a próxima fase").
+Ele aprovou as capturas e decidiu o hex-tiling **só no ultra** (~1,2 ms de GPU na RTX 5060; a reamostragem de longe
+já tira o xadrez visto do alto).
 Terceira fase do roteiro de `docs/plano_melhorias.md`. Só apresentação: **nenhuma altura, contorno ou assinatura do
 terreno muda**, e nada vai para o save.
 

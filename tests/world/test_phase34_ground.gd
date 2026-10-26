@@ -92,10 +92,12 @@ func test_bake_is_deterministic_and_cheap_on_the_seed_1840() -> void:
 
 
 func test_hex_tiling_follows_the_graphics_level() -> void:
+	# só no ultra (decisão do dono do produto): ~1,2 ms de GPU, e a reamostragem de longe já tira o xadrez
 	var config := GameConfig.get_default()
-	assert_bool(config.graphics_presets[0].terrain_hex_tiling).is_false()
-	for index: int in range(1, config.graphics_presets.size()):
-		assert_bool(config.graphics_presets[index].terrain_hex_tiling).is_true()
+	var last := config.graphics_presets.size() - 1
+	for index: int in last:
+		assert_bool(config.graphics_presets[index].terrain_hex_tiling).is_false()
+	assert_bool(config.graphics_presets[last].terrain_hex_tiling).is_true()
 
 
 func test_terrain_view_gives_each_island_its_data_texture() -> void:

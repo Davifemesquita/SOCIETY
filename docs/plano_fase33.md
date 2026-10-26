@@ -1,7 +1,7 @@
 # Plano da Fase 33 — Por cima do mundo (nossa)
 
 **Estado: concluída em 25/10/2026**, começada com a confirmação do dono do produto ("pode seguir para a próxima
-fase"); a regra dos ícones (seção 3) espera a aprovação dele.
+fase"); a regra dos ícones (seção 3) foi aprovada por ele no mesmo dia.
 Segunda fase do roteiro de `docs/plano_melhorias.md`. Só apresentação: **nada muda na simulação nem no save**.
 
 ## 1. A grade fica no chão (`presentation/debug_overlay.gd`, `shaders/grid_overlay*.gdshader*`)
