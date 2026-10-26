@@ -310,6 +310,9 @@ static var _default: GameConfig
 @export var max_build_height_delta_m: float = 0.5
 ## Fração dos materiais devolvida ao demolir.
 @export var demolish_refund: float = 0.5
+## Fase 49: desfazer vale por este tempo de jogo depois da ação (s), com no máximo tantas ações guardadas.
+@export var undo_window_s: float = 120.0
+@export var undo_max_entries: int = 30
 ## Ganho de velocidade da estrada de paralelepípedo sobre a de terra.
 @export var paved_road_speed_bonus: float = 0.5
 ## Paralelepípedo (Fase 8): moedas e tijolos por célula (os tijolos somam e arredondam para cima,

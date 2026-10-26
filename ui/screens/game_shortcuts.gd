@@ -24,7 +24,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_game.open_menu()
 			get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed(&"time_pause"):
+	# Fase 49: Ctrl+Shift+Z também casaria com Ctrl+Z: o refazer vem antes, e só com o Shift exato
+	if event.is_action_pressed(&"game_redo", false, true):
+		_game.tool.redo()
+	elif event.is_action_pressed(&"game_undo", false, true):
+		_game.tool.undo()
+	elif event.is_action_pressed(&"time_pause"):
 		GameClock.toggle_pause()
 	elif event.is_action_pressed(&"time_speed_1"):
 		GameClock.set_speed(0)

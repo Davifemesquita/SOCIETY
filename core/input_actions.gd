@@ -31,6 +31,8 @@ const KEYS: Dictionary[StringName, Array] = {
 	&"build_copy": [],
 	&"build_search": [],
 	&"photo_mode": [],
+	# Fase 49: o modo planta, também sem tecla padrão
+	&"build_plan": [],
 	&"game_menu": [KEY_ESCAPE],
 	&"debug_grid": [KEY_F1],
 	&"debug_roads": [KEY_F2],
@@ -43,12 +45,31 @@ const FIXED: Array[StringName] = [&"build_cancel", &"game_menu", &"debug_grid", 
 		&"debug_advance_hours", &"debug_cheat_resources"]
 
 
+## Fase 49: atalhos com Ctrl (tecla física, com Shift ou não), fixos: desfazer e refazer.
+const CTRL_KEYS: Dictionary[StringName, Array] = {
+	&"game_undo": [[KEY_Z, false]],
+	&"game_redo": [[KEY_Z, true], [KEY_Y, false]],
+}
+
+
 static func register_defaults() -> void:
 	for action: StringName in KEYS:
 		if InputMap.has_action(action):
 			continue
 		InputMap.add_action(action)
 		_set_keys(action, PackedInt32Array(KEYS[action]))
+	for action: StringName in CTRL_KEYS:
+		if InputMap.has_action(action):
+			continue
+		InputMap.add_action(action)
+		for pair: Array in CTRL_KEYS[action]:
+			var event := InputEventKey.new()
+			var keycode: int = pair[0]
+			var shift: bool = pair[1]
+			event.physical_keycode = keycode as Key
+			event.ctrl_pressed = true
+			event.shift_pressed = shift
+			InputMap.action_add_event(action, event)
 
 
 ## Ações que o jogador pode trocar, na ordem da lista.

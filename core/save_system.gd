@@ -6,7 +6,7 @@ extends Node
 ## 15 dígitos e o estado não voltaria idêntico.
 
 ## Versão do formato. Ao mudar o formato, some 1 e acrescente a migração em migrations.
-const SAVE_VERSION := 15
+const SAVE_VERSION := 16
 const SAVE_EXTENSION := ".save"
 const THUMBNAIL_EXTENSION := ".png"
 ## Resumo do save para a tela de carregar (nome, data, dia, população, dinheiro), em JSON ao lado,

@@ -42,6 +42,12 @@ Texto de interface só por chave de tradução, em `ui/translations/strings.csv`
 tools/godot.sh importar            # importa os recursos; obrigatório num clone novo
 tools/godot.sh testes              # suíte gdUnit4 no xvfb (res://tests), ~15 a 25 min nesta VM
 tools/godot.sh testes res://tests/core/test_tick_clock.gd   # um arquivo
+# no PC do dono (Windows), nada na tela dele: core/data/sim/tools/world sem janela, presentation e ui COM janela numa
+# área de trabalho escondida (ambos fora do repositório, em F:\ferramentas)
+#   powershell -File F:\ferramentas\testes_society.ps1
+#   powershell -File F:\ferramentas\testes_janela_oculta.ps1 [res://tests/ui/x.gd]
+# teste que espera animação suavizada pelo tempo (câmera, contadores) espera tempo (simulate_frames(n, ms)), não quadros:
+# na GPU os quadros passam rápido demais, no lavapipe do CI devagar demais
 tools/godot.sh rodar               # abre o jogo
 tools/godot.sh editor              # abre o editor
 tools/godot.sh captura saida.png 180   # grava o quadro 180 do jogo em PNG
@@ -1726,6 +1732,41 @@ Regras que já custaram investigação:
 - **Benchmark**: a linha "dica que decompõe" mede o pior caso no hover.
 - **Capturas**: `tools/capture_phase47.tscn`.
 
+### Godot 4.8 (Fase 48, nossa)
+
+- **Plano** em `docs/plano_fase48.md`. A 4.8 estável não saiu (26/10/2026); o ensaio com a 4.8-beta1 está no ramo
+  `godot-4.8` (sem merge), com a beta em `F:\ferramentas\godot48` e o worktree em `F:\repos\society_48`. Os nomes das
+  opções novas estão na tabela do plano.
+- **No `main`**: o pan pela borda só vale depois de um movimento real do mouse (`StrategyCamera.mouse_seen`; o xvfb e a
+  área de trabalho escondida liam o mouse num canto); filtro de nós que podem ter sido liberados usa parâmetro `Variant`
+  (a 4.8 recusa objeto liberado em parâmetro tipado).
+
+### Desfazer e planta (Fase 49, nossa)
+
+- **Plano** em `docs/plano_fase49.md`, começada em 26/10/2026. **Save na versão 16** (`SaveMigrations.from_15_to_16`:
+  `plans` vazio, `next_plan_id` 1).
+- **Desfazer**: `Simulation.execute_undoable` (a ferramenta usa sempre), `undo_last`, `redo_last`, `undo` (`UndoHistory`,
+  fora do save, zerado no setter de `world`). `UndoHistory.Entry` guarda dinheiro e estoque (antes e depois), estradas,
+  árvores e `cleared_trees` do retângulo (`area_of`), prédios criados e tirados (o registro) e as plantas;
+  `UndoCommand` volta (exato no mesmo tick, diferença depois). `GameConfig.undo_window_s` e `undo_max_entries`. Comando
+  novo que deva entrar no histórico: um caso em `UndoHistory.area_of` e `_island_of`.
+- **Plantas**: `PlanRecord`, `WorldState.plans`, `PlacePlanCommand`, `RemovePlansCommand`, `BuildPlansCommand`,
+  `CommandResult.plans_changed` → `EventBus.plans_changed`; `PlanView` (`GameScreen.plan_view`). A planta não reserva
+  a célula.
+- **Substituir**: `ReplaceCommand` (Ctrl+arrastar na obra, `BuildTool.replace_drag`).
+- **Rotas**: `TradeRoute.name` e `group` (no save), `RenameRouteCommand`, `RouteWindow.display_name` e `ordered`.
+- **Teclas**: `InputActions.CTRL_KEYS` (`game_undo` Ctrl+Z, `game_redo` Ctrl+Shift+Z e Ctrl+Y, fixas); `build_plan` sem
+  tecla.
+
+### Kit de época (Fase 50, nossa)
+
+- **Plano** em `docs/plano_fase50.md`. O caminho está pronto; a arte é do dono (`assets/TODO_ASSETS.md`, seção da Fase 50).
+- **Regras**: `AssetRules` (`tools/import/asset_rules.gd`): orçamento por categoria, uma malha, nó `Front` em −Z, pivô no
+  centro do lote e no chão, tamanho no lote, LOD na importação, nome pelo id do prédio, crédito. `validate_assets.tscn`
+  confere `assets/kit` (também no CI).
+- **Gancho**: `BuildingKit.kit_root`, `asset_path`, `asset_mesh`, `Spec.asset`: a peça `<prédio>[_<classe>].glb` entra no
+  lugar da forma procedural em `BuildingKit.mesh`; `forget_assets` nos testes.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1784,6 +1825,9 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 45 — Ilhas novas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
 | 46 — Calçamento e esquinas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
 | 47 — QoL de interface (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
+| 48 — Godot 4.8 (nossa) | **ensaio feito em 26/10/2026, à espera da 4.8 estável**, sem nada na tela do dono: a estável não saiu; a 4.8-beta1 roda o projeto no ramo `godot-4.8` (378 scripts sem erro, suíte sem janela verde, testes dourados iguais, benchmark com GPU +0,4 ms com sombras de contato e AO de vários quiques ligados no alto e no ultra); nomes reais das opções novas registrados; dois consertos achados medindo vieram para o main (pan pela borda sem mouse e filtro de nós liberados); falta a estável, o dono decidir quando subir e medir na 3060; plano em `docs/plano_fase48.md` |
+| 49 — Desfazer e planta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
+| 50 — Kit de época (nossa) | **caminho pronto em 26/10/2026, à espera da arte**, sem nada na tela do dono: regras de importação com teste (orçamento de triângulos por categoria, uma malha, frente em −Z, pivô e tamanho no lote, LOD, nome, crédito), validação no CI, o BuildingKit pondo a peça no lugar da forma procedural sem quebrar a montagem por célula (sem peça, nada muda; benchmark igual), lista do que falta no `assets/TODO_ASSETS.md`; falta a arte (modelar, gerar ou comprar as peças) e as aprovações do dono; plano em `docs/plano_fase50.md` |
 
 Pendências já vistas para fases futuras:
 

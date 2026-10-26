@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func all() -> Array[Callable]:
-	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10, from_10_to_11, from_11_to_12, from_12_to_13, from_13_to_14, from_14_to_15]
+	return [from_1_to_2, from_2_to_3, from_3_to_4, from_4_to_5, from_5_to_6, from_6_to_7, from_7_to_8, from_8_to_9, from_9_to_10, from_10_to_11, from_11_to_12, from_12_to_13, from_13_to_14, from_14_to_15, from_15_to_16]
 
 
 ## Fase 1 → Fase 2: as caixas provisórias saem (as estradas ficam) e entra a economia, com o
@@ -222,5 +222,22 @@ static func from_13_to_14(state: Dictionary) -> Dictionary:
 static func from_14_to_15(state: Dictionary) -> Dictionary:
 	var world: Dictionary = state.get("world", {})
 	world["victory"] = VictoryState.new().to_dict()
+	state["world"] = world
+	return state
+
+
+## Cenários e vitória → desfazer e planta (Fase 49): a partida antiga começa sem plantas, e as rotas sem nome nem grupo.
+static func from_15_to_16(state: Dictionary) -> Dictionary:
+	var world: Dictionary = state.get("world", {})
+	world["plans"] = []
+	world["next_plan_id"] = 1
+	var routes: Variant = world.get("routes")
+	if routes is Array:
+		var route_list: Array = routes
+		for raw_route: Variant in route_list:
+			if raw_route is Dictionary:
+				var route: Dictionary = raw_route
+				route["name"] = ""
+				route["group"] = ""
 	state["world"] = world
 	return state

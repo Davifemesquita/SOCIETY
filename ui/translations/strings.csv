@@ -14,7 +14,7 @@ REASON_NOT_IMPLEMENTED,Ação ainda não disponível,Action not available yet
 HUD_CLOCK,"Dia %d, %02d:%02d","Day %d, %02d:%02d"
 HUD_ROAD,Estrada (T),Road (T)
 HUD_DEMOLISH,Demolir (Del),Demolish (Del)
-HUD_HINT_BUILDING,Clique constrói · R gira · Esc cancela,Click builds · R rotates · Esc cancels
+HUD_HINT_BUILDING,Clique constrói · R gira · Ctrl+arrastar troca em área · Esc cancela,Click builds · R rotates · Ctrl+drag swaps in an area · Esc cancels
 HUD_HINT_ROAD,Arraste para traçar · Esc cancela,Drag to lay out · Esc cancels
 HUD_HINT_DEMOLISH,Clique ou arraste para demolir · Esc cancela,Click or drag to demolish · Esc cancels
 PREVIEW_ROAD_LENGTH,%d células,%d cells
@@ -921,3 +921,20 @@ ROUTES_FILTER_TIP,Mostrar só as rotas que passam por esta ilha,Show only the ro
 ROUTES_FILTER_ALL,Todas as ilhas,All islands
 ROUTES_DUPLICATE,Duplicar,Duplicate
 ROUTES_DUPLICATE_TIP,"Cria uma rota igual a esta, sem os navios","Creates a route like this one, without the ships"
+HUD_PLAN_TIP,"Modo planta: a obra vira planta, sem custo, e o arrasto de demolir apaga plantas","Plan mode: building places a plan, at no cost, and the demolish drag erases plans"
+HUD_BUILD_PLANS_TIP,"Construir as plantas desta ilha (cada uma pelo custo de sempre; a que não puder fica)","Build this island's plans (each at the usual cost; any that can't be built stay)"
+HUD_UNDO_TIP,Desfazer a última obra ou demolição (Ctrl+Z),Undo the last construction or demolition (Ctrl+Z)
+HUD_REDO_TIP,Refazer o que foi desfeito (Ctrl+Shift+Z),Redo what was undone (Ctrl+Shift+Z)
+HUD_HINT_PLAN,"Planta: clique para desenhar (sem custo); construa todas pelo botão ao lado da busca","Plan: click to draw (no cost); build them all with the button next to the search"
+HUD_HINT_REPLACE,Solte para trocar os prédios do mesmo tamanho no retângulo,Release to swap the same-size buildings in the rectangle
+ACTION_BUILD_PLAN,Modo planta,Plan mode
+REASON_NOTHING_TO_UNDO,Nada para desfazer,Nothing to undo
+REASON_UNDO_EXPIRED,Passou o tempo de desfazer,Too late to undo
+REASON_UNDO_CHANGED,O lugar mudou: não dá para desfazer,The place has changed: can't undo
+REASON_OVER_PLAN,Já há uma planta aqui,There is already a plan here
+REASON_NO_PLAN_HERE,Nenhuma planta aqui,No plan here
+REASON_NOTHING_TO_REPLACE,Nenhum prédio do mesmo tamanho para trocar,No building of the same size to swap
+ROUTES_NAME,Nome da rota,Route name
+ROUTES_NAME_TIP,"Um nome para achar a rota na lista (Enter guarda)","A name to find the route in the list (Enter saves)"
+ROUTES_GROUP,Grupo,Group
+ROUTES_GROUP_TIP,"As rotas do mesmo grupo ficam juntas na lista","Routes in the same group stay together in the list"

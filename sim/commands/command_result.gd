@@ -23,6 +23,8 @@ var missions_changed: bool = false
 var rivals_changed: bool = false
 ## Especialistas (Fase 11): contratado, designado, retirado ou dispensado.
 var specialists_changed: bool = false
+## Plantas (Fase 49): desenhada, apagada ou construída.
+var plans_changed: bool = false
 
 
 static func refused(why: StringName) -> CommandResult:

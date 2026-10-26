@@ -30,6 +30,9 @@ jobs:
       - uses: ./.github/actions/godot
       - name: Compilar todos os scripts
         run: tools/godot.sh godot --headless --path . --script res://tools/check_scripts.gd
+      # Fase 50: as peças do kit de época (assets/kit) passam pelas regras de importação
+      - name: Conferir o kit de época
+        run: tools/godot.sh godot --headless --path . res://tools/import/validate_assets.tscn
 
   testes:
     name: Testes (${{ matrix.pasta }})

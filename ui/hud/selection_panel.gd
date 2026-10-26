@@ -72,6 +72,10 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	_buttons.add_theme_constant_override(&"v_separation", 6)
 	column.add_child(_buttons)
 	tool.selection_changed.connect(show_building)
+	# uma opção nova (modo para daltonismo, idioma) repinta já, sem esperar o próximo refresco
+	EventBus.settings_changed.connect(func() -> void:
+		if visible:
+			_refresh())
 	EventBus.house_upgraded.connect(func(building_id: int) -> void:
 		if building_id == _building_id:
 			show_building(building_id))

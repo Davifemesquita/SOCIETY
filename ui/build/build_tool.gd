@@ -35,6 +35,10 @@ var moving_id: int = 0
 var copying: bool = false
 var copy_paused: bool = false
 var copy_upgrade_blocked: bool = false
+## Fase 49: no modo planta a obra vira planta (sem custo) e o arrasto de demolir apaga plantas.
+var plan_mode: bool = false
+## Fase 49: o arrasto com Ctrl na obra substitui, no retângulo, os prédios do mesmo tamanho pelo escolhido.
+var replace_drag: bool = false
 
 var _simulation: Simulation
 var _camera: StrategyCamera
@@ -158,8 +162,14 @@ func press(cell: Vector2i) -> void:
 	match mode:
 		Mode.NONE:
 			select(grid().building_at(cell))
+		Mode.BUILDING when replace_drag:
+			dragging = true
+			drag_start = cell
+			changed.emit()
+		Mode.BUILDING when plan_mode:
+			_run(PlacePlanCommand.new(island_id, building_def.id, building_origin(), rotation))
 		Mode.BUILDING:
-			var result := _simulation.execute(PlaceBuildingCommand.new(island_id, building_def.id, building_origin(), rotation))
+			var result := _simulation.execute_undoable(PlaceBuildingCommand.new(island_id, building_def.id, building_origin(), rotation))
 			if not result.ok():
 				refused.emit(result.reason)
 			elif copying:
@@ -185,8 +195,14 @@ func release(cell: Vector2i) -> void:
 	hover(cell)
 	if not dragging:
 		return
-	var command: Command = BuildRoadCommand.new(island_id, road_cells(), road_paved) if mode == Mode.ROAD \
-			else DemolishCommand.new(island_id, demolish_rect())
+	var command: Command
+	match mode:
+		Mode.ROAD:
+			command = BuildRoadCommand.new(island_id, road_cells(), road_paved)
+		Mode.BUILDING:
+			command = ReplaceCommand.new(island_id, demolish_rect(), building_def.id)
+		_:
+			command = RemovePlansCommand.new(island_id, demolish_rect()) if plan_mode else DemolishCommand.new(island_id, demolish_rect())
 	dragging = false
 	_run(command)
 	changed.emit()
@@ -215,6 +231,13 @@ func demolish_rect() -> Rect2i:
 ## terreno, desbloqueio e custo, igual ao que o comando vai conferir.
 func preview_reason() -> StringName:
 	match mode:
+		Mode.BUILDING when plan_mode:
+			# a planta não cobra nem confere desbloqueio: só o lugar e o terreno
+			var reason := PlacementRules.check_building(grid(), building_def, building_origin(), rotation)
+			if reason == PlacementRules.OK:
+				var profile := _simulation.data.profile(_simulation.world.economy(island_id).profile_id)
+				reason = PlacementRules.check_terrain(grid(), profile, building_def, building_origin(), rotation, _simulation.config)
+			return reason
 		Mode.BUILDING:
 			return _simulation.placement_reason(building_def, building_origin(), rotation, island_id)
 		Mode.MOVE:
@@ -255,10 +278,38 @@ func _enter(new_mode: Mode) -> void:
 	changed.emit()
 
 
+## Fase 49: tudo passa pelo histórico de desfazer (o que não entra nele, como mover, só é executado).
 func _run(command: Command) -> bool:
-	var result := _simulation.execute(command)
+	var result := _simulation.execute_undoable(command)
 	if not result.ok():
 		refused.emit(result.reason)
+	return result.ok()
+
+
+## Planta liga e desliga (Fase 49).
+func toggle_plan_mode() -> void:
+	plan_mode = not plan_mode
+	changed.emit()
+
+
+## Constrói as plantas da ilha da vez (pelo histórico: desfazer tira tudo de uma vez).
+func build_plans() -> bool:
+	return _run(BuildPlansCommand.new(island_id))
+
+
+func undo() -> bool:
+	var result := _simulation.undo_last()
+	if not result.ok():
+		refused.emit(result.reason)
+	changed.emit()
+	return result.ok()
+
+
+func redo() -> bool:
+	var result := _simulation.redo_last()
+	if not result.ok():
+		refused.emit(result.reason)
+	changed.emit()
 	return result.ok()
 
 
@@ -290,6 +341,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		start_road()
 	elif event.is_action_pressed(&"build_demolish"):
 		start_demolish()
+	elif event.is_action_pressed(&"build_plan"):
+		toggle_plan_mode()
 	elif event.is_action_pressed(&"build_copy"):
 		# o selecionado, ou o prédio sob o cursor
 		if not copy_building(selected_id):
@@ -301,6 +354,8 @@ func _on_mouse_button(event: InputEventMouseButton) -> void:
 	if event.button_index == MOUSE_BUTTON_LEFT and raw_cell is Vector2i:
 		var cell: Vector2i = raw_cell
 		if event.pressed:
+			# Fase 49: Ctrl no clique da obra arrasta o retângulo de substituir
+			replace_drag = mode == Mode.BUILDING and event.ctrl_pressed
 			press(cell)
 		else:
 			release(cell)

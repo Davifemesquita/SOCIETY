@@ -49,6 +49,9 @@ var risks_state := RisksState.new()
 var shipyard_state := ShipyardState.new()
 ## Objetivo da partida (Fase 12); partida livre em mundo novo.
 var victory_state := VictoryState.new()
+## Plantas (Fase 49): prédios desenhados, sem custo, que ainda não existem.
+var plans: Dictionary[int, PlanRecord] = {}
+var next_plan_id: int = 1
 
 # runtime: recalculado a cada tick, fora do save
 var income_per_min: float = 0.0
@@ -212,6 +215,12 @@ func to_dict() -> Dictionary:
 	var route_list: Array[Dictionary] = []
 	for route_id: int in route_ids():
 		route_list.append(routes[route_id].to_dict())
+	var plan_ids: Array[int] = []
+	plan_ids.assign(plans.keys())
+	plan_ids.sort()
+	var plan_list: Array[Dictionary] = []
+	for plan_id: int in plan_ids:
+		plan_list.append(plans[plan_id].to_dict())
 	return {"islands": island_list, "buildings": building_list, "next_building_id": next_building_id,
 			"money": money, "tax_levels": tax_levels.duplicate(), "tick": tick, "carts": cart_list,
 			"seed": seed, "terrain_version": terrain_version, "ships": ship_list, "next_ship_id": next_ship_id,
@@ -220,7 +229,7 @@ func to_dict() -> Dictionary:
 			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
 			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
 			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict(),
-			"victory": victory_state.to_dict()}
+			"victory": victory_state.to_dict(), "plans": plan_list, "next_plan_id": next_plan_id}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -390,6 +399,20 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 	if loaded_victory == null:
 		return null
 	world.victory_state = loaded_victory
+	var raw_plans: Variant = data.get("plans")
+	var raw_next_plan: Variant = data.get("next_plan_id")
+	if not (raw_plans is Array and raw_next_plan is int):
+		return null
+	world.next_plan_id = raw_next_plan
+	var plan_list: Array = raw_plans
+	for raw_plan: Variant in plan_list:
+		if not raw_plan is Dictionary:
+			return null
+		var plan_data: Dictionary = raw_plan
+		var plan := PlanRecord.from_dict(plan_data, game_data, world.islands.size())
+		if plan == null or world.plans.has(plan.id) or plan.id >= world.next_plan_id:
+			return null
+		world.plans[plan.id] = plan
 	return world
 
 

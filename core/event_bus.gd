@@ -86,3 +86,5 @@ signal ship_built(ship_id: int)
 signal match_won()
 signal match_lost()
 signal achievement_unlocked(achievement_id: StringName)
+## Fase 49: as plantas mudaram (desenhada, apagada, construída, desfeita).
+signal plans_changed()
