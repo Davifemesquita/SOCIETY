@@ -51,6 +51,11 @@ uniform vec2 macro_range = vec2(0.76, 1.14);
 uniform vec2 far_blend_m = vec2(60.0, 320.0);
 uniform float far_scale = 0.125;
 uniform float far_mix = 0.65;
+// cada efeito da Fase 34 pode ser desligado (medida de custo: tools/terrain_cost.tscn)
+uniform bool use_edge_noise = true;
+uniform bool use_macro = true;
+uniform bool use_far = true;
+uniform bool use_triplanar = true;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
 
@@ -134,7 +139,10 @@ void fragment() {
 	vec4 kinds = texture(surface_weights, cell);
 	vec4 data = texture(terrain_data, cell);
 	float rock = smoothstep(rock_start, rock_full, world_normal.y);
-	float edge = (value_noise(world_position.xz * 0.5) * 0.6 + value_noise(world_position.xz * 0.25) * 0.4 - 0.5) * edge_noise;
+	float edge = 0.0;
+	if (use_edge_noise) {
+		edge = (value_noise(world_position.xz * 0.5) * 0.6 + value_noise(world_position.xz * 0.25) * 0.4 - 0.5) * edge_noise;
+	}
 
 	vec4 grass_a = texture(grass_albedo, uv);
 	vec4 grass_n = texture(grass_normal, uv);
@@ -166,7 +174,7 @@ void fragment() {
 		grass_n = mix(grass_n, hgn, hex);
 		forest_n = mix(forest_n, hfn, hex);
 	}
-	float far = smoothstep(far_blend_m.x, far_blend_m.y, camera_distance) * far_mix;
+	float far = use_far ? smoothstep(far_blend_m.x, far_blend_m.y, camera_distance) * far_mix : 0.0;
 	vec4 sand_a = texture(sand_albedo, uv);
 	vec4 sand_n = texture(sand_normal, uv);
 	if (far > 0.001) {
@@ -181,7 +189,7 @@ void fragment() {
 	}
 
 	// grama seca nas cristas e onde o ruído de 150 m pede, mais verde perto da água
-	float macro_mid = value_noise(world_position.xz / 150.0);
+	float macro_mid = use_macro ? value_noise(world_position.xz / 150.0) : 0.5;
 	float dry = clamp((macro_mid - 0.4) * 1.4 + (0.5 - data.g) * 2.0 + (0.6 - data.a) * 0.5, 0.0, 1.0);
 	grass_a.rgb *= mix(vec3(1.0), dry_tint, dry * 0.65);
 	grass_a.rgb *= mix(vec3(1.0), lush_tint, data.a * 0.6);
@@ -189,7 +197,10 @@ void fragment() {
 	// rocha: triplanar só na encosta (na plana o peso dela é zero e nada é lido)
 	vec4 rock_a = vec4(0.0);
 	vec4 rock_n = vec4(0.5, 0.5, 1.0, 1.0);
-	if (rock > 0.001) {
+	if (rock > 0.001 && !use_triplanar) {
+		rock_a = texture(rock_albedo, uv * 0.7);
+		rock_n = texture(rock_normal, uv * 0.7);
+	} else if (rock > 0.001) {
 		vec3 blend = pow(abs(world_normal), vec3(4.0));
 		blend /= (blend.x + blend.y + blend.z);
 		vec3 p = world_position / texture_meters * 0.7;
@@ -219,8 +230,10 @@ void fragment() {
 	float land = step(0.0, world_position.y);
 	float valley = clamp((data.g - 0.55) * 4.0, 0.0, 1.0) * data.a * (1.0 - sand);
 	ground_a.rgb *= mix(1.0, 0.82, valley * land);
-	float macro = value_noise(world_position.xz / 40.0) * 0.25 + macro_mid * 0.4 + value_noise(world_position.xz / 500.0) * 0.35;
-	ground_a.rgb *= mix(1.0, mix(macro_range.x, macro_range.y, macro), land);
+	if (use_macro) {
+		float macro = value_noise(world_position.xz / 40.0) * 0.25 + macro_mid * 0.4 + value_noise(world_position.xz / 500.0) * 0.35;
+		ground_a.rgb *= mix(1.0, mix(macro_range.x, macro_range.y, macro), land);
+	}
 
 	// areia molhada na beira d'água (só a da praia, acima do mar)
 	float wet_line = sand * (1.0 - smoothstep(0.0, wet_sand_m, world_position.y)) * land;

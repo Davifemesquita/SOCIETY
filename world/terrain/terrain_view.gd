@@ -63,6 +63,11 @@ func hex_tiling() -> bool:
 	return _hex_tiling
 
 
+## Os materiais do terreno, um por ilha (medida de custo, testes).
+func materials() -> Array[ShaderMaterial]:
+	return _materials
+
+
 ## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade.
 func shown_height(x: float, z: float) -> float:
 	return _world.surface_height(x, z)

@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/terrain_cost.gd" id="1_cost"]
+
+[node name="TerrainCost" type="Node3D"]
+script = ExtResource("1_cost")

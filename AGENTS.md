@@ -1483,6 +1483,11 @@ Regras que já custaram investigação:
 - **Testes sem tela**: o `tests/world/test_phase34_ground.gd` confere o bake; o shader só compila com GPU, então quem o
   confere são as capturas (`tools/capture_phase5.tscn`, que no PC do dono roda com a janela fora do monitor,
   `--position -6000,0`).
+- **Custo por efeito** (`tools/terrain_cost.tscn -- saida.md [shader_antigo]`): desenha só o terreno da semente 1840 a
+  40, 120 e 300 m e mede a GPU do viewport com cada efeito desligado (`use_edge_noise`, `use_macro`, `use_far`,
+  `use_triplanar`, `hex_tiling`) e, se passar o caminho, com outro `.gdshader`. Na RTX 5060: o shader novo custa
+  ~0,5 ms a mais que o da Fase 33 de perto, quase tudo hex-tiling.
+- **Benchmark: um número de FPS só vale repetido.** Na Fase 33 uma rodada deu o alto a 62 FPS e a repetição, 49.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -1527,8 +1532,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 30 — Transição e retorno visual (nossa) | **concluída em 24/10/2026**: cortina com texto na troca de tela, contadores animados e pulso de ganho na barra, notificações que aparecem e esmaecem, moedas e "+X" sobre o entreposto quando o comerciante paga; plano em `docs/plano_fase30.md`; a suíte inteira passou no CI |
 | 31 — Obra e combate (nossa) | **concluída em 25/10/2026**: prédio subindo com squash & stretch e poeira, demolido afundando na poeira, balas em arco com respingo e o alvo adernando no combate naval, zoom suave no cursor; plano em `docs/plano_fase31.md` |
 | 32 — Medida e nitidez (nossa) | **concluída em 25/10/2026** (fechada pelo dono do produto): teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; primeira medição numa GPU (RTX 5060, 1080p, Vulkan e D3D12): fica o Vulkan, alto a ~48 FPS, ultra com travadas; plano em `docs/plano_fase32.md` |
-| 33 — Por cima do mundo (nossa) | **concluída em 25/10/2026** (a regra dos ícones espera a aprovação do dono do produto): grade de construção com teste de profundidade e só em volta do cursor (o destaque é que atravessa), prévia com o modelo do prédio e listras quando não pode, ícones de estado iguais agregados de longe; no benchmark da RTX 5060 o alto passou de 48,6 para 62,2 FPS; a suíte inteira passou no Windows, menos o `test_colorblind_option_repaints_the_house_needs`, que já falhava ali antes da fase; plano em `docs/plano_fase33.md` |
-| 34 — Chão sem xadrez (nossa) | **em andamento desde 25/10/2026**: texturas de dados do terreno (inclinação, curvatura, água, umidade), bordas com ruído e height-blend, macro-variação, hex-tiling perto da câmera e reamostragem por distância (o xadrez de 12 m sumiu a 420 m), triplanar na rocha; as pastas sem tela da suíte passaram; falta o benchmark de FPS na tela do dono e a aprovação das capturas; plano em `docs/plano_fase34.md` |
+| 33 — Por cima do mundo (nossa) | **concluída em 25/10/2026** (a regra dos ícones espera a aprovação do dono do produto): grade de construção com teste de profundidade e só em volta do cursor (o destaque é que atravessa), prévia com o modelo do prédio e listras quando não pode, ícones de estado iguais agregados de longe; no benchmark da RTX 5060 o FPS ficou igual ao da Fase 32 (uma primeira rodada com o alto a 62 FPS não se repetiu); a suíte inteira passou no Windows, menos o `test_colorblind_option_repaints_the_house_needs`, que já falhava ali antes da fase; plano em `docs/plano_fase33.md` |
+| 34 — Chão sem xadrez (nossa) | **em andamento desde 25/10/2026**: texturas de dados do terreno (inclinação, curvatura, água, umidade), bordas com ruído e height-blend, macro-variação, hex-tiling perto da câmera e reamostragem por distância (o xadrez de 12 m sumiu a 420 m), triplanar na rocha; a suíte inteira passou no CI; no benchmark da RTX 5060 a GPU subiu 0,4 ms no baixo e ~1,2 ms nos outros (o hex-tiling, medido à parte no `tools/terrain_cost.tscn`); falta o dono decidir em que níveis o hex-tiling entra e aprovar as capturas; plano em `docs/plano_fase34.md` |
 
 Pendências já vistas para fases futuras:
 
