@@ -1,4 +1,4 @@
-﻿# AGENTS.md — Society
+# AGENTS.md — Society
 
 City builder 3D de economia e logística no estilo do gênero de Anno 1800, em **Godot 4.7.2
 (Forward+)**, GDScript com tipagem estática, para PC Windows. A especificação completa é
