@@ -11,6 +11,8 @@ var _previous_save_dir: String
 
 
 func before_test() -> void:
+	# mouse simulado: o pan pela borda leria o cursor de verdade (num canto) e mexeria na câmera entre os quadros
+	Settings.edge_pan = false
 	GameScreen.use_sky3d = false
 	GameScreen.flat_world = true
 	_previous_save_dir = SaveSystem.save_dir
@@ -25,6 +27,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.edge_pan = true
 	GameScreen.use_sky3d = true
 	GameScreen.flat_world = false
 	SaveSystem.save_dir = _previous_save_dir

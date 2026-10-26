@@ -37,6 +37,12 @@ para o `main`. Nada apareceu na tela do dono (testes sem janela; benchmark e cap
   um engasgo a investigar na estável. De perto (capturas da Fase 39 nas duas versões) a sombra de contato é discreta: pé
   das chaminés e junções dos telhados um pouco mais escuros.
 
+- **Com janela** (área de trabalho escondida, depois de trazer o `main` para o ramo): presentation 143/143 e ui 153/153
+  na 4.8-beta1, iguais à 4.7.2. Dois testes de interface falhavam só na beta e foram consertados nos testes (não no
+  jogo): a 4.8 faz a câmera ler o cursor de verdade da área de trabalho (no canto), não o mouse simulado, e o pan pela
+  borda cancelava a centralização e mexia no zoom — os testes que simulam mouse desligam o pan pela borda, como o da
+  Fase 5 já fazia.
+
 ## 4. Achados no ensaio, consertados no `main`
 
 - **Pan pela borda sem mouse**: na área de trabalho escondida a 4.8 lê o mouse num canto, e a câmera saía andando (o
