@@ -57,3 +57,21 @@ Esta VM não tem GPU: estes itens só se confirmam no PC alvo (RTX 3060).
 | benchmark no nível alto | `Society.exe -- --benchmark` (ou `-- --benchmark --nivel 3` para o ultra): o quadro tem de ficar em até 16,6 ms em 1080p |
 
 | selos de ícone | `assets/source/game-icons/badges/` (happy, minus, plus): círculos simples sem autor registrado; conferir a origem ou redesenhar (Fase 43) | — | — | 43 |
+
+## Kit de época (Fase 50)
+
+A troca do kit de fantasia por arquitetura do século XIX espera a arte (modelar, gerar ou comprar as peças é decisão do
+dono). O caminho já está pronto: cada peça vai em `assets/kit/<prédio>[_<classe>].glb` (ou `.tscn`), passa pelas regras
+de `tools/import/asset_rules.gd` — conferidas por `tools/import/validate_assets.tscn` no CI — e entra no lugar da forma
+procedural pelo `BuildingKit` (mesmo lote e rotação); sem peça, nada muda. Regras: uma malha só, pivô no centro do lote
+e no chão, frente marcada com um nó `Front` em −Z, tamanho dentro do lote (2 m por célula, andar de ~2,6 m), LOD ligado
+na importação, UV na trim sheet do material do kit, o nome começando pelo id do prédio e o arquivo no `CREDITS.md`.
+
+| Arquivo esperado | Descrição | Orçamento (LOD0) | Fonte pensada | Prompt de referência |
+|---|---|---|---|---|
+| `assets/kit/house_peasants.glb`, `house_workers.glb` | casas de camponeses e operários, 3 a 5 variantes cada | 3.000–8.000 | Medieval Village MegaKit (Quaternius, CC0), medido no Blender contra a célula de 2 m | "casa de trabalhadores do século XIX, Europa industrial, madeira e reboco, vista isométrica" |
+| `assets/kit/house_artisans.glb`, `house_engineers.glb`, `house_investors.glb` | casas das classes altas, tijolo e cantaria | 3.000–8.000 | kit próprio no Blender (Geometry Nodes, variantes assadas) | "sobrado de <classe> do século XIX, tijolo e cantaria, sacada de ferro, vista isométrica" |
+| `assets/kit/<fábrica>.glb` (mill, bakery, brewery…) | fábricas por cadeia, com a silhueta da Fase 13 | 8.000–20.000 | kit próprio | "fábrica europeia do século XIX, <nome>, tijolo, chaminé, vista isométrica" |
+| `assets/kit/trading_post.glb`, `warehouse.glb` | porto e armazéns | 8.000–20.000 | kit próprio | "armazém portuário do século XIX, guindaste de madeira" |
+| trim sheet 2K + 1–2 texturas tileáveis por material de classe | o material das peças | — | Poly Haven e ambientCG (CC0), tratadas no Material Maker | — |
+| navios de época | brigue, clíper e fragata de 1840 | 4.000–8.000 | modelo próprio ou retextura | "veleiro mercante de dois mastros, 1840" |

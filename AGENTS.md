@@ -1752,6 +1752,15 @@ Regras que já custaram investigação:
 - **Teclas**: `InputActions.CTRL_KEYS` (`game_undo` Ctrl+Z, `game_redo` Ctrl+Shift+Z e Ctrl+Y, fixas); `build_plan` sem
   tecla.
 
+### Kit de época (Fase 50, nossa)
+
+- **Plano** em `docs/plano_fase50.md`. O caminho está pronto; a arte é do dono (`assets/TODO_ASSETS.md`, seção da Fase 50).
+- **Regras**: `AssetRules` (`tools/import/asset_rules.gd`): orçamento por categoria, uma malha, nó `Front` em −Z, pivô no
+  centro do lote e no chão, tamanho no lote, LOD na importação, nome pelo id do prédio, crédito. `validate_assets.tscn`
+  confere `assets/kit` (também no CI).
+- **Gancho**: `BuildingKit.kit_root`, `asset_path`, `asset_mesh`, `Spec.asset`: a peça `<prédio>[_<classe>].glb` entra no
+  lugar da forma procedural em `BuildingKit.mesh`; `forget_assets` nos testes.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1812,6 +1821,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 47 — QoL de interface (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
 | 48 — Godot 4.8 (nossa) | **ensaio feito em 26/10/2026, à espera da 4.8 estável**, sem nada na tela do dono: a estável não saiu; a 4.8-beta1 roda o projeto no ramo `godot-4.8` (378 scripts sem erro, suíte sem janela verde, testes dourados iguais, benchmark com GPU +0,4 ms com sombras de contato e AO de vários quiques ligados no alto e no ultra); nomes reais das opções novas registrados; dois consertos achados medindo vieram para o main (pan pela borda sem mouse e filtro de nós liberados); falta a estável, o dono decidir quando subir e medir na 3060; plano em `docs/plano_fase48.md` |
 | 49 — Desfazer e planta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
+| 50 — Kit de época (nossa) | **caminho pronto em 26/10/2026, à espera da arte**, sem nada na tela do dono: regras de importação com teste (orçamento de triângulos por categoria, uma malha, frente em −Z, pivô e tamanho no lote, LOD, nome, crédito), validação no CI, o BuildingKit pondo a peça no lugar da forma procedural sem quebrar a montagem por célula (sem peça, nada muda; benchmark igual), lista do que falta no `assets/TODO_ASSETS.md`; falta a arte (modelar, gerar ou comprar as peças) e as aprovações do dono; plano em `docs/plano_fase50.md` |
 
 Pendências já vistas para fases futuras:
 

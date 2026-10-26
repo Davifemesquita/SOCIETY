@@ -244,6 +244,8 @@ class Spec:
 	var hall_side_gap_m: float = 0.0
 	var lucarnes: int = 0
 	var storehouse: bool = false
+	## Fase 50: a peça do kit de época para este prédio (caminho), se houver; vazio, a forma procedural.
+	var asset: String = ""
 
 	func key() -> String:
 		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d" % [cells.x, cells.y, cell_m,
@@ -308,6 +310,7 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	var spec := Spec.new()
 	spec.cells = def.size
 	spec.cell_m = cell_size
+	spec.asset = asset_path(def.id, record.tier)
 	spec.door_index = def.size.x / 2 if posmod(record.rotation, 4) < 2 else def.size.x - 1 - def.size.x / 2
 	if record.is_house():
 		var tier := simulation.data.tier(record.tier)
@@ -430,8 +433,59 @@ static func brick(spec: Spec) -> bool:
 	return spec.dock and spec.level >= DOCK_BRICK_LEVEL
 
 
-## A malha da forma, feita uma vez por chave.
+## Fase 50: a pasta do kit de época. Uma peça <prédio>_<classe> (casas) ou <prédio>, .glb ou .tscn, aprovada pelas
+## AssetRules (uma malha, pivô no centro do lote e no chão, frente em −Z, UV na trim sheet do material do kit), entra no
+## lugar da forma procedural, no mesmo lote e rotação; sem peça, nada muda.
+static var kit_root := "res://assets/kit"
+static var _asset_paths: Dictionary[String, String] = {}
+static var _asset_meshes: Dictionary[String, ArrayMesh] = {}
+
+
+## O caminho da peça do prédio (a da classe antes da geral), ou vazio.
+static func asset_path(def_id: StringName, tier: StringName) -> String:
+	var key := "%s|%s|%s" % [kit_root, def_id, tier]
+	if not _asset_paths.has(key):
+		var found := ""
+		var stems: Array[String] = []
+		if tier != &"":
+			stems.append("%s_%s" % [def_id, tier])
+		stems.append(String(def_id))
+		for stem: String in stems:
+			for extension: String in ["glb", "tscn"]:
+				var path := kit_root.path_join("%s.%s" % [stem, extension])
+				if found == "" and ResourceLoader.exists(path):
+					found = path
+		_asset_paths[key] = found
+	return _asset_paths[key]
+
+
+## A malha da peça (a primeira MeshInstance3D da cena), lida uma vez; null se a cena não tem malha.
+static func asset_mesh(path: String) -> ArrayMesh:
+	if not _asset_meshes.has(path):
+		var mesh: ArrayMesh = null
+		var scene := load(path) as PackedScene
+		if scene != null:
+			var root := scene.instantiate()
+			var found := AssetRules.meshes(root)
+			if not found.is_empty():
+				mesh = found[0].mesh as ArrayMesh
+			root.free()
+		_asset_meshes[path] = mesh
+	return _asset_meshes[path]
+
+
+## Esquece o que achou na pasta do kit (testes, ou peça nova durante o jogo).
+static func forget_assets() -> void:
+	_asset_paths.clear()
+	_asset_meshes.clear()
+
+
+## A malha da forma, feita uma vez por chave (ou a peça do kit de época, se houver).
 static func mesh(spec: Spec) -> ArrayMesh:
+	if spec.asset != "":
+		var piece := asset_mesh(spec.asset)
+		if piece != null:
+			return piece
 	var key := spec.key()
 	if not _meshes.has(key):
 		_meshes[key] = _build(spec)
