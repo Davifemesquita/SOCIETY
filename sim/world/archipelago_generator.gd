@@ -62,18 +62,28 @@ class Noises:
 ## Mundo novo: o arquipélago da semente, com o dinheiro e o navio inicial (com os materiais) na
 ## principal. Tamanho do arquipélago e dificuldade negativos = os padrões do GameConfig.
 static func new_world(seed_value: int, config: GameConfig, data: GameData, archipelago_size: int = -1, difficulty: int = -1) -> WorldState:
+	var size_index := archipelago_size if archipelago_size >= 0 else config.default_archipelago_size
+	var specs := layout(seed_value, config, data, config.island_count_for(size_index))
+	specs.append_array(tropical_layout(seed_value, config, data, specs.size()))
+	var grids: Array[IslandGrid] = []
+	for spec: IslandSpec in specs:
+		grids.append(build_island(spec, config))
+	return assemble(seed_value, config, data, specs, grids, difficulty)
+
+
+## O mundo a partir das ilhas já geradas, na ordem das specs (Fase 42: o ArchipelagoJob gera as ilhas em threads e monta
+## aqui, igual ao caminho direto).
+static func assemble(seed_value: int, config: GameConfig, data: GameData, specs: Array[IslandSpec], grids: Array[IslandGrid],
+		difficulty: int = -1) -> WorldState:
 	var world := WorldState.new()
 	world.seed = seed_value
 	world.terrain_version = VERSION
 	world.difficulty = difficulty if difficulty >= 0 else config.default_difficulty
 	world.money = config.starting_money_for(world.difficulty)
-	var size_index := archipelago_size if archipelago_size >= 0 else config.default_archipelago_size
-	var specs := layout(seed_value, config, data, config.island_count_for(size_index))
-	specs.append_array(tropical_layout(seed_value, config, data, specs.size()))
-	for spec: IslandSpec in specs:
-		world.islands.append(build_island(spec, config))
+	for index: int in specs.size():
+		world.islands.append(grids[index])
 		var economy := IslandEconomy.new()
-		economy.profile_id = spec.profile.id
+		economy.profile_id = specs[index].profile.id
 		world.economies.append(economy)
 	world.add_starting_fleet(config, data)
 	return world

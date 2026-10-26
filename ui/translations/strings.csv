@@ -113,6 +113,15 @@ HUD_MONEY,Moedas %s (%s/min),Coins %s (%s/min)
 LOADING_NEW_WORLD,Gerando o arquipélago…,Generating the archipelago…
 LOADING_SAVE,Carregando…,Loading…
 LOADING_GRAPHICS,Aplicando os gráficos…,Applying the graphics…
+LOADING_BUILDING,Montando a partida…,Setting up the game…
+LOADING_TIP_1,Dica: casas em protesto mostram um ícone sobre o telhado.,Tip: houses in protest show an icon above the roof.
+LOADING_TIP_2,Dica: o entreposto fica no litoral; dele partem as rotas dos navios.,Tip: the trading post sits on the coast; ship routes start there.
+LOADING_TIP_3,Dica: cada fazenda precisa dos seus campos ou pastos no alcance dela.,Tip: every farm needs its fields or pastures within its reach.
+LOADING_TIP_4,Dica: o paralelepípedo deixa as carroças mais rápidas que a terra batida.,Tip: cobblestones make carts faster than dirt roads.
+LOADING_TIP_5,Dica: a camada de beleza mostra onde praças e jardins fazem falta.,Tip: the beauty layer shows where squares and gardens are missing.
+LOADING_TIP_6,Dica: fábrica parada mostra o motivo num ícone sobre ela.,Tip: an idle factory shows the reason in an icon above it.
+LOADING_TIP_7,"Dica: nas ilhas tropicais crescem a cana, o café e o tabaco.","Tip: sugar cane, coffee and tobacco grow on the tropical islands."
+LOADING_TIP_8,Dica: prédio de produção longe de um armazém para e mostra o ícone do armazém.,Tip: a production building far from a warehouse stops and shows the warehouse icon.
 HUD_MONEY_IDLE,%s fábricas ociosas custam %s/min (pausadas pagam %s),%s idle factories cost %s/min (paused they pay %s)
 HUD_MONEY_TIP,Impostos %s/min · Manutenção %s/min · construir para abaixo de %s moedas,Taxes %s/min · Upkeep %s/min · building stops below %s coins
 HUD_STATS,Estatísticas (Tab),Statistics (Tab)

@@ -160,8 +160,18 @@ static func _latest_slot() -> String:
 
 func _start(slot: String) -> void:
 	GameScreen.load_slot_on_start = slot
-	# Fase 30: escurece, mostra o que está sendo montado e clareia na partida
-	SceneFader.change_to(GAME_SCENE, "LOADING_SAVE" if not slot.is_empty() else "LOADING_NEW_WORLD")
+	if not slot.is_empty() or GameScreen.flat_world:
+		# Fase 30: escurece, mostra o que está sendo montado e clareia na partida
+		SceneFader.change_to(GAME_SCENE, "LOADING_SAVE" if not slot.is_empty() else "LOADING_NEW_WORLD")
+		return
+	# Fase 42: o arquipélago é gerado em threads atrás da cortina, com o progresso de verdade; a partida recebe o mundo
+	# pronto (GameScreen.prepared_world), com a semente sorteada aqui
+	var seed_value := GameScreen.world_seed if GameScreen.world_seed >= 0 else randi() % 1_000_000
+	var job := ArchipelagoJob.new(seed_value, GameConfig.get_default(), GameData.get_default(), GameScreen.archipelago_size,
+			GameScreen.difficulty)
+	SceneFader.change_with_job(job, func() -> void:
+		GameScreen.prepared_world = job.result()
+		get_tree().change_scene_to_file(GAME_SCENE), "LOADING_NEW_WORLD")
 
 
 ## Música calma no menu (Fase 10): a mesma da partida, no barramento Music.

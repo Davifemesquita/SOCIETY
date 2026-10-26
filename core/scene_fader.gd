@@ -19,8 +19,14 @@ const TEXT_COLOR := Color(0.93, 0.87, 0.72)
 var instant: bool = false
 var busy: bool = false
 
+## Fase 42: dicas do jogo novo (chaves LOADING_TIP_1 a LOADING_TIP_<TIPS>), sorteadas a cada geração.
+const TIPS := 8
+
 var _curtain := ColorRect.new()
 var _label := Label.new()
+## Fase 42: a barra do progresso de verdade (a geração do arquipélago em threads) e a dica embaixo.
+var _bar := ProgressBar.new()
+var _tip := Label.new()
 
 
 func _ready() -> void:
@@ -39,6 +45,24 @@ func _ready() -> void:
 	_label.add_theme_color_override(&"font_color", TEXT_COLOR)
 	_label.visible = false
 	_curtain.add_child(_label)
+	_bar.name = "Progress"
+	_bar.set_anchors_preset(Control.PRESET_CENTER)
+	_bar.custom_minimum_size = Vector2(520, 14)
+	_bar.position = Vector2(-260, 56)
+	_bar.min_value = 0.0
+	_bar.max_value = 1.0
+	_bar.show_percentage = false
+	_bar.visible = false
+	_curtain.add_child(_bar)
+	_tip.name = "Tip"
+	_tip.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_tip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tip.custom_minimum_size = Vector2(1100, 0)
+	_tip.position = Vector2(-550, -120)
+	_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tip.add_theme_color_override(&"font_color", TEXT_COLOR.darkened(0.15))
+	_tip.visible = false
+	_curtain.add_child(_tip)
 
 
 ## A troca é direta (sem cortina)?
@@ -85,6 +109,77 @@ func change_with(swap: Callable, message_key: String = "") -> void:
 	_curtain.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	busy = false
 	finished.emit()
+
+
+## Fase 42: a cortina em volta do jogo novo — escurece, gera o arquipélago em threads mostrando o progresso de verdade
+## (barra e porcentagem) e uma dica, e só então chama a troca (que usa o job.result()). Direta (sem tela, testes): gera
+## de uma vez e troca.
+func change_with_job(job: ArchipelagoJob, swap: Callable, message_key: String = "") -> void:
+	if busy:
+		return
+	if is_instant():
+		job.start(false)
+		swap.call()
+		finished.emit()
+		return
+	busy = true
+	_curtain.mouse_filter = Control.MOUSE_FILTER_STOP
+	_label.text = tr(message_key) if not message_key.is_empty() else ""
+	_label.visible = not message_key.is_empty()
+	_tip.text = tr("LOADING_TIP_%d" % (randi() % TIPS + 1))
+	_tip.visible = true
+	_bar.value = 0.0
+	_bar.visible = true
+	var darken := create_tween()
+	darken.tween_property(_curtain, ^"color:a", 1.0, FADE_S)
+	await darken.finished
+	job.start(true)
+	while not job.poll():
+		_show_progress(message_key, job.progress())
+		await get_tree().process_frame
+	_show_progress(message_key, 1.0)
+	await get_tree().process_frame
+	_bar.visible = false
+	# montar as vistas da partida ainda é na thread principal (~5 s no arquipélago cheio): o texto diz o que é
+	_label.text = tr("LOADING_BUILDING")
+	await get_tree().process_frame
+	# o resto (montar a partida no escuro e clarear) é a troca de sempre, com a cortina já escura
+	await _finish_swap(swap)
+
+
+func _show_progress(message_key: String, value: float) -> void:
+	_bar.value = value
+	if not message_key.is_empty():
+		_label.text = "%s %d%%" % [tr(message_key), roundi(value * 100.0)]
+
+
+## A troca com a cortina já escura: monta a cena nova, espera ela assentar e quem segura a cortina, e clareia.
+func _finish_swap(swap: Callable) -> void:
+	busy = true
+	swap.call()
+	for frame: int in SETTLE_FRAMES:
+		await get_tree().process_frame
+	var held := 0
+	while held < MAX_HOLD_FRAMES and get_tree().get_first_node_in_group(WarmUp.HOLD_GROUP) != null:
+		await get_tree().process_frame
+		held += 1
+	_label.visible = false
+	_tip.visible = false
+	var lighten := create_tween()
+	lighten.tween_property(_curtain, ^"color:a", 0.0, FADE_S)
+	await lighten.finished
+	_curtain.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	busy = false
+	finished.emit()
+
+
+## A barra e a dica (testes).
+func progress_bar() -> ProgressBar:
+	return _bar
+
+
+func tip_label() -> Label:
+	return _tip
 
 
 ## A cortina agora: o quanto está escura (0 a 1) e se come a entrada (testes).

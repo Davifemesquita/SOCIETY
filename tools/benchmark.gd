@@ -95,6 +95,22 @@ func _run() -> void:
 			"vsync": DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED, "runs": []}
 	GameScreen.flat_world = false
 	GameScreen.world_seed = SEED
+	# Fase 42: o arquipélago em série (como a partida gera sem o menu) e em threads (o jogo novo pelo menu, com a cortina
+	# mostrando o progresso), e o pior quadro enquanto as threads trabalham (a janela não pode congelar)
+	var serial_started := Time.get_ticks_usec()
+	ArchipelagoGenerator.new_world(SEED, config, GameData.get_default())
+	var serial_ms := (Time.get_ticks_usec() - serial_started) / 1000.0
+	var job := ArchipelagoJob.new(SEED, config, GameData.get_default())
+	var job_started := Time.get_ticks_usec()
+	var worst_frame := 0.0
+	job.start(true)
+	var frame_started := Time.get_ticks_usec()
+	while not job.poll():
+		await get_tree().process_frame
+		worst_frame = maxf(worst_frame, (Time.get_ticks_usec() - frame_started) / 1000.0)
+		frame_started = Time.get_ticks_usec()
+	_report("gerar o arquipélago: em série / em threads (pior quadro durante)", "%.0f / %.0f ms (%.0f ms; %d ilhas, %d núcleos)" % [
+			serial_ms, (Time.get_ticks_usec() - job_started) / 1000.0, worst_frame, job.island_count(), OS.get_processor_count()])
 	var started := Time.get_ticks_usec()
 	var game := (load("res://ui/screens/game_screen.tscn") as PackedScene).instantiate() as GameScreen
 	add_child(game)

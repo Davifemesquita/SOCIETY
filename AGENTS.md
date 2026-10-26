@@ -1620,6 +1620,19 @@ Regras que já custaram investigação:
   diferença das linhas; árvores pela área). Ao carregar segue o `simulation.world`; não refaz duas vezes no mesmo quadro.
   O laço por célula indexa os arrays direto (0,75 → 0,45 s no arquipélago da semente 1840).
 
+### Quadro estável e carregamento real (Fase 42, nossa)
+
+- **Plano** em `docs/plano_fase42.md`, começada em 26/10/2026. Nada muda na simulação nem no save.
+- **`ArchipelagoJob`** (`sim/world/archipelago_job.gd`): uma tarefa do `WorkerThreadPool` por ilha, montagem na thread
+  principal por `ArchipelagoGenerator.assemble` (o `new_world` usa a mesma); idêntico ao caminho direto com qualquer
+  número de threads (teste). `IslandSpec` é classe interna do gerador (`ArchipelagoGenerator.IslandSpec`).
+- **Cortina** (`SceneFader.change_with_job`): porcentagem, barra (`progress_bar()`), dica (`LOADING_TIP_1` a
+  `SceneFader.TIPS`, `tip_label()`) e "Montando a partida…" (`LOADING_BUILDING`); direta sem tela. O menu
+  (`BootScreen._start`) gera o jogo novo pelo job e entrega `GameScreen.prepared_world` (usado uma vez e zerado); sem
+  ele a partida gera síncrona, como antes (testes, ferramentas, benchmark).
+- **Benchmark**: a linha "gerar o arquipélago: em série / em threads (pior quadro durante)" (semente 1840: ~980 / ~430
+  ms, pior quadro ~15 ms com 16 núcleos). Montar as vistas (~5 s) segue na thread principal: ficou de fora.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1672,6 +1685,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 39 — Prédios assentados (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); a suíte inteira passou no CI; falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
 | 40 — Campos em colcha (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: terra lavrada com contorno ondulado igual dos dois lados da divisa, sem a caixa; fileiras em x ou z (vizinhos sempre diferentes) com cabeceira; tom por campo; sebe (muro de pedra na encosta) em volta de cada fazenda com porteira, nada nas tropicais; pasto sem caixa, com trilhas no terreno; GPU igual no bairro rural medido; falta o dono escolher sebe ou muro por região e o tratamento das tropicais; plano em `docs/plano_fase40.md` |
 | 41 — Mata e recheio (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copas fofas (normais da copa inteira, tufos, luz de trás) e histerese na troca de detalhe; recheio determinístico fora do save (arbustos, capim, flores, pedrinhas, barris, caixotes e lenha pela vizinhança), refeito só nos trechos atingidos; GPU de 11,1 para 11,4 ms no alto, jogo novo e carregar ~0,4 s a mais; folha recortada e impostor ficaram de fora; falta o dono aprovar a densidade e escolher a textura de folha; plano em `docs/plano_fase41.md` |
+| 42 — Quadro estável e carregamento real (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: o jogo novo gera uma ilha por thread (idêntico ao direto, teste em três sementes) com porcentagem, barra e dicas na cortina; geração de ~980 para ~430 ms com pior quadro de 15 ms; tick p95 1,5 ms, obra 18 ms, o 4× limitado por quadro; montar as vistas (~5 s) segue na thread principal (fica de fora, medido); falta o dono medir no PC e aprovar as metas de quadro; plano em `docs/plano_fase42.md` |
 
 Pendências já vistas para fases futuras:
 

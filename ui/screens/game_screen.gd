@@ -32,6 +32,9 @@ static var starting_money: int = 0
 ## Ilha plana de antes da Fase 5 em vez do arquipélago: os testes de interface conhecem as
 ## coordenadas dela.
 static var flat_world: bool = false
+## Fase 42: o arquipélago já gerado atrás da cortina (ArchipelagoJob, pelo menu); usado uma vez e esquecido. Sem ele (testes,
+## ferramentas, benchmark), a partida gera o mundo aqui, de forma síncrona, como antes.
+static var prepared_world: WorldState = null
 
 const QUICK_SLOT := "rapido"
 const MAIN_MENU := "res://ui/screens/boot_screen.tscn"
@@ -103,8 +106,12 @@ func _ready() -> void:
 			simulation.world.difficulty = difficulty
 			simulation.world.money = _config.starting_money_for(difficulty)
 	else:
-		var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
-		simulation = Simulation.new(_config, data, ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty))
+		var world: WorldState = prepared_world
+		prepared_world = null
+		if world == null:
+			var seed_value := world_seed if world_seed >= 0 else randi() % 1_000_000
+			world = ArchipelagoGenerator.new_world(seed_value, _config, data, archipelago_size, difficulty)
+		simulation = Simulation.new(_config, data, world)
 		simulation.world.events_state.enabled = events_enabled
 		simulation.world.risks_state.enabled = risks_enabled
 		if starting_money > 0:
