@@ -1489,6 +1489,24 @@ Regras que já custaram investigação:
   ~0,5 ms a mais que o da Fase 33 de perto, quase tudo hex-tiling.
 - **Benchmark: um número de FPS só vale repetido.** Na Fase 33 uma rodada deu o alto a 62 FPS e a repetição, 49.
 
+### Costa viva (Fase 35, nossa)
+
+- **Plano** em `docs/plano_fase35.md`, começada em 25/10/2026 com a confirmação do dono do produto. Só apresentação.
+  **Feita sem tela**: o dono decidiu que nada abre no PC dele (nem captura, nem benchmark, nem janela fora do monitor,
+  que o Windows trazia de volta); o visual espera ele liberar a tela, e a compilação dos shaders fica com o CI.
+- **Distância até a costa com sinal** (`TerrainBake.signed_coast`): positiva na terra, negativa na água, linha d'água
+  no meio entre os cantos, cortada em `coast_field_max_m`; chanfro em duas passadas (não EDT exata, erro de até ~10%
+  fora dos eixos), dividindo a distância até a água com o bake da Fase 34 (`distance_to_water`). `CoastField.compose`
+  junta as regiões num mapa do arquipélago (float, 2 m, mar fundo fora delas; `bounds()` com meio pixel de margem).
+- **Água** (`shaders/water.gdshader`, `has_coast`, `WaterView.setup(simulation, coast)`): cor de plataforma no raso
+  (`shelf_m`), bandas de espuma andando para a praia e espuma na linha d'água (`shore_foam_width_m`), ondas acalmadas no
+  vértice (`wave_calm_m`). A espuma por profundidade do Boujie continua.
+- **Terreno**: fundo raso pela distância da costa (sai o halo marrom), cáusticas, espraiado e areia molhada no mesmo
+  ritmo da espuma (`shaders/coast_waves.gdshaderinc`: mesma fase, mesmo `TIME`) e linha de detritos acima do espraiado.
+- **Ficou de fora** a suavização visual da linha d'água: precisa ser validada contra os portos, olhando a tela.
+- **Shader com tela no CI**: `test_shaders_compile_with_the_coast_uniforms` confere os uniformes novos na lista do
+  shader, que só existe se ele compilou; sem tela (dummy) a lista vem vazia e o teste pula.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1534,6 +1552,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 32 — Medida e nitidez (nossa) | **concluída em 25/10/2026** (fechada pelo dono do produto): teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; primeira medição numa GPU (RTX 5060, 1080p, Vulkan e D3D12): fica o Vulkan, alto a ~48 FPS, ultra com travadas; plano em `docs/plano_fase32.md` |
 | 33 — Por cima do mundo (nossa) | **concluída em 25/10/2026** (regra dos ícones aprovada pelo dono do produto): grade de construção com teste de profundidade e só em volta do cursor (o destaque é que atravessa), prévia com o modelo do prédio e listras quando não pode, ícones de estado iguais agregados de longe; no benchmark da RTX 5060 o FPS ficou igual ao da Fase 32 (uma primeira rodada com o alto a 62 FPS não se repetiu); a suíte inteira passou no Windows, menos o `test_colorblind_option_repaints_the_house_needs`, que já falhava ali antes da fase; plano em `docs/plano_fase33.md` |
 | 34 — Chão sem xadrez (nossa) | **concluída em 25/10/2026** (capturas aprovadas; hex-tiling só no ultra, decisão do dono do produto): texturas de dados do terreno (inclinação, curvatura, água, umidade), bordas com ruído e height-blend, macro-variação, hex-tiling perto da câmera e reamostragem por distância (o xadrez de 12 m sumiu a 420 m), triplanar na rocha; a suíte inteira passou no CI; no benchmark da RTX 5060 a GPU subiu 0,4 ms no baixo e ~1,2 ms nos outros (o hex-tiling, medido à parte no `tools/terrain_cost.tscn`); plano em `docs/plano_fase34.md` |
+| 35 — Costa viva (nossa) | **em andamento desde 25/10/2026**, feita sem tela: distância até a costa com sinal (por região e no arquipélago), plataforma rasa, espuma andando para a praia e ondas calmas na água; fundo raso pela distância, cáusticas, espraiado e detritos no terreno; as pastas sem tela passaram; falta o CI (compilação dos shaders) e, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase35.md` |
 
 Pendências já vistas para fases futuras:
 

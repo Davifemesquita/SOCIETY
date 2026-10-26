@@ -6,6 +6,8 @@ extends Node3D
 ## porto, baixas. A poluição (seção 8: olaria, fundição e minas sujam a água em volta) é um mapa
 ## do arquipélago, refeito quando um prédio poluidor entra ou sai.
 ## Sem o addon, um plano simples na altura do mar.
+## Fase 35: com o CoastField (o mesmo da TerrainView), a água rasa junto da costa ganha cor de plataforma, a espuma
+## anda para a praia e as ondas se acalmam.
 
 const OCEAN_SCRIPT := "res://addons/boujie_water_shader/types/ocean.gd"
 const PREFAB_MATERIAL := "res://addons/boujie_water_shader/prefabs/deep_ocean_material.tres"
@@ -27,7 +29,7 @@ var _pollution := Image.new()
 var _polluters: Dictionary[int, bool] = {}
 
 
-func setup(simulation: Simulation) -> void:
+func setup(simulation: Simulation, coast: CoastField = null) -> void:
 	_simulation = simulation
 	for grid: IslandGrid in simulation.world.islands:
 		_bounds = grid.world_rect() if _bounds.size == Vector2.ZERO else _bounds.merge(grid.world_rect())
@@ -36,6 +38,11 @@ func setup(simulation: Simulation) -> void:
 		_create_ocean()
 	else:
 		_create_plane()
+	if _material != null and coast != null and coast.size != Vector2i.ZERO:
+		_material.set_shader_parameter(&"coast_field", coast.texture())
+		_material.set_shader_parameter(&"coast_bounds", coast.bounds())
+		_material.set_shader_parameter(&"coast_far_m", coast.max_m)
+		_material.set_shader_parameter(&"has_coast", true)
 	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(func(building_id: int) -> void:
 		if _polluters.erase(building_id):
@@ -52,6 +59,11 @@ func _on_building_placed(building_id: int) -> void:
 
 func uses_boujie() -> bool:
 	return _ocean != null
+
+
+## Material da água (testes).
+func material() -> ShaderMaterial:
+	return _material
 
 
 ## Poluição da água no ponto (0 a 1), a mesma que o shader lê.

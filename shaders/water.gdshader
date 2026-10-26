@@ -4,6 +4,9 @@
 // um mapa do arquipélago (pollution_map) em coordenadas do mundo. E a leitura da tela desviada pela
 // refração fica dentro dela: a profundidade repetia do outro lado da tela (manchas de mar fundo na
 // borda de baixo).
+// Fase 35 (costa viva): com o campo de distância da costa (coast_field, do CoastField), a água rasa junto da terra
+// ganha a cor de plataforma de areia, bandas de espuma andam para a praia (no mesmo ritmo da areia molhada do terreno,
+// shaders/coast_waves.gdshaderinc) e as ondas se acalmam perto da costa. Sem o campo (has_coast desligado), como antes.
 // Water shader to simulate an open ocean based on Gerstner waves
 
 shader_type spatial;
@@ -28,6 +31,8 @@ render_mode blend_mix,depth_draw_always,cull_disabled,diffuse_burley,specular_sc
 #define VERTEX_WAVE_FADE
 #define DEPTH_FOG_FADE // control depth fade because the depth buffer is imprecise at far distances
 #define REFRACTION_SCALING // refraction refracts distant objects way too much; scale it down with distance.
+
+#include "res://shaders/coast_waves.gdshaderinc"
 
 uniform bool freeze_time = false; // Toki wo tomare.
 uniform vec4 albedo: source_color;
@@ -89,6 +94,20 @@ uniform sampler2D pollution_map : filter_linear, repeat_disable;
 // x, z do canto do mapa no mundo e a largura e a profundidade dele, em metros.
 uniform vec4 pollution_bounds = vec4(0.0, 0.0, 1.0, 1.0);
 uniform vec4 polluted_color : source_color = vec4(0.33, 0.3, 0.2, 0.85);
+group_uniforms;
+
+group_uniforms Coast;
+uniform bool has_coast = false;
+uniform sampler2D coast_field : filter_linear, repeat_disable;
+// canto (x, z) e tamanho do mapa no mundo, em metros (CoastField.bounds)
+uniform vec4 coast_bounds = vec4(0.0, 0.0, 1.0, 1.0);
+uniform float coast_far_m = 64.0;
+// até onde da costa a água fica com a cor de plataforma, a espuma anda e as ondas se acalmam
+uniform float shelf_m = 28.0;
+uniform vec4 color_shelf : source_color = vec4(0.45, 0.66, 0.58, 0.5);
+uniform float shore_foam_width_m = 9.0;
+uniform vec3 shore_foam_color : source_color = vec3(0.93, 0.95, 0.93);
+uniform float wave_calm_m = 22.0;
 group_uniforms;
 
 group_uniforms DepthFog;
@@ -186,6 +205,15 @@ vec3 N_DEG(float x, float z, float t, float Steepness, float Amplitude, float Di
 	return result;
 }
 
+// Society: distância até a costa com sinal no ponto (negativa na água); fora do mapa, mar fundo.
+float coast_at(vec2 xz) {
+	vec2 uv = (xz - coast_bounds.xy) / coast_bounds.zw;
+	if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+		return -coast_far_m;
+	}
+	return textureLod(coast_field, uv, 0.0).r;
+}
+
 // Rotate a vector from vec3(0,1,0) to the normal, rotation about the z and y axes.
 vec3 rotate_to_normal(vec3 point, vec3 normal)
 {
@@ -270,6 +298,10 @@ void vertex() {
 #ifdef VERTEX_WAVE_FADE
 	vertex_fade_alpha = smoothstep(vertex_wave_fade_max, vertex_wave_fade_min, distance_from_camera);
 #endif
+	// Society: as ondas se acalmam chegando na costa
+	if (has_coast) {
+		vertex_fade_alpha *= smoothstep(0.0, wave_calm_m, -coast_at(wave_coords));
+	}
 	
 	// Calculate offset for every wave, take average
 #ifdef VERTEX_WAVE
@@ -446,6 +478,14 @@ void fragment() {
 		screen_color = mix(shallow_screen_color, deep_screen_color, depth_blend_power);
 	}
 #endif
+	// Society: plataforma de areia clara junto da costa, no lugar do fundo escuro misturado com a profundidade
+	float shore_m = has_coast ? -coast_at(world_coordinates.xz) : coast_far_m;
+#if defined(REFRACTION) || defined(DEPTH_FOG)
+	if (has_coast && FRONT_FACING) {
+		float shelf = 1.0 - smoothstep(0.0, shelf_m, shore_m);
+		screen_color = mix(screen_color, color_shelf.rgb, color_shelf.a * shelf);
+	}
+#endif
 
 	// Finally write color to the screen. Screen-reading shaders use EMISSION to simulate ALPHA.
 #if defined(REFRACTION) || defined(DEPTH_FOG)
@@ -491,6 +531,16 @@ void fragment() {
 	EMISSION *= (1.0-shore_alpha); // block emission
 	ALBEDO = mix(ALBEDO, foam_tex.rgb, shore_alpha);
 #endif
+
+	// Society: bandas de espuma que andam para a praia e a espuma fina na linha d'água
+	if (has_coast) {
+		float reach = 1.0 - smoothstep(1.0, shore_foam_width_m, shore_m);
+		float band = smoothstep(0.8, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
+		float edge = 1.0 - smoothstep(0.0, 1.5, shore_m);
+		float coast_foam = clamp(band * 0.75 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
+		EMISSION *= 1.0 - coast_foam;
+		ALBEDO = mix(ALBEDO, shore_foam_color, coast_foam);
+	}
 
 
 	// Society: poluição turva a água (depois da espuma: ela também fica suja)

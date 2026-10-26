@@ -15,9 +15,11 @@ const CURVATURE_SCALE := 4.0
 const DIAGONAL := 1.41421356
 
 
-static func bake(heights: PackedFloat32Array, side: int, spacing: float, water_distance_m: float) -> Image:
+## to_water: a distance_to_water já calculada (a TerrainView a divide com o signed_coast); vazia, calcula aqui.
+static func bake(heights: PackedFloat32Array, side: int, spacing: float, water_distance_m: float,
+		to_water: PackedFloat32Array = PackedFloat32Array()) -> Image:
 	var count := side * side
-	var distance := _water_distance(heights, side)
+	var distance := to_water if not to_water.is_empty() else distance_to_water(heights, side)
 	var bytes := PackedByteArray()
 	bytes.resize(count * 4)
 	var reach := CURVATURE_CELLS * spacing
@@ -49,14 +51,32 @@ static func bake(heights: PackedFloat32Array, side: int, spacing: float, water_d
 	return Image.create_from_data(side, side, false, Image.FORMAT_RGBA8, bytes)
 
 
-## Distância (em células) de cada canto até o mais próximo abaixo do nível do mar, por chanfro em duas passadas
-## (1 de lado, √2 na diagonal). Sem água na região, tudo fica longe.
-static func _water_distance(heights: PackedFloat32Array, side: int) -> PackedFloat32Array:
+## Fase 35: distância até a costa com sinal, em metros, de cada canto: positiva na terra (até a água), negativa na água
+## (até a terra), com a linha d'água no meio entre os cantos e cortada em ±max_m. A mesma conta de chanfro (erro de
+## até ~8% fora dos eixos e das diagonais).
+static func signed_coast(heights: PackedFloat32Array, side: int, spacing: float, max_m: float,
+		to_water: PackedFloat32Array = PackedFloat32Array()) -> PackedFloat32Array:
+	if to_water.is_empty():
+		to_water = distance_to_water(heights, side)
+	var to_land := distance_to_water(heights, side, true)
+	var result := PackedFloat32Array()
+	result.resize(side * side)
+	for i: int in side * side:
+		if heights[i] < 0.0:
+			result[i] = -minf((to_land[i] - 0.5) * spacing, max_m)
+		else:
+			result[i] = minf((to_water[i] - 0.5) * spacing, max_m)
+	return result
+
+
+## Distância (em células) de cada canto até o mais próximo abaixo do nível do mar (ou, com to_land, até o mais próximo
+## acima dele), por chanfro em duas passadas (1 de lado, √2 na diagonal). Sem alvo na região, tudo fica longe.
+static func distance_to_water(heights: PackedFloat32Array, side: int, to_land: bool = false) -> PackedFloat32Array:
 	var far := float(side * 2)
 	var distance := PackedFloat32Array()
 	distance.resize(side * side)
 	for i: int in side * side:
-		distance[i] = 0.0 if heights[i] < 0.0 else far
+		distance[i] = 0.0 if (heights[i] < 0.0) != to_land else far
 	for y: int in side:
 		for x: int in side:
 			var i := y * side + x

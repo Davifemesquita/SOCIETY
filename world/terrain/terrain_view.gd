@@ -25,6 +25,9 @@ var _chunks: int = 0
 var _data_images: Dictionary[int, Image] = {}
 var _materials: Array[ShaderMaterial] = []
 var _hex_tiling: bool = true
+## Fase 35: a distância até a costa com sinal de cada região e o mapa do arquipélago que a água lê.
+var _coast_regions: Array[Dictionary] = []
+var _coast: CoastField
 
 
 func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
@@ -39,6 +42,8 @@ func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
 	for index: int in world.islands.size():
 		if not world.island(index).flat:
 			_build_island(index, textures)
+	_coast = CoastField.compose(_coast_regions, config.cell_size_m, config.coast_field_max_m)
+	_coast_regions.clear()
 	EventBus.trees_changed.connect(_on_trees_changed)
 	EventBus.settings_changed.connect(func() -> void: set_hex_tiling(Settings.preset().terrain_hex_tiling))
 
@@ -68,6 +73,11 @@ func materials() -> Array[ShaderMaterial]:
 	return _materials
 
 
+## Distância até a costa com sinal no arquipélago inteiro (Fase 35): a WaterView lê o mesmo mapa.
+func coast_field() -> CoastField:
+	return _coast
+
+
 ## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade.
 func shown_height(x: float, z: float) -> float:
 	return _world.surface_height(x, z)
@@ -91,10 +101,17 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	material.set_shader_parameter(&"surface_weights", _surfaces[index])
 	var size := (side - 1) * _config.cell_size_m
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
-	_data_images[index] = TerrainBake.bake(heights, side, _config.cell_size_m, _config.terrain_water_distance_m)
+	# a distância até a água sai uma vez só: o bake e o campo da costa (Fase 35) a dividem
+	var to_water := TerrainBake.distance_to_water(heights, side)
+	_data_images[index] = TerrainBake.bake(heights, side, _config.cell_size_m, _config.terrain_water_distance_m, to_water)
 	material.set_shader_parameter(&"terrain_data", ImageTexture.create_from_image(_data_images[index]))
 	material.set_shader_parameter(&"hex_distance_m", _config.terrain_hex_distance_m)
 	material.set_shader_parameter(&"hex_tiling", _hex_tiling)
+	var coast := TerrainBake.signed_coast(heights, side, _config.cell_size_m, _config.coast_field_max_m, to_water)
+	material.set_shader_parameter(&"coast_distance", ImageTexture.create_from_image(
+			Image.create_from_data(side, side, false, Image.FORMAT_RF, coast.to_byte_array())))
+	material.set_shader_parameter(&"has_coast", true)
+	_coast_regions.append({"origin": origin, "side": side, "coast": coast})
 	_materials.append(material)
 	for cy: int in range(0, side - 1, CHUNK_VERTICES):
 		for cx: int in range(0, side - 1, CHUNK_VERTICES):

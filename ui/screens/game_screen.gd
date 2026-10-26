@@ -335,7 +335,7 @@ func _build_ground() -> void:
 	terrain_view.setup(world, _config, simulation.data)
 	water_view = WaterView.new()
 	add_child(water_view)
-	water_view.setup(simulation)
+	water_view.setup(simulation, terrain_view.coast_field())
 	tree_view = TreeView.new()
 	add_child(tree_view)
 	tree_view.setup(world, simulation.data)

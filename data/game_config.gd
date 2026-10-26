@@ -479,6 +479,8 @@ static var _default: GameConfig
 ## floresta usam o hex-tiling (some aos poucos no último quinto; mais longe fica a macro-variação).
 @export var terrain_water_distance_m: float = 64.0
 @export var terrain_hex_distance_m: float = 220.0
+## Fase 35: até onde (m) o campo de distância da costa mede, para cada lado da linha d'água.
+@export var coast_field_max_m: float = 64.0
 ## Até onde a fumaça das chaminés aparece no nível alto, e a força da fuligem no chão.
 @export var smoke_visibility_range_m: float = 450.0
 @export var soot_decal_alpha: float = 0.55
@@ -624,8 +626,8 @@ func validate() -> PackedStringArray:
 		problems.append("as durações da câmera devem ser maiores que zero")
 	if build_grid_radius_m <= 0.0:
 		problems.append("build_grid_radius_m deve ser maior que zero")
-	if terrain_water_distance_m <= 0.0 or terrain_hex_distance_m <= 0.0:
-		problems.append("terrain_water_distance_m e terrain_hex_distance_m devem ser maiores que zero")
+	if terrain_water_distance_m <= 0.0 or terrain_hex_distance_m <= 0.0 or coast_field_max_m <= 0.0:
+		problems.append("terrain_water_distance_m, terrain_hex_distance_m e coast_field_max_m devem ser maiores que zero")
 	if status_icon_full_m <= 0.0 or status_icon_fade_end_m <= status_icon_full_m or status_icon_cluster_m <= 0.0 \
 			or status_icon_min_alpha <= 0.0 or status_icon_min_alpha > 1.0:
 		problems.append("ícones de estado: 0 < full_m < fade_end_m, cluster_m > 0 e min_alpha em (0, 1]")

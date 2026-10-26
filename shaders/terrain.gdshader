@@ -13,10 +13,17 @@
 // - hex-tiling na grama e na floresta perto da câmera (implementação própria pelo artigo de Mikkelsen, "Practical
 //   Real-Time Hex-Tiling", JCGT 11(3), 2022), com o normal map girado junto;
 // - triplanar na rocha, só onde a encosta pede.
+//
+// Fase 35 (costa viva), com a distância até a costa com sinal (coast_distance, do TerrainBake.signed_coast):
+// - o fundo raso é pintado pela distância da costa, não pelo tipo de chão da célula (some o halo marrom junto da vila);
+// - cáusticas no fundo raso;
+// - a areia molhada sobe e desce com as ondas (shaders/coast_waves.gdshaderinc, o mesmo ritmo da espuma da água) e
+//   deixa uma linha de detritos acima do espraiado.
 shader_type spatial;
 render_mode cull_back;
 
 #include "res://shaders/wet_surface.gdshaderinc"
+#include "res://shaders/coast_waves.gdshaderinc"
 
 uniform sampler2D grass_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D grass_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
@@ -56,6 +63,15 @@ uniform bool use_edge_noise = true;
 uniform bool use_macro = true;
 uniform bool use_far = true;
 uniform bool use_triplanar = true;
+// Fase 35: distância até a costa com sinal (m; positiva na terra), por região, na mesma escala de surface_weights
+uniform bool has_coast = false;
+uniform sampler2D coast_distance : filter_linear, repeat_disable;
+// até onde o espraiado sobe na areia, e o fundo: cor rasa e funda e onde ele já é fundo
+uniform float swash_m = 3.5;
+uniform vec3 seabed_shallow = vec3(1.08, 1.04, 0.92);
+uniform vec3 seabed_deep = vec3(0.5, 0.6, 0.58);
+uniform float seabed_deep_m = 30.0;
+uniform float caustics_strength = 0.22;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
 
@@ -237,6 +253,26 @@ void fragment() {
 
 	// areia molhada na beira d'água (só a da praia, acima do mar)
 	float wet_line = sand * (1.0 - smoothstep(0.0, wet_sand_m, world_position.y)) * land;
+	if (has_coast) {
+		float coast = texture(coast_distance, cell).r;
+		float under = 1.0 - land;
+		// fundo pela distância da costa: areia clara no raso, escurecendo para o fundo
+		float shore = max(-coast, 0.0);
+		vec3 seabed = sand_a.rgb * mix(seabed_shallow, seabed_deep, smoothstep(2.0, seabed_deep_m, shore));
+		ground_a.rgb = mix(ground_a.rgb, seabed, under);
+		ground_n = mix(ground_n, sand_n, under);
+		// cáusticas: duas camadas de ruído andando em sentidos opostos, só no raso
+		vec2 flow = vec2(TIME * 0.35, TIME * 0.22);
+		float caustic = pow(1.0 - abs(value_noise(world_position.xz * 0.9 + flow) - value_noise(world_position.xz * 1.3 - flow)), 6.0);
+		ground_a.rgb += caustic * caustics_strength * under * (1.0 - smoothstep(0.0, 4.0, -world_position.y));
+		// espraiado: a onda sobe na areia no mesmo ritmo da espuma, e a areia por onde ela passou fica molhada
+		float reach = (1.0 - smoothstep(0.0, swash_m, coast)) * step(0.0, coast);
+		float wave = 0.5 + 0.5 * sin(coast_phase(coast, TIME));
+		wet_line = max(wet_line, sand * land * reach * mix(0.5, 1.0, wave));
+		// linha de detritos (algas, conchas) logo acima de onde o espraiado chega
+		float debris_at = abs(coast - swash_m - 0.6 - (value_noise(world_position.xz * 0.7) - 0.5) * 1.2);
+		ground_a.rgb *= 1.0 - (1.0 - smoothstep(0.0, 0.18, debris_at)) * sand * land * 0.35;
+	}
 	ground_a.rgb *= mix(1.0, 0.62, wet_line);
 	ground_n.a *= mix(1.0, 0.45, wet_line);
 	// o fundo do mar não molha (já está debaixo d'água)
