@@ -5,7 +5,8 @@ extends Node3D
 ## modelo. Derrubar árvores ao construir refaz só o trecho atingido (trees_changed). Posição,
 ## giro e tamanho de cada árvore saem do índice da célula: o mesmo mundo dá sempre a mesma mata.
 ## Nas ilhas tropicais (Fase 11), palmeiras no lugar da mata; desde a Fase 58, o coqueiro do `TreeModel` (três
-## variantes, com a malha de longe), no lugar das palmeiras do Kenney. Desde a Fase 22 a mata temperada é gerada no código (`TreeModel`): carvalho e faia entre as
+## variantes, com a malha de longe), no lugar das palmeiras do Kenney; desde a Fase 59, misturado à folhosa tropical
+## (mais coqueiro na terra baixa da costa, mais folhosa no alto). Desde a Fase 22 a mata temperada é gerada no código (`TreeModel`): carvalho e faia entre as
 ## folhosas, pinheiro-silvestre entre as coníferas, duas variantes de cada, já em metros.
 ## Desde a Fase 36 as pedras são de rocha de verdade (a textura de rocha do terreno, triplanar, sem o musgo verde
 ## recolorido), aparecem mais nos barrancos altos e no litoral rochoso e sentam na malha com o detalhe visual
@@ -20,6 +21,13 @@ const CONIFER: Array[Array] = [[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Spe
 ## Formas de pedra: as variantes do RockModel.
 const ROCKS := RockModel.VARIANTS
 const PALMS: Array[Array] = [[TreeModel.Species.COCONUT_PALM, 0], [TreeModel.Species.COCONUT_PALM, 1], [TreeModel.Species.COCONUT_PALM, 2]]
+## Fase 59: a folhosa da mata tropical, misturada aos coqueiros.
+const TROPICAL: Array[Array] = [[TreeModel.Species.TROPICAL_BROADLEAF, 0], [TreeModel.Species.TROPICAL_BROADLEAF, 1]]
+## Na ilha tropical, abaixo desta altura do terreno (a terra baixa da costa) quase tudo é coqueiro; acima, a mata é
+## mais de folhosa.
+const PALM_HEIGHT_M := 3.0
+const PALM_SHARE_LOW := 0.8
+const PALM_SHARE_HIGH := 0.3
 ## Raio da pedra (a RockModel tem raio 1) e quanto ela é mais alta que larga.
 const ROCK_SIZE_M := 1.0
 const ROCK_TALL := 1.25
@@ -67,6 +75,7 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 		_far_models.append(null)
 		_scales.append(ROCK_SIZE_M)
 	_add_trees(PALMS)
+	_add_trees(TROPICAL)
 	for index: int in world.islands.size():
 		if world.is_tropical(index, data):
 			_tropical[index] = true
@@ -107,11 +116,20 @@ func chunk_layers(island_id: int, chunk: Vector2i) -> Array:
 
 ## Palmeiras desenhadas numa ilha (as das ilhas tropicais; a camada de longe não conta).
 func palm_count(island_id: int) -> int:
+	return _count_layers(island_id, "Palm")
+
+
+## Folhosas tropicais desenhadas numa ilha (Fase 59; a camada de longe não conta).
+func tropical_count(island_id: int) -> int:
+	return _count_layers(island_id, "Tropical")
+
+
+func _count_layers(island_id: int, kind: String) -> int:
 	var total := 0
 	for key: String in _chunks:
 		if key.begins_with("%d/" % island_id):
 			for node: MultiMeshInstance3D in _chunks[key]:
-				if String(node.name).contains("Palm") and node.visibility_range_begin == 0.0:
+				if String(node.name).contains(kind) and node.visibility_range_begin == 0.0:
 					total += node.multimesh.instance_count
 	return total
 
@@ -149,8 +167,13 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 				for n: int in mini(count, DRAWN_PER_CELL):
 					var seed_value := hash([island_id, index, n])
 					if tropical:
-						var palm := BROADLEAF.size() + CONIFER.size() + ROCKS + (seed_value / 7) % PALMS.size()
-						entries.append([palm, _transform(grid, cell, seed_value, _scales[palm] * (0.75 + (seed_value / 13 % 50) / 100.0))])
+						# coqueiro na terra baixa da costa, folhosa tropical mais para o alto
+						var share := PALM_SHARE_LOW if grid.cell_height(cell) < PALM_HEIGHT_M else PALM_SHARE_HIGH
+						var first_palm := BROADLEAF.size() + CONIFER.size() + ROCKS
+						var pick := first_palm + (seed_value / 7) % PALMS.size()
+						if (seed_value / 3 % 100) >= share * 100.0:
+							pick = first_palm + PALMS.size() + (seed_value / 7) % TROPICAL.size()
+						entries.append([pick, _transform(grid, cell, seed_value, _scales[pick] * (0.75 + (seed_value / 13 % 50) / 100.0))])
 						continue
 					var conifer := (seed_value % 100) < (70 if high else 20)
 					var family := CONIFER if conifer else BROADLEAF
@@ -179,7 +202,12 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 				buffer.append_array(floats)
 		if buffer.is_empty():
 			continue
-		var name_text := "Palm%d" % model if model >= BROADLEAF.size() + CONIFER.size() + ROCKS else "Trees%d" % model
+		var first_palm := BROADLEAF.size() + CONIFER.size() + ROCKS
+		var name_text := "Trees%d" % model
+		if model >= first_palm + PALMS.size():
+			name_text = "Tropical%d" % model
+		elif model >= first_palm:
+			name_text = "Palm%d" % model
 		var far := _far_models[model]
 		var near := _layer(name_text, _models[model], buffer, 0.0, NEAR_UNTIL_M if far != null else VISIBLE_UNTIL_M)
 		nodes.append(near)

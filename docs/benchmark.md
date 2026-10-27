@@ -1188,3 +1188,8 @@ mesmo da Fase 57), GPU média 11,5 e 10,7 ms; dia inteiro 78,8 e 40,6 FPS de mé
 a máquina oscilou muito nesta tarde, de rodada para rodada, e a GPU é o número que vale para a fase. Jogo novo 8,8 e
 10,0 s. "Árvores desenhadas" passa a 28837: o `instance_count` contava parte das camadas de longe, renomeadas pelo
 Godot (os 47010 das fases anteriores estavam inflados; ver `docs/plano_fase58.md`).
+## Fase 59 — mata tropical (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3): 28837 árvores desenhadas (as mesmas), 2759 objetos e 1109 draw
+calls (a ilha tropical fica fora do quadro com tudo visível), GPU média 10,7 ms (p99 14,2), igual à Fase 58; dia
+inteiro 51,9 FPS (p50 19,1 ms), com a máquina ainda oscilando nesta tarde; jogo novo 8,7 s, carregar 3,82 s.

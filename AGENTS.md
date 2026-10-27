@@ -1832,6 +1832,12 @@ Regras que já custaram investigação:
   variantes nas ilhas tropicais, perto e longe. A pasta `assets/models/nature/` (Kenney Nature Kit) saiu. Só
   apresentação.
 
+### Mata tropical (Fase 59, nossa)
+
+- **Plano** em `docs/plano_fase59.md`. `TreeModel.Species.TROPICAL_BROADLEAF`: tronco nu com sapopemas e copa em
+  guarda-chuva; malha de longe. Na ilha tropical a `TreeView` sorteia coqueiro ou folhosa pela altura do terreno (80% de
+  coqueiro abaixo de `PALM_HEIGHT_M`, 30% acima); camadas `Tropical<n>` e `tropical_count`. Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1901,6 +1907,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 56 — Rocha nos rochedos e nas falésias (nossa) | **feita em 27/10/2026, a pedido do dono**: rocha gerada no código (sem asset novo); cada rochedo solto no mar vira bloco de rocha com pilar e pedras em volta, e a face das falésias ganha rochas encaixadas, abaixo da borda e fora de onde se constrói; só apresentação; o rochedo segue construível na simulação (proposta à espera do dono); plano em `docs/plano_fase56.md` |
 | 57 — Pedras soltas com a rocha gerada (nossa) | **feita em 27/10/2026, a pedido do dono**: as pedras dos barrancos e do litoral rochoso trocam as lajes do Kenney pela rocha facetada da Fase 56, nos mesmos lugares; só apresentação; plano em `docs/plano_fase57.md` |
 | 58 — Coqueiro gerado no código (nossa) | **feita em 27/10/2026, a pedido do dono**: as ilhas tropicais trocam as palmeiras do Kenney por um coqueiro gerado no código, com malha de longe; sai o último modelo do Nature Kit; só apresentação; a mata tropical de folhosas fica como proposta; plano em `docs/plano_fase58.md` |
+| 59 — Mata tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: folhosa tropical gerada no código (tronco com sapopemas, copa em guarda-chuva) misturada aos coqueiros, mais coqueiro na costa baixa e mais folhosa no alto; só apresentação; plano em `docs/plano_fase59.md` |
 
 Pendências já vistas para fases futuras:
 

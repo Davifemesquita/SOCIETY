@@ -11,7 +11,10 @@ extends RefCounted
 ## Fase 58: o coqueiro das ilhas tropicais, no lugar das palmeiras do Kenney: tronco curvo em gomos com anéis, a
 ## coroa de folhas compridas que sobem e caem, com folíolos em serra e dobradas em V, e um cacho de cocos.
 
-enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM }
+## Fase 59: a folhosa da mata tropical, misturada aos coqueiros: tronco reto e liso com sapopemas (as raízes em aleta do
+## pé) e a copa em guarda-chuva, larga e chata, de verde mais escuro.
+
+enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM, TROPICAL_BROADLEAF }
 
 const DETAIL_NEAR := 0
 const DETAIL_FAR := 1
@@ -31,6 +34,8 @@ const PALM_OLD_LEAF := Color(0.5, 0.52, 0.2)
 const PALM_BARK := Color(0.5, 0.42, 0.32)
 const PALM_RING := Color(0.42, 0.35, 0.27)
 const COCONUT := Color(0.36, 0.34, 0.12)
+const TROPICAL_LEAF := Color(0.2, 0.44, 0.13)
+const TROPICAL_BARK := Color(0.52, 0.48, 0.4)
 ## Coqueiro: altura do tronco (antes do sorteio), gomos do tronco, folhas da coroa e o comprimento delas, em metros.
 const PALM_HEIGHT_M := 8.0
 const PALM_SEGMENTS := 7
@@ -72,6 +77,8 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 			_pine(tool, rng, detail)
 		Species.COCONUT_PALM:
 			_palm(tool, rng, detail)
+		Species.TROPICAL_BROADLEAF:
+			_tropical(tool, rng, detail)
 	var result := tool.commit()
 	result.surface_set_material(0, _material(result))
 	_cache[key] = result
@@ -176,6 +183,44 @@ static func _palm(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) ->
 			var angle := spin + c * TAU / 4.0 + 0.4
 			var nut := top + Vector3(cos(angle) * 0.24, -0.35 - (c % 2) * 0.15, sin(angle) * 0.24)
 			_crown(tool, rng, nut, Vector3(0.16, 0.18, 0.16), COCONUT, detail, Vector3.INF, 0)
+
+
+## Folhosa tropical: tronco reto, claro e liso até o alto, com quatro sapopemas no pé; lá em cima abre em galhos quase
+## deitados, cada um com uma massa de folhagem achatada na ponta, mais a do meio: copa em guarda-chuva, mais larga que
+## alta, sobre um tronco nu.
+static func _tropical(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> void:
+	var lean := Vector3(rng.randf_range(-0.2, 0.2), 0.0, rng.randf_range(-0.2, 0.2))
+	var fork := Vector3(0.0, rng.randf_range(5.6, 6.6), 0.0) + lean
+	_limb(tool, Vector3.ZERO, fork, 0.3, 0.2, detail, TROPICAL_BARK, TROPICAL_BARK.lightened(0.08))
+	var turn := rng.randf() * TAU
+	if detail == DETAIL_NEAR:
+		for i: int in 4:
+			_buttress(tool, turn + i * TAU / 4.0 + rng.randf_range(-0.3, 0.3), rng.randf_range(0.8, 1.2), rng.randf_range(1.0, 1.6))
+	var hull := fork + Vector3(0.0, 1.8, 0.0)
+	var tips: Array[Vector3] = []
+	for i: int in 4:
+		var angle := turn + PI / 4.0 + i * TAU / 4.0 + rng.randf_range(-0.3, 0.3)
+		var reach := rng.randf_range(1.8, 2.5)
+		var tip := fork + Vector3(cos(angle) * reach, rng.randf_range(0.9, 1.5), sin(angle) * reach)
+		tips.append(tip)
+		if detail == DETAIL_NEAR:
+			_limb(tool, fork - Vector3(0.0, 0.2, 0.0), tip, 0.13, 0.06, detail, TROPICAL_BARK, TROPICAL_BARK)
+		var radius := rng.randf_range(1.6, 2.0)
+		_crown(tool, rng, tip + Vector3(0.0, 0.5, 0.0), Vector3(radius, radius * 0.5, radius), TROPICAL_LEAF, detail, hull)
+	_crown(tool, rng, fork + Vector3(0.0, 2.0, 0.0), Vector3(2.0, 0.9, 2.0), TROPICAL_LEAF, detail, hull)
+	_puffs(tool, rng, tips, hull, TROPICAL_LEAF, detail, 0.9)
+
+
+## Uma sapopema: aleta fina e triangular saindo do pé do tronco para o lado de angle, reach metros para fora e rise de
+## altura no tronco (um triângulo só: o material da folhagem desenha as duas faces).
+static func _buttress(tool: SurfaceTool, angle: float, reach: float, rise: float) -> void:
+	var out := Vector3(cos(angle), 0.0, sin(angle))
+	var normal := Vector3(-out.z, 0.0, out.x)
+	var points: Array[Vector3] = [out * 0.15 + Vector3.UP * rise, out * (0.15 + reach) + Vector3.DOWN * 0.05, out * 0.1 + Vector3.DOWN * 0.05]
+	for point: Vector3 in points:
+		tool.set_normal((normal + Vector3.UP * 0.3).normalized())
+		tool.set_color(TROPICAL_BARK.darkened(0.08))
+		tool.add_vertex(point)
 
 
 ## Ponto do tronco do coqueiro na fração t da altura: curva para o lado de lean, mais no alto.
