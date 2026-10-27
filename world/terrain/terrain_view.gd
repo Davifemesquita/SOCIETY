@@ -120,6 +120,18 @@ func coast_field() -> CoastField:
 	return _coast
 
 
+## Fase 56: as alturas desenhadas da região da ilha (com o detalhe das encostas), o lado e o canto dela; vazio na ilha
+## plana. As rochas das falésias e dos rochedos (RockView) sentam nelas.
+func region_heights(index: int) -> Dictionary:
+	if not _regions.has(index):
+		return {}
+	var region: Dictionary = _regions[index]
+	var origin: Vector2 = region["origin"]
+	var side: int = region["side"]
+	var heights: PackedFloat32Array = region["heights"]
+	return {"heights": _with_detail(index, heights, side, origin), "side": side, "origin": origin}
+
+
 ## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade, mais o detalhe visual
 ## das encostas (Fase 36, zero onde a simulação manda).
 func shown_height(x: float, z: float) -> float:

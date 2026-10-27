@@ -1168,3 +1168,9 @@ vizinhos de cada canto) e carregar 3,84 s. Quadro igual.
 dia inteiro 88,9 FPS de média (1% low 46,9), GPU média 10,6 ms; jogo novo 8,7 s (8,0 s na Fase 54: a subgrade dos
 quadrados da costa sai em GDScript; nesta rodada o tick e a carga também mediram um pouco mais lentos) e carregar
 3,83 s. Quadro igual.
+## Fase 56 — rocha nos rochedos e nas falésias (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), duas rodadas: quadro com tudo visível 13 ms (78 FPS), 2776
+objetos e 1126 draw calls (+20 da rocha), dia inteiro 77,9 e 77,5 FPS de média, GPU média 11,8 ms; jogo novo 8,9 s.
+Na mesma hora, com a `RockView` desligada: 13 ms (77 FPS), dia inteiro 78,8 FPS, GPU 11,5 ms. A queda contra a Fase 55
+(91 FPS de manhã) é da máquina nesta hora, não da rocha, que custa até ~0,3 ms de GPU.

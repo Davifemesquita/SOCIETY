@@ -1810,6 +1810,14 @@ Regras que já custaram investigação:
   cantos que pesam e a `terrain_coast_refine_max_m` (0,8 m) da reta; os cantos da grade não mudam, a borda comum sai da
   mesma conta dos dois lados e a borda com quadrado comum fica na reta dele. Só apresentação.
 
+### Rocha nos rochedos e nas falésias (Fase 56, nossa)
+
+- **Plano** em `docs/plano_fase56.md`. `RockModel` (`presentation/rock_model.gd`): rocha gerada no código (icosfera com
+  ruído, planos de corte e topo cortado, faces chapadas, 4 variantes). `RockView` (`presentation/rock_view.gd`, montada
+  pela `GameScreen`): pelas alturas desenhadas (`TerrainView.region_heights`), bloco e pilar em cada rochedo solto no
+  mar e rochas encaixadas na face das falésias, com o topo abaixo da borda e nunca onde caberia estrada ou prédio
+  (`RockView.places` é função pura). Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1876,6 +1884,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 53 — Cor no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**: grama verde e saturada, areia clara, rocha escura, folhas mais vivas, água turquesa mais viva e larga junto à costa, névoa mais leve de longe; falésia do v3 descendo em 1,6 célula e sem praia em cima (assinaturas do v3 regravadas); o serrilhado da linha d'água (grade de 2 m) fica de fora; plano em `docs/plano_fase53.md` |
 | 54 — Costa lisa (nossa) | **feita em 26/10/2026, a pedido do dono**: a distância até a costa parte de onde a altura cruza o zero (espuma, areia molhada e plataforma sem a escada da grade), cada quadrado do terreno pela diagonal que segue o relevo, a praia pela distância até a linha d'água e sem areia na falésia e na rocha; só apresentação (terreno e assinaturas iguais); plano em `docs/plano_fase54.md` |
 | 55 — Malha fina na linha d'água (nossa) | **feita em 27/10/2026, a pedido do dono**: os quadrados da malha que a costa atravessa viram subgrade de 3 × 3 com alturas curvas (Catmull-Rom, até 0,8 m da reta), a linha d'água sai curva de perto em vez de reta de 2 em 2 m; cantos da grade iguais aos da simulação, sem fresta; só apresentação; plano em `docs/plano_fase55.md` |
+| 56 — Rocha nos rochedos e nas falésias (nossa) | **feita em 27/10/2026, a pedido do dono**: rocha gerada no código (sem asset novo); cada rochedo solto no mar vira bloco de rocha com pilar e pedras em volta, e a face das falésias ganha rochas encaixadas, abaixo da borda e fora de onde se constrói; só apresentação; o rochedo segue construível na simulação (proposta à espera do dono); plano em `docs/plano_fase56.md` |
 
 Pendências já vistas para fases futuras:
 
