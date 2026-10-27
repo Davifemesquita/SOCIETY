@@ -1200,3 +1200,8 @@ mesmas), jogo novo 21,7 e 23,1 s, GPU média 22,5 e 22,8 ms, dia inteiro 36,0 e 
 Fase 59 sem mudança nenhuma: jogo novo 22,8 s, GPU 23,0 ms, dia inteiro 35,1 FPS. A fase é neutra; a máquina inteira
 (CPU e GPU) mediu ~2,5 vezes mais lenta nesta hora, com o plano de energia em alto desempenho e a CPU no relógio
 cheio — causa fora do jogo (talvez o papel de parede animado em execução disputando a GPU), a conferir com o dono.
+## Fase 61 — helicônias (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), com a máquina ainda no estado lento da Fase 60: 2759 objetos e
+1109 draw calls (os mesmos), jogo novo 21,8 s, GPU média 21,9 ms, dia inteiro 36,6 FPS — no nível do commit da Fase 59
+medido nesse estado (GPU 23,0 ms, 35,1 FPS). Neutra.

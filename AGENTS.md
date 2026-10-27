@@ -1844,6 +1844,11 @@ Regras que já custaram investigação:
   código): na ilha tropical o arbusto do recheio vira uma delas (`BANANA_SHARE`); o contexto da ilha diz se ela é
   tropical. As temperadas ficam iguais. Só apresentação.
 
+### Helicônias (Fase 61, nossa)
+
+- **Plano** em `docs/plano_fase61.md`. `ScatterView.Kind.HELICONIA` (gerada no código, brácteas vermelhas de ponta
+  amarela no vértice): na ilha tropical as flores do campo do recheio viram helicônia. Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1915,6 +1920,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 58 — Coqueiro gerado no código (nossa) | **feita em 27/10/2026, a pedido do dono**: as ilhas tropicais trocam as palmeiras do Kenney por um coqueiro gerado no código, com malha de longe; sai o último modelo do Nature Kit; só apresentação; a mata tropical de folhosas fica como proposta; plano em `docs/plano_fase58.md` |
 | 59 — Mata tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: folhosa tropical gerada no código (tronco com sapopemas, copa em guarda-chuva) misturada aos coqueiros, mais coqueiro na costa baixa e mais folhosa no alto; só apresentação; plano em `docs/plano_fase59.md` |
 | 60 — Sub-bosque tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: bananeira e samambaia geradas no código no lugar do arbusto temperado nas ilhas tropicais; temperadas iguais; só apresentação; plano em `docs/plano_fase60.md` |
+| 61 — Helicônias (nossa) | **feita em 27/10/2026, a pedido do dono**: helicônia gerada no código no lugar das flores do campo nas ilhas tropicais; só apresentação; plano em `docs/plano_fase61.md` |
 
 Pendências já vistas para fases futuras:
 

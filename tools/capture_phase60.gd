@@ -1,7 +1,8 @@
 extends Node
 ## Roteiro de verificação visual da Fase 60 (sub-bosque tropical): na semente 1840, de perto, bananeiras e samambaias
 ## que o recheio pôs numa ilha tropical. Precisa de GPU; no PC do dono roda na área de trabalho escondida:
-##   godot --path . --resolution 1920x1080 res://tools/capture_phase60.tscn -- <pasta>
+##   godot --path . --resolution 1920x1080 res://tools/capture_phase60.tscn -- <pasta> [heliconia]
+## Com "heliconia" (Fase 61), as helicônias de perto no lugar das bananeiras.
 
 const SEED := 1840
 
@@ -26,6 +27,9 @@ func _run() -> void:
 	_set_hour(11.0)
 	game.hud.visible = false
 	var world := game.simulation.world
+	# a peça procurada sai do segundo argumento ("heliconia" para a Fase 61); sem ele, a bananeira
+	var args := OS.get_cmdline_user_args()
+	var kind := ScatterView.Kind.HELICONIA if args.size() > 1 and args[1] == "heliconia" else ScatterView.Kind.BANANA
 	var spots: Array[Vector3] = []
 	for index: int in world.islands.size():
 		if not world.is_tropical(index, game.simulation.data) or world.island(index).flat:
@@ -34,13 +38,15 @@ func _run() -> void:
 		for cy: int in ceili(grid.size.y / float(ScatterView.CHUNK_CELLS)):
 			for cx: int in ceili(grid.size.x / float(ScatterView.CHUNK_CELLS)):
 				var items := game.scatter_view.chunk_items(index, Vector2i(cx, cy))
-				var bananas: Array = items.get(ScatterView.Kind.BANANA, [])
-				for item: Array in bananas:
+				var found: Array = items.get(kind, [])
+				for item: Array in found:
 					var place: Transform3D = item[0]
 					spots.append(place.origin)
-	print("bananeiras ", spots.size())
+	print("peças ", spots.size())
+	var prefix := "heliconia" if kind == ScatterView.Kind.HELICONIA else "sub_bosque"
+	var distance := 9.0 if kind == ScatterView.Kind.HELICONIA else 16.0
 	for k: int in mini(spots.size(), 3):
-		await _shot(game, "sub_bosque_%d.png" % k, spots[k * (spots.size() / 3)], 16.0, 0.6 + k * 2.0)
+		await _shot(game, "%s_%d.png" % [prefix, k], spots[k * (spots.size() / 3)], distance, 0.6 + k * 2.0)
 	GameScreen.terrain_version = -1
 	get_tree().quit()
 

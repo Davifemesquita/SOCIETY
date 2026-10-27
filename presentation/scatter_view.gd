@@ -7,9 +7,10 @@ extends Node3D
 ## CHUNK_CELLS e por peça, até VISIBLE_UNTIL_M da câmera. Refaz só os trechos que uma obra, uma estrada ou uma
 ## derrubada de árvores atingiu. Só lê o mundo. A ilha plana dos testes e saves antigos não tem recheio.
 ## Fase 60: nas ilhas tropicais o arbusto temperado vira sub-bosque tropical — bananeira (BANANA_SHARE das vezes) ou
-## samambaia —; as ilhas temperadas não mudam (o sorteio extra só acontece na tropical).
+## samambaia —; as ilhas temperadas não mudam (o sorteio extra só acontece na tropical). Fase 61: lá, as flores do
+## campo viram helicônias (folhas em remo e brácteas vermelhas de ponta amarela em zigue-zague).
 
-enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN }
+enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
@@ -17,11 +18,15 @@ const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA]
 ## As plantas (material da folhagem, balançam).
-const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN]
+const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
 const FERN_LEAF := Color(0.18, 0.4, 0.12)
+const HELICONIA_LEAF := Color(0.26, 0.5, 0.16)
+## As brácteas da helicônia: vermelhas com a ponta amarela.
+const HELICONIA_BRACT := Color(0.85, 0.12, 0.1)
+const HELICONIA_TIP := Color(0.95, 0.8, 0.2)
 ## Chances por célula, pelo que há em volta: [peça, chance].
 const NEAR_HOUSE: Array[Array] = [[Kind.BUSH, 0.25], [Kind.FLOWERS, 0.3], [Kind.BARREL, 0.1], [Kind.WOODPILE, 0.08],
 		[Kind.CRATE, 0.05]]
@@ -354,6 +359,8 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			continue
 		if tropical and kind == Kind.BUSH:
 			kind = Kind.BANANA if rng.randf() < BANANA_SHARE else Kind.FERN
+		elif tropical and kind == Kind.FLOWERS:
+			kind = Kind.HELICONIA
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
@@ -367,7 +374,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		match kind:
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
-			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN:
+			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		var list: Array = result[kind]
@@ -427,6 +434,22 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 			for i: int in 8:
 				_leaf(tool, Vector3(0.0, 0.05, 0.0), TAU * i / 8.0 + (i % 2) * 0.2, 0.75, 0.12, 0.7, 0.08, 5, true,
 						FERN_LEAF.lightened(0.08 * (i % 2)))
+		Kind.HELICONIA:
+			# quatro folhas em remo, em pé, e duas hastes com brácteas vermelhas de ponta amarela alternadas em
+			# zigue-zague (~1,2 m); a instância só varia o tom, como no arbusto
+			for i: int in 4:
+				_leaf(tool, Vector3(0.0, 0.05, 0.0), TAU * i / 4.0 + 0.4, 0.45, 0.12, 0.7, -0.35, 4, false, HELICONIA_LEAF)
+			for stalk: int in 2:
+				var foot := Vector3(0.1 * (1 - 2 * stalk), 0.0, 0.06)
+				CropView._part(tool, CropView._box(Vector3(0.03, 1.15, 0.03)), Transform3D(Basis.IDENTITY,
+						foot + Vector3(0.0, 0.575, 0.0)), HELICONIA_LEAF)
+				for b: int in 5:
+					var side := 1.0 if b % 2 == 0 else -1.0
+					var bract := Basis(Vector3.BACK, side * 0.9)
+					var at := foot + Vector3(side * 0.09, 1.2 - b * 0.14, 0.0)
+					CropView._part(tool, CropView._box(Vector3(0.08, 0.22, 0.03)), Transform3D(bract, at), HELICONIA_BRACT)
+					CropView._part(tool, CropView._box(Vector3(0.06, 0.05, 0.035)), Transform3D(bract,
+							at + bract.y * 0.12), HELICONIA_TIP)
 	tool.index()
 	return tool.commit()
 
