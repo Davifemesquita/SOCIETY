@@ -29,7 +29,14 @@ func test_terrain_mesh_sits_on_the_simulation_heights() -> void:
 			var cell := grid.world_to_cell(vertex)
 			if grid.in_bounds(cell) and grid.in_bounds(cell - Vector2i.ONE):
 				var simulated := grid.height_at(vertex.x, vertex.z)
-				if simulated >= 0.0:
+				var at_grid := (Vector2(vertex.x, vertex.z) - grid.origin_m) / grid.cell_size
+				if not at_grid.is_equal_approx(at_grid.round()):
+					# Fase 55: ponto da subgrade da linha d'água, curvo, a até terrain_coast_refine_max_m da reta entre os
+					# cantos desenhados (que no mar podem estar bem abaixo da simulação: só o limite de cima vale aqui;
+					# tests/world/test_phase55_coast_mesh.gd confere os dois lados)
+					var straight := simulated + TerrainDetail.offset_at(grid, _config, vertex.x, vertex.z)
+					assert_float(vertex.y).is_less_equal(maxf(straight, simulated) + _config.terrain_coast_refine_max_m + 0.001)
+				elif simulated >= 0.0:
 					# Fase 36: a malha leva o detalhe visual das encostas, zero onde a simulação manda
 					# (tests/world/test_phase36_slopes.gd confere onde ele pode ser diferente de zero)
 					assert_float(vertex.y).is_equal_approx(simulated + TerrainDetail.offset_at(grid, _config, vertex.x, vertex.z), 0.001)

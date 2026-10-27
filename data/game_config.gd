@@ -487,6 +487,10 @@ static var _default: GameConfig
 @export var terrain_hex_distance_m: float = 220.0
 ## Fase 35: até onde (m) o campo de distância da costa mede, para cada lado da linha d'água.
 @export var coast_field_max_m: float = 64.0
+## Fase 55: em quantas partes de lado se divide o quadrado da malha que a linha d'água atravessa (1 desliga), e quanto
+## (m) a altura curva pode sair da reta entre os cantos.
+@export var terrain_coast_subdivisions: int = 3
+@export var terrain_coast_refine_max_m: float = 0.8
 ## Fase 38: a estrada de terra pintada no terreno (desligada, volta o ladrilho), os pixels da máscara por célula e até
 ## onde (m da linha do meio) ela mede a distância.
 @export var road_paint: bool = true
@@ -646,6 +650,8 @@ func validate() -> PackedStringArray:
 		problems.append("build_grid_radius_m deve ser maior que zero")
 	if terrain_water_distance_m <= 0.0 or terrain_hex_distance_m <= 0.0 or coast_field_max_m <= 0.0:
 		problems.append("terrain_water_distance_m, terrain_hex_distance_m e coast_field_max_m devem ser maiores que zero")
+	if terrain_coast_subdivisions < 1 or terrain_coast_subdivisions > 8 or terrain_coast_refine_max_m < 0.0:
+		problems.append("terrain_coast_subdivisions deve ficar entre 1 e 8 e terrain_coast_refine_max_m não pode ser negativo")
 	if road_mask_px_per_cell < 1 or road_mask_max_m <= 0.0:
 		problems.append("road_mask_px_per_cell deve ser pelo menos 1 e road_mask_max_m maior que zero")
 	if status_icon_full_m <= 0.0 or status_icon_fade_end_m <= status_icon_full_m or status_icon_cluster_m <= 0.0 \

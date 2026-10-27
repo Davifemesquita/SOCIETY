@@ -1803,6 +1803,13 @@ Regras que já custaram investigação:
   diferença de altura; a praia do `terrain.gdshader` sai do `coast_distance` (`beach_m`, `beach_top_m`), sem rocha nem
   falésia. Só apresentação: as assinaturas do terreno não mudam.
 
+### Malha fina na linha d'água (Fase 55, nossa)
+
+- **Plano** em `docs/plano_fase55.md`. `CoastRefine` (`world/terrain/coast_refine.gd`): o quadrado da malha que a linha
+  d'água atravessa vira subgrade de `terrain_coast_subdivisions` (3) de lado, com alturas por Catmull-Rom limitadas aos
+  cantos que pesam e a `terrain_coast_refine_max_m` (0,8 m) da reta; os cantos da grade não mudam, a borda comum sai da
+  mesma conta dos dois lados e a borda com quadrado comum fica na reta dele. Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1868,6 +1875,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 52 — Ilhas no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**, olhando o Anno 1800 dele (só capturas, nenhum arquivo): gerador v3, padrão dos jogos novos, com ilhas alongadas sobre uma espinha curva, 2–3 enseadas com praia larga e água rasa, falésias no resto da costa com a planície mais alta, rochedos soltos junto aos cabos, interior quase plano e a plataforma turquesa pela costa de verdade; cerca de metade dos lotes de casa do v1 (faixa provisória); a cor, a água e a rocha ficam para a Fase 53; plano em `docs/plano_fase52.md` |
 | 53 — Cor no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**: grama verde e saturada, areia clara, rocha escura, folhas mais vivas, água turquesa mais viva e larga junto à costa, névoa mais leve de longe; falésia do v3 descendo em 1,6 célula e sem praia em cima (assinaturas do v3 regravadas); o serrilhado da linha d'água (grade de 2 m) fica de fora; plano em `docs/plano_fase53.md` |
 | 54 — Costa lisa (nossa) | **feita em 26/10/2026, a pedido do dono**: a distância até a costa parte de onde a altura cruza o zero (espuma, areia molhada e plataforma sem a escada da grade), cada quadrado do terreno pela diagonal que segue o relevo, a praia pela distância até a linha d'água e sem areia na falésia e na rocha; só apresentação (terreno e assinaturas iguais); plano em `docs/plano_fase54.md` |
+| 55 — Malha fina na linha d'água (nossa) | **feita em 27/10/2026, a pedido do dono**: os quadrados da malha que a costa atravessa viram subgrade de 3 × 3 com alturas curvas (Catmull-Rom, até 0,8 m da reta), a linha d'água sai curva de perto em vez de reta de 2 em 2 m; cantos da grade iguais aos da simulação, sem fresta; só apresentação; plano em `docs/plano_fase55.md` |
 
 Pendências já vistas para fases futuras:
 
