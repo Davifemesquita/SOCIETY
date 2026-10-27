@@ -1155,3 +1155,9 @@ obra 16,4 ms; carregar 3,96 s; quadro com tudo visível 11–13 ms e o dia intei
 Área de trabalho escondida, alto, semente 1840 (v3): quadro com tudo visível 11 ms (89 FPS), dia inteiro 87,9 FPS de
 média (1% low 45,5), GPU média 10,6 ms: o tratamento de cor no shader do terreno não custou nada medível (Fase 52: GPU
 10,7–11,9 ms).
+
+## Fase 54 — costa lisa (26/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3): quadro com tudo visível 11 ms (90 FPS), dia inteiro 87,6 FPS de
+média (1% low 45,2), GPU média 10,7 ms; jogo novo 8,0 s (7,6 s na Fase 52: a distância até a costa agora olha os oito
+vizinhos de cada canto) e carregar 3,84 s. Quadro igual.

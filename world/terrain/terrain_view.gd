@@ -153,7 +153,7 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	material.set_shader_parameter(&"terrain_data", ImageTexture.create_from_image(_data_images[index]))
 	material.set_shader_parameter(&"hex_distance_m", _config.terrain_hex_distance_m)
 	material.set_shader_parameter(&"hex_tiling", _hex_tiling)
-	var coast := TerrainBake.signed_coast(heights, side, _config.cell_size_m, _config.coast_field_max_m, to_water)
+	var coast := TerrainBake.signed_coast(heights, side, _config.cell_size_m, _config.coast_field_max_m)
 	material.set_shader_parameter(&"coast_distance", ImageTexture.create_from_image(
 			Image.create_from_data(side, side, false, Image.FORMAT_RF, coast.to_byte_array())))
 	material.set_shader_parameter(&"has_coast", true)
@@ -252,7 +252,8 @@ func _with_detail(index: int, heights: PackedFloat32Array, side: int, origin: Ve
 	return shown
 
 
-## Malha de um trecho: vértices nos cantos (x, z de 2 em 2 m) com a normal pelas alturas vizinhas.
+## Malha de um trecho: vértices nos cantos (x, z de 2 em 2 m) com a normal pelas alturas vizinhas; cada quadrado pela
+## diagonal que segue o relevo.
 func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: int, cy: int) -> ArrayMesh:
 	var spacing := _config.cell_size_m
 	var count_x := mini(CHUNK_VERTICES, side - 1 - cx) + 1
@@ -273,10 +274,18 @@ func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: in
 			var up := heights[maxi(gy - 1, 0) * side + gx]
 			var down := heights[mini(gy + 1, side - 1) * side + gx]
 			normals[y * count_x + x] = Vector3(left - right, 2.0 * spacing, up - down).normalized()
+	# Fase 54: cada quadrado se divide pela diagonal de menor diferença de altura (a que segue o relevo); com a diagonal
+	# sempre igual, a costa e a falésia que correm na outra diagonal viravam escada
 	for y: int in count_y - 1:
 		for x: int in count_x - 1:
 			var a := y * count_x + x
-			indices.append_array(PackedInt32Array([a, a + 1, a + count_x, a + 1, a + count_x + 1, a + count_x]))
+			var b := a + 1
+			var c := a + count_x
+			var d := c + 1
+			if absf(vertices[a].y - vertices[d].y) < absf(vertices[b].y - vertices[c].y):
+				indices.append_array(PackedInt32Array([a, b, d, a, d, c]))
+			else:
+				indices.append_array(PackedInt32Array([a, b, c, b, d, c]))
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices

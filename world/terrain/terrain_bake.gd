@@ -52,22 +52,62 @@ static func bake(heights: PackedFloat32Array, side: int, spacing: float, water_d
 
 
 ## Fase 35: distância até a costa com sinal, em metros, de cada canto: positiva na terra (até a água), negativa na água
-## (até a terra), com a linha d'água no meio entre os cantos e cortada em ±max_m. A mesma conta de chanfro (erro de
-## até ~8% fora dos eixos e das diagonais).
-static func signed_coast(heights: PackedFloat32Array, side: int, spacing: float, max_m: float,
-		to_water: PackedFloat32Array = PackedFloat32Array()) -> PackedFloat32Array:
-	if to_water.is_empty():
-		to_water = distance_to_water(heights, side)
-	var to_land := distance_to_water(heights, side, true)
+## (até a terra), cortada em ±max_m. Desde a Fase 54 a linha d'água fica onde a altura cruza o zero entre dois cantos
+## (interpolada pelas alturas, não no meio): os cantos dos dois lados da linha começam com a distância exata até ela e o
+## chanfro (1 de lado, √2 na diagonal) espalha o resto; a espuma e a areia molhada deixam de seguir a escada da grade.
+static func signed_coast(heights: PackedFloat32Array, side: int, spacing: float, max_m: float) -> PackedFloat32Array:
+	var far := float(side * 2)
+	var distance := PackedFloat32Array()
+	distance.resize(side * side)
+	distance.fill(far)
+	for y: int in side:
+		for x: int in side:
+			var i := y * side + x
+			var h := heights[i]
+			# os vizinhos de lado e de diagonal (a diagonal mede √2 vezes a fração)
+			for step: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1), Vector2i(1, 1), Vector2i(-1, 1),
+					Vector2i(1, -1), Vector2i(-1, -1)]:
+				var nx := x + step.x
+				var ny := y + step.y
+				if nx < 0 or ny < 0 or nx >= side or ny >= side:
+					continue
+				var other := heights[ny * side + nx]
+				if (h < 0.0) == (other < 0.0):
+					continue
+				var length := DIAGONAL if step.x != 0 and step.y != 0 else 1.0
+				distance[i] = minf(distance[i], length * absf(h) / maxf(absf(h) + absf(other), 0.0001))
+	for y: int in side:
+		for x: int in side:
+			var i := y * side + x
+			var best := distance[i]
+			if x > 0:
+				best = minf(best, distance[i - 1] + 1.0)
+			if y > 0:
+				best = minf(best, distance[i - side] + 1.0)
+				if x > 0:
+					best = minf(best, distance[i - side - 1] + DIAGONAL)
+				if x < side - 1:
+					best = minf(best, distance[i - side + 1] + DIAGONAL)
+			distance[i] = best
+	for y: int in range(side - 1, -1, -1):
+		for x: int in range(side - 1, -1, -1):
+			var i := y * side + x
+			var best := distance[i]
+			if x < side - 1:
+				best = minf(best, distance[i + 1] + 1.0)
+			if y < side - 1:
+				best = minf(best, distance[i + side] + 1.0)
+				if x < side - 1:
+					best = minf(best, distance[i + side + 1] + DIAGONAL)
+				if x > 0:
+					best = minf(best, distance[i + side - 1] + DIAGONAL)
+			distance[i] = best
 	var result := PackedFloat32Array()
 	result.resize(side * side)
 	for i: int in side * side:
-		if heights[i] < 0.0:
-			result[i] = -minf((to_land[i] - 0.5) * spacing, max_m)
-		else:
-			result[i] = minf((to_water[i] - 0.5) * spacing, max_m)
+		var metres := minf(distance[i] * spacing, max_m)
+		result[i] = -metres if heights[i] < 0.0 else metres
 	return result
-
 
 ## Distância (em células) de cada canto até o mais próximo abaixo do nível do mar (ou, com to_land, até o mais próximo
 ## acima dele), por chanfro em duas passadas (1 de lado, √2 na diagonal). Sem alvo na região, tudo fica longe.

@@ -77,6 +77,10 @@ uniform vec3 seabed_shallow = vec3(1.08, 1.04, 0.92);
 uniform vec3 seabed_deep = vec3(0.5, 0.6, 0.58);
 uniform float seabed_deep_m = 30.0;
 uniform float caustics_strength = 0.22;
+// Fase 54: a praia pela distância até a linha d'água (contorno liso, não os quadrados da grade), nunca acima de
+// beach_top_m (a falésia) nem na encosta de rocha
+uniform float beach_m = 6.0;
+uniform float beach_top_m = 2.4;
 // Fase 38: máscara das estradas (RoadMask: r distância até a linha do meio da terra, até road_mask_max_m; g calçamento;
 // b desgaste das portas; a poças), o canto e o tamanho da grade da ilha no mundo, e a terra batida das estradas
 uniform bool has_roads = false;
@@ -264,6 +268,12 @@ void fragment() {
 	float ragged = texture(rock_albedo, uv * 0.23).a - 0.5;
 	float mud = smoothstep(0.3, 0.7, kinds.b + ragged * 1.2 + edge * 0.5);
 	float sand_raw = max(kinds.r, step(world_position.y, 0.4));
+	if (has_coast) {
+		float to_sea = texture(coast_distance, cell).r;
+		float beach = (1.0 - smoothstep(beach_m * 0.7, beach_m * 1.3, to_sea + edge * 3.0))
+				* (1.0 - smoothstep(beach_top_m - 0.4, beach_top_m + 0.4, world_position.y)) * (1.0 - rock);
+		sand_raw = max(beach, step(world_position.y, 0.4));
+	}
 	float forest = height_blend(smoothstep(0.2, 0.8, kinds.g + edge), grass_a.a, forest_a.a);
 	vec4 ground_a = mix(grass_a, forest_a, forest);
 	vec4 ground_n = mix(grass_n, forest_n, forest);

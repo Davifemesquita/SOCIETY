@@ -1796,6 +1796,13 @@ Regras que já custaram investigação:
   (`color_shelf`, `shelf_m`, `color_deep`) e névoa mais leve no `GameConfig`. No v3 não se desenha praia acima de
   `ArchipelagoGenerator.CLIFF_SAND_MAX_M`.
 
+### Costa lisa (Fase 54, nossa)
+
+- **Plano** em `docs/plano_fase54.md`. `TerrainBake.signed_coast` parte de onde a altura cruza o zero (não mais do meio
+  da célula; a assinatura perdeu o `to_water`); `TerrainView._chunk_mesh` divide cada quadrado pela diagonal de menor
+  diferença de altura; a praia do `terrain.gdshader` sai do `coast_distance` (`beach_m`, `beach_top_m`), sem rocha nem
+  falésia. Só apresentação: as assinaturas do terreno não mudam.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1860,6 +1867,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 51 — Fotos e retratos nos menus (nossa) | **feita em 26/10/2026, a pedido do dono**, sem nada na tela dele: ideias do Anno 1800 (cartões ilustrados, painel com a imagem do prédio, retratos pintados), nenhum arquivo dele; 64 fotos dos nossos próprios modelos com acabamento de pintura nos cartões do menu de construção e no painel; retratos de pinturas do século XIX em domínio público (Pissarro, Renoir, Manet e outros, Art Institute of Chicago, CC0) nas classes, no conselheiro e no comerciante; quadro igual; plano em `docs/plano_fase51.md` |
 | 52 — Ilhas no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**, olhando o Anno 1800 dele (só capturas, nenhum arquivo): gerador v3, padrão dos jogos novos, com ilhas alongadas sobre uma espinha curva, 2–3 enseadas com praia larga e água rasa, falésias no resto da costa com a planície mais alta, rochedos soltos junto aos cabos, interior quase plano e a plataforma turquesa pela costa de verdade; cerca de metade dos lotes de casa do v1 (faixa provisória); a cor, a água e a rocha ficam para a Fase 53; plano em `docs/plano_fase52.md` |
 | 53 — Cor no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**: grama verde e saturada, areia clara, rocha escura, folhas mais vivas, água turquesa mais viva e larga junto à costa, névoa mais leve de longe; falésia do v3 descendo em 1,6 célula e sem praia em cima (assinaturas do v3 regravadas); o serrilhado da linha d'água (grade de 2 m) fica de fora; plano em `docs/plano_fase53.md` |
+| 54 — Costa lisa (nossa) | **feita em 26/10/2026, a pedido do dono**: a distância até a costa parte de onde a altura cruza o zero (espuma, areia molhada e plataforma sem a escada da grade), cada quadrado do terreno pela diagonal que segue o relevo, a praia pela distância até a linha d'água e sem areia na falésia e na rocha; só apresentação (terreno e assinaturas iguais); plano em `docs/plano_fase54.md` |
 
 Pendências já vistas para fases futuras:
 

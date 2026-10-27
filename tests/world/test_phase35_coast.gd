@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## Costa viva (Fase 35): a distância até a costa com sinal sai das alturas (positiva na terra, negativa na água, com a
-## linha d'água no meio), é determinística e barata, vira um mapa do arquipélago que a água lê, e os shaders da água e
+## linha d'água onde a altura cruza o zero, desde a Fase 54), é determinística e barata, vira um mapa do arquipélago que a água lê, e os shaders da água e
 ## do terreno a recebem. O shader só compila com um renderizador de verdade (o CI roda com tela): sem tela, esse teste
 ## pula.
 
@@ -21,11 +21,11 @@ func test_straight_coast_is_positive_on_land_negative_at_sea_and_clamped() -> vo
 	# mar nas quatro primeiras colunas, terra a 2 m no resto
 	var heights := _heights(func(x: int, _y: int) -> float: return -1.0 if x < 4 else 2.0)
 	var coast := TerrainBake.signed_coast(heights, SIDE, SPACING, 64.0)
-	# a linha d'água fica entre as colunas 3 e 4: um metro de cada lado
-	assert_float(coast[16 * SIDE + 3]).is_equal_approx(-1.0, 0.001)
-	assert_float(coast[16 * SIDE + 4]).is_equal_approx(1.0, 0.001)
-	assert_float(coast[16 * SIDE + 0]).is_equal_approx(-7.0, 0.001)
-	assert_float(coast[16 * SIDE + 10]).is_equal_approx(13.0, 0.001)
+	# a linha d'água fica entre as colunas 3 e 4, onde a altura cruza o zero (de -1 para 2: a um terço do canto do mar)
+	assert_float(coast[16 * SIDE + 3]).is_equal_approx(-2.0 / 3.0, 0.001)
+	assert_float(coast[16 * SIDE + 4]).is_equal_approx(4.0 / 3.0, 0.001)
+	assert_float(coast[16 * SIDE + 0]).is_equal_approx(-6.0 - 2.0 / 3.0, 0.001)
+	assert_float(coast[16 * SIDE + 10]).is_equal_approx(12.0 + 4.0 / 3.0, 0.001)
 	var clamped := TerrainBake.signed_coast(heights, SIDE, SPACING, 8.0)
 	assert_float(clamped[16 * SIDE + 10]).is_equal_approx(8.0, 0.001)
 	assert_float(clamped[16 * SIDE + 30]).is_equal_approx(8.0, 0.001)
@@ -35,11 +35,12 @@ func test_distance_stays_close_to_euclidean_off_the_axes() -> void:
 	# um poço de água no meio da terra
 	var coast := TerrainBake.signed_coast(_heights(func(x: int, y: int) -> float: return -1.0 if x == 16 and y == 16 else 3.0),
 			SIDE, SPACING, 64.0)
+	# de -1 para 3 a água acaba a um quarto do canto do poço
 	for offset: Vector2i in [Vector2i(3, 0), Vector2i(3, 3), Vector2i(3, 1), Vector2i(5, 2), Vector2i(7, 4)]:
-		var exact := (Vector2(offset).length() - 0.5) * SPACING
+		var exact := (Vector2(offset).length() - 0.25) * SPACING
 		var cell := Vector2i(16, 16) + offset
 		assert_float(coast[cell.y * SIDE + cell.x]).override_failure_message("%s longe do euclidiano" % offset) \
-				.is_between(exact * 0.99, exact * 1.1)
+				.is_between(exact * 0.97, exact * 1.1)
 
 
 func test_field_composes_regions_and_falls_to_deep_sea_outside() -> void:
