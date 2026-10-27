@@ -1838,6 +1838,12 @@ Regras que já custaram investigação:
   guarda-chuva; malha de longe. Na ilha tropical a `TreeView` sorteia coqueiro ou folhosa pela altura do terreno (80% de
   coqueiro abaixo de `PALM_HEIGHT_M`, 30% acima); camadas `Tropical<n>` e `tropical_count`. Só apresentação.
 
+### Sub-bosque tropical (Fase 60, nossa)
+
+- **Plano** em `docs/plano_fase60.md`. `ScatterView.Kind.BANANA` e `Kind.FERN` (bananeira e samambaia, geradas no
+  código): na ilha tropical o arbusto do recheio vira uma delas (`BANANA_SHARE`); o contexto da ilha diz se ela é
+  tropical. As temperadas ficam iguais. Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1908,6 +1914,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 57 — Pedras soltas com a rocha gerada (nossa) | **feita em 27/10/2026, a pedido do dono**: as pedras dos barrancos e do litoral rochoso trocam as lajes do Kenney pela rocha facetada da Fase 56, nos mesmos lugares; só apresentação; plano em `docs/plano_fase57.md` |
 | 58 — Coqueiro gerado no código (nossa) | **feita em 27/10/2026, a pedido do dono**: as ilhas tropicais trocam as palmeiras do Kenney por um coqueiro gerado no código, com malha de longe; sai o último modelo do Nature Kit; só apresentação; a mata tropical de folhosas fica como proposta; plano em `docs/plano_fase58.md` |
 | 59 — Mata tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: folhosa tropical gerada no código (tronco com sapopemas, copa em guarda-chuva) misturada aos coqueiros, mais coqueiro na costa baixa e mais folhosa no alto; só apresentação; plano em `docs/plano_fase59.md` |
+| 60 — Sub-bosque tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: bananeira e samambaia geradas no código no lugar do arbusto temperado nas ilhas tropicais; temperadas iguais; só apresentação; plano em `docs/plano_fase60.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -6,14 +6,22 @@ extends Node3D
 ## determinístico pela célula (o mesmo mundo dá sempre o mesmo recheio), nada no save, em MultiMesh por trecho de
 ## CHUNK_CELLS e por peça, até VISIBLE_UNTIL_M da câmera. Refaz só os trechos que uma obra, uma estrada ou uma
 ## derrubada de árvores atingiu. Só lê o mundo. A ilha plana dos testes e saves antigos não tem recheio.
+## Fase 60: nas ilhas tropicais o arbusto temperado vira sub-bosque tropical — bananeira (BANANA_SHARE das vezes) ou
+## samambaia —; as ilhas temperadas não mudam (o sorteio extra só acontece na tropical).
 
-enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE }
+enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
-const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE]
+const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA]
+## As plantas (material da folhagem, balançam).
+const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN]
+const BANANA_SHARE := 0.4
+const BANANA_LEAF := Color(0.36, 0.58, 0.18)
+const BANANA_STEM := Color(0.42, 0.46, 0.2)
+const FERN_LEAF := Color(0.18, 0.4, 0.12)
 ## Chances por célula, pelo que há em volta: [peça, chance].
 const NEAR_HOUSE: Array[Array] = [[Kind.BUSH, 0.25], [Kind.FLOWERS, 0.3], [Kind.BARREL, 0.1], [Kind.WOODPILE, 0.08],
 		[Kind.CRATE, 0.05]]
@@ -59,8 +67,7 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 	plain.roughness = 0.9
 	for kind: int in Kind.values():
 		_meshes[kind] = piece_mesh(kind)
-		_materials[kind] = CropView.plant_material(_meshes[kind], 0.1) if kind in [Kind.BUSH, Kind.TUFT, Kind.FLOWERS] \
-				else plain
+		_materials[kind] = CropView.plant_material(_meshes[kind], 0.1) if kind in PLANTS else plain
 	EventBus.building_placed.connect(_on_building_changed)
 	EventBus.building_removed.connect(_on_building_changed)
 	EventBus.roads_changed.connect(_on_roads_changed)
@@ -237,8 +244,8 @@ func _build_chunk(island_id: int, chunk: Vector2i, context: Array) -> void:
 	rebuilt_chunks += 1
 
 
-## As portas (células da entrada) e o tipo de cada prédio da ilha: [portas, tipos]. Feito uma vez por ilha a cada
-## desenho (não por trecho).
+## As portas (células da entrada), o tipo de cada prédio da ilha e se ela é tropical: [portas, tipos, tropical]. Feito
+## uma vez por ilha a cada desenho (não por trecho).
 static func island_context(world: WorldState, data: GameData, island_id: int) -> Array:
 	var doors: Dictionary[Vector2i, bool] = {}
 	var kinds: Dictionary[int, int] = {}
@@ -251,7 +258,7 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 			continue
 		kinds[id] = def.kind
 		doors[Footprint.entrance_cell(record.origin, def.size, record.rotation)] = true
-	return [doors, kinds]
+	return [doors, kinds, world.is_tropical(island_id, data)]
 
 
 ## As peças de um trecho: tipo → [[lugar no mundo, cor da instância], ...]. Função pura do mundo (testes, save).
@@ -269,6 +276,7 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 	# as portas dos prédios ficam limpas: é por onde se passa
 	var doors: Dictionary[Vector2i, bool] = context[0]
 	var kinds: Dictionary[int, int] = context[1]
+	var tropical: bool = context[2]
 	var trees := grid.trees
 	var roads := grid.roads
 	var ground := grid.ground
@@ -329,13 +337,14 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 				rules = NEAR_ROAD
 			elif sea:
 				rules = NEAR_SEA
-			_cell_items(grid, config, island_id, cell, rules, lean, result)
+			_cell_items(grid, config, island_id, cell, rules, lean, tropical, result)
 	return result
 
 
-## As peças de uma célula: cada regra sorteia pela célula; encostadas no prédio do lado "lean" (se houver).
+## As peças de uma célula: cada regra sorteia pela célula; encostadas no prédio do lado "lean" (se houver). Na ilha
+## tropical o arbusto vira bananeira ou samambaia.
 static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, cell: Vector2i, rules: Array[Array],
-		lean: Vector2i, result: Dictionary) -> void:
+		lean: Vector2i, tropical: bool, result: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([island_id, cell, &"recheio"])
 	for rule: Array in rules:
@@ -343,6 +352,8 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		var chance: float = rule[1]
 		if rng.randf() >= chance:
 			continue
+		if tropical and kind == Kind.BUSH:
+			kind = Kind.BANANA if rng.randf() < BANANA_SHARE else Kind.FERN
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
@@ -356,7 +367,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		match kind:
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
-			Kind.BUSH, Kind.TUFT:
+			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		var list: Array = result[kind]
@@ -405,5 +416,48 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 					CropView._part(tool, CropView._cylinder(0.09, 1.0), Transform3D(Basis(Vector3.BACK, PI * 0.5),
 							Vector3(0.0, 0.09 + row * 0.16, -0.27 + k * 0.18 + row * 0.09)),
 							Color(0.5, 0.36, 0.22).darkened(0.08 * ((row + k) % 2)))
+		Kind.BANANA:
+			# pseudocaule e seis folhas largas em remo, arqueadas para fora (~2,6 m)
+			CropView._part(tool, CropView._cylinder(0.1, 1.5), Transform3D(Basis.IDENTITY, Vector3(0.0, 0.75, 0.0)), BANANA_STEM)
+			for i: int in 6:
+				_leaf(tool, Vector3(0.0, 1.4 + (i % 2) * 0.12, 0.0), TAU * i / 6.0 + (i % 2) * 0.3, 1.4, 0.32,
+						1.0 if i % 2 == 0 else 0.6, 0.9, 6, false, BANANA_LEAF.lerp(BANANA_STEM, 0.15 * (i % 3)))
+		Kind.FERN:
+			# roseta de oito frondes recortadas e arqueadas, rente ao chão (~0,6 m)
+			for i: int in 8:
+				_leaf(tool, Vector3(0.0, 0.05, 0.0), TAU * i / 8.0 + (i % 2) * 0.2, 0.75, 0.12, 0.7, 0.08, 5, true,
+						FERN_LEAF.lightened(0.08 * (i % 2)))
 	tool.index()
 	return tool.commit()
+
+
+## Uma folha: a nervura sai de base para o lado de angle, length metros, subindo rise e caindo droop até a ponta; a
+## lâmina em volta tem meia largura width (afinando nas pontas) e, se serrated, alterna estreita (frondes recortadas).
+static func _leaf(tool: SurfaceTool, base: Vector3, angle: float, length: float, width: float, rise: float, droop: float,
+		steps: int, serrated: bool, color: Color) -> void:
+	var out := Vector3(cos(angle), 0.0, sin(angle))
+	var side := Vector3(-out.z, 0.0, out.x)
+	var spine: Array[Vector3] = []
+	for s: int in steps + 1:
+		var t := float(s) / steps
+		spine.append(base + out * length * t + Vector3.UP * (rise * 4.0 * t * (1.0 - t) - droop * t * t))
+	for s: int in steps:
+		var widths: Array[float] = []
+		for k: int in [s, s + 1]:
+			var w := width * sin(PI * float(k) / steps)
+			if serrated and k % 2 == 1:
+				w *= 0.45
+			widths.append(w)
+		var along := (spine[s + 1] - spine[s]).normalized()
+		var normal := side.cross(along).normalized()
+		if normal.y < 0.0:
+			normal = -normal
+		for edge: float in [-1.0, 1.0]:
+			var a := spine[s]
+			var b := spine[s + 1]
+			var c := b + side * edge * widths[1] + Vector3.DOWN * widths[1] * 0.15
+			var d := a + side * edge * widths[0] + Vector3.DOWN * widths[0] * 0.15
+			for point: Vector3 in [a, b, c, a, c, d]:
+				tool.set_color(color)
+				tool.set_normal(normal)
+				tool.add_vertex(point)

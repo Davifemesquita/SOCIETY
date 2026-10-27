@@ -1193,3 +1193,10 @@ Godot (os 47010 das fases anteriores estavam inflados; ver `docs/plano_fase58.md
 Área de trabalho escondida, alto, semente 1840 (v3): 28837 árvores desenhadas (as mesmas), 2759 objetos e 1109 draw
 calls (a ilha tropical fica fora do quadro com tudo visível), GPU média 10,7 ms (p99 14,2), igual à Fase 58; dia
 inteiro 51,9 FPS (p50 19,1 ms), com a máquina ainda oscilando nesta tarde; jogo novo 8,7 s, carregar 3,82 s.
+## Fase 60 — sub-bosque tropical (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), duas rodadas: 2745 a 2759 objetos e 1107 a 1109 draw calls (as
+mesmas), jogo novo 21,7 e 23,1 s, GPU média 22,5 e 22,8 ms, dia inteiro 36,0 e 35,5 FPS. Na mesma hora, o commit da
+Fase 59 sem mudança nenhuma: jogo novo 22,8 s, GPU 23,0 ms, dia inteiro 35,1 FPS. A fase é neutra; a máquina inteira
+(CPU e GPU) mediu ~2,5 vezes mais lenta nesta hora, com o plano de energia em alto desempenho e a CPU no relógio
+cheio — causa fora do jogo (talvez o papel de parede animado em execução disputando a GPU), a conferir com o dono.
