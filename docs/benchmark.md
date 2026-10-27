@@ -1181,3 +1181,10 @@ objetos e 1109 draw calls (17 a menos que na Fase 56: as pedras de cada trecho c
 e 55,5 FPS de média (p50 16,0 ms), GPU média 10,7 e 10,8 ms; jogo novo 8,9 s, carregar 3,92 s. Na mesma hora, o
 commit da Fase 56 sem mudança nenhuma: 19 ms (54 FPS), dia inteiro 55,6 FPS, GPU 10,9 ms. A queda é da máquina nesta
 hora (o quadro preso perto de 16 ms com a GPU folgada), não da fase, que é neutra.
+## Fase 58 — coqueiro gerado no código (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), duas rodadas: 2745 a 2759 objetos e 1107 a 1109 draw calls (o
+mesmo da Fase 57), GPU média 11,5 e 10,7 ms; dia inteiro 78,8 e 40,6 FPS de média (p50 12,2 e 21,7 ms) com a GPU igual:
+a máquina oscilou muito nesta tarde, de rodada para rodada, e a GPU é o número que vale para a fase. Jogo novo 8,8 e
+10,0 s. "Árvores desenhadas" passa a 28837: o `instance_count` contava parte das camadas de longe, renomeadas pelo
+Godot (os 47010 das fases anteriores estavam inflados; ver `docs/plano_fase58.md`).

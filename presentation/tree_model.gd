@@ -8,7 +8,10 @@ extends RefCounted
 ## (balança ao vento). Em metros: a TreeView não reescala. Dois níveis de detalhe: o perto (`DETAIL_NEAR`)
 ## e o de longe (`DETAIL_FAR`, a copa sem subdividir e o tronco de quatro faces, sem galhos).
 
-enum Species { OAK, BEECH, SCOTS_PINE }
+## Fase 58: o coqueiro das ilhas tropicais, no lugar das palmeiras do Kenney: tronco curvo em gomos com anéis, a
+## coroa de folhas compridas que sobem e caem, com folíolos em serra e dobradas em V, e um cacho de cocos.
+
+enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM }
 
 const DETAIL_NEAR := 0
 const DETAIL_FAR := 1
@@ -22,6 +25,17 @@ const OAK_BARK := Color(0.3, 0.25, 0.19)
 const BEECH_BARK := Color(0.46, 0.45, 0.41)
 const PINE_BARK := Color(0.33, 0.22, 0.15)
 const PINE_UPPER_BARK := Color(0.62, 0.36, 0.2)
+const PALM_LEAF := Color(0.3, 0.52, 0.15)
+## As folhas de baixo (as mais velhas) puxam para esta cor.
+const PALM_OLD_LEAF := Color(0.5, 0.52, 0.2)
+const PALM_BARK := Color(0.5, 0.42, 0.32)
+const PALM_RING := Color(0.42, 0.35, 0.27)
+const COCONUT := Color(0.36, 0.34, 0.12)
+## Coqueiro: altura do tronco (antes do sorteio), gomos do tronco, folhas da coroa e o comprimento delas, em metros.
+const PALM_HEIGHT_M := 8.0
+const PALM_SEGMENTS := 7
+const PALM_FRONDS := 10
+const PALM_FROND_M := Vector2(3.4, 4.2)
 ## A folhagem embaixo de cada massa fica nesta fração da cor; em cima, um pouco mais clara.
 const CROWN_SHADE := 0.74
 const CROWN_LIGHT := 1.12
@@ -56,6 +70,8 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 			_beech(tool, rng, detail)
 		Species.SCOTS_PINE:
 			_pine(tool, rng, detail)
+		Species.COCONUT_PALM:
+			_palm(tool, rng, detail)
 	var result := tool.commit()
 	result.surface_set_material(0, _material(result))
 	_cache[key] = result
@@ -124,6 +140,90 @@ static func _pine(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) ->
 		var radius := rng.randf_range(1.3, 1.8)
 		_crown(tool, rng, spot, Vector3(radius, radius * 0.5, radius), PINE_NEEDLE, detail, hull)
 	_puffs(tool, rng, spots, hull, PINE_NEEDLE, detail, 0.45)
+
+
+## Coqueiro: tronco curvo para um lado, em gomos com um anel escuro em cada junta e o pé alargado; no alto, a coroa de
+## folhas em volta (as de cima mais em pé, as de baixo caídas e mais amarelas) e um cacho de cocos sob ela. De longe,
+## menos gomos e folhas, sem cocos.
+static func _palm(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> void:
+	var height := PALM_HEIGHT_M * rng.randf_range(0.9, 1.15)
+	var turn := rng.randf() * TAU
+	var lean := Vector3(cos(turn), 0.0, sin(turn)) * rng.randf_range(0.8, 2.0)
+	var segments := PALM_SEGMENTS if detail == DETAIL_NEAR else 3
+	var last := Vector3.ZERO
+	for i: int in segments:
+		var t0 := float(i) / segments
+		var t1 := float(i + 1) / segments
+		var from := _palm_spine(height, lean, t0)
+		var to := _palm_spine(height, lean, t1)
+		var r_from := lerpf(0.24, 0.14, t0) + (0.1 if i == 0 else 0.0)
+		var r_to := lerpf(0.24, 0.14, t1)
+		_limb(tool, from, to, r_from, r_to, detail, PALM_RING if detail == DETAIL_NEAR else PALM_BARK, PALM_BARK)
+		last = to
+	var top := last
+	var fronds := PALM_FRONDS if detail == DETAIL_NEAR else 6
+	var spin := rng.randf() * TAU
+	for f: int in fronds:
+		var angle := spin + f * TAU / fronds + rng.randf_range(-0.25, 0.25)
+		# metade de cima mais em pé, metade de baixo caída
+		var upper := f % 2 == 0
+		var rise := rng.randf_range(0.5, 0.9) if upper else rng.randf_range(0.0, 0.3)
+		var droop := rng.randf_range(1.6, 2.4) if upper else rng.randf_range(2.4, 3.2)
+		var color := PALM_LEAF if upper else PALM_LEAF.lerp(PALM_OLD_LEAF, rng.randf_range(0.2, 0.5))
+		_frond(tool, top, angle, rng.randf_range(PALM_FROND_M.x, PALM_FROND_M.y), rise, droop, color, detail)
+	if detail == DETAIL_NEAR:
+		for c: int in 4:
+			var angle := spin + c * TAU / 4.0 + 0.4
+			var nut := top + Vector3(cos(angle) * 0.24, -0.35 - (c % 2) * 0.15, sin(angle) * 0.24)
+			_crown(tool, rng, nut, Vector3(0.16, 0.18, 0.16), COCONUT, detail, Vector3.INF, 0)
+
+
+## Ponto do tronco do coqueiro na fração t da altura: curva para o lado de lean, mais no alto.
+static func _palm_spine(height: float, lean: Vector3, t: float) -> Vector3:
+	return Vector3(0.0, height * t, 0.0) + lean * t * t
+
+
+## Uma folha do coqueiro: a nervura sai do alto, sobe rise e cai droop até a ponta (length metros para fora), e a lâmina
+## em volta dela tem os folíolos em serra (largura alternando), dobrada em V para baixo e afinando até a ponta.
+static func _frond(tool: SurfaceTool, top: Vector3, angle: float, length: float, rise: float, droop: float, color: Color,
+		detail: int) -> void:
+	var out := Vector3(cos(angle), 0.0, sin(angle))
+	var side := Vector3(-out.z, 0.0, out.x)
+	var steps := 10 if detail == DETAIL_NEAR else 4
+	var spine: Array[Vector3] = []
+	for s: int in steps + 1:
+		var t := float(s) / steps
+		spine.append(top + out * length * t + Vector3.UP * (rise * 4.0 * t * (1.0 - t) - droop * t * t))
+	for s: int in steps:
+		var t0 := float(s) / steps
+		var t1 := float(s + 1) / steps
+		var w0 := _frond_width(t0, s, detail)
+		var w1 := _frond_width(t1, s + 1, detail)
+		var along := (spine[s + 1] - spine[s]).normalized()
+		var normal := side.cross(along).normalized()
+		if normal.y < 0.0:
+			normal = -normal
+		var shade := lerpf(0.85, 1.05, t0)
+		var tint := Color(color.r * shade, color.g * shade, color.b * shade)
+		for edge: float in [-1.0, 1.0]:
+			var fold := Vector3.DOWN * 0.18
+			var a := spine[s]
+			var b := spine[s + 1]
+			var c := spine[s + 1] + side * edge * w1 + fold * w1
+			var d := spine[s] + side * edge * w0 + fold * w0
+			var tilted := (normal + side * edge * 0.35).normalized()
+			for point: Vector3 in [a, b, c, a, c, d]:
+				tool.set_normal(tilted)
+				tool.set_color(tint)
+				tool.add_vertex(point)
+
+
+## Meia largura da lâmina na fração t da folha: cresce, afina até a ponta e, de perto, alterna (os folíolos em serra).
+static func _frond_width(t: float, step: int, detail: int) -> float:
+	var width := 0.55 * sin(PI * sqrt(t))
+	if detail == DETAIL_NEAR and step % 2 == 1:
+		width *= 0.4
+	return maxf(width, 0.0)
 
 
 ## Tronco ou galho: cilindro afinando de from (raio r_from) a to, com a cor indo de uma à outra.

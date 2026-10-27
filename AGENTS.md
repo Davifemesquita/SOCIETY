@@ -1825,6 +1825,13 @@ Regras que já custaram investigação:
   largas (`ROCK_SIZE_M`, `ROCK_TALL`), nos mesmos lugares e chances de antes. Os `.glb` das pedras do Kenney saíram.
   Só apresentação.
 
+### Coqueiro gerado no código (Fase 58, nossa)
+
+- **Plano** em `docs/plano_fase58.md`. `TreeModel.Species.COCONUT_PALM`: tronco curvo em gomos com anéis, coroa de
+  folhas que sobem e caem com folíolos em serra, dobradas em V, e cocos; malha de longe. A `TreeView` desenha três
+  variantes nas ilhas tropicais, perto e longe. A pasta `assets/models/nature/` (Kenney Nature Kit) saiu. Só
+  apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1893,6 +1900,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 55 — Malha fina na linha d'água (nossa) | **feita em 27/10/2026, a pedido do dono**: os quadrados da malha que a costa atravessa viram subgrade de 3 × 3 com alturas curvas (Catmull-Rom, até 0,8 m da reta), a linha d'água sai curva de perto em vez de reta de 2 em 2 m; cantos da grade iguais aos da simulação, sem fresta; só apresentação; plano em `docs/plano_fase55.md` |
 | 56 — Rocha nos rochedos e nas falésias (nossa) | **feita em 27/10/2026, a pedido do dono**: rocha gerada no código (sem asset novo); cada rochedo solto no mar vira bloco de rocha com pilar e pedras em volta, e a face das falésias ganha rochas encaixadas, abaixo da borda e fora de onde se constrói; só apresentação; o rochedo segue construível na simulação (proposta à espera do dono); plano em `docs/plano_fase56.md` |
 | 57 — Pedras soltas com a rocha gerada (nossa) | **feita em 27/10/2026, a pedido do dono**: as pedras dos barrancos e do litoral rochoso trocam as lajes do Kenney pela rocha facetada da Fase 56, nos mesmos lugares; só apresentação; plano em `docs/plano_fase57.md` |
+| 58 — Coqueiro gerado no código (nossa) | **feita em 27/10/2026, a pedido do dono**: as ilhas tropicais trocam as palmeiras do Kenney por um coqueiro gerado no código, com malha de longe; sai o último modelo do Nature Kit; só apresentação; a mata tropical de folhosas fica como proposta; plano em `docs/plano_fase58.md` |
 
 Pendências já vistas para fases futuras:
 

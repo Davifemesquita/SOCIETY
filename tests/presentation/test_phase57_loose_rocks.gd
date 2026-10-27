@@ -20,14 +20,21 @@ func _grid_at(point: Vector3) -> IslandGrid:
 	return null
 
 
+## O modelo da camada pelo nome ("Trees6", ou "@Trees6@123" quando o Godot renomeia o repetido de outro trecho); -1 se
+## não for de árvore ou pedra.
+func _model(layer: MultiMeshInstance3D) -> int:
+	var clean := String(layer.name).trim_prefix("@").get_slice("@", 0)
+	return int(clean.trim_prefix("Trees")) if clean.begins_with("Trees") else -1
+
+
 func _rock_nodes(view: TreeView) -> Array[MultiMeshInstance3D]:
 	var first := TreeView.BROADLEAF.size() + TreeView.CONIFER.size()
 	var result: Array[MultiMeshInstance3D] = []
 	for node: Node in view.get_children():
 		var layer := node as MultiMeshInstance3D
-		if layer == null or not layer.name.begins_with("Trees"):
+		if layer == null:
 			continue
-		var model := int(String(layer.name).trim_prefix("Trees"))
+		var model := _model(layer)
 		if model >= first and model < first + TreeView.ROCKS:
 			result.append(layer)
 	return result
@@ -43,7 +50,7 @@ func test_loose_rocks_use_the_generated_rock() -> void:
 	var total := 0
 	for layer: MultiMeshInstance3D in layers:
 		var mesh := layer.multimesh.mesh as ArrayMesh
-		var model := int(String(layer.name).trim_prefix("Trees")) - TreeView.BROADLEAF.size() - TreeView.CONIFER.size()
+		var model := _model(layer) - TreeView.BROADLEAF.size() - TreeView.CONIFER.size()
 		var original := RockModel.mesh(model)
 		# a mesma malha da RockModel (mesmos vértices), numa cópia com o material
 		assert_int(mesh.surface_get_array_len(0)).is_equal(original.surface_get_array_len(0))

@@ -4,8 +4,8 @@ extends Node3D
 ## pela semente) e são desenhadas em MultiMesh por trecho de CHUNK_CELLS × CHUNK_CELLS e por
 ## modelo. Derrubar árvores ao construir refaz só o trecho atingido (trees_changed). Posição,
 ## giro e tamanho de cada árvore saem do índice da célula: o mesmo mundo dá sempre a mesma mata.
-## Palmeiras do Kenney Nature Kit (CC0); nas ilhas tropicais (Fase 11), palmeiras no lugar da
-## mata. Desde a Fase 22 a mata temperada é gerada no código (`TreeModel`): carvalho e faia entre as
+## Nas ilhas tropicais (Fase 11), palmeiras no lugar da mata; desde a Fase 58, o coqueiro do `TreeModel` (três
+## variantes, com a malha de longe), no lugar das palmeiras do Kenney. Desde a Fase 22 a mata temperada é gerada no código (`TreeModel`): carvalho e faia entre as
 ## folhosas, pinheiro-silvestre entre as coníferas, duas variantes de cada, já em metros.
 ## Desde a Fase 36 as pedras são de rocha de verdade (a textura de rocha do terreno, triplanar, sem o musgo verde
 ## recolorido), aparecem mais nos barrancos altos e no litoral rochoso e sentam na malha com o detalhe visual
@@ -19,10 +19,7 @@ const BROADLEAF: Array[Array] = [[TreeModel.Species.OAK, 0], [TreeModel.Species.
 const CONIFER: Array[Array] = [[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Species.SCOTS_PINE, 1]]
 ## Formas de pedra: as variantes do RockModel.
 const ROCKS := RockModel.VARIANTS
-const PALMS: Array[String] = ["tree_palm", "tree_palmTall", "tree_palmBend"]
-const MODEL_DIR := "res://assets/models/nature/%s.glb"
-## Altura de uma palmeira adulta, em metros (as árvores do TreeModel já vêm no tamanho).
-const TREE_HEIGHT_M := 8.0
+const PALMS: Array[Array] = [[TreeModel.Species.COCONUT_PALM, 0], [TreeModel.Species.COCONUT_PALM, 1], [TreeModel.Species.COCONUT_PALM, 2]]
 ## Raio da pedra (a RockModel tem raio 1) e quanto ela é mais alta que larga.
 const ROCK_SIZE_M := 1.0
 const ROCK_TALL := 1.25
@@ -47,13 +44,10 @@ const LOD_MARGIN_M := 24.0
 ## Desenhadas no máximo tantas árvores por célula (a regra do lenhador conta todas): a copa de
 ## uma árvore de 8 m já cobre a célula de 2 m.
 const DRAWN_PER_CELL := 2
-## Cores das superfícies das palmeiras do pacote (as dele são de desenho animado).
-const PALM_COLOR := Color(0.24, 0.42, 0.14)
-const PALM_TRUNK_COLOR := Color(0.46, 0.36, 0.24)
 
 var _world: WorldState
 var _models: Array[Mesh] = []
-## A malha de longe de cada modelo (null nos que não têm: pedras e palmeiras).
+## A malha de longe de cada modelo (null nas pedras, que não têm).
 var _far_models: Array[Mesh] = []
 ## Fator de escala de cada modelo para chegar à altura certa.
 var _scales: PackedFloat32Array = []
@@ -67,22 +61,12 @@ var _config: GameConfig
 func setup(world: WorldState, data: GameData = GameData.get_default(), config: GameConfig = null) -> void:
 	_world = world
 	_config = config if config != null else GameConfig.get_default()
-	for tree: Array in BROADLEAF + CONIFER:
-		var species: TreeModel.Species = tree[0]
-		var variant: int = tree[1]
-		_models.append(TreeModel.mesh(species, variant))
-		_far_models.append(TreeModel.mesh(species, variant, TreeModel.DETAIL_FAR))
-		_scales.append(1.0)
+	_add_trees(BROADLEAF + CONIFER)
 	for variant: int in ROCKS:
 		_models.append(_stone(RockModel.mesh(variant)))
 		_far_models.append(null)
 		_scales.append(ROCK_SIZE_M)
-	for name: String in PALMS:
-		var mesh := _recolor(_load_mesh(MODEL_DIR % name), PALM_COLOR, PALM_TRUNK_COLOR)
-		_models.append(mesh)
-		_far_models.append(null)
-		var height := mesh.get_aabb().size.y if mesh != null else 1.0
-		_scales.append(TREE_HEIGHT_M / maxf(height, 0.01))
+	_add_trees(PALMS)
 	for index: int in world.islands.size():
 		if world.is_tropical(index, data):
 			_tropical[index] = true
@@ -95,12 +79,23 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 	EventBus.trees_changed.connect(_on_trees_changed)
 
 
+## Os modelos de [espécie, variante] do TreeModel, perto e longe, já em metros.
+func _add_trees(trees: Array) -> void:
+	for tree: Array in trees:
+		var species: TreeModel.Species = tree[0]
+		var variant: int = tree[1]
+		_models.append(TreeModel.mesh(species, variant))
+		_far_models.append(TreeModel.mesh(species, variant, TreeModel.DETAIL_FAR))
+		_scales.append(1.0)
+
+
 ## Árvores e pedras desenhadas (a camada de longe repete as de perto e não conta).
 func instance_count() -> int:
 	var total := 0
 	for instances: Array in _chunks.values():
 		for node: MultiMeshInstance3D in instances:
-			if not node.name.ends_with("Far"):
+			# a camada de longe começa longe (o nome não serve: o Godot renomeia os repetidos de outros trechos)
+			if node.visibility_range_begin == 0.0:
 				total += node.multimesh.instance_count
 	return total
 
@@ -110,13 +105,13 @@ func chunk_layers(island_id: int, chunk: Vector2i) -> Array:
 	return _chunks.get("%d/%d/%d" % [island_id, chunk.x, chunk.y], [])
 
 
-## Palmeiras desenhadas numa ilha (as das ilhas tropicais).
+## Palmeiras desenhadas numa ilha (as das ilhas tropicais; a camada de longe não conta).
 func palm_count(island_id: int) -> int:
 	var total := 0
 	for key: String in _chunks:
 		if key.begins_with("%d/" % island_id):
 			for node: MultiMeshInstance3D in _chunks[key]:
-				if node.name.begins_with("Palm"):
+				if String(node.name).contains("Palm") and node.visibility_range_begin == 0.0:
 					total += node.multimesh.instance_count
 	return total
 
@@ -224,29 +219,6 @@ static func _transform(grid: IslandGrid, cell: Vector2i, seed_value: int, scale:
 			grid.height_at(x, z) - 0.1, basis.x.z, basis.y.z, basis.z.z, z])
 
 
-## Cópia da malha com os materiais trocados: a superfície esverdeada vira folhagem (ou musgo) e a
-## outra, casca (ou pedra).
-## Troca as cores do pacote pelas do jogo; desde a Fase 9 o material é o da folhagem, que balança
-## ao vento (a pedra não balança).
-static func _recolor(mesh: Mesh, foliage: Color, wood: Color, sways: bool = true) -> Mesh:
-	if mesh == null:
-		return null
-	var copy := mesh.duplicate() as Mesh
-	var shader := load("res://shaders/foliage.gdshader") as Shader
-	for surface: int in copy.get_surface_count():
-		var original := copy.surface_get_material(surface) as BaseMaterial3D
-		var greenish := original != null and original.albedo_color.g > original.albedo_color.r + 0.15
-		var material := ShaderMaterial.new()
-		material.shader = shader
-		material.set_shader_parameter(&"albedo", foliage if greenish else wood)
-		material.set_shader_parameter(&"model_height", maxf(mesh.get_aabb().end.y, 0.1))
-		material.set_shader_parameter(&"sway", 0.035 if sways else 0.0)
-		var array_mesh := copy as ArrayMesh
-		if array_mesh != null:
-			array_mesh.surface_set_material(surface, material)
-	return copy
-
-
 ## Chance de pedra na célula de terra sem árvore: barranco alto, ou litoral rochoso (terra encostada no mar com
 ## desnível). Zero no resto.
 static func rock_chance(grid: IslandGrid, cell: Vector2i) -> float:
@@ -272,15 +244,3 @@ static func _stone(mesh: ArrayMesh) -> Mesh:
 func rock_material() -> Material:
 	var model := _models[BROADLEAF.size() + CONIFER.size()]
 	return model.surface_get_material(0) if model != null else null
-
-
-## Malha do primeiro MeshInstance3D da cena .glb (os materiais vêm junto, por superfície).
-static func _load_mesh(path: String) -> Mesh:
-	var scene := load(path) as PackedScene
-	if scene == null:
-		return null
-	var root := scene.instantiate()
-	var meshes := root.find_children("*", "MeshInstance3D", true, false)
-	var mesh: Mesh = (meshes[0] as MeshInstance3D).mesh if not meshes.is_empty() else null
-	root.free()
-	return mesh
