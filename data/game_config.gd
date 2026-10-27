@@ -266,9 +266,9 @@ static var _default: GameConfig
 @export var archipelago_island_counts: PackedInt32Array = PackedInt32Array([5, 7, 9])
 ## Tamanho usado quando ninguém escolhe (testes, ferramentas, `-- --novo-jogo`).
 @export var default_archipelago_size: int = 0
-## Fase 45: o gerador dos jogos novos (1, o de sempre, até o dono aprovar o v2 pela prévia; 2, as ilhas orgânicas).
-## Os saves refazem o terreno na versão que gravaram.
-@export var new_game_terrain_version: int = 1
+## Fase 45: o gerador dos jogos novos (1, o de sempre; 2, as ilhas orgânicas; desde a Fase 52, a pedido do dono, 3: as
+## ilhas alongadas com enseadas e falésias). Os saves refazem o terreno na versão que gravaram.
+@export var new_game_terrain_version: int = 3
 @export var main_island_profile: StringName = &"main_island"
 ## Perfis sorteados (pela semente) para as outras ilhas.
 @export var other_island_profiles: Array[StringName] = [&"farmland", &"highlands", &"woodland", &"reef"]
@@ -555,9 +555,10 @@ func day_length_game_seconds() -> float:
 ## Lista os valores inválidos. Vazia quando a configuração está boa.
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()
-	if new_game_terrain_version not in [1, 2]:
-		problems.append("new_game_terrain_version deve ser 1 ou 2")
+	if new_game_terrain_version not in ArchipelagoGenerator.VERSIONS:
+		problems.append("new_game_terrain_version deve ser 1, 2 ou 3")
 	problems.append_array(TerrainV2Params.get_default().validate())
+	problems.append_array(TerrainV3Params.get_v3().validate())
 	if ticks_per_second <= 0:
 		problems.append("ticks_per_second deve ser maior que zero")
 	if max_ticks_per_frame <= 0:

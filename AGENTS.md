@@ -1778,6 +1778,17 @@ Regras que já custaram investigação:
   retratos.
 - **Interface**: cartões do menu com a foto (`Hud.PHOTO_CARD_HEIGHT`); faixa `Photo` no topo do painel do selecionado.
 
+### Ilhas no jeito do Anno (Fase 52, nossa)
+
+- **Plano** em `docs/plano_fase52.md`. O Anno 1800 do dono foi só olhado (capturas fora do repositório); nada de
+  engenharia reversa nem arquivo dele.
+- **Gerador v3** (`terrain_version = 3`, padrão dos jogos novos): `ArchipelagoGenerator.shape_v3` (espinha curva,
+  penínsulas, enseadas, rochedos) e `height_at_v3`; parâmetros em `TerrainV3Params` (herda do `TerrainV2Params`, pega por
+  `TerrainV3Params.get_v3()`). Faixas da costa em células. Mudou um número dali, regrave as assinaturas do v3 no
+  `test_terrain_golden.gd` (pegue os valores dentro do gdUnit: o modo `--script` não carrega os autoloads e os perfis
+  das ilhas podem sair diferentes).
+- **Plataforma desenhada** no v3 pela distância até a terra (`_distance_to_land`), não pelo quadrado do v1.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1840,6 +1851,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 49 — Desfazer e planta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
 | 50 — Kit de época (nossa) | **caminho pronto em 26/10/2026, à espera da arte**, sem nada na tela do dono: regras de importação com teste (orçamento de triângulos por categoria, uma malha, frente em −Z, pivô e tamanho no lote, LOD, nome, crédito), validação no CI, o BuildingKit pondo a peça no lugar da forma procedural sem quebrar a montagem por célula (sem peça, nada muda; benchmark igual), lista do que falta no `assets/TODO_ASSETS.md`; falta a arte (modelar, gerar ou comprar as peças) e as aprovações do dono; plano em `docs/plano_fase50.md` |
 | 51 — Fotos e retratos nos menus (nossa) | **feita em 26/10/2026, a pedido do dono**, sem nada na tela dele: ideias do Anno 1800 (cartões ilustrados, painel com a imagem do prédio, retratos pintados), nenhum arquivo dele; 64 fotos dos nossos próprios modelos com acabamento de pintura nos cartões do menu de construção e no painel; retratos de pinturas do século XIX em domínio público (Pissarro, Renoir, Manet e outros, Art Institute of Chicago, CC0) nas classes, no conselheiro e no comerciante; quadro igual; plano em `docs/plano_fase51.md` |
+| 52 — Ilhas no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**, olhando o Anno 1800 dele (só capturas, nenhum arquivo): gerador v3, padrão dos jogos novos, com ilhas alongadas sobre uma espinha curva, 2–3 enseadas com praia larga e água rasa, falésias no resto da costa com a planície mais alta, rochedos soltos junto aos cabos, interior quase plano e a plataforma turquesa pela costa de verdade; cerca de metade dos lotes de casa do v1 (faixa provisória); a cor, a água e a rocha ficam para a Fase 53; plano em `docs/plano_fase52.md` |
 
 Pendências já vistas para fases futuras:
 

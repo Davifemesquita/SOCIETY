@@ -52,11 +52,12 @@ static func squareness(grid: IslandGrid) -> float:
 	return float(land) / box
 
 
-func test_the_new_game_default_stays_on_v1_until_approval() -> void:
-	assert_int(GameConfig.get_default().new_game_terrain_version).is_equal(1)
+func test_the_new_game_default_follows_the_owner() -> void:
+	# Fase 52: o dono pediu as ilhas no jeito do Anno; os jogos novos saem no v3 (o v1 e o v2 seguem para os saves)
+	assert_int(GameConfig.get_default().new_game_terrain_version).is_equal(ArchipelagoGenerator.VERSION_V3)
 	assert_int(ArchipelagoGenerator.VERSION).is_equal(1)
 	var world := ArchipelagoGenerator.new_world(1840, _config, _data)
-	assert_int(world.terrain_version).is_equal(1)
+	assert_int(world.terrain_version).is_equal(ArchipelagoGenerator.VERSION_V3)
 	assert_array(Array(TerrainV2Params.get_default().validate())).is_empty()
 
 
@@ -152,8 +153,8 @@ func test_saves_rebuild_the_terrain_of_the_version_they_wrote() -> void:
 		assert_int(loaded.terrain_version).is_equal(version)
 		assert_that(_fingerprints(loaded)).is_equal(_fingerprints(world))
 	# versão que este jogo não conhece: recusado
-	var future := ArchipelagoGenerator.new_world(1840, _config, _data).to_dict()
-	future["terrain_version"] = 3
+	var future := ArchipelagoGenerator.new_world(1840, _config, _data, -1, -1, 1).to_dict()
+	future["terrain_version"] = 99
 	assert_object(WorldState.from_dict(future, _data, _config)).is_null()
 
 

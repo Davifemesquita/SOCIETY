@@ -76,7 +76,9 @@ func test_outside_the_grid_is_always_sea_floor() -> void:
 func test_main_island_has_room_for_the_base_game() -> void:
 	var grid := _world.island(0)
 	var land := grid.ground.count(IslandGrid.Ground.LAND)
-	assert_float(land / float(grid.ground.size())).is_greater(0.5)
+	# desde a Fase 52 o padrão é o v3: enseadas e falésias deixam menos terra na grade que o v1 (que enchia mais da metade)
+	var least := 0.25 if _world.terrain_version == ArchipelagoGenerator.VERSION_V3 else 0.5
+	assert_float(land / float(grid.ground.size())).is_greater(least)
 	var flat := 0
 	for i: int in grid.ground.size():
 		if grid.ground[i] == IslandGrid.Ground.LAND and grid.area_relief(Rect2i(grid.cell_at(i), Vector2i.ONE)) <= 0.5:

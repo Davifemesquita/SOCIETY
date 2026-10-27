@@ -81,3 +81,26 @@ func test_v2_small_archipelagos_keep_their_fingerprints() -> void:
 	for seed_value: int in V2_SMALL:
 		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 2)
 		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V2_SMALL[seed_value])
+
+## Fase 52: o v3 (ilhas alongadas, enseadas, falésias, rochedos), gravado na fase em que entrou e conferido igual no
+## Windows e no Linux (WSL). Mudou de propósito (um número do TerrainV3Params ou o algoritmo), regrave e diga no registro
+## que os saves v3 de antes refazem outro mapa.
+const V3_SEED_1840: Array[int] = [3209189234, 111649509, 498667958, 2275440000, 1717719261, 239502851, 38359108,
+		2992743778]
+const V3_SMALL: Dictionary[int, Array] = {
+	1: [3380542985, 1442531715, 1908832297, 123675424, 2762270405],
+	7: [4209756538, 4173651663, 664998334, 233982599, 759684904],
+	2026: [1004173226, 3563785068, 3706603696, 3285313400, 2717220858],
+	999999: [1608008522, 1270934442, 2128309334, 1216952448, 4219412997],
+}
+
+func test_v3_seed_1840_keeps_its_fingerprints() -> void:
+	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default(), -1, -1, 3)
+	assert_array(_fingerprints(world)).is_equal(V3_SEED_1840)
+
+
+func test_v3_small_archipelagos_keep_their_fingerprints() -> void:
+	var config := _small_config()
+	for seed_value: int in V3_SMALL:
+		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 3)
+		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V3_SMALL[seed_value])

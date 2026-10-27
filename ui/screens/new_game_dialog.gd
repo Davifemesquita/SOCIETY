@@ -24,8 +24,8 @@ var deadline_option := OptionButton.new()
 ## Fase 44: a carta do arquipélago da semente, gerada numa thread a cada troca (com um respiro de PREVIEW_DELAY_S para
 ## não gerar a cada dígito), e o texto enquanto ela não sai. As prévias velhas ficam aqui até a tarefa ser recolhida.
 const PREVIEW_DELAY_S := 0.35
-## Fase 45: o gerador das ilhas, na ordem das versões (1, 2).
-const TERRAIN_KEYS: Array[String] = ["NEW_GAME_TERRAIN_CLASSIC", "NEW_GAME_TERRAIN_ORGANIC"]
+## Fase 45: o gerador das ilhas, na ordem das versões (1, 2; desde a Fase 52, 3).
+const TERRAIN_KEYS: Array[String] = ["NEW_GAME_TERRAIN_CLASSIC", "NEW_GAME_TERRAIN_ORGANIC", "NEW_GAME_TERRAIN_COVES"]
 var terrain_option := OptionButton.new()
 var preview := TextureRect.new()
 var preview_label := Label.new()
