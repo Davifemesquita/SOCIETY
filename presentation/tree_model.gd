@@ -14,9 +14,10 @@ const DETAIL_NEAR := 0
 const DETAIL_FAR := 1
 ## Variantes de cada espécie (sorteio diferente da copa e dos galhos).
 const VARIANTS := 2
-const OAK_LEAF := Color(0.24, 0.35, 0.14)
-const BEECH_LEAF := Color(0.33, 0.45, 0.17)
-const PINE_NEEDLE := Color(0.15, 0.27, 0.15)
+## Fase 53: folhas mais claras e saturadas (a mata do Anno é verde viva, não um bloco escuro)
+const OAK_LEAF := Color(0.32, 0.5, 0.17)
+const BEECH_LEAF := Color(0.44, 0.6, 0.2)
+const PINE_NEEDLE := Color(0.2, 0.38, 0.18)
 const OAK_BARK := Color(0.3, 0.25, 0.19)
 const BEECH_BARK := Color(0.46, 0.45, 0.41)
 const PINE_BARK := Color(0.33, 0.22, 0.15)

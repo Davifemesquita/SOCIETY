@@ -28,7 +28,8 @@ const V3_PATH := "res://data/terrain_v3.tres"
 ## rampa de 15 m que não deixa construir na beira): praia, praia da enseada e falésia.
 @export var beach_band_cells: float = 1.5
 @export var bay_beach_band_cells: float = 2.5
-@export var cliff_band_cells: float = 0.8
+## (Fase 53: 1,6 em vez de 0,8: com a descida em uma célula a falésia virava a escada da grade de 2 m)
+@export var cliff_band_cells: float = 1.6
 ## Falésia: a faixa do ruído em que a costa passa de praia a falésia (fora das enseadas) e o patamar da planície em cima
 ## dela (índice em terrace_levels_m).
 @export var cliff_noise: Vector2 = Vector2(-0.2, 0.12)

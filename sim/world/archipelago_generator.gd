@@ -33,6 +33,8 @@ const CLIFF_BAND := 0.012
 const LAND_MIN_M := 0.3
 ## Sem árvores a menos disto do mar (praia).
 const BEACH_CELLS := 2
+## v3: acima desta altura (m) a beira do mar não é desenhada como praia (é a falésia).
+const CLIFF_SAND_MAX_M := 2.4
 ## Largura da lama na margem do rio, em células (desenho só).
 const RIVER_BANK_CELLS := 1
 const DEPOSIT_TRIES := 600
@@ -948,6 +950,9 @@ static func region_corners(world: WorldState, index: int, config: GameConfig, da
 					kind = Surface.FOREST if trees[cell] > 0 else Surface.AUTO
 				if bank[cell] == 1 and beach[cell] == 0:
 					kind = Surface.MUD
+				# v3 (Fase 53): em cima da falésia não há praia; o chão é o da terra (grama, e rocha pela inclinação)
+				if not coast_m.is_empty() and kind == Surface.SAND and height > CLIFF_SAND_MAX_M:
+					kind = Surface.FOREST if trees[cell] > 0 else Surface.AUTO
 			# v3: canto que toca terra ou rio fica na altura da simulação (a ilha pode chegar perto da borda da região)
 			if sea and height < 0.0 and (coast_m.is_empty() or coast_m[py * side + px] > 0.0):
 				var x := origin.x + px * cell_m

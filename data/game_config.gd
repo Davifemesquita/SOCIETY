@@ -42,7 +42,7 @@ static var _default: GameConfig
 @export var sky_ambient_share_night: float = 0.25
 @export var moon_light_energy: float = 0.7
 ## Neblina da atmosfera do Sky3D: densidade e distância onde começa.
-@export var sky_fog_density: float = 0.00035
+@export var sky_fog_density: float = 0.0002
 @export var sky_fog_start_m: float = 60.0
 
 @export_group("Economia")
@@ -500,7 +500,7 @@ static var _default: GameConfig
 @export var glow_intensity: float = 0.5
 @export var glow_bloom: float = 0.03
 @export var glow_hdr_threshold: float = 1.1
-@export var volumetric_fog_density: float = 0.004
+@export var volumetric_fog_density: float = 0.0018
 @export var volumetric_fog_length_m: float = 220.0
 ## Fase 37: com a "Cor de época" ligada, o branco e o contraste do AgX (6 a 8 é a faixa das cenas realistas).
 @export var period_agx_white: float = 7.0

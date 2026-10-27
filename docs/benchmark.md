@@ -1149,3 +1149,9 @@ arquipélago 787 → 2.637 ms em série e 343 → 1.247 ms em threads, pior quad
 por canto, mais forma; pular a terra nos cantos de mar tirou ~11%; o jogo novo gera atrás da cortina); jogo novo 7,6 s;
 obra 16,4 ms; carregar 3,96 s; quadro com tudo visível 11–13 ms e o dia inteiro a 76,7–87,1 FPS de média em duas rodadas
 (GPU 10,7–11,9 ms), dentro do ruído da Fase 51 (81,9 FPS, GPU 11,5 ms).
+
+## Fase 53 — cor no jeito do Anno (26/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3): quadro com tudo visível 11 ms (89 FPS), dia inteiro 87,9 FPS de
+média (1% low 45,5), GPU média 10,6 ms: o tratamento de cor no shader do terreno não custou nada medível (Fase 52: GPU
+10,7–11,9 ms).

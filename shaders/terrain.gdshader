@@ -97,6 +97,13 @@ uniform float road_rut_darken = 0.68;
 uniform float road_rut_far_m = 160.0;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
+// Fase 53 (cor no jeito do Anno): grama verde e saturada, a seca mais fraca, areia de praia clara e rocha escura
+uniform vec3 grass_grade = vec3(0.76, 1.12, 0.58);
+uniform float grass_saturation = 1.45;
+uniform float dry_strength = 0.3;
+uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
+uniform vec3 sand_grade = vec3(1.3, 1.2, 1.0);
+uniform vec3 rock_grade = vec3(0.7, 0.66, 0.62);
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -230,8 +237,13 @@ void fragment() {
 	// grama seca nas cristas e onde o ruído de 150 m pede, mais verde perto da água
 	float macro_mid = use_macro ? value_noise(world_position.xz / 150.0) : 0.5;
 	float dry = clamp((macro_mid - 0.4) * 1.4 + (0.5 - data.g) * 2.0 + (0.6 - data.a) * 0.5, 0.0, 1.0);
-	grass_a.rgb *= mix(vec3(1.0), dry_tint, dry * 0.65);
+	grass_a.rgb *= mix(vec3(1.0), dry_tint, dry * dry_strength);
 	grass_a.rgb *= mix(vec3(1.0), lush_tint, data.a * 0.6);
+	grass_a.rgb *= grass_grade;
+	float grass_luma = dot(grass_a.rgb, vec3(0.299, 0.587, 0.114));
+	grass_a.rgb = max(mix(vec3(grass_luma), grass_a.rgb, grass_saturation), vec3(0.0));
+	forest_a.rgb *= forest_grade;
+	sand_a.rgb *= sand_grade;
 
 	// rocha: triplanar só na encosta (na plana o peso dela é zero e nada é lido)
 	vec4 rock_a = vec4(0.0);
@@ -246,6 +258,7 @@ void fragment() {
 		rock_a = texture(rock_albedo, p.zy) * blend.x + texture(rock_albedo, p.xz) * blend.y + texture(rock_albedo, p.xy) * blend.z;
 		rock_n = texture(rock_normal, p.zy) * blend.x + texture(rock_normal, p.xz) * blend.y + texture(rock_normal, p.xy) * blend.z;
 	}
+	rock_a.rgb *= rock_grade;
 
 	// bordas com ruído e height-blend
 	float ragged = texture(rock_albedo, uv * 0.23).a - 0.5;

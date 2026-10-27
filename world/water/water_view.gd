@@ -105,7 +105,11 @@ func _create_ocean() -> void:
 	# perto do litoral o fundo aparece: a cor funda chega mais devagar
 	_material.set_shader_parameter(&"beers_law", 0.12)
 	_material.set_shader_parameter(&"depth_offset", -1.0)
-	_material.set_shader_parameter(&"color_shallow", Color(0.25, 0.55, 0.55, 0.35))
+	_material.set_shader_parameter(&"color_shallow", Color(0.2, 0.62, 0.62, 0.4))
+	# Fase 53: plataforma turquesa mais viva e mais larga, e o fundo azul de mar aberto (a água do Anno)
+	_material.set_shader_parameter(&"color_shelf", Color(0.24, 0.76, 0.72, 0.62))
+	_material.set_shader_parameter(&"shelf_m", 40.0)
+	_material.set_shader_parameter(&"color_deep", Color(0.05, 0.19, 0.42, 1.0))
 	var script := load(OCEAN_SCRIPT) as GDScript
 	var created: Variant = script.new()
 	if not created is Node3D:
