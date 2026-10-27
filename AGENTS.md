@@ -1818,6 +1818,13 @@ Regras que já custaram investigação:
   mar e rochas encaixadas na face das falésias, com o topo abaixo da borda e nunca onde caberia estrada ou prédio
   (`RockView.places` é função pura). Só apresentação.
 
+### Pedras soltas com a rocha gerada (Fase 57, nossa)
+
+- **Plano** em `docs/plano_fase57.md`. As pedras soltas da `TreeView` (barrancos e litoral rochoso, Fase 36) usam as
+  quatro formas da `RockModel` com o material da `RockView` (`TreeView._stone`), raio de 1 m e 1,25 vez mais altas que
+  largas (`ROCK_SIZE_M`, `ROCK_TALL`), nos mesmos lugares e chances de antes. Os `.glb` das pedras do Kenney saíram.
+  Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1885,6 +1892,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 54 — Costa lisa (nossa) | **feita em 26/10/2026, a pedido do dono**: a distância até a costa parte de onde a altura cruza o zero (espuma, areia molhada e plataforma sem a escada da grade), cada quadrado do terreno pela diagonal que segue o relevo, a praia pela distância até a linha d'água e sem areia na falésia e na rocha; só apresentação (terreno e assinaturas iguais); plano em `docs/plano_fase54.md` |
 | 55 — Malha fina na linha d'água (nossa) | **feita em 27/10/2026, a pedido do dono**: os quadrados da malha que a costa atravessa viram subgrade de 3 × 3 com alturas curvas (Catmull-Rom, até 0,8 m da reta), a linha d'água sai curva de perto em vez de reta de 2 em 2 m; cantos da grade iguais aos da simulação, sem fresta; só apresentação; plano em `docs/plano_fase55.md` |
 | 56 — Rocha nos rochedos e nas falésias (nossa) | **feita em 27/10/2026, a pedido do dono**: rocha gerada no código (sem asset novo); cada rochedo solto no mar vira bloco de rocha com pilar e pedras em volta, e a face das falésias ganha rochas encaixadas, abaixo da borda e fora de onde se constrói; só apresentação; o rochedo segue construível na simulação (proposta à espera do dono); plano em `docs/plano_fase56.md` |
+| 57 — Pedras soltas com a rocha gerada (nossa) | **feita em 27/10/2026, a pedido do dono**: as pedras dos barrancos e do litoral rochoso trocam as lajes do Kenney pela rocha facetada da Fase 56, nos mesmos lugares; só apresentação; plano em `docs/plano_fase57.md` |
 
 Pendências já vistas para fases futuras:
 

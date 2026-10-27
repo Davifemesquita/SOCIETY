@@ -1174,3 +1174,10 @@ quadrados da costa sai em GDScript; nesta rodada o tick e a carga também medira
 objetos e 1126 draw calls (+20 da rocha), dia inteiro 77,9 e 77,5 FPS de média, GPU média 11,8 ms; jogo novo 8,9 s.
 Na mesma hora, com a `RockView` desligada: 13 ms (77 FPS), dia inteiro 78,8 FPS, GPU 11,5 ms. A queda contra a Fase 55
 (91 FPS de manhã) é da máquina nesta hora, não da rocha, que custa até ~0,3 ms de GPU.
+## Fase 57 — pedras soltas com a rocha gerada (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), duas rodadas: quadro com tudo visível 18 ms (54 FPS), 2759
+objetos e 1109 draw calls (17 a menos que na Fase 56: as pedras de cada trecho cabem em menos malhas), dia inteiro 55,6
+e 55,5 FPS de média (p50 16,0 ms), GPU média 10,7 e 10,8 ms; jogo novo 8,9 s, carregar 3,92 s. Na mesma hora, o
+commit da Fase 56 sem mudança nenhuma: 19 ms (54 FPS), dia inteiro 55,6 FPS, GPU 10,9 ms. A queda é da máquina nesta
+hora (o quadro preso perto de 16 ms com a GPU folgada), não da fase, que é neutra.
