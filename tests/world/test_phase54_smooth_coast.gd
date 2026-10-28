@@ -29,7 +29,10 @@ func test_a_diagonal_coast_gets_a_true_distance_not_a_staircase() -> void:
 
 func test_each_terrain_quad_follows_the_relief_diagonal() -> void:
 	var view: TerrainView = auto_free(TerrainView.new())
-	view.set(&"_config", GameConfig.new())
+	var config := GameConfig.new()
+	# o quadrado comum: com 5 m de desnível ele viraria a subgrade da falésia (Fase 62)
+	config.terrain_cliff_refine_relief_m = 0.0
+	view.set(&"_config", config)
 	# um quadrado com a crista em a–d e outro com a crista em b–c
 	var heights := PackedFloat32Array([0.0, 5.0, 5.0, 0.0, 0.0, 5.0, 5.0, 0.0, 0.0])
 	var mesh: ArrayMesh = view.call(&"_chunk_mesh", heights, 3, Vector2.ZERO, 0, 0)

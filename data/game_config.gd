@@ -491,6 +491,10 @@ static var _default: GameConfig
 ## (m) a altura curva pode sair da reta entre os cantos.
 @export var terrain_coast_subdivisions: int = 3
 @export var terrain_coast_refine_max_m: float = 0.8
+## Fase 62: o quadrado seco com pelo menos este desnível (m) entre os cantos também se divide (0 desliga); fica acima de
+## max_road_relief_m, então nenhuma célula onde se constrói muda. E a aspereza de rocha (m) dos pontos novos da falésia.
+@export var terrain_cliff_refine_relief_m: float = 2.4
+@export var terrain_cliff_rough_m: float = 0.35
 ## Fase 38: a estrada de terra pintada no terreno (desligada, volta o ladrilho), os pixels da máscara por célula e até
 ## onde (m da linha do meio) ela mede a distância.
 @export var road_paint: bool = true
@@ -652,6 +656,8 @@ func validate() -> PackedStringArray:
 		problems.append("terrain_water_distance_m, terrain_hex_distance_m e coast_field_max_m devem ser maiores que zero")
 	if terrain_coast_subdivisions < 1 or terrain_coast_subdivisions > 8 or terrain_coast_refine_max_m < 0.0:
 		problems.append("terrain_coast_subdivisions deve ficar entre 1 e 8 e terrain_coast_refine_max_m não pode ser negativo")
+	if terrain_cliff_rough_m < 0.0 or (terrain_cliff_refine_relief_m > 0.0 and terrain_cliff_refine_relief_m <= max_road_relief_m):
+		problems.append("terrain_cliff_rough_m não pode ser negativo e terrain_cliff_refine_relief_m (se ligado) deve passar de max_road_relief_m")
 	if road_mask_px_per_cell < 1 or road_mask_max_m <= 0.0:
 		problems.append("road_mask_px_per_cell deve ser pelo menos 1 e road_mask_max_m maior que zero")
 	if status_icon_full_m <= 0.0 or status_icon_fade_end_m <= status_icon_full_m or status_icon_cluster_m <= 0.0 \

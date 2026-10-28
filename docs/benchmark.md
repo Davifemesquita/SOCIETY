@@ -1205,3 +1205,10 @@ cheio — causa fora do jogo (talvez o papel de parede animado em execução dis
 Área de trabalho escondida, alto, semente 1840 (v3), com a máquina ainda no estado lento da Fase 60: 2759 objetos e
 1109 draw calls (os mesmos), jogo novo 21,8 s, GPU média 21,9 ms, dia inteiro 36,6 FPS — no nível do commit da Fase 59
 medido nesse estado (GPU 23,0 ms, 35,1 FPS). Neutra.
+## Fase 62 — malha fina na face da falésia (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: com a falésia refinada, 15 547 741
+primitivas no quadro com tudo visível (+20 256), 1107 draw calls (as mesmas), GPU média 21,9 ms, jogo novo 24,4 e 23,9 s,
+dia inteiro 36,7 FPS. Na mesma hora com `terrain_cliff_refine_relief_m` = 0 (desligada): 15 527 485 primitivas, GPU 22,0
+ms, jogo novo 23,2 s, dia inteiro 36,5 FPS. Custo: ~1 s no jogo novo nesta máquina lenta (as subgrades e as normais
+pela subgrade em GDScript; ~0,4 s na velocidade normal) e nada na GPU.

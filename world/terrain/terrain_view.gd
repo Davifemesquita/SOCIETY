@@ -265,7 +265,7 @@ func _with_detail(index: int, heights: PackedFloat32Array, side: int, origin: Ve
 
 
 ## Malha de um trecho: vértices nos cantos (x, z de 2 em 2 m) com a normal pelas alturas vizinhas; cada quadrado pela
-## diagonal que segue o relevo, e os da linha d'água mais finos (Fase 55).
+## diagonal que segue o relevo, e os da linha d'água (Fase 55) e da face da falésia (Fase 62) mais finos.
 func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: int, cy: int) -> ArrayMesh:
 	var spacing := _config.cell_size_m
 	var count_x := mini(CHUNK_VERTICES, side - 1 - cx) + 1
@@ -282,11 +282,13 @@ func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: in
 			var h := heights[gy * side + gx]
 			vertices[y * count_x + x] = Vector3(origin.x + gx * spacing, h, origin.y + gy * spacing)
 			normals[y * count_x + x] = CoastRefine.corner_normal(heights, side, gx, gy, spacing)
-	# Fase 55: o quadrado que a linha d'água atravessa vira uma subgrade mais fina (CoastRefine)
+	# Fase 55: o quadrado que a linha d'água atravessa vira uma subgrade mais fina (CoastRefine); Fase 62: e o da face
+	# seca da falésia
 	var n := _config.terrain_coast_subdivisions
+	var relief := _config.terrain_cliff_refine_relief_m
 	for y: int in count_y - 1:
 		for x: int in count_x - 1:
-			if n > 1 and CoastRefine.crosses(heights, side, cx + x, cy + y):
+			if n > 1 and CoastRefine.refines(heights, side, cx + x, cy + y, relief):
 				_refined_quad(heights, side, origin, cx + x, cy + y, n, vertices, normals, indices)
 				continue
 			var a := y * count_x + x
@@ -311,20 +313,19 @@ static func _append_quad(vertices: PackedVector3Array, indices: PackedInt32Array
 
 
 ## Fase 55: subgrade de n × n no quadrado de canto (gx, gy); na borda com um quadrado que não se divide, a altura fica
-## na reta do vizinho.
+## na reta do vizinho. Fase 62: com a aspereza da falésia, e a normal dos pontos novos pelas alturas da subgrade em
+## volta (a rocha partida aparece na luz); nos cantos da grade, a normal de sempre (contínua com o resto da malha).
 func _refined_quad(heights: PackedFloat32Array, side: int, origin: Vector2, gx: int, gy: int, n: int,
 		vertices: PackedVector3Array, normals: PackedVector3Array, indices: PackedInt32Array) -> void:
 	var spacing := _config.cell_size_m
 	var max_m := _config.terrain_coast_refine_max_m
-	var linear_left := not CoastRefine.crosses(heights, side, gx - 1, gy)
-	var linear_right := not CoastRefine.crosses(heights, side, gx + 1, gy)
-	var linear_up := not CoastRefine.crosses(heights, side, gx, gy - 1)
-	var linear_down := not CoastRefine.crosses(heights, side, gx, gy + 1)
-	# a normal dos pontos novos é a dos quatro cantos pela interpolação linear (contínua com o resto da malha)
-	var n00 := CoastRefine.corner_normal(heights, side, gx, gy, spacing)
-	var n10 := CoastRefine.corner_normal(heights, side, gx + 1, gy, spacing)
-	var n01 := CoastRefine.corner_normal(heights, side, gx, gy + 1, spacing)
-	var n11 := CoastRefine.corner_normal(heights, side, gx + 1, gy + 1, spacing)
+	var relief := _config.terrain_cliff_refine_relief_m
+	var rough := _config.terrain_cliff_rough_m
+	var linear_left := not CoastRefine.refines(heights, side, gx - 1, gy, relief)
+	var linear_right := not CoastRefine.refines(heights, side, gx + 1, gy, relief)
+	var linear_up := not CoastRefine.refines(heights, side, gx, gy - 1, relief)
+	var linear_down := not CoastRefine.refines(heights, side, gx, gy + 1, relief)
+	var step := spacing / n
 	var first := vertices.size()
 	for j: int in n + 1:
 		for i: int in n + 1:
@@ -332,10 +333,17 @@ func _refined_quad(heights: PackedFloat32Array, side: int, origin: Vector2, gx: 
 					or (j == n and linear_down)
 			var sx := gx * n + i
 			var sy := gy * n + j
-			var h := CoastRefine.height(heights, side, sx, sy, n, max_m, linear)
+			var h := CoastRefine.height(heights, side, sx, sy, n, max_m, linear, rough, relief)
 			vertices.append(Vector3(origin.x + float(sx) / n * spacing, h, origin.y + float(sy) / n * spacing))
-			var fx := float(i) / n
-			normals.append(n00.lerp(n10, fx).lerp(n01.lerp(n11, fx), float(j) / n).normalized())
+			if (i == 0 or i == n) and (j == 0 or j == n):
+				normals.append(CoastRefine.corner_normal(heights, side, gx + (1 if i == n else 0), gy + (1 if j == n else 0),
+						spacing))
+				continue
+			var left := CoastRefine.height(heights, side, maxi(sx - 1, 0), sy, n, max_m, false, rough, relief)
+			var right := CoastRefine.height(heights, side, sx + 1, sy, n, max_m, false, rough, relief)
+			var up := CoastRefine.height(heights, side, sx, maxi(sy - 1, 0), n, max_m, false, rough, relief)
+			var down := CoastRefine.height(heights, side, sx, sy + 1, n, max_m, false, rough, relief)
+			normals.append(Vector3(left - right, 2.0 * step, up - down).normalized())
 	for j: int in n:
 		for i: int in n:
 			var a := first + j * (n + 1) + i

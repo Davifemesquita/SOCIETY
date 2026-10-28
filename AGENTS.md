@@ -1849,6 +1849,13 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase61.md`. `ScatterView.Kind.HELICONIA` (gerada no código, brácteas vermelhas de ponta
   amarela no vértice): na ilha tropical as flores do campo do recheio viram helicônia. Só apresentação.
 
+### Malha fina na face da falésia (Fase 62, nossa)
+
+- **Plano** em `docs/plano_fase62.md`. `CoastRefine.steep`/`refines`: o quadrado seco com desnível de
+  `terrain_cliff_refine_relief_m` (2,4 m, sempre acima de `max_road_relief_m`) também vira a subgrade da Fase 55; os
+  pontos novos acima d'água ganham aspereza de rocha (`terrain_cliff_rough_m`) pelo desnível dos cantos, e a normal
+  pela subgrade. Cantos, bordas e linha d'água como na Fase 55. Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1921,6 +1928,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 59 — Mata tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: folhosa tropical gerada no código (tronco com sapopemas, copa em guarda-chuva) misturada aos coqueiros, mais coqueiro na costa baixa e mais folhosa no alto; só apresentação; plano em `docs/plano_fase59.md` |
 | 60 — Sub-bosque tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: bananeira e samambaia geradas no código no lugar do arbusto temperado nas ilhas tropicais; temperadas iguais; só apresentação; plano em `docs/plano_fase60.md` |
 | 61 — Helicônias (nossa) | **feita em 27/10/2026, a pedido do dono**: helicônia gerada no código no lugar das flores do campo nas ilhas tropicais; só apresentação; plano em `docs/plano_fase61.md` |
+| 62 — Malha fina na face da falésia (nossa) | **feita em 27/10/2026, a pedido do dono**: a face da falésia vira subgrade como a costa da Fase 55, com aspereza de rocha e normais pela subgrade, sem tocar célula construível nem a linha d'água; só apresentação; plano em `docs/plano_fase62.md` |
 
 Pendências já vistas para fases futuras:
 

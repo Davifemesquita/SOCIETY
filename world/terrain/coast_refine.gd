@@ -6,6 +6,31 @@ extends RefCounted
 ## fica dentro das alturas dos cantos que pesam no ponto e a até max_m da interpolação linear.
 ## Toda conta parte das coordenadas absolutas da subgrade: o ponto na borda comum a dois quadrados sai igual dos dois
 ## lados (sem fresta). Na borda com um quadrado que não se divide, a altura é a linear (a mesma reta do vizinho).
+## Fase 62: também a face seca da falésia (quadrado com desnível de relief_m ou mais, acima da estrada mais íngreme)
+## se divide, e todo ponto novo acima d'água ganha aspereza de rocha (rough_m) que cresce com o desnível dos cantos que
+## pesam nele (na falésia seca e na que desce no mar; zero na praia suave): pela conta da
+## borda, os dois quadrados vizinhos dão a mesma aspereza no ponto comum.
+
+## A aspereza só mexe no ponto acima desta altura e não o leva abaixo do piso (m).
+const ROUGH_ABOVE_M := 0.5
+const ROUGH_FLOOR_M := 0.3
+
+
+## O quadrado de canto (x, y) se divide: a linha d'água o atravessa, ou é face seca de falésia (relief_m > 0).
+static func refines(heights: PackedFloat32Array, side: int, x: int, y: int, relief_m: float) -> bool:
+	return crosses(heights, side, x, y) or steep(heights, side, x, y, relief_m)
+
+
+## O quadrado de canto (x, y) está todo acima do mar e tem desnível de relief_m ou mais (0 desliga).
+static func steep(heights: PackedFloat32Array, side: int, x: int, y: int, relief_m: float) -> bool:
+	if relief_m <= 0.0 or x < 0 or y < 0 or x >= side - 1 or y >= side - 1:
+		return false
+	var a := heights[y * side + x]
+	var b := heights[y * side + x + 1]
+	var c := heights[(y + 1) * side + x]
+	var d := heights[(y + 1) * side + x + 1]
+	var low := minf(minf(a, b), minf(c, d))
+	return low >= 0.0 and maxf(maxf(a, b), maxf(c, d)) - low >= relief_m
 
 
 ## O quadrado de canto (x, y) atravessa a linha d'água.
@@ -20,7 +45,10 @@ static func crosses(heights: PackedFloat32Array, side: int, x: int, y: int) -> b
 
 
 ## Altura no ponto (sx, sy) da subgrade de n por célula. linear: a borda encosta num quadrado que não se divide.
-static func height(heights: PackedFloat32Array, side: int, sx: int, sy: int, n: int, max_m: float, linear: bool) -> float:
+## rough_m e relief_m (Fase 62): a aspereza da falésia, cheia quando os cantos que pesam no ponto têm o dobro de
+## relief_m de desnível e nenhuma abaixo de relief_m.
+static func height(heights: PackedFloat32Array, side: int, sx: int, sy: int, n: int, max_m: float, linear: bool,
+		rough_m := 0.0, relief_m := 0.0) -> float:
 	var ix := mini(sx / n, side - 1)
 	var iy := mini(sy / n, side - 1)
 	var fx := float(sx - ix * n) / n
@@ -53,7 +81,17 @@ static func height(heights: PackedFloat32Array, side: int, sx: int, sy: int, n: 
 		if corner.y > 0.0 and corner.z > 0.0:
 			low = minf(low, corner.x)
 			high = maxf(high, corner.x)
+	# a aspereza só no ponto bem acima d'água (também na falésia que desce no mar) e sem descer até ela: a linha d'água
+	# fica onde a Fase 55 a pôs
+	if rough_m > 0.0 and relief_m > 0.0 and value > ROUGH_ABOVE_M:
+		var amount := clampf((high - low) / relief_m - 1.0, 0.0, 1.0)
+		value = maxf(value + rough_m * amount * (_noise(sx, sy) * 2.0 - 1.0), ROUGH_FLOOR_M)
 	return clampf(clampf(value, low, high), bilinear - max_m, bilinear + max_m)
+
+
+## Ruído fixo do ponto da subgrade, de 0 a 1 (o mesmo ponto dá sempre o mesmo valor, dos dois lados de uma borda).
+static func _noise(sx: int, sy: int) -> float:
+	return float(posmod(hash(Vector2i(sx, sy)), 10007)) / 10007.0
 
 
 ## Normal de um canto da grade pelas alturas vizinhas.

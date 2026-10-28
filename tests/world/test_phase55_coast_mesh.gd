@@ -25,6 +25,8 @@ func _view(subdivisions: int) -> TerrainView:
 	var view: TerrainView = auto_free(TerrainView.new())
 	var config := GameConfig.new()
 	config.terrain_coast_subdivisions = subdivisions
+	# só a costa: a face da falésia (Fase 62) fica desligada aqui
+	config.terrain_cliff_refine_relief_m = 0.0
 	view.set(&"_config", config)
 	return view
 
