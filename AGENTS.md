@@ -1976,6 +1976,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase81.md`. Na festa, os turistas na rua (e o teto) vezes `1 + tourism_festival_bonus`;
   `TourismSystem.has_festival` usado pela renda e pela `Crowd`.
 
+### Ver os fogos (Fase 82, nossa)
+
+- **Plano** em `docs/plano_fase82.md`. Na festa, na hora dos fogos (`Crowd.fireworks_now`), o turista vai a uma das
+  praças da festa (`FestivalView.squares`) e fica na rua ao longo das cordas do mastro, de frente para ele
+  (`WATCH_NEAR_M`, `WATCH_FAR_M`, `WATCH_SIDE_SHARE`); anda da porta até o lugar e, ao sair, do lugar até a porta.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2068,6 +2074,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 79 — O bicho vai beber (nossa) | **feita em 28/10/2026, a pedido do dono**: o leão e o tigre vão ao bebedouro, viram de frente e bebem inclinados, e saem de ré; os bichos maiores não cabem de frente para ele no cercado (medido); só apresentação; plano em `docs/plano_fase79.md` |
 | 80 — Turistas na rua (nossa) | **feita em 28/10/2026, a pedido do dono**: com os eventos ligados, turistas de roupa clara saem do entreposto, visitam as atrações da ilha e voltam, na quantidade da atratividade; só visual; números provisórios; plano em `docs/plano_fase80.md` |
 | 81 — Festa cheia (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa vêm mais turistas para a rua, na mesma proporção da renda do turismo; só visual; plano em `docs/plano_fase81.md` |
+| 82 — Ver os fogos (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa, à noite, os turistas vão às praças e ficam em volta do mastro olhando os fogos; só visual; plano em `docs/plano_fase82.md` |
 
 Pendências já vistas para fases futuras:
 
