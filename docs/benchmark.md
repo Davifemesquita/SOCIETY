@@ -1223,3 +1223,7 @@ jornal não toca o desenho; o FPS de volta aos ~88 da manhã confirma que a lent
 Área de trabalho escondida, alto, semente 1840 (v3), com a máquina de novo no estado lento das Fases 60 a 62 (jogo novo
 23,4 s): 2755 objetos e 1117 draw calls (+8: as duas camadas de bichos e os esguichos), GPU média 22,5 ms e dia inteiro
 35,8 FPS — no nível das Fases 60 a 62 medidas nesse estado (GPU 21,9 a 23,0 ms). Neutra.
+## Fase 65 — festa na cidade (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: os mesmos 2755 objetos e 1117 draw
+calls (o benchmark roda sem eventos: nenhuma festa no quadro), GPU média 22,2 ms, dia inteiro 36,5 FPS. Neutra.

@@ -1871,6 +1871,12 @@ Regras que já custaram investigação:
   mergulha com a cauda erguida, o golfinho salta em arco (`whale_pose`, `dolphin_pose`, no tempo de jogo). Só
   apresentação.
 
+### Festa na cidade (Fase 65, nossa)
+
+- **Plano** em `docs/plano_fase65.md`. `FestivalView`: com o evento `festival` numa ilha, mastro na porta de cada
+  praça (chafariz, coreto, mercado; sem nenhum, o entreposto) e cordas de bandeirolas só por cima da rua
+  (`strings_of`); fogos de artifício à noite sobre os mastros. Some quando a festa acaba. Só apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1946,6 +1952,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 62 — Malha fina na face da falésia (nossa) | **feita em 27/10/2026, a pedido do dono**: a face da falésia vira subgrade como a costa da Fase 55, com aspereza de rocha e normais pela subgrade, sem tocar célula construível nem a linha d'água; só apresentação; plano em `docs/plano_fase62.md` |
 | 63 — Jornal (nossa) | **feita em 27/10/2026, a pedido do dono**: edição periódica com manchete sorteada que mexe na felicidade de todas as ilhas, e propaganda paga que troca a manchete; só com os eventos ligados (assinaturas iguais); números provisórios, à espera do dono; plano em `docs/plano_fase63.md` |
 | 64 — Baleias e golfinhos (nossa) | **feita em 27/10/2026, a pedido do dono**: baleias que sobem, sopram e mergulham no mar aberto e golfinhos saltando em águas médias, gerados no código; só apresentação; a proposta de fábricas com estado visível já estava feita; plano em `docs/plano_fase64.md` |
+| 65 — Festa na cidade (nossa) | **feita em 27/10/2026, a pedido do dono**: com a festa numa ilha, bandeirolas por cima das ruas das praças e fogos de artifício à noite; só apresentação; plano em `docs/plano_fase65.md` |
 
 Pendências já vistas para fases futuras:
 

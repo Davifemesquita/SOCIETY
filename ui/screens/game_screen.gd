@@ -73,6 +73,8 @@ var lamp_view: LampView
 var animal_view: AnimalView
 var crop_view: CropView
 var bird_view: BirdView
+## Fase 65: bandeirolas e fogos nas praças da ilha em festa.
+var festival_view: FestivalView
 var harbor_view: HarborView
 var yard_view: YardView
 var decoration_view: DecorationView
@@ -212,6 +214,10 @@ func _ready() -> void:
 	add_child(bird_view)
 	bird_view.setup(simulation)
 	graphics.add_effect(bird_view)
+	festival_view = FestivalView.new()
+	festival_view.name = "Festival"
+	add_child(festival_view)
+	festival_view.setup(simulation)
 	harbor_view = HarborView.new()
 	harbor_view.name = "Harbor"
 	add_child(harbor_view)
