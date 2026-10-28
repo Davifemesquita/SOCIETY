@@ -27,12 +27,15 @@ apresentação: a simulação, o save e as assinaturas não mudam.
 - `tests/presentation/test_phase76_train_smoke.gd`: a fumaça na boca da chaminé, filha da locomotiva e solta no mundo;
   fraca esperando, cheia andando, nada com o jogo pausado ou o poço pausado; `moving_at` igual ao vaivém; deitando no
   vento; o nível gráfico mudando as partículas e o alcance, e sem fumaça no nível sem partículas.
-- Capturas: `tools/capture_phase76.tscn -- <pasta>` (no mundo plano, com o jogo andando a 1×: o trem andando, de longe,
-  esperando na usina e voltando; em `F:\ferramentas\capturas\fase76`). Achado nas capturas: a primeira fumaça da partida
-  leva uns 7 a 10 s para aparecer (o shader das partículas compila na primeira vez); a das chaminés das fábricas também,
-  porque o `WarmUp` da Fase 32 não desenha partículas. Por isso a espera é fotografada na usina, não no poço.
+- Capturas: `tools/capture_phase76.tscn -- <pasta>` (no mundo plano, com o jogo andando a 1× e a câmera seguindo a
+  locomotiva: esperando no poço, andando e de longe; em `F:\ferramentas\capturas\fase76`).
+- **Correção (28/10/2026, depois do commit da fase):** a primeira versão destas notas dizia que a primeira fumaça da
+  partida levava 7 a 10 s para aparecer por causa da compilação do shader. Estava errado. O Godot só simula as
+  partículas que estão na tela, e o roteiro levava a câmera até o trem só 5 quadros antes de cada foto. Medido à parte:
+  uma fumaça posta na tela aparece em 0,5 s, e pôr as partículas no `WarmUp` não mudou as pipelines compiladas na
+  primeira baforada (2 com e 2 sem) nem o pior quadro (33 ms nos dois). A mudança no `WarmUp` foi desfeita sem commit, e
+  o roteiro agora segue o trem com a câmera.
 
 ## Fica de fora (proposta à espera do dono)
 
-- Pôr a fumaça (das fábricas e do trem) no `WarmUp`, para a primeira baforada não atrasar.
 - Apito e barulho do trem, vapor branco na partida, faísca à noite, o trem levar a carga de verdade e mais trens.

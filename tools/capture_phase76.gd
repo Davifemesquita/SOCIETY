@@ -1,7 +1,7 @@
 extends Node
 ## Roteiro de verificação visual da Fase 76 (fumaça do trem): o trem da Fase 71 no mundo plano, com o jogo andando a 1×
-## (as partículas precisam do tempo real): andando (fumaça cheia ficando para trás), de longe, esperando na usina (fumaça
-## fraca) e voltando de ré. Precisa de GPU; no PC do dono roda na área de trabalho escondida:
+## (as partículas precisam do tempo real) e a câmera seguindo a locomotiva: esperando no poço (fumaça fraca), andando
+## (fumaça cheia ficando para trás) e de longe. Precisa de GPU; no PC do dono roda na área de trabalho escondida:
 ##   godot --path . --resolution 1920x1080 res://tools/capture_phase76.tscn -- <pasta>
 
 const SPOT := Vector2i(40, 60)
@@ -46,38 +46,37 @@ func _run() -> void:
 	if trains.train_count() == 0:
 		get_tree().quit()
 		return
-	# o jogo andando a 1×: o trem espera DWELL_S no poço e depois sai
+	# o jogo andando a 1×, a câmera seguindo a locomotiva o tempo todo: o Godot só simula as partículas que estão na
+	# tela, então a fumaça precisa ficar à vista antes de cada foto
 	GameClock.set_speed(0)
-	await get_tree().create_timer(TrainView.DWELL_S + 3.0).timeout
-	await _shot(game, "andando.png", trains.loco_transform(0).origin, 16.0, 2.2)
-	await _shot(game, "de_longe.png", trains.loco_transform(0).origin, 45.0, 0.5)
-	# a espera na usina (a primeira baforada do jogo ainda compila o shader das partículas, por isso não no poço)
-	var last := trains.loco_transform(0).origin
-	var still_s := 0.0
-	while still_s < 2.0:
-		await get_tree().process_frame
-		var now := trains.loco_transform(0).origin
-		still_s = still_s + get_process_delta_time() if now.is_equal_approx(last) else 0.0
-		last = now
-	await _shot(game, "esperando.png", last, 14.0, 0.9)
-	await get_tree().create_timer(TrainView.DWELL_S + 1.0).timeout
-	await _shot(game, "voltando.png", trains.loco_transform(0).origin, 16.0, 2.2)
+	await _follow(game, trains, TrainView.DWELL_S * 0.7, 14.0, 0.9)
+	_save("esperando.png")
+	await _follow(game, trains, TrainView.DWELL_S * 0.3 + 3.0, 16.0, 2.2)
+	_save("andando.png")
+	await _follow(game, trains, 1.0, 45.0, 0.5)
+	_save("de_longe.png")
 	GameClock.set_speed(TickClock.PAUSED)
 	GameScreen.flat_world = false
 	get_tree().quit()
 
 
-func _shot(game: GameScreen, file_name: String, focus: Vector3, distance: float, yaw: float) -> void:
+## A câmera na locomotiva a cada quadro por "seconds" segundos.
+func _follow(game: GameScreen, trains: TrainView, seconds: float, distance: float, yaw: float) -> void:
 	var rig := game.camera.rig
-	rig.focus = Vector3(focus.x, 0.0, focus.z)
 	rig.distance = distance
 	rig.yaw = yaw
 	rig.target_yaw = yaw
-	rig.ground_height = maxf(game.simulation.world.surface_height(focus.x, focus.z), 0.0)
-	game.camera.apply()
-	for frame: int in 5:
+	var left := seconds
+	while left > 0.0:
+		var focus := trains.loco_transform(0).origin
+		rig.focus = Vector3(focus.x, 0.0, focus.z)
+		rig.ground_height = maxf(game.simulation.world.surface_height(focus.x, focus.z), 0.0)
+		game.camera.apply()
 		await get_tree().process_frame
+		left -= get_process_delta_time()
 	await RenderingServer.frame_post_draw
+
+
+func _save(file_name: String) -> void:
 	get_viewport().get_texture().get_image().save_png(_out_dir.path_join(file_name))
-	var smoke := game.train_view.smoke_of(0)
-	print("capturado ", file_name, " fumaça ", smoke.get_instance_id(), " emitindo ", smoke.emitting, " ", smoke.amount_ratio)
+	print("capturado ", file_name)
