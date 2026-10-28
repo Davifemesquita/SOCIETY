@@ -1270,3 +1270,9 @@ benchmark: tick médio 1,31 ms, 2769 objetos e 1119 draw calls (a variação de 
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. O mundo do benchmark não tem poço
 de petróleo: tick médio 1,33 ms, os mesmos 2755 objetos e 1117 draw calls, GPU 23,2 ms, dia inteiro 35,0 FPS (pior
 quadro 432 ms, no nível das Fases 64 a 70). Neutra.
+## Fase 74 — recintos e vitrines (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem zoológico nem museu. A máquina voltou
+ao estado rápido nesta rodada (o ~2,5× mais lento vinha desde a Fase 60): GPU 11,9 ms, dia inteiro 77,6 FPS (1% low
+40,2, pior quadro 28 ms), tick médio 1,39 ms, 2769 objetos e 1119 draw calls (a variação de sempre). A diferença é da
+máquina, não da fase: nada desta fase entra no mundo do benchmark. Neutra.

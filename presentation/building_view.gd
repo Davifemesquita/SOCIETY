@@ -83,6 +83,9 @@ var _rotors: Dictionary[int, Node3D] = {}
 var _rotor_speeds: Dictionary[int, float] = {}
 ## Fase 73: as partes que balançam em vez de girar — [amplitude, fase] pelo prédio.
 var _rotor_rocks: Dictionary[int, Array] = {}
+## Fase 74: os bichos e as peças postos no zoológico e no museu (ExhibitModels), com cor por vértice — o mesmo jeito de
+## material do trilho e do trem, sem pipeline nova.
+var _exhibit_material := StandardMaterial3D.new()
 ## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
 var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
@@ -106,6 +109,9 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_simulation = simulation
 	_cell_size = cell_size
 	_door_material.albedo_color = DOOR_COLOR
+	_exhibit_material.vertex_color_use_as_albedo = true
+	_exhibit_material.vertex_color_is_srgb = true
+	_exhibit_material.roughness = 0.75
 	_selection = MeshInstance3D.new()
 	var selection_material := StandardMaterial3D.new()
 	selection_material.albedo_color = SELECTED_COLOR
@@ -482,6 +488,8 @@ func _add(building_id: int) -> void:
 		body.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, record))
 		_lots[building_id] = [record.island_id, area]
 		_add_plinth(body, record, spec, area)
+		if def.is_exhibit_hall():
+			_dress_exhibits(building_id, body, spec)
 		var rotor := BuildingKit.rotor(spec)
 		if rotor != null:
 			var pivot := Node3D.new()
@@ -836,7 +844,49 @@ func _on_building_state_changed(building_id: int) -> void:
 			_scaffold(building_id)
 			if building_id == _selected_id:
 				select(building_id)
+		elif spec != null and _simulation.def_of(record).is_exhibit_hall():
+			# Fase 74: peça posta no prédio (a forma não muda): só os bichos e as peças são refeitos
+			var body := _nodes[building_id].get_node_or_null(^"Model") as Node3D
+			if body != null:
+				_dress_exhibits(building_id, body, spec)
 	_refresh_label(building_id)
+
+
+## Fase 74: os bichos nos cercados do zoológico e as peças nos pedestais do museu, na ordem do catálogo, como filhos do
+## modelo (seguem o giro dele); refeitos quando uma peça entra.
+func _dress_exhibits(building_id: int, body: Node3D, spec: BuildingKit.Spec) -> void:
+	var old := body.get_node_or_null(^"Exhibits")
+	if old != null:
+		body.remove_child(old)
+		old.queue_free()
+	var spots := BuildingKit.exhibit_spots(spec)
+	var shown := _simulation.world.exhibits_state.in_building(building_id, _simulation.data)
+	if spots.is_empty() or shown.is_empty():
+		return
+	var group := Node3D.new()
+	group.name = "Exhibits"
+	for k: int in mini(spots.size(), shown.size()):
+		var item := MeshInstance3D.new()
+		item.name = String(shown[k].id)
+		item.mesh = ExhibitModels.mesh(shown[k].id)
+		item.material_override = _exhibit_material
+		item.position = spots[k]
+		item.visibility_range_end = _detail_range_m
+		group.add_child(item)
+	body.add_child(group)
+
+
+## Os bichos e as peças à mostra no prédio (testes).
+func exhibit_nodes(building_id: int) -> Array[Node3D]:
+	var found: Array[Node3D] = []
+	var root: Node3D = _nodes.get(building_id)
+	if root == null:
+		return found
+	var group := root.get_node_or_null(^"Model/Exhibits")
+	if group != null:
+		for child: Node in group.get_children():
+			found.append(child as Node3D)
+	return found
 
 
 func _on_house_upgraded(building_id: int) -> void:

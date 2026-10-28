@@ -231,11 +231,11 @@ static func loco_mesh() -> Mesh:
 	var half := LOCO_M * 0.5
 	var deck := RAIL_TOP_M + WHEEL_R * 1.4
 	_wheels(tool, half, 3)
-	_box(tool, Vector3(0.0, deck, 0.0), Vector3(0.75, 0.15, half), FRAME_COLOR)
-	_cylinder(tool, Vector3(0.0, deck + 0.75, -half), Vector3(0.0, deck + 0.75, 0.6), 0.6, BOILER_COLOR)
-	_cylinder(tool, Vector3(0.0, deck + 1.2, -half + 0.8), Vector3(0.0, deck + 2.1, -half + 0.8), 0.2, BOILER_COLOR)
-	_box(tool, Vector3(0.0, deck + 0.95, half - 0.9), Vector3(0.8, 0.8, 0.9), BODY_COLOR)
-	_box(tool, Vector3(0.0, deck + 1.82, half - 0.9), Vector3(0.9, 0.07, 1.05), ROOF_COLOR)
+	VertexShapes.box(tool, Vector3(0.0, deck, 0.0), Vector3(0.75, 0.15, half), FRAME_COLOR)
+	VertexShapes.cylinder(tool, Vector3(0.0, deck + 0.75, -half), Vector3(0.0, deck + 0.75, 0.6), 0.6, BOILER_COLOR)
+	VertexShapes.cylinder(tool, Vector3(0.0, deck + 1.2, -half + 0.8), Vector3(0.0, deck + 2.1, -half + 0.8), 0.2, BOILER_COLOR)
+	VertexShapes.box(tool, Vector3(0.0, deck + 0.95, half - 0.9), Vector3(0.8, 0.8, 0.9), BODY_COLOR)
+	VertexShapes.box(tool, Vector3(0.0, deck + 1.82, half - 0.9), Vector3(0.9, 0.07, 1.05), ROOF_COLOR)
 	tool.generate_normals()
 	return tool.commit()
 
@@ -247,9 +247,9 @@ static func wagon_mesh() -> Mesh:
 	var half := WAGON_M * 0.5
 	var deck := RAIL_TOP_M + WHEEL_R * 1.4
 	_wheels(tool, half, 2)
-	_box(tool, Vector3(0.0, deck, 0.0), Vector3(0.75, 0.12, half), FRAME_COLOR)
-	_cylinder(tool, Vector3(0.0, deck + 0.85, -half + 0.2), Vector3(0.0, deck + 0.85, half - 0.2), 0.72, TANK_COLOR)
-	_box(tool, Vector3(0.0, deck + 1.62, 0.0), Vector3(0.2, 0.1, 0.2), TANK_COLOR)
+	VertexShapes.box(tool, Vector3(0.0, deck, 0.0), Vector3(0.75, 0.12, half), FRAME_COLOR)
+	VertexShapes.cylinder(tool, Vector3(0.0, deck + 0.85, -half + 0.2), Vector3(0.0, deck + 0.85, half - 0.2), 0.72, TANK_COLOR)
+	VertexShapes.box(tool, Vector3(0.0, deck + 1.62, 0.0), Vector3(0.2, 0.1, 0.2), TANK_COLOR)
 	tool.generate_normals()
 	return tool.commit()
 
@@ -261,40 +261,4 @@ static func _wheels(tool: SurfaceTool, half: float, pairs: int) -> void:
 		for side: float in [-1.0, 1.0]:
 			var x := side * RailView.GAUGE_M * 0.5
 			var center := Vector3(x, RAIL_TOP_M + WHEEL_R, z)
-			_cylinder(tool, center - Vector3(0.06, 0.0, 0.0), center + Vector3(0.06, 0.0, 0.0), WHEEL_R, BOILER_COLOR)
-
-
-## Caixa centrada em center com meias medidas half (sem rotação).
-static func _box(tool: SurfaceTool, center: Vector3, half: Vector3, color: Color) -> void:
-	var c: Array[Vector3] = []
-	for k: int in 8:
-		c.append(center + Vector3(half.x * (1 if k & 1 else -1), half.y * (1 if k & 2 else -1), half.z * (1 if k & 4 else -1)))
-	# faces com os cantos em volta, de fora (sentido horário visto de fora, como o Godot espera)
-	for face: Array in [[2, 3, 7, 6], [0, 4, 5, 1], [1, 5, 7, 3], [0, 2, 6, 4], [4, 6, 7, 5], [0, 1, 3, 2]]:
-		_quad(tool, c[face[0]], c[face[1]], c[face[2]], c[face[3]], color)
-
-
-## Cilindro de a até b com raio radius, com as tampas.
-static func _cylinder(tool: SurfaceTool, a: Vector3, b: Vector3, radius: float, color: Color) -> void:
-	var axis := (b - a).normalized()
-	var helper := Vector3.UP if absf(axis.dot(Vector3.UP)) < 0.9 else Vector3.RIGHT
-	var u := axis.cross(helper).normalized() * radius
-	var v := axis.cross(u).normalized() * radius
-	var sides := 10
-	for i: int in sides:
-		var p := u * cos(TAU * i / sides) + v * sin(TAU * i / sides)
-		var q := u * cos(TAU * (i + 1) / sides) + v * sin(TAU * (i + 1) / sides)
-		_quad(tool, a + p, b + p, b + q, a + q, color)
-		_tri(tool, a, a + p, a + q, color)
-		_tri(tool, b, b + q, b + p, color)
-
-
-static func _quad(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, color: Color) -> void:
-	_tri(tool, a, b, c, color)
-	_tri(tool, a, c, d, color)
-
-
-static func _tri(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
-	for point: Vector3 in [a, b, c]:
-		tool.set_color(color)
-		tool.add_vertex(point)
+			VertexShapes.cylinder(tool, center - Vector3(0.06, 0.0, 0.0), center + Vector3(0.06, 0.0, 0.0), WHEEL_R, BOILER_COLOR)

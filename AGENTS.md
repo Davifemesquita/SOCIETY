@@ -1931,6 +1931,12 @@ Regras que já custaram investigação:
   a caixa de engrenagens e a cabeça do poço (`BuildingKit._pumpjack`, `pumpjack_layout`), galpão baixo atrás, e o
   balancim que balança (`Rotor.rock`, `BuildingView._rotor_rocks`) enquanto o poço produz.
 
+### Recintos e vitrines (Fase 74, nossa)
+
+- **Plano** em `docs/plano_fase74.md`. `Silhouette.MENAGERIE` (zoológico: seis cercados no pátio) e `GALLERY` (museu:
+  seis pedestais na frente), `BuildingKit.exhibit_spots` (uma vaga por cercado ou pedestal), `ExhibitModels` (bichos e
+  peças com cor por vértice) e `BuildingView._dress_exhibits`; formas simples em `VertexShapes`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2015,6 +2021,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 71 — O trem no trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: locomotiva com vagão-tanque gerados no código indo e voltando pelo caminho mais curto do trilho entre o poço e a usina; só apresentação (a simulação e as assinaturas não mudam); plano em `docs/plano_fase71.md` |
 | 72 — Desfazer o trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: o trilho entra no histórico do Ctrl+Z (posto ou demolido, com o reembolso, e o refazer); só o histórico, fora do save; plano em `docs/plano_fase72.md` |
 | 73 — O cavalo-de-pau (nossa) | **feita em 28/10/2026, a pedido do dono**: o poço de petróleo troca a torre de mina por um cavalo-de-pau gerado com as peças do kit, com o balancim balançando enquanto produz; só apresentação; plano em `docs/plano_fase73.md` |
+| 74 — Recintos e vitrines (nossa) | **feita em 28/10/2026, a pedido do dono**: o zoológico ganha seis cercados e o museu seis pedestais, e cada peça posta aparece na sua vaga (bichos e peças gerados no código); só apresentação; plano em `docs/plano_fase74.md` |
 
 Pendências já vistas para fases futuras:
 

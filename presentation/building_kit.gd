@@ -154,6 +154,12 @@ const PUMPJACK_SHED_M := 3.0
 const PUMPJACK_PIVOT_M := 2.4
 const PUMPJACK_ROCK := 0.28
 const PUMPJACK_SPEED := 1.3
+## Zoológico e museu (Fase 74): o galpão do zoológico fica nas MENAGERIE_HALL_ROWS fileiras de trás e o pátio da frente
+## tem os cercados (3 por fileira de cercados, cerca de MENAGERIE_FENCE_M); o museu tem uma fileira de pátio com os
+## pedestais (GALLERY_PEDESTAL_M de altura) dos dois lados do caminho da porta. Uma vaga de peça por cercado ou pedestal.
+const MENAGERIE_HALL_ROWS := 2
+const MENAGERIE_FENCE_M := 0.9
+const GALLERY_PEDESTAL_M := 0.9
 ## Campanário da igreja (Fase 18): torre quadrada no canto da frente, saindo um pouco das paredes, que
 ## passa do beiral, sineira aberta com o sino e a agulha com a cruz.
 const BELFRY_SIDE_M := 2.4
@@ -400,6 +406,13 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var shed := spec.hall()
 		spec.roof = Roof.GABLE_X if shed.cells.x >= shed.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(shed.cells.x, shed.cells.y) * cell_size * ROOF_SLOPE
+	elif (def.silhouette == BuildingDef.Silhouette.MENAGERIE and def.size.y > MENAGERIE_HALL_ROWS) \
+			or (def.silhouette == BuildingDef.Silhouette.GALLERY and def.size.y > 1):
+		# o pátio da frente fica com os cercados ou os pedestais; o corpo, nas fileiras de trás
+		spec.court_rows = def.size.y - MENAGERIE_HALL_ROWS if def.silhouette == BuildingDef.Silhouette.MENAGERIE else 1
+		var body := spec.hall()
+		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.WINDMILL:
 		# a empena fica na frente e as pás giram nela
 		spec.roof = Roof.GABLE_Z
@@ -746,6 +759,12 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.PUMPJACK:
 			if spec.court_rows > 0:
 				_pumpjack(tool, extra, spec)
+		BuildingDef.Silhouette.MENAGERIE:
+			_pens(extra, spec)
+		BuildingDef.Silhouette.GALLERY:
+			for spot: Vector3 in exhibit_spots(spec):
+				_box(extra, spot - Vector3(0.0, GALLERY_PEDESTAL_M * 0.5, 0.0), Vector3(0.7, GALLERY_PEDESTAL_M, 0.7), UV_LIGHT_STONE)
+				_box(extra, spot - Vector3(0.0, 0.05, 0.0), Vector3(0.82, 0.1, 0.82), UV_LIGHT_STONE)
 	if spec.dock:
 		_dock(extra, spec)
 
@@ -787,6 +806,64 @@ static func _pumpjack(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void
 	var well_z := pivot.z - ahead - 0.12
 	_box(extra, Vector3(0.0, 0.4, well_z), Vector3(0.4, 0.8, 0.4), UV_IRON)
 	_box(extra, Vector3(0.0, 1.2, well_z), Vector3(0.06, 0.8, 0.06), UV_IRON)
+
+
+## Fase 74: onde fica cada vaga de peça do zoológico (o meio do cercado, no chão) ou do museu (o tampo do pedestal), no
+## referencial do prédio, na ordem em que as peças entram; vazio fora dessas silhuetas ou sem pátio.
+static func exhibit_spots(spec: Spec) -> Array[Vector3]:
+	var spots: Array[Vector3] = []
+	if spec.court_rows == 0:
+		return spots
+	var size := spec.size_m()
+	var front := -size.y * 0.5
+	var depth := spec.court_rows * spec.cell_m
+	match spec.silhouette:
+		BuildingDef.Silhouette.MENAGERIE:
+			var rows := maxi(1, spec.court_rows / 2)
+			for row: int in rows:
+				for column: int in 3:
+					spots.append(Vector3(size.x * (column - 1) / 3.0, 0.0, front + depth * (row + 0.5) / rows))
+		BuildingDef.Silhouette.GALLERY:
+			var z := front + depth * 0.5
+			for k: int in 6:
+				# três de cada lado do caminho da porta, do meio para fora
+				var side := -1.0 if k % 2 == 0 else 1.0
+				spots.append(Vector3(side * (1.6 + (k / 2) * 1.35) * size.x / 9.7, GALLERY_PEDESTAL_M, z))
+	return spots
+
+
+## Os cercados do zoológico: em volta de cada vaga, a cerca de madeira (mourões nos cantos e no meio dos lados, duas
+## travessas) com a abertura do portão no lado da frente.
+static func _pens(tool: SurfaceTool, spec: Spec) -> void:
+	var spots := exhibit_spots(spec)
+	if spots.is_empty():
+		return
+	var rows := maxi(1, spec.court_rows / 2)
+	var half := Vector2(spec.size_m().x / 3.0, spec.court_rows * spec.cell_m / rows) * 0.5 - Vector2(0.25, 0.25)
+	for spot: Vector3 in spots:
+		var corners: Array[Vector3] = [spot + Vector3(-half.x, 0.0, -half.y), spot + Vector3(half.x, 0.0, -half.y),
+				spot + Vector3(half.x, 0.0, half.y), spot + Vector3(-half.x, 0.0, half.y)]
+		for i: int in 4:
+			var a := corners[i]
+			var b := corners[(i + 1) % 4]
+			for t: float in [0.0, 0.5]:
+				var post := a.lerp(b, t)
+				_box(tool, post + Vector3(0.0, MENAGERIE_FENCE_M * 0.55, 0.0), Vector3(0.12, MENAGERIE_FENCE_M * 1.1, 0.12), UV_TIMBER)
+			for rail: float in [0.4, 0.85]:
+				var y := Vector3(0.0, MENAGERIE_FENCE_M * rail, 0.0)
+				if i == 0:
+					# o lado da frente com o portão (um vão no meio)
+					_rail(tool, a + y, a.lerp(b, 0.4) + y)
+					_rail(tool, a.lerp(b, 0.6) + y, b + y)
+				else:
+					_rail(tool, a + y, b + y)
+
+
+static func _rail(tool: SurfaceTool, a: Vector3, b: Vector3) -> void:
+	var middle := (a + b) * 0.5
+	var along := b - a
+	var size := Vector3(absf(along.x) + 0.06, 0.08, absf(along.z) + 0.06)
+	_box(tool, middle, size, UV_TIMBER)
 
 
 ## Onde fica a plataforma de carga (Fase 23): x entre as rampas, z da frente da área até a parede do corpo,

@@ -20,3 +20,4 @@ beauty = 0.1
 beauty_radius_cells = 18
 exhibit_slots = 6
 exhibit_kind = 1
+silhouette = 12
