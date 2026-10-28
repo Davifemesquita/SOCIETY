@@ -36,6 +36,12 @@ func setup(config: GameConfig, simulation: Simulation, sky: SkyAdapter, clouds: 
 	refresh()
 
 
+## A chuva só entra na árvore no setup: sem ele, sai junto com a vista (não fica órfã).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE and is_instance_valid(_rain) and _rain.get_parent() == null:
+		_rain.free()
+
+
 func set_quality(preset: GraphicsPresetDef) -> void:
 	_particles_ratio = preset.particles_ratio
 	_base_volumetric = _config.volumetric_fog_density

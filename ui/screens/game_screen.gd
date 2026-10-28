@@ -201,6 +201,9 @@ func _ready() -> void:
 	smoke_view.weather = weather
 	smoke_view.setup(simulation, _config.cell_size_m)
 	graphics.add_effect(smoke_view)
+	# Fase 76: a fumaça da locomotiva deita no mesmo vento e segue o nível gráfico
+	train_view.weather = weather
+	graphics.add_effect(train_view)
 	stockpile_view = StockpileView.new()
 	stockpile_view.name = "Stockpiles"
 	add_child(stockpile_view)

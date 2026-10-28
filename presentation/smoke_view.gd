@@ -155,7 +155,8 @@ func _remove(building_id: int) -> void:
 			nodes.erase(building_id)
 
 
-func _process_material(kind: int) -> ParticleProcessMaterial:
+## Também usado pela fumaça da locomotiva (TrainView, Fase 76).
+static func _process_material(kind: int) -> ParticleProcessMaterial:
 	var material := ParticleProcessMaterial.new()
 	material.direction = Vector3.UP
 	material.spread = 12.0
@@ -189,7 +190,7 @@ static func drift(direction: Vector2, strength: float) -> Vector3:
 	return Vector3(direction.x * WIND_PUSH_M_S2 * strength, RISE_M_S2, direction.y * WIND_PUSH_M_S2 * strength)
 
 
-func _draw_mesh(kind: int) -> QuadMesh:
+static func _draw_mesh(kind: int) -> QuadMesh:
 	var quad := QuadMesh.new()
 	var side: float = SIZES[kind]
 	quad.size = Vector2(side, side)

@@ -22,6 +22,13 @@ const FRAME_COLOR := Color(0.45, 0.12, 0.1)
 const TANK_COLOR := Color(0.12, 0.12, 0.13)
 const ROOF_COLOR := Color(0.2, 0.2, 0.22)
 const VISIBLE_UNTIL_M := 700.0
+## Fase 76: a fumaça da chaminé (a mesma da fumaça das fábricas, SmokeView, tipo SMOKE): partículas no nível mais alto,
+## quanto sai andando e parado na ponta (amount_ratio), quanto dura cada baforada e até onde aparece.
+const PUFFS := 24
+const PUFFS_MOVING := 1.0
+const PUFFS_WAITING := 0.4
+const PUFF_LIFETIME_S := 3.5
+const SMOKE_UNTIL_M := 450.0
 
 
 class Train:
@@ -34,6 +41,8 @@ class Train:
 	var clock: float = 0.0
 	var loco: MeshInstance3D
 	var wagon: MeshInstance3D
+	## Fase 76: a fumaça da chaminé (filha da locomotiva; null no nível sem partículas)
+	var smoke: GPUParticles3D
 
 	func length() -> float:
 		return along[along.size() - 1] if not along.is_empty() else 0.0
@@ -46,6 +55,14 @@ var _loco_mesh: Mesh
 var _wagon_mesh: Mesh
 var _trains: Array[Train] = []
 var _stale := true
+## Fase 76: a fumaça (o material de processo é de todos os trens e deita no vento), a fração de partículas e o alcance
+## pelo nível gráfico.
+var _smoke_process: ParticleProcessMaterial
+var _smoke_draw: QuadMesh
+var _particles_ratio: float = 1.0
+var _smoke_range_m: float = SMOKE_UNTIL_M
+## De onde vem o vento; sem ele, a fumaça sobe reta.
+var weather: WeatherView
 
 
 func setup(simulation: Simulation, config: GameConfig) -> void:
@@ -56,6 +73,8 @@ func setup(simulation: Simulation, config: GameConfig) -> void:
 	_material.roughness = 0.75
 	_loco_mesh = loco_mesh()
 	_wagon_mesh = wagon_mesh()
+	_smoke_process = SmokeView._process_material(BuildingDef.Smoke.SMOKE)
+	_smoke_draw = SmokeView._draw_mesh(BuildingDef.Smoke.SMOKE)
 	var mark := func(_id: int) -> void: _stale = true
 	EventBus.rails_changed.connect(mark)
 	EventBus.building_placed.connect(mark)
@@ -96,8 +115,58 @@ func refresh() -> void:
 			train.clock = resume
 			train.loco = _body("Loco", _loco_mesh)
 			train.wagon = _body("Wagon", _wagon_mesh)
+			train.smoke = _chimney_smoke(train.loco)
 			_trains.append(train)
 	_place()
+
+
+## Pelo nível gráfico (GraphicsQuality): quantas partículas e até onde a fumaça aparece; refaz os trens.
+func set_quality(preset: GraphicsPresetDef) -> void:
+	_particles_ratio = preset.particles_ratio
+	_smoke_range_m = SMOKE_UNTIL_M * preset.visibility_scale
+	refresh()
+
+
+## A fumaça em cima da chaminé, solta no mundo (local_coords desligado): a baforada fica para trás quando o trem anda.
+func _chimney_smoke(loco: Node3D) -> GPUParticles3D:
+	var amount := roundi(PUFFS * _particles_ratio)
+	if amount <= 0:
+		return null
+	var plume := GPUParticles3D.new()
+	plume.name = "Smoke"
+	plume.amount = amount
+	plume.lifetime = PUFF_LIFETIME_S
+	plume.local_coords = false
+	plume.process_material = _smoke_process
+	plume.draw_pass_1 = _smoke_draw
+	plume.position = chimney_top()
+	plume.visibility_aabb = AABB(Vector3(-15, -3, -15), Vector3(30, 30, 30))
+	plume.visibility_range_end = _smoke_range_m
+	plume.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	plume.emitting = false
+	loco.add_child(plume)
+	return plume
+
+
+## A boca da chaminé no referencial da locomotiva (a chaminé do loco_mesh).
+static func chimney_top() -> Vector3:
+	var deck := RAIL_TOP_M + WHEEL_R * 1.4
+	return Vector3(0.0, deck + 2.2, -LOCO_M * 0.5 + 0.8)
+
+
+## Se o trem anda no relógio dado (fora das esperas nas pontas e com caminho maior que ele).
+static func moving_at(length: float, clock: float) -> bool:
+	return not is_equal_approx(head_at(length, clock), head_at(length, clock + 0.05))
+
+
+## A fumaça do trem (testes): null sem partículas.
+func smoke_of(index: int) -> GPUParticles3D:
+	return _trains[index].smoke
+
+
+## Para onde a fumaça dos trens deita (testes).
+func smoke_push() -> Vector3:
+	return _smoke_process.gravity
 
 
 func train_count() -> int:
@@ -129,8 +198,15 @@ func _process(delta: float) -> void:
 
 func _tick(seconds: float) -> void:
 	for train: Train in _trains:
-		if _running(train):
+		var running := _running(train)
+		if running:
 			train.clock += seconds
+		if train.smoke != null:
+			# Fase 76: baforada forte andando, fraca esperando na ponta, nada com o trem parado ou o jogo pausado
+			train.smoke.emitting = running and seconds > 0.0
+			train.smoke.amount_ratio = PUFFS_MOVING if moving_at(train.length(), train.clock) else PUFFS_WAITING
+	if weather != null:
+		_smoke_process.gravity = SmokeView.drift(weather.sample.wind_direction, weather.sample.wind)
 	_place()
 
 

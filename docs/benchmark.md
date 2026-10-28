@@ -1283,3 +1283,9 @@ máquina, não da fase: nada desta fase entra no mundo do benchmark. Neutra.
 lento das Fases 60–73: GPU 22,9 ms, dia inteiro 34,8 FPS (1% low 15,3, pior quadro 272 ms), tick médio 1,34 ms,
 construir com a ilha cheia 16,8 ms, 2755 objetos e 1117 draw calls (a variação de sempre). A diferença para a Fase 74 é
 da máquina: nada desta fase entra no mundo do benchmark (o passeio só existe com bicho posto num zoológico). Neutra.
+
+## Fase 76 — fumaça do trem (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem trilho nem trem. Máquina no estado
+lento, igual à Fase 75: GPU 22,5 ms, dia inteiro 35,4 FPS (1% low 15,3, pior quadro 140 ms), tick médio 1,34 ms,
+construir com a ilha cheia 16,5 ms, 2755 objetos e 1117 draw calls (iguais aos da Fase 75). Neutra.
