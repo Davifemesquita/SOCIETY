@@ -2,203 +2,203 @@
 	"cell": 128,
 	"icons": {
 		"action_achievements": [
-			1024,
+			1152,
 			1792
 		],
 		"action_add": [
-			768,
+			896,
 			1024
 		],
 		"action_advisor": [
-			768,
+			896,
 			1152
 		],
 		"action_back": [
-			0,
+			128,
 			1152
 		],
 		"action_build_ship": [
-			640,
+			768,
 			1792
 		],
 		"action_buy": [
-			1280,
+			1408,
 			1024
 		],
 		"action_buy_frigate": [
-			1920,
-			1536
+			0,
+			1664
 		],
 		"action_buy_ship": [
-			512,
+			640,
 			1024
 		],
 		"action_center": [
-			1664,
+			1792,
 			1024
 		],
 		"action_close": [
-			1536,
-			896
-		],
-		"action_confirm": [
-			128,
-			1152
-		],
-		"action_continue": [
-			256,
-			1024
-		],
-		"action_copy": [
-			1408,
-			896
-		],
-		"action_credits": [
-			0,
-			1024
-		],
-		"action_delete": [
-			1536,
-			1024
-		],
-		"action_demolish": [
-			1024,
-			896
-		],
-		"action_dice": [
-			1920,
-			1024
-		],
-		"action_exit": [
-			1920,
-			896
-		],
-		"action_fast": [
-			256,
-			896
-		],
-		"action_gift": [
-			1152,
-			1536
-		],
-		"action_goal": [
-			640,
-			1152
-		],
-		"action_info": [
-			256,
-			1152
-		],
-		"action_load": [
-			512,
-			896
-		],
-		"action_load_cargo": [
-			1024,
-			1024
-		],
-		"action_menu": [
-			1792,
-			896
-		],
-		"action_missions": [
-			1792,
-			1408
-		],
-		"action_move": [
-			512,
-			1152
-		],
-		"action_new_game": [
-			128,
-			1024
-		],
-		"action_options": [
 			1664,
 			896
 		],
-		"action_pause": [
-			0,
+		"action_confirm": [
+			256,
+			1152
+		],
+		"action_continue": [
+			384,
+			1024
+		],
+		"action_copy": [
+			1536,
 			896
 		],
-		"action_paved_road": [
+		"action_credits": [
+			128,
+			1024
+		],
+		"action_delete": [
+			1664,
+			1024
+		],
+		"action_demolish": [
+			1152,
+			896
+		],
+		"action_dice": [
+			0,
+			1152
+		],
+		"action_exit": [
+			0,
+			1024
+		],
+		"action_fast": [
+			384,
+			896
+		],
+		"action_gift": [
+			1280,
+			1536
+		],
+		"action_goal": [
+			768,
+			1152
+		],
+		"action_info": [
 			384,
 			1152
 		],
-		"action_peace": [
-			1408,
-			1536
+		"action_load": [
+			640,
+			896
 		],
-		"action_photo": [
-			384,
-			1920
+		"action_load_cargo": [
+			1152,
+			1024
 		],
-		"action_play": [
+		"action_menu": [
+			1920,
+			896
+		],
+		"action_missions": [
+			1920,
+			1408
+		],
+		"action_move": [
+			640,
+			1152
+		],
+		"action_new_game": [
+			256,
+			1024
+		],
+		"action_options": [
+			1792,
+			896
+		],
+		"action_pause": [
 			128,
 			896
 		],
-		"action_remove": [
-			896,
-			1024
+		"action_paved_road": [
+			512,
+			1152
 		],
-		"action_reset": [
-			1792,
-			1024
-		],
-		"action_road": [
-			896,
-			896
-		],
-		"action_rotate": [
-			1152,
-			896
-		],
-		"action_routes": [
-			768,
-			896
-		],
-		"action_sail_to": [
-			640,
-			1024
-		],
-		"action_save": [
-			384,
-			896
-		],
-		"action_scenarios": [
-			896,
-			1792
-		],
-		"action_sell": [
-			1408,
-			1024
-		],
-		"action_specialists": [
-			640,
-			1664
-		],
-		"action_statistics": [
-			640,
-			896
-		],
-		"action_trade": [
-			384,
-			1024
-		],
-		"action_treaty": [
+		"action_peace": [
 			1536,
 			1536
 		],
-		"action_unload_cargo": [
-			1152,
+		"action_photo": [
+			512,
+			1920
+		],
+		"action_play": [
+			256,
+			896
+		],
+		"action_remove": [
+			1024,
 			1024
 		],
-		"action_upgrade": [
+		"action_reset": [
+			1920,
+			1024
+		],
+		"action_road": [
+			1024,
+			896
+		],
+		"action_rotate": [
 			1280,
 			896
 		],
-		"action_war": [
+		"action_routes": [
+			896,
+			896
+		],
+		"action_sail_to": [
+			768,
+			1024
+		],
+		"action_save": [
+			512,
+			896
+		],
+		"action_scenarios": [
+			1024,
+			1792
+		],
+		"action_sell": [
+			1536,
+			1024
+		],
+		"action_specialists": [
+			768,
+			1664
+		],
+		"action_statistics": [
+			768,
+			896
+		],
+		"action_trade": [
+			512,
+			1024
+		],
+		"action_treaty": [
+			1664,
+			1536
+		],
+		"action_unload_cargo": [
 			1280,
+			1024
+		],
+		"action_upgrade": [
+			1408,
+			896
+		],
+		"action_war": [
+			1408,
 			1536
 		],
 		"building_bakery": [
@@ -206,7 +206,7 @@
 			384
 		],
 		"building_bandstand": [
-			128,
+			256,
 			1920
 		],
 		"building_brewery": [
@@ -266,7 +266,7 @@
 			256
 		],
 		"building_fire_station": [
-			1792,
+			1920,
 			1664
 		],
 		"building_fishery": [
@@ -274,12 +274,12 @@
 			256
 		],
 		"building_flower_bed": [
-			1664,
+			1792,
 			1792
 		],
 		"building_fountain_square": [
-			1920,
-			1792
+			0,
+			1920
 		],
 		"building_furnace": [
 			128,
@@ -302,8 +302,8 @@
 			384
 		],
 		"building_hospital": [
-			1920,
-			1664
+			0,
+			1792
 		],
 		"building_house": [
 			1152,
@@ -338,7 +338,7 @@
 			640
 		],
 		"building_park_bench": [
-			1792,
+			1920,
 			1792
 		],
 		"building_pasture": [
@@ -354,7 +354,7 @@
 			384
 		],
 		"building_planted_tree": [
-			1536,
+			1664,
 			1792
 		],
 		"building_potato_farm": [
@@ -362,7 +362,7 @@
 			384
 		],
 		"building_power_station": [
-			384,
+			512,
 			1664
 		],
 		"building_rendering_works": [
@@ -394,7 +394,7 @@
 			256
 		],
 		"building_shipyard": [
-			384,
+			512,
 			1792
 		],
 		"building_soap_factory": [
@@ -402,7 +402,7 @@
 			384
 		],
 		"building_statue": [
-			0,
+			128,
 			1920
 		],
 		"building_steel_beam_works": [
@@ -423,6 +423,10 @@
 		],
 		"building_tobacco_plantation": [
 			1280,
+			640
+		],
+		"building_town_hall": [
+			1792,
 			640
 		],
 		"building_trading_post": [
@@ -454,31 +458,31 @@
 			512
 		],
 		"event_fair": [
-			384,
-			1536
-		],
-		"event_fair_wind": [
 			512,
 			1536
 		],
+		"event_fair_wind": [
+			640,
+			1536
+		],
 		"event_festival": [
-			768,
-			1536
-		],
-		"event_good_harvest": [
-			128,
-			1536
-		],
-		"event_immigrants": [
 			896,
 			1536
 		],
-		"event_rich_vein": [
+		"event_good_harvest": [
 			256,
 			1536
 		],
+		"event_immigrants": [
+			1024,
+			1536
+		],
+		"event_rich_vein": [
+			384,
+			1536
+		],
 		"event_storm": [
-			640,
+			768,
 			1536
 		],
 		"good_beer": [
@@ -646,352 +650,352 @@
 			0
 		],
 		"hud_cart": [
-			1664,
+			1792,
 			1152
 		],
 		"hud_clock": [
-			1152,
+			1280,
 			1152
 		],
 		"hud_event": [
-			1920,
-			1408
+			0,
+			1536
 		],
 		"hud_happiness": [
-			1280,
+			1408,
 			1152
 		],
 		"hud_hull": [
-			0,
+			128,
 			1664
 		],
 		"hud_island": [
-			0,
+			128,
 			1280
 		],
 		"hud_money": [
-			896,
+			1024,
 			1152
 		],
 		"hud_objective": [
-			1408,
+			1536,
 			1792
 		],
 		"hud_population": [
-			1024,
+			1152,
 			1152
 		],
 		"hud_risk": [
-			256,
+			384,
 			1792
 		],
 		"hud_rival": [
-			1024,
+			1152,
 			1536
 		],
 		"hud_seed": [
-			1920,
-			1152
+			0,
+			1280
 		],
 		"hud_storage": [
-			1792,
+			1920,
 			1152
 		],
 		"hud_tax": [
-			1408,
+			1536,
 			1152
 		],
 		"hud_workers": [
-			1536,
+			1664,
 			1152
 		],
 		"need_accessories": [
-			1408,
+			1536,
 			768
 		],
 		"need_adornment": [
-			1664,
+			1792,
 			768
 		],
 		"need_clothing": [
-			512,
+			640,
 			768
 		],
 		"need_commerce": [
-			768,
+			896,
 			768
 		],
 		"need_drink": [
-			1024,
+			1152,
 			768
 		],
 		"need_education": [
-			896,
+			1024,
 			768
 		],
 		"need_food": [
-			384,
+			512,
 			768
 		],
 		"need_household": [
-			1280,
+			1408,
 			768
 		],
 		"need_hygiene": [
-			640,
+			768,
 			768
 		],
 		"need_social": [
-			1152,
+			1280,
 			768
 		],
 		"need_tobacco": [
-			1536,
+			1664,
 			768
 		],
 		"notice_achievement": [
-			1152,
+			1280,
 			1792
 		],
 		"notice_battle": [
-			128,
+			256,
 			1664
 		],
 		"notice_colonized": [
-			1408,
+			1536,
 			1408
 		],
 		"notice_disease": [
-			128,
+			256,
 			1792
 		],
 		"notice_fire": [
-			0,
+			128,
 			1792
 		],
 		"notice_info": [
-			1664,
+			1792,
 			1408
 		],
 		"notice_milestone": [
-			1280,
+			1408,
 			1408
 		],
 		"notice_mission": [
-			0,
+			128,
 			1536
 		],
 		"notice_rival": [
-			1664,
+			1792,
 			1536
 		],
 		"notice_ship_arrived": [
-			1152,
+			1280,
 			1408
 		],
 		"notice_ship_built": [
-			768,
+			896,
 			1792
 		],
 		"notice_shortage": [
-			768,
+			896,
 			1408
 		],
 		"notice_stopped": [
-			896,
+			1024,
 			1408
 		],
 		"notice_storage_full": [
-			1024,
+			1152,
 			1408
 		],
 		"notice_sunk": [
-			256,
+			384,
 			1664
 		],
 		"notice_trader": [
-			1536,
+			1664,
 			1408
 		],
 		"notice_victory": [
-			1280,
+			1408,
 			1792
 		],
 		"option_audio": [
-			256,
+			384,
 			1280
 		],
 		"option_controls": [
-			384,
+			512,
 			1280
 		],
 		"option_game": [
-			768,
+			896,
 			1280
 		],
 		"option_graphics": [
-			128,
+			256,
 			1280
 		],
 		"option_interface": [
-			640,
+			768,
 			1280
 		],
 		"option_language": [
-			512,
+			640,
 			1280
 		],
 		"overlay_beauty": [
-			256,
+			384,
 			1920
 		],
 		"overlay_electricity": [
-			512,
+			640,
 			1664
 		],
 		"overlay_fertility": [
-			1152,
+			1280,
 			1280
 		],
 		"overlay_pollution": [
-			1280,
+			1408,
 			1280
 		],
 		"overlay_roads": [
-			1408,
+			1536,
 			1280
 		],
 		"overlay_service": [
-			896,
+			1024,
 			1280
 		],
 		"overlay_warehouse": [
-			1024,
+			1152,
 			1280
 		],
 		"ship_clipper": [
-			512,
+			640,
 			1792
 		],
 		"ship_frigate": [
-			1792,
+			1920,
 			1536
 		],
 		"ship_merchant_ship": [
-			1792,
+			1920,
 			768
 		],
 		"ship_trader_ship": [
-			1920,
-			768
+			0,
+			896
 		],
 		"specialist_agronomist": [
-			896,
-			1664
-		],
-		"specialist_bookkeeper": [
 			1024,
 			1664
 		],
-		"specialist_foreman": [
-			1280,
-			1664
-		],
-		"specialist_forester": [
-			768,
-			1664
-		],
-		"specialist_master_brewer": [
-			1408,
-			1664
-		],
-		"specialist_master_glassblower": [
-			1536,
-			1664
-		],
-		"specialist_mining_engineer": [
+		"specialist_bookkeeper": [
 			1152,
 			1664
 		],
-		"specialist_steelmaster": [
+		"specialist_foreman": [
+			1408,
+			1664
+		],
+		"specialist_forester": [
+			896,
+			1664
+		],
+		"specialist_master_brewer": [
+			1536,
+			1664
+		],
+		"specialist_master_glassblower": [
 			1664,
 			1664
 		],
+		"specialist_mining_engineer": [
+			1280,
+			1664
+		],
+		"specialist_steelmaster": [
+			1792,
+			1664
+		],
 		"state_disconnected": [
-			640,
+			768,
 			1408
 		],
 		"state_no_input": [
-			1536,
-			1280
-		],
-		"state_no_modules": [
-			0,
-			1408
-		],
-		"state_no_road": [
-			1920,
-			1280
-		],
-		"state_no_trees": [
-			384,
-			1408
-		],
-		"state_no_warehouse": [
-			256,
-			1408
-		],
-		"state_no_workers": [
 			1664,
 			1280
 		],
-		"state_output_full": [
+		"state_no_modules": [
+			128,
+			1408
+		],
+		"state_no_road": [
+			0,
+			1408
+		],
+		"state_no_trees": [
+			512,
+			1408
+		],
+		"state_no_warehouse": [
+			384,
+			1408
+		],
+		"state_no_workers": [
 			1792,
 			1280
 		],
+		"state_output_full": [
+			1920,
+			1280
+		],
 		"state_paused": [
-			128,
+			256,
 			1408
 		],
 		"state_protest": [
-			512,
+			640,
 			1408
 		],
 		"status_bad": [
-			768,
-			1920
-		],
-		"status_good": [
-			512,
-			1920
-		],
-		"status_missing": [
 			896,
 			1920
 		],
-		"status_partial": [
+		"status_good": [
 			640,
 			1920
 		],
-		"tier_artisans": [
-			0,
-			768
+		"status_missing": [
+			1024,
+			1920
 		],
-		"tier_engineers": [
+		"status_partial": [
+			768,
+			1920
+		],
+		"tier_artisans": [
 			128,
 			768
 		],
-		"tier_investors": [
+		"tier_engineers": [
 			256,
 			768
 		],
+		"tier_investors": [
+			384,
+			768
+		],
 		"tier_peasants": [
-			1792,
+			1920,
 			640
 		],
 		"tier_workers": [
-			1920,
-			640
+			0,
+			768
 		]
 	}
 }

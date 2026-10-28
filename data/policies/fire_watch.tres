@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PolicyDef" format=3]
+
+[ext_resource type="Script" path="res://data/policy_def.gd" id="1_policy"]
+
+[resource]
+script = ExtResource("1_policy")
+id = &"fire_watch"
+effect = 1
+amount = 0.4
+upkeep_per_min = 20
+after_milestone = 0

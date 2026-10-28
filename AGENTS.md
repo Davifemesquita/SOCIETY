@@ -1877,6 +1877,14 @@ Regras que já custaram investigação:
   praça (chafariz, coreto, mercado; sem nenhum, o entreposto) e cordas de bandeirolas só por cima da rua
   (`strings_of`); fogos de artifício à noite sobre os mastros. Some quando a festa acaba. Só apresentação.
 
+### Prefeitura e políticas (Fase 66, nossa)
+
+- **Plano** em `docs/plano_fase66.md`. Prédio `town_hall` (`BuildingDef.policy_radius_cells`), `PolicyDef`
+  (`data/policies/`: velocidade da produção, chance de incêndio, felicidade, imposto), `SetPolicyCommand` e
+  `BuildingRecord.policy` no save. `DerivedState._apply_policies` soma os efeitos por prédio no raio (a mesma política
+  uma vez) e a manutenção; produção, riscos e população leem `policy_speed`, `policy_fire`, `policy_happiness` e
+  `policy_tax`. Painel com um botão por política.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1953,6 +1961,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 63 — Jornal (nossa) | **feita em 27/10/2026, a pedido do dono**: edição periódica com manchete sorteada que mexe na felicidade de todas as ilhas, e propaganda paga que troca a manchete; só com os eventos ligados (assinaturas iguais); números provisórios, à espera do dono; plano em `docs/plano_fase63.md` |
 | 64 — Baleias e golfinhos (nossa) | **feita em 27/10/2026, a pedido do dono**: baleias que sobem, sopram e mergulham no mar aberto e golfinhos saltando em águas médias, gerados no código; só apresentação; a proposta de fábricas com estado visível já estava feita; plano em `docs/plano_fase64.md` |
 | 65 — Festa na cidade (nossa) | **feita em 27/10/2026, a pedido do dono**: com a festa numa ilha, bandeirolas por cima das ruas das praças e fogos de artifício à noite; só apresentação; plano em `docs/plano_fase65.md` |
+| 66 — Prefeitura e políticas (nossa) | **feita em 27/10/2026, a pedido do dono**: prefeitura com uma política por vez (jornada longa, vigia de incêndio, feriados, coletoria) que vale nos prédios em volta, com manutenção; no save; números provisórios, à espera do dono; plano em `docs/plano_fase66.md` |
 
 Pendências já vistas para fases futuras:
 

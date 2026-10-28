@@ -14,6 +14,8 @@ var rotation: int
 var paused: bool = false
 ## Nível do armazém ou entreposto (0 = como construído).
 var level: int = 0
+## Prefeitura (Fase 66): a política escolhida (vazia = nenhuma). Só vai no save quando há.
+var policy: StringName = &""
 
 # produção
 var in_cycle: bool = false
@@ -53,6 +55,8 @@ func is_house() -> bool:
 func to_dict() -> Dictionary:
 	var data := {"id": id, "def": def_id, "island": island_id, "origin": origin, "rotation": rotation, "paused": paused,
 			"level": level}
+	if policy != &"":
+		data["policy"] = policy
 	if is_house():
 		data["house"] = {"tier": tier, "residents": residents, "happiness": happiness, "upgrade_blocked": upgrade_blocked,
 				"tax_per_min": tax_per_min}
@@ -84,6 +88,10 @@ static func from_dict(data: Dictionary) -> BuildingRecord:
 	var record := BuildingRecord.new(building_id, def, island, at, rot)
 	record.paused = raw_paused
 	record.level = raw_level
+	var raw_policy: Variant = data.get("policy", &"")
+	if not raw_policy is StringName:
+		return null
+	record.policy = raw_policy
 	var raw_house: Variant = data.get("house")
 	var raw_production: Variant = data.get("production")
 	if raw_house is Dictionary:

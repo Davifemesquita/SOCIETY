@@ -8,6 +8,7 @@ extends RefCounted
 ## Eletricidade (Fase 11): a usina queima a entrada sem gerar bem; a fábrica no raio de uma usina
 ## que produzia no tick anterior ganha electricity_bonus na velocidade.
 ## Especialistas (Fase 11): o de velocidade multiplica o fator; o de tonelada extra conta os ciclos.
+## Prefeitura (Fase 66): a política de velocidade em volta também multiplica o fator.
 ## Riscos: o prédio em chamas para (o ciclo espera o fogo apagar).
 ## O estaleiro não tem ciclo: o ShipyardSystem cuida dele.
 ## O fim do ciclo tem folga de 1e-6: 75 ticks de 0,2/15 somam 0,99999… e o ciclo atrasaria
@@ -30,6 +31,7 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 				break
 	# Fase 29: o que não muda dentro do tick (há especialista? há fogo?) fica fora do laço
 	var any_fire := not fires.is_empty()
+	var any_policy := not derived.policy_speed.is_empty()
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
 		if entry.shipyard:
 			continue
@@ -40,6 +42,9 @@ static func run(config: GameConfig, derived: DerivedState, dt: float, events: Ev
 			factor *= 1.0 + config.electricity_bonus
 		if entry.specialist != null and entry.specialist.def.effect == SpecialistDef.Effect.SPEED:
 			factor *= 1.0 + entry.specialist.def.amount
+		# Fase 66: a política de velocidade da prefeitura em volta
+		if any_policy and derived.policy_speed.has(record.id):
+			factor *= 1.0 + derived.policy_speed[record.id]
 		var speed := 0.0
 		if any_fire and fires.has(record.id):
 			record.state = BuildingRecord.State.ON_FIRE

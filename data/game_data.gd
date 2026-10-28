@@ -28,6 +28,8 @@ static var _default: GameData
 @export var achievements: Array[AchievementDef] = []
 ## Manchetes do jornal (Fase 63): as de notícia, sorteadas a cada edição, e as de propaganda, compradas.
 @export var headlines: Array[HeadlineDef] = []
+## Políticas da prefeitura (Fase 66).
+@export var policies: Array[PolicyDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -107,6 +109,13 @@ func profile(id: StringName) -> IslandProfileDef:
 
 func event(id: StringName) -> EventDef:
 	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func policy(id: StringName) -> PolicyDef:
+	for def: PolicyDef in policies:
 		if def.id == id:
 			return def
 	return null
@@ -231,6 +240,12 @@ func validate() -> PackedStringArray:
 			problems.append("evento %s: duração e peso positivos, marco não negativo" % event_def.id)
 		if event_def.effect != EventDef.Effect.HAPPINESS and event_def.amount <= 0.0:
 			problems.append("evento %s: multiplicador deve ser positivo" % event_def.id)
+	_check_ids(problems, "política", policies.map(func(def: PolicyDef) -> StringName: return def.id))
+	for policy_def: PolicyDef in policies:
+		if policy_def.upkeep_per_min < 0 or policy_def.after_milestone < 0:
+			problems.append("política %s: manutenção e marco não negativos" % policy_def.id)
+		if policy_def.effect == PolicyDef.Effect.FIRE_RISK and (policy_def.amount < 0.0 or policy_def.amount >= 1.0):
+			problems.append("política %s: o multiplicador do incêndio fica entre 0 e 1" % policy_def.id)
 	_check_ids(problems, "manchete", headlines.map(func(def: HeadlineDef) -> StringName: return def.id))
 	var news := 0
 	for headline_def: HeadlineDef in headlines:

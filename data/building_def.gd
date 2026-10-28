@@ -76,6 +76,9 @@ enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }
 @export_group("Serviço")
 ## Raio do serviço medido por estrada; 0 usa GameConfig.service_radius_cells.
 @export var service_radius_cells: int = 0
+## Prefeitura (Fase 66): a política escolhida vale para os prédios a até este raio (em células, pela distância entre
+## os lotes). 0 = não é prefeitura.
+@export var policy_radius_cells: int = 0
 
 @export_group("Eletricidade")
 ## Usina (Fase 11): queima as entradas sem gerar bem e, enquanto produz, eletrifica as fábricas
@@ -111,6 +114,11 @@ func is_decoration() -> bool:
 
 func is_production() -> bool:
 	return kind == Kind.PRODUCTION
+
+
+## Prefeitura (Fase 66): escolhe uma política que vale em volta dela.
+func is_town_hall() -> bool:
+	return policy_radius_cells > 0
 
 
 func is_warehouse() -> bool:

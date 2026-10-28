@@ -51,6 +51,14 @@ var service_reach: Dictionary[int, PackedInt32Array] = {}
 var fire_protected: Dictionary[int, bool] = {}
 var health_protected: Dictionary[int, bool] = {}
 var protected_by: Dictionary[int, Array] = {}
+## Políticas das prefeituras (Fase 66), já somadas por prédio: fração de velocidade da produção, multiplicador da chance
+## de incêndio, pontos de felicidade e fração do imposto das casas. Sem política, o prédio não está na lista.
+var policy_speed: Dictionary[int, float] = {}
+var policy_fire: Dictionary[int, float] = {}
+var policy_happiness: Dictionary[int, float] = {}
+var policy_tax: Dictionary[int, float] = {}
+## Prefeitura → os prédios em que a política dela vale (para o painel e os testes).
+var policy_reach: Dictionary[int, Array] = {}
 var houses: Array[int] = []
 ## Ilhas com pelo menos uma casa (as outras não têm necessidade a calcular).
 var islands_with_houses: Dictionary[int, bool] = {}
@@ -115,6 +123,11 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	fire_protected.clear()
 	health_protected.clear()
 	protected_by.clear()
+	policy_speed.clear()
+	policy_fire.clear()
+	policy_happiness.clear()
+	policy_tax.clear()
+	policy_reach.clear()
 	houses.clear()
 	islands_with_houses.clear()
 	production.clear()
@@ -175,6 +188,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	for service_id: int in services:
 		_cover(world, data, config, service_id, houses_at_road)
 		_protect(world, data, service_id, production_at_road)
+	_apply_policies(world, data, services)
 	_lap("serviços")
 	_assign_modules(world, data, farms, modules)
 	_spread_pollution(world, data, polluters)
@@ -552,6 +566,51 @@ func _protect(world: WorldState, data: GameData, service_id: int, production_at_
 	var into := fire_protected if hazard == BuildingDef.Hazard.FIRE else health_protected
 	for building_id: int in guarded:
 		into[building_id] = true
+
+
+## Políticas (Fase 66): cada prefeitura com política e estrada aplica o efeito dela nos prédios (casas e produção) a até
+## policy_radius_cells do lote, e soma a manutenção da política. A mesma política em duas prefeituras vale uma vez no
+## prédio; políticas diferentes somam.
+func _apply_policies(world: WorldState, data: GameData, services: Array[int]) -> void:
+	var applied: Dictionary[int, Dictionary] = {}
+	for hall_id: int in services:
+		var hall := world.building(hall_id)
+		var hall_def := data.building(hall.def_id)
+		if not hall_def.is_town_hall() or hall.policy == &"" or not road_access.get(hall_id, false):
+			continue
+		var policy_def := data.policy(hall.policy)
+		if policy_def == null:
+			continue
+		upkeep_per_min += policy_def.upkeep_per_min
+		var area := Footprint.rect(hall.origin, hall_def.size, hall.rotation)
+		var reached: Array[int] = []
+		for building_id: int in houses + production:
+			var record := world.building(building_id)
+			if record.island_id != hall.island_id:
+				continue
+			var def := data.building(record.def_id)
+			if _rect_gap(area, Footprint.rect(record.origin, def.size, record.rotation)) > hall_def.policy_radius_cells:
+				continue
+			reached.append(building_id)
+			if not applied.has(building_id):
+				applied[building_id] = {}
+			var seen: Dictionary = applied[building_id]
+			if seen.has(policy_def.id):
+				continue
+			seen[policy_def.id] = true
+			match policy_def.effect:
+				PolicyDef.Effect.PRODUCTION_SPEED:
+					if def.is_production():
+						policy_speed[building_id] = policy_speed.get(building_id, 0.0) + policy_def.amount
+				PolicyDef.Effect.FIRE_RISK:
+					policy_fire[building_id] = policy_fire.get(building_id, 1.0) * policy_def.amount
+				PolicyDef.Effect.HAPPINESS:
+					if record.is_house():
+						policy_happiness[building_id] = policy_happiness.get(building_id, 0.0) + policy_def.amount
+				PolicyDef.Effect.TAX:
+					if record.is_house():
+						policy_tax[building_id] = policy_tax.get(building_id, 0.0) + policy_def.amount
+		policy_reach[hall_id] = reached
 
 
 ## Cada módulo serve a uma fazenda só: a de menor id que o tem no raio e ainda precisa dele.

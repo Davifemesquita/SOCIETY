@@ -1227,3 +1227,8 @@ jornal não toca o desenho; o FPS de volta aos ~88 da manhã confirma que a lent
 
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: os mesmos 2755 objetos e 1117 draw
 calls (o benchmark roda sem eventos: nenhuma festa no quadro), GPU média 22,2 ms, dia inteiro 36,5 FPS. Neutra.
+## Fase 66 — prefeitura e políticas (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,30 ms (p95 1,84;
+1,27 na Fase 63), construir um prédio com a ilha cheia 15,1 ms (o recálculo ganha o laço das prefeituras, vazio no
+benchmark), os mesmos 2755 objetos e 1117 draw calls, GPU 22,2 ms, dia inteiro 36,2 FPS. Neutra.

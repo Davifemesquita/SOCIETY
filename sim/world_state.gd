@@ -564,6 +564,9 @@ func _restore_building(record: BuildingRecord, game_data: GameData) -> bool:
 		return false
 	if record.is_house() and game_data.tier(record.tier) == null:
 		return false
+	# a política (Fase 66) só numa prefeitura e só uma que existe
+	if record.policy != &"" and (not def.is_town_hall() or game_data.policy(record.policy) == null):
+		return false
 	var area := Footprint.rect(record.origin, def.size, record.rotation)
 	if PlacementRules.check_area(grid, area) != &"":
 		return false

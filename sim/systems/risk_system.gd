@@ -68,6 +68,8 @@ static func _ignite(world: WorldState, data: GameData, config: GameConfig, deriv
 		var chance := config.fire_chance_per_hour * def.fire_risk * hours
 		if derived.fire_protected.has(building_id):
 			chance *= config.fire_protected_factor
+		# Fase 66: a vigia de incêndio da prefeitura em volta
+		chance *= derived.policy_fire.get(building_id, 1.0)
 		if rng.randf() < chance and not state.fires.has(building_id):
 			ignite(world, building_id)
 

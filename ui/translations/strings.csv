@@ -539,6 +539,7 @@ BUILDING_CIGAR_FACTORY,Charutaria,Cigar factory
 BUILDING_GOLDSMITH,Ourivesaria,Goldsmith
 BUILDING_THEATER,Teatro,Theatre
 BUILDING_UNIVERSITY,Universidade,University
+BUILDING_TOWN_HALL,Prefeitura,Town hall
 TIER_ARTISANS,Artesãos,Artisans
 TIER_ENGINEERS,Engenheiros,Engineers
 TIER_INVESTORS,Investidores,Investors
@@ -788,6 +789,23 @@ SPECIALIST_DISMISS_TIP,"Dispensar: sai da companhia, sem devolução","Dismiss: 
 PANEL_SPECIALIST,Especialista,Specialist
 PANEL_SPECIALIST_TIP,Contratar ou designar um especialista para este prédio,Hire or assign a specialist for this building
 PANEL_SPECIALIST_AT,Especialista: %s,Specialist: %s
+PANEL_POLICY,Política: %s,Policy: %s
+PANEL_POLICY_NONE,"Nenhuma política: escolha uma abaixo","No policy: choose one below"
+PANEL_POLICY_REACH,"Vale em %s prédios a até %s células (manutenção %s/min)","Applies to %s buildings within %s cells (upkeep %s/min)"
+PANEL_POLICY_NO_ROAD,A prefeitura sem estrada não aplica a política,A town hall without a road does not apply its policy
+PANEL_POLICY_CLEAR,Sem política,No policy
+PANEL_POLICY_CLEAR_TIP,Tira a política desta prefeitura (para a manutenção dela),Remove this town hall's policy (stops its upkeep)
+PANEL_POLICY_CHOOSE_TIP,"%s. Manutenção: %s/min; vale nos prédios em volta da prefeitura.","%s. Upkeep: %s/min; applies to the buildings around the town hall."
+POLICY_LONG_SHIFTS,Jornada longa,Long shifts
+POLICY_LONG_SHIFTS_DESC,+%s na velocidade da produção em volta,+%s production speed around
+POLICY_FIRE_WATCH,Vigia de incêndio,Fire watch
+POLICY_FIRE_WATCH_DESC,−%s na chance de incêndio em volta,−%s fire chance around
+POLICY_HOLIDAYS,Feriados,Public holidays
+POLICY_HOLIDAYS_DESC,+%s de felicidade nas casas em volta,+%s happiness in the houses around
+POLICY_TAX_OFFICE,Coletoria,Tax office
+POLICY_TAX_OFFICE_DESC,+%s no imposto das casas em volta,+%s tax from the houses around
+REASON_NOT_TOWN_HALL,Só a prefeitura escolhe política,Only a town hall chooses a policy
+REASON_POLICY_LOCKED,Esta política ainda não foi liberada,This policy is not unlocked yet
 REASON_NO_SPECIALIST_OFFER,Fora da oferta desta volta,Not in this tour's offer
 REASON_NO_SPECIALIST,Especialista não encontrado,Specialist not found
 REASON_SPECIALIST_LIMIT,Teto de especialistas contratados,Specialist limit reached

@@ -6,6 +6,7 @@ extends RefCounted
 ## - Felicidade: base + luxo − falta de bens + nível de imposto − poluição + beleza (decoração, Fase 16) (+ festa, Fase 11),
 ##   andando devagar. A chegada de imigrantes (Fase 11) acelera o enchimento.
 ## - O imposto da casa fica em tax_per_min para a economia somar no mesmo tick.
+## - Prefeitura (Fase 66): a política em volta soma felicidade ao alvo e uma fração ao imposto.
 ## - Cada tick avalia um grupo de casas (DerivedState.house_groups) com o tempo do ciclo
 ##   inteiro de grupos: cada casa é vista uma vez a cada house_update_groups ticks.
 ## - Upgrade: todas as básicas atendidas, casa cheia, materiais no estoque e sem bloqueio.
@@ -79,9 +80,11 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 				- config.happiness_pollution_penalty * pollution \
 				+ config.happiness_per_beauty * beauty \
 				+ event_happiness[island] \
+				+ derived.policy_happiness.get(house_id, 0.0) \
 				- (config.disease_happiness_penalty if sick else 0.0)
 		house.happiness = move_toward(house.happiness, clampf(happiness_target, 0.0, 100.0), happiness_step)
-		house.tax_per_min = 0.0 if burning else HouseNeeds.tax_from(world, config, house, tier, evaluation.bonus_categories)
+		house.tax_per_min = 0.0 if burning else HouseNeeds.tax_from(world, config, house, tier, evaluation.bonus_categories) \
+				* (1.0 + derived.policy_tax.get(house_id, 0.0))
 		if not upgraded_on.has(island) and evaluation.all_basic_met and not burning and not sick \
 				and _try_upgrade(world, data, house, tier, target):
 			upgraded_on[island] = true
