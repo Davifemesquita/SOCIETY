@@ -1289,3 +1289,9 @@ da máquina: nada desta fase entra no mundo do benchmark (o passeio só existe c
 Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem trilho nem trem. Máquina no estado
 lento, igual à Fase 75: GPU 22,5 ms, dia inteiro 35,4 FPS (1% low 15,3, pior quadro 140 ms), tick médio 1,34 ms,
 construir com a ilha cheia 16,5 ms, 2755 objetos e 1117 draw calls (iguais aos da Fase 75). Neutra.
+
+## Fase 77 — chão e bebedouro no cercado (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem zoológico. Máquina no estado lento:
+GPU 23,4 ms, dia inteiro 34,4 FPS (1% low 18,8, pior quadro 112 ms), tick médio 1,34 ms, construir com a ilha cheia
+16,4 ms, 2755 objetos e 1117 draw calls (iguais aos das Fases 75 e 76). Neutra.

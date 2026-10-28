@@ -822,7 +822,8 @@ static func exhibit_spots(spec: Spec) -> Array[Vector3]:
 			var rows := maxi(1, spec.court_rows / 2)
 			for row: int in rows:
 				for column: int in 3:
-					spots.append(Vector3(size.x * (column - 1) / 3.0, 0.0, front + depth * (row + 0.5) / rows))
+					# Fase 77: em cima do piso (até a Fase 76 o bicho ficava com as patas no piso)
+					spots.append(Vector3(size.x * (column - 1) / 3.0, FOUNDATION_UP_M, front + depth * (row + 0.5) / rows))
 		BuildingDef.Silhouette.GALLERY:
 			var z := front + depth * 0.5
 			for k: int in 6:

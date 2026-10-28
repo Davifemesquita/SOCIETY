@@ -29,6 +29,8 @@ var footprint: Rect2
 ## Onde está (no cercado, a partir do meio) e para onde olha (0 = -Z).
 var position := Vector2.ZERO
 var heading: float = 0.0
+## Fase 77: o retângulo no chão do cercado que o corpo não pode tocar (o bebedouro); vazio = nenhum.
+var blocked := Rect2()
 ## Sem nenhuma pose que caiba: não anda.
 var still: bool = false
 var step := Step.REST
@@ -38,9 +40,10 @@ var _target_heading: float = 0.0
 var _rng := RandomNumberGenerator.new()
 
 
-func _init(pen_half: Vector2, body: Rect2, seed_value: int, start_heading: float) -> void:
+func _init(pen_half: Vector2, body: Rect2, seed_value: int, start_heading: float, obstacle: Rect2 = Rect2()) -> void:
 	half = pen_half
 	footprint = body
+	blocked = obstacle
 	_rng.seed = seed_value
 	heading = start_heading
 	# começa no meio, com a pegada centrada; senão, a primeira pose sorteada que couber
@@ -70,13 +73,60 @@ func corners(at: Vector2, facing: float) -> Array[Vector2]:
 	return found
 
 
-## A pegada inteira dentro da cerca, a "gap" dela.
+## A pegada inteira dentro da cerca, a "gap" dela, e sem tocar o bebedouro (com a mesma folga).
 func fits(at: Vector2, facing: float, gap: float = FENCE_GAP_M) -> bool:
 	var limit := half - Vector2(gap, gap)
-	for corner: Vector2 in corners(at, facing):
+	var found := corners(at, facing)
+	for corner: Vector2 in found:
 		if absf(corner.x) > limit.x or absf(corner.y) > limit.y:
 			return false
-	return true
+	return _clear(found, _axes(facing), gap)
+
+
+## Fase 77: o caminho reto de "from" até "to" olhando para "facing" não passa pelo bebedouro. O que o corpo varre andando
+## é o fecho convexo dos cantos de saída e de chegada; o teste dos eixos separadores usa os lados do corpo, os do
+## bebedouro e o lado paralelo ao caminho.
+func path_clear(from: Vector2, to: Vector2, facing: float) -> bool:
+	var swept := corners(from, facing) + corners(to, facing)
+	var axes := _axes(facing)
+	axes.append((to - from).orthogonal())
+	return _clear(swept, axes, FENCE_GAP_M)
+
+
+## Os pontos (um corpo convexo) não tocam o bebedouro crescido de "gap": separados em algum dos eixos (os do bebedouro e
+## os dados).
+func _clear(points: Array[Vector2], axes: Array[Vector2], gap: float) -> bool:
+	if not blocked.has_area():
+		return true
+	var box := blocked.grow(gap)
+	var box_corners: Array[Vector2] = [box.position, Vector2(box.end.x, box.position.y), box.end,
+			Vector2(box.position.x, box.end.y)]
+	var all_axes: Array[Vector2] = [Vector2.RIGHT, Vector2.DOWN]
+	all_axes.append_array(axes)
+	for axis: Vector2 in all_axes:
+		if axis.is_zero_approx():
+			continue
+		var mine := _span(points, axis)
+		var theirs := _span(box_corners, axis)
+		if mine.y < theirs.x or theirs.y < mine.x:
+			return true
+	return false
+
+
+## Os dois lados do corpo olhando para "facing".
+static func _axes(facing: float) -> Array[Vector2]:
+	return [_rotated(Vector2.RIGHT, facing), _rotated(Vector2.DOWN, facing)]
+
+
+## Onde os pontos caem projetados em "axis": (menor, maior).
+static func _span(points: Array[Vector2], axis: Vector2) -> Vector2:
+	var low := INF
+	var high := -INF
+	for point: Vector2 in points:
+		var at := point.dot(axis)
+		low = minf(low, at)
+		high = maxf(high, at)
+	return Vector2(low, high)
 
 
 func advance(seconds: float) -> void:
@@ -117,7 +167,7 @@ func _choose() -> void:
 		if gap.length() < 0.3:
 			continue
 		var facing := atan2(-gap.x, -gap.y)
-		if fits(target, facing) and _turn_fits(facing):
+		if fits(target, facing) and _turn_fits(facing) and path_clear(position, target, facing):
 			_target = target
 			_target_heading = facing
 			step = Step.TURN
@@ -154,7 +204,7 @@ func _random_point() -> Vector2:
 	return Vector2(_rng.randf_range(-aim.x, aim.x), _rng.randf_range(-aim.y, aim.y))
 
 
-## A escala do bicho no cercado: 1 se ele cabe com folga, menor se o corpo passa de FIT_SHARE do lado menor.
+## A escala do bicho no cercado: 1 se ele cabe com folga, menor se o corpo passa de FIT_SHARE do lado menor do cercado.
 static func fit_scale(pen_half: Vector2, body: Rect2) -> float:
 	var room := (minf(pen_half.x, pen_half.y) - FENCE_GAP_M) * 2.0 * FIT_SHARE
 	return minf(1.0, room / maxf(body.size.x, body.size.y))

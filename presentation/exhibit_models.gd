@@ -9,8 +9,21 @@ extends RefCounted
 const FACING: Dictionary[StringName, float] = {&"elephant": 0.4, &"giraffe": -0.5, &"lion": 0.7, &"tiger": 0.7,
 		&"zebras": 0.0}
 
+## Fase 77: o chão do cercado de cada bicho (areia da savana, capim seco, capim verde) e o bebedouro encostado na cerca
+## de trás (+Z): o tamanho dele (x, altura, z); o PenWalk desvia do retângulo dele no chão (trough_rect).
+const SAND := Color(0.74, 0.64, 0.44)
+const DRY_GRASS := Color(0.56, 0.6, 0.32)
+const GREEN_GRASS := Color(0.33, 0.52, 0.24)
+const GROUNDS: Dictionary[StringName, Color] = {&"elephant": SAND, &"lion": SAND, &"tiger": SAND,
+		&"giraffe": DRY_GRASS, &"zebras": DRY_GRASS, &"parrots": GREEN_GRASS}
+const TROUGH_M := Vector3(1.0, 0.4, 0.36)
+const PEN_FLOOR_Y := 0.03
+const WATER := Color(0.22, 0.42, 0.55)
+const TROUGH_WOOD := Color(0.4, 0.28, 0.16)
+
 static var _meshes: Dictionary[StringName, Mesh] = {}
 static var _footprints: Dictionary[StringName, Rect2] = {}
+static var _pens: Dictionary[String, Mesh] = {}
 
 
 static func mesh(exhibit_id: StringName) -> Mesh:
@@ -50,6 +63,49 @@ static func mesh(exhibit_id: StringName) -> Mesh:
 	var made := tool.commit()
 	_meshes[exhibit_id] = made
 	return made
+
+
+## Fase 77: o chão e o bebedouro do cercado do bicho (meias medidas half, origem no meio do cercado, no chão), feitos uma
+## vez por bicho e tamanho de cercado. O chão em ladrilhos de tom variado; o bebedouro de madeira com a água em cima, no
+## lado direito da cerca de trás.
+static func pen_dressing(exhibit_id: StringName, half: Vector2) -> Mesh:
+	var key := "%s %.2f %.2f" % [exhibit_id, half.x, half.y]
+	if _pens.has(key):
+		return _pens[key]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var ground: Color = GROUNDS.get(exhibit_id, DRY_GRASS)
+	var inner := half - Vector2(0.06, 0.06)
+	var tiles := 4
+	for i: int in tiles:
+		for j: int in tiles:
+			var x0 := lerpf(-inner.x, inner.x, float(i) / tiles)
+			var x1 := lerpf(-inner.x, inner.x, float(i + 1) / tiles)
+			var z0 := lerpf(-inner.y, inner.y, float(j) / tiles)
+			var z1 := lerpf(-inner.y, inner.y, float(j + 1) / tiles)
+			var shade := (hash([exhibit_id, i, j]) % 100) / 100.0 - 0.5
+			var color := ground.lightened(shade * 0.16) if shade > 0.0 else ground.darkened(-shade * 0.16)
+			VertexShapes.quad(tool, Vector3(x0, PEN_FLOOR_Y, z0), Vector3(x1, PEN_FLOOR_Y, z0), Vector3(x1, PEN_FLOOR_Y, z1),
+					Vector3(x0, PEN_FLOOR_Y, z1), color)
+	var trough := trough_center(half)
+	VertexShapes.box(tool, trough, TROUGH_M * 0.5, TROUGH_WOOD)
+	VertexShapes.box(tool, trough + Vector3(0.0, TROUGH_M.y * 0.5 - 0.03, 0.0),
+			Vector3(TROUGH_M.x * 0.5 - 0.05, 0.03, TROUGH_M.z * 0.5 - 0.05), WATER)
+	tool.generate_normals()
+	var made := tool.commit()
+	_pens[key] = made
+	return made
+
+
+## O meio do bebedouro: encostado na cerca de trás, do lado direito.
+static func trough_center(half: Vector2) -> Vector3:
+	return Vector3(half.x * 0.45, TROUGH_M.y * 0.5, half.y - 0.1 - TROUGH_M.z * 0.5)
+
+
+## O bebedouro no chão do cercado (x e z), para o PenWalk desviar.
+static func trough_rect(half: Vector2) -> Rect2:
+	var center := trough_center(half)
+	return Rect2(Vector2(center.x - TROUGH_M.x * 0.5, center.z - TROUGH_M.z * 0.5), Vector2(TROUGH_M.x, TROUGH_M.z))
 
 
 static func roams(exhibit_id: StringName) -> bool:

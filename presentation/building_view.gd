@@ -915,16 +915,24 @@ func _dress_exhibits(building_id: int, body: Node3D, spec: BuildingKit.Spec) -> 
 		shape.visibility_range_end = _detail_range_m
 		item.add_child(shape)
 		group.add_child(item)
+		var half := BuildingKit.pen_half(spec)
+		if spec.silhouette == BuildingDef.Silhouette.MENAGERIE:
+			# Fase 77: o chão do bicho e o bebedouro no cercado ocupado
+			var pen := MeshInstance3D.new()
+			pen.name = "Pen"
+			pen.mesh = ExhibitModels.pen_dressing(exhibit_id, half)
+			pen.material_override = _exhibit_material
+			pen.visibility_range_end = _detail_range_m
+			item.add_child(pen)
 		if spec.silhouette == BuildingDef.Silhouette.MENAGERIE and ExhibitModels.roams(exhibit_id):
 			# o bicho grande demais para virar no cercado fica menor (PenWalk.fit_scale)
-			var half := BuildingKit.pen_half(spec)
 			var footprint := ExhibitModels.footprint(exhibit_id)
 			var fit := PenWalk.fit_scale(half, footprint)
 			shape.scale = Vector3.ONE * fit
 			var walk: PenWalk = old_walks.get(exhibit_id)
 			if walk == null:
 				walk = PenWalk.new(half, Rect2(footprint.position * fit, footprint.size * fit),
-						hash([building_id, k, exhibit_id]), ExhibitModels.FACING[exhibit_id])
+						hash([building_id, k, exhibit_id]), ExhibitModels.FACING[exhibit_id], ExhibitModels.trough_rect(half))
 			var entry: Array = [walk, shape, exhibit_id]
 			_place_walker(entry)
 			walkers.append(entry)

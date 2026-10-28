@@ -1949,6 +1949,11 @@ Regras que já custaram investigação:
   `_draw_mesh` agora estáticas, solta no mundo na boca da chaminé), forte andando e fraca na ponta (`moving_at`), parada
   com o trem ou o jogo parados, no vento (`weather`) e pelo nível gráfico (`set_quality`).
 
+### Chão e bebedouro no cercado (Fase 77, nossa)
+
+- **Plano** em `docs/plano_fase77.md`. `ExhibitModels.pen_dressing` (o chão do bicho e o cocho, por cercado ocupado),
+  `trough_rect` e `PenWalk.blocked`/`path_clear` (o bicho desvia do cocho pelo teste dos eixos separadores).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2036,6 +2041,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 74 — Recintos e vitrines (nossa) | **feita em 28/10/2026, a pedido do dono**: o zoológico ganha seis cercados e o museu seis pedestais, e cada peça posta aparece na sua vaga (bichos e peças gerados no código); só apresentação; plano em `docs/plano_fase74.md` |
 | 75 — Bichos no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: os bichos do zoológico andam e viram dentro do cercado sem atravessar a cerca (o elefante fica menor para caber); as araras e as peças do museu ficam paradas; só apresentação; plano em `docs/plano_fase75.md` |
 | 76 — Fumaça do trem (nossa) | **feita em 28/10/2026, a pedido do dono**: a locomotiva solta fumaça pela chaminé, cheia andando e fraca esperando nas pontas, deitando no vento e pelo nível gráfico; só apresentação; plano em `docs/plano_fase76.md` |
+| 77 — Chão e bebedouro no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: cada cercado ocupado ganha o chão do bicho (areia ou capim) e um bebedouro, de que os bichos desviam; a ideia de pôr as partículas no rascunho da primeira vez foi medida e descartada; só apresentação; plano em `docs/plano_fase77.md` |
 
 Pendências já vistas para fases futuras:
 
