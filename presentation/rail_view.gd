@@ -115,9 +115,14 @@ func _segment(tool: SurfaceTool, grid: IslandGrid, center: Vector3, direction: V
 
 ## A altura do chão desenhado no ponto (com o detalhe das encostas), um pouco acima.
 func _ground(grid: IslandGrid, point: Vector3) -> Vector3:
+	return ground_point(grid, _config, point)
+
+
+## O mesmo para quem anda em cima do trilho (o trem, Fase 71).
+static func ground_point(grid: IslandGrid, config: GameConfig, point: Vector3) -> Vector3:
 	var y := grid.height_at(point.x, point.z)
 	if not grid.flat:
-		y += TerrainDetail.offset_at(grid, _config, point.x, point.z)
+		y += TerrainDetail.offset_at(grid, config, point.x, point.z)
 	return Vector3(point.x, y + LIFT_M, point.z)
 
 

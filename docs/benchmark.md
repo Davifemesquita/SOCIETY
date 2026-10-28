@@ -1255,3 +1255,8 @@ quadro de 2.138 ms (1% low 6,6 FPS): as manchas dos campos de petróleo, que já
 o material na primeira vez que entravam na tela. Com o trilho e um campo de petróleo no rascunho do WarmUp (atrás da
 cortina), a segunda rodada: pior quadro 426 ms (no nível das Fases 64 a 69), dia inteiro 35,6 FPS, GPU 22,5 ms, tick
 médio 1,37 ms, os mesmos 2755 objetos e 1117 draw calls (as manchas ficam fora do quadro com tudo visível).
+## Fase 71 — o trem no trilho (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. O mundo do benchmark não tem trilho,
+então não há trem: tick médio 1,32 ms, os mesmos 2755 objetos e 1117 draw calls, GPU 21,8 ms, dia inteiro 36,9 FPS
+(pior quadro 157 ms). Neutra.

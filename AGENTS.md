@@ -1914,6 +1914,12 @@ Regras que já custaram investigação:
   (poço e usina no mesmo grupo de trilho) e `RailSystem` (leva o petróleo, sem carroça). `BuildTool.road_rail` (o
   arrasto da estrada, sempre em L), cartão "Trilho", `RailView` (trilho e manchas de petróleo).
 
+### O trem no trilho (Fase 71, nossa)
+
+- **Plano** em `docs/plano_fase71.md`. Só apresentação: `RailNetwork.route` (o caminho mais curto pelo trilho entre os
+  lotes) e `TrainView` (um trem por ligação do `rail_feeds`, locomotiva e vagão-tanque gerados no código, vaivém com
+  espera nas pontas, parado com o poço ou a usina pausados; mesmo material do trilho).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1995,6 +2001,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 68 — Atratividade e turistas (nossa) | **feita em 28/10/2026, a pedido do dono**: atratividade por ilha (beleza menos poluição) e turistas que pagam por ela, mais na festa, com os eventos ligados; parcela no detalhamento e linha no entreposto; números provisórios; plano em `docs/plano_fase68.md` |
 | 69 — Expedições (nossa) | **feita em 28/10/2026, a pedido do dono**: navio parado mandado a um de quatro destinos, que volta sorteado (peça de coleção, moedas, mãos vazias ou naufrágio); no save; números provisórios; plano em `docs/plano_fase69.md` |
 | 70 — Ferrovia e petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: campos de petróleo pela semente (assinatura igual), poço, usina a petróleo e trilho que leva o petróleo do poço à usina (sem carroça); trilho no save; números provisórios; plano em `docs/plano_fase70.md` |
+| 71 — O trem no trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: locomotiva com vagão-tanque gerados no código indo e voltando pelo caminho mais curto do trilho entre o poço e a usina; só apresentação (a simulação e as assinaturas não mudam); plano em `docs/plano_fase71.md` |
 
 Pendências já vistas para fases futuras:
 

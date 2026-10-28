@@ -54,6 +54,7 @@ var plan_view: PlanView
 var building_view: BuildingView
 var road_view: RoadView
 var rail_view: RailView
+var train_view: TrainView
 var cart_view: CartView
 var overlay: DebugOverlay
 var sky: SkyAdapter
@@ -144,6 +145,11 @@ func _ready() -> void:
 	rail_view.name = "Rails"
 	add_child(rail_view)
 	rail_view.setup(simulation, _config)
+	# Fase 71: o trem andando no trilho
+	train_view = TrainView.new()
+	train_view.name = "Trains"
+	add_child(train_view)
+	train_view.setup(simulation, _config)
 	building_view = BuildingView.new()
 	building_view.setup(simulation, _config.cell_size_m)
 	add_child(building_view)
