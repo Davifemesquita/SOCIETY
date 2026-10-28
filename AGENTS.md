@@ -1864,6 +1864,13 @@ Regras que já custaram investigação:
   eventos ligados; vai no `EventsState` (save antigo sem as chaves carrega sem edição). Na tela, no alto da janela das
   encomendas (J), e aviso a cada edição.
 
+### Baleias e golfinhos (Fase 64, nossa)
+
+- **Plano** em `docs/plano_fase64.md`. `MarineLifeView` (montada com a água): baleias no mar aberto e bandos de
+  golfinhos em águas médias, pelo `CoastField` e pela semente, malhas geradas no código; a baleia sobe, sopra e
+  mergulha com a cauda erguida, o golfinho salta em arco (`whale_pose`, `dolphin_pose`, no tempo de jogo). Só
+  apresentação.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1938,6 +1945,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 61 — Helicônias (nossa) | **feita em 27/10/2026, a pedido do dono**: helicônia gerada no código no lugar das flores do campo nas ilhas tropicais; só apresentação; plano em `docs/plano_fase61.md` |
 | 62 — Malha fina na face da falésia (nossa) | **feita em 27/10/2026, a pedido do dono**: a face da falésia vira subgrade como a costa da Fase 55, com aspereza de rocha e normais pela subgrade, sem tocar célula construível nem a linha d'água; só apresentação; plano em `docs/plano_fase62.md` |
 | 63 — Jornal (nossa) | **feita em 27/10/2026, a pedido do dono**: edição periódica com manchete sorteada que mexe na felicidade de todas as ilhas, e propaganda paga que troca a manchete; só com os eventos ligados (assinaturas iguais); números provisórios, à espera do dono; plano em `docs/plano_fase63.md` |
+| 64 — Baleias e golfinhos (nossa) | **feita em 27/10/2026, a pedido do dono**: baleias que sobem, sopram e mergulham no mar aberto e golfinhos saltando em águas médias, gerados no código; só apresentação; a proposta de fábricas com estado visível já estava feita; plano em `docs/plano_fase64.md` |
 
 Pendências já vistas para fases futuras:
 

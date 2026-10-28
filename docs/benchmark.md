@@ -1218,3 +1218,8 @@ pela subgrade em GDScript; ~0,4 s na velocidade normal) e nada na GPU.
 a etapa "eventos, encomendas, jornal e especialistas" 0,01 ms — o benchmark roda com os eventos desligados, como o
 robô), 2759 objetos e 1109 draw calls, dia inteiro 87,6 FPS (1% low 47,4), GPU média 10,8 ms, jogo novo 10,1 s. O
 jornal não toca o desenho; o FPS de volta aos ~88 da manhã confirma que a lentidão das Fases 60 a 62 era da máquina.
+## Fase 64 — baleias e golfinhos (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), com a máquina de novo no estado lento das Fases 60 a 62 (jogo novo
+23,4 s): 2755 objetos e 1117 draw calls (+8: as duas camadas de bichos e os esguichos), GPU média 22,5 ms e dia inteiro
+35,8 FPS — no nível das Fases 60 a 62 medidas nesse estado (GPU 21,9 a 23,0 ms). Neutra.

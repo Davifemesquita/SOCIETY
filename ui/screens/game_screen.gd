@@ -88,6 +88,8 @@ var water_view: WaterView
 var tree_view: TreeView
 var rock_view: RockView
 var scatter_view: ScatterView
+## Fase 64: baleias e golfinhos no mar.
+var marine_view: MarineLifeView
 var _ground: Node3D
 ## Destaque de terreno por ilha e prédio (percorre a ilha inteira: guardado até árvores caírem).
 var _terrain_highlights: Dictionary[String, Image] = {}
@@ -337,12 +339,13 @@ func _exit_tree() -> void:
 ## O chão do mundo atual: a ilha plana de antes ou o terreno, a água e as árvores do arquipélago.
 ## Refeito ao carregar um save de outro mundo.
 func _build_ground() -> void:
-	for node: Node in [_ground, terrain_view, water_view, tree_view, rock_view, scatter_view]:
+	for node: Node in [_ground, terrain_view, water_view, tree_view, rock_view, scatter_view, marine_view]:
 		if node != null:
 			node.queue_free()
 	_ground = null
 	terrain_view = null
 	water_view = null
+	marine_view = null
 	tree_view = null
 	rock_view = null
 	scatter_view = null
@@ -359,6 +362,10 @@ func _build_ground() -> void:
 	water_view = WaterView.new()
 	add_child(water_view)
 	water_view.setup(simulation, terrain_view.coast_field())
+	marine_view = MarineLifeView.new()
+	marine_view.name = "MarineLife"
+	add_child(marine_view)
+	marine_view.setup(terrain_view.coast_field(), world_bounds(), world.seed)
 	tree_view = TreeView.new()
 	add_child(tree_view)
 	tree_view.setup(world, simulation.data, _config)
