@@ -181,6 +181,11 @@ func tick(_tick_index: int) -> void:
 	MissionSystem.run(world, data, config)
 	NewspaperSystem.run(world, data, config)
 	SpecialistSystem.run(world, data, config)
+	# Fase 69: o navio que volta da expedição entra de novo no mapa
+	if not ExpeditionSystem.run(world, data, config).is_empty():
+		_dirty = true
+		place_new_ships()
+		EventBus.ships_changed.emit()
 	_lap(&"eventos, encomendas, jornal e especialistas")
 	if world.risks_state.enabled:
 		_remove_lost(RiskSystem.run(world, data, config, derived))

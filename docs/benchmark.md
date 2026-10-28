@@ -1243,3 +1243,8 @@ Neutra (o benchmark não constrói zoológico nem museu).
 benchmark roda sem eventos, então o turismo não paga e o sistema sai logo), construir com a ilha cheia 15,4 ms (o
 recálculo ganha a soma da atratividade), 2769 objetos e 1119 draw calls (+2 na rodada; nada desta fase desenha), GPU
 21,8 ms, dia inteiro 36,8 FPS. Neutra.
+## Fase 69 — expedições (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,32 ms (p95 1,56; sem
+expedição, o sistema sai logo), construir com a ilha cheia 15,0 ms, os mesmos 2769 objetos e 1119 draw calls, GPU 22,3
+ms, dia inteiro 36,1 FPS. Neutra.

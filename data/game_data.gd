@@ -32,6 +32,8 @@ static var _default: GameData
 @export var policies: Array[PolicyDef] = []
 ## Peças do zoológico e do museu (Fase 67).
 @export var exhibits: Array[ExhibitDef] = []
+## Destinos das expedições (Fase 69).
+@export var expeditions: Array[ExpeditionDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -111,6 +113,13 @@ func profile(id: StringName) -> IslandProfileDef:
 
 func event(id: StringName) -> EventDef:
 	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func expedition(id: StringName) -> ExpeditionDef:
+	for def: ExpeditionDef in expeditions:
 		if def.id == id:
 			return def
 	return null
@@ -249,6 +258,13 @@ func validate() -> PackedStringArray:
 			problems.append("evento %s: duração e peso positivos, marco não negativo" % event_def.id)
 		if event_def.effect != EventDef.Effect.HAPPINESS and event_def.amount <= 0.0:
 			problems.append("evento %s: multiplicador deve ser positivo" % event_def.id)
+	_check_ids(problems, "expedição", expeditions.map(func(def: ExpeditionDef) -> StringName: return def.id))
+	for expedition_def: ExpeditionDef in expeditions:
+		if expedition_def.duration_s <= 0.0 or expedition_def.cost_money < 0 or expedition_def.after_milestone < 0:
+			problems.append("expedição %s: duração positiva, custo e marco não negativos" % expedition_def.id)
+		if expedition_def.empty_chance < 0.0 or expedition_def.lost_chance < 0.0 \
+				or expedition_def.empty_chance + expedition_def.lost_chance >= 1.0:
+			problems.append("expedição %s: as chances de voltar vazia e de naufragar somam menos que 1" % expedition_def.id)
 	_check_ids(problems, "peça", exhibits.map(func(def: ExhibitDef) -> StringName: return def.id))
 	for exhibit_def: ExhibitDef in exhibits:
 		if exhibit_def.price < 0 or exhibit_def.beauty < 0.0 or exhibit_def.after_milestone < 0:

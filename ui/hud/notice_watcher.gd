@@ -192,6 +192,29 @@ func newspaper_published(headline_id: StringName) -> Notice:
 	return notice
 
 
+## Expedição de volta (Fase 69): com a peça ou as moedas (verde), de mãos vazias (neutro) ou o navio perdido (vermelho).
+func expedition_returned(expedition_id: StringName, outcome: int, exhibit_id: StringName) -> Notice:
+	var def := _simulation.data.expedition(expedition_id)
+	var place: String = String(TranslationServer.translate(def.title_key())) if def != null else ""
+	var notice: Notice
+	match outcome:
+		ExpeditionSystem.Outcome.LOST:
+			notice = Notice.new("expedition/%s" % expedition_id, "notice_ship_arrived", "NOTICE_EXPEDITION_LOST", [place])
+			notice.status = UiPalette.Status.BAD
+		ExpeditionSystem.Outcome.EMPTY:
+			notice = Notice.new("expedition/%s" % expedition_id, "notice_ship_arrived", "NOTICE_EXPEDITION_EMPTY", [place])
+		_:
+			var exhibit := _simulation.data.exhibit(exhibit_id)
+			if exhibit != null:
+				notice = Notice.new("expedition/%s" % expedition_id, "notice_ship_arrived", "NOTICE_EXPEDITION_EXHIBIT",
+						[place, TranslationServer.translate(exhibit.title_key())])
+			else:
+				notice = Notice.new("expedition/%s" % expedition_id, "notice_ship_arrived", "NOTICE_EXPEDITION_RICH", [place])
+			notice.status = UiPalette.Status.GOOD
+	notice.opens_missions = true
+	return notice
+
+
 func mission_offered(mission_id: int) -> Notice:
 	var item := _simulation.world.events_state.mission(mission_id)
 	var good: String = String(TranslationServer.translate(_simulation.data.good(item.def.good).name_key)) if item != null else ""

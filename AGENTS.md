@@ -1899,6 +1899,13 @@ Regras que já custaram investigação:
   dinheiro e em `income_per_min`, guarda `WorldState.tourism_per_min`). Parcela `Breakdown.Kind.TOURISM` e a linha no
   painel do entreposto.
 
+### Expedições (Fase 69, nossa)
+
+- **Plano** em `docs/plano_fase69.md`. `ExpeditionDef` (`data/expeditions/`), `StartExpeditionCommand` (o navio sai
+  do mapa para o `ExpeditionsState`), `ExpeditionSystem` (a volta sorteada pela semente e pelo número: naufrágio, mãos
+  vazias ou a recompensa — peça guardada da Fase 67 ou moedas; o navio volta ao porto de origem) e o sinal
+  `expedition_returned`. Botões no painel do navio, viagens na janela das encomendas, aviso da frota.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1978,6 +1985,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 66 — Prefeitura e políticas (nossa) | **feita em 27/10/2026, a pedido do dono**: prefeitura com uma política por vez (jornada longa, vigia de incêndio, feriados, coletoria) que vale nos prédios em volta, com manutenção; no save; números provisórios, à espera do dono; plano em `docs/plano_fase66.md` |
 | 67 — Zoológico e museu (nossa) | **feita em 28/10/2026, a pedido do dono**: zoológico e museu com seis vagas cada para peças compradas uma vez (animais e objetos), que somam beleza às casas em volta; no save; números provisórios; plano em `docs/plano_fase67.md` |
 | 68 — Atratividade e turistas (nossa) | **feita em 28/10/2026, a pedido do dono**: atratividade por ilha (beleza menos poluição) e turistas que pagam por ela, mais na festa, com os eventos ligados; parcela no detalhamento e linha no entreposto; números provisórios; plano em `docs/plano_fase68.md` |
+| 69 — Expedições (nossa) | **feita em 28/10/2026, a pedido do dono**: navio parado mandado a um de quatro destinos, que volta sorteado (peça de coleção, moedas, mãos vazias ou naufrágio); no save; números provisórios; plano em `docs/plano_fase69.md` |
 
 Pendências já vistas para fases futuras:
 

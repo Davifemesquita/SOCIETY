@@ -59,6 +59,7 @@ func setup(simulation: Simulation) -> void:
 	EventBus.world_event_ended.connect(func(_def: StringName, _island: int) -> void: _rebuild_if_open())
 	EventBus.newspaper_published.connect(func(_headline: StringName) -> void: _rebuild_if_open())
 	EventBus.newspaper_changed.connect(_rebuild_if_open)
+	EventBus.ships_changed.connect(_rebuild_if_open)
 
 
 func toggle() -> void:
@@ -109,6 +110,21 @@ func rebuild() -> void:
 		_events.add_child(UiKit.label("MISSIONS_NO_EVENTS", &"DimLabel"))
 	for event: WorldEvent in state.events:
 		_events.add_child(_event_row(event))
+	# Fase 69: as expedições em andamento (o navio fica fora do mapa até a volta)
+	for trip: ExpeditionsState.Trip in _simulation.world.expeditions_state.trips:
+		var row := HBoxContainer.new()
+		row.name = "Trip_%d" % trip.number
+		row.add_theme_constant_override(&"separation", 10)
+		row.add_child(UiKit.icon_rect(Icons.get_icon("notice_ship_arrived"), 32))
+		var text := VBoxContainer.new()
+		row.add_child(text)
+		var ship_def := _simulation.data.ship(trip.ship.def_id)
+		text.add_child(UiKit.label(tr("EXPEDITION_UNDER_WAY") % [tr(trip.def.title_key()),
+				tr("SHIP_TITLE") % [tr(ship_def.name_key), trip.ship.id]], &"HeaderLabel"))
+		var timer := Label.new()
+		text.add_child(timer)
+		_track(timer, trip.ends_tick, "EXPEDITION_BACK_IN")
+		_events.add_child(row)
 	_refresh_left = 0.0
 	reset_size()
 	_center.call_deferred()

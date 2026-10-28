@@ -15,7 +15,7 @@ const CATEGORIES: Array[String] = ["economy", "alert", "fleet", "diplomacy", "mi
 const PREFIXES := {
 	"stopped": "economy", "full": "economy", "shortage": "economy", "trader": "economy",
 	"fire": "alert", "disease": "alert", "sunk": "alert", "attack": "alert",
-	"ship": "fleet", "ship_built": "fleet",
+	"ship": "fleet", "ship_built": "fleet", "expedition": "fleet",
 	"rival": "diplomacy",
 	"mission": "missions", "event": "missions", "newspaper": "missions",
 	"milestone": "progress", "colony": "progress", "achievement": "progress",
@@ -45,6 +45,8 @@ func setup(simulation: Simulation) -> void:
 		push(watcher.trader(island_id, earned, spent)))
 	EventBus.world_event_started.connect(func(def_id: StringName, island_id: int) -> void: push(watcher.event_started(def_id, island_id)))
 	EventBus.mission_offered.connect(func(mission_id: int) -> void: push(watcher.mission_offered(mission_id)))
+	EventBus.expedition_returned.connect(func(expedition_id: StringName, outcome: int, exhibit_id: StringName) -> void:
+		push(watcher.expedition_returned(expedition_id, outcome, exhibit_id)))
 	EventBus.newspaper_published.connect(func(headline_id: StringName) -> void:
 		if headline_id != &"":
 			push(watcher.newspaper_published(headline_id)))

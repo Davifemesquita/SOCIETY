@@ -49,6 +49,8 @@ var risks_state := RisksState.new()
 var shipyard_state := ShipyardState.new()
 ## Peças do zoológico e do museu (Fase 67).
 var exhibits_state := ExhibitsState.new()
+## Expedições em andamento (Fase 69): o navio que viaja fica aqui, fora de ships.
+var expeditions_state := ExpeditionsState.new()
 ## Objetivo da partida (Fase 12); partida livre em mundo novo.
 var victory_state := VictoryState.new()
 ## Plantas (Fase 49): prédios desenhados, sem custo, que ainda não existem.
@@ -234,7 +236,7 @@ func to_dict() -> Dictionary:
 			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
 			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict(),
 			"victory": victory_state.to_dict(), "plans": plan_list, "next_plan_id": next_plan_id,
-			"exhibits": exhibits_state.to_dict()}
+			"exhibits": exhibits_state.to_dict(), "expeditions": expeditions_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -442,6 +444,19 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 		if used[building_id] > hall_def.exhibit_slots:
 			return null
 	world.exhibits_state = loaded_exhibits
+	# as expedições (Fase 69) não existem nos saves de antes: sem a chave, nenhuma em andamento
+	var raw_expeditions: Variant = data.get("expeditions", {"trips": [], "count": 0})
+	if not raw_expeditions is Dictionary:
+		return null
+	var expeditions_data: Dictionary = raw_expeditions
+	var loaded_expeditions := ExpeditionsState.from_dict(expeditions_data, game_data, world.islands.size())
+	if loaded_expeditions == null:
+		return null
+	# o navio em viagem é da companhia, não está no mapa e tem id já dado
+	for trip: ExpeditionsState.Trip in loaded_expeditions.trips:
+		if trip.ship.owner != Ship.Owner.PLAYER or world.ships.has(trip.ship.id) or trip.ship.id >= world.next_ship_id:
+			return null
+	world.expeditions_state = loaded_expeditions
 	return world
 
 

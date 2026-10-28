@@ -166,6 +166,39 @@ func _build_actions(ship: Ship) -> void:
 		_build_trader_actions(ship)
 	elif _simulation.world.has_trading_post(ship.at, _simulation.data):
 		_build_port_actions(ship)
+		_build_expedition_actions(ship)
+
+
+## Expedições (Fase 69): um botão por destino, com o custo, a duração, as chances e a recompensa na dica; desligado com
+## o motivo (bloqueado pelo marco, sem dinheiro).
+func _build_expedition_actions(ship: Ship) -> void:
+	if _simulation.data.expeditions.is_empty():
+		return
+	_actions.add_child(UiKit.label("SHIP_EXPEDITIONS", &"DimLabel"))
+	var row := HFlowContainer.new()
+	row.name = "Expeditions"
+	_actions.add_child(row)
+	for def: ExpeditionDef in _simulation.data.expeditions:
+		var button := _button(def.title_key(), "action_sail_to", func() -> void: _run(StartExpeditionCommand.new(ship.id, def.id)))
+		button.name = "Expedition_" + String(def.id)
+		button.tooltip_text = expedition_tip(def)
+		var reason := StartExpeditionCommand.check(_simulation.world, _simulation.data, ship.id, def.id, _simulation.free_build)
+		if reason != &"":
+			button.disabled = true
+			button.tooltip_text += "\n" + tr(reason)
+		row.add_child(button)
+
+
+## A dica do destino: o texto, o custo e a duração, as chances e o que ele traz.
+static func expedition_tip(def: ExpeditionDef) -> String:
+	var reward := TranslationServer.translate("EXPEDITION_REWARD_MONEY") % Fmt.integer(def.reward_money)
+	if def.reward == ExpeditionDef.Reward.ANIMAL:
+		reward = TranslationServer.translate("EXPEDITION_REWARD_ANIMAL")
+	elif def.reward == ExpeditionDef.Reward.ARTIFACT:
+		reward = TranslationServer.translate("EXPEDITION_REWARD_ARTIFACT")
+	return "%s\n%s\n%s" % [TranslationServer.translate(def.description_key()),
+			TranslationServer.translate("EXPEDITION_TERMS") % [Fmt.integer(def.cost_money), Fmt.countdown(def.duration_s),
+					Fmt.percent(def.empty_chance), Fmt.percent(def.lost_chance)], reward]
 
 
 func _build_port_actions(ship: Ship) -> void:

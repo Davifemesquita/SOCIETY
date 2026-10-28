@@ -203,6 +203,11 @@
 [ext_resource type="Script" path="res://data/headline_def.gd" id="hl_script"]
 [ext_resource type="Script" path="res://data/policy_def.gd" id="po_script"]
 [ext_resource type="Script" path="res://data/exhibit_def.gd" id="ex_script"]
+[ext_resource type="Script" path="res://data/expedition_def.gd" id="xp_script"]
+[ext_resource type="Resource" path="res://data/expeditions/savanna_coast.tres" id="xp_savanna_coast"]
+[ext_resource type="Resource" path="res://data/expeditions/ancient_ruins.tres" id="xp_ancient_ruins"]
+[ext_resource type="Resource" path="res://data/expeditions/spice_islands.tres" id="xp_spice_islands"]
+[ext_resource type="Resource" path="res://data/expeditions/northern_seas.tres" id="xp_northern_seas"]
 [ext_resource type="Resource" path="res://data/exhibits/parrots.tres" id="ex_parrots"]
 [ext_resource type="Resource" path="res://data/exhibits/zebras.tres" id="ex_zebras"]
 [ext_resource type="Resource" path="res://data/exhibits/giraffe.tres" id="ex_giraffe"]
@@ -250,3 +255,4 @@ achievements = Array[ExtResource("ac_script")]([ExtResource("ac_first_investor")
 headlines = Array[ExtResource("hl_script")]([ExtResource("hl_quiet_week"), ExtResource("hl_harbor_praise"), ExtResource("hl_price_rumor"), ExtResource("hl_cholera_fear"), ExtResource("hl_company_scandal"), ExtResource("hl_royal_visit"), ExtResource("hl_progress"), ExtResource("hl_prosperity"), ExtResource("hl_company_pride")])
 policies = Array[ExtResource("po_script")]([ExtResource("po_long_shifts"), ExtResource("po_fire_watch"), ExtResource("po_holidays"), ExtResource("po_tax_office")])
 exhibits = Array[ExtResource("ex_script")]([ExtResource("ex_parrots"), ExtResource("ex_zebras"), ExtResource("ex_giraffe"), ExtResource("ex_lion"), ExtResource("ex_elephant"), ExtResource("ex_tiger"), ExtResource("ex_amphora"), ExtResource("ex_ship_model"), ExtResource("ex_fossil"), ExtResource("ex_telescope"), ExtResource("ex_mummy"), ExtResource("ex_old_master")])
+expeditions = Array[ExtResource("xp_script")]([ExtResource("xp_savanna_coast"), ExtResource("xp_ancient_ruins"), ExtResource("xp_spice_islands"), ExtResource("xp_northern_seas")])

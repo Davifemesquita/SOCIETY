@@ -981,6 +981,27 @@ BREAKDOWN_SHIPS,Navios (%d),Ships (%d)
 BREAKDOWN_SALARIES,Salários dos especialistas,Specialist salaries
 BREAKDOWN_TREATY,Acordos comerciais,Trade agreements
 BREAKDOWN_TOURISM,Turistas,Tourists
+SHIP_EXPEDITIONS,Mandar em expedição,Send on an expedition
+EXPEDITION_TERMS,"Custa %s moedas e leva %s · volta vazia: %s · naufrágio: %s","Costs %s coins and takes %s · returns empty: %s · shipwreck: %s"
+EXPEDITION_REWARD_MONEY,Pode trazer %s moedas,May bring back %s coins
+EXPEDITION_REWARD_ANIMAL,Pode trazer um animal para o zoológico,May bring back an animal for the zoo
+EXPEDITION_REWARD_ARTIFACT,Pode trazer uma peça para o museu,May bring back an exhibit for the museum
+EXPEDITION_UNDER_WAY,%s — %s,%s — %s
+EXPEDITION_BACK_IN,Volta em %s,Back in %s
+NOTICE_EXPEDITION_LOST,A expedição %s naufragou: o navio se perdeu,The %s expedition was shipwrecked: the ship is lost
+NOTICE_EXPEDITION_EMPTY,A expedição %s voltou de mãos vazias,The %s expedition came back empty-handed
+NOTICE_EXPEDITION_EXHIBIT,"A expedição %s trouxe: %s (guardada, para expor)","The %s expedition brought back: %s (in storage, ready to display)"
+NOTICE_EXPEDITION_RICH,A expedição %s voltou com o porão cheio de moedas,The %s expedition came back with a hold full of coins
+REASON_EXPEDITION_NO_SHIP,"O navio precisa estar parado num porto da companhia, fora de rota","The ship must be idle at a Company port, off any route"
+REASON_EXPEDITION_LOCKED,Este destino ainda não foi liberado,This destination is not unlocked yet
+EXPEDITION_SAVANNA_COAST,Costa das savanas,Savanna coast
+EXPEDITION_SAVANNA_COAST_DESC,Uma viagem à costa africana atrás de animais para o zoológico,A voyage to the African coast in search of animals for the zoo
+EXPEDITION_ANCIENT_RUINS,Ruínas antigas,Ancient ruins
+EXPEDITION_ANCIENT_RUINS_DESC,Uma viagem ao Mediterrâneo atrás de peças para o museu,A voyage to the Mediterranean in search of exhibits for the museum
+EXPEDITION_SPICE_ISLANDS,Ilhas das especiarias,Spice islands
+EXPEDITION_SPICE_ISLANDS_DESC,Uma viagem de comércio às ilhas das especiarias,A trading voyage to the spice islands
+EXPEDITION_NORTHERN_SEAS,Mares do norte,Northern seas
+EXPEDITION_NORTHERN_SEAS_DESC,"Caça à baleia nos mares gelados: muito lucro, muito risco","Whaling in the icy seas: big profit, big risk"
 PANEL_ATTRACTIVENESS,"Atratividade: %s · turistas %s/min","Attractiveness: %s · tourists %s/min"
 PANEL_ATTRACTIVENESS_TIP,"A beleza que a ilha espalha (decorações, zoológico e museu com as peças) menos a poluição dos prédios. Com a festa na ilha, os turistas pagam mais.","The beauty the island spreads (decorations, zoo and museum with their exhibits) minus the buildings' pollution. With a festival on the island, tourists pay more."
 BREAKDOWN_MONEY,"De onde vem e para onde vai o dinheiro, por minuto","Where the money comes from and goes, per minute"
