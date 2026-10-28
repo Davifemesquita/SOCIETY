@@ -838,8 +838,7 @@ static func _pens(tool: SurfaceTool, spec: Spec) -> void:
 	var spots := exhibit_spots(spec)
 	if spots.is_empty():
 		return
-	var rows := maxi(1, spec.court_rows / 2)
-	var half := Vector2(spec.size_m().x / 3.0, spec.court_rows * spec.cell_m / rows) * 0.5 - Vector2(0.25, 0.25)
+	var half := pen_half(spec)
 	for spot: Vector3 in spots:
 		var corners: Array[Vector3] = [spot + Vector3(-half.x, 0.0, -half.y), spot + Vector3(half.x, 0.0, -half.y),
 				spot + Vector3(half.x, 0.0, half.y), spot + Vector3(-half.x, 0.0, half.y)]
@@ -857,6 +856,12 @@ static func _pens(tool: SurfaceTool, spec: Spec) -> void:
 					_rail(tool, a.lerp(b, 0.6) + y, b + y)
 				else:
 					_rail(tool, a + y, b + y)
+
+
+## Meia largura (x) e meia profundidade (z) de cada cercado do zoológico, da vaga até a linha da cerca.
+static func pen_half(spec: Spec) -> Vector2:
+	var rows := maxi(1, spec.court_rows / 2)
+	return Vector2(spec.size_m().x / 3.0, spec.court_rows * spec.cell_m / rows) * 0.5 - Vector2(0.25, 0.25)
 
 
 static func _rail(tool: SurfaceTool, a: Vector3, b: Vector3) -> void:

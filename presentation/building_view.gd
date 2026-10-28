@@ -86,6 +86,8 @@ var _rotor_rocks: Dictionary[int, Array] = {}
 ## Fase 74: os bichos e as peças postos no zoológico e no museu (ExhibitModels), com cor por vértice — o mesmo jeito de
 ## material do trilho e do trem, sem pipeline nova.
 var _exhibit_material := StandardMaterial3D.new()
+## Fase 75: os bichos que andam no cercado, pelo prédio: [PenWalk, corpo, peça] de cada um.
+var _walkers: Dictionary[int, Array] = {}
 ## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
 var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
@@ -195,6 +197,7 @@ func select(building_id: int) -> void:
 
 func _process(delta: float) -> void:
 	spin_rotors(delta * GameClock.clock.speed_multiplier())
+	walk_animals(delta * GameClock.clock.speed_multiplier())
 	_refresh_left -= delta
 	if _refresh_left <= 0.0:
 		_refresh_left = REFRESH_SECONDS
@@ -247,6 +250,34 @@ func spin_rotors(game_seconds: float) -> void:
 			_rotors[building_id].basis = Basis(Vector3.RIGHT, sin(phase) * amplitude)
 		else:
 			_rotors[building_id].rotate_object_local(Vector3.RIGHT, _rotor_speeds[building_id] * game_seconds)
+
+
+## Fase 75: os bichos andam no cercado por "game_seconds" segundos de jogo (parados com o jogo pausado).
+func walk_animals(game_seconds: float) -> void:
+	if game_seconds <= 0.0:
+		return
+	for building_id: int in _walkers:
+		for entry: Array in _walkers[building_id]:
+			var walk: PenWalk = entry[0]
+			walk.advance(game_seconds)
+			_place_walker(entry)
+
+
+func _place_walker(entry: Array) -> void:
+	var walk: PenWalk = entry[0]
+	var body: Node3D = entry[1]
+	var exhibit_id: StringName = entry[2]
+	var facing: float = ExhibitModels.FACING[exhibit_id]
+	body.position = Vector3(walk.position.x, 0.0, walk.position.y)
+	body.rotation.y = walk.heading - facing
+
+
+## O passeio do bicho no cercado, ou null se ele não anda (testes).
+func exhibit_walk(building_id: int, exhibit_id: StringName) -> PenWalk:
+	for entry: Array in _walkers.get(building_id, []):
+		if entry[2] == exhibit_id:
+			return entry[0]
+	return null
 
 
 func rotor_count() -> int:
@@ -747,6 +778,7 @@ func _remove(building_id: int, sink: bool = false) -> void:
 		_rotors.erase(building_id)
 		_rotor_speeds.erase(building_id)
 		_rotor_rocks.erase(building_id)
+		_walkers.erase(building_id)
 		_spec_keys.erase(building_id)
 		_lots.erase(building_id)
 		if _plinths.erase(building_id):
@@ -853,27 +885,52 @@ func _on_building_state_changed(building_id: int) -> void:
 
 
 ## Fase 74: os bichos nos cercados do zoológico e as peças nos pedestais do museu, na ordem do catálogo, como filhos do
-## modelo (seguem o giro dele); refeitos quando uma peça entra.
+## modelo (seguem o giro dele); refeitos quando uma peça entra. Cada vaga é um nó no meio dela com o corpo ("Body")
+## dentro; no cercado, o corpo do bicho que anda é posto pelo PenWalk (Fase 75), que segue o mesmo quando outra peça entra.
 func _dress_exhibits(building_id: int, body: Node3D, spec: BuildingKit.Spec) -> void:
 	var old := body.get_node_or_null(^"Exhibits")
 	if old != null:
 		body.remove_child(old)
 		old.queue_free()
+	var old_walks: Dictionary[StringName, PenWalk] = {}
+	for entry: Array in _walkers.get(building_id, []):
+		old_walks[entry[2]] = entry[0]
+	_walkers.erase(building_id)
 	var spots := BuildingKit.exhibit_spots(spec)
 	var shown := _simulation.world.exhibits_state.in_building(building_id, _simulation.data)
 	if spots.is_empty() or shown.is_empty():
 		return
 	var group := Node3D.new()
 	group.name = "Exhibits"
+	var walkers: Array[Array] = []
 	for k: int in mini(spots.size(), shown.size()):
-		var item := MeshInstance3D.new()
-		item.name = String(shown[k].id)
-		item.mesh = ExhibitModels.mesh(shown[k].id)
-		item.material_override = _exhibit_material
+		var exhibit_id := shown[k].id
+		var item := Node3D.new()
+		item.name = String(exhibit_id)
 		item.position = spots[k]
-		item.visibility_range_end = _detail_range_m
+		var shape := MeshInstance3D.new()
+		shape.name = "Body"
+		shape.mesh = ExhibitModels.mesh(exhibit_id)
+		shape.material_override = _exhibit_material
+		shape.visibility_range_end = _detail_range_m
+		item.add_child(shape)
 		group.add_child(item)
+		if spec.silhouette == BuildingDef.Silhouette.MENAGERIE and ExhibitModels.roams(exhibit_id):
+			# o bicho grande demais para virar no cercado fica menor (PenWalk.fit_scale)
+			var half := BuildingKit.pen_half(spec)
+			var footprint := ExhibitModels.footprint(exhibit_id)
+			var fit := PenWalk.fit_scale(half, footprint)
+			shape.scale = Vector3.ONE * fit
+			var walk: PenWalk = old_walks.get(exhibit_id)
+			if walk == null:
+				walk = PenWalk.new(half, Rect2(footprint.position * fit, footprint.size * fit),
+						hash([building_id, k, exhibit_id]), ExhibitModels.FACING[exhibit_id])
+			var entry: Array = [walk, shape, exhibit_id]
+			_place_walker(entry)
+			walkers.append(entry)
 	body.add_child(group)
+	if not walkers.is_empty():
+		_walkers[building_id] = walkers
 
 
 ## Os bichos e as peças à mostra no prédio (testes).

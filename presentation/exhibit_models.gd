@@ -4,7 +4,13 @@ extends RefCounted
 ## de coleção (ExhibitDef) tem a sua malha, feita uma vez e guardada. Frente em -Z, origem no chão (bicho) ou no tampo
 ## do pedestal (peça). Peça sem forma própria vira um caixote.
 
+## Fase 75: os bichos que andam no cercado (as araras ficam no poleiro) e para onde cada um olha na malha (o giro com que
+## foi feito; a manada de zebras, para a frente).
+const FACING: Dictionary[StringName, float] = {&"elephant": 0.4, &"giraffe": -0.5, &"lion": 0.7, &"tiger": 0.7,
+		&"zebras": 0.0}
+
 static var _meshes: Dictionary[StringName, Mesh] = {}
+static var _footprints: Dictionary[StringName, Rect2] = {}
 
 
 static func mesh(exhibit_id: StringName) -> Mesh:
@@ -46,6 +52,26 @@ static func mesh(exhibit_id: StringName) -> Mesh:
 	return made
 
 
+static func roams(exhibit_id: StringName) -> bool:
+	return FACING.has(exhibit_id)
+
+
+## Fase 75: a pegada do bicho no chão (x e z) com ele de frente para -Z: os vértices da malha desfeito o giro de FACING.
+static func footprint(exhibit_id: StringName) -> Rect2:
+	if _footprints.has(exhibit_id):
+		return _footprints[exhibit_id]
+	var yaw: float = FACING.get(exhibit_id, 0.0)
+	var unturn := Basis(Vector3.UP, -yaw)
+	var vertices: PackedVector3Array = (mesh(exhibit_id) as ArrayMesh).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var area := Rect2()
+	for k: int in vertices.size():
+		var point := unturn * vertices[k]
+		var flat := Vector2(point.x, point.z)
+		area = Rect2(flat, Vector2.ZERO) if k == 0 else area.expand(flat)
+	_footprints[exhibit_id] = area
+	return area
+
+
 ## Bicho de quatro patas: o corpo numa altura (pernas), as quatro pernas, o pescoço saindo da frente do corpo até a
 ## cabeça e o rabo. Devolve onde fica a cabeça (para orelhas, juba, tromba).
 static func _quadruped(tool: SurfaceTool, at: Vector3, yaw: float, body: Vector3, leg_m: float, leg_w: float,
@@ -69,9 +95,9 @@ static func _quadruped(tool: SurfaceTool, at: Vector3, yaw: float, body: Vector3
 
 static func _elephant(tool: SurfaceTool) -> void:
 	var grey := Color(0.52, 0.51, 0.52)
-	var head := _quadruped(tool, Vector3.ZERO, 0.4, Vector3(0.7, 0.65, 1.15), 1.0, 0.24, Vector3(0.0, 0.55, -1.35),
-			Vector3(0.42, 0.45, 0.38), grey)
-	var turn := Basis(Vector3.UP, 0.4)
+	var turn := Basis(Vector3.UP, FACING[&"elephant"])
+	var head := _quadruped(tool, Vector3.ZERO, FACING[&"elephant"], Vector3(0.7, 0.65, 1.15), 1.0, 0.24,
+			Vector3(0.0, 0.55, -1.35), Vector3(0.42, 0.45, 0.38), grey)
 	# tromba descendo da frente da cabeça, orelhas grandes dos lados e as presas
 	VertexShapes.strut(tool, head + turn * Vector3(0.0, -0.1, -0.35), head + turn * Vector3(0.0, -1.35, -0.6), 0.1, 0.1, grey)
 	for side: float in [-1.0, 1.0]:
@@ -83,9 +109,9 @@ static func _elephant(tool: SurfaceTool) -> void:
 
 static func _giraffe(tool: SurfaceTool) -> void:
 	var coat := Color(0.86, 0.68, 0.36)
-	var head := _quadruped(tool, Vector3.ZERO, -0.5, Vector3(0.38, 0.38, 0.75), 1.5, 0.08, Vector3(0.0, 2.1, -1.05),
-			Vector3(0.12, 0.13, 0.3), coat)
-	var turn := Basis(Vector3.UP, -0.5)
+	var turn := Basis(Vector3.UP, FACING[&"giraffe"])
+	var head := _quadruped(tool, Vector3.ZERO, FACING[&"giraffe"], Vector3(0.38, 0.38, 0.75), 1.5, 0.08,
+			Vector3(0.0, 2.1, -1.05), Vector3(0.12, 0.13, 0.3), coat)
 	# manchas no corpo e os ossicones
 	for spot: Vector3 in [Vector3(0.39, 0.1, -0.3), Vector3(-0.39, -0.1, 0.25), Vector3(0.39, -0.15, 0.4), Vector3(-0.39, 0.15, -0.35)]:
 		VertexShapes.oriented_box(tool, Transform3D(turn, Vector3(0.0, 1.5 + 0.38, 0.0) + turn * spot), Vector3(0.02, 0.12, 0.14),
@@ -97,7 +123,7 @@ static func _giraffe(tool: SurfaceTool) -> void:
 
 ## Leão (com juba) ou tigre (com listras).
 static func _cat(tool: SurfaceTool, coat: Color, mane: bool, stripes: bool) -> void:
-	var yaw := 0.7
+	var yaw: float = FACING[&"lion"]
 	var turn := Basis(Vector3.UP, yaw)
 	var head := _quadruped(tool, Vector3.ZERO, yaw, Vector3(0.28, 0.27, 0.72), 0.5, 0.08, Vector3(0.0, 0.35, -0.95),
 			Vector3(0.2, 0.2, 0.22), coat)

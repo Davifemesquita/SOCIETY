@@ -1937,6 +1937,12 @@ Regras que já custaram investigação:
   seis pedestais na frente), `BuildingKit.exhibit_spots` (uma vaga por cercado ou pedestal), `ExhibitModels` (bichos e
   peças com cor por vértice) e `BuildingView._dress_exhibits`; formas simples em `VertexShapes`.
 
+### Bichos no cercado (Fase 75, nossa)
+
+- **Plano** em `docs/plano_fase75.md`. `PenWalk` (descansa, vira no lugar e anda até um ponto sorteado; toda pose
+  conferida pela pegada do corpo contra a cerca), `ExhibitModels.FACING`/`footprint`/`roams`, `BuildingKit.pen_half`,
+  `PenWalk.fit_scale` (o bicho grande demais fica menor no cercado) e `BuildingView.walk_animals` pelos segundos de jogo.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2022,6 +2028,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 72 — Desfazer o trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: o trilho entra no histórico do Ctrl+Z (posto ou demolido, com o reembolso, e o refazer); só o histórico, fora do save; plano em `docs/plano_fase72.md` |
 | 73 — O cavalo-de-pau (nossa) | **feita em 28/10/2026, a pedido do dono**: o poço de petróleo troca a torre de mina por um cavalo-de-pau gerado com as peças do kit, com o balancim balançando enquanto produz; só apresentação; plano em `docs/plano_fase73.md` |
 | 74 — Recintos e vitrines (nossa) | **feita em 28/10/2026, a pedido do dono**: o zoológico ganha seis cercados e o museu seis pedestais, e cada peça posta aparece na sua vaga (bichos e peças gerados no código); só apresentação; plano em `docs/plano_fase74.md` |
+| 75 — Bichos no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: os bichos do zoológico andam e viram dentro do cercado sem atravessar a cerca (o elefante fica menor para caber); as araras e as peças do museu ficam paradas; só apresentação; plano em `docs/plano_fase75.md` |
 
 Pendências já vistas para fases futuras:
 

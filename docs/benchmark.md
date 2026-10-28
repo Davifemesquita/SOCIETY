@@ -1276,3 +1276,10 @@ quadro 432 ms, no nível das Fases 64 a 70). Neutra.
 ao estado rápido nesta rodada (o ~2,5× mais lento vinha desde a Fase 60): GPU 11,9 ms, dia inteiro 77,6 FPS (1% low
 40,2, pior quadro 28 ms), tick médio 1,39 ms, 2769 objetos e 1119 draw calls (a variação de sempre). A diferença é da
 máquina, não da fase: nada desta fase entra no mundo do benchmark. Neutra.
+
+## Fase 75 — bichos no cercado (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem zoológico. A máquina voltou ao estado
+lento das Fases 60–73: GPU 22,9 ms, dia inteiro 34,8 FPS (1% low 15,3, pior quadro 272 ms), tick médio 1,34 ms,
+construir com a ilha cheia 16,8 ms, 2755 objetos e 1117 draw calls (a variação de sempre). A diferença para a Fase 74 é
+da máquina: nada desta fase entra no mundo do benchmark (o passeio só existe com bicho posto num zoológico). Neutra.
