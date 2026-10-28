@@ -11,7 +11,7 @@ extends RefCounted
 ## Fase 80: turistas. Com os eventos ligados, cada ilha com atratividade (DerivedState.attractiveness) ganha
 ## tourists_per_point turistas por ponto (até max_tourists_per_island): saem do entreposto, visitam uma das atrações da
 ## ilha (os prédios com beleza: zoológico, museu, praças, estátuas), ficam olhando na porta e voltam. Roupa clara
-## (TOURIST_COLORS) e a calça da classe mais rica.
+## (TOURIST_COLORS) e a calça da classe mais rica. Desde a Fase 81, na festa vêm mais (1 + tourism_festival_bonus).
 const BUCKET_SECONDS := 0.25
 const REBALANCE_SECONDS := 2.0
 ## Quem não achou caminho tenta de novo depois disto.
@@ -266,7 +266,10 @@ func _rebalance_tourists() -> void:
 				continue
 			seen[island_id] = true
 			var points: float = derived.attractiveness[island_id]
-			var count := mini(_config.max_tourists_per_island, floori(points * _config.tourists_per_point * pedestrian_ratio))
+			# Fase 81: na festa, mais turistas, na mesma proporção da renda (e o teto também sobe)
+			var crowd_factor := 1.0 + _config.tourism_festival_bonus if TourismSystem.has_festival(world, island_id) else 1.0
+			var count := mini(roundi(_config.max_tourists_per_island * crowd_factor),
+					floori(points * _config.tourists_per_point * pedestrian_ratio * crowd_factor))
 			var kept := PackedInt32Array()
 			for index: int in _tourists.get(island_id, PackedInt32Array()):
 				var agent := agents[index] if index < agents.size() else null

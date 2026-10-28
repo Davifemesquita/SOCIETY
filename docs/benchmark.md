@@ -1314,3 +1314,10 @@ GPU 22,8 ms, dia inteiro 34,9 FPS (1% low 16,3, pior quadro 115 ms), tick médio
 beleza (atratividade zero): nenhum turista; 2000 pedestres na multidão e 1902 na rua (1901 antes), multidão na CPU
 0,28 ms por quadro. Máquina no estado lento: GPU 23,0 ms, dia inteiro 34,6 FPS, tick médio 1,34 ms, construir com a ilha
 cheia 15,8 ms, 2769 objetos e 1119 draw calls. Neutra; o custo dos turistas (até 30 por ilha) fica sem medida aqui.
+
+## Fase 81 — festa cheia (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem atratividade nem festa no mundo do benchmark: 2000 pedestres,
+1901 na rua, nenhum turista. Máquina no estado lento: GPU 23,8 ms, dia inteiro 34,4 FPS (1% low 11,6, pior quadro
+345 ms, uma travada isolada), tick médio 1,32 ms, construir com a ilha cheia 16,2 ms, 2755 objetos e 1117 draw calls.
+Neutra.

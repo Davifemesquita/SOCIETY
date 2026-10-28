@@ -1971,6 +1971,11 @@ Regras que já custaram investigação:
   com os eventos ligados; `tourists_per_point`, `max_tourists_per_island`), `_pick_attraction` (as atrações de mais
   beleza na rede do entreposto) e `TOURIST_COLORS`. Só visual.
 
+### Festa cheia (Fase 81, nossa)
+
+- **Plano** em `docs/plano_fase81.md`. Na festa, os turistas na rua (e o teto) vezes `1 + tourism_festival_bonus`;
+  `TourismSystem.has_festival` usado pela renda e pela `Crowd`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2062,6 +2067,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 78 — Tanques da usina a petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: a usina a petróleo deixa a forma da usina a carvão e ganha o pátio com dois tanques, dique, escada e tubo até o galpão; foto do menu refeita; só apresentação; plano em `docs/plano_fase78.md` |
 | 79 — O bicho vai beber (nossa) | **feita em 28/10/2026, a pedido do dono**: o leão e o tigre vão ao bebedouro, viram de frente e bebem inclinados, e saem de ré; os bichos maiores não cabem de frente para ele no cercado (medido); só apresentação; plano em `docs/plano_fase79.md` |
 | 80 — Turistas na rua (nossa) | **feita em 28/10/2026, a pedido do dono**: com os eventos ligados, turistas de roupa clara saem do entreposto, visitam as atrações da ilha e voltam, na quantidade da atratividade; só visual; números provisórios; plano em `docs/plano_fase80.md` |
+| 81 — Festa cheia (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa vêm mais turistas para a rua, na mesma proporção da renda do turismo; só visual; plano em `docs/plano_fase81.md` |
 
 Pendências já vistas para fases futuras:
 

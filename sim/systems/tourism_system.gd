@@ -20,7 +20,12 @@ static func run(world: WorldState, config: GameConfig, derived: DerivedState, dt
 ## Os turistas de uma ilha, em moedas por minuto (com a festa, se houver).
 static func island_income(world: WorldState, config: GameConfig, derived: DerivedState, island_id: int) -> float:
 	var income: float = derived.attractiveness.get(island_id, 0.0) * config.tourism_coins_per_point
+	return income * (1.0 + config.tourism_festival_bonus) if has_festival(world, island_id) else income
+
+
+## A festa está acontecendo na ilha (também usado pelos turistas na rua, Fase 81).
+static func has_festival(world: WorldState, island_id: int) -> bool:
 	for event: WorldEvent in world.events_state.events:
 		if event.def_id == &"festival" and event.island_id == island_id:
-			return income * (1.0 + config.tourism_festival_bonus)
-	return income
+			return true
+	return false
