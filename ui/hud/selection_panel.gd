@@ -174,7 +174,7 @@ func _process(delta: float) -> void:
 
 
 func _build_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
-	_add_lines(6)
+	_add_lines(7)
 	var upgrade := _add_button("PANEL_UPGRADE", "action_upgrade", func() -> void:
 		var result := _simulation.execute(UpgradeBuildingCommand.new(record.id))
 		if not result.ok():
@@ -614,6 +614,14 @@ func _refresh_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 		_lines[5].text = tr("WAREHOUSE_BERTHS") % [docked, berths.size()]
 	else:
 		_lines[5].text = ""
+	# Fase 68: a atratividade da ilha e o que os turistas pagam (com os eventos ligados)
+	var attraction: float = derived.attractiveness.get(record.island_id, -1.0)
+	_lines[6].visible = def.is_trading_post and _simulation.world.events_state.enabled and attraction >= 0.0
+	if _lines[6].visible:
+		_lines[6].text = tr("PANEL_ATTRACTIVENESS") % [Fmt.integer(roundi(attraction)),
+				Fmt.integer(TourismSystem.island_income(_simulation.world, _simulation.config, derived, record.island_id))]
+		_lines[6].tooltip_text = "PANEL_ATTRACTIVENESS_TIP"
+		_lines[6].mouse_filter = Control.MOUSE_FILTER_PASS
 	var upgrade := _buttons.get_node_or_null("Upgrade") as Button
 	if upgrade != null:
 		var next := record.level + 1

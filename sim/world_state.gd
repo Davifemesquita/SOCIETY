@@ -60,6 +60,8 @@ var income_per_min: float = 0.0
 var upkeep_per_min: float = 0.0
 ## Renda dos acordos comerciais com rivais (Fase 11), já somada em income_per_min.
 var treaty_income_per_min: float = 0.0
+## Renda do turismo (Fase 68), já somada em income_per_min.
+var tourism_per_min: float = 0.0
 
 
 func island(island_id: int) -> IslandGrid:

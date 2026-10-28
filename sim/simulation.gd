@@ -170,6 +170,7 @@ func tick(_tick_index: int) -> void:
 	VictorySystem.run(world, data, config, derived)
 	_lap(&"marcos, metas e vitória")
 	EconomySystem.run(world, derived, dt)
+	TourismSystem.run(world, config, derived, dt)
 	_lap(&"economia")
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)

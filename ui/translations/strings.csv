@@ -980,6 +980,9 @@ BREAKDOWN_BUILDINGS,Prédios,Buildings
 BREAKDOWN_SHIPS,Navios (%d),Ships (%d)
 BREAKDOWN_SALARIES,Salários dos especialistas,Specialist salaries
 BREAKDOWN_TREATY,Acordos comerciais,Trade agreements
+BREAKDOWN_TOURISM,Turistas,Tourists
+PANEL_ATTRACTIVENESS,"Atratividade: %s · turistas %s/min","Attractiveness: %s · tourists %s/min"
+PANEL_ATTRACTIVENESS_TIP,"A beleza que a ilha espalha (decorações, zoológico e museu com as peças) menos a poluição dos prédios. Com a festa na ilha, os turistas pagam mais.","The beauty the island spreads (decorations, zoo and museum with their exhibits) minus the buildings' pollution. With a festival on the island, tourists pay more."
 BREAKDOWN_MONEY,"De onde vem e para onde vai o dinheiro, por minuto","Where the money comes from and goes, per minute"
 BREAKDOWN_GOOD,"%s: o que produz e o que consome, em t/min","%s: what produces and consumes it, in t/min"
 STATS_PRODUCERS_TIP,Ir ao próximo prédio que produz este bem,Go to the next building that produces this good

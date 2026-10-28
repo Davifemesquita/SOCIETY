@@ -1237,3 +1237,9 @@ benchmark), os mesmos 2755 objetos e 1117 draw calls, GPU 22,2 ms, dia inteiro 3
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,30 ms (p95 1,40),
 construir com a ilha cheia 15,3 ms, os mesmos 2755 objetos e 1117 draw calls, GPU 22,0 ms, dia inteiro 36,7 FPS.
 Neutra (o benchmark não constrói zoológico nem museu).
+## Fase 68 — atratividade e turistas (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,31 ms (p95 1,44; o
+benchmark roda sem eventos, então o turismo não paga e o sistema sai logo), construir com a ilha cheia 15,4 ms (o
+recálculo ganha a soma da atratividade), 2769 objetos e 1119 draw calls (+2 na rodada; nada desta fase desenha), GPU
+21,8 ms, dia inteiro 36,8 FPS. Neutra.

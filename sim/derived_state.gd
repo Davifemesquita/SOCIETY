@@ -59,6 +59,8 @@ var policy_happiness: Dictionary[int, float] = {}
 var policy_tax: Dictionary[int, float] = {}
 ## Prefeitura → os prédios em que a política dela vale (para o painel e os testes).
 var policy_reach: Dictionary[int, Array] = {}
+## Turismo (Fase 68): a atratividade de cada ilha com entreposto e casas (sem a festa, que o TourismSystem soma).
+var attractiveness: Dictionary[int, float] = {}
 var houses: Array[int] = []
 ## Ilhas com pelo menos uma casa (as outras não têm necessidade a calcular).
 var islands_with_houses: Dictionary[int, bool] = {}
@@ -128,6 +130,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	policy_happiness.clear()
 	policy_tax.clear()
 	policy_reach.clear()
+	attractiveness.clear()
 	houses.clear()
 	islands_with_houses.clear()
 	production.clear()
@@ -193,6 +196,7 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	_assign_modules(world, data, farms, modules)
 	_spread_pollution(world, data, polluters)
 	_spread_beauty(world, data, decorations)
+	_attract(world, data, config, decorations, polluters)
 	_lap("módulos, poluição e beleza")
 	_index_warehouses(world, data, config, depots, piers)
 	_lap("armazéns")
@@ -668,6 +672,23 @@ func _spread_beauty(world: WorldState, data: GameData, decorations: Array[int]) 
 			if gap <= def.beauty_radius_cells:
 				var falloff := 1.0 - float(gap) / float(def.beauty_radius_cells + 1)
 				beauty[house_id] = minf(1.0, beauty[house_id] + strength * falloff)
+
+
+## Turismo (Fase 68): a atratividade de cada ilha com entreposto e casas — a beleza que ela espalha menos a poluição dos
+## prédios dela, nos pesos da config, nunca abaixo de zero.
+func _attract(world: WorldState, data: GameData, config: GameConfig, decorations: Array[int], polluters: Array[int]) -> void:
+	for island_id: int in islands_with_houses:
+		if not world.has_trading_post(island_id, data):
+			continue
+		var points := 0.0
+		for source_id: int in decorations:
+			if world.building(source_id).island_id == island_id:
+				points += beauty_strength(world, data, source_id) * config.attractiveness_per_beauty
+		for source_id: int in polluters:
+			var source := world.building(source_id)
+			if source.island_id == island_id:
+				points -= data.building(source.def_id).pollution_strength * config.attractiveness_per_pollution
+		attractiveness[island_id] = maxf(points, 0.0)
 
 
 ## A beleza que o prédio espalha: a da definição e, no zoológico e no museu (Fase 67), mais a das peças que ele expõe.

@@ -171,6 +171,14 @@ static var _default: GameConfig
 @export var newspaper_first_after_s: float = 300.0
 @export var newspaper_interval_s: float = 600.0
 @export var newspaper_propaganda_cost: int = 2500
+## Turismo (Fase 68, com os eventos ligados): a atratividade da ilha com entreposto e casas soma a beleza que ela
+## espalha (decorações, zoológico e museu com as peças) vezes attractiveness_per_beauty e desconta a poluição dos prédios
+## vezes attractiveness_per_pollution; os turistas pagam tourism_coins_per_point moedas por minuto por ponto, e mais
+## tourism_festival_bonus (fração) com a festa na ilha.
+@export var attractiveness_per_beauty: float = 100.0
+@export var attractiveness_per_pollution: float = 60.0
+@export var tourism_coins_per_point: float = 0.5
+@export var tourism_festival_bonus: float = 0.5
 
 @export_group("Estaleiro")
 ## O navio encomendado ao estaleiro custa esta fração do preço do entreposto (moedas e materiais,
@@ -624,6 +632,9 @@ func validate() -> PackedStringArray:
 		problems.append("max_active_events, max_open_missions e events_check_ticks pelo menos 1")
 	if newspaper_first_after_s <= 0.0 or newspaper_interval_s <= 0.0 or newspaper_propaganda_cost < 0:
 		problems.append("jornal: tempos positivos e propaganda não negativa")
+	if attractiveness_per_beauty < 0.0 or attractiveness_per_pollution < 0.0 or tourism_coins_per_point < 0.0 \
+			or tourism_festival_bonus < 0.0:
+		problems.append("turismo: os pesos não podem ser negativos")
 	if rival_base_relation.size() != 3 or rival_island_share < 0.0 or rival_island_share > 1.0 or rival_residents_per_cell <= 0.0 \
 			or rival_residents_per_house <= 0.0 or rival_max_houses < 2:
 		problems.append("rivais: três relações de base, fração entre 0 e 1, teto e casas positivos")

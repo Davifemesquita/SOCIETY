@@ -1892,6 +1892,13 @@ Regras que já custaram investigação:
   graça) e `ExhibitsState` no save (demolir guarda). A beleza do prédio soma as peças (`DerivedState.beauty_strength`,
   também na camada Beleza). Painel com um botão por peça.
 
+### Atratividade e turistas (Fase 68, nossa)
+
+- **Plano** em `docs/plano_fase68.md`. `DerivedState.attractiveness` (por ilha com entreposto e casas: beleza menos
+  poluição, nos pesos da config) e `TourismSystem` (só com os eventos ligados: paga por ponto, mais na festa; soma no
+  dinheiro e em `income_per_min`, guarda `WorldState.tourism_per_min`). Parcela `Breakdown.Kind.TOURISM` e a linha no
+  painel do entreposto.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1970,6 +1977,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 65 — Festa na cidade (nossa) | **feita em 27/10/2026, a pedido do dono**: com a festa numa ilha, bandeirolas por cima das ruas das praças e fogos de artifício à noite; só apresentação; plano em `docs/plano_fase65.md` |
 | 66 — Prefeitura e políticas (nossa) | **feita em 27/10/2026, a pedido do dono**: prefeitura com uma política por vez (jornada longa, vigia de incêndio, feriados, coletoria) que vale nos prédios em volta, com manutenção; no save; números provisórios, à espera do dono; plano em `docs/plano_fase66.md` |
 | 67 — Zoológico e museu (nossa) | **feita em 28/10/2026, a pedido do dono**: zoológico e museu com seis vagas cada para peças compradas uma vez (animais e objetos), que somam beleza às casas em volta; no save; números provisórios; plano em `docs/plano_fase67.md` |
+| 68 — Atratividade e turistas (nossa) | **feita em 28/10/2026, a pedido do dono**: atratividade por ilha (beleza menos poluição) e turistas que pagam por ela, mais na festa, com os eventos ligados; parcela no detalhamento e linha no entreposto; números provisórios; plano em `docs/plano_fase68.md` |
 
 Pendências já vistas para fases futuras:
 
