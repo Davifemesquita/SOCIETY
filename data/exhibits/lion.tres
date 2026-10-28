@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ExhibitDef" format=3]
+
+[ext_resource type="Script" path="res://data/exhibit_def.gd" id="1_exhibit"]
+
+[resource]
+script = ExtResource("1_exhibit")
+id = &"lion"
+kind = 0
+beauty = 0.12
+price = 5000
+after_milestone = 1

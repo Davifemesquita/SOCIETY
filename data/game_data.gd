@@ -30,6 +30,8 @@ static var _default: GameData
 @export var headlines: Array[HeadlineDef] = []
 ## Políticas da prefeitura (Fase 66).
 @export var policies: Array[PolicyDef] = []
+## Peças do zoológico e do museu (Fase 67).
+@export var exhibits: Array[ExhibitDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -109,6 +111,13 @@ func profile(id: StringName) -> IslandProfileDef:
 
 func event(id: StringName) -> EventDef:
 	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func exhibit(id: StringName) -> ExhibitDef:
+	for def: ExhibitDef in exhibits:
 		if def.id == id:
 			return def
 	return null
@@ -240,6 +249,10 @@ func validate() -> PackedStringArray:
 			problems.append("evento %s: duração e peso positivos, marco não negativo" % event_def.id)
 		if event_def.effect != EventDef.Effect.HAPPINESS and event_def.amount <= 0.0:
 			problems.append("evento %s: multiplicador deve ser positivo" % event_def.id)
+	_check_ids(problems, "peça", exhibits.map(func(def: ExhibitDef) -> StringName: return def.id))
+	for exhibit_def: ExhibitDef in exhibits:
+		if exhibit_def.price < 0 or exhibit_def.beauty < 0.0 or exhibit_def.after_milestone < 0:
+			problems.append("peça %s: preço, beleza e marco não negativos" % exhibit_def.id)
 	_check_ids(problems, "política", policies.map(func(def: PolicyDef) -> StringName: return def.id))
 	for policy_def: PolicyDef in policies:
 		if policy_def.upkeep_per_min < 0 or policy_def.after_milestone < 0:

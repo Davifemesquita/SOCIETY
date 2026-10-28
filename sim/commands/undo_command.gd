@@ -46,6 +46,7 @@ func execute(context: CommandContext) -> CommandResult:
 		world.shipyard_state.forget(building_id)
 		if world.specialists_state.release(building_id):
 			result.specialists_changed = true
+		world.exhibits_state.release(building_id)
 		result.removed.append(building_id)
 	for record: BuildingRecord in entry.removed:
 		var def := context.data.building(record.def_id)

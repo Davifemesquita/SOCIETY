@@ -215,6 +215,7 @@ func _remove_lost(lost: Array[int]) -> void:
 		world.shipyard_state.forget(building_id)
 		if world.specialists_state.release(building_id):
 			EventBus.specialists_changed.emit()
+		world.exhibits_state.release(building_id)
 		_dirty = true
 		EventBus.building_removed.emit(building_id)
 		EventBus.fire_ended.emit(building_id, true)

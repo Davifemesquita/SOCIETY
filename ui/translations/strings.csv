@@ -540,6 +540,8 @@ BUILDING_GOLDSMITH,Ourivesaria,Goldsmith
 BUILDING_THEATER,Teatro,Theatre
 BUILDING_UNIVERSITY,Universidade,University
 BUILDING_TOWN_HALL,Prefeitura,Town hall
+BUILDING_ZOO,Zoológico,Zoo
+BUILDING_MUSEUM,Museu,Museum
 TIER_ARTISANS,Artesãos,Artisans
 TIER_ENGINEERS,Engenheiros,Engineers
 TIER_INVESTORS,Investidores,Investors
@@ -805,6 +807,38 @@ POLICY_HOLIDAYS_DESC,+%s de felicidade nas casas em volta,+%s happiness in the h
 POLICY_TAX_OFFICE,Coletoria,Tax office
 POLICY_TAX_OFFICE_DESC,+%s no imposto das casas em volta,+%s tax from the houses around
 REASON_NOT_TOWN_HALL,Só a prefeitura escolhe política,Only a town hall chooses a policy
+PANEL_EXHIBITS,"Peças: %s de %s · %s de felicidade nas casas em volta","Exhibits: %s of %s · %s happiness in the houses around"
+PANEL_EXHIBIT_HERE,Exposta aqui,On display here
+PANEL_EXHIBIT_STORED,Guardada: expor aqui não custa nada,In storage: displaying it here is free
+PANEL_EXHIBIT_BUY,Comprar e expor por %s moedas,Buy and display for %s coins
+REASON_NOT_EXHIBIT_HALL,Esta peça não vai neste prédio,This exhibit does not go in this building
+REASON_EXHIBIT_HALL_FULL,Não há vaga para mais peças,There is no room for more exhibits
+REASON_EXHIBIT_SHOWN,Esta peça já está exposta,This exhibit is already on display
+REASON_EXHIBIT_LOCKED,Esta peça ainda não está à venda,This exhibit is not for sale yet
+EXHIBIT_PARROTS,Araras,Macaws
+EXHIBIT_PARROTS_DESC,Um viveiro de araras coloridas trazidas das ilhas do sul,An aviary of colourful macaws brought from the southern islands
+EXHIBIT_ZEBRAS,Zebras,Zebras
+EXHIBIT_ZEBRAS_DESC,Uma pequena manada de zebras africanas,A small herd of African zebras
+EXHIBIT_GIRAFFE,Girafa,Giraffe
+EXHIBIT_GIRAFFE_DESC,A primeira girafa que o arquipélago já viu,The first giraffe the archipelago has ever seen
+EXHIBIT_LION,Leão,Lion
+EXHIBIT_LION_DESC,Um leão do Atlas que ruge na hora da comida,An Atlas lion that roars at feeding time
+EXHIBIT_ELEPHANT,Elefante,Elephant
+EXHIBIT_ELEPHANT_DESC,Um elefante indiano que encanta as crianças,An Indian elephant that delights the children
+EXHIBIT_TIGER,Tigre,Tiger
+EXHIBIT_TIGER_DESC,Um tigre de Bengala atrás de grades de ferro forjado,A Bengal tiger behind wrought-iron bars
+EXHIBIT_AMPHORA,Ânfora grega,Greek amphora
+EXHIBIT_AMPHORA_DESC,Uma ânfora pintada achada num naufrágio antigo,A painted amphora found in an ancient shipwreck
+EXHIBIT_SHIP_MODEL,Maquete de navio,Ship model
+EXHIBIT_SHIP_MODEL_DESC,A maquete do primeiro navio da Companhia,A model of the Company's first ship
+EXHIBIT_FOSSIL,Fóssil,Fossil
+EXHIBIT_FOSSIL_DESC,O esqueleto de um réptil marinho das falésias,The skeleton of a sea reptile from the cliffs
+EXHIBIT_TELESCOPE,Telescópio,Telescope
+EXHIBIT_TELESCOPE_DESC,Um grande telescópio de latão para ver as estrelas,A great brass telescope for watching the stars
+EXHIBIT_MUMMY,Múmia egípcia,Egyptian mummy
+EXHIBIT_MUMMY_DESC,Uma múmia num sarcófago dourado,A mummy in a gilded sarcophagus
+EXHIBIT_OLD_MASTER,Pintura de mestre,Old master painting
+EXHIBIT_OLD_MASTER_DESC,Uma tela de um mestre flamengo,A canvas by a Flemish master
 REASON_POLICY_LOCKED,Esta política ainda não foi liberada,This policy is not unlocked yet
 REASON_NO_SPECIALIST_OFFER,Fora da oferta desta volta,Not in this tour's offer
 REASON_NO_SPECIALIST,Especialista não encontrado,Specialist not found

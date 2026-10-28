@@ -172,6 +172,8 @@ static func beauty(simulation: Simulation, island_id: int) -> Image:
 		var def := simulation.def_of(record)
 		if record.island_id != island_id or def.beauty <= 0.0 or def.beauty_radius_cells <= 0:
 			continue
+		# a do zoológico e do museu soma as peças (Fase 67)
+		var power := DerivedState.beauty_strength(world, simulation.data, record.id)
 		var area := Footprint.rect(record.origin, def.size, record.rotation)
 		var reach := area.grow(def.beauty_radius_cells).intersection(Rect2i(Vector2i.ZERO, grid.size))
 		for y: int in range(reach.position.y, reach.end.y):
@@ -179,7 +181,7 @@ static func beauty(simulation: Simulation, island_id: int) -> Image:
 				var gap := DerivedState._rect_gap(area, Rect2i(x, y, 1, 1))
 				var falloff := 1.0 - float(gap) / float(def.beauty_radius_cells + 1)
 				var i := y * grid.size.x + x
-				strength[i] = minf(1.0, strength[i] + def.beauty * falloff)
+				strength[i] = minf(1.0, strength[i] + power * falloff)
 	var image := _blank(grid)
 	for i: int in strength.size():
 		if strength[i] > 0.0:

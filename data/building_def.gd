@@ -79,6 +79,9 @@ enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }
 ## Prefeitura (Fase 66): a política escolhida vale para os prédios a até este raio (em células, pela distância entre
 ## os lotes). 0 = não é prefeitura.
 @export var policy_radius_cells: int = 0
+## Zoológico e museu (Fase 67): quantas peças cabem e de que tipo (ExhibitDef.Kind). 0 vagas = não expõe nada.
+@export var exhibit_slots: int = 0
+@export var exhibit_kind: int = 0
 
 @export_group("Eletricidade")
 ## Usina (Fase 11): queima as entradas sem gerar bem e, enquanto produz, eletrifica as fábricas
@@ -119,6 +122,11 @@ func is_production() -> bool:
 ## Prefeitura (Fase 66): escolhe uma política que vale em volta dela.
 func is_town_hall() -> bool:
 	return policy_radius_cells > 0
+
+
+## Zoológico ou museu (Fase 67): tem vagas para peças de coleção.
+func is_exhibit_hall() -> bool:
+	return exhibit_slots > 0
 
 
 func is_warehouse() -> bool:

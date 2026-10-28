@@ -145,6 +145,8 @@ func show_building(building_id: int) -> void:
 			_add_lines(1)
 			if def.is_town_hall():
 				_build_town_hall(record)
+			if def.is_exhibit_hall():
+				_build_exhibit_hall(record, def)
 	# Fase 47: copiar (tipo, rotação e configuração) e passar pelos prédios do mesmo tipo
 	var copy := _add_button("PANEL_COPY", "action_copy", func() -> void: _tool.copy_building(record.id))
 	copy.name = "Copy"
@@ -354,6 +356,51 @@ func _refresh_town_hall(record: BuildingRecord, def: BuildingDef) -> void:
 			button.tooltip_text += "\n" + tr(SetPolicyCommand.POLICY_LOCKED)
 
 
+## Zoológico e museu (Fase 67): a linha das peças e um botão por peça do tipo dele (comprar, ou expor a guardada).
+func _build_exhibit_hall(record: BuildingRecord, def: BuildingDef) -> void:
+	_add_lines(1)
+	for exhibit: ExhibitDef in _simulation.data.exhibits:
+		if exhibit.kind != def.exhibit_kind:
+			continue
+		var icon := "building_zoo" if exhibit.kind == ExhibitDef.Kind.ANIMAL else "building_museum"
+		var button := UiKit.button(exhibit.title_key(), icon, func() -> void:
+			var result := _simulation.execute(PlaceExhibitCommand.new(exhibit.id, record.id))
+			if not result.ok():
+				_tool.refused.emit(result.reason)
+			_refresh())
+		button.name = "Exhibit_" + String(exhibit.id)
+		_buttons.add_child(button)
+
+
+## Quantas peças, a beleza que elas somam e os botões: a exposta aqui marcada e desligada, a de outro prédio escondida,
+## a que dá para comprar com o preço na dica, a que não dá desligada com o motivo.
+func _refresh_exhibit_hall(record: BuildingRecord, def: BuildingDef) -> void:
+	var state := _simulation.world.exhibits_state
+	var shown := state.in_building(record.id, _simulation.data)
+	# o zoológico e o museu não atendem necessidade: embelezam, como a decoração
+	_lines[0].text = tr("DECORATION_HOUSES") % Fmt.integer(DecorationView.houses_near(_simulation, record).size())
+	var bonus := 0.0
+	for exhibit: ExhibitDef in shown:
+		bonus += exhibit.beauty
+	_lines[1].text = tr("PANEL_EXHIBITS") % [Fmt.integer(shown.size()), Fmt.integer(def.exhibit_slots),
+			Fmt.integer(roundi((def.beauty + bonus) * _simulation.config.happiness_per_beauty))]
+	for exhibit: ExhibitDef in _simulation.data.exhibits:
+		var button := _buttons.find_child("Exhibit_" + String(exhibit.id), false, false) as Button
+		if button == null:
+			continue
+		var at: int = state.placed.get(exhibit.id, -1)
+		button.visible = at == -1 or at == 0 or at == record.id
+		var description := tr(exhibit.description_key())
+		if at == record.id:
+			button.disabled = true
+			button.tooltip_text = description + "\n" + tr("PANEL_EXHIBIT_HERE")
+			continue
+		var reason := PlaceExhibitCommand.check(_simulation.world, _simulation.data, exhibit.id, record.id, _simulation.free_build)
+		button.disabled = reason != &""
+		var action := tr("PANEL_EXHIBIT_STORED") if at == 0 else tr("PANEL_EXHIBIT_BUY") % Fmt.integer(exhibit.price)
+		button.tooltip_text = description + "\n" + action + ("\n" + tr(reason) if reason != &"" else "")
+
+
 ## O efeito da política em texto: "+15% na velocidade da produção em volta".
 static func policy_effect(policy: PolicyDef) -> String:
 	var text := TranslationServer.translate(policy.description_key())
@@ -401,6 +448,8 @@ func _refresh() -> void:
 				_lines[0].text = tr("SERVICE_PROTECTS") % Fmt.integer(guarded.size())
 			if def.is_town_hall():
 				_refresh_town_hall(record, def)
+			if def.is_exhibit_hall():
+				_refresh_exhibit_hall(record, def)
 		BuildingDef.Kind.DECORATION:
 			_title.text = tr(def.name_key)
 			_lines[0].text = tr("DECORATION_HOUSES") % Fmt.integer(DecorationView.houses_near(_simulation, record).size())

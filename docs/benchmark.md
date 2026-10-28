@@ -1232,3 +1232,8 @@ calls (o benchmark roda sem eventos: nenhuma festa no quadro), GPU média 22,2 m
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,30 ms (p95 1,84;
 1,27 na Fase 63), construir um prédio com a ilha cheia 15,1 ms (o recálculo ganha o laço das prefeituras, vazio no
 benchmark), os mesmos 2755 objetos e 1117 draw calls, GPU 22,2 ms, dia inteiro 36,2 FPS. Neutra.
+## Fase 67 — zoológico e museu (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,30 ms (p95 1,40),
+construir com a ilha cheia 15,3 ms, os mesmos 2755 objetos e 1117 draw calls, GPU 22,0 ms, dia inteiro 36,7 FPS.
+Neutra (o benchmark não constrói zoológico nem museu).

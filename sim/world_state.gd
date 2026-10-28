@@ -47,6 +47,8 @@ var specialists_state := SpecialistsState.new()
 var risks_state := RisksState.new()
 ## Encomendas dos estaleiros.
 var shipyard_state := ShipyardState.new()
+## Peças do zoológico e do museu (Fase 67).
+var exhibits_state := ExhibitsState.new()
 ## Objetivo da partida (Fase 12); partida livre em mundo novo.
 var victory_state := VictoryState.new()
 ## Plantas (Fase 49): prédios desenhados, sem custo, que ainda não existem.
@@ -229,7 +231,8 @@ func to_dict() -> Dictionary:
 			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
 			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
 			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict(),
-			"victory": victory_state.to_dict(), "plans": plan_list, "next_plan_id": next_plan_id}
+			"victory": victory_state.to_dict(), "plans": plan_list, "next_plan_id": next_plan_id,
+			"exhibits": exhibits_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -413,6 +416,30 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 		if plan == null or world.plans.has(plan.id) or plan.id >= world.next_plan_id:
 			return null
 		world.plans[plan.id] = plan
+	# as peças de coleção (Fase 67) não existem nos saves de antes: sem a chave, nenhuma comprada
+	var raw_exhibits: Variant = data.get("exhibits", {"placed": {}})
+	if not raw_exhibits is Dictionary:
+		return null
+	var exhibits_data: Dictionary = raw_exhibits
+	var loaded_exhibits := ExhibitsState.from_dict(exhibits_data, game_data)
+	if loaded_exhibits == null:
+		return null
+	# a peça posta fica num zoológico ou museu do tipo dela, sem passar das vagas
+	var used: Dictionary[int, int] = {}
+	for exhibit_id: StringName in loaded_exhibits.placed:
+		var building_id: int = loaded_exhibits.placed[exhibit_id]
+		if building_id == 0:
+			continue
+		var record := world.building(building_id)
+		var hall_def: BuildingDef = null
+		if record != null:
+			hall_def = game_data.building(record.def_id)
+		if hall_def == null or not hall_def.is_exhibit_hall() or hall_def.exhibit_kind != game_data.exhibit(exhibit_id).kind:
+			return null
+		used[building_id] = used.get(building_id, 0) + 1
+		if used[building_id] > hall_def.exhibit_slots:
+			return null
+	world.exhibits_state = loaded_exhibits
 	return world
 
 

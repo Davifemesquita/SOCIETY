@@ -94,6 +94,8 @@ building_gold_mine,delapouite/gold-mine,building
 building_theater,delapouite/theater,building
 building_university,delapouite/graduate-cap,building
 building_town_hall,lorc/scroll-unfurled,building
+building_zoo,lorc/lion,building
+building_museum,delapouite/stone-bust,building
 tier_peasants,delapouite/farmer,tier
 tier_workers,delapouite/blacksmith,tier
 tier_artisans,lorc/gear-hammer,tier

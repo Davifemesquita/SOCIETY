@@ -652,11 +652,12 @@ func _spread_pollution(world: WorldState, data: GameData, polluters: Array[int])
 
 
 ## Beleza (Fase 16): como a poluição, cada decoração cai linear com a distância até o raio dela, e a soma
-## por casa vai até 1.
+## por casa vai até 1. Fase 67: a beleza do zoológico e do museu é a dele mais a das peças que ele expõe.
 func _spread_beauty(world: WorldState, data: GameData, decorations: Array[int]) -> void:
 	for source_id: int in decorations:
 		var source := world.building(source_id)
 		var def := data.building(source.def_id)
+		var strength := beauty_strength(world, data, source_id)
 		var area := Footprint.rect(source.origin, def.size, source.rotation)
 		for house_id: int in houses:
 			var house := world.building(house_id)
@@ -666,7 +667,18 @@ func _spread_beauty(world: WorldState, data: GameData, decorations: Array[int]) 
 			var gap := _rect_gap(area, house_area)
 			if gap <= def.beauty_radius_cells:
 				var falloff := 1.0 - float(gap) / float(def.beauty_radius_cells + 1)
-				beauty[house_id] = minf(1.0, beauty[house_id] + def.beauty * falloff)
+				beauty[house_id] = minf(1.0, beauty[house_id] + strength * falloff)
+
+
+## A beleza que o prédio espalha: a da definição e, no zoológico e no museu (Fase 67), mais a das peças que ele expõe.
+static func beauty_strength(world: WorldState, data: GameData, building_id: int) -> float:
+	var record := world.building(building_id)
+	var def := data.building(record.def_id)
+	var strength := def.beauty
+	if def.is_exhibit_hall():
+		for exhibit: ExhibitDef in world.exhibits_state.in_building(building_id, data):
+			strength += exhibit.beauty
+	return strength
 
 
 static func _rect_gap(a: Rect2i, b: Rect2i) -> int:

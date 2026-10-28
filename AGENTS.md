@@ -1885,6 +1885,13 @@ Regras que já custaram investigação:
   uma vez) e a manutenção; produção, riscos e população leem `policy_speed`, `policy_fire`, `policy_happiness` e
   `policy_tax`. Painel com um botão por política.
 
+### Zoológico e museu (Fase 67, nossa)
+
+- **Plano** em `docs/plano_fase67.md`. Prédios `zoo` e `museum` (`BuildingDef.exhibit_slots`, `exhibit_kind`),
+  `ExhibitDef` (`data/exhibits/`: seis animais, seis objetos), `PlaceExhibitCommand` (compra e põe; a guardada de
+  graça) e `ExhibitsState` no save (demolir guarda). A beleza do prédio soma as peças (`DerivedState.beauty_strength`,
+  também na camada Beleza). Painel com um botão por peça.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1962,6 +1969,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 64 — Baleias e golfinhos (nossa) | **feita em 27/10/2026, a pedido do dono**: baleias que sobem, sopram e mergulham no mar aberto e golfinhos saltando em águas médias, gerados no código; só apresentação; a proposta de fábricas com estado visível já estava feita; plano em `docs/plano_fase64.md` |
 | 65 — Festa na cidade (nossa) | **feita em 27/10/2026, a pedido do dono**: com a festa numa ilha, bandeirolas por cima das ruas das praças e fogos de artifício à noite; só apresentação; plano em `docs/plano_fase65.md` |
 | 66 — Prefeitura e políticas (nossa) | **feita em 27/10/2026, a pedido do dono**: prefeitura com uma política por vez (jornada longa, vigia de incêndio, feriados, coletoria) que vale nos prédios em volta, com manutenção; no save; números provisórios, à espera do dono; plano em `docs/plano_fase66.md` |
+| 67 — Zoológico e museu (nossa) | **feita em 28/10/2026, a pedido do dono**: zoológico e museu com seis vagas cada para peças compradas uma vez (animais e objetos), que somam beleza às casas em volta; no save; números provisórios; plano em `docs/plano_fase67.md` |
 
 Pendências já vistas para fases futuras:
 
