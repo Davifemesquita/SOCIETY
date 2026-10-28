@@ -26,6 +26,8 @@ static var _default: GameData
 ## Cenários prontos e conquistas (Fase 12).
 @export var scenarios: Array[ScenarioDef] = []
 @export var achievements: Array[AchievementDef] = []
+## Manchetes do jornal (Fase 63): as de notícia, sorteadas a cada edição, e as de propaganda, compradas.
+@export var headlines: Array[HeadlineDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -105,6 +107,13 @@ func profile(id: StringName) -> IslandProfileDef:
 
 func event(id: StringName) -> EventDef:
 	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func headline(id: StringName) -> HeadlineDef:
+	for def: HeadlineDef in headlines:
 		if def.id == id:
 			return def
 	return null
@@ -222,6 +231,15 @@ func validate() -> PackedStringArray:
 			problems.append("evento %s: duração e peso positivos, marco não negativo" % event_def.id)
 		if event_def.effect != EventDef.Effect.HAPPINESS and event_def.amount <= 0.0:
 			problems.append("evento %s: multiplicador deve ser positivo" % event_def.id)
+	_check_ids(problems, "manchete", headlines.map(func(def: HeadlineDef) -> StringName: return def.id))
+	var news := 0
+	for headline_def: HeadlineDef in headlines:
+		if headline_def.weight <= 0 or headline_def.after_milestone < 0:
+			problems.append("manchete %s: peso positivo, marco não negativo" % headline_def.id)
+		if not headline_def.propaganda and headline_def.after_milestone == 0:
+			news += 1
+	if not headlines.is_empty() and news == 0:
+		problems.append("manchetes: pelo menos uma de notícia sem marco (a primeira edição precisa de uma)")
 	_check_ids(problems, "encomenda", missions.map(func(def: MissionDef) -> StringName: return def.id))
 	for mission_def: MissionDef in missions:
 		if good(mission_def.good) == null:

@@ -200,6 +200,16 @@
 [ext_resource type="Resource" path="res://data/achievements/won_merchant_prince.tres" id="ac_won_merchant_prince"]
 [ext_resource type="Script" path="res://data/scenario_def.gd" id="sc_script"]
 [ext_resource type="Script" path="res://data/achievement_def.gd" id="ac_script"]
+[ext_resource type="Script" path="res://data/headline_def.gd" id="hl_script"]
+[ext_resource type="Resource" path="res://data/headlines/quiet_week.tres" id="hl_quiet_week"]
+[ext_resource type="Resource" path="res://data/headlines/harbor_praise.tres" id="hl_harbor_praise"]
+[ext_resource type="Resource" path="res://data/headlines/price_rumor.tres" id="hl_price_rumor"]
+[ext_resource type="Resource" path="res://data/headlines/cholera_fear.tres" id="hl_cholera_fear"]
+[ext_resource type="Resource" path="res://data/headlines/company_scandal.tres" id="hl_company_scandal"]
+[ext_resource type="Resource" path="res://data/headlines/royal_visit.tres" id="hl_royal_visit"]
+[ext_resource type="Resource" path="res://data/headlines/progress.tres" id="hl_progress"]
+[ext_resource type="Resource" path="res://data/headlines/prosperity.tres" id="hl_prosperity"]
+[ext_resource type="Resource" path="res://data/headlines/company_pride.tres" id="hl_company_pride"]
 
 [resource]
 script = ExtResource("1_data")
@@ -216,3 +226,4 @@ rivals = Array[ExtResource("11_rival")]([ExtResource("rival_hanseatic"), ExtReso
 specialists = Array[ExtResource("12_specialist")]([ExtResource("specialist_forester"), ExtResource("specialist_agronomist"), ExtResource("specialist_bookkeeper"), ExtResource("specialist_mining_engineer"), ExtResource("specialist_foreman"), ExtResource("specialist_master_brewer"), ExtResource("specialist_master_glassblower"), ExtResource("specialist_steelmaster")])
 scenarios = Array[ExtResource("sc_script")]([ExtResource("sc_poor_colony"), ExtResource("sc_island_race"), ExtResource("sc_merchant_prince")])
 achievements = Array[ExtResource("ac_script")]([ExtResource("ac_first_investor"), ExtResource("ac_engineer_city"), ExtResource("ac_tycoon"), ExtResource("ac_archipelago"), ExtResource("ac_shipwright"), ExtResource("ac_fire_brigade"), ExtResource("ac_admiral"), ExtResource("ac_first_victory"), ExtResource("ac_won_poor_colony"), ExtResource("ac_won_island_race"), ExtResource("ac_won_merchant_prince")])
+headlines = Array[ExtResource("hl_script")]([ExtResource("hl_quiet_week"), ExtResource("hl_harbor_praise"), ExtResource("hl_price_rumor"), ExtResource("hl_cholera_fear"), ExtResource("hl_company_scandal"), ExtResource("hl_royal_visit"), ExtResource("hl_progress"), ExtResource("hl_prosperity"), ExtResource("hl_company_pride")])

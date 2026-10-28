@@ -17,6 +17,14 @@ var next_mission_id: int = 1
 var next_offer_tick: int = 0
 ## Encomendas cumpridas no prazo (estatística e testes).
 var missions_done: int = 0
+## Jornal (Fase 63): edições já publicadas (é o número do sorteio da próxima), tick da próxima (0 = ainda não marcado),
+## a manchete da edição de agora (vazia antes da primeira) e se a propaganda dela já foi comprada.
+var edition_count: int = 0
+var next_edition_tick: int = 0
+var headline_id: StringName = &""
+var propaganda_used: bool = false
+## runtime: a definição da manchete (resolvida ao publicar, comprar e carregar), fora do save.
+var headline: HeadlineDef
 
 
 func mission(mission_id: int) -> Mission:
@@ -44,7 +52,8 @@ func to_dict() -> Dictionary:
 		mission_list.append(item.to_dict())
 	return {"enabled": enabled, "events": event_list, "next_event_tick": next_event_tick, "event_count": event_count,
 			"missions": mission_list, "next_mission_id": next_mission_id, "next_offer_tick": next_offer_tick,
-			"missions_done": missions_done}
+			"missions_done": missions_done, "edition_count": edition_count, "next_edition_tick": next_edition_tick,
+			"headline": headline_id, "propaganda_used": propaganda_used}
 
 
 static func from_dict(data: Dictionary, game_data: GameData, island_count: int) -> EventsState:
@@ -68,6 +77,23 @@ static func from_dict(data: Dictionary, game_data: GameData, island_count: int) 
 	state.missions_done = raw_done
 	if state.event_count < 0 or state.missions_done < 0 or state.next_mission_id < 1:
 		return null
+	# o jornal (Fase 63) não existe nos saves de antes: sem as chaves, nenhuma edição ainda
+	var raw_editions: Variant = data.get("edition_count", 0)
+	var raw_next_edition: Variant = data.get("next_edition_tick", 0)
+	var raw_headline: Variant = data.get("headline", &"")
+	var raw_propaganda: Variant = data.get("propaganda_used", false)
+	if not (raw_editions is int and raw_next_edition is int and raw_headline is StringName and raw_propaganda is bool):
+		return null
+	state.edition_count = raw_editions
+	state.next_edition_tick = raw_next_edition
+	state.headline_id = raw_headline
+	state.propaganda_used = raw_propaganda
+	if state.edition_count < 0 or state.next_edition_tick < 0:
+		return null
+	if state.headline_id != &"":
+		state.headline = game_data.headline(state.headline_id)
+		if state.headline == null:
+			return null
 	var event_list: Array = raw_events
 	for raw: Variant in event_list:
 		if not raw is Dictionary:

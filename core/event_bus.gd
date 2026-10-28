@@ -56,6 +56,10 @@ signal mission_completed(def_id: StringName, bonus: int)
 signal mission_expired(def_id: StringName, accepted: bool)
 ## Encomenda aceita, recusada ou entregue em parte: a janela refaz a lista.
 signal missions_changed()
+## Jornal (Fase 63): saiu uma edição (headline_id vazio se nenhuma manchete estava liberada), ou a propaganda comprada
+## trocou a manchete dela.
+signal newspaper_published(headline_id: StringName)
+signal newspaper_changed()
 
 ## Companhias rivais (Fase 11): uma fundou colônia numa ilha; a postura dela mudou (RivalState.Stance);
 ## presente, acordo, guerra ou paz pedidos pelo jogador (a janela refaz).

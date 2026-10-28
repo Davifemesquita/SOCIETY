@@ -26,7 +26,7 @@ static func run(world: WorldState, data: GameData, config: GameConfig, derived: 
 	## Fase 29: o que não muda de casa para casa sai do laço — chegada e efeito de evento por ilha, se há fogo ou
 	## doença, a felicidade do nível de imposto por classe
 	var events := world.events_state
-	var any_event := not events.events.is_empty()
+	var any_event := not events.events.is_empty() or events.headline != null
 	var risks := world.risks_state
 	var any_fire := not risks.fires.is_empty()
 	var any_outbreak := not risks.outbreaks.is_empty()

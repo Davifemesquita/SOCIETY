@@ -19,6 +19,8 @@ var created_id: int = 0
 var colonized: bool = false
 ## Encomendas (Fase 11): uma foi aceita ou recusada.
 var missions_changed: bool = false
+## Jornal (Fase 63): a propaganda comprada trocou a manchete.
+var newspaper_changed: bool = false
 ## Rivais (Fase 11): um gesto de diplomacia mudou a relação ou a postura.
 var rivals_changed: bool = false
 ## Especialistas (Fase 11): contratado, designado, retirado ou dispensado.

@@ -634,14 +634,46 @@ OPTIONS_CAMERA_SPEED_TIP,Rapidez do movimento da câmera pelo teclado e pela bor
 NEW_GAME_EVENTS,Eventos e encomendas,Events and orders
 NEW_GAME_EVENTS_TIP,"De tempos em tempos acontecem eventos (boa colheita, feira, tempestade) e o comerciante faz encomendas com prêmio","From time to time events happen (good harvest, fair, storm) and the trader places orders with a bonus"
 HUD_MISSIONS,Encomendas (%d),Orders (%d)
-HUD_MISSIONS_TIP,Encomendas do comerciante e eventos em andamento (J),Trader's orders and current events (J)
+HUD_MISSIONS_TIP,"Jornal, encomendas do comerciante e eventos em andamento (J)","Newspaper, trader's orders and current events (J)"
 ACTION_GAME_MISSIONS,Encomendas e eventos,Orders and events
-MISSIONS_TITLE,Encomendas,Orders
+MISSIONS_TITLE,Jornal e encomendas,Newspaper and orders
 MISSIONS_HINT,"Entregue vendendo o bem no posto do comerciante, por rota ou pelo painel do navio. Cada tonelada é paga; no prazo, ganha o prêmio.","Deliver by selling the good at the trader's post, by route or from the ship panel. Every ton is paid; on time, you earn the bonus."
 MISSIONS_EVENTS,Eventos em andamento,Current events
 MISSIONS_DISABLED,Esta partida não tem eventos nem encomendas,This game has no events or orders
 MISSIONS_NONE,Nenhuma encomenda agora,No orders right now
 MISSIONS_NO_EVENTS,Nenhum evento agora,No events right now
+NEWSPAPER_TITLE,Gazeta do Arquipélago,The Archipelago Gazette
+NEWSPAPER_DISABLED,Esta partida não tem jornal (os eventos estão desligados),This game has no newspaper (events are off)
+NEWSPAPER_NONE,A primeira edição ainda não saiu,The first issue is not out yet
+NEWSPAPER_NEXT,Próxima edição em %s,Next issue in %s
+NEWSPAPER_EFFECT_UP,+%s de felicidade em todas as ilhas até a próxima edição,+%s happiness on every island until the next issue
+NEWSPAPER_EFFECT_DOWN,−%s de felicidade em todas as ilhas até a próxima edição,−%s happiness on every island until the next issue
+NEWSPAPER_NO_EFFECT,Sem efeito na felicidade,No effect on happiness
+NEWSPAPER_PROPAGANDA,Publicar «%s» (%s moedas),Print “%s” (%s coins)
+NEWSPAPER_PROPAGANDA_TIP,Troca a manchete desta edição pela propaganda até a próxima edição (uma vez por edição),Replaces this issue's headline with the propaganda until the next issue (once per issue)
+NEWSPAPER_PROPAGANDA_USED,Esta edição já tem propaganda,This issue already has propaganda
+NOTICE_NEWSPAPER,Saiu o jornal: %s,The newspaper is out: %s
+REASON_NO_EDITION,O jornal ainda não saiu,The newspaper is not out yet
+REASON_PROPAGANDA_USED,Esta edição já tem propaganda,This issue already has propaganda
+REASON_NOT_PROPAGANDA,Esta manchete não é de propaganda,This headline is not propaganda
+HEADLINE_QUIET_WEEK,Semana tranquila no arquipélago,A quiet week in the archipelago
+HEADLINE_QUIET_WEEK_DESC,"Nada de novo nos cais nem nas praças: o povo lê as notas do comércio e segue a vida.","Nothing new on the docks or in the squares: people read the trade notes and carry on."
+HEADLINE_HARBOR_PRAISE,Gazeta elogia o movimento do porto,Gazette praises the busy harbour
+HEADLINE_HARBOR_PRAISE_DESC,"Navios cheios e preços justos: a Gazeta diz que as ilhas nunca viveram tão bem.","Full ships and fair prices: the Gazette says the islands have never had it so good."
+HEADLINE_PRICE_RUMOR,Boatos de carestia assustam o povo,Rumours of scarcity alarm the people
+HEADLINE_PRICE_RUMOR_DESC,"Um panfleto anônimo diz que o pão vai faltar. Ninguém sabe de onde veio, mas todos falam disso.","An anonymous pamphlet says bread will run short. Nobody knows where it came from, but everyone is talking."
+HEADLINE_CHOLERA_FEAR,Medo do cólera chega pelos jornais,Fear of cholera spreads through the papers
+HEADLINE_CHOLERA_FEAR_DESC,"Notícias do continente falam de cólera nos portos. As famílias evitam as ruas e as tavernas.","News from the mainland tells of cholera in the ports. Families avoid the streets and the taverns."
+HEADLINE_COMPANY_SCANDAL,Escândalo na Companhia,Scandal at the Company
+HEADLINE_COMPANY_SCANDAL_DESC,"Um contador acusa a Companhia de esconder lucros. Os moradores desconfiam de quem governa as ilhas.","A bookkeeper accuses the Company of hiding profits. Residents distrust those who run the islands."
+HEADLINE_ROYAL_VISIT,Visita real anunciada,A royal visit is announced
+HEADLINE_ROYAL_VISIT_DESC,"A Coroa promete visitar as ilhas. Fachadas pintadas, bandeiras nas janelas e muito orgulho nas ruas.","The Crown promises to visit the islands. Painted façades, flags in the windows and a lot of pride in the streets."
+HEADLINE_PROGRESS,O progresso chegou às ilhas,Progress has reached the islands
+HEADLINE_PROGRESS_DESC,"Propaganda da Companhia: fábricas novas, trabalho para todos e um futuro de vapor e ferro.","Company propaganda: new factories, work for everyone and a future of steam and iron."
+HEADLINE_PROSPERITY,Prosperidade para todos,Prosperity for all
+HEADLINE_PROSPERITY_DESC,"Propaganda da Companhia: mesas fartas e salários em dia em cada casa do arquipélago.","Company propaganda: full tables and wages paid on time in every home of the archipelago."
+HEADLINE_COMPANY_PRIDE,Orgulho da Companhia,The Company's pride
+HEADLINE_COMPANY_PRIDE_DESC,"Propaganda da Companhia: as ilhas são o exemplo do mundo e cada morador é parte dessa glória.","Company propaganda: the islands are an example to the world and every resident shares in the glory."
 MISSION_REQUEST,%s t de %s,%s t of %s
 MISSION_REWARD,"Prêmio de %s moedas, prazo de %s","Bonus of %s coins, %s to deliver"
 MISSION_ANSWER_IN,Responda em %s,Answer within %s

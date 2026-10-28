@@ -89,6 +89,8 @@ func execute(command: Command) -> CommandResult:
 		EventBus.rivals_changed.emit()
 	if result.missions_changed:
 		EventBus.missions_changed.emit()
+	if result.newspaper_changed:
+		EventBus.newspaper_changed.emit()
 	if result.specialists_changed:
 		_dirty = true
 		EventBus.specialists_changed.emit()
@@ -176,8 +178,9 @@ func tick(_tick_index: int) -> void:
 		_lap(&"combate")
 	EventSystem.run(world, data, config)
 	MissionSystem.run(world, data, config)
+	NewspaperSystem.run(world, data, config)
 	SpecialistSystem.run(world, data, config)
-	_lap(&"eventos, encomendas e especialistas")
+	_lap(&"eventos, encomendas, jornal e especialistas")
 	if world.risks_state.enabled:
 		_remove_lost(RiskSystem.run(world, data, config, derived))
 	_lap(&"riscos")

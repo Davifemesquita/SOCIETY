@@ -179,6 +179,19 @@ func event_started(def_id: StringName, island_id: int) -> Notice:
 	return notice
 
 
+## Saiu uma edição do jornal (Fase 63): a manchete, verde se sobe a felicidade e laranja se tira; o clique abre a janela.
+func newspaper_published(headline_id: StringName) -> Notice:
+	var def := _simulation.data.headline(headline_id)
+	var title: String = String(TranslationServer.translate(def.title_key())) if def != null else ""
+	var notice := Notice.new("newspaper/edition", "notice_mission", "NOTICE_NEWSPAPER", [title])
+	notice.opens_missions = true
+	if def != null and def.happiness > 0.0:
+		notice.status = UiPalette.Status.GOOD
+	elif def != null and def.happiness < 0.0:
+		notice.status = UiPalette.Status.PARTIAL
+	return notice
+
+
 func mission_offered(mission_id: int) -> Notice:
 	var item := _simulation.world.events_state.mission(mission_id)
 	var good: String = String(TranslationServer.translate(_simulation.data.good(item.def.good).name_key)) if item != null else ""

@@ -1212,3 +1212,9 @@ primitivas no quadro com tudo visível (+20 256), 1107 draw calls (as mesmas), G
 dia inteiro 36,7 FPS. Na mesma hora com `terrain_cliff_refine_relief_m` = 0 (desligada): 15 527 485 primitivas, GPU 22,0
 ms, jogo novo 23,2 s, dia inteiro 36,5 FPS. Custo: ~1 s no jogo novo nesta máquina lenta (as subgrades e as normais
 pela subgrade em GDScript; ~0,4 s na velocidade normal) e nada na GPU.
+## Fase 63 — jornal (27/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), com a máquina de volta ao normal: tick médio 1,27 ms (p95 1,48;
+a etapa "eventos, encomendas, jornal e especialistas" 0,01 ms — o benchmark roda com os eventos desligados, como o
+robô), 2759 objetos e 1109 draw calls, dia inteiro 87,6 FPS (1% low 47,4), GPU média 10,8 ms, jogo novo 10,1 s. O
+jornal não toca o desenho; o FPS de volta aos ~88 da manhã confirma que a lentidão das Fases 60 a 62 era da máquina.

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HeadlineDef" format=3]
+
+[ext_resource type="Script" path="res://data/headline_def.gd" id="1_headline"]
+
+[resource]
+script = ExtResource("1_headline")
+id = &"progress"
+happiness = 8.0
+weight = 1
+propaganda = true
+after_milestone = 0

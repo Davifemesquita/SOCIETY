@@ -1856,6 +1856,14 @@ Regras que já custaram investigação:
   pontos novos acima d'água ganham aspereza de rocha (`terrain_cliff_rough_m`) pelo desnível dos cantos, e a normal
   pela subgrade. Cantos, bordas e linha d'água como na Fase 55. Só apresentação.
 
+### Jornal (Fase 63, nossa)
+
+- **Plano** em `docs/plano_fase63.md`. `HeadlineDef` (`data/headlines/`, notícia e propaganda), `NewspaperSystem`
+  (edição a cada `newspaper_interval_s`, manchete pela semente e pelo número da edição, felicidade em todas as ilhas
+  pelo `EventEffects.happiness`) e `BuyPropagandaCommand` (uma vez por edição, `newspaper_propaganda_cost`). Só com os
+  eventos ligados; vai no `EventsState` (save antigo sem as chaves carrega sem edição). Na tela, no alto da janela das
+  encomendas (J), e aviso a cada edição.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1929,6 +1937,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 60 — Sub-bosque tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: bananeira e samambaia geradas no código no lugar do arbusto temperado nas ilhas tropicais; temperadas iguais; só apresentação; plano em `docs/plano_fase60.md` |
 | 61 — Helicônias (nossa) | **feita em 27/10/2026, a pedido do dono**: helicônia gerada no código no lugar das flores do campo nas ilhas tropicais; só apresentação; plano em `docs/plano_fase61.md` |
 | 62 — Malha fina na face da falésia (nossa) | **feita em 27/10/2026, a pedido do dono**: a face da falésia vira subgrade como a costa da Fase 55, com aspereza de rocha e normais pela subgrade, sem tocar célula construível nem a linha d'água; só apresentação; plano em `docs/plano_fase62.md` |
+| 63 — Jornal (nossa) | **feita em 27/10/2026, a pedido do dono**: edição periódica com manchete sorteada que mexe na felicidade de todas as ilhas, e propaganda paga que troca a manchete; só com os eventos ligados (assinaturas iguais); números provisórios, à espera do dono; plano em `docs/plano_fase63.md` |
 
 Pendências já vistas para fases futuras:
 
