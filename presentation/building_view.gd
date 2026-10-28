@@ -63,6 +63,8 @@ const NON_HOUSE_SHIFT := 0.35
 const INVERTED_EVERY := 5
 const JITTER_M := 0.01
 const JITTER_DEG := 0.5
+## Fase 79: quanto o bicho inclina para a frente bebendo (rad).
+const DRINK_TILT := 0.12
 
 var _simulation: Simulation
 var _cell_size: float
@@ -86,7 +88,7 @@ var _rotor_rocks: Dictionary[int, Array] = {}
 ## Fase 74: os bichos e as peças postos no zoológico e no museu (ExhibitModels), com cor por vértice — o mesmo jeito de
 ## material do trilho e do trem, sem pipeline nova.
 var _exhibit_material := StandardMaterial3D.new()
-## Fase 75: os bichos que andam no cercado, pelo prédio: [PenWalk, corpo, peça] de cada um.
+## Fase 75: os bichos que andam no cercado, pelo prédio: [PenWalk, corpo, peça, escala] de cada um.
 var _walkers: Dictionary[int, Array] = {}
 ## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
 var _spec_keys: Dictionary[int, String] = {}
@@ -267,9 +269,13 @@ func _place_walker(entry: Array) -> void:
 	var walk: PenWalk = entry[0]
 	var body: Node3D = entry[1]
 	var exhibit_id: StringName = entry[2]
+	var fit: float = entry[3]
 	var facing: float = ExhibitModels.FACING[exhibit_id]
-	body.position = Vector3(walk.position.x, 0.0, walk.position.y)
-	body.rotation.y = walk.heading - facing
+	# o corpo olha para "heading" (desfeito o giro com que a malha foi feita); bebendo (Fase 79), inclina para a frente
+	# em volta do eixo de lado do próprio bicho, com o pé no chão
+	var tilt := -DRINK_TILT if walk.drinking else 0.0
+	var turn := Basis(Vector3.UP, walk.heading) * Basis(Vector3.RIGHT, tilt) * Basis(Vector3.UP, -facing)
+	body.transform = Transform3D(turn * Basis.from_scale(Vector3.ONE * fit), Vector3(walk.position.x, 0.0, walk.position.y))
 
 
 ## O passeio do bicho no cercado, ou null se ele não anda (testes).
@@ -933,7 +939,7 @@ func _dress_exhibits(building_id: int, body: Node3D, spec: BuildingKit.Spec) -> 
 			if walk == null:
 				walk = PenWalk.new(half, Rect2(footprint.position * fit, footprint.size * fit),
 						hash([building_id, k, exhibit_id]), ExhibitModels.FACING[exhibit_id], ExhibitModels.trough_rect(half))
-			var entry: Array = [walk, shape, exhibit_id]
+			var entry: Array = [walk, shape, exhibit_id, fit]
 			_place_walker(entry)
 			walkers.append(entry)
 	body.add_child(group)

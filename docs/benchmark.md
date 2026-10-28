@@ -1301,3 +1301,9 @@ GPU 23,4 ms, dia inteiro 34,4 FPS (1% low 18,8, pior quadro 112 ms), tick médio
 Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem usina a petróleo. Máquina no estado
 lento: GPU 24,1 ms, dia inteiro 33,8 FPS (1% low 17,2, pior quadro 131 ms), tick médio 1,32 ms, construir com a ilha
 cheia 15,8 ms, 2755 objetos e 1117 draw calls (iguais aos das Fases 75 a 77). Neutra.
+
+## Fase 79 — o bicho vai beber (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem zoológico. Máquina no estado lento:
+GPU 22,8 ms, dia inteiro 34,9 FPS (1% low 16,3, pior quadro 115 ms), tick médio 1,34 ms, construir com a ilha cheia
+16,0 ms, 2769 objetos e 1119 draw calls (a variação de sempre: 2755–2769). Neutra.

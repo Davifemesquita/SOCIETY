@@ -2,8 +2,9 @@ class_name PenWalk
 extends RefCounted
 ## Fase 75: o passeio de um bicho dentro do cercado do zoológico. Descansa, escolhe um ponto, vira para ele no lugar e
 ## anda até lá; toda pose (o alvo, o giro e o caminho) é conferida pelo retângulo do corpo (a pegada, de frente para -Z)
-## contra a cerca, então nada atravessa a cerca. Sem pose que caiba, fica parado. Só apresentação: a sorte vem da
-## semente (o prédio e a vaga), fora da simulação.
+## contra a cerca, então nada atravessa a cerca. Sem pose que caiba, fica parado. Desde a Fase 77 desvia do bebedouro e,
+## desde a Fase 79, às vezes vai até ele, vira de frente e bebe um tempo. Só apresentação: a sorte vem da semente (o
+## prédio e a vaga), fora da simulação.
 
 const WALK_M_S := 0.55
 const TURN_RAD_S := 1.1
@@ -19,6 +20,15 @@ const AIM_SHARE := 0.7
 ## O bicho cabe com folga para virar: o corpo (o lado maior da pegada) ocupa no máximo esta parte do lado menor do
 ## cercado; o maior que isso fica menor no cercado (fit_scale).
 const FIT_SHARE := 0.72
+## Fase 79: a chance de cada escolha ser ir beber, quanto tempo bebe e a folga do focinho até o bebedouro.
+const DRINK_CHANCE := 0.3
+const DRINK_MIN_S := 6.0
+const DRINK_MAX_S := 10.0
+const DRINK_GAP_M := 0.15
+## Fase 79: os pontos de virar bem na frente do de beber (a esta distância dele), tentados antes dos sorteados.
+const DRINK_STAGES: Array[float] = [0.4, 0.6, 0.8, 1.0]
+## Fase 79: quanto o bicho tenta recuar de ré quando não tem para onde virar nem andar.
+const BACK_UP_M: Array[float] = [1.0, 0.7, 0.4]
 
 enum Step { REST, TURN, WALK }
 
@@ -33,6 +43,12 @@ var heading: float = 0.0
 var blocked := Rect2()
 ## Sem nenhuma pose que caiba: não anda.
 var still: bool = false
+## Fase 79: parado no bebedouro, de frente para ele.
+var drinking: bool = false
+## Fase 79: 0 = passeando, 1 = andando até o ponto de virar, 2 = indo ao bebedouro, 3 = virando de frente para ele.
+var _drink_stage: int = 0
+## Fase 79: para onde olha na última perna, do ponto de virar até o bebedouro.
+var _drink_heading: float = 0.0
 var step := Step.REST
 var _left: float = 0.0
 var _target := Vector2.ZERO
@@ -156,11 +172,44 @@ func advance(seconds: float) -> void:
 				left -= used
 				if position.distance_to(_target) < 0.001:
 					position = _target
-					_rest()
+					_arrive()
+
+
+## Fase 79: chegou ao ponto. Indo beber: no ponto de virar, vira para o bebedouro e anda até ele; lá, vira de frente para
+## ele e bebe. Senão, descansa.
+func _arrive() -> void:
+	match _drink_stage:
+		1:
+			_drink_stage = 2
+			_target = drink_spot()
+			_target_heading = _drink_heading
+			step = Step.TURN
+		2:
+			_drink_stage = 3
+			_target_heading = PI
+			step = Step.TURN
+		3:
+			_drink_stage = 0
+			drinking = true
+			step = Step.REST
+			_left = _rng.randf_range(DRINK_MIN_S, DRINK_MAX_S)
+		_:
+			_rest()
+
+## Fase 79: onde o bicho fica para beber, de frente para o bebedouro (olhando para +Z, heading PI), com o focinho a
+## DRINK_GAP_M da frente dele; Vector2.INF sem bebedouro. A pegada olhando para +Z vira ao contrário: a frente dela
+## (footprint.position.y) fica em position.y - footprint.position.y.
+func drink_spot() -> Vector2:
+	if not blocked.has_area():
+		return Vector2.INF
+	return Vector2(blocked.get_center().x, blocked.position.y - DRINK_GAP_M + footprint.position.y)
 
 
 ## O próximo ponto: o primeiro sorteado em que o alvo, o giro no lugar e (pela pegada convexa) o caminho reto cabem.
 func _choose() -> void:
+	drinking = false
+	if blocked.has_area() and _rng.randf() < DRINK_CHANCE and _choose_drink():
+		return
 	for k: int in TRIES:
 		var target := _random_point()
 		var gap := target - position
@@ -172,7 +221,7 @@ func _choose() -> void:
 			_target_heading = facing
 			step = Step.TURN
 			return
-	# sem caminho que caiba: só vira no lugar (pastando), se der
+	# sem caminho que caiba: só vira no lugar (pastando), se der; senão, recua de ré (Fase 79: saindo do bebedouro)
 	for k: int in TRIES:
 		var facing := heading + _rng.randf_range(-PI, PI)
 		if _turn_fits(facing):
@@ -180,16 +229,73 @@ func _choose() -> void:
 			_target_heading = facing
 			step = Step.TURN
 			return
+	if _back_up():
+		return
 	_rest()
 
 
+## Fase 79: recua de ré em linha reta (sem virar) até onde cabe: do bebedouro, onde o corpo não vira, ele sai assim.
+func _back_up() -> bool:
+	var backward := -_rotated(Vector2(0.0, -1.0), heading)
+	for distance: float in BACK_UP_M:
+		var target := position + backward * distance
+		if fits(target, heading) and path_clear(position, target, heading):
+			_target = target
+			_target_heading = heading
+			step = Step.TURN
+			return true
+	return false
+
+
+## Fase 79: ir ao bebedouro, por um ponto de virar (o lugar onde está ou um sorteado): até ele, vira para o ponto de
+## beber, anda até lá e vira de frente para o bebedouro. Só se tudo cabe: as pernas, os três giros e o ponto de beber.
+func _choose_drink() -> bool:
+	var spot := drink_spot()
+	if not fits(spot, PI):
+		return false
+	# o lugar onde está, os pontos bem na frente do bebedouro e os sorteados
+	for k: int in TRIES + 1 + DRINK_STAGES.size():
+		var stage := position
+		if k > 0:
+			stage = spot - Vector2(0.0, DRINK_STAGES[k - 1]) if k <= DRINK_STAGES.size() else _random_point()
+		var last := spot - stage
+		if last.length() < 0.3:
+			continue
+		var final_heading := atan2(-last.x, -last.y)
+		if not (fits(spot, final_heading) and path_clear(stage, spot, final_heading)
+				and _turn_fits(PI, spot, final_heading)):
+			continue
+		if k == 0:
+			if not _turn_fits(final_heading):
+				continue
+			_target = spot
+			_target_heading = final_heading
+			_drink_stage = 2
+			step = Step.TURN
+			return true
+		var first := stage - position
+		if first.length() < 0.3:
+			continue
+		var facing := atan2(-first.x, -first.y)
+		if fits(stage, facing) and _turn_fits(facing) and path_clear(position, stage, facing) \
+				and _turn_fits(final_heading, stage, facing):
+			_target = stage
+			_target_heading = facing
+			_drink_heading = final_heading
+			_drink_stage = 1
+			step = Step.TURN
+			return true
+	return false
+
 ## O giro no lugar até "facing" cabe: conferido a cada TURN_CHECK_RAD com folga a mais (o canto entre duas conferidas
 ## sai da corda bem menos que ela).
-func _turn_fits(facing: float) -> bool:
-	var turn := angle_difference(heading, facing)
+func _turn_fits(facing: float, at: Vector2 = Vector2.INF, from: float = NAN) -> bool:
+	var where := position if at == Vector2.INF else at
+	var start := heading if is_nan(from) else from
+	var turn := angle_difference(start, facing)
 	var checks := maxi(1, ceili(absf(turn) / TURN_CHECK_RAD))
 	for k: int in range(1, checks + 1):
-		if not fits(position, heading + turn * k / checks, FENCE_GAP_M + TURN_SLACK_M):
+		if not fits(where, start + turn * k / checks, FENCE_GAP_M + TURN_SLACK_M):
 			return false
 	return true
 

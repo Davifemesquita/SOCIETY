@@ -67,7 +67,7 @@ static func mesh(exhibit_id: StringName) -> Mesh:
 
 ## Fase 77: o chão e o bebedouro do cercado do bicho (meias medidas half, origem no meio do cercado, no chão), feitos uma
 ## vez por bicho e tamanho de cercado. O chão em ladrilhos de tom variado; o bebedouro de madeira com a água em cima, no
-## lado direito da cerca de trás.
+## meio da cerca de trás.
 static func pen_dressing(exhibit_id: StringName, half: Vector2) -> Mesh:
 	var key := "%s %.2f %.2f" % [exhibit_id, half.x, half.y]
 	if _pens.has(key):
@@ -97,9 +97,10 @@ static func pen_dressing(exhibit_id: StringName, half: Vector2) -> Mesh:
 	return made
 
 
-## O meio do bebedouro: encostado na cerca de trás, do lado direito.
+## O meio do bebedouro: encostado no meio da cerca de trás (Fase 79: no meio, o bicho comprido consegue virar na frente
+## dele e chegar de frente; até aí ficava do lado direito).
 static func trough_center(half: Vector2) -> Vector3:
-	return Vector3(half.x * 0.45, TROUGH_M.y * 0.5, half.y - 0.1 - TROUGH_M.z * 0.5)
+	return Vector3(0.0, TROUGH_M.y * 0.5, half.y - 0.1 - TROUGH_M.z * 0.5)
 
 
 ## O bebedouro no chão do cercado (x e z), para o PenWalk desviar.

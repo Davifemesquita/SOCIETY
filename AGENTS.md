@@ -1960,6 +1960,11 @@ Regras que já custaram investigação:
   dois tanques (`BuildingKit._tankfarm`, `_tank`, `tank_layout`), dique, escada e tubo; galpão atrás. Peças geradas no
   código vão no `extra` do `_build` (no `tool`, já indexado, somem).
 
+### O bicho vai beber (Fase 79, nossa)
+
+- **Plano** em `docs/plano_fase79.md`. `PenWalk._choose_drink` (por um ponto de virar até o `drink_spot`, de frente para
+  o bebedouro), `drinking`, `_back_up` (sai de ré), `BuildingView.DRINK_TILT`; o bebedouro no meio da cerca de trás.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2049,6 +2054,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 76 — Fumaça do trem (nossa) | **feita em 28/10/2026, a pedido do dono**: a locomotiva solta fumaça pela chaminé, cheia andando e fraca esperando nas pontas, deitando no vento e pelo nível gráfico; só apresentação; plano em `docs/plano_fase76.md` |
 | 77 — Chão e bebedouro no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: cada cercado ocupado ganha o chão do bicho (areia ou capim) e um bebedouro, de que os bichos desviam; a ideia de pôr as partículas no rascunho da primeira vez foi medida e descartada; só apresentação; plano em `docs/plano_fase77.md` |
 | 78 — Tanques da usina a petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: a usina a petróleo deixa a forma da usina a carvão e ganha o pátio com dois tanques, dique, escada e tubo até o galpão; foto do menu refeita; só apresentação; plano em `docs/plano_fase78.md` |
+| 79 — O bicho vai beber (nossa) | **feita em 28/10/2026, a pedido do dono**: o leão e o tigre vão ao bebedouro, viram de frente e bebem inclinados, e saem de ré; os bichos maiores não cabem de frente para ele no cercado (medido); só apresentação; plano em `docs/plano_fase79.md` |
 
 Pendências já vistas para fases futuras:
 
