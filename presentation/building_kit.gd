@@ -157,6 +157,13 @@ const PUMPJACK_SPEED := 1.3
 ## Zoológico e museu (Fase 74): o galpão do zoológico fica nas MENAGERIE_HALL_ROWS fileiras de trás e o pátio da frente
 ## tem os cercados (3 por fileira de cercados, cerca de MENAGERIE_FENCE_M); o museu tem uma fileira de pátio com os
 ## pedestais (GALLERY_PEDESTAL_M de altura) dos dois lados do caminho da porta. Uma vaga de peça por cercado ou pedestal.
+## Tanques da usina a petróleo (Fase 78): o pátio da frente (TANKFARM_ROWS fileiras) com dois tanques verticais de
+## TANK_SIDES faces (no máximo TANK_MAX_M de altura), dentro de um dique baixo de TANKFARM_BUND_M, com escada e tubo até o
+## galpão; o galpão nas fileiras de trás.
+const TANKFARM_ROWS := 2
+const TANKFARM_BUND_M := 0.45
+const TANK_SIDES := 12
+const TANK_MAX_M := 5.5
 const MENAGERIE_HALL_ROWS := 2
 const MENAGERIE_FENCE_M := 0.9
 const GALLERY_PEDESTAL_M := 0.9
@@ -406,6 +413,12 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var shed := spec.hall()
 		spec.roof = Roof.GABLE_X if shed.cells.x >= shed.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(shed.cells.x, shed.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.TANKFARM and def.size.y > TANKFARM_ROWS:
+		# o pátio da frente fica com os tanques; o galpão, nas fileiras de trás
+		spec.court_rows = TANKFARM_ROWS
+		var hall := spec.hall()
+		spec.roof = Roof.GABLE_X if hall.cells.x >= hall.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(hall.cells.x, hall.cells.y) * cell_size * ROOF_SLOPE
 	elif (def.silhouette == BuildingDef.Silhouette.MENAGERIE and def.size.y > MENAGERIE_HALL_ROWS) \
 			or (def.silhouette == BuildingDef.Silhouette.GALLERY and def.size.y > 1):
 		# o pátio da frente fica com os cercados ou os pedestais; o corpo, nas fileiras de trás
@@ -759,6 +772,9 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.PUMPJACK:
 			if spec.court_rows > 0:
 				_pumpjack(tool, extra, spec)
+		BuildingDef.Silhouette.TANKFARM:
+			if spec.court_rows > 0:
+				_tankfarm(extra, spec)
 		BuildingDef.Silhouette.MENAGERIE:
 			_pens(extra, spec)
 		BuildingDef.Silhouette.GALLERY:
@@ -857,6 +873,71 @@ static func _pens(tool: SurfaceTool, spec: Spec) -> void:
 					_rail(tool, a.lerp(b, 0.6) + y, b + y)
 				else:
 					_rail(tool, a + y, b + y)
+
+
+## Fase 78: os tanques da usina a petróleo no pátio — cada um [meio da base, raio, altura do costado], lado a lado.
+static func tank_layout(spec: Spec) -> Array[Array]:
+	var tanks: Array[Array] = []
+	if spec.court_rows == 0:
+		return tanks
+	var size := spec.size_m()
+	var depth := spec.court_rows * spec.cell_m
+	var middle := -size.y * 0.5 + depth * 0.5
+	var radius := minf(depth * 0.4, size.x * 0.18)
+	var height := minf(spec.height_m * 0.6, TANK_MAX_M)
+	for side: float in [-1.0, 1.0]:
+		tanks.append([Vector3(side * size.x * 0.25, 0.0, middle), radius, height])
+	return tanks
+
+
+## O pátio dos tanques: o dique baixo de pedra em volta (com a passagem até a porta no meio da frente), cada tanque com o
+## teto em cone, os anéis de ferro, a escada na frente e o tubo até a parede do galpão.
+static func _tankfarm(extra: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var front := -size.y * 0.5 + 0.15
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var left := -size.x * 0.5 + 0.15
+	var y := TANKFARM_BUND_M * 0.5
+	var gap := 0.9
+	_box(extra, Vector3((left - gap) * 0.5, y, front), Vector3(-gap - left, TANKFARM_BUND_M, 0.2), UV_STONE)
+	_box(extra, Vector3((gap - left) * 0.5, y, front), Vector3(-gap - left, TANKFARM_BUND_M, 0.2), UV_STONE)
+	for side: float in [-1.0, 1.0]:
+		_box(extra, Vector3(side * -left, y, (front + wall_z) * 0.5), Vector3(0.2, TANKFARM_BUND_M, wall_z - front), UV_STONE)
+	for tank: Array in tank_layout(spec):
+		var base: Vector3 = tank[0]
+		var radius: float = tank[1]
+		var height: float = tank[2]
+		_tank(extra, base, radius, height, UV_LIGHT_STONE)
+		for ring: float in [0.33, 0.66]:
+			_tank(extra, base + Vector3(0.0, height * ring - 0.05, 0.0), radius + 0.03, 0.1, UV_IRON, false)
+		# a escada: dois montantes e os degraus, encostados na frente do costado
+		var face := base.z - radius - 0.08
+		for rail: float in [-0.22, 0.22]:
+			_bar(extra, Vector3(base.x + rail, 0.0, face), Vector3(base.x + rail, height + 0.6, face), 0.05, UV_IRON)
+		var rung := 0.5
+		while rung < height + 0.4:
+			_box(extra, Vector3(base.x, rung, face), Vector3(0.44, 0.04, 0.04), UV_IRON)
+			rung += 0.5
+		# o tubo do fundo do tanque até o galpão, num suporte
+		var from := Vector3(base.x * 0.6, 0.7, base.z + radius * 0.7)
+		_bar(extra, from, Vector3(base.x * 0.6, 0.7, wall_z), 0.16, UV_IRON)
+		_box(extra, Vector3(base.x * 0.6, 0.3, (from.z + wall_z) * 0.5), Vector3(0.12, 0.6, 0.12), UV_IRON)
+
+
+## Tanque vertical de TANK_SIDES faces com a base em "base"; com teto, o cone baixo em cima.
+static func _tank(tool: SurfaceTool, base: Vector3, radius: float, height: float, uv: Vector2, roof: bool = true) -> void:
+	var top := base + Vector3(0.0, height, 0.0)
+	var peak := top + Vector3(0.0, radius * 0.25, 0.0)
+	for i: int in TANK_SIDES:
+		var a0 := TAU * i / TANK_SIDES
+		var a1 := TAU * (i + 1) / TANK_SIDES
+		var d0 := Vector3(cos(a0), 0.0, sin(a0)) * radius
+		var d1 := Vector3(cos(a1), 0.0, sin(a1)) * radius
+		_quad(tool, base + d0, base + d1, top + d1, top + d0, (d0 + d1) * 0.5, uv)
+		if roof:
+			_triangle(tool, top + d0, top + d1, peak, (d0 + d1) * 0.5 + Vector3(0.0, radius, 0.0), uv)
+		else:
+			_triangle(tool, top + d0, top + d1, top, Vector3.UP, uv)
 
 
 ## Meia largura (x) e meia profundidade (z) de cada cercado do zoológico, da vaga até a linha da cerca.

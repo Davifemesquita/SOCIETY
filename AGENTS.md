@@ -1954,6 +1954,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase77.md`. `ExhibitModels.pen_dressing` (o chão do bicho e o cocho, por cercado ocupado),
   `trough_rect` e `PenWalk.blocked`/`path_clear` (o bicho desvia do cocho pelo teste dos eixos separadores).
 
+### Tanques da usina a petróleo (Fase 78, nossa)
+
+- **Plano** em `docs/plano_fase78.md`. `Silhouette.TANKFARM` (no fim do enum) na usina a petróleo: pátio da frente com
+  dois tanques (`BuildingKit._tankfarm`, `_tank`, `tank_layout`), dique, escada e tubo; galpão atrás. Peças geradas no
+  código vão no `extra` do `_build` (no `tool`, já indexado, somem).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2042,6 +2048,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 75 — Bichos no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: os bichos do zoológico andam e viram dentro do cercado sem atravessar a cerca (o elefante fica menor para caber); as araras e as peças do museu ficam paradas; só apresentação; plano em `docs/plano_fase75.md` |
 | 76 — Fumaça do trem (nossa) | **feita em 28/10/2026, a pedido do dono**: a locomotiva solta fumaça pela chaminé, cheia andando e fraca esperando nas pontas, deitando no vento e pelo nível gráfico; só apresentação; plano em `docs/plano_fase76.md` |
 | 77 — Chão e bebedouro no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: cada cercado ocupado ganha o chão do bicho (areia ou capim) e um bebedouro, de que os bichos desviam; a ideia de pôr as partículas no rascunho da primeira vez foi medida e descartada; só apresentação; plano em `docs/plano_fase77.md` |
+| 78 — Tanques da usina a petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: a usina a petróleo deixa a forma da usina a carvão e ganha o pátio com dois tanques, dique, escada e tubo até o galpão; foto do menu refeita; só apresentação; plano em `docs/plano_fase78.md` |
 
 Pendências já vistas para fases futuras:
 
