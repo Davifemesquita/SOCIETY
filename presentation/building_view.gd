@@ -81,6 +81,8 @@ var _selected_id: int = 0
 ## Partes que giram (BuildingKit.Rotor), pelo prédio, e quanto giram por segundo de jogo.
 var _rotors: Dictionary[int, Node3D] = {}
 var _rotor_speeds: Dictionary[int, float] = {}
+## Fase 73: as partes que balançam em vez de girar — [amplitude, fase] pelo prédio.
+var _rotor_rocks: Dictionary[int, Array] = {}
 ## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
 var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
@@ -228,7 +230,16 @@ func spin_rotors(game_seconds: float) -> void:
 		return
 	for building_id: int in _rotors:
 		var record := _simulation.world.building(building_id)
-		if record != null and record.state == BuildingRecord.State.PRODUCING and not record.paused:
+		if record == null or record.state != BuildingRecord.State.PRODUCING or record.paused:
+			continue
+		if _rotor_rocks.has(building_id):
+			# Fase 73: o balancim balança em volta do eixo (a fase anda; o ângulo é o seno dela)
+			var rock: Array = _rotor_rocks[building_id]
+			var phase: float = rock[1] + _rotor_speeds[building_id] * game_seconds
+			rock[1] = phase
+			var amplitude: float = rock[0]
+			_rotors[building_id].basis = Basis(Vector3.RIGHT, sin(phase) * amplitude)
+		else:
 			_rotors[building_id].rotate_object_local(Vector3.RIGHT, _rotor_speeds[building_id] * game_seconds)
 
 
@@ -485,6 +496,8 @@ func _add(building_id: int) -> void:
 			body.add_child(pivot)
 			_rotors[building_id] = pivot
 			_rotor_speeds[building_id] = rotor.speed
+			if rotor.rock > 0.0:
+				_rotor_rocks[building_id] = [rotor.rock, 0.0]
 		if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
 			root.add_child(_occluder(box_size, Vector3(0.0, (height - FOUNDATION_M) * 0.5, 0.0)))
 		root.add_child(body)
@@ -725,6 +738,7 @@ func _remove(building_id: int, sink: bool = false) -> void:
 		_label_keys.erase(building_id)
 		_rotors.erase(building_id)
 		_rotor_speeds.erase(building_id)
+		_rotor_rocks.erase(building_id)
 		_spec_keys.erase(building_id)
 		_lots.erase(building_id)
 		if _plinths.erase(building_id):

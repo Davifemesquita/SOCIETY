@@ -1265,3 +1265,8 @@ então não há trem: tick médio 1,32 ms, os mesmos 2755 objetos e 1117 draw ca
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. O histórico de desfazer não roda no
 benchmark: tick médio 1,31 ms, 2769 objetos e 1119 draw calls (a variação de sempre do quadro com tudo visível), GPU
 21,9 ms, dia inteiro 36,6 FPS (pior quadro 260 ms). Neutra.
+## Fase 73 — o cavalo-de-pau (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. O mundo do benchmark não tem poço
+de petróleo: tick médio 1,33 ms, os mesmos 2755 objetos e 1117 draw calls, GPU 23,2 ms, dia inteiro 35,0 FPS (pior
+quadro 432 ms, no nível das Fases 64 a 70). Neutra.

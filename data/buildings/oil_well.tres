@@ -25,4 +25,4 @@ pollution_radius_cells = 8
 pollution_strength = 0.4
 wall_material = 2
 work_sound = &"metal"
-silhouette = 3
+silhouette = 10

@@ -1925,6 +1925,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase72.md`. `UndoHistory` guarda a camada de trilho do retângulo (`rails_before`/`after`) e
   aceita o `BuildRailCommand`; o `UndoCommand` devolve o trilho (posto ou demolido) e recusa se ele mudou depois.
 
+### O cavalo-de-pau (Fase 73, nossa)
+
+- **Plano** em `docs/plano_fase73.md`. `Silhouette.PUMPJACK` (no fim do enum) no poço: pátio na frente com o cavalete,
+  a caixa de engrenagens e a cabeça do poço (`BuildingKit._pumpjack`, `pumpjack_layout`), galpão baixo atrás, e o
+  balancim que balança (`Rotor.rock`, `BuildingView._rotor_rocks`) enquanto o poço produz.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2008,6 +2014,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 70 — Ferrovia e petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: campos de petróleo pela semente (assinatura igual), poço, usina a petróleo e trilho que leva o petróleo do poço à usina (sem carroça); trilho no save; números provisórios; plano em `docs/plano_fase70.md` |
 | 71 — O trem no trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: locomotiva com vagão-tanque gerados no código indo e voltando pelo caminho mais curto do trilho entre o poço e a usina; só apresentação (a simulação e as assinaturas não mudam); plano em `docs/plano_fase71.md` |
 | 72 — Desfazer o trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: o trilho entra no histórico do Ctrl+Z (posto ou demolido, com o reembolso, e o refazer); só o histórico, fora do save; plano em `docs/plano_fase72.md` |
+| 73 — O cavalo-de-pau (nossa) | **feita em 28/10/2026, a pedido do dono**: o poço de petróleo troca a torre de mina por um cavalo-de-pau gerado com as peças do kit, com o balancim balançando enquanto produz; só apresentação; plano em `docs/plano_fase73.md` |
 
 Pendências já vistas para fases futuras:
 

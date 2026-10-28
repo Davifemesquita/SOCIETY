@@ -146,6 +146,14 @@ const HOIST_LOAD_M := 1.5
 const WINDMILL_SPEED := 0.7
 const WATERWHEEL_SPEED := 0.5
 const SHEAVE_SPEED := 1.6
+## Cavalo-de-pau do poço de petróleo (Fase 73): o pátio da frente (PUMPJACK_ROWS fileiras) com o cavalete, a caixa de
+## engrenagens com os contrapesos e a cabeça do poço; o galpão baixo atrás. O balancim balança (não gira) em torno do
+## eixo no alto do cavalete: até PUMPJACK_ROCK rad para cada lado, PUMPJACK_SPEED rad de fase por segundo de jogo.
+const PUMPJACK_ROWS := 2
+const PUMPJACK_SHED_M := 3.0
+const PUMPJACK_PIVOT_M := 2.4
+const PUMPJACK_ROCK := 0.28
+const PUMPJACK_SPEED := 1.3
 ## Campanário da igreja (Fase 18): torre quadrada no canto da frente, saindo um pouco das paredes, que
 ## passa do beiral, sineira aberta com o sino e a agulha com a cruz.
 const BELFRY_SIDE_M := 2.4
@@ -385,6 +393,13 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var house := spec.hall()
 		spec.roof = Roof.GABLE_X if house.cells.x >= house.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(house.cells.x, house.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.PUMPJACK and def.size.y > PUMPJACK_ROWS:
+		# o pátio da frente fica com o cavalo-de-pau; o galpão baixo, nas fileiras de trás
+		spec.court_rows = PUMPJACK_ROWS
+		spec.height_m = minf(spec.height_m, PUMPJACK_SHED_M)
+		var shed := spec.hall()
+		spec.roof = Roof.GABLE_X if shed.cells.x >= shed.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(shed.cells.x, shed.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.WINDMILL:
 		# a empena fica na frente e as pás giram nela
 		spec.roof = Roof.GABLE_Z
@@ -728,8 +743,50 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.VERANDA:
 			if spec.court_rows > 0:
 				_veranda(extra, spec)
+		BuildingDef.Silhouette.PUMPJACK:
+			if spec.court_rows > 0:
+				_pumpjack(tool, extra, spec)
 	if spec.dock:
 		_dock(extra, spec)
+
+
+## Fase 73: as medidas do cavalo-de-pau no pátio — o fundo do pátio (z da frente da área), a profundidade dele, o eixo
+## do balancim e quanto o balancim sai para a frente (até a cabeça) e para trás (até a biela).
+static func pumpjack_layout(spec: Spec) -> Dictionary:
+	var size := spec.size_m()
+	var front := -size.y * 0.5
+	var depth := spec.court_rows * spec.cell_m
+	var middle := front + depth * 0.5
+	return {
+		&"front": front,
+		&"depth": depth,
+		&"pivot": Vector3(0.0, PUMPJACK_PIVOT_M, middle + depth * 0.05),
+		&"ahead": depth * 0.45,
+		&"behind": depth * 0.34,
+		&"gearbox": Vector3(0.0, 0.62, middle + depth * 0.36),
+	}
+
+
+## As peças paradas do cavalo-de-pau: o estrado, o cavalete em A com a escora, o mancal do eixo, a caixa de engrenagens
+## com as manivelas e os contrapesos, e a cabeça do poço com a haste, embaixo da cabeça do balancim.
+static func _pumpjack(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
+	var layout := pumpjack_layout(spec)
+	var depth: float = layout[&"depth"]
+	var pivot: Vector3 = layout[&"pivot"]
+	var gearbox: Vector3 = layout[&"gearbox"]
+	var ahead: float = layout[&"ahead"]
+	var middle: float = layout[&"front"] + depth * 0.5
+	_box(extra, Vector3(0.0, 0.12, middle), Vector3(1.0, 0.24, depth * 0.86), UV_TIMBER)
+	for side: float in [-1.0, 1.0]:
+		_beam(tool, Vector3(side * 0.7, 0.24, pivot.z), Vector3(side * 0.12, pivot.y - 0.12, pivot.z), 0.18)
+	_beam(tool, Vector3(0.0, 0.24, pivot.z + depth * 0.22), Vector3(0.0, pivot.y - 0.15, pivot.z + 0.05), 0.16)
+	_box(extra, pivot + Vector3(0.0, -0.05, 0.0), Vector3(0.5, 0.2, 0.3), UV_IRON)
+	_box(extra, gearbox, Vector3(0.66, 0.76, 0.6), UV_IRON)
+	for side: float in [-1.0, 1.0]:
+		_box(extra, gearbox + Vector3(side * 0.42, 0.0, 0.0), Vector3(0.12, 1.0, 0.34), UV_IRON)
+	var well_z := pivot.z - ahead - 0.12
+	_box(extra, Vector3(0.0, 0.4, well_z), Vector3(0.4, 0.8, 0.4), UV_IRON)
+	_box(extra, Vector3(0.0, 1.2, well_z), Vector3(0.06, 0.8, 0.06), UV_IRON)
 
 
 ## Onde fica a plataforma de carga (Fase 23): x entre as rampas, z da frente da área até a parede do corpo,
@@ -1320,17 +1377,24 @@ class Rotor:
 	## Onde fica o eixo, no referencial canônico; o giro é em torno do x local.
 	var pivot: Transform3D
 	var speed: float
+	## Fase 73: maior que zero, a parte balança até esse ângulo (rad) para cada lado em vez de girar; speed é a fase.
+	var rock: float = 0.0
 
 
 static var _rotors: Dictionary[String, Rotor] = {}
 
 
 static func rotor(spec: Spec) -> Rotor:
+	if spec.silhouette == BuildingDef.Silhouette.PUMPJACK and spec.court_rows == 0:
+		return null
 	if spec.silhouette not in [BuildingDef.Silhouette.WINDMILL, BuildingDef.Silhouette.WATERWHEEL,
-			BuildingDef.Silhouette.HEADFRAME]:
+			BuildingDef.Silhouette.HEADFRAME, BuildingDef.Silhouette.PUMPJACK]:
 		return null
 	var key := spec.key()
 	if _rotors.has(key):
+		return _rotors[key]
+	if spec.silhouette == BuildingDef.Silhouette.PUMPJACK:
+		_rotors[key] = _walking_beam(spec)
 		return _rotors[key]
 	var size := spec.size_m()
 	var result := Rotor.new()
@@ -1362,6 +1426,32 @@ static func rotor(spec: Spec) -> Rotor:
 	_append_piece(tool, piece, Transform3D(Basis.from_scale(Vector3.ONE * scale), -center * scale))
 	result.mesh = tool.commit()
 	_rotors[key] = result
+	return result
+
+
+## Fase 73: o balancim do cavalo-de-pau, no referencial do eixo: a viga de madeira, a cabeça de ferro na frente (sobre
+## o poço), a travessa atrás e as duas bielas descendo até as manivelas.
+static func _walking_beam(spec: Spec) -> Rotor:
+	var layout := pumpjack_layout(spec)
+	var pivot: Vector3 = layout[&"pivot"]
+	var ahead: float = layout[&"ahead"]
+	var behind: float = layout[&"behind"]
+	var gearbox: Vector3 = layout[&"gearbox"]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_box(tool, Vector3(0.0, 0.14, (behind - ahead) * 0.5), Vector3(0.26, 0.28, ahead + behind), UV_TIMBER)
+	_box(tool, Vector3(0.0, -0.2, -ahead - 0.1), Vector3(0.3, 0.9, 0.36), UV_IRON)
+	_box(tool, Vector3(0.0, 0.0, behind), Vector3(0.95, 0.16, 0.22), UV_IRON)
+	var drop := pivot.y - gearbox.y
+	for side: float in [-1.0, 1.0]:
+		_box(tool, Vector3(side * 0.42, -drop * 0.5, behind), Vector3(0.07, drop, 0.07), UV_IRON)
+	tool.index()
+	tool.generate_tangents()
+	var result := Rotor.new()
+	result.mesh = tool.commit()
+	result.pivot = Transform3D(Basis.IDENTITY, pivot)
+	result.speed = PUMPJACK_SPEED
+	result.rock = PUMPJACK_ROCK
 	return result
 
 
