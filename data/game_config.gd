@@ -179,6 +179,10 @@ static var _default: GameConfig
 @export var attractiveness_per_pollution: float = 60.0
 @export var tourism_coins_per_point: float = 0.5
 @export var tourism_festival_bonus: float = 0.5
+## Fase 80: turistas na rua (só visual, como os pedestres): um por tantos pontos de atratividade da ilha, até o teto
+## por ilha (vezes a fração de pedestres do nível gráfico). Números provisórios, à espera do dono.
+@export var tourists_per_point: float = 0.05
+@export var max_tourists_per_island: int = 30
 ## Ferrovia (Fase 70): o custo de cada célula de trilho (moedas e tábuas) e quanto petróleo a usina guarda no máximo
 ## (toneladas): o trilho leva do poço até encher.
 @export var rail_cost_per_cell: int = 15

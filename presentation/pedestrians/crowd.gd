@@ -8,7 +8,10 @@ extends RefCounted
 ## PedestrianView, que só aplica a lista de mudanças. O pedestre anda na placa de vídeo, trecho
 ## reto por trecho reto (shaders/pedestrian_vat.gdshader); a CPU só mexe nele quando ele troca de
 ## trecho, chega ou sai.
-
+## Fase 80: turistas. Com os eventos ligados, cada ilha com atratividade (DerivedState.attractiveness) ganha
+## tourists_per_point turistas por ponto (até max_tourists_per_island): saem do entreposto, visitam uma das atrações da
+## ilha (os prédios com beleza: zoológico, museu, praças, estátuas), ficam olhando na porta e voltam. Roupa clara
+## (TOURIST_COLORS) e a calça da classe mais rica.
 const BUCKET_SECONDS := 0.25
 const REBALANCE_SECONDS := 2.0
 ## Quem não achou caminho tenta de novo depois disto.
@@ -29,6 +32,11 @@ const CLIP_TALK := 3
 ## de fazenda.
 enum Load { NONE, BASKET, SACK }
 const BODIES := 2
+## Fase 80: as roupas dos turistas (linho, branco, azul-claro, palha, rosa) e entre quantas atrações (as de mais beleza)
+## cada um escolhe.
+const TOURIST_COLORS: Array[Color] = [Color(0.93, 0.9, 0.8), Color(0.95, 0.95, 0.93), Color(0.62, 0.76, 0.9),
+		Color(0.86, 0.76, 0.5), Color(0.9, 0.72, 0.72)]
+const TOURIST_CHOICES := 4
 
 ## HOME e INSIDE ficam escondidos; INSIDE é a pausa na porta do trabalho ou de casa no meio da
 ## rotina (conta como gente na rua).
@@ -66,6 +74,8 @@ class Agent:
 	var removed: bool = false
 	## Já está na lista de mudanças.
 	var queued: bool = false
+	## Fase 80: turista (a "casa" é o entreposto da ilha).
+	var tourist: bool = false
 
 
 class Group:
@@ -96,6 +106,9 @@ var _rng := RandomNumberGenerator.new()
 var _strides: Array[PackedFloat32Array] = []
 var _free_agents := PackedInt32Array()
 var _by_house: Dictionary[int, PackedInt32Array] = {}
+## Fase 80: os turistas de cada ilha e as atrações que cada entreposto alcança (em cache).
+var _tourists: Dictionary[int, PackedInt32Array] = {}
+var _attractions_of: Dictionary[int, PackedInt32Array] = {}
 var _buckets: Dictionary[int, PackedInt32Array] = {}
 var _next_bucket: int = 0
 var _home_queue: Array[int] = []
@@ -146,6 +159,7 @@ func reset() -> void:
 	agents.clear()
 	_free_agents.clear()
 	_by_house.clear()
+	_tourists.clear()
 	_buckets.clear()
 	_home_queue.clear()
 	_out = 0
@@ -237,9 +251,62 @@ func _rebalance() -> void:
 			for index: int in _by_house[house_id]:
 				_remove_agent(agents[index])
 			_by_house.erase(house_id)
+	_rebalance_tourists()
 
 
-func _add_agent(house: BuildingRecord) -> Agent:
+## Fase 80: ajusta os turistas de cada ilha à atratividade dela (só com os eventos ligados, como o turismo).
+func _rebalance_tourists() -> void:
+	var world := _simulation.world
+	var derived := _simulation.derived_state()
+	var seen: Dictionary[int, bool] = {}
+	if world.events_state.enabled:
+		for island_id: int in derived.attractiveness:
+			var post := _trading_post(island_id)
+			if post == null:
+				continue
+			seen[island_id] = true
+			var points: float = derived.attractiveness[island_id]
+			var count := mini(_config.max_tourists_per_island, floori(points * _config.tourists_per_point * pedestrian_ratio))
+			var kept := PackedInt32Array()
+			for index: int in _tourists.get(island_id, PackedInt32Array()):
+				var agent := agents[index] if index < agents.size() else null
+				if agent == null or not agent.tourist or agent.island_id != island_id:
+					continue
+				if kept.size() >= count or agent.home_id != post.id:
+					_retire(agent)
+				else:
+					kept.append(index)
+			while kept.size() < count:
+				kept.append(_add_agent(post, _simulation.data.tiers[_simulation.data.tiers.size() - 1].id, true).index)
+			_tourists[island_id] = kept
+	for island_id: int in _tourists.keys():
+		if seen.has(island_id):
+			continue
+		for index: int in _tourists[island_id]:
+			var agent := agents[index] if index < agents.size() else null
+			if agent != null and agent.tourist and agent.island_id == island_id:
+				_retire(agent)
+		_tourists.erase(island_id)
+
+
+func _trading_post(island_id: int) -> BuildingRecord:
+	for record: BuildingRecord in _simulation.world.buildings.values():
+		if record.island_id == island_id and _simulation.def_of(record).is_trading_post:
+			return record
+	return null
+
+
+## Turistas na multidão agora (testes).
+func tourist_count() -> int:
+	var total := 0
+	for agent: Agent in agents:
+		if agent != null and agent.tourist:
+			total += 1
+	return total
+
+
+## A casa do pedestre; turista (Fase 80): a "casa" é o entreposto, com a classe dada e a roupa de turista.
+func _add_agent(house: BuildingRecord, tier: StringName = &"", tourist: bool = false) -> Agent:
 	var agent := Agent.new()
 	if _free_agents.is_empty():
 		agent.index = agents.size()
@@ -250,12 +317,13 @@ func _add_agent(house: BuildingRecord) -> Agent:
 		agents[agent.index] = agent
 	agent.home_id = house.id
 	agent.island_id = house.island_id
-	agent.tier = house.tier
+	agent.tier = tier if tourist else house.tier
+	agent.tourist = tourist
 	agent.body = _rng.randi_range(0, BODIES - 1)
-	agent.group = _group_of[_group_key(house.tier, agent.body)]
+	agent.group = _group_of[_group_key(agent.tier, agent.body)]
 	agent.slot = _take_slot(groups[agent.group])
-	var palette := _simulation.data.tier(house.tier).clothing_colors
-	var coat := palette[_rng.randi_range(0, palette.size() - 1)] if not palette.is_empty() else Color.GRAY
+	var palette: Array = TOURIST_COLORS if tourist else Array(_simulation.data.tier(agent.tier).clothing_colors)
+	var coat: Color = palette[_rng.randi_range(0, palette.size() - 1)] if not palette.is_empty() else Color.GRAY
 	agent.color = Color(coat.r, coat.g, coat.b, _rng.randf())
 	agent.event_at = time
 	_home_queue.append(agent.index)
@@ -447,8 +515,10 @@ func _wait_at_service(agent: Agent) -> void:
 	var half_width := Footprint.rotated_size(def.size, service.rotation).x * _cell_size * 0.4
 	agent.spot = _door_point(service, def) + outward * _rng.randf_range(0.4, 1.4) + along * _rng.randf_range(-half_width, half_width)
 	agent.spot.y = _simulation.world.island(service.island_id).height_at(agent.spot.x, agent.spot.z)
-	agent.facing = (-outward).rotated(Vector3.UP, _rng.randf_range(-2.2, 2.2))
-	agent.clip = CLIP_TALK if _rng.randf() < 0.6 else CLIP_IDLE
+	# o turista (Fase 80) fica olhando para o prédio, quase sempre parado
+	var spread := 0.5 if agent.tourist else 2.2
+	agent.facing = (-outward).rotated(Vector3.UP, _rng.randf_range(-spread, spread))
+	agent.clip = CLIP_TALK if _rng.randf() < (0.25 if agent.tourist else 0.6) else CLIP_IDLE
 	agent.phase = _rng.randf()
 	agent.segment_start = time
 	_set_state(agent, State.WAITING)
@@ -518,6 +588,8 @@ func _set_state(agent: Agent, state: State) -> void:
 ## mesma rede de estrada. Sem nenhum da classe, qualquer prédio de trabalho da rede (o pedestre
 ## anda atrás de serviço).
 func _pick_work(agent: Agent) -> int:
+	if agent.tourist:
+		return 0
 	if not _work_choices.has(agent.home_id):
 		_work_choices[agent.home_id] = _work_candidates(agent)
 	var choices: PackedInt32Array = _work_choices[agent.home_id]
@@ -558,11 +630,38 @@ func _nearest(agent: Agent, ids: Array[int], accepts: Callable) -> PackedInt32Ar
 
 ## Serviço: um dos que atendem a casa; sem nenhum, um dos mais perto na mesma rede de estrada.
 func _pick_service(agent: Agent) -> int:
+	if agent.tourist:
+		return _pick_attraction(agent)
 	if not _services_of.has(agent.home_id):
 		_services_of[agent.home_id] = _nearest(agent, _simulation.derived_state().services_list(),
 				func(_def: BuildingDef) -> bool: return true)
 	var services: PackedInt32Array = _services_of[agent.home_id]
 	return services[_rng.randi_range(0, services.size() - 1)] if not services.is_empty() else 0
+
+
+## Fase 80: a atração que o turista visita: uma das TOURIST_CHOICES de mais beleza da ilha (os prédios com beleza e raio),
+## na mesma rede de estrada do entreposto.
+func _pick_attraction(agent: Agent) -> int:
+	if not _attractions_of.has(agent.home_id):
+		var world := _simulation.world
+		var post := world.building(agent.home_id)
+		var post_label := _label_of(post) if post != null else 0
+		var found: Array[Vector2] = []
+		if post_label > 0:
+			for record: BuildingRecord in world.buildings.values():
+				var def := _simulation.def_of(record)
+				if record.island_id != post.island_id or def.beauty <= 0.0 or def.beauty_radius_cells <= 0:
+					continue
+				if _label_of(record) != post_label:
+					continue
+				found.append(Vector2(-DerivedState.beauty_strength(world, _simulation.data, record.id), record.id))
+		found.sort()
+		var ids := PackedInt32Array()
+		for i: int in mini(found.size(), TOURIST_CHOICES):
+			ids.append(int(found[i].y))
+		_attractions_of[agent.home_id] = ids
+	var choices: PackedInt32Array = _attractions_of[agent.home_id]
+	return choices[_rng.randi_range(0, choices.size() - 1)] if not choices.is_empty() else 0
 
 
 ## Rota de porta a porta: [pontos na calçada, células da estrada], em cache por par de prédios.
@@ -648,6 +747,7 @@ func _refresh_structure() -> void:
 	_legs.clear()
 	_work_choices.clear()
 	_services_of.clear()
+	_attractions_of.clear()
 	var derived := _simulation.derived_state()
 	for service_id: int in derived.service_houses:
 		for house: Variant in derived.service_houses[service_id]:

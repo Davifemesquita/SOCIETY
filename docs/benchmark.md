@@ -1307,3 +1307,10 @@ cheia 15,8 ms, 2755 objetos e 1117 draw calls (iguais aos das Fases 75 a 77). Ne
 Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark não tem zoológico. Máquina no estado lento:
 GPU 22,8 ms, dia inteiro 34,9 FPS (1% low 16,3, pior quadro 115 ms), tick médio 1,34 ms, construir com a ilha cheia
 16,0 ms, 2769 objetos e 1119 draw calls (a variação de sempre: 2755–2769). Neutra.
+
+## Fase 80 — turistas na rua (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). O mundo do benchmark tem os eventos ligados, mas nenhum prédio com
+beleza (atratividade zero): nenhum turista; 2000 pedestres na multidão e 1902 na rua (1901 antes), multidão na CPU
+0,28 ms por quadro. Máquina no estado lento: GPU 23,0 ms, dia inteiro 34,6 FPS, tick médio 1,34 ms, construir com a ilha
+cheia 15,8 ms, 2769 objetos e 1119 draw calls. Neutra; o custo dos turistas (até 30 por ilha) fica sem medida aqui.
