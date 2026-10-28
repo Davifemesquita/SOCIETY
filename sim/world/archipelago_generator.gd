@@ -197,6 +197,9 @@ static func build_island(spec: IslandSpec, config: GameConfig, version: int = VE
 	_grow_forest(grid, spec.profile, noises, config)
 	grid.invalidate_heights()
 	grid.fingerprint = fingerprint(grid)
+	# Fase 70: os campos de petróleo saem depois da assinatura (não a mudam), só nas ilhas temperadas
+	if not spec.profile.is_tropical():
+		grid.oil_spots = OilFields.spots(grid, spec.seed_value, config)
 	return grid
 
 

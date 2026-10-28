@@ -207,8 +207,12 @@ func to_dict() -> Dictionary:
 		for i: int in grid.cleared_trees.size():
 			if grid.cleared_trees[i] == 1:
 				cleared.append(i)
+		var rail_indices := PackedInt32Array()
+		for i: int in grid.rails.size():
+			if grid.rails[i] != 0:
+				rail_indices.append(i)
 		island_list.append({"size": grid.size, "roads": road_indices, "paved": paved_indices, "economy": economies[index].to_dict(),
-				"cleared_trees": cleared, "fingerprint": grid.fingerprint, "origin": grid.origin_m})
+				"cleared_trees": cleared, "fingerprint": grid.fingerprint, "origin": grid.origin_m, "rails": rail_indices})
 	var building_list: Array[Dictionary] = []
 	var cart_list: Array[Dictionary] = []
 	for building_id: int in building_ids():
@@ -580,6 +584,15 @@ func _restore_island(raw: Variant, game_data: GameData, generated: IslandGrid) -
 		if i < 0 or i >= grid.roads.size() or grid.roads[i] != IslandGrid.Road.DIRT:
 			return false
 		grid.roads[i] = IslandGrid.Road.PAVED
+	# a ferrovia (Fase 70) não existe nos saves de antes; trilho não divide célula com estrada
+	var raw_rails: Variant = data.get("rails", PackedInt32Array())
+	if not raw_rails is PackedInt32Array:
+		return false
+	var rail_indices: PackedInt32Array = raw_rails
+	for i: int in rail_indices:
+		if i < 0 or i >= grid.rails.size() or grid.roads[i] != IslandGrid.Road.NONE:
+			return false
+		grid.rails[i] = 1
 	var raw_fingerprint: Variant = data.get("fingerprint")
 	if generated != null and raw_fingerprint is int and raw_fingerprint != generated.fingerprint:
 		terrain_mismatch = true

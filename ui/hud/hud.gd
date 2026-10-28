@@ -691,6 +691,12 @@ func _select_category(index: int) -> void:
 		paved.pressed.connect(_tool.start_paved_road)
 		_items.add_child(paved)
 		_paved_button = paved
+		# Fase 70: o trilho que liga o poço de petróleo à usina
+		var rail := _card("HUD_RAIL", Icons.action("rail"))
+		rail.name = "Rail"
+		rail.tooltip_text = tr("HUD_RAIL_TIP") % [Fmt.integer(config.rail_cost_per_cell), Fmt.decimal(config.rail_planks_per_cell, 1)]
+		rail.pressed.connect(_tool.start_rail)
+		_items.add_child(rail)
 		var demolish := _card("HUD_DEMOLISH", Icons.action("demolish"))
 		demolish.tooltip_text = tr("HUD_DEMOLISH_TIP") % Fmt.percent(_simulation.config.demolish_refund)
 		demolish.pressed.connect(_tool.start_demolish)
@@ -828,6 +834,8 @@ func _refresh_tool() -> void:
 				_hint.text = tr("HUD_HINT_REPLACE")
 			else:
 				_hint.text = tr("HUD_HINT_PLAN") if _tool.plan_mode else tr("HUD_HINT_BUILDING")
+		BuildTool.Mode.ROAD when _tool.road_rail:
+			_hint.text = tr("HUD_HINT_RAIL")
 		BuildTool.Mode.ROAD:
 			_hint.text = tr("HUD_HINT_PAVED_ROAD") if _tool.road_paved else tr("HUD_HINT_ROAD")
 			# o traçado da vez e a tecla que troca (Fase 17)

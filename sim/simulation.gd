@@ -91,6 +91,9 @@ func execute(command: Command) -> CommandResult:
 		EventBus.missions_changed.emit()
 	if result.newspaper_changed:
 		EventBus.newspaper_changed.emit()
+	if result.rails_changed:
+		_dirty = true
+		EventBus.rails_changed.emit(result.island_id)
 	if result.specialists_changed:
 		_dirty = true
 		EventBus.specialists_changed.emit()
@@ -146,6 +149,9 @@ func tick(_tick_index: int) -> void:
 	_lap(&"estado derivado")
 	WorkforceSystem.run(world, derived)
 	_lap(&"força de trabalho")
+	# Fase 70: o trilho leva o petróleo do poço até a usina
+	if not derived.rail_feeds.is_empty():
+		RailSystem.run(world, config, derived)
 	ProductionSystem.run(config, derived, dt, world.events_state, world.risks_state)
 	_lap(&"produção")
 	var built := ShipyardSystem.run(world, data, config, derived, dt)

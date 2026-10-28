@@ -2,495 +2,507 @@
 	"cell": 128,
 	"icons": {
 		"action_achievements": [
-			1408,
+			1920,
 			1792
 		],
 		"action_add": [
-			1152,
+			1536,
 			1024
 		],
 		"action_advisor": [
-			1152,
+			1664,
 			1152
 		],
 		"action_back": [
-			384,
+			768,
 			1152
 		],
 		"action_build_ship": [
-			1024,
+			1536,
 			1792
 		],
 		"action_buy": [
-			1664,
-			1024
+			0,
+			1152
 		],
 		"action_buy_frigate": [
-			256,
+			768,
 			1664
 		],
 		"action_buy_ship": [
-			896,
+			1280,
 			1024
 		],
 		"action_center": [
-			0,
+			384,
 			1152
 		],
 		"action_close": [
-			1920,
-			896
+			256,
+			1024
 		],
 		"action_confirm": [
-			512,
+			896,
 			1152
 		],
 		"action_continue": [
-			640,
+			1024,
 			1024
 		],
 		"action_copy": [
-			1792,
-			896
+			128,
+			1024
 		],
 		"action_credits": [
-			384,
+			768,
 			1024
 		],
 		"action_delete": [
-			1920,
-			1024
+			256,
+			1152
 		],
 		"action_demolish": [
-			1408,
+			1792,
 			896
 		],
 		"action_dice": [
-			256,
+			640,
 			1152
 		],
 		"action_exit": [
-			256,
+			640,
 			1024
 		],
 		"action_fast": [
-			640,
+			1024,
 			896
 		],
 		"action_gift": [
-			1536,
-			1536
+			0,
+			1664
 		],
 		"action_goal": [
-			1024,
+			1536,
 			1152
 		],
 		"action_info": [
-			640,
+			1024,
 			1152
 		],
 		"action_load": [
-			896,
+			1280,
 			896
 		],
 		"action_load_cargo": [
-			1408,
+			1792,
 			1024
 		],
 		"action_menu": [
-			128,
+			512,
 			1024
 		],
 		"action_missions": [
-			128,
+			640,
 			1536
 		],
 		"action_move": [
-			896,
+			1408,
 			1152
 		],
 		"action_new_game": [
-			512,
+			896,
 			1024
 		],
 		"action_options": [
-			0,
+			384,
 			1024
 		],
 		"action_pause": [
-			384,
+			768,
 			896
 		],
 		"action_paved_road": [
-			768,
+			1152,
 			1152
 		],
 		"action_peace": [
-			1792,
-			1536
+			256,
+			1664
 		],
 		"action_photo": [
-			768,
+			1280,
 			1920
 		],
 		"action_play": [
-			512,
+			896,
 			896
 		],
-		"action_remove": [
+		"action_rail": [
 			1280,
+			1152
+		],
+		"action_remove": [
+			1664,
 			1024
 		],
 		"action_reset": [
-			128,
+			512,
 			1152
 		],
 		"action_road": [
-			1280,
+			1664,
 			896
 		],
 		"action_rotate": [
-			1536,
+			1920,
 			896
 		],
 		"action_routes": [
-			1152,
+			1536,
 			896
 		],
 		"action_sail_to": [
-			1024,
+			1408,
 			1024
 		],
 		"action_save": [
-			768,
+			1152,
 			896
 		],
 		"action_scenarios": [
-			1280,
+			1792,
 			1792
 		],
 		"action_sell": [
-			1792,
-			1024
+			128,
+			1152
 		],
 		"action_specialists": [
-			1024,
+			1536,
 			1664
 		],
 		"action_statistics": [
-			1024,
+			1408,
 			896
 		],
 		"action_trade": [
-			768,
+			1152,
 			1024
 		],
 		"action_treaty": [
-			1920,
-			1536
+			384,
+			1664
 		],
 		"action_unload_cargo": [
-			1536,
+			1920,
 			1024
 		],
 		"action_upgrade": [
-			1664,
-			896
+			0,
+			1024
 		],
 		"action_war": [
-			1664,
-			1536
+			128,
+			1664
 		],
 		"building_bakery": [
-			640,
+			768,
 			384
 		],
 		"building_bandstand": [
-			512,
+			1024,
 			1920
 		],
 		"building_brewery": [
-			1536,
+			1664,
 			384
 		],
 		"building_brickworks": [
-			1792,
+			1920,
 			384
 		],
 		"building_butcher": [
-			896,
+			1024,
 			384
 		],
 		"building_cannery": [
-			1792,
+			1920,
 			512
 		],
 		"building_champagne_cellar": [
-			640,
+			768,
 			640
 		],
 		"building_church": [
-			640,
+			768,
 			512
 		],
 		"building_cigar_factory": [
-			768,
+			896,
 			640
 		],
 		"building_clay_pit": [
-			1664,
+			1792,
 			384
 		],
 		"building_clockmaker": [
-			256,
+			384,
 			640
 		],
 		"building_coal_mine": [
-			1920,
-			384
+			0,
+			512
 		],
 		"building_coffee_plantation": [
-			1152,
+			1280,
 			640
 		],
 		"building_coffee_roaster": [
-			384,
+			512,
 			640
 		],
 		"building_distillery": [
-			256,
+			384,
 			384
 		],
 		"building_field": [
-			1280,
+			1408,
 			256
 		],
 		"building_fire_station": [
-			128,
+			640,
 			1792
 		],
 		"building_fishery": [
-			1792,
+			1920,
 			256
 		],
 		"building_flower_bed": [
-			0,
+			512,
 			1920
 		],
 		"building_fountain_square": [
-			256,
+			768,
 			1920
 		],
 		"building_furnace": [
-			128,
+			256,
 			512
 		],
 		"building_glassworks": [
-			1408,
+			1536,
 			512
 		],
 		"building_gold_mine": [
-			1408,
+			1536,
 			640
 		],
 		"building_goldsmith": [
-			896,
+			1024,
 			640
 		],
 		"building_hop_farm": [
-			1280,
+			1408,
 			384
 		],
 		"building_hospital": [
-			256,
+			768,
 			1792
 		],
 		"building_house": [
-			1152,
+			1280,
 			256
 		],
 		"building_iron_mine": [
-			0,
+			128,
 			512
 		],
 		"building_lamp_factory": [
-			0,
+			128,
 			640
 		],
 		"building_lumberjack": [
-			1536,
+			1664,
 			256
 		],
 		"building_malthouse": [
-			1408,
+			1536,
 			384
 		],
 		"building_market": [
-			384,
+			512,
 			512
 		],
 		"building_mill": [
-			512,
+			640,
 			384
 		],
 		"building_museum": [
-			0,
+			128,
+			768
+		],
+		"building_oil_power_station": [
+			384,
+			768
+		],
+		"building_oil_well": [
+			256,
 			768
 		],
 		"building_optician": [
-			128,
+			256,
 			640
 		],
 		"building_park_bench": [
-			128,
+			640,
 			1920
 		],
 		"building_pasture": [
-			1408,
+			1536,
 			256
 		],
 		"building_pier": [
-			1152,
+			1280,
 			512
 		],
 		"building_pig_farm": [
-			768,
+			896,
 			384
 		],
 		"building_planted_tree": [
-			1920,
-			1792
-		],
-		"building_potato_farm": [
-			128,
-			384
-		],
-		"building_power_station": [
-			768,
-			1664
-		],
-		"building_rendering_works": [
-			1024,
-			384
-		],
-		"building_rum_distillery": [
-			1920,
-			512
-		],
-		"building_sand_pit": [
-			1280,
-			512
-		],
-		"building_sawmill": [
-			1664,
-			256
-		],
-		"building_school": [
-			768,
-			512
-		],
-		"building_sewing_machine_factory": [
-			1664,
-			512
-		],
-		"building_sheep_farm": [
-			1920,
-			256
-		],
-		"building_shipyard": [
-			768,
-			1792
-		],
-		"building_soap_factory": [
-			1152,
-			384
-		],
-		"building_statue": [
 			384,
 			1920
 		],
-		"building_steel_beam_works": [
+		"building_potato_farm": [
 			256,
-			512
+			384
 		],
-		"building_sugar_cane_farm": [
-			1024,
-			640
-		],
-		"building_tavern": [
-			512,
-			512
-		],
-		"building_theater": [
-			1536,
-			640
-		],
-		"building_tobacco_plantation": [
+		"building_power_station": [
 			1280,
+			1664
+		],
+		"building_rendering_works": [
+			1152,
+			384
+		],
+		"building_rum_distillery": [
+			0,
 			640
 		],
-		"building_town_hall": [
+		"building_sand_pit": [
+			1408,
+			512
+		],
+		"building_sawmill": [
 			1792,
-			640
+			256
 		],
-		"building_trading_post": [
+		"building_school": [
 			896,
 			512
 		],
-		"building_university": [
-			1664,
-			640
-		],
-		"building_vineyard": [
-			512,
-			640
-		],
-		"building_warehouse": [
-			1024,
+		"building_sewing_machine_factory": [
+			1792,
 			512
 		],
-		"building_weavery": [
+		"building_sheep_farm": [
 			0,
 			384
 		],
-		"building_wheat_farm": [
-			384,
+		"building_shipyard": [
+			1280,
+			1792
+		],
+		"building_soap_factory": [
+			1280,
 			384
 		],
-		"building_window_works": [
-			1536,
+		"building_statue": [
+			896,
+			1920
+		],
+		"building_steel_beam_works": [
+			384,
 			512
 		],
-		"building_zoo": [
+		"building_sugar_cane_farm": [
+			1152,
+			640
+		],
+		"building_tavern": [
+			640,
+			512
+		],
+		"building_theater": [
+			1664,
+			640
+		],
+		"building_tobacco_plantation": [
+			1408,
+			640
+		],
+		"building_town_hall": [
 			1920,
 			640
 		],
-		"event_fair": [
-			768,
-			1536
+		"building_trading_post": [
+			1024,
+			512
 		],
-		"event_fair_wind": [
-			896,
-			1536
+		"building_university": [
+			1792,
+			640
 		],
-		"event_festival": [
+		"building_vineyard": [
+			640,
+			640
+		],
+		"building_warehouse": [
 			1152,
-			1536
+			512
 		],
-		"event_good_harvest": [
+		"building_weavery": [
+			128,
+			384
+		],
+		"building_wheat_farm": [
 			512,
-			1536
+			384
 		],
-		"event_immigrants": [
+		"building_window_works": [
+			1664,
+			512
+		],
+		"building_zoo": [
+			0,
+			768
+		],
+		"event_fair": [
 			1280,
 			1536
 		],
+		"event_fair_wind": [
+			1408,
+			1536
+		],
+		"event_festival": [
+			1664,
+			1536
+		],
+		"event_good_harvest": [
+			1024,
+			1536
+		],
+		"event_immigrants": [
+			1792,
+			1536
+		],
 		"event_rich_vein": [
-			640,
+			1152,
 			1536
 		],
 		"event_storm": [
-			1024,
+			1536,
 			1536
 		],
 		"good_beer": [
@@ -506,15 +518,15 @@
 			128
 		],
 		"good_canned_food": [
-			1280,
+			1408,
 			128
 		],
 		"good_champagne": [
-			512,
+			640,
 			256
 		],
 		"good_cigars": [
-			768,
+			896,
 			256
 		],
 		"good_clay": [
@@ -522,7 +534,7 @@
 			128
 		],
 		"good_clocks": [
-			128,
+			256,
 			256
 		],
 		"good_coal": [
@@ -530,11 +542,11 @@
 			128
 		],
 		"good_coffee": [
-			1920,
-			128
+			0,
+			256
 		],
 		"good_coffee_beans": [
-			1792,
+			1920,
 			128
 		],
 		"good_fish": [
@@ -546,19 +558,19 @@
 			0
 		],
 		"good_glass": [
-			1024,
+			1152,
 			128
 		],
 		"good_glasses": [
-			256,
+			384,
 			256
 		],
 		"good_gold": [
-			896,
+			1024,
 			256
 		],
 		"good_grapes": [
-			384,
+			512,
 			256
 		],
 		"good_hops": [
@@ -566,20 +578,24 @@
 			0
 		],
 		"good_iron_ore": [
-			512,
+			640,
 			128
 		],
 		"good_jewelry": [
-			1024,
+			1152,
 			256
 		],
 		"good_light_bulbs": [
-			0,
+			128,
 			256
 		],
 		"good_malt": [
 			1920,
 			0
+		],
+		"good_oil": [
+			512,
+			128
 		],
 		"good_pigs": [
 			1280,
@@ -594,11 +610,11 @@
 			0
 		],
 		"good_rum": [
-			1664,
+			1792,
 			128
 		],
 		"good_sand": [
-			896,
+			1024,
 			128
 		],
 		"good_sausages": [
@@ -606,7 +622,7 @@
 			0
 		],
 		"good_sewing_machines": [
-			1408,
+			1536,
 			128
 		],
 		"good_soap": [
@@ -618,15 +634,15 @@
 			0
 		],
 		"good_steel": [
-			640,
-			128
-		],
-		"good_steel_beams": [
 			768,
 			128
 		],
+		"good_steel_beams": [
+			896,
+			128
+		],
 		"good_sugar": [
-			1536,
+			1664,
 			128
 		],
 		"good_tallow": [
@@ -634,7 +650,7 @@
 			0
 		],
 		"good_tobacco": [
-			640,
+			768,
 			256
 		],
 		"good_wheat": [
@@ -642,7 +658,7 @@
 			0
 		],
 		"good_windows": [
-			1152,
+			1280,
 			128
 		],
 		"good_wood": [
@@ -658,351 +674,351 @@
 			0
 		],
 		"hud_cart": [
-			0,
+			512,
 			1280
 		],
 		"hud_clock": [
-			1536,
-			1152
+			0,
+			1280
 		],
 		"hud_event": [
-			256,
+			768,
 			1536
 		],
 		"hud_happiness": [
-			1664,
-			1152
+			128,
+			1280
 		],
 		"hud_hull": [
-			384,
+			896,
 			1664
 		],
 		"hud_island": [
-			384,
+			896,
 			1280
 		],
 		"hud_money": [
-			1280,
+			1792,
 			1152
 		],
 		"hud_objective": [
-			1792,
-			1792
+			256,
+			1920
 		],
 		"hud_population": [
-			1408,
+			1920,
 			1152
 		],
 		"hud_risk": [
-			640,
+			1152,
 			1792
 		],
 		"hud_rival": [
-			1408,
+			1920,
 			1536
 		],
 		"hud_seed": [
-			256,
+			768,
 			1280
 		],
 		"hud_storage": [
-			128,
+			640,
 			1280
 		],
 		"hud_tax": [
-			1792,
-			1152
+			256,
+			1280
 		],
 		"hud_workers": [
-			1920,
-			1152
+			384,
+			1280
 		],
 		"need_accessories": [
-			1792,
-			768
+			128,
+			896
 		],
 		"need_adornment": [
-			0,
+			384,
 			896
 		],
 		"need_clothing": [
-			896,
+			1280,
 			768
 		],
 		"need_commerce": [
-			1152,
+			1536,
 			768
 		],
 		"need_drink": [
-			1408,
+			1792,
 			768
 		],
 		"need_education": [
-			1280,
+			1664,
 			768
 		],
 		"need_food": [
-			768,
+			1152,
 			768
 		],
 		"need_household": [
-			1664,
-			768
+			0,
+			896
 		],
 		"need_hygiene": [
-			1024,
+			1408,
 			768
 		],
 		"need_social": [
-			1536,
+			1920,
 			768
 		],
 		"need_tobacco": [
-			1920,
-			768
+			256,
+			896
 		],
 		"notice_achievement": [
-			1536,
-			1792
+			0,
+			1920
 		],
 		"notice_battle": [
-			512,
+			1024,
 			1664
 		],
 		"notice_colonized": [
-			1792,
-			1408
+			256,
+			1536
 		],
 		"notice_disease": [
-			512,
+			1024,
 			1792
 		],
 		"notice_fire": [
-			384,
+			896,
 			1792
 		],
 		"notice_info": [
-			0,
+			512,
 			1536
 		],
 		"notice_milestone": [
-			1664,
-			1408
+			128,
+			1536
 		],
 		"notice_mission": [
-			384,
+			896,
 			1536
 		],
 		"notice_rival": [
-			0,
+			512,
 			1664
 		],
 		"notice_ship_arrived": [
-			1536,
-			1408
+			0,
+			1536
 		],
 		"notice_ship_built": [
-			1152,
+			1664,
 			1792
 		],
 		"notice_shortage": [
-			1152,
+			1664,
 			1408
 		],
 		"notice_stopped": [
-			1280,
+			1792,
 			1408
 		],
 		"notice_storage_full": [
-			1408,
+			1920,
 			1408
 		],
 		"notice_sunk": [
-			640,
+			1152,
 			1664
 		],
 		"notice_trader": [
-			1920,
-			1408
+			384,
+			1536
 		],
 		"notice_victory": [
-			1664,
-			1792
+			128,
+			1920
 		],
 		"option_audio": [
-			640,
+			1152,
 			1280
 		],
 		"option_controls": [
-			768,
+			1280,
 			1280
 		],
 		"option_game": [
-			1152,
+			1664,
 			1280
 		],
 		"option_graphics": [
-			512,
+			1024,
 			1280
 		],
 		"option_interface": [
-			1024,
+			1536,
 			1280
 		],
 		"option_language": [
-			896,
+			1408,
 			1280
 		],
 		"overlay_beauty": [
-			640,
+			1152,
 			1920
 		],
 		"overlay_electricity": [
-			896,
+			1408,
 			1664
 		],
 		"overlay_fertility": [
-			1536,
-			1280
+			0,
+			1408
 		],
 		"overlay_pollution": [
-			1664,
-			1280
+			128,
+			1408
 		],
 		"overlay_roads": [
-			1792,
-			1280
+			256,
+			1408
 		],
 		"overlay_service": [
-			1280,
+			1792,
 			1280
 		],
 		"overlay_warehouse": [
-			1408,
+			1920,
 			1280
 		],
 		"ship_clipper": [
-			896,
+			1408,
 			1792
 		],
 		"ship_frigate": [
-			128,
+			640,
 			1664
 		],
 		"ship_merchant_ship": [
-			128,
+			512,
 			896
 		],
 		"ship_trader_ship": [
-			256,
+			640,
 			896
 		],
 		"specialist_agronomist": [
-			1280,
-			1664
-		],
-		"specialist_bookkeeper": [
-			1408,
-			1664
-		],
-		"specialist_foreman": [
-			1664,
-			1664
-		],
-		"specialist_forester": [
-			1152,
-			1664
-		],
-		"specialist_master_brewer": [
 			1792,
 			1664
 		],
-		"specialist_master_glassblower": [
+		"specialist_bookkeeper": [
 			1920,
 			1664
 		],
-		"specialist_mining_engineer": [
-			1536,
+		"specialist_foreman": [
+			128,
+			1792
+		],
+		"specialist_forester": [
+			1664,
 			1664
 		],
-		"specialist_steelmaster": [
+		"specialist_master_brewer": [
+			256,
+			1792
+		],
+		"specialist_master_glassblower": [
+			384,
+			1792
+		],
+		"specialist_mining_engineer": [
 			0,
 			1792
 		],
+		"specialist_steelmaster": [
+			512,
+			1792
+		],
 		"state_disconnected": [
-			1024,
+			1536,
 			1408
 		],
 		"state_no_input": [
-			1920,
-			1280
+			384,
+			1408
 		],
 		"state_no_modules": [
-			384,
+			896,
 			1408
 		],
 		"state_no_road": [
-			256,
-			1408
-		],
-		"state_no_trees": [
 			768,
 			1408
 		],
+		"state_no_trees": [
+			1280,
+			1408
+		],
 		"state_no_warehouse": [
-			640,
+			1152,
 			1408
 		],
 		"state_no_workers": [
-			0,
+			512,
 			1408
 		],
 		"state_output_full": [
-			128,
+			640,
 			1408
 		],
 		"state_paused": [
-			512,
+			1024,
 			1408
 		],
 		"state_protest": [
-			896,
+			1408,
 			1408
 		],
 		"status_bad": [
-			1152,
+			1664,
 			1920
 		],
 		"status_good": [
-			896,
+			1408,
 			1920
 		],
 		"status_missing": [
-			1280,
+			1792,
 			1920
 		],
 		"status_partial": [
-			1024,
+			1536,
 			1920
 		],
 		"tier_artisans": [
-			384,
+			768,
 			768
 		],
 		"tier_engineers": [
-			512,
+			896,
 			768
 		],
 		"tier_investors": [
-			640,
+			1024,
 			768
 		],
 		"tier_peasants": [
-			128,
+			512,
 			768
 		],
 		"tier_workers": [
-			256,
+			640,
 			768
 		]
 	}

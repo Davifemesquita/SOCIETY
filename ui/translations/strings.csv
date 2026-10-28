@@ -542,6 +542,14 @@ BUILDING_UNIVERSITY,Universidade,University
 BUILDING_TOWN_HALL,Prefeitura,Town hall
 BUILDING_ZOO,Zoológico,Zoo
 BUILDING_MUSEUM,Museu,Museum
+BUILDING_OIL_WELL,Poço de petróleo,Oil well
+BUILDING_OIL_POWER_STATION,Usina a petróleo,Oil power station
+GOOD_OIL,Petróleo,Oil
+HUD_RAIL,Trilho,Rail
+HUD_RAIL_TIP,"Ferrovia: liga o poço de petróleo à usina (o petróleo só anda por trilho). %s moedas e %s tábua por célula; não leva carroça nem gente.","Railway: links the oil well to the power station (oil only travels by rail). %s coins and %s plank per cell; carries no carts or people."
+HUD_HINT_RAIL,"Arraste para pôr o trilho · encoste-o num lado do poço e da usina","Drag to lay rail · make it touch a side of the well and of the power station"
+REASON_ON_RAIL,Há trilho aqui,There is rail here
+REASON_NEEDS_OIL,O poço precisa ficar num campo de petróleo,The well must stand on an oil field
 TIER_ARTISANS,Artesãos,Artisans
 TIER_ENGINEERS,Engenheiros,Engineers
 TIER_INVESTORS,Investidores,Investors

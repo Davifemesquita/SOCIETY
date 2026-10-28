@@ -76,6 +76,11 @@ static func scratch(config: GameConfig, data: GameData) -> Simulation:
 		BuildRoadCommand.new(Simulation.MAIN_ISLAND, RoadPath.l_path(Vector2i(1, road_y), Vector2i(half, road_y))).execute(context)
 		BuildRoadCommand.new(Simulation.MAIN_ISLAND, RoadPath.l_path(Vector2i(half + 1, road_y), Vector2i(size.x - 2, road_y)),
 				true).execute(context)
+	# Fase 70: um trecho de trilho e um campo de petróleo livre, na última fileira (os materiais deles compilam aqui)
+	var grid := sim.world.island(Simulation.MAIN_ISLAND)
+	var bottom := size.y - 3
+	BuildRailCommand.new(Simulation.MAIN_ISLAND, RoadPath.l_path(Vector2i(2, bottom), Vector2i(12, bottom))).execute(context)
+	grid.oil_spots = PackedInt32Array([grid.index(Vector2i(18, bottom))])
 	return sim
 
 
@@ -97,9 +102,11 @@ func start(config: GameConfig, data: GameData, camera: Camera3D) -> void:
 	var harbor := HarborView.new()
 	var yards := YardView.new()
 	var decorations := DecorationView.new()
-	for view: Node3D in [road_view, building_view, window_view, stockpiles, lamps, crops, harbor, yards, decorations]:
+	var rails := RailView.new()
+	for view: Node3D in [road_view, building_view, window_view, stockpiles, lamps, crops, harbor, yards, decorations, rails]:
 		add_child(view)
 		views.append(view)
+	rails.setup(simulation, config)
 	stockpiles.setup(simulation, cell)
 	lamps.setup(simulation, cell)
 	crops.setup(simulation)

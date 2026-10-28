@@ -29,6 +29,10 @@ func execute(context: CommandContext) -> CommandResult:
 			if grid.has_road(cell):
 				grid.set_road(cell, IslandGrid.Road.NONE)
 				result.roads_changed = true
+			# o trilho (Fase 70) sai como a estrada
+			if grid.has_rail(cell):
+				grid.set_rail(cell, false)
+				result.rails_changed = true
 	var economy := world.economy(island_id)
 	for building_id: int in result.removed:
 		var record := world.building(building_id)
@@ -45,7 +49,7 @@ func execute(context: CommandContext) -> CommandResult:
 		if not context.free_build:
 			for material: StringName in def.cost_materials:
 				economy.add(material, floorf(def.cost_materials[material] * context.config.demolish_refund), _capacity(context, island_id))
-	if result.removed.is_empty() and not result.roads_changed:
+	if result.removed.is_empty() and not result.roads_changed and not result.rails_changed:
 		return CommandResult.refused(&"REASON_NOTHING_TO_DEMOLISH")
 	return result
 

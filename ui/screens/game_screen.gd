@@ -53,6 +53,7 @@ var photo_mode: PhotoMode
 var plan_view: PlanView
 var building_view: BuildingView
 var road_view: RoadView
+var rail_view: RailView
 var cart_view: CartView
 var overlay: DebugOverlay
 var sky: SkyAdapter
@@ -138,6 +139,11 @@ func _ready() -> void:
 	road_view = RoadView.new()
 	road_view.setup(simulation, _config.cell_size_m)
 	add_child(road_view)
+	# Fase 70: os trilhos e os campos de petróleo
+	rail_view = RailView.new()
+	rail_view.name = "Rails"
+	add_child(rail_view)
+	rail_view.setup(simulation, _config)
 	building_view = BuildingView.new()
 	building_view.setup(simulation, _config.cell_size_m)
 	add_child(building_view)

@@ -5,8 +5,8 @@ extends Resource
 ## PIER (Fase 6) e DECORATION (Fase 16) entram no fim: o número do tipo fica nos .tres.
 enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE, PIER, DECORATION }
 ## Requisitos de terreno. Até a Fase 5 a ilha de teste cumpre todos, menos o litoral,
-## que já é a borda da ilha.
-enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
+## que já é a borda da ilha. OIL (Fase 70): cobrir um campo de petróleo (IslandGrid.oil_spots), também na ilha plana.
+enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST, OIL }
 ## O que sai da chaminé enquanto o prédio produz (Fase 9): nada, vapor claro, fumaça ou fumaça
 ## pesada (com fuligem no chão em volta).
 enum Smoke { NONE, STEAM, SMOKE, HEAVY }

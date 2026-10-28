@@ -30,8 +30,13 @@ class ProductionEntry:
 	## Estaleiro (sem ciclo, o ShipyardSystem cuida) e a classe de quem trabalha, guardados para o tick (Fase 29).
 	var shipyard: bool = false
 	var workforce_tier: StringName
+	## Ferrovia (Fase 70): a saída só anda por trilho (o poço de petróleo): a carroça não a leva ao estoque.
+	var rail_output: bool = false
 
 var road_access: Dictionary[int, bool] = {}
+## Ferrovia (Fase 70): cada prédio que recebe um bem só de trilho (a usina a petróleo) → as entradas de produção que
+## o mandam (os poços), ligados por trilho contínuo na mesma ilha.
+var rail_feeds: Dictionary[int, Array] = {}
 ## Casa → serviços (id do tipo) que a cobrem.
 var coverage: Dictionary[int, Array] = {}
 ## Fazenda → módulos atribuídos a ela.
@@ -365,6 +370,7 @@ func _index_production(world: WorldState, data: GameData) -> void:
 		entry.shipyard = entry.def.is_shipyard()
 		entry.workforce_tier = entry.def.workforce_tier
 		entry.modules_ok = module_count.get(building_id, 0) >= entry.def.modules_required
+		entry.rail_output = entry.def.output != &"" and data.good(entry.def.output).rail_only
 		var grid := world.island(entry.record.island_id)
 		if entry.def.terrain == BuildingDef.Terrain.TREES and not grid.flat:
 			var area := Footprint.rect(entry.record.origin, entry.def.size, entry.record.rotation)
@@ -387,6 +393,41 @@ func _index_production(world: WorldState, data: GameData) -> void:
 				var list: Array = by_good[input]
 				list.append(entry)
 	_wire_power()
+	_link_rails(world, data)
+
+
+## Ferrovia (Fase 70): em cada ilha, os trilhos em grupos ligados (vizinhos de lado); o prédio que encosta num trilho
+## está naquele grupo; quem recebe um bem só de trilho é servido por quem o produz no mesmo grupo.
+func _link_rails(world: WorldState, data: GameData) -> void:
+	rail_feeds.clear()
+	var senders: Array[ProductionEntry] = []
+	var receivers: Array[ProductionEntry] = []
+	for entry: ProductionEntry in production_entries:
+		if entry.rail_output:
+			senders.append(entry)
+		for input: StringName in entry.def.inputs:
+			if data.good(input).rail_only:
+				receivers.append(entry)
+				break
+	if senders.is_empty() or receivers.is_empty():
+		return
+	var groups_by_island: Dictionary[int, PackedInt32Array] = {}
+	for entry: ProductionEntry in receivers:
+		var island := entry.record.island_id
+		if not groups_by_island.has(island):
+			groups_by_island[island] = RailNetwork.groups(world.island(island))
+		var groups := groups_by_island[island]
+		var mine := RailNetwork.touching(world.island(island), groups, entry.record, entry.def)
+		var fed: Array = []
+		for sender: ProductionEntry in senders:
+			if sender.record.island_id != island or not entry.def.inputs.has(sender.def.output):
+				continue
+			for group: int in RailNetwork.touching(world.island(island), groups, sender.record, sender.def):
+				if mine.has(group):
+					fed.append(sender)
+					break
+		if not fed.is_empty():
+			rail_feeds[entry.record.id] = fed
 
 
 ## Liga cada fábrica às usinas da mesma ilha cujo raio a alcança (folga entre os retângulos).

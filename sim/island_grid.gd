@@ -14,6 +14,12 @@ enum Ground { LAND = 0, SEA = 1, RIVER = 2 }
 var size: Vector2i
 var occupancy: PackedInt32Array
 var roads: PackedByteArray
+## Ferrovia (Fase 70): 1 nas células com trilho. Trilho não leva carroça nem gente e não divide célula com prédio
+## nem estrada; só liga o poço de petróleo à usina.
+var rails: PackedByteArray
+## Campos de petróleo (Fase 70): as células onde o poço pode ser construído, tiradas da semente depois da assinatura
+## do terreno (ArchipelagoGenerator; não mudam a assinatura). Vazio na ilha plana e nas tropicais.
+var oil_spots := PackedInt32Array()
 ## Canto (0, 0) da ilha no mundo, em metros (x, z).
 var origin_m := Vector2.ZERO
 var cell_size: float = 2.0
@@ -42,6 +48,7 @@ func _init(grid_size: Vector2i) -> void:
 	size = grid_size
 	occupancy.resize(size.x * size.y)
 	roads.resize(size.x * size.y)
+	rails.resize(size.x * size.y)
 
 
 func in_bounds(cell: Vector2i) -> bool:
@@ -80,6 +87,30 @@ func fill_building(area: Rect2i, building_id: int) -> void:
 
 func set_road(cell: Vector2i, road: Road) -> void:
 	roads[index(cell)] = road
+
+
+func has_rail(cell: Vector2i) -> bool:
+	return in_bounds(cell) and rails[index(cell)] != 0
+
+
+func set_rail(cell: Vector2i, on: bool) -> void:
+	rails[index(cell)] = 1 if on else 0
+
+
+func rail_cells() -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for i: int in rails.size():
+		if rails[i] != 0:
+			cells.append(cell_at(i))
+	return cells
+
+
+## O retângulo cobre um campo de petróleo (Fase 70).
+func area_on_oil(area: Rect2i) -> bool:
+	for spot: int in oil_spots:
+		if area.has_point(cell_at(spot)):
+			return true
+	return false
 
 
 func road_cells() -> Array[Vector2i]:

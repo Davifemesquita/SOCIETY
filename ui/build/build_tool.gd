@@ -27,6 +27,8 @@ var selected_ship: int = 0
 var island_id: int = Simulation.MAIN_ISLAND
 ## A estrada do modo ROAD é de paralelepípedo.
 var road_paved: bool = false
+## Ferrovia (Fase 70): o arrasto do modo ROAD põe trilho em vez de estrada.
+var road_rail: bool = false
 ## Traçado em diagonal (Fase 17), alternado com a tecla de girar enquanto se traça estrada.
 var road_diagonal: bool = false
 ## Prédio que está sendo mudado de lugar (modo MOVE).
@@ -77,6 +79,14 @@ func copy_building(building_id: int) -> bool:
 
 func start_road(paved: bool = false) -> void:
 	road_paved = paved
+	road_rail = false
+	_enter(Mode.ROAD)
+
+
+## Ferrovia (Fase 70): o mesmo arrasto da estrada, que põe trilho.
+func start_rail() -> void:
+	road_paved = false
+	road_rail = true
 	_enter(Mode.ROAD)
 
 
@@ -197,6 +207,8 @@ func release(cell: Vector2i) -> void:
 		return
 	var command: Command
 	match mode:
+		Mode.ROAD when road_rail:
+			command = BuildRailCommand.new(island_id, road_cells())
 		Mode.ROAD:
 			command = BuildRoadCommand.new(island_id, road_cells(), road_paved)
 		Mode.BUILDING:
@@ -219,7 +231,10 @@ func building_rect() -> Rect2i:
 ## Traçado da estrada: o L (ou a diagonal) do arrasto, ou só a célula sob o cursor antes de arrastar.
 func road_cells() -> Array[Vector2i]:
 	if dragging:
-		return RoadPath.diagonal_path(drag_start, hover_cell) if road_diagonal else RoadPath.l_path(drag_start, hover_cell)
+		# o trilho (Fase 70) liga só por lado: sempre o L
+		if road_diagonal and not road_rail:
+			return RoadPath.diagonal_path(drag_start, hover_cell)
+		return RoadPath.l_path(drag_start, hover_cell)
 	return [hover_cell]
 
 
@@ -242,6 +257,16 @@ func preview_reason() -> StringName:
 			return _simulation.placement_reason(building_def, building_origin(), rotation, island_id)
 		Mode.MOVE:
 			return _simulation.move_reason(moving_id, building_origin(), rotation)
+		Mode.ROAD when road_rail:
+			for cell: Vector2i in road_cells():
+				var reason := BuildRailCommand.check_cell(grid(), cell, _simulation.config)
+				if reason != PlacementRules.OK:
+					return reason
+			if not _simulation.free_build:
+				var world := _simulation.world
+				if not world.has_trading_post(island_id, _simulation.data):
+					return PlacementRules.NEEDS_TRADING_POST
+				return PlacementRules.check_cost(world, world.economy(island_id), _simulation.config, road_cost(), road_materials())
 		Mode.ROAD:
 			for cell: Vector2i in road_cells():
 				var reason := PlacementRules.check_road_cell(grid(), cell, _simulation.config)
@@ -260,11 +285,15 @@ func preview_reason() -> StringName:
 
 ## Custo do traçado atual: só as células que ainda não têm a estrada pedida.
 func road_cost() -> int:
+	if road_rail:
+		return BuildRailCommand.new_cells(grid(), road_cells()) * _simulation.config.rail_cost_per_cell
 	return BuildRoadCommand.cost_money(_simulation.config, BuildRoadCommand.new_cells(grid(), road_cells(), road_paved), road_paved)
 
 
 ## Tijolos do traçado de paralelepípedo (vazio na estrada de terra).
 func road_materials() -> Dictionary[StringName, int]:
+	if road_rail:
+		return BuildRailCommand.cost_materials(_simulation.config, BuildRailCommand.new_cells(grid(), road_cells()))
 	return BuildRoadCommand.cost_materials(_simulation.config, BuildRoadCommand.new_cells(grid(), road_cells(), road_paved), road_paved)
 
 

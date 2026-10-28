@@ -28,6 +28,11 @@ static func terrain(grid: IslandGrid, def: BuildingDef) -> Image:
 	if grid.flat or def.terrain == BuildingDef.Terrain.NONE:
 		return null
 	var image := Image.create_empty(grid.size.x, grid.size.y, false, Image.FORMAT_RGBA8)
+	# o poço (Fase 70): o bloco de cada campo de petróleo, onde o lote do poço tem de cair
+	if def.terrain == BuildingDef.Terrain.OIL:
+		for spot: int in grid.oil_spots:
+			_fill(image, Rect2i(grid.cell_at(spot) - Vector2i.ONE, Vector2i(3, 3)), DEPOSIT_CELL)
+		return image
 	for i: int in grid.ground.size():
 		var cell := grid.cell_at(i)
 		match def.terrain:

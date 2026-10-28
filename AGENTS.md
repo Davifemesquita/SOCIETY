@@ -1906,6 +1906,14 @@ Regras que já custaram investigação:
   vazias ou a recompensa — peça guardada da Fase 67 ou moedas; o navio volta ao porto de origem) e o sinal
   `expedition_returned`. Botões no painel do navio, viagens na janela das encomendas, aviso da frota.
 
+### Ferrovia e petróleo (Fase 70, nossa)
+
+- **Plano** em `docs/plano_fase70.md`. `OilFields` (campos pela semente, depois da assinatura: `IslandGrid.oil_spots`),
+  `GoodDef.rail_only` (petróleo), `oil_well` (`Terrain.OIL`) e `oil_power_station`, `IslandGrid.rails` com
+  `BuildRailCommand` (bloqueia prédio e estrada; demolir tira; no save), `RailNetwork` e `DerivedState._link_rails`
+  (poço e usina no mesmo grupo de trilho) e `RailSystem` (leva o petróleo, sem carroça). `BuildTool.road_rail` (o
+  arrasto da estrada, sempre em L), cartão "Trilho", `RailView` (trilho e manchas de petróleo).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1986,6 +1994,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 67 — Zoológico e museu (nossa) | **feita em 28/10/2026, a pedido do dono**: zoológico e museu com seis vagas cada para peças compradas uma vez (animais e objetos), que somam beleza às casas em volta; no save; números provisórios; plano em `docs/plano_fase67.md` |
 | 68 — Atratividade e turistas (nossa) | **feita em 28/10/2026, a pedido do dono**: atratividade por ilha (beleza menos poluição) e turistas que pagam por ela, mais na festa, com os eventos ligados; parcela no detalhamento e linha no entreposto; números provisórios; plano em `docs/plano_fase68.md` |
 | 69 — Expedições (nossa) | **feita em 28/10/2026, a pedido do dono**: navio parado mandado a um de quatro destinos, que volta sorteado (peça de coleção, moedas, mãos vazias ou naufrágio); no save; números provisórios; plano em `docs/plano_fase69.md` |
+| 70 — Ferrovia e petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: campos de petróleo pela semente (assinatura igual), poço, usina a petróleo e trilho que leva o petróleo do poço à usina (sem carroça); trilho no save; números provisórios; plano em `docs/plano_fase70.md` |
 
 Pendências já vistas para fases futuras:
 

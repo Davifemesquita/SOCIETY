@@ -15,3 +15,5 @@ enum Pile { NONE, SACK, BARREL, CRATE, LOGS, HEAP }
 @export var color: Color = Color(0.6, 0.6, 0.6)
 ## Forma da carga (Fase 13): a peça da pilha diante do prédio e da carga da carroça (CargoKit).
 @export var pile: Pile = Pile.SACK
+## Ferrovia (Fase 70): o bem só anda por trilho, do poço à usina (petróleo): carroça não leva e ele não vai ao estoque.
+@export var rail_only: bool = false

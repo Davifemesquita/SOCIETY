@@ -76,6 +76,11 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 	EventBus.building_placed.connect(_on_building_changed)
 	EventBus.building_removed.connect(_on_building_changed)
 	EventBus.roads_changed.connect(_on_roads_changed)
+	# o trilho (Fase 70) tira o recheio das células dele (raro: refaz a ilha)
+	EventBus.rails_changed.connect(func(island_id: int) -> void:
+		var grid := _world.island(island_id)
+		if grid != null:
+			_mark(island_id, Rect2i(Vector2i.ZERO, grid.size)))
 	EventBus.trees_changed.connect(func(island_id: int, area: Rect2i) -> void: _mark(island_id, area.grow(1)))
 	EventBus.world_replaced.connect(_on_world_replaced)
 	rebuild()
@@ -284,6 +289,7 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 	var tropical: bool = context[2]
 	var trees := grid.trees
 	var roads := grid.roads
+	var rails := grid.rails
 	var ground := grid.ground
 	var occupancy := grid.occupancy
 	var width := grid.size.x
@@ -293,7 +299,7 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 		for x: int in range(area.position.x, area.end.x):
 			var index := y * width + x
 			if ground[index] != IslandGrid.Ground.LAND or trees[index] > 0 or roads[index] != IslandGrid.Road.NONE \
-					or occupancy[index] != 0:
+					or occupancy[index] != 0 or rails[index] != 0:
 				continue
 			var cell := Vector2i(x, y)
 			if doors.has(cell):

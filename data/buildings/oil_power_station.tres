@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://data/building_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"oil_power_station"
+name_key = "BUILDING_OIL_POWER_STATION"
+kind = 1
+size = Vector2i(5, 5)
+height_m = 10.0
+color = Color(0.35, 0.33, 0.36, 1)
+cost_money = 8000
+cost_materials = Dictionary[StringName, int]({&"bricks": 20, &"steel_beams": 12})
+upkeep_per_min = 250
+unlock_tier = &"engineers"
+unlock_residents = 300
+workforce_tier = &"engineers"
+workers = 50
+inputs = Array[StringName]([&"oil"])
+cycle_s = 60.0
+power_radius_cells = 32
+pollution_radius_cells = 12
+pollution_strength = 0.6
+smoke = 2
+wall_material = 3
+work_sound = &"metal"
+silhouette = 6

@@ -1248,3 +1248,10 @@ recálculo ganha a soma da atratividade), 2769 objetos e 1119 draw calls (+2 na 
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento: tick médio 1,32 ms (p95 1,56; sem
 expedição, o sistema sai logo), construir com a ilha cheia 15,0 ms, os mesmos 2769 objetos e 1119 draw calls, GPU 22,3
 ms, dia inteiro 36,1 FPS. Neutra.
+## Fase 70 — ferrovia e petróleo (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. A primeira rodada deu um pior
+quadro de 2.138 ms (1% low 6,6 FPS): as manchas dos campos de petróleo, que já existem no mundo do benchmark, compilavam
+o material na primeira vez que entravam na tela. Com o trilho e um campo de petróleo no rascunho do WarmUp (atrás da
+cortina), a segunda rodada: pior quadro 426 ms (no nível das Fases 64 a 69), dia inteiro 35,6 FPS, GPU 22,5 ms, tick
+médio 1,37 ms, os mesmos 2755 objetos e 1117 draw calls (as manchas ficam fora do quadro com tudo visível).

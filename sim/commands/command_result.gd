@@ -21,6 +21,8 @@ var colonized: bool = false
 var missions_changed: bool = false
 ## Jornal (Fase 63): a propaganda comprada trocou a manchete.
 var newspaper_changed: bool = false
+## Ferrovia (Fase 70): trilho posto ou tirado na ilha island_id.
+var rails_changed: bool = false
 ## Rivais (Fase 11): um gesto de diplomacia mudou a relação ou a postura.
 var rivals_changed: bool = false
 ## Especialistas (Fase 11): contratado, designado, retirado ou dispensado.

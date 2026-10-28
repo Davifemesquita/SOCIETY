@@ -63,6 +63,8 @@ signal newspaper_changed()
 ## Expedição (Fase 69) de volta: o destino, o resultado (ExpeditionSystem.Outcome) e a peça ganha (vazia se não foi
 ## peça).
 signal expedition_returned(expedition_id: StringName, outcome: int, exhibit_id: StringName)
+## Ferrovia (Fase 70): trilho posto ou tirado numa ilha.
+signal rails_changed(island_id: int)
 
 ## Companhias rivais (Fase 11): uma fundou colônia numa ilha; a postura dela mudou (RivalState.Stance);
 ## presente, acordo, guerra ou paz pedidos pelo jogador (a janela refaz).

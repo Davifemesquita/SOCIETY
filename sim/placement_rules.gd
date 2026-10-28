@@ -32,6 +32,9 @@ const RIVAL_ISLAND := &"REASON_RIVAL_ISLAND"
 const SHIP_LOCKED := &"REASON_SHIP_LOCKED"
 ## Navio que só o estaleiro constrói (o entreposto não vende).
 const SHIPYARD_ONLY := &"REASON_SHIPYARD_ONLY"
+## Ferrovia (Fase 70): célula com trilho, e o poço fora de um campo de petróleo.
+const ON_RAIL := &"REASON_ON_RAIL"
+const NEEDS_OIL := &"REASON_NEEDS_OIL"
 ## Folga do ponto flutuante na diferença de altura.
 const _HEIGHT_EPSILON := 0.0001
 
@@ -46,6 +49,8 @@ static func check_area(grid: IslandGrid, area: Rect2i) -> StringName:
 				return OCCUPIED
 			if grid.has_road(cell):
 				return ON_ROAD
+			if grid.has_rail(cell):
+				return ON_RAIL
 	return OK
 
 
@@ -57,13 +62,15 @@ static func check_building(grid: IslandGrid, def: BuildingDef, origin: Vector2i,
 	return check_area(grid, Footprint.rect(origin, def.size, rotation))
 
 
-## Estrada só vai em célula da ilha sem prédio, fora do mar e sem barranco. Célula que já é
-## estrada passa (não duplica); sobre o rio, a estrada é ponte.
+## Estrada só vai em célula da ilha sem prédio nem trilho, fora do mar e sem barranco. Célula que já é
+## estrada passa (não duplica); sobre o rio, a estrada é ponte. O trilho (Fase 70) usa a mesma regra, trocando os papéis.
 static func check_road_cell(grid: IslandGrid, cell: Vector2i, config: GameConfig = null) -> StringName:
 	if not grid.in_bounds(cell):
 		return OUT_OF_ISLAND
 	if grid.building_at(cell) != 0:
 		return OCCUPIED
+	if grid.has_rail(cell):
+		return ON_RAIL
 	if grid.flat:
 		return OK
 	var ground := grid.ground_at(cell)
@@ -80,6 +87,9 @@ static func check_road_cell(grid: IslandGrid, cell: Vector2i, config: GameConfig
 static func check_terrain(grid: IslandGrid, profile: IslandProfileDef, def: BuildingDef, origin: Vector2i, rotation: int,
 		config: GameConfig = null) -> StringName:
 	var area := Footprint.rect(origin, def.size, rotation)
+	# o poço de petróleo (Fase 70) cobre um campo, na ilha plana também (os testes põem os campos à mão)
+	if def.terrain == BuildingDef.Terrain.OIL and not grid.area_on_oil(area):
+		return NEEDS_OIL
 	if grid.flat:
 		if def.terrain == BuildingDef.Terrain.COAST and not touches_coast(grid, area):
 			return NEEDS_COAST

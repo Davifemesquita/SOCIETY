@@ -19,6 +19,7 @@ good_beer,lorc/beer-stein,good
 good_clay,delapouite/dig-hole,good
 good_bricks,delapouite/brick-pile,good
 good_coal,delapouite/coal-pile,good
+good_oil,delapouite/barrel,good
 good_iron_ore,faithtoken/ore,good
 good_steel,lorc/metal-bar,good
 good_steel_beams,delapouite/i-beam,good
@@ -96,6 +97,8 @@ building_university,delapouite/graduate-cap,building
 building_town_hall,lorc/scroll-unfurled,building
 building_zoo,lorc/lion,building
 building_museum,delapouite/stone-bust,building
+building_oil_well,delapouite/oil-pump,building
+building_oil_power_station,delapouite/oil-rig,building
 tier_peasants,delapouite/farmer,tier
 tier_workers,delapouite/blacksmith,tier
 tier_artisans,lorc/gear-hammer,tier
@@ -150,6 +153,7 @@ action_back,lorc/return-arrow,action
 action_confirm,delapouite/check-mark,action
 action_info,delapouite/info,action
 action_paved_road,lorc/stone-block,action
+action_rail,delapouite/rail-road,action
 action_move,delapouite/move,action
 action_goal,delapouite/flag-objective,action
 action_advisor,lorc/quill,action

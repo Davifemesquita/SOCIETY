@@ -179,6 +179,11 @@ static var _default: GameConfig
 @export var attractiveness_per_pollution: float = 60.0
 @export var tourism_coins_per_point: float = 0.5
 @export var tourism_festival_bonus: float = 0.5
+## Ferrovia (Fase 70): o custo de cada célula de trilho (moedas e tábuas) e quanto petróleo a usina guarda no máximo
+## (toneladas): o trilho leva do poço até encher.
+@export var rail_cost_per_cell: int = 15
+@export var rail_planks_per_cell: float = 0.5
+@export var rail_input_buffer_t: float = 6.0
 
 @export_group("Estaleiro")
 ## O navio encomendado ao estaleiro custa esta fração do preço do entreposto (moedas e materiais,
