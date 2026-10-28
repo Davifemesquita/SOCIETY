@@ -1321,3 +1321,9 @@ cheia 15,8 ms, 2769 objetos e 1119 draw calls. Neutra; o custo dos turistas (at�
 1901 na rua, nenhum turista. Máquina no estado lento: GPU 23,8 ms, dia inteiro 34,4 FPS (1% low 11,6, pior quadro
 345 ms, uma travada isolada), tick médio 1,32 ms, construir com a ilha cheia 16,2 ms, 2755 objetos e 1117 draw calls.
 Neutra.
+
+## Fase 82 — ver os fogos (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem atratividade nem festa no mundo do benchmark: 2000 pedestres,
+1900 na rua, nenhum turista. Máquina no estado lento: GPU 22,9 ms, dia inteiro 34,8 FPS (1% low 18,2, pior quadro
+142 ms), tick médio 1,33 ms, construir com a ilha cheia 17,1 ms, 2755 objetos e 1117 draw calls. Neutra.
