@@ -1260,3 +1260,8 @@ médio 1,37 ms, os mesmos 2755 objetos e 1117 draw calls (as manchas ficam fora 
 Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. O mundo do benchmark não tem trilho,
 então não há trem: tick médio 1,32 ms, os mesmos 2755 objetos e 1117 draw calls, GPU 21,8 ms, dia inteiro 36,9 FPS
 (pior quadro 157 ms). Neutra.
+## Fase 72 — desfazer o trilho (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3), máquina ainda no estado lento. O histórico de desfazer não roda no
+benchmark: tick médio 1,31 ms, 2769 objetos e 1119 draw calls (a variação de sempre do quadro com tudo visível), GPU
+21,9 ms, dia inteiro 36,6 FPS (pior quadro 260 ms). Neutra.

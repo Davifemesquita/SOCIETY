@@ -1920,6 +1920,11 @@ Regras que já custaram investigação:
   lotes) e `TrainView` (um trem por ligação do `rail_feeds`, locomotiva e vagão-tanque gerados no código, vaivém com
   espera nas pontas, parado com o poço ou a usina pausados; mesmo material do trilho).
 
+### Desfazer o trilho (Fase 72, nossa)
+
+- **Plano** em `docs/plano_fase72.md`. `UndoHistory` guarda a camada de trilho do retângulo (`rails_before`/`after`) e
+  aceita o `BuildRailCommand`; o `UndoCommand` devolve o trilho (posto ou demolido) e recusa se ele mudou depois.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2002,6 +2007,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 69 — Expedições (nossa) | **feita em 28/10/2026, a pedido do dono**: navio parado mandado a um de quatro destinos, que volta sorteado (peça de coleção, moedas, mãos vazias ou naufrágio); no save; números provisórios; plano em `docs/plano_fase69.md` |
 | 70 — Ferrovia e petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: campos de petróleo pela semente (assinatura igual), poço, usina a petróleo e trilho que leva o petróleo do poço à usina (sem carroça); trilho no save; números provisórios; plano em `docs/plano_fase70.md` |
 | 71 — O trem no trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: locomotiva com vagão-tanque gerados no código indo e voltando pelo caminho mais curto do trilho entre o poço e a usina; só apresentação (a simulação e as assinaturas não mudam); plano em `docs/plano_fase71.md` |
+| 72 — Desfazer o trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: o trilho entra no histórico do Ctrl+Z (posto ou demolido, com o reembolso, e o refazer); só o histórico, fora do save; plano em `docs/plano_fase72.md` |
 
 Pendências já vistas para fases futuras:
 

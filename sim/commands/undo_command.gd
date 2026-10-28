@@ -1,7 +1,7 @@
 class_name UndoCommand
 extends Command
 ## Desfaz uma ação do UndoHistory (Fase 49): tira os prédios que ela criou, devolve os que ela tirou (o mesmo registro,
-## com moradores e carroça), volta as estradas, as árvores e as plantas do retângulo dela e devolve o dinheiro e o
+## com moradores e carroça), volta as estradas, o trilho (Fase 72), as árvores e as plantas do retângulo dela e devolve o dinheiro e o
 ## estoque. No mesmo tick, os valores exatos; depois, a diferença. Recusado (sem mexer em nada) fora da janela ou se o
 ## lugar mudou desde então (outro prédio no lote, estrada refeita).
 
@@ -34,6 +34,8 @@ func execute(context: CommandContext) -> CommandResult:
 					return CommandResult.refused(UndoHistory.CHANGED)
 	if UndoHistory.region(grid.roads, grid.size.x, entry.area) != entry.roads_after:
 		return CommandResult.refused(UndoHistory.CHANGED)
+	if UndoHistory.region(grid.rails, grid.size.x, entry.area) != entry.rails_after:
+		return CommandResult.refused(UndoHistory.CHANGED)
 	var result := CommandResult.new()
 	result.island_id = entry.island_id
 	for building_id: int in entry.placed:
@@ -62,6 +64,11 @@ func execute(context: CommandContext) -> CommandResult:
 		UndoHistory.paste(roads, grid.size.x, entry.area, entry.roads_before)
 		grid.roads = roads
 		result.roads_changed = true
+	if entry.rails_before != entry.rails_after:
+		var rails := grid.rails
+		UndoHistory.paste(rails, grid.size.x, entry.area, entry.rails_before)
+		grid.rails = rails
+		result.rails_changed = true
 	if entry.trees_before != entry.trees_after or entry.cleared_before != entry.cleared_after:
 		var trees := grid.trees
 		var cleared := grid.cleared_trees
