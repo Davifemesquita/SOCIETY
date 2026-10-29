@@ -92,24 +92,25 @@ func _crowd(sim: Simulation) -> Crowd:
 	return Crowd.new(sim, sim.config, strides, 4)
 
 
-func test_watchers_cheer() -> void:
+## Desde a Fase 85 as palmas são a reação a cada estouro (test_phase85_burst_cheers): sem estouro, quem vê a festa olha o
+## mastro parado e ninguém bate palmas.
+func test_watchers_wait_still_without_bursts() -> void:
 	var sim := SimFixture.two_islands(Vector2i(60, 30))
 	_houses(sim, 0, [12, 16, 20, 24, 28])
 	var square := _square(sim, 0)
 	_festival(sim, 0)
 	var crowd := _crowd(sim)
 	crowd.activity_override = 1.0
-	var cheering := 0
+	var watching := 0
 	for step: int in 400:
 		crowd.update(0.5, NIGHT)
 		for agent: Crowd.Agent in crowd.agents:
-			if agent != null and agent.watching and agent.state == Crowd.State.WAITING:
-				assert_int(agent.target_id).is_equal(square)
-				assert_bool(agent.clip == Crowd.CLIP_CHEER or agent.clip == Crowd.CLIP_IDLE).is_true()
-				cheering += int(agent.clip == Crowd.CLIP_CHEER)
-			elif agent != null and agent.state == Crowd.State.WAITING:
+			if agent != null and agent.state == Crowd.State.WAITING:
 				assert_int(agent.clip).is_not_equal(Crowd.CLIP_CHEER)
-	assert_int(cheering).is_greater(0)
+				if agent.watching:
+					assert_int(agent.target_id).is_equal(square)
+					watching += 1
+	assert_int(watching).is_greater(0)
 
 
 func test_the_extra_crowd_comes_only_from_the_festival_island() -> void:

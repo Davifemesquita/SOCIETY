@@ -4,6 +4,10 @@ extends Node3D
 ## praça com chafariz, coreto; sem nenhum, o entreposto) ganha um mastro na porta, com cordas de bandeirolas coloridas
 ## que descem até postes ao longo da rua (só por cima da estrada: nunca cruzam telhado); à noite, fogos de artifício
 ## estouram sobre as praças. Some quando a festa acaba. Só apresentação: lê os eventos e o mundo, não muda nada.
+## Desde a Fase 85, cada estouro avisa (exploded): o povo na praça bate palmas e o som do estouro e das palmas toca.
+
+## Um estouro no céu, na ilha da festa (Fase 85).
+signal exploded(island_id: int, position: Vector3)
 
 ## Prédios que viram praça da festa, na ordem de preferência; o entreposto só se a ilha não tem nenhum.
 const SQUARES: Array[StringName] = [&"fountain_square", &"bandstand", &"market"]
@@ -35,6 +39,8 @@ var _simulation: Simulation
 var _decor: Dictionary[int, Node3D] = {}
 ## Lugares dos fogos (o alto de cada mastro) das ilhas em festa.
 var _launch_sites: Array[Vector3] = []
+## A ilha de cada lugar (Fase 85).
+var _launch_islands := PackedInt32Array()
 var _fireworks: Array[GPUParticles3D] = []
 var _next_firework: float = 0.0
 var _rng := RandomNumberGenerator.new()
@@ -125,6 +131,7 @@ func rebuild() -> void:
 		node.queue_free()
 	_decor.clear()
 	_launch_sites.clear()
+	_launch_islands.clear()
 	for island_id: int in festival_islands(_simulation.world):
 		var node := Node3D.new()
 		node.name = "Festival_%d" % island_id
@@ -136,6 +143,7 @@ func rebuild() -> void:
 				continue
 			var mast_top: Vector3 = lines[0][0]
 			_launch_sites.append(mast_top)
+			_launch_islands.append(island_id)
 			_post(tool, mast_top, MAST_M, 0.09)
 			for line: PackedVector3Array in lines:
 				_post(tool, line[1], POLE_M, 0.06)
@@ -177,6 +185,8 @@ func launch(site: Vector3) -> void:
 		var process := burst.process_material as ParticleProcessMaterial
 		process.color = FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
 		burst.restart()
+		var site_index := _launch_sites.find(site)
+		exploded.emit(_launch_islands[site_index] if site_index >= 0 else -1, burst.position)
 		return
 
 

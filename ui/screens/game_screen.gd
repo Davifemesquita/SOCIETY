@@ -85,6 +85,8 @@ var fire_view: FireView
 var music: MusicDirector
 var ambience: AmbiencePlayer
 var sound: SoundEffects
+## Fase 85: estouros e palmas da festa.
+var festival_sounds: FestivalSounds
 var autosave: Autosave
 ## Chão do mundo: a ilha plana (FlatIsland) ou terreno, água e árvores do arquipélago.
 var terrain_view: TerrainView
@@ -265,6 +267,10 @@ func _ready() -> void:
 	sound.name = "Sound"
 	add_child(sound)
 	sound.setup(_config, simulation, camera)
+	festival_sounds = FestivalSounds.new()
+	festival_sounds.name = "FestivalSounds"
+	add_child(festival_sounds)
+	festival_sounds.setup(camera, festival_view, pedestrian_view.crowd)
 	autosave = Autosave.new()
 	autosave.name = "Autosave"
 	add_child(autosave)

@@ -30,10 +30,14 @@ const CLIP_WALK := 0
 const CLIP_WALK_CARRY := 1
 const CLIP_IDLE := 2
 const CLIP_TALK := 3
-## Fase 84: olhando para o céu e batendo palmas (gerada no código, tools/vat/cheer_clip.gd), e a parte de quem está
-## vendo os fogos que faz isso (os outros ficam parados olhando o mastro).
+## Fase 84: olhando para o céu e batendo palmas (gerada no código, tools/vat/cheer_clip.gd). Desde a Fase 85 é a reação
+## a cada estouro (react_to_burst): quem vê a festa até REACT_RADIUS_M dele, na parte REACT_SHARE, demora REACT_DELAY_S,
+## bate palmas por CHEER_SECONDS e volta a olhar o mastro.
 const CLIP_CHEER := 4
-const CHEER_SHARE := 0.8
+const REACT_SHARE := 0.85
+const REACT_RADIUS_M := 30.0
+const REACT_DELAY_S := Vector2(0.15, 0.6)
+const CHEER_SECONDS := Vector2(1.6, 2.6)
 ## O que vai na mão de quem anda com a animação de carregar (Fase 15): cesto saindo do mercado, saco saindo
 ## de fazenda.
 enum Load { NONE, BASKET, SACK }
@@ -98,6 +102,8 @@ class Agent:
 	var to_spot: bool = false
 	## Fase 83: parado (ou indo) num lugar de ver a festa, longe da porta: ao sair, anda primeiro até ela.
 	var watching: bool = false
+	## Fase 85: batendo palmas por um estouro até este tempo visual (0 = não).
+	var cheer_until: float = 0.0
 
 
 class Group:
@@ -139,6 +145,8 @@ var _festival_agents: int = 0
 ## partida até o próximo).
 var _festive: Dictionary[int, bool] = {}
 var _quiet_out: int = 0
+## Fase 85: quem está batendo palmas por um estouro (índices).
+var _cheering := PackedInt32Array()
 var _buckets: Dictionary[int, PackedInt32Array] = {}
 var _next_bucket: int = 0
 var _home_queue: Array[int] = []
@@ -193,6 +201,7 @@ func reset() -> void:
 	_festival_agents = 0
 	_festive.clear()
 	_quiet_out = 0
+	_cheering.clear()
 	_buckets.clear()
 	_home_queue.clear()
 	_out = 0
@@ -244,6 +253,8 @@ func update(dt: float, hour: float) -> void:
 		_rebalance_left = REBALANCE_SECONDS
 		_rebalance()
 	_process_events()
+	if not _cheering.is_empty():
+		_end_cheers()
 	var wanted := desired_out(hour)
 	if _out < wanted:
 		_start_trips(wanted - _out, wanted)
@@ -619,12 +630,56 @@ func _wait_at_service(agent: Agent) -> void:
 	_stand(agent)
 
 
+## Fase 85: um estouro em at, na ilha: quem está parado vendo a festa até REACT_RADIUS_M dele (no chão), na parte
+## REACT_SHARE, bate palmas olhando para o céu depois de REACT_DELAY_S. Devolve quantos (o som das palmas segue isso).
+func react_to_burst(island_id: int, at: Vector3) -> int:
+	var flat := Vector2(at.x, at.z)
+	var count := 0
+	for agent: Agent in agents:
+		if agent == null or agent.removed or not agent.watching or agent.state != State.WAITING:
+			continue
+		if agent.island_id != island_id or Vector2(agent.spot.x, agent.spot.z).distance_to(flat) > REACT_RADIUS_M:
+			continue
+		if agent.cheer_until > time or _rng.randf() >= REACT_SHARE:
+			continue
+		# a animação começa na palma (fase 0) quando ele reage
+		agent.clip = CLIP_CHEER
+		agent.phase = 0.0
+		agent.segment_start = time + _rng.randf_range(REACT_DELAY_S.x, REACT_DELAY_S.y)
+		agent.cheer_until = agent.segment_start + _rng.randf_range(CHEER_SECONDS.x, CHEER_SECONDS.y)
+		_write(agent)
+		_cheering.append(agent.index)
+		count += 1
+	return count
+
+
+## Fase 85: quem acabou de bater palmas volta a olhar o mastro; quem saiu do lugar sai da lista.
+func _end_cheers() -> void:
+	var kept := PackedInt32Array()
+	for index: int in _cheering:
+		var agent := agents[index] if index < agents.size() else null
+		if agent == null or agent.removed:
+			continue
+		if agent.state != State.WAITING or not agent.watching or agent.clip != CLIP_CHEER:
+			agent.cheer_until = 0.0
+			continue
+		if time < agent.cheer_until:
+			kept.append(index)
+			continue
+		agent.cheer_until = 0.0
+		agent.clip = CLIP_IDLE
+		agent.phase = _rng.randf()
+		agent.segment_start = time
+		_write(agent)
+	_cheering = kept
+
+
 ## Para no lugar (agent.spot, agent.facing) e fica um tempo, conversando ou parado.
 func _stand(agent: Agent) -> void:
 	agent.to_spot = false
 	if agent.watching:
-		# vendo os fogos (Fase 84): quase todos olham para o céu batendo palmas
-		agent.clip = CLIP_CHEER if _rng.randf() < CHEER_SHARE else CLIP_IDLE
+		# vendo a festa: olha o mastro e bate palmas a cada estouro (Fase 85, react_to_burst)
+		agent.clip = CLIP_IDLE
 	else:
 		agent.clip = CLIP_TALK if _rng.randf() < (0.25 if agent.tourist else 0.6) else CLIP_IDLE
 	agent.phase = _rng.randf()
