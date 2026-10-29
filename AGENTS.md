@@ -2150,6 +2150,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 87 — Formas e vivas (nossa) | **feita em 28/10/2026, a pedido do dono**: estouros em bola, crisântemo, salgueiro e anel; os fogos mais baixos (de 28–42 para 14–22 m: lá em cima ficavam fora da tela); rastro do foguete mais forte; vivas do povo numa gravação CC BY 4.0 (Gregor Quendel) que sobem com a gente reagindo; o som falta ser ouvido pelo dono; plano em `docs/plano_fase87.md` |
 | 88 — Duas etapas e vivas calmas (nossa) | **feita em 28/10/2026, a pedido do dono**: bomba de duas etapas (as estrelas estouram de novo, pelo sub-emissor) e a faixa calma das vivas para pouca gente, misturada com a forte pelo nível; cortar a gravação ficou de fora (pede `ffmpeg` no disco C); o som falta ser ouvido pelo dono; plano em `docs/plano_fase88.md` |
 | 89 — Grand finale (nossa) | **feita em 28/10/2026, a pedido do dono**: às 23h de cada noite de festa, uma salva de 24 foguetes que acaba na chuva dourada; todo foguete estoura (antes sumia com as bombas ocupadas); as vivas seguem quem ainda bate palmas (na salva quase não tocavam); plano em `docs/plano_fase89.md` |
+| 90 — Daltônico no Windows (nossa) | **feita em 28/10/2026**, primeira do roteiro `docs/plano_fases_90_93.md`: o teste do modo daltônico que falhava no Windows do dono já tinha sido corrigido em 26/10 (`2f735e3`: o painel repinta na hora em que a opção muda); a pendência saiu da lista e a suíte inteira foi conferida no PC do dono, 986 casos sem nenhum vermelho; plano em `docs/plano_fase90.md` |
 
 Pendências já vistas para fases futuras:
 
@@ -2162,5 +2163,3 @@ Pendências já vistas para fases futuras:
   ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).
-- No Windows do dono (25/10/2026), `tests/ui/test_menus.gd` → `test_colorblind_option_repaints_the_house_needs` falha
-  (linha 154, a cor do marcador não muda), também no commit de antes da Fase 33; no CI passava. Não investigado.
