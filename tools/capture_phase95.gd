@@ -60,6 +60,8 @@ func _run() -> void:
 		var at := grid.cell_world(streets[row] + Vector2i(0, -2))
 		await _shot("rua_%s_a.png" % TIERS[row], at, 40.0, 0.0)
 		await _shot("rua_%s_b.png" % TIERS[row], at, 40.0, PI)
+		# Fase 96: em diagonal, para ver os volumes (a ala mais baixa e o telhado cruzado)
+		await _shot("rua_%s_c.png" % TIERS[row], at, 34.0, PI * 0.75)
 	var big_at := grid.cell_world(Vector2i(ORIGIN.x + 20, big_y - 3))
 	await _shot("grandes_a.png", big_at, 60.0, 0.0)
 	await _shot("grandes_b.png", grid.cell_world(Vector2i(ORIGIN.x + 45, big_y - 3)), 60.0, 0.0)

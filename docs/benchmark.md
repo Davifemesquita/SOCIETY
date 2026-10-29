@@ -1417,3 +1417,12 @@ casas; 12,8 GB de RAM e a GPU dividida), então os números absolutos não valem
 ms, 1% low 22,7), **com a Fase 95** 38,0 FPS (GPU 23,6 ms, 1% low 22,7) — igual dentro do ruído. Primitivas no quadro
 com tudo visível 15.574.385 → 15.615.617 (+0,26%, as hastes redondas); draw calls iguais (1087 e 1085, pela hora do
 quadro). Neutra; repetir sem o Anno aberto.
+
+## Fase 96 — casa em mais de um volume (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v4), sem o Anno aberto, mas com a máquina no **estado lento** (GPU ~23 ms,
+jogo novo ~25,5 s nas duas rodadas). A/B nas mesmas condições: **sem a Fase 96** 34,9 FPS (GPU 23,3 ms, 1% low 20,1,
+pior quadro 116 ms), carregar 7,6 s, 1085 draw calls, 15.615.617 primitivas; **com a Fase 96** 34,8 FPS (GPU 23,5 ms,
+1% low 22,4, pior quadro 53 ms), carregar 10,3 s, 1137 draw calls (+5%), 15.380.371 primitivas (−1,5%: a ala tira
+paredes). O quadro fica igual; o carregar sobe com as formas de casa em dobro (com e sem ala) montadas na primeira vez.
+Tick 1,33 ms nas duas.

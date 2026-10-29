@@ -79,8 +79,13 @@ func test_model_windows_sit_on_the_facades_and_skip_the_door() -> void:
 	var door := GridSpace.cell_center(Footprint.entrance_cell(house.origin, def.size, house.rotation), 2.0)
 	var windows := WindowLightsView.building_windows(_sim, house)
 	var spec := BuildingKit.spec_for(_sim, house, 2.0)
-	# uma janela por célula da borda e por andar, menos a porta
-	assert_int(windows.size()).is_equal((def.size.x + def.size.y) * 2 * spec.floors() - 1)
+	# uma janela por célula da borda e por andar, menos a porta e (desde a Fase 96) as células que a ala tira
+	var removed := 0
+	for face: int in 4:
+		for index: int in (spec.cells.x if face % 2 == 0 else spec.cells.y):
+			for level: int in spec.floors():
+				removed += int(BuildingKit.in_wing(spec, face, index, level))
+	assert_int(windows.size()).is_equal((def.size.x + def.size.y) * 2 * spec.floors() - 1 - removed)
 	var half := spec.size_m().x * 0.5
 	for window: Transform3D in windows:
 		var offset := window.origin - Vector3(center.x, window.origin.y, center.z)

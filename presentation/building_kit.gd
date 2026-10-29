@@ -27,6 +27,11 @@ const RIDGE_CAP_M := 0.14
 const RIDGE_SIDES := 6
 const EAVE_ROLL_M := 0.11
 const EAVE_SIDES := 6
+## Fase 96: o telhado da ala em fração do do corpo, e a classe a partir da qual a casa pode ter ala (os camponeses ficam
+## na casinha de um volume, com o quintal).
+const WING_ROOF := 0.7
+const WING_ROOF_FLOOR := 0.8
+const WING_SHARE := 2
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -274,11 +279,14 @@ class Spec:
 	var storehouse: bool = false
 	## Fase 50: a peça do kit de época para este prédio (caminho), se houver; vazio, a forma procedural.
 	var asset: String = ""
+	## Fase 96: a ala mais baixa (0 sem; -1 no lado de −X): a coluna de células da ponta perde o último andar e ganha
+	## telhado próprio, cruzado com o do corpo.
+	var wing: int = 0
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -304,6 +312,7 @@ class Spec:
 		copy.side_gap_m = hall_side_gap_m
 		copy.lucarnes = lucarnes
 		copy.storehouse = storehouse
+		copy.wing = wing
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -317,6 +326,65 @@ class Spec:
 
 	func floor_m() -> float:
 		return height_m / floors()
+
+	## Fase 96: a largura de uma coluna de células, a parte do corpo (sem a coluna da ala) e a da ala, cada uma no
+	## referencial dela (main_offset e wing_offset as levam ao do prédio).
+	func column_m() -> float:
+		return size_m().x / cells.x
+
+	func main_part() -> Spec:
+		var copy := hall()
+		if copy == self:
+			copy = _copy()
+		copy.cells = Vector2i(cells.x - 1, cells.y)
+		copy.wing = 0
+		return copy
+
+	func main_offset() -> Vector3:
+		return Vector3(-wing * column_m() * 0.5, 0.0, 0.0)
+
+	func wing_part() -> Spec:
+		var copy := _copy()
+		copy.cells = Vector2i(1, cells.y)
+		copy.wing = 0
+		copy.height_m = height_m - floor_m()
+		copy.lucarnes = 0
+		copy.chimney = false
+		copy.overhang_m = minf(overhang_m, 0.3)
+		# o telhado da ala cruza o do corpo: com a cumeeira do corpo ao longo de x, a da ala corre em z
+		copy.roof = Roof.GABLE_Z if roof == Roof.GABLE_X else Roof.HIP
+		# cabe no andar que a ala tirou: a cumeeira dela fica abaixo do beiral do corpo (mais alto virava uma agulha)
+		copy.roof_m = minf(roof_m * WING_ROOF, floor_m() * WING_ROOF_FLOOR)
+		return copy
+
+	func wing_offset() -> Vector3:
+		return Vector3(wing * (size_m().x * 0.5 - column_m() * 0.5), 0.0, 0.0)
+
+	func _copy() -> Spec:
+		var copy := Spec.new()
+		copy.cells = cells
+		copy.cell_m = cell_m
+		copy.height_m = height_m
+		copy.walls = walls
+		copy.roof = roof
+		copy.roof_m = roof_m
+		copy.door = door
+		copy.door_index = door_index
+		copy.window_style = window_style
+		copy.sparse_windows = sparse_windows
+		copy.chimney = chimney
+		copy.silhouette = silhouette
+		copy.court_rows = court_rows
+		copy.trim = trim
+		copy.dock = dock
+		copy.level = level
+		copy.overhang_m = overhang_m
+		copy.side_gap_m = side_gap_m
+		copy.hall_side_gap_m = hall_side_gap_m
+		copy.lucarnes = lucarnes
+		copy.storehouse = storehouse
+		copy.wing = wing
+		return copy
 
 
 static var _parts: Dictionary[String, Array] = {}
@@ -361,6 +429,10 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 			# a fileira da frente vira quintal cercado; a casa fica nas de trás, recuada das divisas dos lados
 			spec.court_rows = 1
 			spec.hall_side_gap_m = YARD_SIDE_GAP_M
+		elif spec.cells.x >= 3 and spec.roof != Roof.FLAT and spec.floors() >= 2 \
+				and BuildingView.house_hash(record.id) / 7 % WING_SHARE == 0:
+			# Fase 96: metade das casas de dois andares para cima ganha a ala mais baixa num lado (a chaminé fica no outro)
+			spec.wing = -1
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -546,7 +618,19 @@ static func cached_meshes() -> int:
 
 ## O que vai em cada célula da borda de cada andar: &"door", &"arch", &"plain" ou &"window".
 ## faces: 0 = frente (−Z), 1 = +X, 2 = fundo (+Z), 3 = −X; índice crescendo em x ou z.
+## Fase 96: a célula de parede que a ala tira (o último andar da coluna da ponta e o lado da ala nesse andar).
+static func in_wing(spec: Spec, face: int, index: int, level: int) -> bool:
+	if spec.wing == 0 or spec.floors() < 2 or level != spec.floors() - 1:
+		return false
+	var wing_face := 3 if spec.wing < 0 else 1
+	if face == wing_face:
+		return true
+	return face % 2 == 0 and index == (0 if spec.wing < 0 else spec.cells.x - 1)
+
+
 static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
+	if in_wing(spec, face, index, level):
+		return &"none"
 	if face == 0 and level == 0 and index == spec.door_index and spec.door != Door.NONE:
 		return &"arch" if spec.door in [Door.ARCH, Door.GATE] else &"door"
 	if spec.silhouette == BuildingDef.Silhouette.BANNERS and face == 0 and level == 1 and index == spec.door_index:
@@ -674,12 +758,22 @@ static func _build(spec: Spec) -> ArrayMesh:
 		for level: int in hall.floors():
 			for index: int in count:
 				var kind := slot(hall, face, index, level)
+				if kind == &"none":
+					continue
 				var piece: String = pieces[&"plain"]
 				if kind == &"window":
 					piece = choices[spec.window_style % choices.size()]
 				elif kind != &"plain":
 					piece = pieces[kind]
 				_append_piece(tool, piece, offset * _cell_transform(hall, face, index, level))
+	if hall.wing != 0 and hall.floors() >= 2:
+		# Fase 96: no último andar, a parede do corpo do lado da ala (uma coluna para dentro), lisa
+		var wing_face := 3 if hall.wing < 0 else 1
+		var inward := -_face_normal(wing_face) * hall.column_m()
+		var plain_piece: String = pieces[&"plain"]
+		for index: int in hall.cells.y:
+			_append_piece(tool, plain_piece,
+					offset * _cell_transform(hall, wing_face, index, hall.floors() - 1).translated(inward))
 	var size := spec.size_m()
 	# alicerce e telhado à parte: as peças do kit chegam indexadas, e vértice solto depois delas
 	# ficaria fora do índice
@@ -690,7 +784,17 @@ static func _build(spec: Spec) -> ArrayMesh:
 	var base_center := spec.hall_offset() if spec.trim == TierDef.HouseTrim.YARD else Vector3.ZERO
 	_box(extra, base_center + Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0),
 			Vector3(base.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, base.y + 0.1), UV_STONE)
-	if spec.court_rows > 0:
+	if hall.wing != 0 and hall.floors() >= 2:
+		# Fase 96: o telhado do corpo, uma coluna mais estreito, e o da ala, mais baixo e cruzado com ele
+		for part: Array in [[hall.main_part(), hall.main_offset()], [hall.wing_part(), hall.wing_offset()]]:
+			var piece_spec: Spec = part[0]
+			var shift: Vector3 = part[1]
+			var roof := SurfaceTool.new()
+			roof.begin(Mesh.PRIMITIVE_TRIANGLES)
+			_roof(roof, piece_spec)
+			_lucarnes(roof, piece_spec)
+			extra.append_from(roof.commit(), 0, offset.translated(shift))
+	elif spec.court_rows > 0:
 		# o telhado do corpo é feito no referencial dele e trazido para o do prédio
 		var roof := SurfaceTool.new()
 		roof.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -1357,8 +1461,17 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 	var hall := spec.hall()
 	var center := spec.hall_offset()
 	var size := hall.size_m()
-	_box(tool, center + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
-			Vector3(size.x + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	if hall.wing != 0 and hall.floors() >= 2:
+		# Fase 96: a cornija do alto só no corpo; a da ala no topo dela (a altura do último andar a menos)
+		var main_width := size.x - hall.column_m()
+		_box(tool, center + hall.main_offset() + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
+				Vector3(main_width + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+		var wing_top := hall.height_m - hall.floor_m()
+		_box(tool, center + hall.wing_offset() + Vector3(0.0, wing_top - CORNICE_M * 0.5, 0.0),
+				Vector3(hall.column_m() + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	else:
+		_box(tool, center + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
+				Vector3(size.x + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
 	if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
 		for level: int in range(1, hall.floors()):
 			_box(tool, center + Vector3(0.0, level * hall.floor_m(), 0.0),

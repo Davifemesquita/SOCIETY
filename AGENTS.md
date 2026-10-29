@@ -2073,6 +2073,13 @@ Regras que já custaram investigação:
   redondo) na célula (1, 3) (`UV_ROOF_TRIM`). A captura das casas é `tools/capture_phase95.tscn` (ilha plana; a da Fase
   39 não acha mais lugar no terreno v3/v4).
 
+### Casa em mais de um volume (Fase 96, nossa)
+
+- **Plano** em `docs/plano_fase96.md`. `Spec.wing` (metade das casas dos operários para cima): a coluna de −X perde o último
+  andar e ganha telhado próprio, cruzado e mais baixo que o beiral do corpo (`main_part`, `wing_part`). **`slot()` devolve
+  `&"none"` nas células que a ala tira** (`in_wing`): paredes, vidros acesos, caixilho, floreiras e vergas acompanham
+  sozinhos. Código novo que ande pelas paredes do prédio deve pular `&"none"`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2179,6 +2186,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 93 — Porto em toda ilha (nossa) | **feita em 28/10/2026**: terreno v4, o padrão do jogo novo: o v3 com um porto aplainado na ilha que não tinha lugar de entreposto (12 de 31 sementes tinham ilha sem como colonizar); as outras ilhas saem iguais às do v3; o v1, o v2 e o v3 seguem para os saves; o `SiteFinder` deixou de pular lotes encostados no mar pelo canto; plano em `docs/plano_fase93.md` |
 | 94 — Som e câmera do grand finale (nossa) | **feita em 28/10/2026**, a última do roteiro: rufar de caixa gerado no código antes da salva, com o primeiro foguete esperando ele acabar; opção "Câmera no grand finale" (desligada por padrão) que leva a câmera à praça às 23h; o som falta ser ouvido pelo dono; plano em `docs/plano_fase94.md` |
 | 95 — Telhado de telhas (nossa) | **feita em 29/10/2026**, primeira do roteiro das formas mais redondas (Fases 95 a 99, olhando o Anno do dono): telhas em fileiras desencontradas com a borda redonda nas águas (no shader), capa redonda na cumeeira e nos espigões e beiral redondo; GPU igual no A/B; plano em `docs/plano_fase95.md` |
+| 96 — Casa em mais de um volume (nossa) | **feita em 29/10/2026**: metade das casas dos operários para cima ganha uma ala de um andar a menos com telhado próprio cruzado com o do corpo (o telhado em L); as janelas acesas, o caixilho e a cornija acompanham; quadro igual no A/B, o carregar sobe com as formas em dobro; plano em `docs/plano_fase96.md` |
 
 Pendências já vistas para fases futuras:
 
