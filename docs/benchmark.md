@@ -1455,3 +1455,9 @@ Mesmas condições (área de trabalho escondida, alto, semente 1840, **estado le
 34,6), GPU 22,4 ms (23,4), p95 36,3 ms (37,7), pior quadro 105 ms, carregar 10,4 s. O MultiMesh das baforadas soma um objeto
 e uma draw call (2724 · 976) e 4.690 primitivas no quadro com tudo visível. A melhora está dentro do ruído do estado lento:
 as baforadas não pesam.
+
+## Fase 101 — toldos listrados (29/10/2026)
+
+Mesmas condições (área de trabalho escondida, alto, semente 1840, **estado lento**, jogo novo 26,0 s): 36,0 FPS (antes
+36,3), GPU 22,5 ms (22,4), p95 36,4 ms, pior quadro 122 ms, carregar 10,3 s; objetos, draw calls e primitivas do quadro
+com tudo visível iguais (a cidade do benchmark não tem padaria, açougue, taverna nem casa de artesão à vista). Neutra.

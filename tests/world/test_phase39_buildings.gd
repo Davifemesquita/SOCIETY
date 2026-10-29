@@ -275,5 +275,6 @@ func test_varied_houses_build_in_reasonable_time() -> void:
 	var elapsed := Time.get_ticks_msec() - started
 	var made := BuildingKit.cached_meshes() - before
 	print("Fase 39: 600 casas variadas em %d ms, %d malhas novas no cache" % [elapsed, made])
-	# a variação cabe em 3 telhados × 3 degraus × 2 janelas por classe, com e sem a ala (Fase 96)
-	assert_int(made).is_less_equal(5 * 18 * 2)
+	# a variação cabe em 3 telhados × 3 degraus × 2 janelas por classe, com e sem a ala (Fase 96), e com e sem a loja de
+	# toldo nos artesãos e engenheiros (Fase 101)
+	assert_int(made).is_less_equal(5 * 18 * 2 + 2 * 18 * 2)

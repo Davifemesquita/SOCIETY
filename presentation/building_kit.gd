@@ -70,6 +70,19 @@ const ARCADE_PIER_M := 0.34
 const ARCADE_SPRING_M := 1.9
 const ARCADE_THICK_M := 0.32
 const ARCADE_ROOF_RISE_M := 0.6
+## Fase 101: o toldo listrado sobre a porta e as janelas do térreo da frente — as lojas de AWNING_SHOPS e uma casa em
+## AWNING_HOUSE_SHARE dos artesãos e engenheiros; preso a AWNING_AT do andar, saindo AWNING_OUT_M e caindo AWNING_DROP_M,
+## em AWNING_STRIPES listras alternando a cor e o creme, com a sanefa de AWNING_VALANCE_M na ponta.
+const AWNING_SHOPS: Array[StringName] = [&"bakery", &"butcher", &"tavern"]
+const AWNING_HOUSE_SHARE := 3
+const AWNING_AT := 0.86
+const AWNING_OUT_M := 0.75
+const AWNING_DROP_M := 0.42
+const AWNING_STRIPES := 7
+const AWNING_VALANCE_M := 0.16
+const UV_AWNING_COLORS: Array[Vector2] = [Vector2(3.5 / 8.0, 1.5 / 4.0), Vector2(4.5 / 8.0, 1.5 / 4.0),
+		Vector2(5.5 / 8.0, 1.5 / 4.0)]
+const UV_CANVAS := Vector2(6.5 / 8.0, 1.5 / 4.0)
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -327,11 +340,13 @@ class Spec:
 	var vault: bool = false
 	## Fase 99: as janelas com a cabeça em arco (os serviços de pedra e os investidores).
 	var arched: bool = false
+	## Fase 101: o toldo listrado do térreo da frente (0 sem; 1 a 3, a cor da listra).
+	var awning: int = 0
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -362,6 +377,7 @@ class Spec:
 		copy.turret = turret
 		copy.vault = vault
 		copy.arched = arched
+		copy.awning = awning
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -438,6 +454,7 @@ class Spec:
 		copy.turret = turret
 		copy.vault = vault
 		copy.arched = arched
+		copy.awning = awning
 		return copy
 
 
@@ -491,6 +508,11 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.turret = spec.trim == TierDef.HouseTrim.PORTICO and spec.floors() >= 3
 		# Fase 99: as janelas em arco das casas dos investidores
 		spec.arched = spec.trim == TierDef.HouseTrim.PORTICO
+		# Fase 101: uma casa em AWNING_HOUSE_SHARE dos artesãos e engenheiros tem loja no térreo, com o toldo
+		if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES] \
+				and BuildingView.house_hash(record.id) / 11 % AWNING_HOUSE_SHARE == 0:
+			# uma cor por classe (cada forma nova custa ~18 ms; três cores triplicavam as casas com loja)
+			spec.awning = 1 if spec.trim == TierDef.HouseTrim.FLOWER_BOXES else 2
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -581,6 +603,9 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
 		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
+	# Fase 101: o toldo das lojas, na cor sorteada pelo tipo
+	if def.id in AWNING_SHOPS:
+		spec.awning = 1 + absi(hash(String(def.id))) % UV_AWNING_COLORS.size()
 	# Fase 98: a abóbada no lugar das duas águas (o mercado e as fábricas de nave comprida)
 	spec.vault = def.id in VAULTED and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z]
 	return spec
@@ -881,6 +906,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 	_glazing(extra, hall, offset)
 	_silhouette(tool, extra, spec)
 	_trim(tool, extra, spec)
+	if spec.awning > 0:
+		_awnings(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -893,6 +920,57 @@ static func _build(spec: Spec) -> ArrayMesh:
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	importer.generate_lods(25.0, 60.0, [])
 	return importer.get_mesh()
+
+
+## Fase 101: as células do térreo da frente que levam toldo (porta e janelas).
+static func awning_cells(spec: Spec) -> Array[int]:
+	var cells: Array[int] = []
+	if spec.awning <= 0:
+		return cells
+	var hall := spec.hall()
+	for index: int in hall.cells.x:
+		if slot(hall, 0, index, 0) in [&"window", &"door", &"arch"]:
+			cells.append(index)
+	return cells
+
+
+## O toldo de cada célula: a água de lona listrada da parede para fora e para baixo (de cima e de baixo), as duas abas
+## dos lados e a sanefa na ponta, nas listras alternadas da cor do toldo e do creme.
+static func _awnings(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var size := hall.size_m()
+	var step := size.x / hall.cells.x
+	var normal := _face_normal(0)
+	var color := UV_AWNING_COLORS[(spec.awning - 1) % UV_AWNING_COLORS.size()]
+	var width := step * 0.86
+	var high := hall.floor_m() * AWNING_AT
+	for index: int in awning_cells(spec):
+		var wall := spec.hall_offset() + _wall_point(hall, 0, index, 0)
+		var base := Vector3(wall.x, high, wall.z) + normal * 0.02
+		var tip := base + normal * AWNING_OUT_M + Vector3.DOWN * AWNING_DROP_M
+		var up_side := (tip - base).cross(Vector3.RIGHT).normalized()
+		if up_side.y < 0.0:
+			up_side = -up_side
+		for stripe: int in AWNING_STRIPES:
+			var uv := color if stripe % 2 == 0 else UV_CANVAS
+			var x0 := -width * 0.5 + width * stripe / AWNING_STRIPES
+			var x1 := -width * 0.5 + width * (stripe + 1) / AWNING_STRIPES
+			var a := base + Vector3.RIGHT * x0
+			var b := base + Vector3.RIGHT * x1
+			var c := tip + Vector3.RIGHT * x1
+			var d := tip + Vector3.RIGHT * x0
+			_quad(tool, a, b, c, d, up_side, uv)
+			_quad(tool, a, b, c, d, -up_side, uv)
+			# a sanefa: a aba que cai na ponta, de cada listra
+			var drop := Vector3.DOWN * AWNING_VALANCE_M
+			_quad(tool, d, c, c + drop, d + drop, normal, uv)
+			_quad(tool, d, c, c + drop, d + drop, -normal, uv)
+		# as abas dos lados, um triângulo de lona de cada lado
+		for side: float in [-0.5, 0.5]:
+			var at := Vector3.RIGHT * width * side
+			var corner := base + at + Vector3.DOWN * AWNING_DROP_M
+			_triangle(tool, base + at, tip + at, corner, Vector3.RIGHT * side, UV_CANVAS)
+			_triangle(tool, base + at, tip + at, corner, Vector3.LEFT * side, UV_CANVAS)
 
 
 ## A chaminé da casa no telhado, no referencial do prédio: a peça do kit esticada até passar da cumeeira.

@@ -58,6 +58,11 @@ uniform float tile_fade_far = 80.0;
 // Fase 97: a pátina do cobre (cúpulas e torreões)
 uniform vec4 copper_dark : source_color = vec4(0.22, 0.42, 0.38, 1.0);
 uniform vec4 copper_light : source_color = vec4(0.42, 0.66, 0.58, 1.0);
+// Fase 101: as cores da lona dos toldos
+uniform vec4 awning_red : source_color = vec4(0.62, 0.17, 0.14, 1.0);
+uniform vec4 awning_green : source_color = vec4(0.2, 0.4, 0.26, 1.0);
+uniform vec4 awning_blue : source_color = vec4(0.2, 0.3, 0.5, 1.0);
+uniform vec4 awning_cream : source_color = vec4(0.88, 0.84, 0.72, 1.0);
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -135,6 +140,11 @@ void fragment() {
 		float streak = moss_noise(vec2(atan(world_position.z, world_position.x) * 9.0 + world_position.x * 1.3,
 				world_position.y * 0.6));
 		color = mix(copper_dark.rgb, copper_light.rgb, smoothstep(0.25, 0.85, streak));
+	} else if (cell.y == 1 && cell.x >= 3 && cell.x <= 6) {
+		// Fase 101: a lona dos toldos (células (3..6, 1), que o kit não usa): três cores de listra e o creme, com a trama
+		color = cell.x == 3 ? awning_red.rgb : (cell.x == 4 ? awning_green.rgb
+				: (cell.x == 5 ? awning_blue.rgb : awning_cream.rgb));
+		color *= 0.9 + 0.2 * moss_noise(world_position.xz * 6.0 + world_position.y * 3.0);
 	} else if (cell == ivec2(4, 3)) {
 		color = kit_luma / 0.55 * mix(mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), trim_paint_color.rgb, trim_paint);
 	} else if (cell == ivec2(3, 3)) {
