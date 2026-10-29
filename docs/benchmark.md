@@ -1377,3 +1377,10 @@ novo 10,3 s, carregar 3,79 s, 2769 objetos e 1119 draw calls (iguais). Neutra.
 6 e 8, ficam parados). Máquina no estado rápido: GPU 10,8 ms, dia inteiro 86,4 FPS (1% low 43,3, pior quadro 32 ms),
 tick médio 1,35 ms, construir com a ilha cheia 16,4 ms, jogo novo 10,4 s, carregar 3,78 s, 2769 objetos e 1119 draw
 calls (iguais). Neutra.
+
+## Fase 91 — travadas do ultra (28/10/2026)
+
+Área de trabalho escondida, **ultra**, semente 1840 (v3), três rodadas seguidas: 61,8 / 63,9 / 64,1 FPS de média, 1%
+low 33,9 / 39,8 / 41,6, pior quadro 85 / 32 / 28 ms (p99 24,3 e 22,6 ms nas rodadas 1 e 3), GPU ~15 ms. Nenhuma das
+travadas de ~2 s da Fase 32. O JSON dos quadros passou ao formato 2 (hora e pipelines compiladas por quadro): 189
+compilações no dia, quase todas no anoitecer (18h18 e 18h48) e às 2h42, nenhuma num quadro acima de 25 ms.

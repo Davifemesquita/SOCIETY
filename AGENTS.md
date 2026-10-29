@@ -2151,15 +2151,18 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 88 — Duas etapas e vivas calmas (nossa) | **feita em 28/10/2026, a pedido do dono**: bomba de duas etapas (as estrelas estouram de novo, pelo sub-emissor) e a faixa calma das vivas para pouca gente, misturada com a forte pelo nível; cortar a gravação ficou de fora (pede `ffmpeg` no disco C); o som falta ser ouvido pelo dono; plano em `docs/plano_fase88.md` |
 | 89 — Grand finale (nossa) | **feita em 28/10/2026, a pedido do dono**: às 23h de cada noite de festa, uma salva de 24 foguetes que acaba na chuva dourada; todo foguete estoura (antes sumia com as bombas ocupadas); as vivas seguem quem ainda bate palmas (na salva quase não tocavam); plano em `docs/plano_fase89.md` |
 | 90 — Daltônico no Windows (nossa) | **feita em 28/10/2026**, primeira do roteiro `docs/plano_fases_90_93.md`: o teste do modo daltônico que falhava no Windows do dono já tinha sido corrigido em 26/10 (`2f735e3`: o painel repinta na hora em que a opção muda); a pendência saiu da lista e a suíte inteira foi conferida no PC do dono, 986 casos sem nenhum vermelho; plano em `docs/plano_fase90.md` |
+| 91 — Travadas do ultra (nossa) | **feita em 28/10/2026**: três rodadas do ultra na RTX 5060 (62 a 64 FPS, pior quadro de 85, 32 e 28 ms), nenhuma travada de ~2 s; o benchmark grava por quadro a hora e as pipelines compiladas, e as compilações do anoitecer não coincidem com nenhum quadro lento (o Godot as faz por fora); nada mudou no jogo; plano em `docs/plano_fase91.md` |
 
 Pendências já vistas para fases futuras:
 
 - Balanceamento: ver `docs/balanceamento.md`. Medido na Fase 27 e folgado na Fase 28 (24/10/2026): o robô joga 4 h
   numa ilha plana de 350×350, o pior saldo fica em −745 e ele chega aos engenheiros aos ~120 min e aos investidores
   aos ~225. Falta medir com gente de verdade jogando: o robô não sente a partida.
-- Desempenho gráfico (medido na RTX 5060 em 25/10/2026, `docs/benchmark.md`): o alto fica em ~48 FPS em 1080p, com
-  a GPU em ~20 ms por quadro, e o ultra tem travadas de até ~2 s (pior tick de até 122 ms no mesmo dia). Falta medir
-  4K, VSync desligado e o build com o shader baker, e conferir no olho as nuvens volumétricas e o rastro do FSR no
-  ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
+- Desempenho gráfico (RTX 5060, 1080p, `docs/benchmark.md`): em 25/10/2026 o alto dava ~48 FPS e o ultra travava até
+  ~2 s; em 28/10/2026, na área de trabalho escondida, o alto dá ~86 FPS e o ultra 62 a 64 FPS, com o pior quadro entre 28
+  e 85 ms em três rodadas e nenhuma travada longa (Fase 91: as compilações de shader do anoitecer não param o quadro). A
+  máquina oscila entre um estado lento e um rápido (ver as entradas do benchmark). Falta medir 4K, VSync desligado e o
+  build com o shader baker (Fase 92), e conferir no olho as nuvens volumétricas e o rastro do FSR no ultra; o detalhe que
+  falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).

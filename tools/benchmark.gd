@@ -37,8 +37,9 @@ const DAY_SECONDS := 60.0
 const DAY_DISTANCES: Array[float] = [40.0, 120.0, 300.0]
 const SLOT := "benchmark"
 const RESULT_PATH := "user://benchmark.md"
-## Versão do JSON dos quadros: mudou o formato, some 1.
-const FRAMES_FORMAT := 1
+## Versão do JSON dos quadros: mudou o formato, some 1. A 2 (Fase 91) acrescenta, por quadro, a hora do jogo (hour) e as
+## pipelines compiladas (pipelines_frame).
+const FRAMES_FORMAT := 2
 const SEED := 1840
 
 var _lines: PackedStringArray = []
@@ -330,6 +331,10 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	var cpu := PackedFloat64Array()
 	var gpu := PackedFloat64Array()
 	var ticks := PackedFloat64Array()
+	# Fase 91: por quadro, a hora do jogo e quantas pipelines o motor compilou nele (as travadas da noite eram isso)
+	var hours := PackedFloat64Array()
+	var compiled := PackedInt32Array()
+	var last_compiled := _pipelines_total()
 	GameClock.set_speed(0)
 	var start := Time.get_ticks_usec()
 	var last := start
@@ -354,6 +359,10 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 			tick_usec += sim.profile[step]
 		ticks.append((tick_usec - last_tick_usec) / 1000.0)
 		last_tick_usec = tick_usec
+		hours.append(GameClock.clock.hour())
+		var total := _pipelines_total()
+		compiled.append(total - last_compiled)
+		last_compiled = total
 		last = now
 		progress = (now - start) / 1000000.0 / DAY_SECONDS
 	GameClock.set_speed(TickClock.PAUSED)
@@ -381,8 +390,16 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	runs.append({"level": String(preset.id), "render_scale": Settings.render_scale,
 			"aa": "fsr2" if preset.uses_temporal(Settings.render_scale) else ["none", "fxaa", "smaa"][preset.screen_aa_for(Settings.render_scale)],
 			"summary": stats, "gpu_summary": gpu_stats, "tick_summary": tick_stats, "pipelines": pipelines,
-			"frames_ms": frames, "cpu_ms": cpu, "gpu_ms": gpu, "tick_ms": ticks})
+			"frames_ms": frames, "cpu_ms": cpu, "gpu_ms": gpu, "tick_ms": ticks, "hour": hours, "pipelines_frame": compiled})
 	_frames_doc["runs"] = runs
+
+
+## Fase 91: todas as compilações de pipeline somadas (para contar por quadro).
+static func _pipelines_total() -> int:
+	var total := 0
+	for value: int in _pipelines().values():
+		total += value
+	return total
 
 
 ## Os contadores de compilação de pipeline do motor (acumulados desde o início do jogo).
