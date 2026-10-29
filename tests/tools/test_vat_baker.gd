@@ -98,7 +98,7 @@ func test_baked_pedestrians_fit_the_polygon_budget_and_walk_forward() -> void:
 		assert_object(model).is_not_null()
 		# seção 14: pedestre de 1.000 a 3.000 triângulos
 		assert_int(model.triangle_count).is_between(1000, 3000)
-		assert_array(Array(model.clip_names)).is_equal(["walk", "walk_carry", "idle", "talk"])
+		assert_array(Array(model.clip_names)).is_equal(["walk", "walk_carry", "idle", "talk", "cheer"])
 		assert_float(model.clip_strides_m[0]).is_between(0.8, 2.0)
 		assert_float(model.clip_strides_m[2]).is_equal(0.0)
 		var frames := 0

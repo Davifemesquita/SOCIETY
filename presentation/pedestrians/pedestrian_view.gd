@@ -15,6 +15,8 @@ const HOLD_FORWARD_M := 0.3
 const HIDDEN := Transform3D(Basis(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO), Vector3.ZERO)
 ## Altura da caixa de recorte da multidão (o boneco anda no shader, longe da posição da instância).
 const BOUNDS_HEIGHT_M := 4.0
+## Tamanho da tabela de animações do shader (clips[8]); desde a Fase 84 são cinco.
+const MAX_CLIPS := 8
 
 ## Os modelos ficam carregados entre partidas (abrir um save ou um jogo novo não relê os .res).
 static var _model_cache: Dictionary[String, VatModel] = {}
@@ -52,7 +54,9 @@ func setup(simulation: Simulation, config: GameConfig, seed_value: int = 1) -> v
 		material.shader = SHADER
 		material.set_shader_parameter(&"vat_positions", model.positions)
 		material.set_shader_parameter(&"vat_normals", model.normals)
-		material.set_shader_parameter(&"clips", model.clip_uniforms())
+		var clips := model.clip_uniforms()
+		clips.resize(MAX_CLIPS)
+		material.set_shader_parameter(&"clips", clips)
 		material.set_shader_parameter(&"trousers_color", simulation.data.tier(group.tier).trousers_color)
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D

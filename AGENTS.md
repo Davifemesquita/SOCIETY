@@ -111,6 +111,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 400000 res://t
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase39.tscn -- /pasta/de/saida
 # Fase 83: o bairro com a festa às 22 h (hora presa), moradores e turistas em volta do mastro; o resumo vai em <pasta>/fase83.txt
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase83.tscn -- /pasta/de/saida
+# Fase 84: a mesma, e de perto alguém batendo palmas olhando para o céu (palmas.png, palmas_lado.png)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase84.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
@@ -1991,6 +1993,14 @@ Regras que já custaram investigação:
   conta com pelo menos `FESTIVAL_NIGHT_ACTIVITY` dos pedestres dela na rua (`_festival_agents`, somado no
   `desired_out`); `Agent.watching` marca quem está num lugar de ver a festa (ao sair, anda dele até a porta). Só visual.
 
+### Palmas e cota da festa (Fase 84, nossa)
+
+- **Plano** em `docs/plano_fase84.md`. `CheerClip` (`tools/vat/cheer_clip.gd`): a animação de ver os fogos gerada da
+  parada (cabeça erguida, palmas por IK de dois ossos), gravada pelo `tools/bake_pedestrians.gd` como a quinta do VAT
+  (`Crowd.CLIP_CHEER`; o shader tem `clips[8]`, a `PedestrianView` completa até `MAX_CLIPS`). Quem vê a festa usa ela
+  (`CHEER_SHARE`). Na hora dos fogos, o pedestre de ilha sem festa só sai na cota da hora (`_quiet_full`): a gente a mais
+  é só da ilha da festa. Mudou a parada ou o esqueleto, refaça os pedestres (`tools/bake_pedestrians.gd`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2085,6 +2095,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 81 — Festa cheia (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa vêm mais turistas para a rua, na mesma proporção da renda do turismo; só visual; plano em `docs/plano_fase81.md` |
 | 82 — Ver os fogos (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa, à noite, os turistas vão às praças e ficam em volta do mastro olhando os fogos; só visual; plano em `docs/plano_fase82.md` |
 | 83 — Moradores na festa (nossa) | **feita em 28/10/2026, a pedido do dono**: na noite de fogos os moradores também vão às praças e ficam em volta do mastro, e a festa põe metade da gente da ilha na rua (à noite saíam só ~18%); só visual; plano em `docs/plano_fase83.md` |
+| 84 — Palmas e cota da festa (nossa) | **feita em 28/10/2026, a pedido do dono**: quem vê os fogos olha para o céu batendo palmas (animação gerada no código a partir da parada, quinta do VAT), e a gente a mais na rua sai só da ilha da festa; só visual; plano em `docs/plano_fase84.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -10,8 +10,9 @@ global uniform float visual_time;
 
 uniform sampler2D vat_positions : filter_nearest, repeat_disable;
 uniform sampler2D vat_normals : filter_nearest, repeat_disable;
-// Por animação: linha inicial, quadros, quadros por segundo, passo (m por ciclo; 0 = parada).
-uniform vec4 clips[4];
+// Por animação: linha inicial, quadros, quadros por segundo, passo (m por ciclo; 0 = parada). Cinco desde a Fase 84
+// (a de ver os fogos); folga até 8 (PedestrianView.MAX_CLIPS).
+uniform vec4 clips[8];
 uniform vec3 trousers_color : source_color = vec3(0.25, 0.22, 0.2);
 uniform vec3 shoes_color : source_color = vec3(0.12, 0.08, 0.06);
 uniform vec3 skin_a : source_color = vec3(0.93, 0.76, 0.62);
@@ -33,7 +34,7 @@ void vertex() {
 	vec4 data = INSTANCE_CUSTOM;
 	float elapsed = max(visual_time - data.x, 0.0);
 	float dist = min(elapsed * data.z, data.y);
-	int clip = clamp(int(data.w), 0, 3);
+	int clip = clamp(int(data.w), 0, 7);
 	vec4 info = clips[clip];
 	float frames = max(info.y, 1.0);
 	float cycle = info.w > 0.0 ? fract(data.w) + dist / info.w : fract(data.w) + elapsed * info.z / frames;

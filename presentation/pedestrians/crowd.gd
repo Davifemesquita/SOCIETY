@@ -30,6 +30,10 @@ const CLIP_WALK := 0
 const CLIP_WALK_CARRY := 1
 const CLIP_IDLE := 2
 const CLIP_TALK := 3
+## Fase 84: olhando para o céu e batendo palmas (gerada no código, tools/vat/cheer_clip.gd), e a parte de quem está
+## vendo os fogos que faz isso (os outros ficam parados olhando o mastro).
+const CLIP_CHEER := 4
+const CHEER_SHARE := 0.8
 ## O que vai na mão de quem anda com a animação de carregar (Fase 15): cesto saindo do mercado, saco saindo
 ## de fazenda.
 enum Load { NONE, BASKET, SACK }
@@ -131,6 +135,10 @@ var _attractions_of: Dictionary[int, PackedInt32Array] = {}
 var _squares_of: Dictionary[int, PackedInt32Array] = {}
 ## Fase 83: pedestres (moradores e turistas) das ilhas na hora dos fogos, contados a cada _rebalance.
 var _festival_agents: int = 0
+## Fase 84: as ilhas na hora dos fogos e os pedestres das outras na rua (contados a cada _rebalance e somados a cada
+## partida até o próximo).
+var _festive: Dictionary[int, bool] = {}
+var _quiet_out: int = 0
 var _buckets: Dictionary[int, PackedInt32Array] = {}
 var _next_bucket: int = 0
 var _home_queue: Array[int] = []
@@ -183,6 +191,8 @@ func reset() -> void:
 	_by_house.clear()
 	_tourists.clear()
 	_festival_agents = 0
+	_festive.clear()
+	_quiet_out = 0
 	_buckets.clear()
 	_home_queue.clear()
 	_out = 0
@@ -279,21 +289,37 @@ func _rebalance() -> void:
 	_count_festival_agents()
 
 
-## Fase 83: quantos pedestres (de casa e turistas) estão nas ilhas na hora dos fogos.
+## Fase 83: quantos pedestres (de casa e turistas) estão nas ilhas na hora dos fogos. Desde a Fase 84, também quais
+## ilhas são essas e quantos das outras estão na rua: a cota extra é só para a gente da festa.
 func _count_festival_agents() -> void:
 	_festival_agents = 0
-	var festive: Dictionary[int, bool] = {}
+	_festive.clear()
 	for house_id: int in _by_house:
 		var house := _simulation.world.building(house_id)
 		if house == null:
 			continue
-		if not festive.has(house.island_id):
-			festive[house.island_id] = fireworks_now(house.island_id)
-		if festive[house.island_id]:
+		if not _festive.has(house.island_id):
+			_festive[house.island_id] = fireworks_now(house.island_id)
+		if _festive[house.island_id]:
 			_festival_agents += _by_house[house_id].size()
 	for island_id: int in _tourists:
-		if festive.get(island_id, fireworks_now(island_id)):
+		if not _festive.has(island_id):
+			_festive[island_id] = fireworks_now(island_id)
+		if _festive[island_id]:
 			_festival_agents += _tourists[island_id].size()
+	_quiet_out = 0
+	if _festival_agents > 0:
+		for agent: Agent in agents:
+			if agent != null and not agent.removed and agent.state != State.HOME and not _festive.get(agent.island_id, false):
+				_quiet_out += 1
+
+
+## Fase 84: o pedestre de fora da festa já não cabe na rua: a parte da multidão dele (sem a cota extra) está cheia.
+func _quiet_full(agent: Agent) -> bool:
+	if _festival_agents == 0 or _festive.get(agent.island_id, false):
+		return false
+	var activity := activity_override if activity_override >= 0.0 else DayClock.activity(_config, _hour)
+	return _quiet_out >= roundi((agent_count() - _festival_agents) * activity)
 
 
 ## Fase 80: ajusta os turistas de cada ilha à atratividade dela (só com os eventos ligados, como o turismo).
@@ -426,11 +452,14 @@ func _start_trips(missing: int, wanted: int) -> void:
 		var agent := agents[index] if index < agents.size() else null
 		if agent == null or agent.state != State.HOME:
 			continue
-		if agent.event_at > time or _route_usec > _config.pedestrian_route_budget_ms * 1000.0 * (4.0 if warm else 1.0):
+		if agent.event_at > time or _route_usec > _config.pedestrian_route_budget_ms * 1000.0 * (4.0 if warm else 1.0) \
+				or _quiet_full(agent):
 			_home_queue.append(index)
 			continue
 		if _begin_routine(agent, warm):
 			started += 1
+			if _festival_agents > 0 and not _festive.get(agent.island_id, false):
+				_quiet_out += 1
 		else:
 			agent.event_at = time + RETRY_SECONDS
 			_home_queue.append(index)
@@ -593,7 +622,11 @@ func _wait_at_service(agent: Agent) -> void:
 ## Para no lugar (agent.spot, agent.facing) e fica um tempo, conversando ou parado.
 func _stand(agent: Agent) -> void:
 	agent.to_spot = false
-	agent.clip = CLIP_TALK if _rng.randf() < (0.25 if agent.tourist else 0.6) else CLIP_IDLE
+	if agent.watching:
+		# vendo os fogos (Fase 84): quase todos olham para o céu batendo palmas
+		agent.clip = CLIP_CHEER if _rng.randf() < CHEER_SHARE else CLIP_IDLE
+	else:
+		agent.clip = CLIP_TALK if _rng.randf() < (0.25 if agent.tourist else 0.6) else CLIP_IDLE
 	agent.phase = _rng.randf()
 	agent.segment_start = time
 	_set_state(agent, State.WAITING)
