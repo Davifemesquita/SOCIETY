@@ -22,6 +22,11 @@ const FOUNDATION_UP_M := 0.15
 ## Beiral do telhado e espessura das águas.
 const ROOF_OVERHANG_M := 0.35
 const ROOF_THICKNESS_M := 0.18
+## Fase 95: a capa redonda da cumeeira e dos espigões (raio, faces da meia volta) e o beiral redondo (raio, faces).
+const RIDGE_CAP_M := 0.14
+const RIDGE_SIDES := 6
+const EAVE_ROLL_M := 0.11
+const EAVE_SIDES := 6
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -39,6 +44,8 @@ const WINDOW_GAP_M := 0.06
 ## shader usa a mesma divisão: parede = (1, 2) e (5, 3); telhado = (0, 3) e (1, 3).
 const UV_WALL := Vector2(1.25 / 8.0, 2.5 / 4.0)
 const UV_ROOF := Vector2(0.25 / 8.0, 3.5 / 4.0)
+## Fase 95: a capa da cumeeira e o beiral (célula (1, 3), que o shader trata como telhado: textura e tom, sem as telhas).
+const UV_ROOF_TRIM := Vector2(1.5 / 8.0, 3.5 / 4.0)
 const UV_STONE := Vector2(7.5 / 8.0, 3.5 / 4.0)
 ## Fase 18: madeiramento (o shader escurece), ferro (cinza-chumbo da paleta) e bronze (o marrom-cobre).
 const UV_TIMBER := Vector2(4.5 / 8.0, 3.5 / 4.0)
@@ -1646,6 +1653,18 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 			_quad(tool, c11, c01, r01, r11, Vector3(0, 1, 1), UV_ROOF)
 			_quad(tool, c01, c00, r00, r01, Vector3(-1, 1, 0), UV_ROOF)
 			_quad(tool, c00, c10, c11, c01, Vector3.DOWN, UV_ROOF)
+			# Fase 95: as quinas arredondadas (espigões e cumeeira) e o beiral redondo
+			var lift := Vector3(0.0, RIDGE_CAP_M * 0.4, 0.0)
+			for pair: Array in [[c00, r00], [c10, r10], [c11, r11], [c01, r01]]:
+				var low: Vector3 = pair[0]
+				var high: Vector3 = pair[1]
+				_rod(tool, low + lift, high + lift, RIDGE_CAP_M * 0.8, RIDGE_SIDES, UV_ROOF_TRIM, true)
+			if r00.distance_to(r11) > 0.01:
+				_rod(tool, r00 + lift, r11 + lift, RIDGE_CAP_M, RIDGE_SIDES, UV_ROOF_TRIM, true)
+			for edge: Array in [[c00, c10], [c10, c11], [c11, c01], [c01, c00]]:
+				var start: Vector3 = edge[0]
+				var finish: Vector3 = edge[1]
+				_rod(tool, start, finish, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
 		_:
 			var along_x := spec.roof == Roof.GABLE_X
 			# a cumeeira corre em u (x ou z) e as águas descem em v
@@ -1663,6 +1682,12 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				_quad(tool, low_a, low_b, high_b, high_a, away + Vector3.UP, UV_ROOF)
 				_quad(tool, low_a + down, low_b + down, high_b + down, high_a + down, -away - Vector3.UP, UV_ROOF)
 				_quad(tool, low_a + down, low_b + down, low_b, low_a, away, UV_ROOF)
+				# Fase 95: o beiral redondo (a borda grossa da água, no lugar da quina viva)
+				_rod(tool, low_a + down * 0.5, low_b + down * 0.5, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+			# Fase 95: a capa redonda da cumeeira, de ponta a ponta
+			var cap_lift := Vector3(0.0, RIDGE_CAP_M * 0.35, 0.0)
+			_rod(tool, _uv_point(along_x, -hu - o, ridge, 0.0) + cap_lift, _uv_point(along_x, hu + o, ridge, 0.0) + cap_lift,
+					RIDGE_CAP_M, RIDGE_SIDES, UV_ROOF_TRIM, true)
 			for end: float in [-1.0, 1.0]:
 				var left := _uv_point(along_x, end * hu, top, -hv)
 				var right := _uv_point(along_x, end * hu, top, hv)
@@ -1831,6 +1856,42 @@ static func _triangle(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, out
 		tool.set_normal(normal)
 		tool.set_uv(uv)
 		tool.add_vertex(point)
+
+
+## Fase 95: haste redonda de from até to (raio radius, sides faces) com a normal de cada vértice para fora do eixo (o
+## sombreado sai liso, redondo). Com half, só a metade de cima (a capa da cumeeira, que assenta nas duas águas).
+static func _rod(tool: SurfaceTool, from: Vector3, to: Vector3, radius: float, sides: int, uv: Vector2, half: bool = false) -> void:
+	var axis := to - from
+	if axis.length_squared() < 1e-6:
+		return
+	var direction := axis.normalized()
+	var side := direction.cross(Vector3.UP)
+	if side.length_squared() < 1e-6:
+		side = direction.cross(Vector3.RIGHT)
+	side = side.normalized()
+	var up := side.cross(direction).normalized()
+	if up.y < 0.0:
+		up = -up
+		side = -side
+	var arc := PI if half else TAU
+	var normals: Array[Vector3] = []
+	for i: int in sides + 1:
+		var angle := arc * i / sides
+		normals.append(side * cos(angle) + up * sin(angle))
+	for i: int in sides:
+		var n0 := normals[i]
+		var n1 := normals[i + 1]
+		var quad: Array[Vector3] = [from + n0 * radius, to + n0 * radius, to + n1 * radius, from + n1 * radius]
+		var quad_normals: Array[Vector3] = [n0, n0, n1, n1]
+		# o sentido dos vértices pela normal média (a face para fora do eixo)
+		var outward := (n0 + n1).normalized()
+		var order: Array[int] = [0, 1, 2, 0, 2, 3]
+		if (quad[1] - quad[0]).cross(quad[2] - quad[0]).dot(outward) > 0.0:
+			order = [0, 2, 1, 0, 3, 2]
+		for index: int in order:
+			tool.set_normal(quad_normals[index])
+			tool.set_uv(uv)
+			tool.add_vertex(quad[index])
 
 
 static func _box(tool: SurfaceTool, center: Vector3, size: Vector3, uv: Vector2) -> void:

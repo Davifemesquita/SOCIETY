@@ -2065,6 +2065,14 @@ Regras que já custaram investigação:
   primeiro foguete espera `FestivalView.FINALE_ROLL_S`; `finale_started(site)` leva o mastro. Com `Settings.finale_camera`
   (Opções → Jogo, desligada por padrão) a câmera desliza até a praça.
 
+### Telhado de telhas (Fase 95, nossa)
+
+- **Plano** em `docs/plano_fase95.md` (roteiro `docs/plano_fases_95_99.md`, formas mais redondas, olhando o Anno do dono:
+  só a ideia). As águas do telhado ganham telhas no shader (`roof_tile_shade`, só na célula (0, 3) da paleta, sem
+  triângulo a mais) e as quinas ganham hastes redondas (`BuildingKit._rod`: capa da cumeeira e dos espigões, beiral
+  redondo) na célula (1, 3) (`UV_ROOF_TRIM`). A captura das casas é `tools/capture_phase95.tscn` (ilha plana; a da Fase
+  39 não acha mais lugar no terreno v3/v4).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2170,6 +2178,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 92 — Medidas que faltam (nossa) | **feita em 28/10/2026**: alto em 1080p com VSync desligado 86 FPS, o 3D nos pixels do 4K 46,5 FPS (GPU 21 ms), o executável exportado 89 FPS; o shader baker não muda as compilações (fica registrado); o executável caía no benchmark porque um `assert` some na exportação, e por trás disso as ilhas 3 e 4 da semente 1840 no terreno v3 não têm lugar de entreposto (virou a Fase 93); plano em `docs/plano_fase92.md` |
 | 93 — Porto em toda ilha (nossa) | **feita em 28/10/2026**: terreno v4, o padrão do jogo novo: o v3 com um porto aplainado na ilha que não tinha lugar de entreposto (12 de 31 sementes tinham ilha sem como colonizar); as outras ilhas saem iguais às do v3; o v1, o v2 e o v3 seguem para os saves; o `SiteFinder` deixou de pular lotes encostados no mar pelo canto; plano em `docs/plano_fase93.md` |
 | 94 — Som e câmera do grand finale (nossa) | **feita em 28/10/2026**, a última do roteiro: rufar de caixa gerado no código antes da salva, com o primeiro foguete esperando ele acabar; opção "Câmera no grand finale" (desligada por padrão) que leva a câmera à praça às 23h; o som falta ser ouvido pelo dono; plano em `docs/plano_fase94.md` |
+| 95 — Telhado de telhas (nossa) | **feita em 29/10/2026**, primeira do roteiro das formas mais redondas (Fases 95 a 99, olhando o Anno do dono): telhas em fileiras desencontradas com a borda redonda nas águas (no shader), capa redonda na cumeeira e nos espigões e beiral redondo; GPU igual no A/B; plano em `docs/plano_fase95.md` |
 
 Pendências já vistas para fases futuras:
 

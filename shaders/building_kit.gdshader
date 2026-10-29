@@ -46,6 +46,15 @@ uniform vec4 moss_color : source_color = vec4(0.27, 0.31, 0.16, 1.0);
 uniform float moss_height = 0.9;
 uniform float moss_strength = 0.45;
 
+// Fase 95: as telhas nas águas do telhado (célula (0, 3); a capa da cumeeira e o beiral, na (1, 3), ficam lisos):
+// fileiras de tile_row_m ao longo da água, telhas de tile_width_m desencontradas fileira a fileira, a borda de baixo
+// arredondada com a sombra embaixo, a junta entre as telhas e um tom por telha; some de tile_fade_far / 2 a tile_fade_far
+// (de longe as linhas cintilavam)
+uniform float tile_row_m = 0.34;
+uniform float tile_width_m = 0.27;
+uniform float tile_strength = 0.38;
+uniform float tile_fade_far = 80.0;
+
 varying vec3 world_position;
 varying vec3 world_normal;
 varying float contact;
@@ -73,6 +82,26 @@ float moss_noise(vec2 p) {
 	float c = fract(sin(dot(i + vec2(0.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
 	float d = fract(sin(dot(i + vec2(1.0, 1.0), vec2(127.1, 311.7))) * 43758.5453);
 	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+// Fase 95: quanto a cor da água do telhado escurece no ponto p (normal n), de 0 a 1: a sombra sob a borda redonda de
+// cada telha, a junta entre elas, a parte de cima coberta pela fileira de cima e um tom sorteado por telha
+float roof_tile_shade(vec3 p, vec3 n) {
+	vec2 down = normalize(n.xz);
+	vec2 across = vec2(-down.y, down.x);
+	// a distância ao longo da água: a do chão dividida pelo cosseno da inclinação (n.y)
+	float s = dot(p.xz, down) / max(n.y, 0.2) / tile_row_m;
+	float row = floor(s);
+	float f = fract(s);
+	float c = dot(p.xz, across) / tile_width_m + 0.5 * mod(row, 2.0);
+	float cf = fract(c) - 0.5;
+	// a borda de baixo arredondada: o meio da telha desce mais que as juntas
+	float edge = 0.8 + 0.17 * (1.0 - 4.0 * cf * cf);
+	float under = smoothstep(edge - 0.06, edge, f);
+	float seam = smoothstep(0.38, 0.5, abs(cf));
+	float covered = 1.0 - smoothstep(0.0, 0.35, f);
+	float tone = fract(sin(dot(vec2(row, floor(c)), vec2(12.9898, 78.233))) * 43758.5453);
+	return clamp(under * 0.9 + seam * 0.45 + covered * 0.25 + (tone - 0.5) * 0.35, 0.0, 1.0);
 }
 
 vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, float index) {
@@ -123,6 +152,11 @@ void fragment() {
 		NORMAL_MAP = wall
 				? triplanar(wall_normals, world_position, weights, wall_meters, layer).rgb
 				: triplanar(roof_normals, world_position, weights, roof_meters, roof_layer).rgb;
+		// Fase 95: as telhas, só nas águas viradas para cima (não na capa, no beiral nem embaixo do telhado)
+		if (roof && cell.x == 0 && world_normal.y > 0.25 && world_normal.y < 0.97) {
+			float near = 1.0 - smoothstep(tile_fade_far * 0.5, tile_fade_far, length(VERTEX));
+			color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;
+		}
 	}
 	float above = world_position.y - base_height;
 	if (glass) {

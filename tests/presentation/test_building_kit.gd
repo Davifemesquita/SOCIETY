@@ -255,7 +255,8 @@ func test_the_church_gets_a_belfry_with_a_bell_above_the_roof() -> void:
 	var size := church.size_m()
 	assert_float(tower.x).is_less(-size.x * 0.25)
 	assert_float(tower.z).is_less(-size.y * 0.25)
-	assert_float(box.position.x).is_greater_equal(-size.x * 0.5 - BuildingKit.BELFRY_OUT_M - 0.3)
+	# (desde a Fase 95 o beiral redondo põe a borda do telhado EAVE_ROLL_M mais para fora)
+	assert_float(box.position.x).is_greater_equal(-size.x * 0.5 - BuildingKit.BELFRY_OUT_M - 0.3 - BuildingKit.EAVE_ROLL_M)
 	var plain := _spec(&"church")
 	plain.silhouette = BuildingDef.Silhouette.NONE
 	assert_int(BuildingKit.triangles(church)).is_greater(BuildingKit.triangles(plain) + BuildingKit.BELL_SEGMENTS * 6)

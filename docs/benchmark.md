@@ -1408,3 +1408,12 @@ série 3.019 ms (2.784 no v3), em threads 1.230 ms (1.202), pior quadro 21 ms. J
 Área de trabalho escondida, alto, semente 1840 (v4). Sem festa no mundo do benchmark (o rufar é gerado ao montar a
 partida e não toca). Dia inteiro 88,1 FPS (1% low 45,4, pior quadro 32 ms), tick médio 1,31 ms, construir com a ilha
 cheia 16,1 ms, jogo novo 10,7 s, carregar 4,0 s, 2737 objetos e 1087 draw calls (iguais à Fase 93). Neutra.
+
+## Fase 95 — telhado de telhas (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v4), **com o Anno 1800 aberto ao lado** (aberto nesta sessão para olhar as
+casas; 12,8 GB de RAM e a GPU dividida), então os números absolutos não valem: o tick subiu para 1,7 ms e o jogo novo para
+13,7 s sem nada a ver com o telhado. A/B nas mesmas condições, minutos de distância: **sem a Fase 95** 37,2 FPS (GPU 23,9
+ms, 1% low 22,7), **com a Fase 95** 38,0 FPS (GPU 23,6 ms, 1% low 22,7) — igual dentro do ruído. Primitivas no quadro
+com tudo visível 15.574.385 → 15.615.617 (+0,26%, as hastes redondas); draw calls iguais (1087 e 1085, pela hora do
+quadro). Neutra; repetir sem o Anno aberto.
