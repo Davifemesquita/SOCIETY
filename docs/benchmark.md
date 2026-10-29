@@ -1356,3 +1356,10 @@ dia inteiro 86,6 FPS (1% low 45,2, pior quadro 27 ms), tick médio 1,32 ms, cons
 foguetes da `FestivalView` ficam escondidos). Máquina no estado rápido: GPU 10,9 ms, dia inteiro 86,7 FPS (1% low 45,0,
 pior quadro 28 ms), tick médio 1,33 ms, construir com a ilha cheia 16,3 ms, jogo novo 10,5 s, carregar 3,72 s, 2769
 objetos e 1119 draw calls (iguais à Fase 85). Neutra.
+
+## Fase 87 — formas e vivas (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark (nenhum estouro; a gravação das
+vivas é carregada ao montar a partida e não toca). Máquina no estado rápido: GPU 11,0 ms, dia inteiro 85,9 FPS (1% low
+45,7, pior quadro 27 ms), tick médio 1,34 ms, construir com a ilha cheia 16,1 ms, jogo novo 10,4 s, carregar 3,80 s,
+2769 objetos e 1119 draw calls (iguais). Neutra.
