@@ -1370,3 +1370,10 @@ vivas é carregada ao montar a partida e não toca). Máquina no estado rápido:
 ficam parados; a segunda gravação é carregada ao montar a partida e não toca). Máquina no estado rápido: GPU 10,9 ms,
 dia inteiro 86,3 FPS (1% low 44,2, pior quadro 33 ms), tick médio 1,34 ms, construir com a ilha cheia 16,1 ms, jogo
 novo 10,3 s, carregar 3,79 s, 2769 objetos e 1119 draw calls (iguais). Neutra.
+
+## Fase 89 — grand finale (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark (as 14 bombas e os 12 foguetes, eram
+6 e 8, ficam parados). Máquina no estado rápido: GPU 10,8 ms, dia inteiro 86,4 FPS (1% low 43,3, pior quadro 32 ms),
+tick médio 1,35 ms, construir com a ilha cheia 16,4 ms, jogo novo 10,4 s, carregar 3,78 s, 2769 objetos e 1119 draw
+calls (iguais). Neutra.
