@@ -4,7 +4,7 @@ extends Node
 ## vento e a chuva do AmbiencePlayer). O estouro toca no ponto do céu e chega atrasado pela distância até a câmera
 ## (SOUND_SPEED_M_S); as palmas tocam na praça, um pouco depois (o povo reage), mais altas com mais gente batendo.
 ## Desde a Fase 86, o assobio do foguete subindo (segue o foguete e acaba no estouro) e o eco do estrondo (ECHO_*).
-## Desde a Fase 87, as vivas do povo: a gravação de uma multidão (CHEER_PATH, Gregor Quendel, CC BY 4.0) em laço na
+## Desde a Fase 94, o rufar de caixa antes do grand finale (on_finale). Desde a Fase 87, as vivas do povo: a gravação de uma multidão (CHEER_PATH, Gregor Quendel, CC BY 4.0) em laço na
 ## praça, que sobe a cada estouro com gente reagindo (a partir de CHEER_MIN_PEOPLE) e some devagar (cheer_level); desde
 ## a Fase 88 com a faixa calma (CHEER_SOFT_PATH) para pouca gente, misturada pelo nível (cheer_mix).
 ## Sem tela (headless) nada toca: os testes conferem `played`, `pending_count`, `flights_count` e `cheer_level`.
@@ -44,6 +44,11 @@ const CHEER_SILENT := 0.02
 const CHEER_SOFT_PATH := "res://assets/audio/sfx/crowd_cheer_soft.mp3"
 const CHEER_MIX_FROM := 0.35
 const CHEER_MIX_TO := 0.8
+## Fase 94: o rufar de caixa antes do grand finale: ROLL_S (o mesmo FestivalView.FINALE_ROLL_S), as batidas apertando de
+## ROLL_GAP_S.x a .y e subindo de volume, e uma batida forte no fim.
+const ROLL_S := 2.0
+const ROLL_GAP_S := Vector2(0.11, 0.04)
+const ROLL_DB := -2.0
 
 ## Quantas vezes cada som tocou (&"bang", &"echo", &"applause", &"whistle", &"cheer").
 var played: Dictionary[StringName, int] = {}
@@ -54,6 +59,7 @@ var cheer_level: float = 0.0
 static var _bang_cache: AudioStreamWAV
 static var _applause_cache: AudioStreamWAV
 static var _whistle_cache: AudioStreamWAV
+static var _roll_cache: AudioStreamWAV
 
 var _camera: StrategyCamera
 var _bang: AudioStreamWAV
@@ -65,6 +71,7 @@ var _whistles: Array[AudioStreamPlayer3D] = []
 var _flights: Array[Array] = []
 ## As vivas: [calma, forte] (Fase 88; null quando a gravação falta).
 var _cheers: Array[AudioStreamPlayer3D] = []
+var _roll: AudioStreamPlayer3D
 ## Sons esperando a hora: [tempo que falta, chave, posição, volume em dB].
 var _pending: Array[Array] = []
 var _audible: bool = true
@@ -79,6 +86,7 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 		_bang_cache = bang_stream()
 		_applause_cache = applause_stream()
 		_whistle_cache = whistle_stream()
+		_roll_cache = roll_stream()
 	_bang = _bang_cache
 	_applause = _applause_cache
 	for i: int in BANG_VOICES:
@@ -95,6 +103,8 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 			looped.loop = true
 			player = _voice(looped, 14.0, 260.0)
 		_cheers.append(player)
+	_roll = _voice(_roll_cache, 14.0, 300.0)
+	festival.finale_started.connect(on_finale)
 	festival.launched.connect(func(_island_id: int, from: Vector3, to: Vector3, rise_s: float) -> void:
 		on_launch(from, to, rise_s))
 	festival.exploded.connect(func(island_id: int, at: Vector3) -> void:
@@ -146,6 +156,17 @@ func pending_count() -> int:
 
 func flights_count() -> int:
 	return _flights.size()
+
+
+## Fase 94: o grand finale vai começar na praça do mastro site: o rufar toca ali (o primeiro foguete espera ele acabar).
+func on_finale(site: Vector3) -> void:
+	played[&"roll"] = played.get(&"roll", 0) + 1
+	if not _audible or _roll == null:
+		return
+	_roll.global_position = Vector3(site.x, site.y - FestivalView.MAST_M * 0.5, site.z)
+	_roll.volume_db = ROLL_DB
+	_roll.pitch_scale = maxf(GameClock.clock.speed_multiplier(), 1.0)
+	_roll.play()
 
 
 ## Fase 86: um foguete subindo de from até to em rise_s segundos de jogo: o assobio sai dele e acaba no estouro.
@@ -372,6 +393,36 @@ static func whistle_stream() -> AudioStreamWAV:
 		var envelope := minf(t / 0.06, 1.0) * minf((1.0 - t) / 0.12, 1.0)
 		samples[i] = (sin(phase) * 0.7 + hiss * 0.35) * envelope
 	return _wav(samples)
+
+
+## Fase 94: o rufar de caixa: batidas curtas de ruído em faixa (o estalo da pele e o chiado da esteira, que dura mais),
+## cada vez mais juntas (ROLL_GAP_S) e mais fortes, e a batida forte do fim.
+static func roll_stream() -> AudioStreamWAV:
+	var count := roundi((ROLL_S + 0.4) * RATE)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 94
+	var time := 0.0
+	while time < ROLL_S:
+		var progress := time / ROLL_S
+		_drum_hit(samples, rng, roundi(time * RATE), lerpf(0.25, 0.8, progress * progress))
+		time += lerpf(ROLL_GAP_S.x, ROLL_GAP_S.y, progress) * rng.randf_range(0.9, 1.1)
+	_drum_hit(samples, rng, roundi(ROLL_S * RATE), 1.0)
+	return _wav(samples)
+
+
+## Uma batida de caixa a partir da amostra at: o estalo (ruído agudo que some em ~6 ms) e a esteira (ruído que some em ~40 ms).
+static func _drum_hit(samples: PackedFloat32Array, rng: RandomNumberGenerator, at: int, strength: float) -> void:
+	var low := 0.0
+	for j: int in roundi(0.12 * RATE):
+		if at + j >= samples.size():
+			return
+		var noise := rng.randf_range(-1.0, 1.0)
+		low += (noise - low) * 0.3
+		var crack := (noise - low) * exp(-float(j) / (0.006 * RATE))
+		var snare := noise * 0.45 * exp(-float(j) / (0.04 * RATE))
+		samples[at + j] += (crack + snare) * strength
 
 
 ## PCM de 16 bits, mono, normalizado a 0,8.

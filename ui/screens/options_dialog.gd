@@ -159,6 +159,8 @@ func _game() -> Control:
 	grid.add_child(autosave)
 	grid.add_child(UiKit.label("OPTIONS_ADVISOR"))
 	grid.add_child(_check("OPTIONS_ADVISOR_TIP", Settings.advisor, func(on: bool) -> void: Settings.advisor = on))
+	grid.add_child(UiKit.label("OPTIONS_FINALE_CAMERA"))
+	grid.add_child(_check("OPTIONS_FINALE_CAMERA_TIP", Settings.finale_camera, func(on: bool) -> void: Settings.finale_camera = on))
 	grid.add_child(UiKit.label("OPTIONS_CAMERA_SPEED"))
 	grid.add_child(_slider("OPTIONS_CAMERA_SPEED_TIP", Settings.CAMERA_SPEED_RANGE.x, Settings.CAMERA_SPEED_RANGE.y, 0.1,
 			Settings.camera_speed, func(value: float) -> void: Settings.camera_speed = value))

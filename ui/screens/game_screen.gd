@@ -271,6 +271,7 @@ func _ready() -> void:
 	festival_sounds.name = "FestivalSounds"
 	add_child(festival_sounds)
 	festival_sounds.setup(camera, festival_view, pedestrian_view.crowd)
+	festival_view.finale_started.connect(_on_finale_started)
 	autosave = Autosave.new()
 	autosave.name = "Autosave"
 	add_child(autosave)
@@ -430,6 +431,12 @@ func look_at_start() -> void:
 	camera.rig.focus = focus
 	camera.rig.ground_height = simulation.world.surface_height(focus.x, focus.z)
 	camera.apply()
+
+
+## Fase 94: com a opção ligada (Opções → Jogo), o grand finale leva a câmera à praça dele (desliza, como o clique num aviso).
+func _on_finale_started(site: Vector3) -> void:
+	if Settings.finale_camera and not photo_mode.active:
+		camera.rig.center_on(site)
 
 
 func game_state() -> Dictionary:

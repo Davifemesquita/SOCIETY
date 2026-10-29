@@ -31,6 +31,8 @@ var graphics_preset: int = 2
 ## Salvamento automático a cada tantos minutos de jogo (0 = desligado) e o conselheiro falando.
 var autosave_minutes: float = 10.0
 var advisor: bool = true
+## Fase 94: no grand finale (às 23h nas noites de festa), a câmera vai sozinha para a praça.
+var finale_camera: bool = false
 ## Velocidade do pan da câmera (multiplica GameConfig.camera_pan_speed).
 var camera_speed: float = 1.0
 ## Limite de quadros por segundo (0 = sem limite, FPS_AUTO = pelo monitor).
@@ -246,6 +248,7 @@ func save_to(path: String) -> Error:
 	file.set_value("graphics", "period_look", period_look)
 	file.set_value("game", "autosave_minutes", autosave_minutes)
 	file.set_value("game", "advisor", advisor)
+	file.set_value("game", "finale_camera", finale_camera)
 	file.set_value("controls", "camera_speed", camera_speed)
 	for bus: StringName in volumes:
 		file.set_value("audio", String(bus), volumes[bus])
@@ -275,6 +278,7 @@ func load_from(path: String) -> void:
 	var raw_autosave := _number(file.get_value("game", "autosave_minutes", _config.autosave_interval_minutes), _config.autosave_interval_minutes)
 	autosave_minutes = raw_autosave if AUTOSAVE_CHOICES.has(raw_autosave) else _config.autosave_interval_minutes
 	advisor = _flag(file.get_value("game", "advisor", true), true)
+	finale_camera = _flag(file.get_value("game", "finale_camera", false), false)
 	fullscreen = _flag(file.get_value("graphics", "fullscreen", false), false)
 	vsync = _flag(file.get_value("graphics", "vsync", true), true)
 	period_look = _flag(file.get_value("graphics", "period_look", false), false)

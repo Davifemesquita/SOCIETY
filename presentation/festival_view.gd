@@ -13,8 +13,8 @@ extends Node3D
 signal exploded(island_id: int, position: Vector3)
 ## Um foguete subindo de from até to em rise_s segundos de jogo (Fase 86).
 signal launched(island_id: int, from: Vector3, to: Vector3, rise_s: float)
-## O grand finale começou (Fase 89).
-signal finale_started
+## O grand finale começou (Fase 89), na praça do mastro site (Fase 94: para o rufar e a câmera).
+signal finale_started(site: Vector3)
 
 ## Prédios que viram praça da festa, na ordem de preferência; o entreposto só se a ilha não tem nenhum.
 const SQUARES: Array[StringName] = [&"fountain_square", &"bandstand", &"market"]
@@ -53,6 +53,8 @@ const ROCKET_POOL := 12
 const FINALE_HOUR := 23.0
 const FINALE_WINDOW_H := 0.9
 const FINALE_GAP_S := Vector2(0.12, 0.35)
+## Fase 94: o rufar antes da salva (s de jogo): o primeiro foguete espera ele acabar.
+const FINALE_ROLL_S := 2.0
 const FINALE_SHAPES: Array[int] = [Shape.CHRYSANTHEMUM, Shape.PEONY, Shape.DOUBLE, Shape.CHRYSANTHEMUM, Shape.RING,
 		Shape.PEONY, Shape.CHRYSANTHEMUM, Shape.DOUBLE, Shape.RING, Shape.CHRYSANTHEMUM, Shape.PEONY, Shape.DOUBLE,
 		Shape.CHRYSANTHEMUM, Shape.RING, Shape.DOUBLE, Shape.CHRYSANTHEMUM, Shape.PEONY, Shape.DOUBLE, Shape.WILLOW,
@@ -253,8 +255,9 @@ func _process(delta: float) -> void:
 func start_finale() -> void:
 	_finale_armed = false
 	_finale = FINALE_SHAPES.duplicate()
-	_finale_wait = 0.0
-	finale_started.emit()
+	# Fase 94: o primeiro foguete sai quando o rufar acaba
+	_finale_wait = FINALE_ROLL_S
+	finale_started.emit(_launch_sites[0] if not _launch_sites.is_empty() else Vector3.ZERO)
 
 
 ## Fase 89: anda a salva game_delta segundos de jogo: um foguete a cada FINALE_GAP_S, de um mastro sorteado, na forma

@@ -32,7 +32,7 @@ func before_test() -> void:
 	_finales = 0
 	_view.launched.connect(func(_island: int, _from: Vector3, _to: Vector3, _rise: float) -> void: _launches += 1)
 	_view.exploded.connect(func(_island: int, _at: Vector3) -> void: _shapes.append(_view.last_shape))
-	_view.finale_started.connect(func() -> void: _finales += 1)
+	_view.finale_started.connect(func(_site: Vector3) -> void: _finales += 1)
 
 
 func after_test() -> void:
@@ -67,7 +67,10 @@ func test_the_finale_fires_the_whole_list_in_order() -> void:
 
 func test_the_finale_is_quick_but_not_all_at_once() -> void:
 	_view.start_finale()
+	# desde a Fase 94 o primeiro foguete espera o rufar
 	_view.advance_finale(0.0)
+	assert_int(_launches).is_equal(0)
+	_view.advance_finale(FestivalView.FINALE_ROLL_S)
 	assert_int(_launches).is_equal(1)
 	# em poucos segundos sai a salva toda (sem esperar os estouros)
 	var seconds := 0.0

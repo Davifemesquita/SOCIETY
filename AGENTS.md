@@ -123,6 +123,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase88.tscn -- /pasta/de/saida
 # Fase 89: o grand finale (finale_meio.png e finale_chuva.png)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase89.tscn -- /pasta/de/saida
+# Fase 94: a câmera indo à praça no rufar (camera_na_praca.png), o grand finale e rufar.wav
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase94.tscn -- /pasta/de/saida
 # cidade de teste: o jogador-robô joga 4 h (todas as classes), mais praças, zoológico e museu cheios, prefeitura, eventos
 # ligados com uma festa e o relógio às 18h, no slot "cidade_de_teste" (abre pelo Carregar); ~3 min, sem tela
 tools/godot.sh godot --headless --path . res://tools/build_test_city.tscn
@@ -2057,6 +2059,12 @@ Regras que já custaram investigação:
   (`harbor_site`); ilha que já tinha sai igual à do v3. O v3 fica para os saves dele. `SiteFinder` dilata a água até largura
   + altura do prédio (antes pulava lotes bons). Mudou um número do porto (`HARBOR_*`), regrave as assinaturas do v4.
 
+### Rufar e câmera do grand finale (Fase 94, nossa)
+
+- **Plano** em `docs/plano_fase94.md`. O grand finale começa com o rufar (`FestivalSounds.roll_stream`, `on_finale`) e o
+  primeiro foguete espera `FestivalView.FINALE_ROLL_S`; `finale_started(site)` leva o mastro. Com `Settings.finale_camera`
+  (Opções → Jogo, desligada por padrão) a câmera desliza até a praça.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2161,6 +2169,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 91 — Travadas do ultra (nossa) | **feita em 28/10/2026**: três rodadas do ultra na RTX 5060 (62 a 64 FPS, pior quadro de 85, 32 e 28 ms), nenhuma travada de ~2 s; o benchmark grava por quadro a hora e as pipelines compiladas, e as compilações do anoitecer não coincidem com nenhum quadro lento (o Godot as faz por fora); nada mudou no jogo; plano em `docs/plano_fase91.md` |
 | 92 — Medidas que faltam (nossa) | **feita em 28/10/2026**: alto em 1080p com VSync desligado 86 FPS, o 3D nos pixels do 4K 46,5 FPS (GPU 21 ms), o executável exportado 89 FPS; o shader baker não muda as compilações (fica registrado); o executável caía no benchmark porque um `assert` some na exportação, e por trás disso as ilhas 3 e 4 da semente 1840 no terreno v3 não têm lugar de entreposto (virou a Fase 93); plano em `docs/plano_fase92.md` |
 | 93 — Porto em toda ilha (nossa) | **feita em 28/10/2026**: terreno v4, o padrão do jogo novo: o v3 com um porto aplainado na ilha que não tinha lugar de entreposto (12 de 31 sementes tinham ilha sem como colonizar); as outras ilhas saem iguais às do v3; o v1, o v2 e o v3 seguem para os saves; o `SiteFinder` deixou de pular lotes encostados no mar pelo canto; plano em `docs/plano_fase93.md` |
+| 94 — Som e câmera do grand finale (nossa) | **feita em 28/10/2026**, a última do roteiro: rufar de caixa gerado no código antes da salva, com o primeiro foguete esperando ele acabar; opção "Câmera no grand finale" (desligada por padrão) que leva a câmera à praça às 23h; o som falta ser ouvido pelo dono; plano em `docs/plano_fase94.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -640,6 +640,8 @@ OPTIONS_AUTOSAVE_OFF,Desligado,Off
 OPTIONS_AUTOSAVE_EVERY,A cada %s min,Every %s min
 OPTIONS_ADVISOR,Conselheiro,Advisor
 OPTIONS_ADVISOR_TIP,O conselheiro apresenta e comenta as metas guiadas,The advisor introduces and comments on the guided goals
+OPTIONS_FINALE_CAMERA,Câmera no grand finale,Camera at the grand finale
+OPTIONS_FINALE_CAMERA_TIP,"Nas noites de festa, às 23h, a câmera vai sozinha para a praça ver o grand finale","On festival nights, at 11 pm, the camera moves to the square on its own to watch the grand finale"
 OPTIONS_CAMERA_SPEED,Velocidade da câmera,Camera speed
 OPTIONS_CAMERA_SPEED_TIP,Rapidez do movimento da câmera pelo teclado e pela borda da tela,How fast the camera moves with the keyboard and the screen edge
 NEW_GAME_EVENTS,Eventos e encomendas,Events and orders

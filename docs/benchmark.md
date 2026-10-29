@@ -1402,3 +1402,9 @@ navios em 7 rotas", sem ilha de fora (na Fase 92, 5 rotas e 2 ilhas sem lugar de
 série 3.019 ms (2.784 no v3), em threads 1.230 ms (1.202), pior quadro 21 ms. Jogo novo 10,6 s, carregar 4,0 s, 28.830
 árvores (7 a menos: os portos aplainados), 2737 objetos e 1087 draw calls. Dia inteiro 87,4 FPS (1% low 43,7, pior quadro
 29 ms), tick médio 1,33 ms, construir com a ilha cheia 16,3 ms. Neutra.
+
+## Fase 94 — som e câmera do grand finale (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v4). Sem festa no mundo do benchmark (o rufar é gerado ao montar a
+partida e não toca). Dia inteiro 88,1 FPS (1% low 45,4, pior quadro 32 ms), tick médio 1,31 ms, construir com a ilha
+cheia 16,1 ms, jogo novo 10,7 s, carregar 4,0 s, 2737 objetos e 1087 draw calls (iguais à Fase 93). Neutra.
