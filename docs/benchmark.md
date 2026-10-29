@@ -1342,3 +1342,10 @@ dos pedestres ganhou 60 linhas e o shader, a tabela de 8 animações): 2000 pede
 rápido, como na Fase 83: GPU 11,0 ms (10,8), dia inteiro 84,3 FPS (86,3; 1% low 41,1, pior quadro 37 ms), tick médio
 1,42 ms (1,39), construir com a ilha cheia 17,9 ms (16,7), 2769 objetos e 1119 draw calls (iguais). Dentro da variação
 entre rodadas; neutra.
+
+## Fase 85 — palmas nos estouros (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark (nenhum estouro, nenhuma palma); o
+som da festa é gerado uma vez ao montar a partida (~21 ms, medido num teste). Máquina no estado rápido: GPU 10,8 ms,
+dia inteiro 86,6 FPS (1% low 45,2, pior quadro 27 ms), tick médio 1,32 ms, construir com a ilha cheia 16,6 ms, jogo novo
+10,4 s (10,4 na Fase 84), carregar 3,75 s (3,82), 2769 objetos e 1119 draw calls (iguais). Neutra.
