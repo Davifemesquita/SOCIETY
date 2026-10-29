@@ -29,7 +29,8 @@ func after_test() -> void:
 
 
 func test_the_draw_follows_the_weights() -> void:
-	var counts := PackedInt32Array([0, 0, 0, 0])
+	var counts := PackedInt32Array()
+	counts.resize(FestivalView.Shape.size())
 	for i: int in 1000:
 		counts[FestivalView.pick_shape((i + 0.5) / 1000.0)] += 1
 	var total := 0.0

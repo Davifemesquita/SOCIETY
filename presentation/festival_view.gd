@@ -48,8 +48,11 @@ const ROCKET_GLOW_M := 1.6
 const ROCKET_SPARK_M := 0.7
 ## Fase 87: as formas do estouro e o peso de cada uma no sorteio: bola (a de antes), crisântemo (mais denso, passando de
 ## uma cor a outra), salgueiro (dourado, devagar, caindo como chuva) e anel (num plano inclinado).
-enum Shape { PEONY, CHRYSANTHEMUM, WILLOW, RING }
-const SHAPE_WEIGHTS: Array[float] = [4.0, 2.0, 2.0, 2.0]
+## Fase 88: e a de duas etapas (DOUBLE_STARS estrelas, cada uma estourando de novo em DOUBLE_SPARKS faíscas).
+enum Shape { PEONY, CHRYSANTHEMUM, WILLOW, RING, DOUBLE }
+const SHAPE_WEIGHTS: Array[float] = [4.0, 2.0, 2.0, 2.0, 1.5]
+const DOUBLE_STARS := 10
+const DOUBLE_SPARKS := 12
 const WILLOW_COLOR := Color(1.0, 0.78, 0.35)
 const FIREWORK_COLORS: Array[Color] = [Color(1.0, 0.35, 0.3), Color(1.0, 0.85, 0.35), Color(0.45, 0.7, 1.0), Color(0.6, 1.0, 0.5),
 		Color(1.0, 0.55, 0.95), Color(1.0, 1.0, 0.95)]
@@ -264,6 +267,7 @@ static func shape_burst(burst: GPUParticles3D, shape: Shape, first: Color, secon
 	process.radial_velocity_min = 0.0
 	process.radial_velocity_max = 0.0
 	process.spread = 180.0
+	process.sub_emitter_mode = ParticleProcessMaterial.SUB_EMITTER_DISABLED
 	var end := first
 	match shape:
 		Shape.PEONY:
@@ -292,6 +296,20 @@ static func shape_burst(burst: GPUParticles3D, shape: Shape, first: Color, secon
 			process.emission_ring_height = 0.0
 			process.radial_velocity_min = 11.0
 			process.radial_velocity_max = 12.0
+		Shape.DOUBLE:
+			# poucas estrelas grandes e rápidas que, ao apagar, estouram de novo na segunda cor
+			burst.amount = DOUBLE_STARS
+			burst.lifetime = 0.8
+			_speeds(process, 11.0, 13.0, 1.0, 1.5, -3.0)
+			process.sub_emitter_mode = ParticleProcessMaterial.SUB_EMITTER_AT_END
+			process.sub_emitter_amount_at_end = DOUBLE_SPARKS
+			var sub := burst.get_node_or_null("Sub") as GPUParticles3D
+			if sub != null:
+				var sub_process := sub.process_material as ParticleProcessMaterial
+				_speeds(sub_process, 3.5, 5.0, 1.5, 2.0, -4.0)
+				var sub_fade := (sub_process.color_ramp as GradientTexture1D).gradient
+				sub_fade.set_color(0, Color(second, 1.0))
+				sub_fade.set_color(1, Color(second.darkened(0.3), 0.0))
 	fade.set_color(0, Color(first, 1.0))
 	fade.set_color(1, Color(end, 0.0))
 
@@ -465,12 +483,23 @@ static func _rocket() -> Rocket:
 
 
 ## Uma bomba de fogos: estouro de uma vez em todas as direções, que cai devagar e apaga.
+## Fase 88: com um sub-emissor filho (Sub), que só a bomba de duas etapas usa (as estrelas dela estouram de novo no fim).
 static func _burst() -> GPUParticles3D:
-	var particles := GPUParticles3D.new()
-	particles.amount = 70
-	particles.lifetime = 1.8
+	var particles := _sparks(70, 1.8, 0.6)
 	particles.one_shot = true
 	particles.explosiveness = 1.0
+	var sub := _sparks(DOUBLE_STARS * DOUBLE_SPARKS, 1.0, 0.45)
+	sub.name = "Sub"
+	particles.add_child(sub)
+	particles.sub_emitter = NodePath("Sub")
+	return particles
+
+
+## Faíscas aditivas que apagam no fim, com a cor pela rampa (a bomba e o sub-emissor dela).
+static func _sparks(amount: int, lifetime: float, size: float) -> GPUParticles3D:
+	var particles := GPUParticles3D.new()
+	particles.amount = amount
+	particles.lifetime = lifetime
 	particles.emitting = false
 	particles.visibility_aabb = AABB(Vector3(-25, -40, -25), Vector3(50, 60, 50))
 	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -490,7 +519,7 @@ static func _burst() -> GPUParticles3D:
 	process.color_ramp = ramp
 	particles.process_material = process
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.6, 0.6)
+	quad.size = Vector2(size, size)
 	var material := StandardMaterial3D.new()
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD

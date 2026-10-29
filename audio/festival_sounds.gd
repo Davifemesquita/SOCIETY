@@ -5,7 +5,8 @@ extends Node
 ## (SOUND_SPEED_M_S); as palmas tocam na praça, um pouco depois (o povo reage), mais altas com mais gente batendo.
 ## Desde a Fase 86, o assobio do foguete subindo (segue o foguete e acaba no estouro) e o eco do estrondo (ECHO_*).
 ## Desde a Fase 87, as vivas do povo: a gravação de uma multidão (CHEER_PATH, Gregor Quendel, CC BY 4.0) em laço na
-## praça, que sobe a cada estouro com gente reagindo (a partir de CHEER_MIN_PEOPLE) e some devagar (cheer_level).
+## praça, que sobe a cada estouro com gente reagindo (a partir de CHEER_MIN_PEOPLE) e some devagar (cheer_level); desde
+## a Fase 88 com a faixa calma (CHEER_SOFT_PATH) para pouca gente, misturada pelo nível (cheer_mix).
 ## Sem tela (headless) nada toca: os testes conferem `played`, `pending_count`, `flights_count` e `cheer_level`.
 
 const RATE := 22050
@@ -38,6 +39,11 @@ const CHEER_MIN_PEOPLE := 3
 const CHEER_DB := -3.0
 const CHEER_FADE_PER_S := 0.35
 const CHEER_SILENT := 0.02
+## Fase 88: a faixa calma do mesmo pacote ("Soft cheering - II") para pouca gente: até CHEER_MIX_FROM do nível só ela,
+## a partir de CHEER_MIX_TO só a forte, e entre as duas, a mistura (cheer_mix).
+const CHEER_SOFT_PATH := "res://assets/audio/sfx/crowd_cheer_soft.mp3"
+const CHEER_MIX_FROM := 0.35
+const CHEER_MIX_TO := 0.8
 
 ## Quantas vezes cada som tocou (&"bang", &"echo", &"applause", &"whistle", &"cheer").
 var played: Dictionary[StringName, int] = {}
@@ -57,7 +63,8 @@ var _claps: Array[AudioStreamPlayer3D] = []
 var _whistles: Array[AudioStreamPlayer3D] = []
 ## Assobios no ar: [voz, de, até, segundos da subida, segundos andados] (tempo de jogo).
 var _flights: Array[Array] = []
-var _cheer: AudioStreamPlayer3D
+## As vivas: [calma, forte] (Fase 88; null quando a gravação falta).
+var _cheers: Array[AudioStreamPlayer3D] = []
 ## Sons esperando a hora: [tempo que falta, chave, posição, volume em dB].
 var _pending: Array[Array] = []
 var _audible: bool = true
@@ -80,11 +87,14 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 		_claps.append(_voice(_applause, 10.0, 220.0))
 	for i: int in WHISTLE_VOICES:
 		_whistles.append(_voice(_whistle_cache, 20.0, 500.0))
-	var recording := load(CHEER_PATH) as AudioStreamMP3
-	if recording != null:
-		var looped := recording.duplicate() as AudioStreamMP3
-		looped.loop = true
-		_cheer = _voice(looped, 14.0, 260.0)
+	for path: String in [CHEER_SOFT_PATH, CHEER_PATH]:
+		var recording := load(path) as AudioStreamMP3
+		var player: AudioStreamPlayer3D = null
+		if recording != null:
+			var looped := recording.duplicate() as AudioStreamMP3
+			looped.loop = true
+			player = _voice(looped, 14.0, 260.0)
+		_cheers.append(player)
 	festival.launched.connect(func(_island_id: int, from: Vector3, to: Vector3, rise_s: float) -> void:
 		on_launch(from, to, rise_s))
 	festival.exploded.connect(func(island_id: int, at: Vector3) -> void:
@@ -197,28 +207,50 @@ func _play(key: StringName, at: Vector3, volume_db: float) -> void:
 ## Fase 87: as vivas sobem até level, vindas da praça em at; se estavam caladas, começam num ponto qualquer da gravação.
 func _swell_cheer(at: Vector3, level: float) -> void:
 	cheer_level = maxf(cheer_level, level)
-	if not _audible or _cheer == null:
+	if not _audible:
 		return
-	_cheer.global_position = at
-	_cheer.volume_db = CHEER_DB + linear_to_db(maxf(cheer_level, CHEER_SILENT))
-	if not _cheer.playing:
-		_cheer.play(_rng.randf_range(0.0, maxf(_cheer.stream.get_length() - 4.0, 0.0)))
+	for player: AudioStreamPlayer3D in _cheers:
+		if player == null:
+			continue
+		player.global_position = at
+		if not player.playing:
+			player.play(_rng.randf_range(0.0, maxf(player.stream.get_length() - 4.0, 0.0)))
+	_mix_cheers()
 
 
-## Fase 87: as vivas somem devagar (CHEER_FADE_PER_S de jogo); caladas, a voz para; com o jogo parado, param também.
+## Fase 88: quanto da faixa forte vai no nível (0 só a calma, 1 só a forte).
+static func cheer_mix(level: float) -> float:
+	return smoothstep(CHEER_MIX_FROM, CHEER_MIX_TO, level)
+
+
+## Fase 87: as vivas somem devagar (CHEER_FADE_PER_S de jogo); caladas, as vozes param; com o jogo parado, param também.
+## Desde a Fase 88, ao baixar, a faixa forte dá lugar à calma.
 func fade_cheer(game_delta: float, paused: bool) -> void:
 	if cheer_level <= 0.0:
 		return
 	cheer_level = maxf(cheer_level - CHEER_FADE_PER_S * game_delta, 0.0)
 	if cheer_level < CHEER_SILENT:
 		cheer_level = 0.0
-	if _cheer == null or not _audible:
+	if not _audible:
 		return
-	_cheer.stream_paused = paused
-	if cheer_level == 0.0:
-		_cheer.stop()
-	else:
-		_cheer.volume_db = CHEER_DB + linear_to_db(cheer_level)
+	for player: AudioStreamPlayer3D in _cheers:
+		if player != null:
+			player.stream_paused = paused
+			if cheer_level == 0.0:
+				player.stop()
+	if cheer_level > 0.0:
+		_mix_cheers()
+
+
+## O volume de cada faixa pelo nível e pela mistura (as duas somam o nível, em potência igual).
+func _mix_cheers() -> void:
+	var mix := cheer_mix(cheer_level)
+	var shares := [sqrt(1.0 - mix), sqrt(mix)]
+	for index: int in _cheers.size():
+		var player := _cheers[index]
+		if player != null:
+			var share: float = shares[index]
+			player.volume_db = CHEER_DB + linear_to_db(maxf(cheer_level * share, 0.0001))
 
 
 ## Fase 86: leva cada assobio junto do foguete (a mesma subida da FestivalView.rocket_point, sem o balanço) e o cala no
