@@ -630,6 +630,16 @@ func _wait_at_service(agent: Agent) -> void:
 	_stand(agent)
 
 
+## Fase 89: quantos batem palmas agora (por qualquer estouro, ainda dentro do tempo das palmas).
+func cheering_count() -> int:
+	var count := 0
+	for index: int in _cheering:
+		var agent := agents[index] if index < agents.size() else null
+		if agent != null and not agent.removed and agent.clip == CLIP_CHEER and agent.cheer_until > time:
+			count += 1
+	return count
+
+
 ## Fase 85: um estouro em at, na ilha: quem está parado vendo a festa até REACT_RADIUS_M dele (no chão), na parte
 ## REACT_SHARE, bate palmas olhando para o céu depois de REACT_DELAY_S. Devolve quantos (o som das palmas segue isso).
 func react_to_burst(island_id: int, at: Vector3) -> int:

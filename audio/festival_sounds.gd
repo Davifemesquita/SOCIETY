@@ -98,19 +98,26 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 	festival.launched.connect(func(_island_id: int, from: Vector3, to: Vector3, rise_s: float) -> void:
 		on_launch(from, to, rise_s))
 	festival.exploded.connect(func(island_id: int, at: Vector3) -> void:
-		on_burst(at, crowd.react_to_burst(island_id, at) if crowd != null else 0))
+		if crowd == null:
+			on_burst(at, 0)
+		else:
+			var reacted := crowd.react_to_burst(island_id, at)
+			on_burst(at, reacted, crowd.cheering_count()))
 
 
 ## Um estouro em at, com people batendo palmas por ele: o estrondo chega pela distância e as palmas logo depois.
-func on_burst(at: Vector3, people: int) -> void:
+## Fase 89: as vivas seguem quantos batem palmas agora (cheering, quem ainda bate pelos estouros de antes também conta),
+## não só os que reagiram a este: na salva do grand finale cada estouro pega pouca gente nova.
+func on_burst(at: Vector3, people: int, cheering: int = 0) -> void:
 	var delay := listener_distance(at) / SOUND_SPEED_M_S
 	_pending.append([delay, &"bang", at, BANG_DB])
 	_pending.append([delay + ECHO_DELAY_S, &"echo", at, ECHO_DB])
+	var ground := Vector3(at.x, at.y - FestivalView.FIREWORK_HEIGHT_M.x, at.z)
 	if people > 0:
-		var ground := Vector3(at.x, at.y - FestivalView.FIREWORK_HEIGHT_M.x, at.z)
 		_pending.append([maxf(delay, CLAP_DELAY_S), &"applause", ground, clap_db(people)])
-		if people >= CHEER_MIN_PEOPLE:
-			_pending.append([maxf(delay, CLAP_DELAY_S), &"cheer", ground, cheer_share(people)])
+	var crowd := maxi(people, cheering)
+	if crowd >= CHEER_MIN_PEOPLE:
+		_pending.append([maxf(delay, CLAP_DELAY_S), &"cheer", ground, cheer_share(crowd)])
 
 
 ## Fase 87: o nível das vivas de people pessoas reagindo (0 abaixo de CHEER_MIN_PEOPLE, 1 com CLAP_FULL_PEOPLE).

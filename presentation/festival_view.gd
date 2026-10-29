@@ -7,11 +7,14 @@ extends Node3D
 ## Desde a Fase 85, cada estouro avisa (exploded): o povo na praça bate palmas e o som do estouro e das palmas toca.
 ## Desde a Fase 86, o fogo sobe do mastro como um foguete (fire: cabeça acesa e rastro de faíscas, ROCKET_RISE_S) e só
 ## estoura lá em cima; a subida avisa (launched) para o assobio.
+## Desde a Fase 89, às 23h de cada noite de festa, o grand finale: uma salva de foguetes que acaba na chuva dourada.
 
 ## Um estouro no céu, na ilha da festa (Fase 85).
 signal exploded(island_id: int, position: Vector3)
 ## Um foguete subindo de from até to em rise_s segundos de jogo (Fase 86).
 signal launched(island_id: int, from: Vector3, to: Vector3, rise_s: float)
+## O grand finale começou (Fase 89).
+signal finale_started
 
 ## Prédios que viram praça da festa, na ordem de preferência; o entreposto só se a ilha não tem nenhum.
 const SQUARES: Array[StringName] = [&"fountain_square", &"bandstand", &"market"]
@@ -37,12 +40,23 @@ const FIREWORK_EVERY_S := Vector2(0.9, 2.2)
 ## da borda da tela com a câmera olhando a cidade de cima.
 const FIREWORK_HEIGHT_M := Vector2(14.0, 22.0)
 const FIREWORK_SPREAD_M := 8.0
-const FIREWORK_POOL := 6
+## Bombas ao mesmo tempo (eram 6 até a Fase 88; o grand finale põe muitas no céu de uma vez).
+const FIREWORK_POOL := 14
 ## Fase 86: o foguete leva de ROCKET_RISE_S.x a .y segundos de jogo do alto do mastro até o estouro, balançando até
 ## ROCKET_WOBBLE_M para o lado; no máximo ROCKET_POOL no ar.
 const ROCKET_RISE_S := Vector2(0.9, 1.4)
 const ROCKET_WOBBLE_M := 0.8
-const ROCKET_POOL := 8
+const ROCKET_POOL := 12
+## Fase 89: o grand finale: às FINALE_HOUR de cada noite de festa (até FINALE_WINDOW_H depois, uma vez por noite), uma
+## salva de foguetes, um a cada FINALE_GAP_S, nas formas de FINALE_SHAPES (crisântemos e duas etapas, e a chuva dourada
+## do salgueiro no fim).
+const FINALE_HOUR := 23.0
+const FINALE_WINDOW_H := 0.9
+const FINALE_GAP_S := Vector2(0.12, 0.35)
+const FINALE_SHAPES: Array[int] = [Shape.CHRYSANTHEMUM, Shape.PEONY, Shape.DOUBLE, Shape.CHRYSANTHEMUM, Shape.RING,
+		Shape.PEONY, Shape.CHRYSANTHEMUM, Shape.DOUBLE, Shape.RING, Shape.CHRYSANTHEMUM, Shape.PEONY, Shape.DOUBLE,
+		Shape.CHRYSANTHEMUM, Shape.RING, Shape.DOUBLE, Shape.CHRYSANTHEMUM, Shape.PEONY, Shape.DOUBLE, Shape.WILLOW,
+		Shape.WILLOW, Shape.WILLOW, Shape.WILLOW, Shape.WILLOW, Shape.WILLOW]
 ## O brilho da cabeça e o tamanho de cada faísca do rastro (m).
 const ROCKET_GLOW_M := 1.6
 const ROCKET_SPARK_M := 0.7
@@ -71,6 +85,12 @@ var _rng := RandomNumberGenerator.new()
 var _rockets: Array[Rocket] = []
 ## Fase 87: a forma do último estouro (testes e capturas).
 var last_shape: Shape = Shape.PEONY
+## Fase 89: as formas que faltam na salva, quanto falta para o próximo foguete dela e se a desta noite ainda pode vir.
+var _finale: Array[int] = []
+var _finale_wait: float = 0.0
+var _finale_armed: bool = true
+## A bomba da vez (Fase 89): a busca da livre começa nela, e sem livre ela é a usada há mais tempo.
+var _burst_cursor: int = 0
 
 
 class Rocket:
@@ -83,6 +103,8 @@ class Rocket:
 	var rise_s: float = 1.0
 	var elapsed: float = 0.0
 	var wobble := Vector2.ZERO
+	## Fase 89: a forma do estouro dele (-1 = sorteada no estouro).
+	var shape: int = -1
 
 
 func setup(simulation: Simulation) -> void:
@@ -211,14 +233,48 @@ func _process(delta: float) -> void:
 	advance_rockets(game_delta)
 	if _launch_sites.is_empty():
 		return
-	var night := DayClock.night_factor(_simulation.config, GameClock.clock.hour())
+	var hour := GameClock.clock.hour()
+	var night := DayClock.night_factor(_simulation.config, hour)
 	if night < NIGHT_FIREWORKS:
+		_finale_armed = true
+		return
+	if _finale_armed and hour >= FINALE_HOUR and hour < FINALE_HOUR + FINALE_WINDOW_H:
+		start_finale()
+	if advance_finale(game_delta):
 		return
 	_next_firework -= game_delta
 	if _next_firework > 0.0:
 		return
 	_next_firework = _rng.randf_range(FIREWORK_EVERY_S.x, FIREWORK_EVERY_S.y)
 	fire(_launch_sites[_rng.randi() % _launch_sites.size()])
+
+
+## Fase 89: começa o grand finale (a salva de FINALE_SHAPES); uma vez por noite.
+func start_finale() -> void:
+	_finale_armed = false
+	_finale = FINALE_SHAPES.duplicate()
+	_finale_wait = 0.0
+	finale_started.emit()
+
+
+## Fase 89: anda a salva game_delta segundos de jogo: um foguete a cada FINALE_GAP_S, de um mastro sorteado, na forma
+## da vez. Falso sem salva (os fogos de sempre seguem); enquanto ela dura, os de sempre esperam.
+func advance_finale(game_delta: float) -> bool:
+	if _finale.is_empty():
+		return false
+	_finale_wait -= game_delta
+	while _finale_wait <= 0.0 and not _finale.is_empty() and not _launch_sites.is_empty():
+		if not fire(_launch_sites[_rng.randi() % _launch_sites.size()], _finale[0]):
+			# sem foguete livre: tenta no quadro seguinte
+			_finale_wait = 0.0
+			return true
+		_finale.remove_at(0)
+		_finale_wait += _rng.randf_range(FINALE_GAP_S.x, FINALE_GAP_S.y)
+	return true
+
+
+func finale_left() -> int:
+	return _finale.size()
 
 
 ## Um estouro sobre o lugar: a primeira bomba livre do grupo, numa cor sorteada, a uma altura sorteada.
@@ -228,20 +284,27 @@ func launch(site: Vector3) -> void:
 
 ## Fase 86: o estouro em at (sobre o lugar site). Fase 87: shape escolhe a forma (sem ela, sorteada).
 func burst_at(site: Vector3, at: Vector3, shape: int = -1) -> void:
-	for burst: GPUParticles3D in _fireworks:
-		if burst.emitting:
-			continue
-		burst.position = at
-		# Fase 87: a forma e as cores sorteadas
-		var chosen := pick_shape(_rng.randf()) if shape < 0 else shape as Shape
-		var first := FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
-		var second := FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
-		var axis := Vector3(_rng.randf_range(-0.6, 0.6), 1.0, _rng.randf_range(-0.6, 0.6)).normalized()
-		shape_burst(burst, chosen, first, second, axis)
-		last_shape = chosen
-		burst.restart()
-		exploded.emit(_island_of(site), burst.position)
+	if _fireworks.is_empty():
 		return
+	# Fase 89: a primeira bomba livre a partir da vez; sem nenhuma, a usada há mais tempo (todo foguete estoura)
+	var index := _burst_cursor
+	for offset: int in _fireworks.size():
+		var candidate := (_burst_cursor + offset) % _fireworks.size()
+		if not _fireworks[candidate].emitting:
+			index = candidate
+			break
+	_burst_cursor = (index + 1) % _fireworks.size()
+	var burst := _fireworks[index]
+	burst.position = at
+	# Fase 87: a forma e as cores sorteadas
+	var chosen := pick_shape(_rng.randf()) if shape < 0 else shape as Shape
+	var first := FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
+	var second := FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
+	var axis := Vector3(_rng.randf_range(-0.6, 0.6), 1.0, _rng.randf_range(-0.6, 0.6)).normalized()
+	shape_burst(burst, chosen, first, second, axis)
+	last_shape = chosen
+	burst.restart()
+	exploded.emit(_island_of(site), burst.position)
 
 
 ## Fase 87: a forma pela sorte (0 a 1), pelos pesos de SHAPE_WEIGHTS.
@@ -334,11 +397,12 @@ func _island_of(site: Vector3) -> int:
 
 
 ## Fase 86: um foguete sobe do alto do mastro (site) até o ponto do estouro e estoura lá. Sem foguete livre, nada.
-func fire(site: Vector3) -> bool:
+func fire(site: Vector3, shape: int = -1) -> bool:
 	for rocket: Rocket in _rockets:
 		if rocket.flying:
 			continue
 		rocket.flying = true
+		rocket.shape = shape
 		rocket.site = site
 		rocket.from = site
 		rocket.to = site + _burst_offset()
@@ -363,7 +427,7 @@ func advance_rockets(game_delta: float) -> void:
 			rocket.flying = false
 			rocket.node.visible = false
 			rocket.trail.emitting = false
-			burst_at(rocket.site, rocket.to)
+			burst_at(rocket.site, rocket.to, rocket.shape)
 			continue
 		rocket.node.position = rocket_point(rocket, rocket.elapsed / rocket.rise_s)
 

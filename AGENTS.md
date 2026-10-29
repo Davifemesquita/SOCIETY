@@ -121,6 +121,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase87.tscn -- /pasta/de/saida
 # Fase 88: a mesma com a bomba de duas etapas (forma_dupla.png)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase88.tscn -- /pasta/de/saida
+# Fase 89: o grand finale (finale_meio.png e finale_chuva.png)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase89.tscn -- /pasta/de/saida
 # cidade de teste: o jogador-robô joga 4 h (todas as classes), mais praças, zoológico e museu cheios, prefeitura, eventos
 # ligados com uma festa e o relógio às 18h, no slot "cidade_de_teste" (abre pelo Carregar); ~3 min, sem tela
 tools/godot.sh godot --headless --path . res://tools/build_test_city.tscn
@@ -2041,6 +2043,13 @@ Regras que já custaram investigação:
   `SUB_EMITTER_AT_END`); as estrelas estouram de novo na segunda cor. As vivas tocam duas faixas do mesmo pacote
   (`crowd_cheer_soft.mp3` e `crowd_cheer.mp3`), misturadas pelo nível (`FestivalSounds.cheer_mix`).
 
+### Grand finale (Fase 89, nossa)
+
+- **Plano** em `docs/plano_fase89.md`. Às 23h de cada noite de festa, uma vez, a salva de `FINALE_SHAPES`
+  (`FestivalView.start_finale`, `advance_finale`); o foguete leva a forma (`fire(site, shape)`). Todo foguete estoura
+  (`burst_at` reaproveita a bomba usada há mais tempo). As vivas seguem `Crowd.cheering_count` (quem ainda bate palmas),
+  não só quem reagiu ao estouro.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2140,6 +2149,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 86 — Foguete e assobio (nossa) | **feita em 28/10/2026, a pedido do dono**: o fogo sobe do mastro como foguete (brilho e rastro de faíscas) e só estoura lá em cima, com o assobio seguindo o voo e o eco do estrondo, tudo gerado no código; o som falta ser ouvido pelo dono; plano em `docs/plano_fase86.md` |
 | 87 — Formas e vivas (nossa) | **feita em 28/10/2026, a pedido do dono**: estouros em bola, crisântemo, salgueiro e anel; os fogos mais baixos (de 28–42 para 14–22 m: lá em cima ficavam fora da tela); rastro do foguete mais forte; vivas do povo numa gravação CC BY 4.0 (Gregor Quendel) que sobem com a gente reagindo; o som falta ser ouvido pelo dono; plano em `docs/plano_fase87.md` |
 | 88 — Duas etapas e vivas calmas (nossa) | **feita em 28/10/2026, a pedido do dono**: bomba de duas etapas (as estrelas estouram de novo, pelo sub-emissor) e a faixa calma das vivas para pouca gente, misturada com a forte pelo nível; cortar a gravação ficou de fora (pede `ffmpeg` no disco C); o som falta ser ouvido pelo dono; plano em `docs/plano_fase88.md` |
+| 89 — Grand finale (nossa) | **feita em 28/10/2026, a pedido do dono**: às 23h de cada noite de festa, uma salva de 24 foguetes que acaba na chuva dourada; todo foguete estoura (antes sumia com as bombas ocupadas); as vivas seguem quem ainda bate palmas (na salva quase não tocavam); plano em `docs/plano_fase89.md` |
 
 Pendências já vistas para fases futuras:
 
