@@ -1334,3 +1334,11 @@ Neutra.
 Máquina no estado rápido (não comparável às duas entradas de antes, no lento): GPU 10,8 ms, dia inteiro 86,3 FPS (1% low
 42,9, pior quadro 27 ms), tick médio 1,39 ms, construir com a ilha cheia 16,7 ms, 2769 objetos e 1119 draw calls (14 objetos e 2
 draw calls a mais que na Fase 82, sem festa no mundo; a causa não foi investigada). Neutra.
+
+## Fase 84 — palmas e cota da festa (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark (ninguém usa a animação nova; o VAT
+dos pedestres ganhou 60 linhas e o shader, a tabela de 8 animações): 2000 pedestres, 1900 na rua. Máquina no estado
+rápido, como na Fase 83: GPU 11,0 ms (10,8), dia inteiro 84,3 FPS (86,3; 1% low 41,1, pior quadro 37 ms), tick médio
+1,42 ms (1,39), construir com a ilha cheia 17,9 ms (16,7), 2769 objetos e 1119 draw calls (iguais). Dentro da variação
+entre rodadas; neutra.
