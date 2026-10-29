@@ -14,8 +14,11 @@ const VERSION := 1
 const VERSION_V2 := 2
 ## Fase 52: o v3, a ilha alongada com enseadas, falésias e rochedos (TerrainV3Params).
 const VERSION_V3 := 3
+## Fase 93: o v4 é o v3 com um porto garantido em toda ilha (_ensure_harbor): nas ilhas pequenas do v3 a costa podia não
+## ter lugar de entreposto, e a ilha não podia ser colonizada. Ilha que já tinha lugar sai igual à do v3.
+const VERSION_V4 := 4
 ## As versões que um save pode ter (além do 0, a ilha plana de antes).
-const VERSIONS: Array[int] = [VERSION, VERSION_V2, VERSION_V3]
+const VERSIONS: Array[int] = [VERSION, VERSION_V2, VERSION_V3, VERSION_V4]
 ## Regiões vizinhas da principal, onde ficam as outras ilhas (sorteadas pela semente).
 const REGION_SLOTS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(-1, 0),
 		Vector2i(0, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
@@ -38,6 +41,14 @@ const CLIFF_SAND_MAX_M := 2.4
 ## Largura da lama na margem do rio, em células (desenho só).
 const RIVER_BANK_CELLS := 1
 const DEPOSIT_TRIES := 600
+## Fase 93 (v4): o porto garantido. HARBOR_CELLS é o lado do entreposto (data/buildings/trading_post.tres, o teste confere);
+## na escolha do lote a aplainar, a fração mínima de terra nele e quanto pesa (m) cada célula de mar a aterrar; o lote fica
+## pelo menos HARBOR_ABOVE_SEA_M acima do mínimo de terra.
+const HARBOR_CELLS := 6
+const HARBOR_MIN_LAND := 0.5
+const HARBOR_SEA_COST_M := 1.0
+const HARBOR_ABOVE_SEA_M := 0.9
+const NO_HARBOR := Vector2i(-1, -1)
 
 
 ## Uma ilha a gerar: tamanho, lugar no mundo, perfil e a semente dela.
@@ -181,7 +192,7 @@ static func build_island(spec: IslandSpec, config: GameConfig, version: int = VE
 	var noises := Noises.new(spec.seed_value)
 	if version == VERSION_V2:
 		_heights_v2(grid, spec, config, TerrainV2Params.get_default())
-	elif version == VERSION_V3:
+	elif version == VERSION_V3 or version == VERSION_V4:
 		_heights_v3(grid, spec, config, TerrainV3Params.get_v3())
 	else:
 		for y: int in spec.size + 1:
@@ -192,8 +203,10 @@ static func build_island(spec: IslandSpec, config: GameConfig, version: int = VE
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([spec.seed_value, "features"])
 	for river: int in spec.profile.rivers:
-		_carve_river(grid, config, rng, version == VERSION_V3)
+		_carve_river(grid, config, rng, version >= VERSION_V3)
 	_place_deposits(grid, spec.profile, config, rng, version >= VERSION_V2)
+	if version >= VERSION_V4:
+		_ensure_harbor(grid, config)
 	_grow_forest(grid, spec.profile, noises, config)
 	grid.invalidate_heights()
 	grid.fingerprint = fingerprint(grid)
@@ -803,6 +816,100 @@ static func _place_deposits(grid: IslandGrid, profile: IslandProfileDef, config:
 					grid.deposits[y * grid.size.x + x] = good_index + 1
 
 
+## Fase 93 (v4): sem lote de HARBOR_CELLS em terra, plano, encostado no mar e com uma frente onde passa estrada, aplaina o
+## lote de costa que menos mexe no relevo (o desnível dos cantos de terra mais HARBOR_SEA_COST_M por célula de mar a
+## aterrar), longe de rio e de jazida: o lote vai à altura média da terra dele e o anel em volta fica a até meio
+## max_road_relief_m dessa altura (a rua da frente cabe). As células de mar vizinhas continuam mar: o lote encosta nele.
+## Só reclassifica as células mexidas (classificar a ilha toda apagaria os rios).
+static func _ensure_harbor(grid: IslandGrid, config: GameConfig) -> void:
+	if harbor_site(grid, config) != NO_HARBOR:
+		return
+	var best := NO_HARBOR
+	var best_cost := INF
+	var best_level := 0.0
+	var cells := HARBOR_CELLS * HARBOR_CELLS
+	for y: int in range(1, grid.size.y - HARBOR_CELLS - 1):
+		for x: int in range(1, grid.size.x - HARBOR_CELLS - 1):
+			var area := Rect2i(x, y, HARBOR_CELLS, HARBOR_CELLS)
+			var land := 0
+			var blocked := false
+			for cy: int in range(y, y + HARBOR_CELLS):
+				for cx: int in range(x, x + HARBOR_CELLS):
+					var index := cy * grid.size.x + cx
+					if grid.ground[index] == IslandGrid.Ground.RIVER or grid.deposits[index] != 0:
+						blocked = true
+					elif grid.ground[index] == IslandGrid.Ground.LAND:
+						land += 1
+			if blocked or land < cells * HARBOR_MIN_LAND or not grid.area_touches(area, IslandGrid.Ground.SEA):
+				continue
+			var low := INF
+			var high := -INF
+			var sum := 0.0
+			var count := 0
+			for cy: int in range(y, y + HARBOR_CELLS + 1):
+				for cx: int in range(x, x + HARBOR_CELLS + 1):
+					var height := grid.corner_height(cx, cy)
+					if height < LAND_MIN_M:
+						continue
+					low = minf(low, height)
+					high = maxf(high, height)
+					sum += height
+					count += 1
+			if count == 0:
+				continue
+			var cost := (high - low) + (cells - land) * HARBOR_SEA_COST_M
+			if cost < best_cost:
+				best = Vector2i(x, y)
+				best_cost = cost
+				best_level = maxf(sum / count, LAND_MIN_M + HARBOR_ABOVE_SEA_M)
+	if best == NO_HARBOR:
+		return
+	var half_road := config.max_road_relief_m * 0.5
+	var ring := Rect2i(best, Vector2i(HARBOR_CELLS, HARBOR_CELLS)).grow(1)
+	for cy: int in range(ring.position.y, ring.end.y + 1):
+		for cx: int in range(ring.position.x, ring.end.x + 1):
+			var index := grid.corner_index(cx, cy)
+			var inner := cx > ring.position.x and cx < ring.end.x and cy > ring.position.y and cy < ring.end.y
+			if inner:
+				grid.corner_heights[index] = best_level
+			elif grid.corner_heights[index] >= LAND_MIN_M:
+				grid.corner_heights[index] = clampf(grid.corner_heights[index], best_level - half_road, best_level + half_road)
+	grid.invalidate_heights()
+	var touched := ring.grow(1).intersection(Rect2i(Vector2i.ZERO, grid.size))
+	for cy: int in range(touched.position.y, touched.end.y):
+		for cx: int in range(touched.position.x, touched.end.x):
+			var index := cy * grid.size.x + cx
+			if grid.ground[index] == IslandGrid.Ground.RIVER:
+				continue
+			var low := minf(minf(grid.corner_height(cx, cy), grid.corner_height(cx + 1, cy)),
+					minf(grid.corner_height(cx, cy + 1), grid.corner_height(cx + 1, cy + 1)))
+			grid.ground[index] = IslandGrid.Ground.LAND if low >= LAND_MIN_M else IslandGrid.Ground.SEA
+
+
+## Fase 93: a origem do primeiro lote de HARBOR_CELLS (o tamanho do entreposto) em terra, plano, encostado no mar e com
+## uma frente onde passa estrada, varrendo linha a linha; NO_HARBOR sem nenhum. As mesmas regras do PlacementRules e do
+## SiteFinder, sem o perfil (o entreposto não pede fertilidade).
+static func harbor_site(grid: IslandGrid, config: GameConfig) -> Vector2i:
+	var size := Vector2i(HARBOR_CELLS, HARBOR_CELLS)
+	for y: int in range(0, grid.size.y - HARBOR_CELLS + 1):
+		for x: int in range(0, grid.size.x - HARBOR_CELLS + 1):
+			var origin := Vector2i(x, y)
+			var area := Rect2i(origin, size)
+			if not grid.area_is_land(area) or grid.area_relief(area) > config.max_build_height_delta_m + 0.0001:
+				continue
+			if not grid.area_touches(area, IslandGrid.Ground.SEA):
+				continue
+			for rotation: int in 4:
+				var front_ok := true
+				for cell: Vector2i in Footprint.front_cells(origin, size, rotation):
+					if not grid.is_land(cell) or PlacementRules.check_road_cell(grid, cell, config) != PlacementRules.OK:
+						front_ok = false
+						break
+				if front_ok:
+					return origin
+	return NO_HARBOR
+
+
 static func _has_deposit(grid: IslandGrid, area: Rect2i) -> bool:
 	var clipped := area.intersection(Rect2i(Vector2i.ZERO, grid.size))
 	for y: int in range(clipped.position.y, clipped.end.y):
@@ -934,7 +1041,7 @@ static func region_corners(world: WorldState, index: int, config: GameConfig, da
 	var shelf_end := shelf_start + config.sea_shelf_width_m / (spec.size * cell_m * 0.5)
 	# v3 (Fase 52): a plataforma acompanha a costa de verdade (distância até a terra), não o quadrado do v1
 	var coast_m := PackedFloat32Array()
-	if world.terrain_version == VERSION_V3:
+	if world.terrain_version >= VERSION_V3:
 		coast_m = _distance_to_land(grid, side, first, cell_m)
 	for py: int in side:
 		var gy := py - first.y

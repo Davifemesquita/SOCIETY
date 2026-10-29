@@ -1394,3 +1394,11 @@ a janela de 3840×2160 o Windows encolhe para a altura da tela): 46,5 FPS (1% lo
 21 ms), jogo novo 8,7 s, carregar 3,1 s; pipelines iguais às do editor (5 / 11 montando a cidade, 10 / 11 / 0 / 63 no
 dia): o shader baker não mudou nada. A linha "frota" passa a dizer "10 navios em 5 rotas; 2 ilhas sem lugar de
 entreposto" (antes, 7 rotas, duas delas para ilhas sem porto).
+
+## Fase 93 — porto em toda ilha (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, agora no **terreno v4** (o padrão do jogo novo). A frota volta a "10
+navios em 7 rotas", sem ilha de fora (na Fase 92, 5 rotas e 2 ilhas sem lugar de entreposto). Gerar o arquipélago: em
+série 3.019 ms (2.784 no v3), em threads 1.230 ms (1.202), pior quadro 21 ms. Jogo novo 10,6 s, carregar 4,0 s, 28.830
+árvores (7 a menos: os portos aplainados), 2737 objetos e 1087 draw calls. Dia inteiro 87,4 FPS (1% low 43,7, pior quadro
+29 ms), tick médio 1,33 ms, construir com a ilha cheia 16,3 ms. Neutra.

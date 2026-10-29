@@ -289,8 +289,9 @@ static var _default: GameConfig
 ## Tamanho usado quando ninguém escolhe (testes, ferramentas, `-- --novo-jogo`).
 @export var default_archipelago_size: int = 0
 ## Fase 45: o gerador dos jogos novos (1, o de sempre; 2, as ilhas orgânicas; desde a Fase 52, a pedido do dono, 3: as
-## ilhas alongadas com enseadas e falésias). Os saves refazem o terreno na versão que gravaram.
-@export var new_game_terrain_version: int = 3
+## ilhas alongadas com enseadas e falésias; desde a Fase 93, 4: o v3 com porto garantido em toda ilha). Os saves refazem o
+## terreno na versão que gravaram.
+@export var new_game_terrain_version: int = 4
 @export var main_island_profile: StringName = &"main_island"
 ## Perfis sorteados (pela semente) para as outras ilhas.
 @export var other_island_profiles: Array[StringName] = [&"farmland", &"highlands", &"woodland", &"reef"]
@@ -586,7 +587,7 @@ func day_length_game_seconds() -> float:
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()
 	if new_game_terrain_version not in ArchipelagoGenerator.VERSIONS:
-		problems.append("new_game_terrain_version deve ser 1, 2 ou 3")
+		problems.append("new_game_terrain_version deve ser 1, 2, 3 ou 4")
 	problems.append_array(TerrainV2Params.get_default().validate())
 	problems.append_array(TerrainV3Params.get_v3().validate())
 	if ticks_per_second <= 0:

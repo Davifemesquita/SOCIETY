@@ -104,3 +104,25 @@ func test_v3_small_archipelagos_keep_their_fingerprints() -> void:
 	for seed_value: int in V3_SMALL:
 		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 3)
 		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V3_SMALL[seed_value])
+
+## Fase 93: o v4 (o v3 com porto garantido em toda ilha). Na semente 1840 só as ilhas 3 e 4 mudam (as que não tinham lugar
+## de entreposto); as outras são as do v3, número por número. Mudou de propósito, regrave e diga no registro.
+const V4_SEED_1840: Array[int] = [3367206289, 1450471548, 3766615438, 643021793, 631651224, 3964152210, 1566865390,
+		1505054608]
+const V4_SMALL: Dictionary[int, Array] = {
+	1: [2039150493, 1662957455, 4031346039, 3152036395, 3741952931],
+	7: [1628227579, 2498633088, 2465791277, 2943140433, 2161096221],
+	2026: [502928890, 554403638, 1086738741, 3627644210, 3100827700],
+	999999: [3765091319, 3070326829, 1925196695, 2564319341, 1751673520],
+}
+
+func test_v4_seed_1840_keeps_its_fingerprints() -> void:
+	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default(), -1, -1, 4)
+	assert_array(_fingerprints(world)).is_equal(V4_SEED_1840)
+
+
+func test_v4_small_archipelagos_keep_their_fingerprints() -> void:
+	var config := _small_config()
+	for seed_value: int in V4_SMALL:
+		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 4)
+		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V4_SMALL[seed_value])

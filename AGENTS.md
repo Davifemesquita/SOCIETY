@@ -1799,7 +1799,7 @@ Regras que já custaram investigação:
 
 - **Plano** em `docs/plano_fase52.md`. O Anno 1800 do dono foi só olhado (capturas fora do repositório); nada de
   engenharia reversa nem arquivo dele.
-- **Gerador v3** (`terrain_version = 3`, padrão dos jogos novos): `ArchipelagoGenerator.shape_v3` (espinha curva,
+- **Gerador v3** (`terrain_version = 3`, padrão dos jogos novos até a Fase 93, que trouxe o v4 com porto em toda ilha): `ArchipelagoGenerator.shape_v3` (espinha curva,
   penínsulas, enseadas, rochedos) e `height_at_v3`; parâmetros em `TerrainV3Params` (herda do `TerrainV2Params`, pega por
   `TerrainV3Params.get_v3()`). Faixas da costa em células. Mudou um número dali, regrave as assinaturas do v3 no
   `test_terrain_golden.gd` (pegue os valores dentro do gdUnit: o modo `--script` não carrega os autoloads e os perfis
@@ -2050,6 +2050,13 @@ Regras que já custaram investigação:
   (`burst_at` reaproveita a bomba usada há mais tempo). As vivas seguem `Crowd.cheering_count` (quem ainda bate palmas),
   não só quem reagiu ao estouro.
 
+### Porto em toda ilha (Fase 93, nossa)
+
+- **Plano** em `docs/plano_fase93.md`. **O terreno dos jogos novos é o v4** (`ArchipelagoGenerator.VERSION_V4`): o v3 com
+  `_ensure_harbor` no fim, que aplaina um lote de costa do tamanho do entreposto na ilha que não tem nenhum lugar para ele
+  (`harbor_site`); ilha que já tinha sai igual à do v3. O v3 fica para os saves dele. `SiteFinder` dilata a água até largura
+  + altura do prédio (antes pulava lotes bons). Mudou um número do porto (`HARBOR_*`), regrave as assinaturas do v4.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2153,6 +2160,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 90 — Daltônico no Windows (nossa) | **feita em 28/10/2026**, primeira do roteiro `docs/plano_fases_90_94.md`: o teste do modo daltônico que falhava no Windows do dono já tinha sido corrigido em 26/10 (`2f735e3`: o painel repinta na hora em que a opção muda); a pendência saiu da lista e a suíte inteira foi conferida no PC do dono, 986 casos sem nenhum vermelho; plano em `docs/plano_fase90.md` |
 | 91 — Travadas do ultra (nossa) | **feita em 28/10/2026**: três rodadas do ultra na RTX 5060 (62 a 64 FPS, pior quadro de 85, 32 e 28 ms), nenhuma travada de ~2 s; o benchmark grava por quadro a hora e as pipelines compiladas, e as compilações do anoitecer não coincidem com nenhum quadro lento (o Godot as faz por fora); nada mudou no jogo; plano em `docs/plano_fase91.md` |
 | 92 — Medidas que faltam (nossa) | **feita em 28/10/2026**: alto em 1080p com VSync desligado 86 FPS, o 3D nos pixels do 4K 46,5 FPS (GPU 21 ms), o executável exportado 89 FPS; o shader baker não muda as compilações (fica registrado); o executável caía no benchmark porque um `assert` some na exportação, e por trás disso as ilhas 3 e 4 da semente 1840 no terreno v3 não têm lugar de entreposto (virou a Fase 93); plano em `docs/plano_fase92.md` |
+| 93 — Porto em toda ilha (nossa) | **feita em 28/10/2026**: terreno v4, o padrão do jogo novo: o v3 com um porto aplainado na ilha que não tinha lugar de entreposto (12 de 31 sementes tinham ilha sem como colonizar); as outras ilhas saem iguais às do v3; o v1, o v2 e o v3 seguem para os saves; o `SiteFinder` deixou de pular lotes encostados no mar pelo canto; plano em `docs/plano_fase93.md` |
 
 Pendências já vistas para fases futuras:
 

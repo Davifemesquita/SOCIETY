@@ -211,5 +211,7 @@ func test_generating_v3_costs_about_the_same_as_v1() -> void:
 
 
 func test_the_new_game_dialog_offers_the_coves() -> void:
-	assert_int(NewGameDialog.TERRAIN_KEYS.size()).is_equal(ArchipelagoGenerator.VERSIONS.size())
-	assert_str(NewGameDialog.TERRAIN_KEYS[ArchipelagoGenerator.VERSION_V3 - 1]).is_equal("NEW_GAME_TERRAIN_COVES")
+	# desde a Fase 93 a opção das enseadas é o v4 (o v3 com porto em toda ilha); o v3 só abre os saves dele
+	assert_int(NewGameDialog.TERRAIN_KEYS.size()).is_equal(NewGameDialog.TERRAIN_VERSIONS.size())
+	var coves := NewGameDialog.TERRAIN_KEYS.find("NEW_GAME_TERRAIN_COVES")
+	assert_int(NewGameDialog.TERRAIN_VERSIONS[coves]).is_equal(ArchipelagoGenerator.VERSION_V4)

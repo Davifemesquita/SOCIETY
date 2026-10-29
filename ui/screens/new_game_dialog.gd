@@ -26,6 +26,9 @@ var deadline_option := OptionButton.new()
 const PREVIEW_DELAY_S := 0.35
 ## Fase 45: o gerador das ilhas, na ordem das versões (1, 2; desde a Fase 52, 3).
 const TERRAIN_KEYS: Array[String] = ["NEW_GAME_TERRAIN_CLASSIC", "NEW_GAME_TERRAIN_ORGANIC", "NEW_GAME_TERRAIN_COVES"]
+## A versão do gerador de cada opção (Fase 93: "Enseadas e falésias" é o v4, o v3 com porto em toda ilha; o v3 só abre
+## os saves dele).
+const TERRAIN_VERSIONS: Array[int] = [ArchipelagoGenerator.VERSION, ArchipelagoGenerator.VERSION_V2, ArchipelagoGenerator.VERSION_V4]
 var terrain_option := OptionButton.new()
 var preview := TextureRect.new()
 var preview_label := Label.new()
@@ -103,7 +106,7 @@ func _init() -> void:
 	terrain_option.focus_mode = Control.FOCUS_NONE
 	for key: String in TERRAIN_KEYS:
 		terrain_option.add_item(tr(key))
-	terrain_option.select(clampi(config.new_game_terrain_version - 1, 0, TERRAIN_KEYS.size() - 1))
+	terrain_option.select(maxi(TERRAIN_VERSIONS.find(config.new_game_terrain_version), 0))
 	terrain_option.item_selected.connect(func(_index: int) -> void: _ask_preview())
 	grid.add_child(terrain_option)
 	grid.add_child(UiKit.icon_rect(Icons.get_icon("hud_money"), 30))
@@ -183,7 +186,7 @@ func _ask_preview() -> void:
 
 ## O gerador escolhido (1 ou 2).
 func chosen_terrain() -> int:
-	return terrain_option.selected + 1
+	return TERRAIN_VERSIONS[terrain_option.selected]
 
 
 ## A semente que o campo pede agora (a mesma conta do confirm()).

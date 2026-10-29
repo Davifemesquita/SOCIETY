@@ -53,11 +53,12 @@ static func squareness(grid: IslandGrid) -> float:
 
 
 func test_the_new_game_default_follows_the_owner() -> void:
-	# Fase 52: o dono pediu as ilhas no jeito do Anno; os jogos novos saem no v3 (o v1 e o v2 seguem para os saves)
-	assert_int(GameConfig.get_default().new_game_terrain_version).is_equal(ArchipelagoGenerator.VERSION_V3)
+	# Fase 52: o dono pediu as ilhas no jeito do Anno; os jogos novos saíam no v3 (o v1 e o v2 seguem para os saves). Desde a
+	# Fase 93, no v4: o v3 com porto em toda ilha
+	assert_int(GameConfig.get_default().new_game_terrain_version).is_equal(ArchipelagoGenerator.VERSION_V4)
 	assert_int(ArchipelagoGenerator.VERSION).is_equal(1)
 	var world := ArchipelagoGenerator.new_world(1840, _config, _data)
-	assert_int(world.terrain_version).is_equal(ArchipelagoGenerator.VERSION_V3)
+	assert_int(world.terrain_version).is_equal(ArchipelagoGenerator.VERSION_V4)
 	assert_array(Array(TerrainV2Params.get_default().validate())).is_empty()
 
 
