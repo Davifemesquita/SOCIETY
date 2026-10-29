@@ -47,6 +47,8 @@ var _lines: PackedStringArray = []
 var _frames_doc: Dictionary = {}
 ## Aberto pelo executável (-- --benchmark): mostra o resultado em vez de fechar.
 var _from_game: bool = false
+## Fase 92: ilhas do arquipélago sem lugar de entreposto (ficam sem colônia e sem rota no benchmark).
+var _islands_without_post: int = 0
 
 
 func _ready() -> void:
@@ -87,7 +89,14 @@ func _run() -> void:
 	# (N = -1: o automático), para ver o ritmo dos quadros como o jogador vê
 	var limit_at := args.find("--limite")
 	Settings.max_fps = args[limit_at + 1].to_int() if limit_at >= 0 and limit_at + 1 < args.size() else 0
+	# Fase 92: `-- --sem-vsync` mede com o VSync desligado (só nesta execução: nada vai para as preferências)
+	if "--sem-vsync" in args:
+		Settings.vsync = false
 	Settings.apply()
+	_supersample()
+	if "--4k" in args:
+		_report("resolução do 3D", "%s (200%% da janela: os pixels do 4K; a interface na resolução da janela)" % [
+				DisplayServer.window_get_size() * 2])
 	_report("limite de quadros", "%d FPS (%s)" % [Settings.effective_max_fps(), "escolhido" if limit_at >= 0 else "sem limite"])
 	_report("nível gráfico", "%s (nuvens volumétricas %s)" % [tr(Settings.preset().name_key),
 			"ligadas" if Settings.preset().clouds and not CloudsAdapter.software_renderer() else "desligadas"])
@@ -142,8 +151,9 @@ func _run() -> void:
 	var fleet_started := Time.get_ticks_usec()
 	var routes := _fleet(sim)
 	var on_routes := sim.world.player_ships().filter(func(ship: Ship) -> bool: return ship.route_id != 0).size()
-	_report("frota", "%d navios em %d rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: %.0f ms" % [
-			on_routes, routes, (Time.get_ticks_usec() - fleet_started) / 1000.0])
+	_report("frota", "%d navios em %d rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: %.0f ms%s" % [
+			on_routes, routes, (Time.get_ticks_usec() - fleet_started) / 1000.0,
+			"; %d ilhas sem lugar de entreposto" % _islands_without_post if _islands_without_post > 0 else ""])
 	for index: int in houses.size():
 		var house := sim.world.building(houses[index])
 		house.tier = &"peasants" if index < PEASANT_HOUSES else &"workers"
@@ -317,6 +327,7 @@ func _paved_city(game: GameScreen, config: GameConfig) -> void:
 func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	Settings.set_graphics_preset(level)
 	Settings.apply()
+	_supersample()
 	var preset := Settings.preset()
 	var viewport := get_viewport().get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(viewport, true)
@@ -394,6 +405,16 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	_frames_doc["runs"] = runs
 
 
+## Fase 92: com `-- --4k`, o 3D em 200% da janela (numa janela de 1080p, os pixels do 4K: o Windows não deixa a janela
+## passar da altura da tela). Só no benchmark: o jogo prende a escala em até 100%.
+func _supersample() -> void:
+	if "--4k" not in OS.get_cmdline_user_args():
+		return
+	var root := get_tree().root
+	root.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	root.scaling_3d_scale = 2.0
+
+
 ## Fase 91: todas as compilações de pipeline somadas (para contar por quadro).
 static func _pipelines_total() -> int:
 	var total := 0
@@ -418,7 +439,10 @@ func _fleet(sim: Simulation) -> int:
 	sim.ignore_terrain = false
 	var routes: Array[int] = []
 	for island_id: int in range(1, sim.world.islands.size()):
-		TradeDemo.post(sim, island_id)
+		# ilha sem lugar de entreposto fica sem rota (Fase 92: antes a rota era criada e o navio pulava a parada)
+		if TradeDemo.post(sim, island_id) == 0:
+			_islands_without_post += 1
+			continue
 		var route_id := sim.execute(CreateRouteCommand.new()).created_id
 		var out := TradeRoute.Stop.new(Simulation.MAIN_ISLAND)
 		out.orders.append(TradeRoute.Order.new(&"planks", true, 20))

@@ -1,6 +1,6 @@
 # Plano da Fase 91 — Travadas do ultra
 
-**Estado: feita em 28/10/2026**, segunda do roteiro `docs/plano_fases_90_93.md`. Ferramenta e medida: nada muda no jogo.
+**Estado: feita em 28/10/2026**, segunda do roteiro `docs/plano_fases_90_94.md`. Ferramenta e medida: nada muda no jogo.
 
 ## O que se mediu
 

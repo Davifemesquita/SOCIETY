@@ -13,10 +13,10 @@ config_version=5
 config/name="Society"
 config/description="City builder de economia e logística no século XIX."
 config/version="0.31.0"
-config/icon="res://assets/icon/society_256.png"
-config/windows_native_icon="res://assets/icon/society.ico"
 run/main_scene="res://ui/screens/boot_screen.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
+config/icon="res://assets/icon/society_256.png"
+config/windows_native_icon="res://assets/icon/society.ico"
 
 [autoload]
 
@@ -35,7 +35,6 @@ gdscript/warnings/unsafe_property_access=2
 gdscript/warnings/unsafe_method_access=2
 gdscript/warnings/unsafe_cast=2
 gdscript/warnings/unsafe_call_argument=2
-gdscript/warnings/return_value_discarded=0
 
 [display]
 
@@ -61,9 +60,8 @@ locale/fallback="pt_BR"
 
 [rendering]
 
-renderer/rendering_method="forward_plus"
-occlusion_culling/use_occlusion_culling=true
 textures/canvas_textures/default_texture_filter=3
+occlusion_culling/use_occlusion_culling=true
 
 [shader_globals]
 

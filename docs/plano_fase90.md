@@ -1,6 +1,6 @@
 # Plano da Fase 90 — Daltônico no Windows
 
-**Estado: feita em 28/10/2026**, a primeira do roteiro `docs/plano_fases_90_93.md`.
+**Estado: feita em 28/10/2026**, a primeira do roteiro `docs/plano_fases_90_94.md`.
 
 ## O que se achou
 

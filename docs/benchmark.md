@@ -1384,3 +1384,13 @@ calls (iguais). Neutra.
 low 33,9 / 39,8 / 41,6, pior quadro 85 / 32 / 28 ms (p99 24,3 e 22,6 ms nas rodadas 1 e 3), GPU ~15 ms. Nenhuma das
 travadas de ~2 s da Fase 32. O JSON dos quadros passou ao formato 2 (hora e pipelines compiladas por quadro): 189
 compilações no dia, quase todas no anoitecer (18h18 e 18h48) e às 2h42, nenhuma num quadro acima de 25 ms.
+
+## Fase 92 — medidas que faltam (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). **VSync desligado** (`-- --sem-vsync`), 1080p: 86,4 FPS (1% low
+44,0, 0,1% low 36,0, pior quadro 35 ms), GPU 10,8 ms. **3D nos pixels do 4K** (`-- --4k`, 200% de uma janela de 1080p;
+a janela de 3840×2160 o Windows encolhe para a altura da tela): 46,5 FPS (1% low 35,9, pior quadro 33 ms), GPU 21,1 ms.
+**Executável exportado** (release, `Society.exe -- --benchmark`): 89,1 FPS (1% low 54,6, 0,1% low 48,2, pior quadro
+21 ms), jogo novo 8,7 s, carregar 3,1 s; pipelines iguais às do editor (5 / 11 montando a cidade, 10 / 11 / 0 / 63 no
+dia): o shader baker não mudou nada. A linha "frota" passa a dizer "10 navios em 5 rotas; 2 ilhas sem lugar de
+entreposto" (antes, 7 rotas, duas delas para ilhas sem porto).
