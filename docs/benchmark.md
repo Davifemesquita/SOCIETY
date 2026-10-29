@@ -1327,3 +1327,10 @@ Neutra.
 Área de trabalho escondida, alto, semente 1840 (v3). Sem atratividade nem festa no mundo do benchmark: 2000 pedestres,
 1900 na rua, nenhum turista. Máquina no estado lento: GPU 22,9 ms, dia inteiro 34,8 FPS (1% low 18,2, pior quadro
 142 ms), tick médio 1,33 ms, construir com a ilha cheia 17,1 ms, 2755 objetos e 1117 draw calls. Neutra.
+
+## Fase 83 — moradores na festa (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark: 2000 pedestres, 1900 na rua.
+Máquina no estado rápido (não comparável às duas entradas de antes, no lento): GPU 10,8 ms, dia inteiro 86,3 FPS (1% low
+42,9, pior quadro 27 ms), tick médio 1,39 ms, construir com a ilha cheia 16,7 ms, 2769 objetos e 1119 draw calls (14 objetos e 2
+draw calls a mais que na Fase 82, sem festa no mundo; a causa não foi investigada). Neutra.
