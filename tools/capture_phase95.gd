@@ -43,6 +43,8 @@ func _run() -> void:
 			var result := _sim.execute(PlaceBuildingCommand.new(0, &"house", Vector2i(ORIGIN.x + 1 + i * 3, street_y - 3), 2))
 			if result.ok():
 				_sim.world.building(result.placed[0]).tier = TIERS[row]
+				# Fase 100: com morador (a chaminé só fumega em casa habitada)
+				_sim.world.building(result.placed[0]).residents = 5.0
 		streets.append(Vector2i(ORIGIN.x + HOUSES_PER_STREET * 3 / 2, street_y))
 	# a rua dos prédios grandes, abaixo das casas
 	var big_y := ORIGIN.y + TIERS.size() * STREET_STEP + 3
@@ -70,6 +72,10 @@ func _run() -> void:
 	await _shot("mercado_de_lado.png", grid.cell_world(Vector2i(ORIGIN.x + 9, big_y - 2)), 26.0, PI * 0.2)
 	await _shot("fabricas_de_perto.png", grid.cell_world(Vector2i(ORIGIN.x + 47, big_y - 2)), 30.0, PI * 0.2)
 	await _shot("telhado_de_perto.png", grid.cell_world(streets[2] + Vector2i(0, -2)), 18.0, 0.4)
+	# Fase 100: a fumaça das chaminés na hora do fogão aceso
+	_set_hour(7.5)
+	await _shot("fumaca_manha.png", grid.cell_world(streets[1] + Vector2i(0, -2)), 34.0, 0.5)
+	_set_hour(10.0)
 	await _shot("de_cima.png", grid.cell_world(streets[2]), 140.0, 0.0)
 	get_tree().quit()
 

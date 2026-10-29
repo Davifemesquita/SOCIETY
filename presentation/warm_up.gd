@@ -103,7 +103,9 @@ func start(config: GameConfig, data: GameData, camera: Camera3D) -> void:
 	var yards := YardView.new()
 	var decorations := DecorationView.new()
 	var rails := RailView.new()
-	for view: Node3D in [road_view, building_view, window_view, stockpiles, lamps, crops, harbor, yards, decorations, rails]:
+	var chimneys := ChimneySmokeView.new()
+	for view: Node3D in [road_view, building_view, window_view, stockpiles, lamps, crops, harbor, yards, decorations, rails,
+			chimneys]:
 		add_child(view)
 		views.append(view)
 	rails.setup(simulation, config)
@@ -113,6 +115,7 @@ func start(config: GameConfig, data: GameData, camera: Camera3D) -> void:
 	harbor.setup(simulation)
 	yards.setup(simulation)
 	decorations.setup(simulation)
+	chimneys.setup(simulation)
 	for view: Node3D in views:
 		disconnect_from_bus(view)
 	# a obra (andaime e poeira) numa das casas

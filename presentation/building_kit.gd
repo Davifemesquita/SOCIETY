@@ -887,15 +887,38 @@ static func _build(spec: Spec) -> ArrayMesh:
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
 	if spec.chimney:
-		var stack := spec.roof_m + 0.6
-		var body := hall.size_m()
-		_append_piece(tool, CHIMNEY, offset * Transform3D(Basis.from_scale(Vector3(3.0, stack, 3.0)),
-				Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5)))
+		_append_piece(tool, CHIMNEY, _chimney_place(spec))
 	var arrays := tool.commit_to_arrays()
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	importer.generate_lods(25.0, 60.0, [])
 	return importer.get_mesh()
+
+
+## A chaminé da casa no telhado, no referencial do prédio: a peça do kit esticada até passar da cumeeira.
+static func _chimney_place(spec: Spec) -> Transform3D:
+	var stack := spec.roof_m + 0.6
+	var body := spec.hall().size_m()
+	return Transform3D(Basis.IDENTITY, spec.hall_offset()) * Transform3D(Basis.from_scale(Vector3(3.0, stack, 3.0)),
+			Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5))
+
+
+## Fase 100: a boca da chaminé (o meio do alto da peça), no referencial do prédio; null sem chaminé ou sem o kit.
+static func chimney_top(spec: Spec) -> Variant:
+	if spec == null or not spec.chimney:
+		return null
+	var place := _chimney_place(spec)
+	var box := AABB()
+	var first := true
+	for part: Array in _parts_of(CHIMNEY):
+		var mesh: Mesh = part[0]
+		var transform: Transform3D = part[1]
+		var piece := place * transform * mesh.get_aabb()
+		box = piece if first else box.merge(piece)
+		first = false
+	if first:
+		return null
+	return Vector3(box.get_center().x, box.end.y, box.get_center().z)
 
 
 ## As peças paradas da silhueta (Fase 13). As que giram ficam em rotor().

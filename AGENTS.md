@@ -2101,6 +2101,14 @@ Regras que já custaram investigação:
   do pátio junto do corpo (`arcade_bays`, `_arcade`; as bancas ficam na fileira da rua). O tímpano usa `UV_GLASS`: contar
   vidro por janela tem de somar `ARCH_SEGMENTS` triângulos por janela em arco.
 
+### Fumaça das casas (Fase 100, nossa)
+
+- **Plano** em `docs/plano_fase100.md`, primeira do roteiro `docs/plano_fases_100_104.md` (a rua habitada).
+  `BuildingKit.chimney_top` (a boca, pela mesma conta da chaminé), `ChimneySmokeView` (`GameScreen.chimney_smoke_view`:
+  baforadas num MultiMesh só, só de casa com morador, `amount_at` pela hora) e `shaders/chimney_smoke.gdshader` (sobe,
+  cresce e deita com o vento no tempo visual; esmaece pela distância, porque o alcance de visibilidade de um MultiMesh do
+  mundo todo conta do meio dele).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2211,6 +2219,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 97 — Cúpulas e torreões (nossa) | **feita em 29/10/2026**: cúpula de cobre com tambor e lanternim no teatro, na universidade, na prefeitura e no museu; torreão redondo com telhado cônico no canto das casas altas dos investidores; plano em `docs/plano_fase97.md` |
 | 98 — Abóbadas e tonéis (nossa) | **feita em 29/10/2026**: telhado em abóbada no mercado e nas fábricas de nave comprida; tonéis com arcos de ferro no pátio da cervejaria, das destilarias e da adega; chaminé de tijolo redonda e afunilada; plano em `docs/plano_fase98.md` |
 | 99 — Arcos (nossa) | **feita em 29/10/2026**, a última do roteiro das formas mais redondas: janelas com a cabeça em arco (tímpano de vidro e arquivolta de pedra) nos serviços de pedra e nas casas dos investidores; arcada com pilares, arcos e água de telhas na frente do mercado; plano em `docs/plano_fase99.md` |
+| 100 — Fumaça das casas (nossa) | **feita em 29/10/2026**, primeira do roteiro da rua habitada (Fases 100 a 104): baforadas saindo das chaminés das casas com morador, mais de manhã e à noite, deitando com o vento; plano em `docs/plano_fase100.md` |
 
 Pendências já vistas para fases futuras:
 

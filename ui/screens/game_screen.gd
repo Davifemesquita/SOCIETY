@@ -79,6 +79,7 @@ var bird_view: BirdView
 var festival_view: FestivalView
 var harbor_view: HarborView
 var yard_view: YardView
+var chimney_smoke_view: ChimneySmokeView
 var decoration_view: DecorationView
 var fire_view: FireView
 ## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
@@ -244,6 +245,11 @@ func _ready() -> void:
 	add_child(yard_view)
 	yard_view.setup(simulation)
 	graphics.add_effect(yard_view)
+	chimney_smoke_view = ChimneySmokeView.new()
+	chimney_smoke_view.name = "ChimneySmoke"
+	add_child(chimney_smoke_view)
+	chimney_smoke_view.setup(simulation)
+	graphics.add_effect(chimney_smoke_view)
 	decoration_view = DecorationView.new()
 	decoration_view.name = "Decorations"
 	add_child(decoration_view)

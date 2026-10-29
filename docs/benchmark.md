@@ -1448,3 +1448,10 @@ Mesmas condições (área de trabalho escondida, alto, semente 1840, **estado le
 do benchmark não tem serviço de pedra, casa de investidor nem mercado com a arcada à vista). Um pior quadro isolado de
 321 ms nesta rodada (0,1% low 5,2 FPS; na Fase 98, 131 ms), sem nada novo no caminho dele; repetir quando a máquina sair do
 estado lento.
+
+## Fase 100 — fumaça das casas (29/10/2026)
+
+Mesmas condições (área de trabalho escondida, alto, semente 1840, **estado lento**, jogo novo 26,8 s): 36,3 FPS (antes
+34,6), GPU 22,4 ms (23,4), p95 36,3 ms (37,7), pior quadro 105 ms, carregar 10,4 s. O MultiMesh das baforadas soma um objeto
+e uma draw call (2724 · 976) e 4.690 primitivas no quadro com tudo visível. A melhora está dentro do ruído do estado lento:
+as baforadas não pesam.
