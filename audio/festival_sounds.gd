@@ -4,7 +4,9 @@ extends Node
 ## vento e a chuva do AmbiencePlayer). O estouro toca no ponto do céu e chega atrasado pela distância até a câmera
 ## (SOUND_SPEED_M_S); as palmas tocam na praça, um pouco depois (o povo reage), mais altas com mais gente batendo.
 ## Desde a Fase 86, o assobio do foguete subindo (segue o foguete e acaba no estouro) e o eco do estrondo (ECHO_*).
-## Sem tela (headless) nada toca: os testes conferem `played`, `pending_count` e `flights_count`.
+## Desde a Fase 87, as vivas do povo: a gravação de uma multidão (CHEER_PATH, Gregor Quendel, CC BY 4.0) em laço na
+## praça, que sobe a cada estouro com gente reagindo (a partir de CHEER_MIN_PEOPLE) e some devagar (cheer_level).
+## Sem tela (headless) nada toca: os testes conferem `played`, `pending_count`, `flights_count` e `cheer_level`.
 
 const RATE := 22050
 const SOUND_SPEED_M_S := 343.0
@@ -29,9 +31,18 @@ const WHISTLE_DB := -8.0
 const ECHO_DELAY_S := 0.45
 const ECHO_DB := -12.0
 const ECHO_PITCH := 0.85
+## Fase 87: as vivas: a partir de CHEER_MIN_PEOPLE reagindo, o nível vai a cheer_share (cheio com CLAP_FULL_PEOPLE) e cai
+## CHEER_FADE_PER_S por segundo; no nível 1 toca a CHEER_DB.
+const CHEER_PATH := "res://assets/audio/sfx/crowd_cheer.mp3"
+const CHEER_MIN_PEOPLE := 3
+const CHEER_DB := -3.0
+const CHEER_FADE_PER_S := 0.35
+const CHEER_SILENT := 0.02
 
-## Quantas vezes cada som tocou (&"bang", &"echo", &"applause", &"whistle").
+## Quantas vezes cada som tocou (&"bang", &"echo", &"applause", &"whistle", &"cheer").
 var played: Dictionary[StringName, int] = {}
+## Fase 87: o volume das vivas agora (0 a 1).
+var cheer_level: float = 0.0
 
 ## Os sons gerados ficam entre partidas (gerar leva algumas dezenas de ms).
 static var _bang_cache: AudioStreamWAV
@@ -46,6 +57,7 @@ var _claps: Array[AudioStreamPlayer3D] = []
 var _whistles: Array[AudioStreamPlayer3D] = []
 ## Assobios no ar: [voz, de, até, segundos da subida, segundos andados] (tempo de jogo).
 var _flights: Array[Array] = []
+var _cheer: AudioStreamPlayer3D
 ## Sons esperando a hora: [tempo que falta, chave, posição, volume em dB].
 var _pending: Array[Array] = []
 var _audible: bool = true
@@ -68,6 +80,11 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 		_claps.append(_voice(_applause, 10.0, 220.0))
 	for i: int in WHISTLE_VOICES:
 		_whistles.append(_voice(_whistle_cache, 20.0, 500.0))
+	var recording := load(CHEER_PATH) as AudioStreamMP3
+	if recording != null:
+		var looped := recording.duplicate() as AudioStreamMP3
+		looped.loop = true
+		_cheer = _voice(looped, 14.0, 260.0)
 	festival.launched.connect(func(_island_id: int, from: Vector3, to: Vector3, rise_s: float) -> void:
 		on_launch(from, to, rise_s))
 	festival.exploded.connect(func(island_id: int, at: Vector3) -> void:
@@ -82,6 +99,16 @@ func on_burst(at: Vector3, people: int) -> void:
 	if people > 0:
 		var ground := Vector3(at.x, at.y - FestivalView.FIREWORK_HEIGHT_M.x, at.z)
 		_pending.append([maxf(delay, CLAP_DELAY_S), &"applause", ground, clap_db(people)])
+		if people >= CHEER_MIN_PEOPLE:
+			_pending.append([maxf(delay, CLAP_DELAY_S), &"cheer", ground, cheer_share(people)])
+
+
+## Fase 87: o nível das vivas de people pessoas reagindo (0 abaixo de CHEER_MIN_PEOPLE, 1 com CLAP_FULL_PEOPLE).
+static func cheer_share(people: int) -> float:
+	if people < CHEER_MIN_PEOPLE:
+		return 0.0
+	var share := float(people - CHEER_MIN_PEOPLE + 1) / float(CLAP_FULL_PEOPLE - CHEER_MIN_PEOPLE + 1)
+	return sqrt(clampf(share, 0.0, 1.0))
 
 
 ## Volume das palmas de people pessoas.
@@ -125,6 +152,7 @@ func on_launch(from: Vector3, to: Vector3, rise_s: float) -> void:
 func _process(delta: float) -> void:
 	var speed := GameClock.clock.speed_multiplier()
 	_follow_flights(delta * speed, speed <= 0.0)
+	fade_cheer(delta * speed, speed <= 0.0)
 	if _pending.is_empty():
 		return
 	if speed <= 0.0:
@@ -146,6 +174,10 @@ func _process(delta: float) -> void:
 
 func _play(key: StringName, at: Vector3, volume_db: float) -> void:
 	played[key] = played.get(key, 0) + 1
+	if key == &"cheer":
+		# nas vivas, o último campo é o nível (0 a 1), não dB
+		_swell_cheer(at, volume_db)
+		return
 	if not _audible:
 		return
 	var pool := _claps if key == &"applause" else _bangs
@@ -160,6 +192,33 @@ func _play(key: StringName, at: Vector3, volume_db: float) -> void:
 	player.volume_db = volume_db
 	player.pitch_scale = _rng.randf_range(0.9, 1.1) * (ECHO_PITCH if key == &"echo" else 1.0)
 	player.play()
+
+
+## Fase 87: as vivas sobem até level, vindas da praça em at; se estavam caladas, começam num ponto qualquer da gravação.
+func _swell_cheer(at: Vector3, level: float) -> void:
+	cheer_level = maxf(cheer_level, level)
+	if not _audible or _cheer == null:
+		return
+	_cheer.global_position = at
+	_cheer.volume_db = CHEER_DB + linear_to_db(maxf(cheer_level, CHEER_SILENT))
+	if not _cheer.playing:
+		_cheer.play(_rng.randf_range(0.0, maxf(_cheer.stream.get_length() - 4.0, 0.0)))
+
+
+## Fase 87: as vivas somem devagar (CHEER_FADE_PER_S de jogo); caladas, a voz para; com o jogo parado, param também.
+func fade_cheer(game_delta: float, paused: bool) -> void:
+	if cheer_level <= 0.0:
+		return
+	cheer_level = maxf(cheer_level - CHEER_FADE_PER_S * game_delta, 0.0)
+	if cheer_level < CHEER_SILENT:
+		cheer_level = 0.0
+	if _cheer == null or not _audible:
+		return
+	_cheer.stream_paused = paused
+	if cheer_level == 0.0:
+		_cheer.stop()
+	else:
+		_cheer.volume_db = CHEER_DB + linear_to_db(cheer_level)
 
 
 ## Fase 86: leva cada assobio junto do foguete (a mesma subida da FestivalView.rocket_point, sem o balanço) e o cala no

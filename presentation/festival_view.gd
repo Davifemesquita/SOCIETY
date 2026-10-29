@@ -33,7 +33,10 @@ const WOOD_COLOR := Color(0.45, 0.32, 0.2)
 ## Fogos: acima desta noite (DayClock.night_factor), um estouro a cada FIREWORK_EVERY_S (sorteado), a esta altura.
 const NIGHT_FIREWORKS := 0.45
 const FIREWORK_EVERY_S := Vector2(0.9, 2.2)
-const FIREWORK_HEIGHT_M := Vector2(28.0, 42.0)
+## Fase 87: de 28 a 42 m (Fase 65) para 14 a 22 m e até FIREWORK_SPREAD_M para o lado: lá em cima o estouro ficava acima
+## da borda da tela com a câmera olhando a cidade de cima.
+const FIREWORK_HEIGHT_M := Vector2(14.0, 22.0)
+const FIREWORK_SPREAD_M := 8.0
 const FIREWORK_POOL := 6
 ## Fase 86: o foguete leva de ROCKET_RISE_S.x a .y segundos de jogo do alto do mastro até o estouro, balançando até
 ## ROCKET_WOBBLE_M para o lado; no máximo ROCKET_POOL no ar.
@@ -43,6 +46,11 @@ const ROCKET_POOL := 8
 ## O brilho da cabeça e o tamanho de cada faísca do rastro (m).
 const ROCKET_GLOW_M := 1.6
 const ROCKET_SPARK_M := 0.7
+## Fase 87: as formas do estouro e o peso de cada uma no sorteio: bola (a de antes), crisântemo (mais denso, passando de
+## uma cor a outra), salgueiro (dourado, devagar, caindo como chuva) e anel (num plano inclinado).
+enum Shape { PEONY, CHRYSANTHEMUM, WILLOW, RING }
+const SHAPE_WEIGHTS: Array[float] = [4.0, 2.0, 2.0, 2.0]
+const WILLOW_COLOR := Color(1.0, 0.78, 0.35)
 const FIREWORK_COLORS: Array[Color] = [Color(1.0, 0.35, 0.3), Color(1.0, 0.85, 0.35), Color(0.45, 0.7, 1.0), Color(0.6, 1.0, 0.5),
 		Color(1.0, 0.55, 0.95), Color(1.0, 1.0, 0.95)]
 
@@ -58,6 +66,8 @@ var _next_firework: float = 0.0
 var _rng := RandomNumberGenerator.new()
 ## Fase 86: os foguetes (reaproveitados) e o voo de cada um.
 var _rockets: Array[Rocket] = []
+## Fase 87: a forma do último estouro (testes e capturas).
+var last_shape: Shape = Shape.PEONY
 
 
 class Rocket:
@@ -213,21 +223,91 @@ func launch(site: Vector3) -> void:
 	burst_at(site, site + _burst_offset())
 
 
-## Fase 86: o estouro em at (sobre o lugar site).
-func burst_at(site: Vector3, at: Vector3) -> void:
+## Fase 86: o estouro em at (sobre o lugar site). Fase 87: shape escolhe a forma (sem ela, sorteada).
+func burst_at(site: Vector3, at: Vector3, shape: int = -1) -> void:
 	for burst: GPUParticles3D in _fireworks:
 		if burst.emitting:
 			continue
 		burst.position = at
-		var process := burst.process_material as ParticleProcessMaterial
-		process.color = FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
+		# Fase 87: a forma e as cores sorteadas
+		var chosen := pick_shape(_rng.randf()) if shape < 0 else shape as Shape
+		var first := FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
+		var second := FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
+		var axis := Vector3(_rng.randf_range(-0.6, 0.6), 1.0, _rng.randf_range(-0.6, 0.6)).normalized()
+		shape_burst(burst, chosen, first, second, axis)
+		last_shape = chosen
 		burst.restart()
 		exploded.emit(_island_of(site), burst.position)
 		return
 
 
+## Fase 87: a forma pela sorte (0 a 1), pelos pesos de SHAPE_WEIGHTS.
+static func pick_shape(roll: float) -> Shape:
+	var total := 0.0
+	for weight: float in SHAPE_WEIGHTS:
+		total += weight
+	var left := roll * total
+	for shape: int in SHAPE_WEIGHTS.size():
+		left -= SHAPE_WEIGHTS[shape]
+		if left < 0.0:
+			return shape as Shape
+	return Shape.PEONY
+
+
+## Fase 87: arma a bomba para a forma: quantas faíscas, quanto duram, a força, a queda, as cores (a primeira passa para
+## a segunda no crisântemo; o salgueiro é sempre dourado) e, no anel, o plano em que ele abre (axis).
+static func shape_burst(burst: GPUParticles3D, shape: Shape, first: Color, second: Color, axis: Vector3) -> void:
+	var process := burst.process_material as ParticleProcessMaterial
+	var fade := (process.color_ramp as GradientTexture1D).gradient
+	process.color = Color.WHITE
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	process.radial_velocity_min = 0.0
+	process.radial_velocity_max = 0.0
+	process.spread = 180.0
+	var end := first
+	match shape:
+		Shape.PEONY:
+			burst.amount = 70
+			burst.lifetime = 1.8
+			_speeds(process, 9.0, 12.0, 2.0, 3.0, -4.0)
+		Shape.CHRYSANTHEMUM:
+			burst.amount = 140
+			burst.lifetime = 2.2
+			_speeds(process, 11.0, 14.0, 2.5, 3.0, -3.0)
+			end = second
+		Shape.WILLOW:
+			burst.amount = 110
+			burst.lifetime = 3.4
+			_speeds(process, 6.0, 8.0, 0.6, 1.0, -6.0)
+			first = WILLOW_COLOR
+			end = WILLOW_COLOR.darkened(0.5)
+		Shape.RING:
+			burst.amount = 80
+			burst.lifetime = 1.8
+			_speeds(process, 0.0, 0.0, 2.0, 3.0, -3.0)
+			process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+			process.emission_ring_axis = axis
+			process.emission_ring_radius = 0.4
+			process.emission_ring_inner_radius = 0.38
+			process.emission_ring_height = 0.0
+			process.radial_velocity_min = 11.0
+			process.radial_velocity_max = 12.0
+	fade.set_color(0, Color(first, 1.0))
+	fade.set_color(1, Color(end, 0.0))
+
+
+static func _speeds(process: ParticleProcessMaterial, low: float, high: float, damp_low: float, damp_high: float,
+		fall: float) -> void:
+	process.initial_velocity_min = low
+	process.initial_velocity_max = high
+	process.damping_min = damp_low
+	process.damping_max = damp_high
+	process.gravity = Vector3(0.0, fall, 0.0)
+
+
 func _burst_offset() -> Vector3:
-	return Vector3(_rng.randf_range(-12.0, 12.0), _rng.randf_range(FIREWORK_HEIGHT_M.x, FIREWORK_HEIGHT_M.y), _rng.randf_range(-12.0, 12.0))
+	return Vector3(_rng.randf_range(-FIREWORK_SPREAD_M, FIREWORK_SPREAD_M), _rng.randf_range(FIREWORK_HEIGHT_M.x, FIREWORK_HEIGHT_M.y),
+			_rng.randf_range(-FIREWORK_SPREAD_M, FIREWORK_SPREAD_M))
 
 
 func _island_of(site: Vector3) -> int:
@@ -348,8 +428,8 @@ static func _rocket() -> Rocket:
 	head.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	rocket.node.add_child(head)
 	var trail := GPUParticles3D.new()
-	trail.amount = 90
-	trail.lifetime = 0.9
+	trail.amount = 140
+	trail.lifetime = 1.3
 	trail.local_coords = false
 	trail.emitting = false
 	trail.visibility_aabb = AABB(Vector3(-25, -45, -25), Vector3(50, 50, 50))
@@ -360,7 +440,7 @@ static func _rocket() -> Rocket:
 	process.initial_velocity_min = 0.5
 	process.initial_velocity_max = 1.5
 	process.gravity = Vector3(0.0, -3.0, 0.0)
-	process.color = Color(1.0, 0.7, 0.35)
+	process.color = Color(1.0, 0.8, 0.45)
 	var fade := Gradient.new()
 	fade.set_color(0, Color(1.0, 1.0, 1.0, 1.0))
 	fade.set_color(1, Color(1.0, 0.5, 0.2, 0.0))
@@ -392,7 +472,7 @@ static func _burst() -> GPUParticles3D:
 	particles.one_shot = true
 	particles.explosiveness = 1.0
 	particles.emitting = false
-	particles.visibility_aabb = AABB(Vector3(-20, -20, -20), Vector3(40, 40, 40))
+	particles.visibility_aabb = AABB(Vector3(-25, -40, -25), Vector3(50, 60, 50))
 	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var process := ParticleProcessMaterial.new()
 	process.direction = Vector3.UP

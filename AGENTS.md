@@ -117,6 +117,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://tools/capture_phase85.tscn -- /pasta/de/saida
 # Fase 86: um foguete parado no meio da subida (foguete.png); grava também assobio.wav
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://tools/capture_phase86.tscn -- /pasta/de/saida
+# Fase 87: cada forma de estouro sozinha no céu (forma_<forma>.png) e o foguete com o rastro
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase87.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
@@ -2020,6 +2022,14 @@ Regras que já custaram investigação:
   sendo o estouro imediato. `launched(ilha, de, até, segundos)` dá ao `FestivalSounds` o assobio (`whistle_stream`, a voz
   segue o voo e cala no estouro); o estrondo ganha o eco (`ECHO_*`).
 
+### Formas e vivas (Fase 87, nossa)
+
+- **Plano** em `docs/plano_fase87.md`. `FestivalView.Shape` (bola, crisântemo, salgueiro, anel; `pick_shape`,
+  `shape_burst` rearma a bomba a cada estouro); **os fogos estouram de 14 a 22 m** (`FIREWORK_HEIGHT_M`; de 28 a 42 m
+  ficavam acima da borda da tela); o rastro do foguete mais forte. As vivas são a única gravação de terceiros da festa
+  (`assets/audio/sfx/crowd_cheer.mp3`, Gregor Quendel, CC BY 4.0): em laço na praça, o nível (`cheer_level`) sobe a cada
+  estouro com 3 ou mais reagindo e some devagar.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2117,6 +2127,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 84 — Palmas e cota da festa (nossa) | **feita em 28/10/2026, a pedido do dono**: quem vê os fogos olha para o céu batendo palmas (animação gerada no código a partir da parada, quinta do VAT), e a gente a mais na rua sai só da ilha da festa; só visual; plano em `docs/plano_fase84.md` |
 | 85 — Palmas nos estouros (nossa) | **feita em 28/10/2026, a pedido do dono**: o povo bate palmas a cada estouro e volta a olhar o mastro; som do estouro (atrasado pela distância) e das palmas gerados no código; vivas ficaram de fora; o som falta ser ouvido pelo dono; plano em `docs/plano_fase85.md` |
 | 86 — Foguete e assobio (nossa) | **feita em 28/10/2026, a pedido do dono**: o fogo sobe do mastro como foguete (brilho e rastro de faíscas) e só estoura lá em cima, com o assobio seguindo o voo e o eco do estrondo, tudo gerado no código; o som falta ser ouvido pelo dono; plano em `docs/plano_fase86.md` |
+| 87 — Formas e vivas (nossa) | **feita em 28/10/2026, a pedido do dono**: estouros em bola, crisântemo, salgueiro e anel; os fogos mais baixos (de 28–42 para 14–22 m: lá em cima ficavam fora da tela); rastro do foguete mais forte; vivas do povo numa gravação CC BY 4.0 (Gregor Quendel) que sobem com a gente reagindo; o som falta ser ouvido pelo dono; plano em `docs/plano_fase87.md` |
 
 Pendências já vistas para fases futuras:
 

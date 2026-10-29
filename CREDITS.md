@@ -38,6 +38,7 @@ código GPL dentro do jogo.
 | Flea market in the rain.ogg | stephan (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Flea_market_in_the_rain.ogg | Public domain | `assets/audio/ambience/ambience_city_market.ogg` |
 | Steam engine.ogg | aradlaw (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Steam_engine.ogg | Public domain | `assets/audio/ambience/ambience_factory_steam.ogg` |
 | Corner of a sheep field in summer.ogg | earthcalling (Wikimedia Commons) | https://commons.wikimedia.org/wiki/File:Corner_of_a_sheep_field_in_summer.ogg | Public domain | `assets/audio/ambience/ambience_field_sheep.ogg` |
+| Free Crowd Cheering Sounds (faixa "04 - Strong cheering - II - Short") | Gregor Quendel | https://opengameart.org/content/free-crowd-cheering-sounds | CC BY 4.0 | `assets/audio/sfx/crowd_cheer.mp3` (Fase 87: as vivas do povo na festa, tocadas em laço pelo `FestivalSounds` com o volume pela gente; o arquivo não foi alterado) |
 
 ## Ícones do game-icons.net por autor (Fase 43)
 

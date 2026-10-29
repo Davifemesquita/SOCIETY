@@ -117,7 +117,7 @@ func _run() -> void:
 		for frame: int in 300:
 			await get_tree().process_frame
 			var rocket := _flying_rocket(festival)
-			if rocket != null and rocket.position.y > mast.y + 14.0:
+			if rocket != null and rocket.position.y > mast.y + 7.0:
 				rising = true
 				break
 	GameClock.set_speed(TickClock.PAUSED)
