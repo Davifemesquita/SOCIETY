@@ -2094,6 +2094,13 @@ Regras que já custaram investigação:
   os tonéis no pátio da frente, `vat_layout`, `_vats`) e a chaminé redonda das fábricas (`SmokeView.stack_mesh`). **Erro de
   compilação num teste com a janela oculta deixa o Godot parado até o tempo acabar**: rode o arquivo sem janela primeiro.
 
+### Arcos (Fase 99, nossa)
+
+- **Plano** em `docs/plano_fase99.md`. `Spec.arched` (serviços de pedra e investidores: `_arch_head` com o tímpano de
+  vidro, a arquivolta e a pedra de fecho; `_arches` nos serviços, o `_ornament` nas casas) e a arcada do mercado na fileira
+  do pátio junto do corpo (`arcade_bays`, `_arcade`; as bancas ficam na fileira da rua). O tímpano usa `UV_GLASS`: contar
+  vidro por janela tem de somar `ARCH_SEGMENTS` triângulos por janela em arco.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2203,6 +2210,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 96 — Casa em mais de um volume (nossa) | **feita em 29/10/2026**: metade das casas dos operários para cima ganha uma ala de um andar a menos com telhado próprio cruzado com o do corpo (o telhado em L); as janelas acesas, o caixilho e a cornija acompanham; quadro igual no A/B, o carregar sobe com as formas em dobro; plano em `docs/plano_fase96.md` |
 | 97 — Cúpulas e torreões (nossa) | **feita em 29/10/2026**: cúpula de cobre com tambor e lanternim no teatro, na universidade, na prefeitura e no museu; torreão redondo com telhado cônico no canto das casas altas dos investidores; plano em `docs/plano_fase97.md` |
 | 98 — Abóbadas e tonéis (nossa) | **feita em 29/10/2026**: telhado em abóbada no mercado e nas fábricas de nave comprida; tonéis com arcos de ferro no pátio da cervejaria, das destilarias e da adega; chaminé de tijolo redonda e afunilada; plano em `docs/plano_fase98.md` |
+| 99 — Arcos (nossa) | **feita em 29/10/2026**, a última do roteiro das formas mais redondas: janelas com a cabeça em arco (tímpano de vidro e arquivolta de pedra) nos serviços de pedra e nas casas dos investidores; arcada com pilares, arcos e água de telhas na frente do mercado; plano em `docs/plano_fase99.md` |
 
 Pendências já vistas para fases futuras:
 

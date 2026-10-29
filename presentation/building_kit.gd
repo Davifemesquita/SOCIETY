@@ -60,6 +60,16 @@ const VATS_PER_SIDE := 2
 const VAT_MAX_M := 2.4
 const VAT_BULGE := 1.08
 const VAT_SIDES := 16
+## Fase 99: a cabeça em arco das janelas (ARCH_SEGMENTS trechos, a arquivolta de ARCH_BAND_M saltando ARCH_PROUD_M da
+## parede e o tímpano de vidro) e a arcada do mercado (na fileira do pátio junto do corpo: pilares de ARCADE_PIER_M, o
+## arco nascendo a ARCADE_SPRING_M, a espessura e a água que sobe ARCADE_ROOF_RISE_M até a parede).
+const ARCH_SEGMENTS := 8
+const ARCH_BAND_M := 0.11
+const ARCH_PROUD_M := 0.06
+const ARCADE_PIER_M := 0.34
+const ARCADE_SPRING_M := 1.9
+const ARCADE_THICK_M := 0.32
+const ARCADE_ROOF_RISE_M := 0.6
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -315,11 +325,13 @@ class Spec:
 	var turret: bool = false
 	## Fase 98: o telhado de duas águas vira abóbada (arco abatido sobre o lado curto).
 	var vault: bool = false
+	## Fase 99: as janelas com a cabeça em arco (os serviços de pedra e os investidores).
+	var arched: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -349,6 +361,7 @@ class Spec:
 		copy.dome = dome
 		copy.turret = turret
 		copy.vault = vault
+		copy.arched = arched
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -424,6 +437,7 @@ class Spec:
 		copy.dome = dome
 		copy.turret = turret
 		copy.vault = vault
+		copy.arched = arched
 		return copy
 
 
@@ -475,6 +489,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 			spec.wing = -1
 		# Fase 97: o torreão de canto das casas dos investidores (três andares ou mais)
 		spec.turret = spec.trim == TierDef.HouseTrim.PORTICO and spec.floors() >= 3
+		# Fase 99: as janelas em arco das casas dos investidores
+		spec.arched = spec.trim == TierDef.HouseTrim.PORTICO
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -503,6 +519,7 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.roof_m = short * (SPIRE_SLOPE if def.id == &"church" else ROOF_SLOPE * 1.4)
 		spec.door = Door.ARCH
 		spec.window_style = 2
+		spec.arched = true
 	elif def.kind == BuildingDef.Kind.PRODUCTION and def.smoke != BuildingDef.Smoke.NONE:
 		spec.sparse_windows = true
 		if def.smoke == BuildingDef.Smoke.HEAVY or def.silhouette == BuildingDef.Silhouette.CLERESTORY:
@@ -900,9 +917,11 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 				_beam(tool, feet[i].lerp(heads[i], 0.5), feet[j].lerp(heads[j], 0.5), BEAM_M * 0.6)
 				_beam(tool, heads[i], heads[j], BEAM_M * 0.6)
 		BuildingDef.Silhouette.STALLS:
-			# bancas no pátio, menos na coluna que leva à porta
+			# bancas no pátio, menos na coluna que leva à porta (e, desde a Fase 99, na fileira da arcada)
 			var step := size.x / spec.cells.x
-			for row: int in spec.court_rows:
+			var stall_rows := spec.court_rows - (1 if arcade_bays(spec) > 0 else 0)
+			_arcade(extra, spec)
+			for row: int in stall_rows:
 				for column: int in spec.cells.x:
 					if column == spec.door_index:
 						continue
@@ -1516,6 +1535,8 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 								Vector3(1.6, 3.0, 0.9), 0.45, 0.0))
 	if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]:
 		_ornament(extra, spec)
+	elif spec.arched:
+		_arches(extra, spec)
 
 
 ## Cornija, vergas das janelas e (engenheiros e investidores) a faixa entre os andares, em pedra clara.
@@ -1549,7 +1570,12 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 				var at := center + _wall_point(hall, face, index, level) + Vector3(0.0, top, 0.0) \
 						+ _face_normal(face) * 0.04
 				var width := step * WINDOW_WIDTH * 1.5
-				_box(tool, at, Vector3(width, LINTEL_M, 0.1) if face % 2 == 0 else Vector3(0.1, LINTEL_M, width), UV_LIGHT_STONE)
+				if hall.arched:
+					# Fase 99: a cabeça em arco no lugar da verga reta (a pedra de fecho vai no alto do arco)
+					_arch_head(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m())
+				else:
+					_box(tool, at, Vector3(width, LINTEL_M, 0.1) if face % 2 == 0 else Vector3(0.1, LINTEL_M, width),
+							UV_LIGHT_STONE)
 				# o peitoril (Fase 24), mais estreito que a verga e saindo um pouco mais da parede
 				var sill := center + _wall_point(hall, face, index, level) + _face_normal(face) * 0.07 \
 						+ Vector3(0.0, hall.floor_m() * (WINDOW_CENTER - WINDOW_HEIGHT * 0.5) - SILL_M * 0.5, 0.0)
@@ -1557,14 +1583,15 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 				_box(tool, sill, Vector3(sill_width, SILL_M, 0.16) if face % 2 == 0 else Vector3(0.16, SILL_M, sill_width),
 						UV_LIGHT_STONE)
 				if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
-					_window_frame(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m(), top)
+					_window_frame(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m(), top,
+							not hall.arched)
 
 
 ## Guarnição de pedra da janela (Fase 25): as ombreiras dos dois lados do vão, do peitoril à verga, e a pedra
 ## de fecho no meio da verga. "wall" é o ponto da fachada no meio da célula, no chão do andar; "lintel_y", o
 ## meio da verga acima dele.
 static func _window_frame(tool: SurfaceTool, wall: Vector3, face: int, step: float, floor_m: float,
-		lintel_y: float) -> void:
+		lintel_y: float, keystone := true) -> void:
 	var along_x := face % 2 == 0
 	var lateral := Vector3.RIGHT if along_x else Vector3.BACK
 	var normal := _face_normal(face)
@@ -1574,9 +1601,109 @@ static func _window_frame(tool: SurfaceTool, wall: Vector3, face: int, step: flo
 		var at := wall + lateral * side * (step * WINDOW_WIDTH * 0.5 + JAMB_M * 0.5) \
 				+ Vector3(0.0, floor_m * WINDOW_CENTER + LINTEL_M * 0.25, 0.0) + normal * 0.04
 		_box(tool, at, Vector3(JAMB_M, height, 0.08) if along_x else Vector3(0.08, height, JAMB_M), UV_LIGHT_STONE)
+	if not keystone:
+		return
 	var key := wall + Vector3(0.0, lintel_y - LINTEL_M * 0.5 + KEYSTONE_M * 0.5, 0.0) + normal * 0.07
 	_box(tool, key, Vector3(KEYSTONE_WIDTH_M, KEYSTONE_M, 0.14) if along_x
 			else Vector3(0.14, KEYSTONE_M, KEYSTONE_WIDTH_M), UV_LIGHT_STONE)
+
+
+## Fase 99: a cabeça em arco da janela, por cima do vão — o tímpano de vidro em meio círculo, a arquivolta de pedra que
+## salta da parede (face, borda de fora e intradorso) e a pedra de fecho no alto. "wall" como no _window_frame.
+static func _arch_head(tool: SurfaceTool, wall: Vector3, face: int, step: float, floor_m: float) -> void:
+	var lateral := Vector3.RIGHT if face % 2 == 0 else Vector3.BACK
+	var normal := _face_normal(face)
+	var spring := wall + Vector3(0.0, arch_spring(floor_m), 0.0)
+	var inner := arch_radius(step)
+	var outer := inner + ARCH_BAND_M
+	var proud := normal * ARCH_PROUD_M
+	for k: int in ARCH_SEGMENTS:
+		var a0 := PI * k / ARCH_SEGMENTS
+		var a1 := PI * (k + 1) / ARCH_SEGMENTS
+		var r0 := lateral * cos(a0) + Vector3.UP * sin(a0)
+		var r1 := lateral * cos(a1) + Vector3.UP * sin(a1)
+		_triangle(tool, spring + normal * 0.03, spring + r0 * inner + normal * 0.03, spring + r1 * inner + normal * 0.03,
+				normal, UV_GLASS)
+		_quad(tool, spring + r0 * inner + proud, spring + r1 * inner + proud, spring + r1 * outer + proud,
+				spring + r0 * outer + proud, normal, UV_LIGHT_STONE)
+		_quad(tool, spring + r0 * outer, spring + r1 * outer, spring + r1 * outer + proud, spring + r0 * outer + proud,
+				r0 + r1, UV_LIGHT_STONE)
+		_quad(tool, spring + r0 * inner, spring + r1 * inner, spring + r1 * inner + proud, spring + r0 * inner + proud,
+				-(r0 + r1), UV_LIGHT_STONE)
+	var key := spring + Vector3.UP * (inner + ARCH_BAND_M * 0.5) + normal * (ARCH_PROUD_M + 0.02)
+	_box(tool, key, Vector3(KEYSTONE_WIDTH_M, ARCH_BAND_M * 1.8, 0.1) if face % 2 == 0
+			else Vector3(0.1, ARCH_BAND_M * 1.8, KEYSTONE_WIDTH_M), UV_LIGHT_STONE)
+
+
+## Onde o arco da janela nasce (o alto do vão, acima do chão do andar) e o raio dele (a meia largura do vão).
+static func arch_spring(floor_m: float) -> float:
+	return floor_m * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5)
+
+
+static func arch_radius(step: float) -> float:
+	return step * WINDOW_WIDTH * 0.5
+
+
+## Fase 99: as cabeças em arco de todas as janelas do corpo (os serviços de pedra, que não têm o _ornament das casas).
+static func _arches(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	for face: int in 4:
+		var count := hall.cells.x if face % 2 == 0 else hall.cells.y
+		var step := (size.x if face % 2 == 0 else size.y) / count
+		for level: int in hall.floors():
+			for index: int in count:
+				if slot(hall, face, index, level) == &"window":
+					_arch_head(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m())
+
+
+## Fase 99: a arcada do mercado na fileira do pátio junto do corpo — um pilar em cada divisa de célula, o arco de volta
+## inteira entre eles (o tímpano por cima do arco, a face de trás e o intradorso) e a água de telhas subindo até a parede.
+static func arcade_bays(spec: Spec) -> int:
+	if spec.silhouette != BuildingDef.Silhouette.STALLS or spec.court_rows < 2:
+		return 0
+	return spec.cells.x
+
+
+static func _arcade(tool: SurfaceTool, spec: Spec) -> void:
+	var bays := arcade_bays(spec)
+	if bays == 0:
+		return
+	var size := spec.size_m()
+	var step := size.x / bays
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var front := wall_z - spec.cell_m + 0.15
+	var radius := (step - ARCADE_PIER_M) * 0.5
+	var top := ARCADE_SPRING_M + radius + 0.35
+	var y0 := FOUNDATION_UP_M
+	for k: int in bays + 1:
+		var x := -size.x * 0.5 + step * k
+		x = clampf(x, -size.x * 0.5 + ARCADE_PIER_M * 0.5, size.x * 0.5 - ARCADE_PIER_M * 0.5)
+		_box(tool, Vector3(x, (y0 + top) * 0.5, front + ARCADE_THICK_M * 0.5),
+				Vector3(ARCADE_PIER_M, top - y0, ARCADE_THICK_M), UV_LIGHT_STONE)
+		# o capitel: a pedra mais larga onde o arco nasce
+		_box(tool, Vector3(x, ARCADE_SPRING_M, front + ARCADE_THICK_M * 0.5),
+				Vector3(ARCADE_PIER_M + 0.12, 0.12, ARCADE_THICK_M + 0.08), UV_LIGHT_STONE)
+	for bay: int in bays:
+		var middle := -size.x * 0.5 + step * (bay + 0.5)
+		for i: int in ARCH_SEGMENTS:
+			var a0 := PI * i / ARCH_SEGMENTS
+			var a1 := PI * (i + 1) / ARCH_SEGMENTS
+			var p0 := Vector3(middle + cos(a0) * radius, ARCADE_SPRING_M + sin(a0) * radius, front)
+			var p1 := Vector3(middle + cos(a1) * radius, ARCADE_SPRING_M + sin(a1) * radius, front)
+			var back := Vector3(0.0, 0.0, ARCADE_THICK_M)
+			# o tímpano: do arco até o alto da arcada, na frente e atrás
+			var q0 := Vector3(p0.x, top, front)
+			var q1 := Vector3(p1.x, top, front)
+			_quad(tool, p0, p1, q1, q0, Vector3.FORWARD, UV_LIGHT_STONE)
+			_quad(tool, p0 + back, p1 + back, q1 + back, q0 + back, Vector3.BACK, UV_LIGHT_STONE)
+			var down := Vector3(middle, ARCADE_SPRING_M, front) - (p0 + p1) * 0.5
+			_quad(tool, p0, p1, p1 + back, p0 + back, down, UV_LIGHT_STONE)
+	# a cornija no alto e a água de telhas até a parede do corpo
+	_box(tool, Vector3(0.0, top + 0.06, front + ARCADE_THICK_M * 0.5), Vector3(size.x + 0.1, 0.12, ARCADE_THICK_M + 0.14),
+			UV_LIGHT_STONE)
+	_lean_to(tool, Vector3(0.0, top + ARCADE_ROOF_RISE_M, wall_z), Vector3(0.0, top + 0.12, front - 0.2), size.x + 0.2)
 
 
 ## Frontão: a base de pedra em "height" (o alto da parede) e o triângulo sobre ela, centrados em "front"

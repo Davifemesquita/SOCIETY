@@ -12,6 +12,8 @@ const HOUR := 16.5
 ## Tempo para a poeira da obra e da demolição assentar (s) e o quanto do quadro o prédio ocupa.
 const SETTLE_S := 4.0
 const FILL := 0.62
+## O alto do modelo até onde a foto ainda enquadra pela altura das paredes (em vezes ela).
+const TOP_ALLOWANCE := 1.5
 
 var _out_dir: String
 var _game: GameScreen
@@ -80,6 +82,11 @@ func _photo(def: BuildingDef, tier: StringName, file_name: String) -> bool:
 	var height := def.height_m
 	if tier != &"":
 		height = _sim.data.tier(tier).house_height_m
+	# Fase 99: o que passa muito do telhado (cúpula, campanário, torreão) também entra no quadro; o telhado comum fica
+	# abaixo de TOP_ALLOWANCE da altura das paredes e não muda nada
+	var spec := BuildingKit.spec_for(_sim, _sim.world.building(building_id), cell)
+	if spec != null:
+		height = maxf(height, BuildingKit.mesh(spec).get_aabb().end.y / TOP_ALLOWANCE)
 	# o quadro recortado (0,86 da altura, campo de visão de 45°) vê 0,71 × a distância: o maior lado ocupa FILL dele
 	var span := maxf(maxf(reach.size.x, reach.size.y) * cell, height * 1.7)
 	if def.modules_required > 0:

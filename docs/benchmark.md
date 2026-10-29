@@ -1440,3 +1440,11 @@ Mesmas condições da Fase 97 (área de trabalho escondida, alto, semente 1840, 
 (antes 34,5; 1% low 17,5, pior quadro 131 ms), GPU 23,7 ms (23,6), carregar 10,5 s (10,6), primitivas 15.408.463
 (+0,2%: abóbadas, tonéis e chaminés redondas). As draw calls do quadro com tudo visível caíram de 1137 para 975 (a chaminé
 redonda é uma malha só para todas, como a caixa; a diferença acompanha a hora do quadro, como nas Fases 95 e 96). Neutra.
+
+## Fase 99 — arcos (29/10/2026)
+
+Mesmas condições (área de trabalho escondida, alto, semente 1840, **estado lento**, jogo novo 26,7 s): 34,6 FPS (antes
+34,3), GPU 23,4 ms (23,7), p95 37,7 ms (igual), carregar 10,5 s, 975 draw calls e 15.401.099 primitivas (iguais: a cidade
+do benchmark não tem serviço de pedra, casa de investidor nem mercado com a arcada à vista). Um pior quadro isolado de
+321 ms nesta rodada (0,1% low 5,2 FPS; na Fase 98, 131 ms), sem nada novo no caminho dele; repetir quando a máquina sair do
+estado lento.

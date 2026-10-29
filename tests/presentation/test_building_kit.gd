@@ -349,6 +349,10 @@ func test_upper_houses_frame_their_windows_in_stone() -> void:
 		var floor_m := spec.hall().floor_m()
 		var key_top := floor_m * (BuildingKit.WINDOW_CENTER + BuildingKit.WINDOW_HEIGHT * 0.5) \
 				+ BuildingKit.LINTEL_M * 0.5 + BuildingKit.KEYSTONE_M
+		if spec.arched:
+			# Fase 99: nos investidores a pedra de fecho fica no alto do arco da janela
+			var step := spec.hall().size_m().x / spec.hall().cells.x
+			key_top = BuildingKit.arch_spring(floor_m) + BuildingKit.arch_radius(step) + BuildingKit.ARCH_BAND_M * 1.4
 		var found := false
 		for vertex: Vector3 in BuildingKit.mesh(spec).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
 			if absf(fposmod(vertex.y, floor_m) - key_top) < 0.002:

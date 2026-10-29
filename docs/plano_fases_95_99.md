@@ -29,3 +29,11 @@ moradores), e só olhado: capturas em `F:\ferramentas\capturas\anno\f95_*.png`, 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura (`tools/capture_phaseNN.tscn`) e
 benchmark, commit e push. As malhas novas ficam no cache do `BuildingKit` por forma; o benchmark confere objetos, draw
 calls e a GPU a cada fase (um torreão ou uma cúpula a mais por prédio pode pesar com a cidade cheia).
+
+## Estado
+
+**Concluído em 29/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase95.md` a
+`docs/plano_fase99.md`), testes, captura em `tools/capture_phase95.tscn` e benchmark neutro no A/B. Diferenças do roteiro:
+a ala da Fase 96 começa nos operários, não nos artesãos (metade das casas de dois andares); na 98, os tanques viraram
+tonéis de aduela com arcos de ferro; na 99, as portas dos serviços já eram em arco e só as janelas mudaram. As fotos dos
+cartões do menu (Fase 51) foram refeitas com as formas novas.
