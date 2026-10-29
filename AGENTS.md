@@ -2080,6 +2080,13 @@ Regras que já custaram investigação:
   `&"none"` nas células que a ala tira** (`in_wing`): paredes, vidros acesos, caixilho, floreiras e vergas acompanham
   sozinhos. Código novo que ande pelas paredes do prédio deve pular `&"none"`.
 
+### Cúpulas e torreões (Fase 97, nossa)
+
+- **Plano** em `docs/plano_fase97.md`. `Spec.dome` (os serviços de `DOMED` com telhado de quatro águas: tambor de pedra,
+  meia esfera de cobre e lanternim, `_dome`) e `Spec.turret` (casas de pórtico com três andares ou mais: torreão redondo
+  no canto da frente de +X, `_turret`, `turret_center`; a sacada encurta uma célula). Peças torneadas por `_turned`. O
+  cobre é a célula (2, 1) da paleta (`UV_COPPER`), pintada de azinhavre no `shaders/building_kit.gdshader`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2187,6 +2194,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 94 — Som e câmera do grand finale (nossa) | **feita em 28/10/2026**, a última do roteiro: rufar de caixa gerado no código antes da salva, com o primeiro foguete esperando ele acabar; opção "Câmera no grand finale" (desligada por padrão) que leva a câmera à praça às 23h; o som falta ser ouvido pelo dono; plano em `docs/plano_fase94.md` |
 | 95 — Telhado de telhas (nossa) | **feita em 29/10/2026**, primeira do roteiro das formas mais redondas (Fases 95 a 99, olhando o Anno do dono): telhas em fileiras desencontradas com a borda redonda nas águas (no shader), capa redonda na cumeeira e nos espigões e beiral redondo; GPU igual no A/B; plano em `docs/plano_fase95.md` |
 | 96 — Casa em mais de um volume (nossa) | **feita em 29/10/2026**: metade das casas dos operários para cima ganha uma ala de um andar a menos com telhado próprio cruzado com o do corpo (o telhado em L); as janelas acesas, o caixilho e a cornija acompanham; quadro igual no A/B, o carregar sobe com as formas em dobro; plano em `docs/plano_fase96.md` |
+| 97 — Cúpulas e torreões (nossa) | **feita em 29/10/2026**: cúpula de cobre com tambor e lanternim no teatro, na universidade, na prefeitura e no museu; torreão redondo com telhado cônico no canto das casas altas dos investidores; plano em `docs/plano_fase97.md` |
 
 Pendências já vistas para fases futuras:
 

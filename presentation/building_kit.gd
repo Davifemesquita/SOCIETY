@@ -32,6 +32,23 @@ const EAVE_SIDES := 6
 const WING_ROOF := 0.7
 const WING_ROOF_FLOOR := 0.8
 const WING_SHARE := 2
+## Fase 97: a cúpula de cobre (os serviços de DOMED, no telhado de quatro águas): raio em fração do lado menor (até
+## DOME_MAX_M), o tambor de pedra (DRUM_M acima da cumeeira), a subida da cúpula em fração do raio e o lanternim; e o
+## torreão dos investidores no canto da frente de +X, em balanço do primeiro andar: raio, quanto passa do beiral, o
+## telhado cônico e o cone de pedra que o segura por baixo.
+const DOMED: Array[StringName] = [&"theater", &"university", &"town_hall", &"museum"]
+const DOME_SHARE := 0.2
+const DOME_MAX_M := 3.2
+const DRUM_M := 1.3
+const DOME_RISE := 1.1
+const DOME_SIDES := 16
+const TURRET_R := 0.85
+const TURRET_ABOVE := 0.75
+const TURRET_ROOF_M := 2.4
+const TURRET_CORBEL_M := 1.0
+const TURRET_SIDES := 12
+## A cor do cobre velho (célula (2, 1) da paleta, que o kit não usa).
+const UV_COPPER := Vector2(2.5 / 8.0, 1.5 / 4.0)
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -282,11 +299,14 @@ class Spec:
 	## Fase 96: a ala mais baixa (0 sem; -1 no lado de −X): a coluna de células da ponta perde o último andar e ganha
 	## telhado próprio, cruzado com o do corpo.
 	var wing: int = 0
+	## Fase 97: cúpula de cobre no alto do telhado (os serviços grandes) e torreão redondo no canto da frente (investidores).
+	var dome: bool = false
+	var turret: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -313,6 +333,8 @@ class Spec:
 		copy.lucarnes = lucarnes
 		copy.storehouse = storehouse
 		copy.wing = wing
+		copy.dome = dome
+		copy.turret = turret
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -384,6 +406,8 @@ class Spec:
 		copy.lucarnes = lucarnes
 		copy.storehouse = storehouse
 		copy.wing = wing
+		copy.dome = dome
+		copy.turret = turret
 		return copy
 
 
@@ -433,6 +457,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 				and BuildingView.house_hash(record.id) / 7 % WING_SHARE == 0:
 			# Fase 96: metade das casas de dois andares para cima ganha a ala mais baixa num lado (a chaminé fica no outro)
 			spec.wing = -1
+		# Fase 97: o torreão de canto das casas dos investidores (três andares ou mais)
+		spec.turret = spec.trim == TierDef.HouseTrim.PORTICO and spec.floors() >= 3
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -473,6 +499,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	if brick(spec):
 		spec.walls = Walls.PLASTER
 	spec.silhouette = def.silhouette
+	# Fase 97: a cúpula de cobre dos serviços grandes (no telhado de quatro águas)
+	spec.dome = def.id in DOMED and spec.roof == Roof.HIP
 	if def.silhouette == BuildingDef.Silhouette.STALLS:
 		# metade da frente vira pátio; o telhado segue o lado curto do corpo
 		spec.court_rows = def.size.y / 2
@@ -804,6 +832,11 @@ static func _build(spec: Spec) -> ArrayMesh:
 	else:
 		_roof(extra, spec)
 		_lucarnes(extra, spec)
+	# Fase 97: a cúpula de cobre e o torreão de canto
+	if spec.dome:
+		_dome(extra, spec)
+	if hall.turret:
+		_turret(extra, hall, offset)
 	_glazing(extra, hall, offset)
 	_silhouette(tool, extra, spec)
 	_trim(tool, extra, spec)
@@ -1418,25 +1451,28 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 		TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO:
 			# sacada corrida no primeiro andar (e nos do meio, nos engenheiros): piso de tábuas e grade de ferro
 			var top := hall.floors() - 1 if spec.trim == TierDef.HouseTrim.BALCONIES else mini(2, hall.floors())
+			# Fase 97: com o torreão no canto de +X, a sacada para uma célula antes (o canto é dele)
+			var cells_out := hall.cells.x - (1 if hall.turret else 0)
 			for level: int in range(1, top):
-				for index: int in hall.cells.x:
+				for index: int in cells_out:
 					# o piso de tábuas vai da parede (x = 0 da peça) até a frente da sacada
 					_append_piece(tool, PLANKS, offset * _face_place(hall, 0, index, level,
 							Vector3(BALCONY_OUT_M * 2.0, 2.0, 1.0), BALCONY_OUT_M, -0.12))
 				# grade de ferro na frente e nas duas pontas da sacada corrida
 				var floor_y := level * hall.floor_m()
 				var half := hall.size_m() * 0.5
+				var step_x := hall.size_m().x / hall.cells.x
+				var right := half.x - (step_x if hall.turret else 0.0)
 				var wall := spec.hall_offset() + Vector3(0.0, floor_y, -half.y)
 				var out := Vector3(0.0, 0.0, -BALCONY_OUT_M)
 				# investidores: balaustrada de pedra (Fase 24); engenheiros: a grade de ferro
 				var fence := _balustrade if spec.trim == TierDef.HouseTrim.PORTICO else _railing
-				fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(half.x, 0.0, 0.0))
-				for end: float in [-half.x, half.x]:
+				fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(right, 0.0, 0.0))
+				for end: float in [-half.x, right]:
 					fence.call(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
 				# consolos de pedra sob a sacada, em cada divisa de célula (os das pontas um pouco para dentro)
-				var step_x := hall.size_m().x / hall.cells.x
-				for k: int in hall.cells.x + 1:
-					var x := clampf(-half.x + step_x * k, -half.x + CORBEL_WIDTH_M, half.x - CORBEL_WIDTH_M)
+				for k: int in cells_out + 1:
+					var x := clampf(-half.x + step_x * k, -half.x + CORBEL_WIDTH_M, right - CORBEL_WIDTH_M)
 					_corbel(extra, wall + Vector3(x, -0.12, 0.0), BALCONY_OUT_M * 0.85)
 			if spec.trim == TierDef.HouseTrim.PORTICO:
 				# duas colunas de pedra dos lados da porta e sebe diante das outras células do térreo
@@ -2005,6 +2041,128 @@ static func _rod(tool: SurfaceTool, from: Vector3, to: Vector3, radius: float, s
 			tool.set_normal(quad_normals[index])
 			tool.set_uv(uv)
 			tool.add_vertex(quad[index])
+
+
+## Fase 97: sólido de revolução em volta do eixo vertical que passa por center: o perfil em (raio, altura) de baixo para
+## cima, em sides faces, com a normal de cada vértice pela média dos trechos vizinhos (a cúpula sai lisa).
+static func _turned(tool: SurfaceTool, center: Vector3, profile: Array[Vector2], sides: int, uv: Vector2) -> void:
+	var normals: Array[Vector2] = []
+	for i: int in profile.size():
+		var sum := Vector2.ZERO
+		if i > 0:
+			sum += _profile_normal(profile[i - 1], profile[i])
+		if i < profile.size() - 1:
+			sum += _profile_normal(profile[i], profile[i + 1])
+		normals.append(sum.normalized())
+	for i: int in profile.size() - 1:
+		var low := profile[i]
+		var high := profile[i + 1]
+		if low.x < 0.0001 and high.x < 0.0001:
+			continue
+		for k: int in sides:
+			var a0 := TAU * k / sides
+			var a1 := TAU * (k + 1) / sides
+			var quad: Array[Vector3] = [_ring_point(center, low, a0), _ring_point(center, low, a1),
+					_ring_point(center, high, a1), _ring_point(center, high, a0)]
+			var quad_normals: Array[Vector3] = [_ring_normal(normals[i], a0), _ring_normal(normals[i], a1),
+					_ring_normal(normals[i + 1], a1), _ring_normal(normals[i + 1], a0)]
+			var outward := (quad_normals[0] + quad_normals[2]).normalized()
+			var order: Array[int] = [0, 1, 2, 0, 2, 3]
+			if (quad[1] - quad[0]).cross(quad[2] - quad[0]).dot(outward) > 0.0:
+				order = [0, 2, 1, 0, 3, 2]
+			for index: int in order:
+				tool.set_normal(quad_normals[index])
+				tool.set_uv(uv)
+				tool.add_vertex(quad[index])
+
+
+## A normal de um trecho do perfil (raio, altura), para fora: subindo reto ela aponta para fora; fechando, para cima.
+static func _profile_normal(a: Vector2, b: Vector2) -> Vector2:
+	var along := b - a
+	return Vector2(along.y, -along.x).normalized() if along.length_squared() > 1e-8 else Vector2(1.0, 0.0)
+
+
+static func _ring_point(center: Vector3, point: Vector2, angle: float) -> Vector3:
+	return center + Vector3(cos(angle) * point.x, point.y, sin(angle) * point.x)
+
+
+static func _ring_normal(normal: Vector2, angle: float) -> Vector3:
+	return Vector3(cos(angle) * normal.x, normal.y, sin(angle) * normal.x)
+
+
+## Fase 97: a cúpula de cobre no meio do telhado de quatro águas: o tambor de pedra saindo do telhado até DRUM_M acima da
+## cumeeira, com a cornija e os vãos escuros, a meia esfera de cobre (DOME_RISE do raio) e o lanternim com o remate.
+static func _dome(tool: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var radius := minf(minf(size.x, size.y) * DOME_SHARE, DOME_MAX_M)
+	var center := Vector3(0.0, 0.0, 0.0)
+	var peak := spec.height_m + spec.roof_m
+	var foot := spec.height_m + spec.roof_m * 0.4
+	var drum_top := peak + DRUM_M
+	_turned(tool, center, [Vector2(radius, foot), Vector2(radius, drum_top)], DOME_SIDES, UV_LIGHT_STONE)
+	# a cornija do tambor e os vãos (o vidro escuro do kit)
+	_turned(tool, center, [Vector2(radius, drum_top - 0.18), Vector2(radius + 0.16, drum_top - 0.1),
+			Vector2(radius + 0.16, drum_top), Vector2(radius * 0.98, drum_top + 0.02)], DOME_SIDES, UV_LIGHT_STONE)
+	for k: int in 8:
+		var angle := TAU * (k + 0.5) / 8.0
+		var at := Vector3(cos(angle) * (radius + 0.02), (peak + drum_top) * 0.5, sin(angle) * (radius + 0.02))
+		var window := SurfaceTool.new()
+		window.begin(Mesh.PRIMITIVE_TRIANGLES)
+		_box(window, Vector3.ZERO, Vector3(0.06, DRUM_M * 0.45, radius * 0.35), UV_GLASS)
+		tool.append_from(window.commit(), 0, Transform3D(Basis(Vector3.UP, -angle), at))
+	# a meia esfera de cobre
+	var profile: Array[Vector2] = []
+	for step: int in 9:
+		var angle := PI * 0.5 * step / 8.0
+		profile.append(Vector2(cos(angle) * radius, drum_top + sin(angle) * radius * DOME_RISE))
+	_turned(tool, center, profile, DOME_SIDES, UV_COPPER)
+	# o lanternim: tambor pequeno de pedra, a capinha de cobre e o remate
+	var crown := drum_top + radius * DOME_RISE
+	var small := radius * 0.2
+	_turned(tool, center, [Vector2(small, crown - 0.1), Vector2(small, crown + small * 1.6)], 8, UV_LIGHT_STONE)
+	var cap: Array[Vector2] = []
+	for step: int in 5:
+		var angle := PI * 0.5 * step / 4.0
+		cap.append(Vector2(cos(angle) * small * 1.15, crown + small * 1.6 + sin(angle) * small))
+	_turned(tool, center, cap, 8, UV_COPPER)
+	_rod(tool, Vector3(0.0, crown + small * 2.5, 0.0), Vector3(0.0, crown + small * 2.5 + 0.9, 0.0), 0.05, 6, UV_COPPER)
+
+
+## Fase 97: o torreão redondo no canto da frente de +X (no referencial do corpo), em balanço do primeiro andar: o cone de
+## pedra que o segura, o fuste na parede do prédio subindo TURRET_ABOVE de um andar acima do beiral, os vãos escuros por
+## andar virados para a rua e o telhado cônico com o remate. O meio fica na linha da fachada: metade sai para a frente.
+static func turret_center(spec: Spec) -> Vector3:
+	var size := spec.size_m()
+	return Vector3(size.x * 0.5 - TURRET_R, 0.0, -size.y * 0.5)
+
+
+static func _turret(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
+	var part := SurfaceTool.new()
+	part.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var center := turret_center(spec)
+	var bottom := spec.floor_m()
+	var top := spec.height_m + spec.floor_m() * TURRET_ABOVE
+	_turned(part, center, [Vector2(0.12, bottom - TURRET_CORBEL_M), Vector2(TURRET_R, bottom)], TURRET_SIDES, UV_LIGHT_STONE)
+	_turned(part, center, [Vector2(TURRET_R, bottom), Vector2(TURRET_R, top)], TURRET_SIDES, UV_WALL)
+	# a cornija no alto do fuste
+	_turned(part, center, [Vector2(TURRET_R, top - 0.2), Vector2(TURRET_R + 0.12, top - 0.1), Vector2(TURRET_R + 0.12, top)],
+			TURRET_SIDES, UV_LIGHT_STONE)
+	# um vão por andar em cada um dos três lados que dão para fora (a frente, o canto e o lado)
+	for level: int in range(1, spec.floors() + 1):
+		var y := level * spec.floor_m() + spec.floor_m() * 0.5
+		if y > top - 0.4:
+			break
+		for angle: float in [-PI * 0.5, -PI * 0.25, 0.0]:
+			var at := center + Vector3(cos(angle) * (TURRET_R + 0.02), y, sin(angle) * (TURRET_R + 0.02))
+			var window := SurfaceTool.new()
+			window.begin(Mesh.PRIMITIVE_TRIANGLES)
+			_box(window, Vector3.ZERO, Vector3(0.06, spec.floor_m() * 0.45, 0.42), UV_GLASS)
+			part.append_from(window.commit(), 0, Transform3D(Basis(Vector3.UP, -angle), at))
+	# o telhado cônico (na célula do acabamento: liso, sem as fileiras de telha) e o remate
+	_turned(part, center, [Vector2(TURRET_R + 0.22, top), Vector2(0.0, top + TURRET_ROOF_M)], TURRET_SIDES, UV_ROOF_TRIM)
+	_rod(part, center + Vector3(0.0, top + TURRET_ROOF_M - 0.1, 0.0), center + Vector3(0.0, top + TURRET_ROOF_M + 0.7, 0.0),
+			0.05, 6, UV_IRON)
+	tool.append_from(part.commit(), 0, offset)
 
 
 static func _box(tool: SurfaceTool, center: Vector3, size: Vector3, uv: Vector2) -> void:

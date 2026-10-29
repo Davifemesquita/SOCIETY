@@ -55,6 +55,10 @@ uniform float tile_width_m = 0.27;
 uniform float tile_strength = 0.38;
 uniform float tile_fade_far = 80.0;
 
+// Fase 97: a pátina do cobre (cúpulas e torreões)
+uniform vec4 copper_dark : source_color = vec4(0.22, 0.42, 0.38, 1.0);
+uniform vec4 copper_light : source_color = vec4(0.42, 0.66, 0.58, 1.0);
+
 varying vec3 world_position;
 varying vec3 world_normal;
 varying float contact;
@@ -125,6 +129,12 @@ void fragment() {
 	bool glass = cell == ivec2(0, 1);
 	if (glass) {
 		color = glass_color.rgb;
+	} else if (cell == ivec2(2, 1)) {
+		// Fase 97: cobre velho (célula (2, 1), que o kit não usa): o verde-azulado da pátina, com escorrimentos mais
+		// claros e mais escuros descendo pela cúpula e pelo torreão
+		float streak = moss_noise(vec2(atan(world_position.z, world_position.x) * 9.0 + world_position.x * 1.3,
+				world_position.y * 0.6));
+		color = mix(copper_dark.rgb, copper_light.rgb, smoothstep(0.25, 0.85, streak));
 	} else if (cell == ivec2(4, 3)) {
 		color = kit_luma / 0.55 * mix(mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), trim_paint_color.rgb, trim_paint);
 	} else if (cell == ivec2(3, 3)) {
@@ -140,7 +150,7 @@ void fragment() {
 	} else {
 		color = mix(color, vec3(kit_luma), trim_desaturate) * trim_darken;
 	}
-	float roughness = 0.85;
+	float roughness = cell == ivec2(2, 1) ? 0.5 : 0.85;
 	if (wall || roof) {
 		vec4 surface = wall
 				? triplanar(wall_albedo_rough, world_position, weights, wall_meters, layer)

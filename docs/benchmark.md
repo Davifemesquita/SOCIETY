@@ -1426,3 +1426,10 @@ pior quadro 116 ms), carregar 7,6 s, 1085 draw calls, 15.615.617 primitivas; **c
 1% low 22,4, pior quadro 53 ms), carregar 10,3 s, 1137 draw calls (+5%), 15.380.371 primitivas (−1,5%: a ala tira
 paredes). O quadro fica igual; o carregar sobe com as formas de casa em dobro (com e sem ala) montadas na primeira vez.
 Tick 1,33 ms nas duas.
+
+## Fase 97 — cúpulas e torreões (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v4), ainda no **estado lento** (GPU ~23,6 ms, jogo novo 26,1 s). Comparado
+com a rodada da Fase 96 nas mesmas condições: 34,5 FPS (antes 34,8; 1% low 19,6, pior quadro 142 ms), GPU 23,6 ms (23,5),
+carregar 10,6 s (10,3), 1137 draw calls e 15.380.371 primitivas, iguais: a cidade do benchmark não tem teatro,
+universidade nem casa de investidor alta, então a cúpula e o torreão não aparecem nela. Neutra.
