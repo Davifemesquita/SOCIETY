@@ -121,6 +121,9 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase87.tscn -- /pasta/de/saida
 # Fase 88: a mesma com a bomba de duas etapas (forma_dupla.png)
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase88.tscn -- /pasta/de/saida
+# cidade de teste: o jogador-robô joga 4 h (todas as classes), mais praças, zoológico e museu cheios, prefeitura, eventos
+# ligados com uma festa e o relógio às 18h, no slot "cidade_de_teste" (abre pelo Carregar); ~3 min, sem tela
+tools/godot.sh godot --headless --path . res://tools/build_test_city.tscn
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
