@@ -1363,3 +1363,10 @@ objetos e 1119 draw calls (iguais à Fase 85). Neutra.
 vivas é carregada ao montar a partida e não toca). Máquina no estado rápido: GPU 11,0 ms, dia inteiro 85,9 FPS (1% low
 45,7, pior quadro 27 ms), tick médio 1,34 ms, construir com a ilha cheia 16,1 ms, jogo novo 10,4 s, carregar 3,80 s,
 2769 objetos e 1119 draw calls (iguais). Neutra.
+
+## Fase 88 — duas etapas e vivas calmas (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark (os 6 sub-emissores das bombas
+ficam parados; a segunda gravação é carregada ao montar a partida e não toca). Máquina no estado rápido: GPU 10,9 ms,
+dia inteiro 86,3 FPS (1% low 44,2, pior quadro 33 ms), tick médio 1,34 ms, construir com a ilha cheia 16,1 ms, jogo
+novo 10,3 s, carregar 3,79 s, 2769 objetos e 1119 draw calls (iguais). Neutra.
