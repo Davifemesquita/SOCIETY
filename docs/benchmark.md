@@ -1349,3 +1349,10 @@ entre rodadas; neutra.
 som da festa é gerado uma vez ao montar a partida (~21 ms, medido num teste). Máquina no estado rápido: GPU 10,8 ms,
 dia inteiro 86,6 FPS (1% low 45,2, pior quadro 27 ms), tick médio 1,32 ms, construir com a ilha cheia 16,6 ms, jogo novo
 10,4 s (10,4 na Fase 84), carregar 3,75 s (3,82), 2769 objetos e 1119 draw calls (iguais). Neutra.
+
+## Fase 86 — foguete e assobio (28/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (v3). Sem festa no mundo do benchmark (nenhum foguete no ar; os 8
+foguetes da `FestivalView` ficam escondidos). Máquina no estado rápido: GPU 10,9 ms, dia inteiro 86,7 FPS (1% low 45,0,
+pior quadro 28 ms), tick médio 1,33 ms, construir com a ilha cheia 16,3 ms, jogo novo 10,5 s, carregar 3,72 s, 2769
+objetos e 1119 draw calls (iguais à Fase 85). Neutra.
