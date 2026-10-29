@@ -5,9 +5,13 @@ extends Node3D
 ## que descem até postes ao longo da rua (só por cima da estrada: nunca cruzam telhado); à noite, fogos de artifício
 ## estouram sobre as praças. Some quando a festa acaba. Só apresentação: lê os eventos e o mundo, não muda nada.
 ## Desde a Fase 85, cada estouro avisa (exploded): o povo na praça bate palmas e o som do estouro e das palmas toca.
+## Desde a Fase 86, o fogo sobe do mastro como um foguete (fire: cabeça acesa e rastro de faíscas, ROCKET_RISE_S) e só
+## estoura lá em cima; a subida avisa (launched) para o assobio.
 
 ## Um estouro no céu, na ilha da festa (Fase 85).
 signal exploded(island_id: int, position: Vector3)
+## Um foguete subindo de from até to em rise_s segundos de jogo (Fase 86).
+signal launched(island_id: int, from: Vector3, to: Vector3, rise_s: float)
 
 ## Prédios que viram praça da festa, na ordem de preferência; o entreposto só se a ilha não tem nenhum.
 const SQUARES: Array[StringName] = [&"fountain_square", &"bandstand", &"market"]
@@ -31,6 +35,14 @@ const NIGHT_FIREWORKS := 0.45
 const FIREWORK_EVERY_S := Vector2(0.9, 2.2)
 const FIREWORK_HEIGHT_M := Vector2(28.0, 42.0)
 const FIREWORK_POOL := 6
+## Fase 86: o foguete leva de ROCKET_RISE_S.x a .y segundos de jogo do alto do mastro até o estouro, balançando até
+## ROCKET_WOBBLE_M para o lado; no máximo ROCKET_POOL no ar.
+const ROCKET_RISE_S := Vector2(0.9, 1.4)
+const ROCKET_WOBBLE_M := 0.8
+const ROCKET_POOL := 8
+## O brilho da cabeça e o tamanho de cada faísca do rastro (m).
+const ROCKET_GLOW_M := 1.6
+const ROCKET_SPARK_M := 0.7
 const FIREWORK_COLORS: Array[Color] = [Color(1.0, 0.35, 0.3), Color(1.0, 0.85, 0.35), Color(0.45, 0.7, 1.0), Color(0.6, 1.0, 0.5),
 		Color(1.0, 0.55, 0.95), Color(1.0, 1.0, 0.95)]
 
@@ -44,6 +56,20 @@ var _launch_islands := PackedInt32Array()
 var _fireworks: Array[GPUParticles3D] = []
 var _next_firework: float = 0.0
 var _rng := RandomNumberGenerator.new()
+## Fase 86: os foguetes (reaproveitados) e o voo de cada um.
+var _rockets: Array[Rocket] = []
+
+
+class Rocket:
+	var node: Node3D
+	var trail: GPUParticles3D
+	var flying: bool = false
+	var site := Vector3.ZERO
+	var from := Vector3.ZERO
+	var to := Vector3.ZERO
+	var rise_s: float = 1.0
+	var elapsed: float = 0.0
+	var wobble := Vector2.ZERO
 
 
 func setup(simulation: Simulation) -> void:
@@ -53,6 +79,11 @@ func setup(simulation: Simulation) -> void:
 		var burst := _burst()
 		add_child(burst)
 		_fireworks.append(burst)
+	for i: int in ROCKET_POOL:
+		var rocket := _rocket()
+		rocket.node.name = "Rocket%d" % i
+		add_child(rocket.node)
+		_rockets.append(rocket)
 	EventBus.world_event_started.connect(func(_def: StringName, _island: int) -> void: rebuild())
 	EventBus.world_event_ended.connect(func(_def: StringName, _island: int) -> void: rebuild())
 	EventBus.world_replaced.connect(rebuild)
@@ -163,31 +194,95 @@ func rebuild() -> void:
 
 
 func _process(delta: float) -> void:
+	var game_delta := delta * GameClock.clock.speed_multiplier()
+	advance_rockets(game_delta)
 	if _launch_sites.is_empty():
 		return
 	var night := DayClock.night_factor(_simulation.config, GameClock.clock.hour())
 	if night < NIGHT_FIREWORKS:
 		return
-	_next_firework -= delta * GameClock.clock.speed_multiplier()
+	_next_firework -= game_delta
 	if _next_firework > 0.0:
 		return
 	_next_firework = _rng.randf_range(FIREWORK_EVERY_S.x, FIREWORK_EVERY_S.y)
-	launch(_launch_sites[_rng.randi() % _launch_sites.size()])
+	fire(_launch_sites[_rng.randi() % _launch_sites.size()])
 
 
 ## Um estouro sobre o lugar: a primeira bomba livre do grupo, numa cor sorteada, a uma altura sorteada.
 func launch(site: Vector3) -> void:
+	burst_at(site, site + _burst_offset())
+
+
+## Fase 86: o estouro em at (sobre o lugar site).
+func burst_at(site: Vector3, at: Vector3) -> void:
 	for burst: GPUParticles3D in _fireworks:
 		if burst.emitting:
 			continue
-		var offset := Vector3(_rng.randf_range(-12.0, 12.0), _rng.randf_range(FIREWORK_HEIGHT_M.x, FIREWORK_HEIGHT_M.y), _rng.randf_range(-12.0, 12.0))
-		burst.position = site + offset
+		burst.position = at
 		var process := burst.process_material as ParticleProcessMaterial
 		process.color = FIREWORK_COLORS[_rng.randi() % FIREWORK_COLORS.size()]
 		burst.restart()
-		var site_index := _launch_sites.find(site)
-		exploded.emit(_launch_islands[site_index] if site_index >= 0 else -1, burst.position)
+		exploded.emit(_island_of(site), burst.position)
 		return
+
+
+func _burst_offset() -> Vector3:
+	return Vector3(_rng.randf_range(-12.0, 12.0), _rng.randf_range(FIREWORK_HEIGHT_M.x, FIREWORK_HEIGHT_M.y), _rng.randf_range(-12.0, 12.0))
+
+
+func _island_of(site: Vector3) -> int:
+	var site_index := _launch_sites.find(site)
+	return _launch_islands[site_index] if site_index >= 0 else -1
+
+
+## Fase 86: um foguete sobe do alto do mastro (site) até o ponto do estouro e estoura lá. Sem foguete livre, nada.
+func fire(site: Vector3) -> bool:
+	for rocket: Rocket in _rockets:
+		if rocket.flying:
+			continue
+		rocket.flying = true
+		rocket.site = site
+		rocket.from = site
+		rocket.to = site + _burst_offset()
+		rocket.rise_s = _rng.randf_range(ROCKET_RISE_S.x, ROCKET_RISE_S.y)
+		rocket.elapsed = 0.0
+		rocket.wobble = Vector2(_rng.randf_range(0.0, TAU), _rng.randf_range(2.0, 4.0))
+		rocket.node.position = site
+		rocket.node.visible = true
+		rocket.trail.emitting = true
+		launched.emit(_island_of(site), rocket.from, rocket.to, rocket.rise_s)
+		return true
+	return false
+
+
+## Fase 86: anda os foguetes no ar game_delta segundos de jogo; o que chega em cima estoura.
+func advance_rockets(game_delta: float) -> void:
+	for rocket: Rocket in _rockets:
+		if not rocket.flying or game_delta <= 0.0:
+			continue
+		rocket.elapsed += game_delta
+		if rocket.elapsed >= rocket.rise_s:
+			rocket.flying = false
+			rocket.node.visible = false
+			rocket.trail.emitting = false
+			burst_at(rocket.site, rocket.to)
+			continue
+		rocket.node.position = rocket_point(rocket, rocket.elapsed / rocket.rise_s)
+
+
+## Ponto do foguete na fração t da subida: rápido no começo e devagar no alto (perde força), balançando para o lado.
+static func rocket_point(rocket: Rocket, t: float) -> Vector3:
+	var climb := 1.0 - (1.0 - t) * (1.0 - t)
+	var side := sin(rocket.wobble.x + t * rocket.wobble.y * TAU) * ROCKET_WOBBLE_M * sin(t * PI)
+	var across := Vector3(rocket.to.z - rocket.from.z, 0.0, rocket.from.x - rocket.to.x).normalized()
+	return rocket.from.lerp(rocket.to, climb) + across * side
+
+
+func rockets_flying() -> int:
+	var count := 0
+	for rocket: Rocket in _rockets:
+		count += int(rocket.flying)
+	return count
 
 
 ## Mastro ou poste: caixa fina de madeira do chão (top - height) até top.
@@ -229,6 +324,64 @@ static func _string(tool: SurfaceTool, from: Vector3, to: Vector3) -> void:
 				tool.set_normal(normal)
 				tool.add_vertex(corner)
 		previous = point
+
+
+## Fase 86: o foguete: a cabeça acesa (um brilho de ROCKET_GLOW_M sempre de frente para a câmera: uma esfera de verdade
+## sumia na distância da câmera da cidade) e o rastro de faíscas, que ficam no mundo e caem.
+static func _rocket() -> Rocket:
+	var rocket := Rocket.new()
+	rocket.node = Node3D.new()
+	rocket.node.name = "Rocket"
+	rocket.node.visible = false
+	var head := MeshInstance3D.new()
+	var glow_quad := QuadMesh.new()
+	glow_quad.size = Vector2(ROCKET_GLOW_M, ROCKET_GLOW_M)
+	var glow := StandardMaterial3D.new()
+	glow.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glow.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	glow.albedo_color = Color(1.0, 0.85, 0.55)
+	glow.albedo_texture = SmokeView._puff_texture()
+	glow_quad.material = glow
+	head.mesh = glow_quad
+	head.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	rocket.node.add_child(head)
+	var trail := GPUParticles3D.new()
+	trail.amount = 90
+	trail.lifetime = 0.9
+	trail.local_coords = false
+	trail.emitting = false
+	trail.visibility_aabb = AABB(Vector3(-25, -45, -25), Vector3(50, 50, 50))
+	trail.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var process := ParticleProcessMaterial.new()
+	process.direction = Vector3.DOWN
+	process.spread = 25.0
+	process.initial_velocity_min = 0.5
+	process.initial_velocity_max = 1.5
+	process.gravity = Vector3(0.0, -3.0, 0.0)
+	process.color = Color(1.0, 0.7, 0.35)
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1.0, 1.0, 1.0, 1.0))
+	fade.set_color(1, Color(1.0, 0.5, 0.2, 0.0))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = fade
+	process.color_ramp = ramp
+	trail.process_material = process
+	var quad := QuadMesh.new()
+	quad.size = Vector2(ROCKET_SPARK_M, ROCKET_SPARK_M)
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	material.vertex_color_use_as_albedo = true
+	material.albedo_texture = SmokeView._puff_texture()
+	quad.material = material
+	trail.draw_pass_1 = quad
+	rocket.node.add_child(trail)
+	rocket.trail = trail
+	return rocket
 
 
 ## Uma bomba de fogos: estouro de uma vez em todas as direções, que cai devagar e apaga.

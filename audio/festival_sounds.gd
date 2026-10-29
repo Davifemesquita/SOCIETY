@@ -3,7 +3,8 @@ extends Node
 ## Som da festa (Fase 85): o estouro de cada fogo e as palmas do povo na praça, gerados aqui (sem arquivo, como o
 ## vento e a chuva do AmbiencePlayer). O estouro toca no ponto do céu e chega atrasado pela distância até a câmera
 ## (SOUND_SPEED_M_S); as palmas tocam na praça, um pouco depois (o povo reage), mais altas com mais gente batendo.
-## Sem tela (headless) nada toca: os testes conferem `played` e `pending_count`.
+## Desde a Fase 86, o assobio do foguete subindo (segue o foguete e acaba no estouro) e o eco do estrondo (ECHO_*).
+## Sem tela (headless) nada toca: os testes conferem `played`, `pending_count` e `flights_count`.
 
 const RATE := 22050
 const SOUND_SPEED_M_S := 343.0
@@ -20,19 +21,31 @@ const BANG_DB := 2.0
 ## Duração dos sons gerados (s).
 const BANG_S := 1.8
 const CLAP_S := 2.2
+## Fase 86: o assobio (WHISTLE_S, tocado mais depressa para acabar no estouro) e o eco: o estrondo de novo, mais fraco e
+## mais grave, ECHO_DELAY_S depois.
+const WHISTLE_VOICES := 3
+const WHISTLE_S := 1.4
+const WHISTLE_DB := -8.0
+const ECHO_DELAY_S := 0.45
+const ECHO_DB := -12.0
+const ECHO_PITCH := 0.85
 
-## Quantas vezes cada som tocou (&"bang", &"applause").
+## Quantas vezes cada som tocou (&"bang", &"echo", &"applause", &"whistle").
 var played: Dictionary[StringName, int] = {}
 
 ## Os sons gerados ficam entre partidas (gerar leva algumas dezenas de ms).
 static var _bang_cache: AudioStreamWAV
 static var _applause_cache: AudioStreamWAV
+static var _whistle_cache: AudioStreamWAV
 
 var _camera: StrategyCamera
 var _bang: AudioStreamWAV
 var _applause: AudioStreamWAV
 var _bangs: Array[AudioStreamPlayer3D] = []
 var _claps: Array[AudioStreamPlayer3D] = []
+var _whistles: Array[AudioStreamPlayer3D] = []
+## Assobios no ar: [voz, de, até, segundos da subida, segundos andados] (tempo de jogo).
+var _flights: Array[Array] = []
 ## Sons esperando a hora: [tempo que falta, chave, posição, volume em dB].
 var _pending: Array[Array] = []
 var _audible: bool = true
@@ -46,12 +59,17 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 	if _bang_cache == null:
 		_bang_cache = bang_stream()
 		_applause_cache = applause_stream()
+		_whistle_cache = whistle_stream()
 	_bang = _bang_cache
 	_applause = _applause_cache
 	for i: int in BANG_VOICES:
 		_bangs.append(_voice(_bang, 40.0, 900.0))
 	for i: int in CLAP_VOICES:
 		_claps.append(_voice(_applause, 10.0, 220.0))
+	for i: int in WHISTLE_VOICES:
+		_whistles.append(_voice(_whistle_cache, 20.0, 500.0))
+	festival.launched.connect(func(_island_id: int, from: Vector3, to: Vector3, rise_s: float) -> void:
+		on_launch(from, to, rise_s))
 	festival.exploded.connect(func(island_id: int, at: Vector3) -> void:
 		on_burst(at, crowd.react_to_burst(island_id, at) if crowd != null else 0))
 
@@ -60,6 +78,7 @@ func setup(camera: StrategyCamera, festival: FestivalView, crowd: Crowd) -> void
 func on_burst(at: Vector3, people: int) -> void:
 	var delay := listener_distance(at) / SOUND_SPEED_M_S
 	_pending.append([delay, &"bang", at, BANG_DB])
+	_pending.append([delay + ECHO_DELAY_S, &"echo", at, ECHO_DB])
 	if people > 0:
 		var ground := Vector3(at.x, at.y - FestivalView.FIREWORK_HEIGHT_M.x, at.z)
 		_pending.append([maxf(delay, CLAP_DELAY_S), &"applause", ground, clap_db(people)])
@@ -81,10 +100,33 @@ func pending_count() -> int:
 	return _pending.size()
 
 
+func flights_count() -> int:
+	return _flights.size()
+
+
+## Fase 86: um foguete subindo de from até to em rise_s segundos de jogo: o assobio sai dele e acaba no estouro.
+func on_launch(from: Vector3, to: Vector3, rise_s: float) -> void:
+	played[&"whistle"] = played.get(&"whistle", 0) + 1
+	var player: AudioStreamPlayer3D = null
+	if _audible and not _whistles.is_empty():
+		player = _whistles[0]
+		for candidate: AudioStreamPlayer3D in _whistles:
+			if not candidate.playing:
+				player = candidate
+				break
+		player.global_position = from
+		player.volume_db = WHISTLE_DB
+		# mais depressa (e mais agudo) para acabar junto do estouro
+		player.pitch_scale = clampf(WHISTLE_S / maxf(rise_s, 0.1), 0.6, 2.0) * maxf(GameClock.clock.speed_multiplier(), 1.0)
+		player.play()
+	_flights.append([player, from, to, rise_s, 0.0])
+
+
 func _process(delta: float) -> void:
+	var speed := GameClock.clock.speed_multiplier()
+	_follow_flights(delta * speed, speed <= 0.0)
 	if _pending.is_empty():
 		return
-	var speed := GameClock.clock.speed_multiplier()
 	if speed <= 0.0:
 		return
 	var left: Array[Array] = []
@@ -106,7 +148,7 @@ func _play(key: StringName, at: Vector3, volume_db: float) -> void:
 	played[key] = played.get(key, 0) + 1
 	if not _audible:
 		return
-	var pool := _bangs if key == &"bang" else _claps
+	var pool := _claps if key == &"applause" else _bangs
 	if pool.is_empty():
 		return
 	var player := pool[0]
@@ -116,8 +158,33 @@ func _play(key: StringName, at: Vector3, volume_db: float) -> void:
 			break
 	player.global_position = at
 	player.volume_db = volume_db
-	player.pitch_scale = _rng.randf_range(0.9, 1.1)
+	player.pitch_scale = _rng.randf_range(0.9, 1.1) * (ECHO_PITCH if key == &"echo" else 1.0)
 	player.play()
+
+
+## Fase 86: leva cada assobio junto do foguete (a mesma subida da FestivalView.rocket_point, sem o balanço) e o cala no
+## estouro; com o jogo parado, o assobio para também.
+func _follow_flights(game_delta: float, paused: bool) -> void:
+	var left: Array[Array] = []
+	for flight: Array in _flights:
+		var player: AudioStreamPlayer3D = flight[0]
+		if player != null:
+			player.stream_paused = paused
+		var from: Vector3 = flight[1]
+		var to: Vector3 = flight[2]
+		var rise_s: float = flight[3]
+		var elapsed: float = flight[4]
+		elapsed += game_delta
+		if elapsed >= rise_s:
+			if player != null:
+				player.stop()
+			continue
+		flight[4] = elapsed
+		var t := elapsed / rise_s
+		if player != null:
+			player.global_position = from.lerp(to, 1.0 - (1.0 - t) * (1.0 - t))
+		left.append(flight)
+	_flights = left
 
 
 func _voice(stream: AudioStream, unit_size: float, max_distance: float) -> AudioStreamPlayer3D:
@@ -186,6 +253,26 @@ static func applause_stream() -> AudioStreamWAV:
 			lower += (noise - lower) * 0.08
 			# faixa: o agudo do ruído sem o grave, um estalo de mãos
 			samples[at + j] += (low - lower) * strength * exp(-float(j) / 55.0)
+	return _wav(samples)
+
+
+## Fase 86: o assobio do foguete: um tom que sobe (de 900 a 2.600 Hz, mais depressa no começo) com um tremor, o chiado
+## da pólvora por baixo, entrando depressa e sumindo no fim.
+static func whistle_stream() -> AudioStreamWAV:
+	var count := roundi(WHISTLE_S * RATE)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 86
+	var phase := 0.0
+	var hiss := 0.0
+	for i: int in count:
+		var t := float(i) / count
+		var pitch := lerpf(900.0, 2600.0, 1.0 - (1.0 - t) * (1.0 - t)) * (1.0 + 0.012 * sin(TAU * 7.0 * t * WHISTLE_S))
+		phase += TAU * pitch / RATE
+		hiss += (rng.randf_range(-1.0, 1.0) - hiss) * 0.6
+		var envelope := minf(t / 0.06, 1.0) * minf((1.0 - t) / 0.12, 1.0)
+		samples[i] = (sin(phase) * 0.7 + hiss * 0.35) * envelope
 	return _wav(samples)
 
 

@@ -94,8 +94,8 @@ func test_bang_arrives_late_and_claps_follow() -> void:
 	auto_free(sounds)
 	sounds.on_burst(Vector3(0.0, 30.0, 0.0), 6)
 	sounds.on_burst(Vector3(0.0, 30.0, 0.0), 0)
-	# estrondo e palmas no primeiro; só o estrondo no segundo
-	assert_int(sounds.pending_count()).is_equal(3)
+	# estrondo e palmas no primeiro; só o estrondo no segundo (e, desde a Fase 86, o eco de cada um)
+	assert_int(sounds.pending_count()).is_equal(5)
 	assert_float(FestivalSounds.clap_db(1)).is_equal(FestivalSounds.CLAP_QUIET_DB)
 	assert_float(FestivalSounds.clap_db(FestivalSounds.CLAP_FULL_PEOPLE)).is_equal(FestivalSounds.CLAP_FULL_DB)
 	assert_float(FestivalSounds.clap_db(4)).is_between(FestivalSounds.CLAP_QUIET_DB, FestivalSounds.CLAP_FULL_DB)
@@ -103,6 +103,10 @@ func test_bang_arrives_late_and_claps_follow() -> void:
 	sounds._process(FestivalSounds.CLAP_DELAY_S + 0.01)
 	assert_int(sounds.played.get(&"bang", 0)).is_equal(2)
 	assert_int(sounds.played.get(&"applause", 0)).is_equal(1)
+	# os ecos vêm depois
+	assert_int(sounds.pending_count()).is_equal(2)
+	sounds._process(FestivalSounds.ECHO_DELAY_S)
+	assert_int(sounds.played.get(&"echo", 0)).is_equal(2)
 	assert_int(sounds.pending_count()).is_equal(0)
 
 

@@ -115,6 +115,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase84.tscn -- /pasta/de/saida
 # Fase 85: a mesma com as palmas por estouro; grava estouro.wav e palmas.wav para ouvir
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://tools/capture_phase85.tscn -- /pasta/de/saida
+# Fase 86: um foguete parado no meio da subida (foguete.png); grava também assobio.wav
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://tools/capture_phase86.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
@@ -2011,6 +2013,13 @@ Regras que já custaram investigação:
   gerados no código (em cache, ~21 ms uma vez), o estouro atrasado pela distância até a câmera e as palmas pelo número de
   gente. Script que usa o `GameClock` (como este) não roda por `--script`: meça dentro de um teste.
 
+### Foguete e assobio (Fase 86, nossa)
+
+- **Plano** em `docs/plano_fase86.md`. O `_process` da `FestivalView` lança foguetes (`fire`): sobem do mastro em
+  `ROCKET_RISE_S` (`advance_rockets`, `rocket_point`, no tempo de jogo) e estouram lá em cima (`burst_at`); `launch` segue
+  sendo o estouro imediato. `launched(ilha, de, até, segundos)` dá ao `FestivalSounds` o assobio (`whistle_stream`, a voz
+  segue o voo e cala no estouro); o estrondo ganha o eco (`ECHO_*`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2107,6 +2116,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 83 — Moradores na festa (nossa) | **feita em 28/10/2026, a pedido do dono**: na noite de fogos os moradores também vão às praças e ficam em volta do mastro, e a festa põe metade da gente da ilha na rua (à noite saíam só ~18%); só visual; plano em `docs/plano_fase83.md` |
 | 84 — Palmas e cota da festa (nossa) | **feita em 28/10/2026, a pedido do dono**: quem vê os fogos olha para o céu batendo palmas (animação gerada no código a partir da parada, quinta do VAT), e a gente a mais na rua sai só da ilha da festa; só visual; plano em `docs/plano_fase84.md` |
 | 85 — Palmas nos estouros (nossa) | **feita em 28/10/2026, a pedido do dono**: o povo bate palmas a cada estouro e volta a olhar o mastro; som do estouro (atrasado pela distância) e das palmas gerados no código; vivas ficaram de fora; o som falta ser ouvido pelo dono; plano em `docs/plano_fase85.md` |
+| 86 — Foguete e assobio (nossa) | **feita em 28/10/2026, a pedido do dono**: o fogo sobe do mastro como foguete (brilho e rastro de faíscas) e só estoura lá em cima, com o assobio seguindo o voo e o eco do estrondo, tudo gerado no código; o som falta ser ouvido pelo dono; plano em `docs/plano_fase86.md` |
 
 Pendências já vistas para fases futuras:
 
