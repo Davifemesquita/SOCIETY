@@ -12,7 +12,8 @@ extends RefCounted
 ## tourists_per_point turistas por ponto (até max_tourists_per_island): saem do entreposto, visitam uma das atrações da
 ## ilha (os prédios com beleza: zoológico, museu, praças, estátuas), ficam olhando na porta e voltam. Roupa clara
 ## (TOURIST_COLORS) e a calça da classe mais rica. Desde a Fase 81, na festa vêm mais (1 + tourism_festival_bonus); desde a
-## Fase 82, na hora dos fogos eles vão ver a festa em volta dos mastros das praças.
+## Fase 82, na hora dos fogos eles vão ver a festa em volta dos mastros das praças; desde a Fase 83, os moradores também
+## (RESIDENT_WATCH_SHARE de quem sai nessa hora).
 const BUCKET_SECONDS := 0.25
 const REBALANCE_SECONDS := 2.0
 ## Quem não achou caminho tenta de novo depois disto.
@@ -44,6 +45,12 @@ const TOURIST_CHOICES := 4
 const WATCH_NEAR_M := 1.2
 const WATCH_FAR_M := 7.0
 const WATCH_SIDE_SHARE := 0.35
+## Fase 83: a parte dos moradores que, saindo na hora dos fogos, vai direto de casa a uma praça da festa (os outros seguem
+## a rotina; o serviço de quem sai do trabalho também vira a festa nessa parte).
+const RESIDENT_WATCH_SHARE := 0.6
+## Fase 83: na hora dos fogos, a ilha da festa põe na rua pelo menos esta parte dos pedestres dela (à noite são só ~18%, e
+## a festa ficava vazia).
+const FESTIVAL_NIGHT_ACTIVITY := 0.5
 
 ## HOME e INSIDE ficam escondidos; INSIDE é a pausa na porta do trabalho ou de casa no meio da
 ## rotina (conta como gente na rua).
@@ -85,6 +92,8 @@ class Agent:
 	var tourist: bool = false
 	## Fase 82: andando da porta da praça até o lugar de ver a festa (agent.spot).
 	var to_spot: bool = false
+	## Fase 83: parado (ou indo) num lugar de ver a festa, longe da porta: ao sair, anda primeiro até ela.
+	var watching: bool = false
 
 
 class Group:
@@ -120,6 +129,8 @@ var _tourists: Dictionary[int, PackedInt32Array] = {}
 var _attractions_of: Dictionary[int, PackedInt32Array] = {}
 ## Fase 82: as praças da festa que cada entreposto alcança (em cache).
 var _squares_of: Dictionary[int, PackedInt32Array] = {}
+## Fase 83: pedestres (moradores e turistas) das ilhas na hora dos fogos, contados a cada _rebalance.
+var _festival_agents: int = 0
 var _buckets: Dictionary[int, PackedInt32Array] = {}
 var _next_bucket: int = 0
 var _home_queue: Array[int] = []
@@ -171,6 +182,7 @@ func reset() -> void:
 	_free_agents.clear()
 	_by_house.clear()
 	_tourists.clear()
+	_festival_agents = 0
 	_buckets.clear()
 	_home_queue.clear()
 	_out = 0
@@ -204,7 +216,8 @@ func out_count() -> int:
 ## Quantos a multidão quer na rua agora.
 func desired_out(hour: float) -> int:
 	var activity := activity_override if activity_override >= 0.0 else DayClock.activity(_config, hour)
-	return roundi(agent_count() * activity)
+	# a festa com fogos (Fase 83) enche a rua da ilha dela
+	return roundi(agent_count() * activity + _festival_agents * maxf(FESTIVAL_NIGHT_ACTIVITY - activity, 0.0))
 
 
 ## Avança dt segundos visuais. Pausado (dt = 0), nada muda: ninguém sai congelado na porta.
@@ -263,6 +276,24 @@ func _rebalance() -> void:
 				_remove_agent(agents[index])
 			_by_house.erase(house_id)
 	_rebalance_tourists()
+	_count_festival_agents()
+
+
+## Fase 83: quantos pedestres (de casa e turistas) estão nas ilhas na hora dos fogos.
+func _count_festival_agents() -> void:
+	_festival_agents = 0
+	var festive: Dictionary[int, bool] = {}
+	for house_id: int in _by_house:
+		var house := _simulation.world.building(house_id)
+		if house == null:
+			continue
+		if not festive.has(house.island_id):
+			festive[house.island_id] = fireworks_now(house.island_id)
+		if festive[house.island_id]:
+			_festival_agents += _by_house[house_id].size()
+	for island_id: int in _tourists:
+		if festive.get(island_id, fireworks_now(island_id)):
+			_festival_agents += _tourists[island_id].size()
 
 
 ## Fase 80: ajusta os turistas de cada ilha à atratividade dela (só com os eventos ligados, como o turismo).
@@ -407,6 +438,10 @@ func _start_trips(missing: int, wanted: int) -> void:
 
 ## Sai de casa para o trabalho (ou, sem trabalho, direto para o serviço).
 func _begin_routine(agent: Agent, warm: bool) -> bool:
+	# na hora dos fogos (Fase 83), parte dos moradores vai direto ver a festa
+	var square := _resident_festival(agent)
+	if square != 0 and _start_leg(agent, Leg.TO_SERVICE, agent.home_id, square, warm):
+		return true
 	var work := _pick_work(agent)
 	if work != 0 and _start_leg(agent, Leg.TO_WORK, agent.home_id, work, warm):
 		return true
@@ -527,8 +562,10 @@ func _wait_at_service(agent: Agent) -> void:
 		return
 	var def := _simulation.def_of(service)
 	# na hora dos fogos (Fase 82), o turista fica na rua em volta do mastro da praça
-	var watching := agent.tourist and fireworks_now(agent.island_id) \
+	# (desde a Fase 83, também o morador)
+	var watching := fireworks_now(agent.island_id) \
 			and _festival_squares(agent.home_id).has(service.id) and _watch_spot(agent, service)
+	agent.watching = watching
 	if not watching:
 		var front := Footprint.front_direction(service.rotation)
 		var outward := Vector3(front.x, 0.0, front.y)
@@ -573,9 +610,10 @@ func _start_leg(agent: Agent, leg: Leg, from_id: int, to_id: int, warm: bool) ->
 	if points.size() < 2:
 		return false
 	# saindo de longe da porta (Fase 82: de ver a festa na rua), anda primeiro até ela
-	if agent.tourist and agent.state == State.WAITING and agent.spot.distance_to(points[0]) > WATCH_NEAR_M:
+	if agent.watching and agent.state == State.WAITING and not agent.spot.is_equal_approx(points[0]):
 		points = points.duplicate()
 		points.insert(0, agent.spot)
+	agent.watching = false
 	agent.points = points
 	agent.cells = route[1]
 	agent.leg = leg
@@ -675,6 +713,9 @@ func _nearest(agent: Agent, ids: Array[int], accepts: Callable) -> PackedInt32Ar
 func _pick_service(agent: Agent) -> int:
 	if agent.tourist:
 		return _pick_attraction(agent)
+	var square := _resident_festival(agent)
+	if square != 0:
+		return square
 	if not _services_of.has(agent.home_id):
 		_services_of[agent.home_id] = _nearest(agent, _simulation.derived_state().services_list(),
 				func(_def: BuildingDef) -> bool: return true)
@@ -711,13 +752,23 @@ func _pick_attraction(agent: Agent) -> int:
 	return choices[_rng.randi_range(0, choices.size() - 1)] if not choices.is_empty() else 0
 
 
+## Fase 83: na hora dos fogos, RESIDENT_WATCH_SHARE dos moradores escolhem uma das praças da festa que a casa alcança; 0 para
+## o turista, fora da hora ou para quem segue a rotina.
+func _resident_festival(agent: Agent) -> int:
+	if agent.tourist or not fireworks_now(agent.island_id) or _rng.randf() >= RESIDENT_WATCH_SHARE:
+		return 0
+	var squares := _festival_squares(agent.home_id)
+	return squares[_rng.randi_range(0, squares.size() - 1)] if not squares.is_empty() else 0
+
+
 ## Fase 82: festa na ilha e hora dos fogos (a mesma noite em que a FestivalView os solta).
 func fireworks_now(island_id: int) -> bool:
 	return TourismSystem.has_festival(_simulation.world, island_id) \
 			and DayClock.night_factor(_config, _hour) >= FestivalView.NIGHT_FIREWORKS
 
 
-## Fase 82: as praças da festa (FestivalView.squares) com mastro na rua, na mesma rede de estrada do entreposto.
+## Fase 82: as praças da festa (FestivalView.squares) com mastro na rua, na mesma rede de estrada do entreposto
+## (desde a Fase 83, também da casa do morador: a chave é o prédio de onde ele sai).
 func _festival_squares(post_id: int) -> PackedInt32Array:
 	if _squares_of.has(post_id):
 		return _squares_of[post_id]

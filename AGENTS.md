@@ -109,6 +109,8 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 400000 res://tools/capture_phase32.tscn -- /pasta/de/saida
 # Fase 39: uma rua de casas por classe, o entreposto e a casa no barranco, de perto, às 10h
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase39.tscn -- /pasta/de/saida
+# Fase 83: o bairro com a festa às 22 h (hora presa), moradores e turistas em volta do mastro; o resumo vai em <pasta>/fase83.txt
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase83.tscn -- /pasta/de/saida
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
@@ -1982,6 +1984,13 @@ Regras que já custaram investigação:
   praças da festa (`FestivalView.squares`) e fica na rua ao longo das cordas do mastro, de frente para ele
   (`WATCH_NEAR_M`, `WATCH_FAR_M`, `WATCH_SIDE_SHARE`); anda da porta até o lugar e, ao sair, do lugar até a porta.
 
+### Moradores na festa (Fase 83, nossa)
+
+- **Plano** em `docs/plano_fase83.md`. Na hora dos fogos, `RESIDENT_WATCH_SHARE` dos moradores que saem vão a uma praça da
+  festa que a casa alcança (`Crowd._resident_festival`) e ficam em volta do mastro como os turistas; a ilha da festa
+  conta com pelo menos `FESTIVAL_NIGHT_ACTIVITY` dos pedestres dela na rua (`_festival_agents`, somado no
+  `desired_out`); `Agent.watching` marca quem está num lugar de ver a festa (ao sair, anda dele até a porta). Só visual.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2075,6 +2084,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 80 — Turistas na rua (nossa) | **feita em 28/10/2026, a pedido do dono**: com os eventos ligados, turistas de roupa clara saem do entreposto, visitam as atrações da ilha e voltam, na quantidade da atratividade; só visual; números provisórios; plano em `docs/plano_fase80.md` |
 | 81 — Festa cheia (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa vêm mais turistas para a rua, na mesma proporção da renda do turismo; só visual; plano em `docs/plano_fase81.md` |
 | 82 — Ver os fogos (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa, à noite, os turistas vão às praças e ficam em volta do mastro olhando os fogos; só visual; plano em `docs/plano_fase82.md` |
+| 83 — Moradores na festa (nossa) | **feita em 28/10/2026, a pedido do dono**: na noite de fogos os moradores também vão às praças e ficam em volta do mastro, e a festa põe metade da gente da ilha na rua (à noite saíam só ~18%); só visual; plano em `docs/plano_fase83.md` |
 
 Pendências já vistas para fases futuras:
 
