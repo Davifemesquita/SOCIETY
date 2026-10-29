@@ -58,7 +58,7 @@ func test_the_dome_fits_inside_the_roof() -> void:
 
 
 func test_only_the_domed_services_get_the_dome() -> void:
-	for id: StringName in [&"church", &"market", &"brewery", &"warehouse"]:
+	for id: StringName in [&"church", &"market", &"bakery", &"warehouse"]:
 		var spec := _spec(id)
 		assert_bool(spec.dome).is_false()
 		assert_int(_copper_vertices(BuildingKit.mesh(spec))).is_equal(0)

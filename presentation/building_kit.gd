@@ -49,6 +49,17 @@ const TURRET_CORBEL_M := 1.0
 const TURRET_SIDES := 12
 ## A cor do cobre velho (célula (2, 1) da paleta, que o kit não usa).
 const UV_COPPER := Vector2(2.5 / 8.0, 1.5 / 4.0)
+## Fase 98: a abóbada (os de VAULTED, no lugar das duas águas): arco abatido sobre o lado curto em VAULT_SEGMENTS faixas
+## lisas, VAULT_RISE da altura do telhado de duas águas; e os tonéis do pátio (Silhouette.VATS): VATS_PER_SIDE de cada lado
+## do caminho da porta, de VAT_MAX_M de altura no máximo, com o bojo de VAT_BULGE e os arcos de ferro.
+const VAULTED: Array[StringName] = [&"market", &"weavery", &"sewing_machine_factory", &"cannery", &"soap_factory",
+		&"window_works", &"coffee_roaster"]
+const VAULT_SEGMENTS := 10
+const VAULT_RISE := 0.8
+const VATS_PER_SIDE := 2
+const VAT_MAX_M := 2.4
+const VAT_BULGE := 1.08
+const VAT_SIDES := 16
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -302,11 +313,13 @@ class Spec:
 	## Fase 97: cúpula de cobre no alto do telhado (os serviços grandes) e torreão redondo no canto da frente (investidores).
 	var dome: bool = false
 	var turret: bool = false
+	## Fase 98: o telhado de duas águas vira abóbada (arco abatido sobre o lado curto).
+	var vault: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -335,6 +348,7 @@ class Spec:
 		copy.wing = wing
 		copy.dome = dome
 		copy.turret = turret
+		copy.vault = vault
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -363,7 +377,8 @@ class Spec:
 		return copy
 
 	func main_offset() -> Vector3:
-		return Vector3(-wing * column_m() * 0.5, 0.0, 0.0)
+		# a ponta de fora do corpo fica na parede (com a largura de uma coluna o telhado ficava curto do beiral)
+		return Vector3(-wing * (size_m().x - main_part().size_m().x) * 0.5, 0.0, 0.0)
 
 	func wing_part() -> Spec:
 		var copy := _copy()
@@ -408,6 +423,7 @@ class Spec:
 		copy.wing = wing
 		copy.dome = dome
 		copy.turret = turret
+		copy.vault = vault
 		return copy
 
 
@@ -540,8 +556,16 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var body := spec.hall()
 		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.VATS and def.size.y > 2:
+		# Fase 98: a fileira da frente fica com os tonéis; o corpo, nas de trás
+		spec.court_rows = 1
+		var body := spec.hall()
+		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
 		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
+	# Fase 98: a abóbada no lugar das duas águas (o mercado e as fábricas de nave comprida)
+	spec.vault = def.id in VAULTED and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z]
 	return spec
 
 
@@ -919,6 +943,8 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.TANKFARM:
 			if spec.court_rows > 0:
 				_tankfarm(extra, spec)
+		BuildingDef.Silhouette.VATS:
+			_vats(extra, spec)
 		BuildingDef.Silhouette.MENAGERIE:
 			_pens(extra, spec)
 		BuildingDef.Silhouette.GALLERY:
@@ -1814,6 +1840,8 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				var start: Vector3 = edge[0]
 				var finish: Vector3 = edge[1]
 				_rod(tool, start, finish, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+		_ when spec.vault:
+			_vault(tool, spec)
 		_:
 			var along_x := spec.roof == Roof.GABLE_X
 			# a cumeeira corre em u (x ou z) e as águas descem em v
@@ -1848,6 +1876,134 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				var tip := _uv_point(along_x, end * (hu + o), ridge, 0.0)
 				_quad(tool, side_a, side_a + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
 				_quad(tool, side_b, side_b + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
+
+
+## Fase 98: a altura da abóbada em v (de -largura a +largura, com o beiral): o arco de círculo que passa pelo beiral dos
+## dois lados e pelo alto. Devolve [altura, normal no plano (v, y)].
+static func vault_profile(spec: Spec, v: float) -> Array:
+	var size := spec.size_m()
+	var hv := (size.y if spec.roof == Roof.GABLE_X else size.x) * 0.5
+	var width := hv + spec.overhang_m
+	var rise := spec.roof_m * VAULT_RISE
+	var eave := spec.height_m - spec.overhang_m * 0.3
+	var h := spec.height_m + rise - eave
+	var radius := (width * width + h * h) / (2.0 * h)
+	var center_y := spec.height_m + rise - radius
+	var y := center_y + sqrt(maxf(radius * radius - v * v, 0.0))
+	return [y, Vector2(v, y - center_y) / radius]
+
+
+## A abóbada: as faixas do arco com as normais dele (sai lisa), a espessura por baixo e na borda, o beiral redondo e as
+## empenas em arco nas duas pontas.
+static func _vault(tool: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var along_x := spec.roof == Roof.GABLE_X
+	var hu := (size.x if along_x else size.y) * 0.5
+	var hv := (size.y if along_x else size.x) * 0.5
+	var o := spec.overhang_m
+	var top := spec.height_m
+	var width := hv + o
+	var down := Vector3(0.0, -ROOF_THICKNESS_M, 0.0)
+	for i: int in VAULT_SEGMENTS:
+		var v0 := -width + 2.0 * width * i / VAULT_SEGMENTS
+		var v1 := -width + 2.0 * width * (i + 1) / VAULT_SEGMENTS
+		var p0 := vault_profile(spec, v0)
+		var p1 := vault_profile(spec, v1)
+		var y0: float = p0[0]
+		var y1: float = p1[0]
+		var m0: Vector2 = p0[1]
+		var m1: Vector2 = p1[1]
+		var n0 := _uv_point(along_x, 0.0, m0.y, m0.x)
+		var n1 := _uv_point(along_x, 0.0, m1.y, m1.x)
+		var a := _uv_point(along_x, -hu - o, y0, v0)
+		var b := _uv_point(along_x, hu + o, y0, v0)
+		var c := _uv_point(along_x, hu + o, y1, v1)
+		var d := _uv_point(along_x, -hu - o, y1, v1)
+		_smooth_quad(tool, [a, b, c, d], [n0, n0, n1, n1], UV_ROOF)
+		_quad(tool, a + down, b + down, c + down, d + down, -(n0 + n1), UV_ROOF)
+		# a borda da faixa nas duas pontas
+		for end: float in [-1.0, 1.0]:
+			var e0 := _uv_point(along_x, end * (hu + o), y0, v0)
+			var e1 := _uv_point(along_x, end * (hu + o), y1, v1)
+			_quad(tool, e0, e1, e1 + down, e0 + down, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
+		# a empena: do alto da parede até o arco, só por cima da parede
+		var w0 := clampf(v0, -hv, hv)
+		var w1 := clampf(v1, -hv, hv)
+		if w1 - w0 > 0.001:
+			var r0: float = vault_profile(spec, w0)[0]
+			var r1: float = vault_profile(spec, w1)[0]
+			var g0 := maxf(r0, top)
+			var g1 := maxf(r1, top)
+			for end: float in [-1.0, 1.0]:
+				var outward := _uv_point(along_x, end, 0.0, 0.0)
+				_quad(tool, _uv_point(along_x, end * hu, top, w0), _uv_point(along_x, end * hu, top, w1),
+						_uv_point(along_x, end * hu, g1, w1), _uv_point(along_x, end * hu, g0, w0), outward, UV_WALL)
+	# a borda grossa no beiral e o beiral redondo
+	for side: float in [-1.0, 1.0]:
+		var eave: float = vault_profile(spec, side * width)[0]
+		var low_a := _uv_point(along_x, -hu - o, eave, side * width)
+		var low_b := _uv_point(along_x, hu + o, eave, side * width)
+		_quad(tool, low_a + down, low_b + down, low_b, low_a, _uv_point(along_x, 0.0, 0.0, side), UV_ROOF)
+		_rod(tool, low_a + down * 0.5, low_b + down * 0.5, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+
+
+## Quadrilátero com uma normal por vértice (a, b, c, d em volta), virado para a média delas.
+static func _smooth_quad(tool: SurfaceTool, points: Array[Vector3], normals: Array[Vector3], uv: Vector2) -> void:
+	var outward := normals[0] + normals[1] + normals[2] + normals[3]
+	var order: Array[int] = [0, 1, 2, 0, 2, 3]
+	if (points[1] - points[0]).cross(points[2] - points[0]).dot(outward) > 0.0:
+		order = [0, 2, 1, 0, 3, 2]
+	for index: int in order:
+		tool.set_normal(normals[index].normalized())
+		tool.set_uv(uv)
+		tool.add_vertex(points[index])
+
+
+## Fase 98: os tonéis do pátio — cada um [meio da base, raio do bojo, altura], de cada lado do caminho da porta.
+static func vat_layout(spec: Spec) -> Array[Array]:
+	var vats: Array[Array] = []
+	if spec.court_rows == 0 or spec.silhouette != BuildingDef.Silhouette.VATS:
+		return vats
+	var size := spec.size_m()
+	var depth := spec.court_rows * spec.cell_m
+	var z := -size.y * 0.5 + depth * 0.5
+	var step := size.x / spec.cells.x
+	var door_x := -size.x * 0.5 + step * (spec.door_index + 0.5)
+	var radius := minf(depth * 0.34, 0.75)
+	var height := minf(spec.height_m * 0.36, VAT_MAX_M)
+	for span: Vector2 in [Vector2(-size.x * 0.5 + 0.2, door_x - 0.9), Vector2(door_x + 0.9, size.x * 0.5 - 0.2)]:
+		var room := span.y - span.x
+		var count := mini(VATS_PER_SIDE, floori(room / (radius * 2.0 + 0.25)))
+		for k: int in count:
+			var x := span.x + room * (k + 0.5) / count
+			vats.append([Vector3(x, FOUNDATION_UP_M, z), radius, height])
+	return vats
+
+
+## Os tonéis: aduelas com o bojo (sólido de revolução), três arcos de ferro, a tampa e o cano de cobre até a parede.
+static func _vats(tool: SurfaceTool, spec: Spec) -> void:
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	for vat: Array in vat_layout(spec):
+		var base: Vector3 = vat[0]
+		var radius: float = vat[1]
+		var height: float = vat[2]
+		var profile: Array[Vector2] = []
+		for step: int in 7:
+			var t := step / 6.0
+			profile.append(Vector2(_vat_radius(radius, t), height * t))
+		_turned(tool, base, profile, VAT_SIDES, UV_TIMBER)
+		_turned(tool, base, [Vector2(radius / VAT_BULGE, height), Vector2(0.0, height + 0.05)], VAT_SIDES, UV_TIMBER)
+		for t: float in [0.12, 0.5, 0.88]:
+			var ring := _vat_radius(radius, t) + 0.025
+			_turned(tool, base, [Vector2(ring, height * t - 0.05), Vector2(ring, height * t + 0.05)], VAT_SIDES, UV_IRON)
+		_bar(tool, base + Vector3(0.0, height * 0.8, radius * 0.8), Vector3(base.x, base.y + height * 0.8, wall_z), 0.1,
+				UV_COPPER)
+
+
+## O raio do tonel a "t" da altura (0 embaixo, 1 em cima): a parábola do bojo.
+static func _vat_radius(radius: float, t: float) -> float:
+	var narrow := radius / VAT_BULGE
+	return narrow + (radius - narrow) * (1.0 - pow(2.0 * t - 1.0, 2.0))
 
 
 ## Lucarnas (Fase 39) na água da frente do telhado de duas águas (na de cumeeira em z a frente é a empena: vão na água

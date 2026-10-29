@@ -17,9 +17,9 @@ enum Hazard { NONE, FIRE, DISEASE }
 ## mina, bancas na frente, guindaste, lanternim no telhado ou bandeiras na fachada; e, desde a Fase 18,
 ## o campanário com o sino, desde a Fase 23 a varanda da casa de engenho e, desde a Fase 73, o cavalo-de-pau do poço
 ## de petróleo, desde a Fase 74 os cercados do zoológico e os pedestais do museu e, desde a Fase 78, os tanques da usina a
-## petróleo (no fim: o número fica nos .tres).
+## petróleo e, desde a Fase 98, os tonéis no pátio de quem trabalha com bebida (no fim: o número fica nos .tres).
 enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS, BELFRY, VERANDA, PUMPJACK,
-		MENAGERIE, GALLERY, TANKFARM }
+		MENAGERIE, GALLERY, TANKFARM, VATS }
 ## A planta que a fazenda põe nos campos dela (Fase 14): cereal, tubérculo, lúpulo na estaca, parreira,
 ## cana, arbusto (café) ou folha larga (tabaco).
 enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }

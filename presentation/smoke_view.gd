@@ -11,6 +11,11 @@ const REFRESH_SECONDS := 0.5
 ## Chaminé: lado e quanto passa acima do telhado.
 const STACK_SIDE_M := 1.1
 const STACK_ABOVE_M := 3.0
+## Fase 98: a chaminé redonda, afinando de STACK_SIDE_M embaixo até STACK_TAPER dele na boca, com o colar de tijolo em
+## volta da boca (STACK_CROWN_M de altura) e STACK_SIDES faces.
+const STACK_TAPER := 0.72
+const STACK_CROWN_M := 0.35
+const STACK_SIDES := 14
 ## Partículas por chaminé no nível mais alto, por tipo (vapor, fumaça, pesada).
 const AMOUNTS: Array[int] = [0, 10, 16, 28]
 const LIFETIMES: Array[float] = [0.0, 3.0, 5.0, 7.0]
@@ -32,6 +37,7 @@ var _refresh_left: float = 0.0
 var _process_materials: Array[ParticleProcessMaterial] = []
 var _draw_meshes: Array[QuadMesh] = []
 var _soot_texture: Texture2D
+static var _stack_mesh: Mesh
 ## De onde vem o vento; sem ele, a fumaça sobe reta.
 var weather: WeatherView
 
@@ -110,9 +116,7 @@ func _add(building_id: int) -> void:
 	var offset := (Vector2(back) * 0.3 + side * 0.3) * Vector2(area.size) * _cell_size
 	var top := center + Vector3(offset.x, def.height_m + STACK_ABOVE_M, offset.y)
 	var stack := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(STACK_SIDE_M, STACK_ABOVE_M + 1.0, STACK_SIDE_M)
-	stack.mesh = box
+	stack.mesh = stack_mesh()
 	stack.material_override = BuildingMaterials.walls()
 	BuildingMaterials.dress(stack, BuildingMaterials.Wall.BRICK, Color(0.55, 0.32, 0.25), center.y)
 	stack.position = top - Vector3(0.0, (STACK_ABOVE_M + 1.0) * 0.5, 0.0)
@@ -145,6 +149,34 @@ func _add(building_id: int) -> void:
 		decal.distance_fade_length = _range_m * 0.2
 		add_child(decal)
 		_soot[building_id] = decal
+
+
+## Fase 98: a chaminé redonda (a mesma malha para todas, centrada na altura como a caixa de antes): o fuste afinando e o
+## colar em volta da boca.
+static func stack_mesh() -> Mesh:
+	if _stack_mesh != null:
+		return _stack_mesh
+	var height := STACK_ABOVE_M + 1.0
+	var bottom := STACK_SIDE_M * 0.5
+	var mouth := bottom * STACK_TAPER
+	var shaft := CylinderMesh.new()
+	shaft.bottom_radius = bottom
+	shaft.top_radius = mouth
+	shaft.height = height
+	shaft.radial_segments = STACK_SIDES
+	shaft.rings = 1
+	var crown := CylinderMesh.new()
+	crown.bottom_radius = mouth * 1.18
+	crown.top_radius = mouth * 1.22
+	crown.height = STACK_CROWN_M
+	crown.radial_segments = STACK_SIDES
+	crown.rings = 1
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	tool.append_from(shaft, 0, Transform3D.IDENTITY)
+	tool.append_from(crown, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, (height - STACK_CROWN_M) * 0.5 + 0.05, 0.0)))
+	_stack_mesh = tool.commit()
+	return _stack_mesh
 
 
 func _remove(building_id: int) -> void:

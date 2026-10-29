@@ -22,4 +22,5 @@ output = &"beer"
 cycle_s = 60.0
 terrain = 0
 smoke = 2
+silhouette = 14
 fire_risk = 2.0

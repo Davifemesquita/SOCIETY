@@ -9,7 +9,8 @@ const HOUSES_PER_STREET := 6
 const STREET_STEP := 9
 const ORIGIN := Vector2i(20, 20)
 ## A rua dos prédios grandes: serviços (telhado de quatro águas, campanário) e fábricas (lanternim, fumaça).
-const BIG: Array[StringName] = [&"church", &"market", &"theater", &"university", &"brewery", &"furnace", &"warehouse"]
+const BIG: Array[StringName] = [&"church", &"market", &"theater", &"university", &"brewery", &"furnace", &"warehouse",
+		&"weavery", &"distillery"]
 
 var _out_dir: String
 var _game: GameScreen
@@ -65,6 +66,9 @@ func _run() -> void:
 	var big_at := grid.cell_world(Vector2i(ORIGIN.x + 20, big_y - 3))
 	await _shot("grandes_a.png", big_at, 60.0, 0.0)
 	await _shot("grandes_b.png", grid.cell_world(Vector2i(ORIGIN.x + 45, big_y - 3)), 60.0, 0.0)
+	# Fase 98: o mercado de lado (o arco da abóbada) e a tecelagem e a destilaria de perto (a abóbada e os tonéis)
+	await _shot("mercado_de_lado.png", grid.cell_world(Vector2i(ORIGIN.x + 9, big_y - 2)), 26.0, PI * 0.2)
+	await _shot("fabricas_de_perto.png", grid.cell_world(Vector2i(ORIGIN.x + 47, big_y - 2)), 30.0, PI * 0.2)
 	await _shot("telhado_de_perto.png", grid.cell_world(streets[2] + Vector2i(0, -2)), 18.0, 0.4)
 	await _shot("de_cima.png", grid.cell_world(streets[2]), 140.0, 0.0)
 	get_tree().quit()

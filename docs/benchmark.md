@@ -1433,3 +1433,10 @@ Tick 1,33 ms nas duas.
 com a rodada da Fase 96 nas mesmas condições: 34,5 FPS (antes 34,8; 1% low 19,6, pior quadro 142 ms), GPU 23,6 ms (23,5),
 carregar 10,6 s (10,3), 1137 draw calls e 15.380.371 primitivas, iguais: a cidade do benchmark não tem teatro,
 universidade nem casa de investidor alta, então a cúpula e o torreão não aparecem nela. Neutra.
+
+## Fase 98 — abóbadas e tonéis (29/10/2026)
+
+Mesmas condições da Fase 97 (área de trabalho escondida, alto, semente 1840, **estado lento**, jogo novo 26,6 s): 34,3 FPS
+(antes 34,5; 1% low 17,5, pior quadro 131 ms), GPU 23,7 ms (23,6), carregar 10,5 s (10,6), primitivas 15.408.463
+(+0,2%: abóbadas, tonéis e chaminés redondas). As draw calls do quadro com tudo visível caíram de 1137 para 975 (a chaminé
+redonda é uma malha só para todas, como a caixa; a diferença acompanha a hora do quadro, como nas Fases 95 e 96). Neutra.
