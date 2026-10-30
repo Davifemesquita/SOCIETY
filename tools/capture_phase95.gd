@@ -73,6 +73,11 @@ func _run() -> void:
 	await _shot("fabricas_de_perto.png", grid.cell_world(Vector2i(ORIGIN.x + 47, big_y - 2)), 30.0, PI * 0.2)
 	# Fase 102: o andar saliente com enxaimel, de perto
 	await _shot("enxaimel_de_perto.png", grid.cell_world(streets[1] + Vector2i(0, -1)), 16.0, 0.35)
+	# Fase 103: as claraboias das fábricas, de dia e à noite
+	await _shot("claraboias.png", grid.cell_world(Vector2i(ORIGIN.x + 50, big_y - 2)), 34.0, 0.9)
+	_set_hour(21.0)
+	await _shot("claraboias_noite.png", grid.cell_world(Vector2i(ORIGIN.x + 50, big_y - 2)), 34.0, 0.9)
+	_set_hour(10.0)
 	# Fase 101: o toldo da padaria
 	await _shot("loja_toldo.png", grid.cell_world(Vector2i(ORIGIN.x + 55, big_y - 2)), 20.0, 0.3)
 	await _shot("telhado_de_perto.png", grid.cell_world(streets[2] + Vector2i(0, -2)), 18.0, 0.4)

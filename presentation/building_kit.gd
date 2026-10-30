@@ -89,6 +89,14 @@ const UV_CANVAS := Vector2(6.5 / 8.0, 1.5 / 4.0)
 const JETTY_M := 0.28
 const JETTY_BRACKET_M := 0.6
 const TIMBER_M := 0.1
+## Fase 103: as claraboias das fábricas de lote de SKYLIGHT_MIN_CELLS ou mais (sem silhueta, telhado de duas águas ou
+## abóbada): uma fileira de vidraças em cada água, no meio da descida (SKYLIGHT_AT da meia largura), de SKYLIGHT_PANE_M
+## de lado a cada SKYLIGHT_STEP_M ao longo da cumeeira, com o caixilho de ferro; acendem à noite com a fábrica.
+const SKYLIGHT_MIN_CELLS := 4
+const SKYLIGHT_AT := 0.45
+const SKYLIGHT_PANE_M := Vector2(1.1, 0.9)
+const SKYLIGHT_STEP_M := 1.6
+const SKYLIGHT_LIFT_M := 0.05
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -350,11 +358,13 @@ class Spec:
 	var awning: int = 0
 	## Fase 102: os andares de cima da frente avançam JETTY_M sobre a rua, com o enxaimel à mostra.
 	var jetty: bool = false
+	## Fase 103: as claraboias nas águas (ou na abóbada) das fábricas grandes.
+	var skylights: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -387,6 +397,7 @@ class Spec:
 		copy.arched = arched
 		copy.awning = awning
 		copy.jetty = jetty
+		copy.skylights = skylights
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -465,6 +476,7 @@ class Spec:
 		copy.arched = arched
 		copy.awning = awning
 		copy.jetty = jetty
+		copy.skylights = skylights
 		return copy
 
 
@@ -621,6 +633,9 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.awning = 1 + absi(hash(String(def.id))) % UV_AWNING_COLORS.size()
 	# Fase 98: a abóbada no lugar das duas águas (o mercado e as fábricas de nave comprida)
 	spec.vault = def.id in VAULTED and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z]
+	# Fase 103: as claraboias das fábricas grandes
+	spec.skylights = def.kind == BuildingDef.Kind.PRODUCTION and def.silhouette == BuildingDef.Silhouette.NONE \
+			and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z] and mini(def.size.x, def.size.y) >= SKYLIGHT_MIN_CELLS
 	return spec
 
 
@@ -784,6 +799,8 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
 				var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(step * WINDOW_WIDTH, floor_m * WINDOW_HEIGHT, 1.0))
 				result.append(Transform3D(basis, origin))
+	# Fase 103: as claraboias também são vidro que acende
+	result.append_array(skylight_panes(spec))
 	return result
 
 
@@ -926,6 +943,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_awnings(extra, spec)
 	if spec.jetty:
 		_jetty(extra, spec)
+	if spec.skylights:
+		_skylights(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -1041,6 +1060,54 @@ static func _jetty(tool: SurfaceTool, spec: Spec) -> void:
 			if index == last or slot(hall, 0, index + 1, level) == &"none":
 				_box(tool, shift + Vector3(x1 - 0.06, (y0 + y1) * 0.5, (front + out) * 0.5), Vector3(0.12, floor_m, JETTY_M),
 						UV_WALL)
+
+
+## Fase 103: as vidraças das claraboias, no formato das janelas de windows() (x e y na escala da vidraça, z a normal do
+## telhado para fora): uma fileira em cada água, assentada na água (ou na abóbada) e erguida SKYLIGHT_LIFT_M dela.
+static func skylight_panes(spec: Spec) -> Array[Transform3D]:
+	var panes: Array[Transform3D] = []
+	if not spec.skylights or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z]:
+		return panes
+	var size := spec.size_m()
+	var along_x := spec.roof == Roof.GABLE_X
+	var hu := (size.x if along_x else size.y) * 0.5
+	var hv := (size.y if along_x else size.x) * 0.5
+	var count := maxi(2, floori(hu * 1.6 / SKYLIGHT_STEP_M))
+	var along := _uv_point(along_x, 1.0, 0.0, 0.0)
+	for side: float in [-1.0, 1.0]:
+		var v := side * hv * SKYLIGHT_AT
+		var y: float
+		var flat_normal: Vector2
+		if spec.vault:
+			var profile := vault_profile(spec, v)
+			y = profile[0]
+			flat_normal = profile[1]
+		else:
+			y = spec.height_m + spec.roof_m * (1.0 - absf(v) / hv)
+			flat_normal = Vector2(side * spec.roof_m, hv).normalized()
+		var normal := _uv_point(along_x, 0.0, flat_normal.y, flat_normal.x)
+		var up_slope := normal.cross(along).normalized()
+		var basis := Basis(along, up_slope, normal).scaled_local(Vector3(SKYLIGHT_PANE_M.x, SKYLIGHT_PANE_M.y, 1.0))
+		for k: int in count:
+			var u := -hu * 0.8 + hu * 1.6 * (k + 0.5) / count
+			panes.append(Transform3D(basis, _uv_point(along_x, u, y, v) + normal * SKYLIGHT_LIFT_M))
+	return panes
+
+
+## As claraboias: a vidraça (um quadrilátero de vidro) e o caixilho de ferro em volta, com o montante do meio.
+static func _skylights(tool: SurfaceTool, spec: Spec) -> void:
+	for pane: Transform3D in skylight_panes(spec):
+		var half_x := pane.basis.x * 0.5
+		var half_y := pane.basis.y * 0.5
+		var normal := pane.basis.z.normalized()
+		var at := pane.origin
+		_quad(tool, at - half_x - half_y, at + half_x - half_y, at + half_x + half_y, at - half_x + half_y, normal, UV_GLASS)
+		var lift := normal * 0.03
+		for corner: Array in [[-half_x - half_y, half_x - half_y], [half_x - half_y, half_x + half_y],
+				[half_x + half_y, -half_x + half_y], [-half_x + half_y, -half_x - half_y], [-half_y, half_y]]:
+			var a: Vector3 = corner[0]
+			var b: Vector3 = corner[1]
+			_bar(tool, at + a + lift, at + b + lift, 0.06, UV_IRON)
 
 
 ## A chaminé da casa no telhado, no referencial do prédio: a peça do kit esticada até passar da cumeeira.

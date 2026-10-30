@@ -1469,3 +1469,11 @@ com tudo visível iguais (a cidade do benchmark não tem padaria, açougue, tave
 a 101. O que se compara: objetos e draw calls do quadro com tudo visível iguais (2724 · 976); primitivas 15.405.789 →
 15.520.521 (+0,7%: o enxaimel e o balanço nas casas dos operários da cidade do benchmark); carregar 10,3 → 11,1 s (as
 formas de casa com e sem o avanço). Repetir num estado estável.
+
+## Fase 103 — claraboias (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, com a máquina de volta ao **estado rápido** (jogo novo 11,2 s): 86,5 FPS,
+1% low 45,1, 0,1% low 40,4, pior quadro 26 ms, p50/p95/p99 11,1/14,9/20,9 ms, GPU 10,8 ms, carregar 4,6 s. É o mesmo
+patamar da Fase 92 no estado rápido (alto com VSync desligado, 86 FPS): as formas das Fases 95 a 103 juntas não pesaram.
+Objetos e draw calls do quadro com tudo visível 2738 · 978 (as claraboias das fábricas da cidade do benchmark), primitivas
+15.520.925 (+404).

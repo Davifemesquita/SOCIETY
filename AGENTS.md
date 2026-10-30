@@ -2122,6 +2122,12 @@ Regras que já custaram investigação:
   acompanha; código novo que desenhe na fachada da frente sem passar por ele precisa somar o avanço. `_jetty` desenha a
   viga do balanço, as mãos-francesas, o enxaimel e o fecho das pontas.
 
+### Claraboias (Fase 103, nossa)
+
+- **Plano** em `docs/plano_fase103.md`. `Spec.skylights` (produção sem silhueta, lado menor de `SKYLIGHT_MIN_CELLS` ou mais,
+  duas águas ou abóbada), `skylight_panes` (no formato das janelas) e `_skylights`. **As vidraças entram em `windows()`**:
+  acendem com a fábrica pela `WindowLightsView` e contam como janela em qualquer teste que conte a lista.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2235,6 +2241,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 100 — Fumaça das casas (nossa) | **feita em 29/10/2026**, primeira do roteiro da rua habitada (Fases 100 a 104): baforadas saindo das chaminés das casas com morador, mais de manhã e à noite, deitando com o vento; plano em `docs/plano_fase100.md` |
 | 101 — Toldos listrados (nossa) | **feita em 29/10/2026**: toldo de lona listrada sobre a porta e as janelas do térreo da padaria, do açougue, da taverna e de um terço das casas dos artesãos e engenheiros; plano em `docs/plano_fase101.md` |
 | 102 — Enxaimel saliente (nossa) | **feita em 29/10/2026**: nas casas dos operários e artesãos com a cumeeira ao longo da frente, os andares de cima avançam sobre a rua numa viga com mãos-francesas, com o enxaimel (esteios e escoras) à mostra; plano em `docs/plano_fase102.md` |
+| 103 — Claraboias (nossa) | **feita em 29/10/2026**: uma fileira de vidraças com caixilho de ferro em cada água (ou na abóbada) das fábricas grandes sem silhueta própria, acesas à noite com a fábrica produzindo; plano em `docs/plano_fase103.md` |
 
 Pendências já vistas para fases futuras:
 
