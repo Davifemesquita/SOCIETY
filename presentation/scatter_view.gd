@@ -8,17 +8,19 @@ extends Node3D
 ## derrubada de árvores atingiu. Só lê o mundo. A ilha plana dos testes e saves antigos não tem recheio.
 ## Fase 60: nas ilhas tropicais o arbusto temperado vira sub-bosque tropical — bananeira (BANANA_SHARE das vezes) ou
 ## samambaia —; as ilhas temperadas não mudam (o sorteio extra só acontece na tropical). Fase 61: lá, as flores do
-## campo viram helicônias (folhas em remo e brácteas vermelhas de ponta amarela em zigue-zague).
+## campo viram helicônias (folhas em remo e brácteas vermelhas de ponta amarela em zigue-zague). Fase 105: a árvore de
+## quintal (macieira pequena, no meio da célula, não encostada na parede) nas células junto das casas; na tropical, a
+## bananeira. Ela vem por último na lista: o sorteio das peças de antes não muda.
 
-enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA }
+enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
-const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA]
+const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE]
 ## As plantas (material da folhagem, balançam).
-const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA]
+const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -29,7 +31,15 @@ const HELICONIA_BRACT := Color(0.85, 0.12, 0.1)
 const HELICONIA_TIP := Color(0.95, 0.8, 0.2)
 ## Chances por célula, pelo que há em volta: [peça, chance].
 const NEAR_HOUSE: Array[Array] = [[Kind.BUSH, 0.25], [Kind.FLOWERS, 0.3], [Kind.BARREL, 0.1], [Kind.WOODPILE, 0.08],
-		[Kind.CRATE, 0.05]]
+		[Kind.CRATE, 0.05], [Kind.YARD_TREE, YARD_TREE_CHANCE]]
+## Fase 105: a árvore de quintal — a chance por célula junto de casa, o tronco, a copa (raio que não chega à parede da
+## casa: a célula tem 2 m e a parede fica a 15 cm da divisa) e as frutas vermelhas.
+const YARD_TREE_CHANCE := 0.14
+const YARD_TRUNK_M := 1.5
+const YARD_CROWN_M := 0.75
+const YARD_LEAF := Color(0.24, 0.42, 0.16)
+const YARD_BARK := Color(0.32, 0.24, 0.17)
+const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05]]
@@ -367,20 +377,28 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			kind = Kind.BANANA if rng.randf() < BANANA_SHARE else Kind.FERN
 		elif tropical and kind == Kind.FLOWERS:
 			kind = Kind.HELICONIA
+		elif tropical and kind == Kind.YARD_TREE:
+			kind = Kind.BANANA
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if lean != Vector2i.ZERO:
+		if kind == Kind.YARD_TREE:
+			# no meio da célula: a copa não encosta na parede da casa
+			offset *= 0.15
+		elif lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
 			offset = Vector2(lean) * 0.32 + Vector2(-lean.y, lean.x) * rng.randf_range(-0.35, 0.35)
 		var x := grid.origin_m.x + (cell.x + 0.5 + offset.x) * grid.cell_size
 		var z := grid.origin_m.y + (cell.y + 0.5 + offset.y) * grid.cell_size
 		var y := grid.height_at(x, z) + TerrainDetail.offset_at(grid, config, x, z)
 		var scale := rng.randf_range(TUFT_SCALE.x, TUFT_SCALE.y) if kind == Kind.TUFT else rng.randf_range(0.75, 1.25)
+		if kind == Kind.YARD_TREE:
+			# a copa nunca passa do raio dela
+			scale = minf(scale, 1.0)
 		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * scale)
 		var color := Color.WHITE
 		match kind:
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
-			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA:
+			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		var list: Array = result[kind]
@@ -440,6 +458,21 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 			for i: int in 8:
 				_leaf(tool, Vector3(0.0, 0.05, 0.0), TAU * i / 8.0 + (i % 2) * 0.2, 0.75, 0.12, 0.7, 0.08, 5, true,
 						FERN_LEAF.lightened(0.08 * (i % 2)))
+		Kind.YARD_TREE:
+			# macieira pequena: o tronco, a copa em quatro massas e meia dúzia de frutas por fora (~2,8 m)
+			CropView._part(tool, CropView._cylinder(0.08, YARD_TRUNK_M), Transform3D(Basis.IDENTITY,
+					Vector3(0.0, YARD_TRUNK_M * 0.5, 0.0)), YARD_BARK)
+			for i: int in 4:
+				var angle := TAU * i / 4.0 + 0.4
+				var lump := Vector3(cos(angle) * 0.3, YARD_TRUNK_M + 0.35 + (i % 2) * 0.2, sin(angle) * 0.3)
+				CropView._part(tool, CropView._sphere(YARD_CROWN_M * (0.62 - (i % 2) * 0.08)), Transform3D(Basis.IDENTITY, lump),
+						YARD_LEAF.lightened(0.07 * (i % 2)))
+			CropView._part(tool, CropView._sphere(YARD_CROWN_M * 0.55), Transform3D(Basis.IDENTITY,
+					Vector3(0.0, YARD_TRUNK_M + 0.75, 0.0)), YARD_LEAF.lightened(0.05))
+			for i: int in 6:
+				var angle := TAU * i / 6.0
+				CropView._part(tool, CropView._sphere(0.06), Transform3D(Basis.IDENTITY, Vector3(cos(angle) * 0.62,
+						YARD_TRUNK_M + 0.25 + (i % 3) * 0.2, sin(angle) * 0.62)), YARD_FRUIT)
 		Kind.HELICONIA:
 			# quatro folhas em remo, em pé, e duas hastes com brácteas vermelhas de ponta amarela alternadas em
 			# zigue-zague (~1,2 m); a instância só varia o tom, como no arbusto

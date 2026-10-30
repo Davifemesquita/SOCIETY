@@ -1484,3 +1484,11 @@ Mesmas condições da Fase 103 (área de trabalho escondida, alto, semente 1840,
 (antes 86,5), 1% low 46,2, pior quadro 26 ms, p50/p95/p99 10,9/14,6/20,3 ms, GPU 10,8 ms (igual), carregar 4,6 s.
 Objetos e draw calls iguais (2738 · 978); primitivas 15.520.925 → 15.582.625 (+0,4%: as chaminés de tijolo com os potes e
 os lampiões). Neutra; fecha o roteiro da rua habitada no mesmo patamar da Fase 92.
+
+## Fase 105 — árvores de quintal (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, de volta ao **estado lento** (jogo novo 28,2 s; p50 26,8 ms): 36,8 FPS, GPU
+21,8 ms, pior quadro 317 ms (um só; 0,1% low 5,6), carregar 10,9 s; não se compara com as Fases 103 e 104, medidas no estado
+rápido, mas está no patamar das rodadas lentas das Fases 99 a 101 (34,3 a 36,3 FPS). Objetos, draw calls e primitivas do
+quadro com tudo visível iguais aos da Fase 104 (2724 · 976 · ~15,58 milhões): a cidade do benchmark não tem quintal com
+recheio à vista. Neutra; repetir no estado rápido.
