@@ -1533,3 +1533,8 @@ estado rápido (87,3 FPS, GPU 10,8 ms): a cintilação e as Fases 105 a 109 junt
 
 Estado rápido (jogo novo 11,3 s): 86,6 FPS (antes 86,5), 1% low 44,6, pior quadro 32 ms, GPU 10,8 ms, carregar 5,2 s;
 objetos, draw calls e primitivas iguais (o terreiro é só a máscara, sem malha). Neutra.
+
+## Fase 112 — coqueiros na rua tropical (30/10/2026)
+
+Estado rápido (jogo novo 11,3 s): 86,7 FPS (antes 86,6), 1% low 45,0, pior quadro 27 ms, GPU 10,8 ms, carregar 5,1 s;
+objetos, draw calls e primitivas iguais (a cidade do benchmark é temperada). Neutra.

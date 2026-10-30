@@ -10,15 +10,16 @@ extends Node3D
 ## samambaia —; as ilhas temperadas não mudam (o sorteio extra só acontece na tropical). Fase 61: lá, as flores do
 ## campo viram helicônias (folhas em remo e brácteas vermelhas de ponta amarela em zigue-zague). Fase 105: a árvore de
 ## quintal (macieira pequena, no meio da célula, não encostada na parede) nas células junto das casas; na tropical, a
-## bananeira. Ela vem por último na lista: o sorteio das peças de antes não muda.
+## bananeira. Ela vem por último na lista: o sorteio das peças de antes não muda. Fase 112: na beira das ruas das ilhas
+## tropicais, coqueiros pequenos (o da Fase 58, reduzido a STREET_PALM_SCALE), também no fim da lista NEAR_ROAD.
 
-enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE }
+enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
-const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE]
+const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE]
 const BANANA_SHARE := 0.4
@@ -42,7 +43,11 @@ const YARD_BARK := Color(0.32, 0.24, 0.17)
 const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12]]
-const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05]]
+const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
+		[Kind.STREET_PALM, STREET_PALM_CHANCE]]
+## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
+const STREET_PALM_CHANCE := 0.16
+const STREET_PALM_SCALE := 0.55
 const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08]]
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04]]
 ## O capim do recheio é a touceira das plantações aumentada (a de 30 cm some a 50 m).
@@ -83,6 +88,9 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 	for kind: int in Kind.values():
 		_meshes[kind] = piece_mesh(kind)
 		_materials[kind] = CropView.plant_material(_meshes[kind], 0.1) if kind in PLANTS else plain
+		if kind == Kind.STREET_PALM:
+			# o coqueiro traz o material da folhagem das árvores (o vento das copas)
+			_materials[kind] = _meshes[kind].surface_get_material(0)
 	EventBus.building_placed.connect(_on_building_changed)
 	EventBus.building_removed.connect(_on_building_changed)
 	EventBus.roads_changed.connect(_on_roads_changed)
@@ -382,8 +390,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			kind = Kind.HELICONIA
 		elif tropical and kind == Kind.YARD_TREE:
 			kind = Kind.BANANA
+		elif kind == Kind.STREET_PALM and not tropical:
+			# coqueiro de rua só nas tropicais (o sorteio já foi feito: as outras peças da célula não mudam)
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if kind == Kind.YARD_TREE:
+		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
 		elif lean != Vector2i.ZERO:
@@ -396,12 +407,14 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		if kind == Kind.YARD_TREE:
 			# a copa nunca passa do raio dela
 			scale = minf(scale, 1.0)
+		elif kind == Kind.STREET_PALM:
+			scale = STREET_PALM_SCALE * rng.randf_range(0.85, 1.15)
 		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * scale)
 		var color := Color.WHITE
 		match kind:
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
-			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE:
+			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		var list: Array = result[kind]
@@ -410,6 +423,8 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 
 ## A malha de cada peça, com a base em y = 0 (cor no vértice; a das flores vem da instância).
 static func piece_mesh(kind: int) -> ArrayMesh:
+	if kind == Kind.STREET_PALM:
+		return TreeModel.mesh(TreeModel.Species.COCONUT_PALM, 0)
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
