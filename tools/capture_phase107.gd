@@ -1,0 +1,78 @@
+extends Node
+## Roteiro de verificação visual da Fase 107 (barcos de pesca): na semente 1840, uma cabana de pesca na costa da ilha
+## principal (achada pelo SiteFinder), marcada como produzindo, e o barco dela na ida, no pesqueiro e amarrado. Precisa de
+## GPU; no PC do dono roda na área de trabalho escondida:
+##   godot --path . --resolution 1920x1080 res://tools/capture_phase107.tscn -- <pasta>
+
+const SEED := 1840
+
+var _out_dir: String
+
+
+func _ready() -> void:
+	var args := OS.get_cmdline_user_args()
+	_out_dir = args[0] if not args.is_empty() else OS.get_user_data_dir().path_join("capturas")
+	DirAccess.make_dir_recursive_absolute(_out_dir)
+	_run.call_deferred()
+
+
+func _run() -> void:
+	GameScreen.load_slot_on_start = ""
+	GameScreen.flat_world = false
+	GameScreen.world_seed = SEED
+	var game := (load("res://ui/screens/game_screen.tscn") as PackedScene).instantiate() as GameScreen
+	add_child(game)
+	GameClock.set_speed(TickClock.PAUSED)
+	_set_hour(10.0)
+	game.hud.visible = false
+	var sim := game.simulation
+	var grid := sim.world.island(Simulation.MAIN_ISLAND)
+	sim.free_build = true
+	var found := SiteFinder.find(sim, &"fishery", Simulation.MAIN_ISLAND, grid.size / 2)
+	if found.is_empty():
+		push_warning("capture_phase107: sem lugar para a cabana de pesca")
+		get_tree().quit()
+		return
+	var origin: Vector2i = found[0]
+	var rotation: int = found[1]
+	var result := sim.execute(PlaceBuildingCommand.new(0, &"fishery", origin, rotation))
+	var record := sim.world.building(result.placed[0])
+	record.state = BuildingRecord.State.PRODUCING
+	var view := game.fishing_boat_view
+	print("barcos ", view.boat_count())
+	var boat := view.boat_of(record.id)
+	if boat == null:
+		get_tree().quit()
+		return
+	var center := grid.rect_world(Footprint.rect(record.origin, sim.def_of(record).size, record.rotation))
+	# a fase sai do relógio da vista: anda o relógio até a ida e até o pesqueiro
+	for phase: float in [0.15, 0.5, 0.85]:
+		view._time = 0.0
+		var offset := FishingBoatView.phase_of(record.id, 0.0)
+		view._time = fposmod(phase - offset, 1.0) * FishingBoatView.CYCLE_S
+		await get_tree().process_frame
+		var at := boat.global_position
+		await _shot(game, "barco_%d.png" % roundi(phase * 100.0), (at + center) * 0.5, maxf(at.distance_to(center) * 1.4, 24.0), 0.6)
+	await _shot(game, "barco_de_perto.png", boat.global_position, 9.0, 1.2)
+	get_tree().quit()
+
+
+func _shot(game: GameScreen, file_name: String, focus: Vector3, distance: float, yaw: float) -> void:
+	var rig := game.camera.rig
+	rig.focus = Vector3(focus.x, 0.0, focus.z)
+	rig.distance = distance
+	rig.yaw = yaw
+	rig.target_yaw = yaw
+	rig.ground_height = maxf(game.simulation.world.surface_height(focus.x, focus.z), 0.0)
+	game.camera.apply()
+	for frame: int in 40:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(_out_dir.path_join(file_name))
+	print("capturado ", file_name)
+
+
+func _set_hour(hour: float) -> void:
+	var clock := GameClock.clock
+	clock.extra_hours = 0.0
+	clock.extra_hours = fposmod(hour - clock.hour(), 24.0)
