@@ -2187,6 +2187,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase112.md`. `ScatterView.Kind.STREET_PALM` (o coqueiro do `TreeModel` reduzido, com o material
   dele) no fim de `NEAR_ROAD`, só nas tropicais.
 
+### Alameda (Fase 113, nossa)
+
+- **Plano** em `docs/plano_fase113.md`. `AvenueView` (`GameScreen.avenue_view`): `cells` (as livres em volta das células
+  calçadas da vez, achadas pelo `find` do array) e a faia reduzida num MultiMesh do arquipélago, **sem alcance de
+  visibilidade** (contaria do meio do arquipélago). O recheio deixa as células limpas. Captura em `tools/capture_phase113.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2310,6 +2316,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 110 — Brilho do sol no mar (nossa) | **feita em 30/10/2026**, primeira do roteiro sol, trópico e avenida (Fases 110 a 114): pontos de brilho cintilando no mar aberto onde o reflexo do sol cai, de dia; plano em `docs/plano_fase110.md` |
 | 111 — Terreiro tropical (nossa) | **feita em 30/10/2026**: chão de terra batida em volta das casas das ilhas tropicais, pela máscara das estradas; plano em `docs/plano_fase111.md` |
 | 112 — Coqueiros na rua tropical (nossa) | **feita em 30/10/2026**: coqueiros pequenos na beira das ruas das ilhas tropicais, pelo recheio; plano em `docs/plano_fase112.md` |
+| 113 — Alameda (nossa) | **feita em 30/10/2026**: árvores plantadas a cada três células dos dois lados das ruas calçadas, onde a célula é livre; plano em `docs/plano_fase113.md` |
 
 Pendências já vistas para fases futuras:
 

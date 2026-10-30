@@ -289,6 +289,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 109: o largo calçado em volta dos serviços também fica limpo
 	for cell: Vector2i in ForecourtView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 113: e as árvores da alameda
+	for cell: Vector2i in AvenueView.cells(world, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 

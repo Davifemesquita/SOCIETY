@@ -1538,3 +1538,10 @@ objetos, draw calls e primitivas iguais (o terreiro é só a máscara, sem malha
 
 Estado rápido (jogo novo 11,3 s): 86,7 FPS (antes 86,6), 1% low 45,0, pior quadro 27 ms, GPU 10,8 ms, carregar 5,1 s;
 objetos, draw calls e primitivas iguais (a cidade do benchmark é temperada). Neutra.
+
+## Fase 113 — alameda (30/10/2026)
+
+Estado rápido (jogo novo 11,3 s): 87,7 FPS (antes 86,7), 1% low 44,2, pior quadro 26 ms, GPU 10,7 ms, carregar 5,1 s. Com
+a cidade inteira calçada, o quadro com tudo visível passa de 58.811.300 para 59.107.420 primitivas (+0,5%: as árvores da
+alameda) e 14,3 ms, igual; calçar a cidade inteira de uma vez 441 ms e mais uma rua 40 ms, iguais (a busca da alameda
+anda só nas células calçadas). Neutra.
