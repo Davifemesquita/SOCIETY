@@ -2170,6 +2170,12 @@ Regras que já custaram investigação:
   em volta dos serviços de `PLAZA_SERVICES`) e `slabs` (lajes no relevo). O recheio deixa essas células limpas
   (`ScatterView.island_context` as soma às portas). Captura em `tools/capture_phase109.tscn`.
 
+### Brilho do sol no mar (Fase 110, nossa)
+
+- **Plano** em `docs/plano_fase110.md`, primeira do roteiro `docs/plano_fases_110_114.md` (sol, trópico e avenida). Global de
+  shader `sun_direction` (para o sol, atualizado pela `GameScreen`) e o grupo `Glints` do `shaders/water.gdshader`. O brilho só
+  aparece de frente para o sol: a captura (`tools/capture_phase110.tscn`) gira a câmera nos quatro lados.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2290,6 +2296,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 107 — Barcos de pesca (nossa) | **feita em 30/10/2026**: um barco a vela por cabana de pesca, que sai para o pesqueiro, pesca dando uma volta e retorna enquanto a cabana produz, e fica amarrado com ela parada; plano em `docs/plano_fase107.md` |
 | 108 — Farol (nossa) | **feita em 30/10/2026**: farol caiado com faixas vermelhas na ponta de terra mais exposta ao mar perto de cada entreposto, com a lanterna acesa e dois fachos girando à noite; plano em `docs/plano_fase108.md` |
 | 109 — Largo calçado (nossa) | **feita em 30/10/2026**, a última do roteiro cidade e porto: lajes de pedra em tons nas células livres em volta da igreja, do teatro, da universidade, da prefeitura, do museu e da escola, sem recheio em cima; plano em `docs/plano_fase109.md` |
+| 110 — Brilho do sol no mar (nossa) | **feita em 30/10/2026**, primeira do roteiro sol, trópico e avenida (Fases 110 a 114): pontos de brilho cintilando no mar aberto onde o reflexo do sol cai, de dia; plano em `docs/plano_fase110.md` |
 
 Pendências já vistas para fases futuras:
 

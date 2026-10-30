@@ -1522,3 +1522,9 @@ facho nem aparece. O mesmo padrão das Fases 105 e 106 no estado lento, fora do 
 p50/p95/p99 26,9/35,9/38,3 ms, pior quadro 171 ms, carregar 11,3 s. Objetos e draw calls 2739 · 991 (o MultiMesh das lajes);
 primitivas iguais (a cidade do benchmark não tem serviço de pedra com largo à vista). Neutra; fecha o roteiro cidade e
 porto no patamar das rodadas lentas desde a Fase 99.
+
+## Fase 110 — brilho do sol no mar (30/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, de volta ao **estado rápido** (jogo novo 11,3 s): 86,5 FPS, 1% low 44,3,
+0,1% low 39,2, pior quadro 27 ms, p50/p95/p99 11,0/14,8/21,3 ms, GPU 10,8 ms, carregar 5,2 s. É o patamar da Fase 104 no
+estado rápido (87,3 FPS, GPU 10,8 ms): a cintilação e as Fases 105 a 109 juntas não pesaram. Neutra.

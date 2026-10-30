@@ -110,6 +110,20 @@ uniform vec3 shore_foam_color : source_color = vec3(0.93, 0.95, 0.93);
 uniform float wave_calm_m = 22.0;
 group_uniforms;
 
+// Society (Fase 110): a cintilação do sol no mar. Pontos de brilho onde o reflexo do sol cai, em células de glint_cell_m que
+// acendem e apagam glint_rate vezes por segundo; mais no mar aberto (a partir de glint_open_m da costa), nada de noite.
+global uniform vec3 sun_direction;
+global uniform float night_light;
+group_uniforms Glints;
+uniform float glint_strength = 3.0;
+uniform float glint_sharpness = 40.0;
+uniform float glint_cell_m = 0.45;
+uniform float glint_rate = 3.0;
+uniform float glint_share = 0.14;
+uniform float glint_open_m = 18.0;
+uniform float glint_fade_m = 900.0;
+group_uniforms;
+
 group_uniforms DepthFog;
 uniform vec4 color_deep : source_color;
 uniform vec4 color_shallow : source_color;
@@ -551,4 +565,18 @@ void fragment() {
 	// água suja é fosca: menos reflexo do céu
 	ROUGHNESS = mix(ROUGHNESS, 0.55, murk);
 	SPECULAR = mix(SPECULAR, 0.1, murk);
+
+	// Society (Fase 110): a cintilação do sol (no espaço da câmera: o reflexo da vista contra a direção do sol)
+	vec3 sun_view = normalize((VIEW_MATRIX * vec4(sun_direction, 0.0)).xyz);
+	float facing = max(dot(reflect(-VIEW, NORMAL), sun_view), 0.0);
+	vec2 cell = floor(world_coordinates.xz / glint_cell_m);
+	float tick = floor(TIME * glint_rate * float(!freeze_time) + fract(sin(dot(cell, vec2(3.1, 7.7))) * 91.3) * 4.0);
+	float sparkle = step(1.0 - glint_share, fract(sin(dot(vec3(cell, tick), vec3(12.9898, 78.233, 45.164))) * 43758.5453));
+	// um ponto redondo no meio da célula, não o quadrado dela
+	sparkle *= 1.0 - smoothstep(0.12, 0.38, length(fract(world_coordinates.xz / glint_cell_m) - 0.5));
+	float open_sea = smoothstep(glint_open_m * 0.4, glint_open_m, shore_m);
+	float far = 1.0 - smoothstep(glint_fade_m * 0.6, glint_fade_m, length(VERTEX));
+	float day = (1.0 - night_light) * smoothstep(0.0, 0.08, sun_direction.y);
+	float glint = pow(facing, glint_sharpness) * sparkle * open_sea * far * day * (1.0 - murk);
+	EMISSION += vec3(1.0, 0.95, 0.85) * glint * glint_strength;
 }

@@ -378,6 +378,10 @@ func _process(delta: float) -> void:
 	sky.set_hour(hour)
 	night_light = DayClock.night_factor(_config, hour)
 	RenderingServer.global_shader_parameter_set(&"night_light", night_light)
+	# Fase 110: para onde fica o sol (o brilho dele no mar)
+	var sun_light := sky.sun()
+	if sun_light != null and sun_light.is_inside_tree():
+		RenderingServer.global_shader_parameter_set(&"sun_direction", sun_light.global_basis.z.normalized())
 
 
 func _exit_tree() -> void:
