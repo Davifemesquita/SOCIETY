@@ -1461,3 +1461,11 @@ as baforadas não pesam.
 Mesmas condições (área de trabalho escondida, alto, semente 1840, **estado lento**, jogo novo 26,0 s): 36,0 FPS (antes
 36,3), GPU 22,5 ms (22,4), p95 36,4 ms, pior quadro 122 ms, carregar 10,3 s; objetos, draw calls e primitivas do quadro
 com tudo visível iguais (a cidade do benchmark não tem padaria, açougue, taverna nem casa de artesão à vista). Neutra.
+
+## Fase 102 — enxaimel saliente (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840. A máquina **saiu do estado lento no meio da rodada** (p50 15,2 ms contra
+~27 nas anteriores; GPU média 16,3 ms), então o FPS médio (52,0) e o pior quadro (208 ms) não se comparam com as Fases 95
+a 101. O que se compara: objetos e draw calls do quadro com tudo visível iguais (2724 · 976); primitivas 15.405.789 →
+15.520.521 (+0,7%: o enxaimel e o balanço nas casas dos operários da cidade do benchmark); carregar 10,3 → 11,1 s (as
+formas de casa com e sem o avanço). Repetir num estado estável.

@@ -83,6 +83,12 @@ const AWNING_VALANCE_M := 0.16
 const UV_AWNING_COLORS: Array[Vector2] = [Vector2(3.5 / 8.0, 1.5 / 4.0), Vector2(4.5 / 8.0, 1.5 / 4.0),
 		Vector2(5.5 / 8.0, 1.5 / 4.0)]
 const UV_CANVAS := Vector2(6.5 / 8.0, 1.5 / 4.0)
+## Fase 102: o andar saliente das casas dos operários e artesãos (telhado com a cumeeira ao longo da frente, dois andares
+## ou mais): os andares de cima da frente avançam JETTY_M (menos que o menor beiral), sobre a viga do balanço e as
+## mãos-francesas de JETTY_BRACKET_M, com o enxaimel (frechal, baldrame, esteios e escoras de TIMBER_M) na frente.
+const JETTY_M := 0.28
+const JETTY_BRACKET_M := 0.6
+const TIMBER_M := 0.1
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -342,11 +348,13 @@ class Spec:
 	var arched: bool = false
 	## Fase 101: o toldo listrado do térreo da frente (0 sem; 1 a 3, a cor da listra).
 	var awning: int = 0
+	## Fase 102: os andares de cima da frente avançam JETTY_M sobre a rua, com o enxaimel à mostra.
+	var jetty: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -378,6 +386,7 @@ class Spec:
 		copy.vault = vault
 		copy.arched = arched
 		copy.awning = awning
+		copy.jetty = jetty
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -455,6 +464,7 @@ class Spec:
 		copy.vault = vault
 		copy.arched = arched
 		copy.awning = awning
+		copy.jetty = jetty
 		return copy
 
 
@@ -506,6 +516,9 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 			spec.wing = -1
 		# Fase 97: o torreão de canto das casas dos investidores (três andares ou mais)
 		spec.turret = spec.trim == TierDef.HouseTrim.PORTICO and spec.floors() >= 3
+		# Fase 102: o andar saliente com enxaimel dos operários e artesãos
+		spec.jetty = spec.trim in [TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES] and spec.roof == Roof.GABLE_X \
+				and spec.floors() >= 2
 		# Fase 99: as janelas em arco das casas dos investidores
 		spec.arched = spec.trim == TierDef.HouseTrim.PORTICO
 		# Fase 101: uma casa em AWNING_HOUSE_SHARE dos artesãos e engenheiros tem loja no térreo, com o toldo
@@ -812,6 +825,9 @@ static func _cell_transform(spec: Spec, face: int, index: int, level: int) -> Tr
 	center += normal * ((size.y if along else size.x) * 0.5)
 	# a peça ocupa x de -0,5 a 0,5 com a parede em 0,4..0,5: o meio da célula fica meia célula para dentro
 	center -= normal * depth * 0.5
+	# Fase 102: os andares de cima da frente avançam sobre a rua (tudo o que se põe pela célula acompanha)
+	if spec.jetty and face == 0 and level >= 1:
+		center += normal * JETTY_M
 	var yaw := FACE_YAWS[face]
 	var basis := Basis(Vector3.UP, yaw) * Basis.from_scale(Vector3(depth, spec.floor_m(), step))
 	return Transform3D(basis, center)
@@ -908,6 +924,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 	_trim(tool, extra, spec)
 	if spec.awning > 0:
 		_awnings(extra, spec)
+	if spec.jetty:
+		_jetty(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -971,6 +989,58 @@ static func _awnings(tool: SurfaceTool, spec: Spec) -> void:
 			var corner := base + at + Vector3.DOWN * AWNING_DROP_M
 			_triangle(tool, base + at, tip + at, corner, Vector3.RIGHT * side, UV_CANVAS)
 			_triangle(tool, base + at, tip + at, corner, Vector3.LEFT * side, UV_CANVAS)
+
+
+## Fase 102: o andar saliente — a viga do balanço e as mãos-francesas embaixo, o enxaimel na frente de cada andar de cima
+## (baldrame, frechal, esteios nas divisas e as escoras ao lado da janela, ou em diagonal na parede lisa) e, nas pontas da
+## frente que avançou, o pedaço de parede que fecha o vão até a parede do lado.
+static func _jetty(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var size := hall.size_m()
+	var step := size.x / hall.cells.x
+	var floor_m := hall.floor_m()
+	var shift := spec.hall_offset()
+	var front := -size.y * 0.5
+	var out := front - JETTY_M
+	var timber_z := out - 0.03
+	_box(tool, shift + Vector3(0.0, floor_m - 0.07, (front + out) * 0.5), Vector3(size.x, 0.14, JETTY_M), UV_TIMBER)
+	for k: int in hall.cells.x + 1:
+		var x := clampf(-size.x * 0.5 + step * k, -size.x * 0.5 + 0.06, size.x * 0.5 - 0.06)
+		_bar(tool, shift + Vector3(x, floor_m - JETTY_BRACKET_M, front - 0.02), shift + Vector3(x, floor_m - 0.12, out + 0.04),
+				0.09, UV_TIMBER)
+	for level: int in range(1, hall.floors()):
+		var y0 := level * floor_m
+		var y1 := y0 + floor_m
+		for index: int in hall.cells.x:
+			var kind := slot(hall, 0, index, level)
+			if kind == &"none":
+				continue
+			var x0 := -size.x * 0.5 + step * index
+			var x1 := x0 + step
+			var middle := (x0 + x1) * 0.5
+			_box(tool, shift + Vector3(middle, y0 + 0.07, timber_z), Vector3(step, TIMBER_M, 0.06), UV_TIMBER)
+			_box(tool, shift + Vector3(middle, y1 - 0.07, timber_z), Vector3(step, TIMBER_M, 0.06), UV_TIMBER)
+			for x: float in [x0 + 0.05, x1 - 0.05]:
+				_box(tool, shift + Vector3(x, (y0 + y1) * 0.5, timber_z), Vector3(TIMBER_M, floor_m, 0.06), UV_TIMBER)
+			if kind == &"window":
+				# uma escora de cada lado da janela, do pé do esteio até o alto do vão
+				var beside := step * WINDOW_WIDTH * 0.5 + 0.14
+				var top := y0 + floor_m * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5)
+				_bar(tool, shift + Vector3(x0 + 0.08, y0 + 0.12, timber_z), shift + Vector3(middle - beside, top, timber_z), 0.08,
+						UV_TIMBER)
+				_bar(tool, shift + Vector3(x1 - 0.08, y0 + 0.12, timber_z), shift + Vector3(middle + beside, top, timber_z), 0.08,
+						UV_TIMBER)
+			else:
+				_bar(tool, shift + Vector3(x0 + 0.08, y0 + 0.12, timber_z), shift + Vector3(x1 - 0.08, y1 - 0.12, timber_z), 0.08,
+						UV_TIMBER)
+			# o vão entre a frente que avançou e a parede do lado, nas pontas de cada trecho da frente
+			var last := hall.cells.x - 1
+			if index == 0 or slot(hall, 0, index - 1, level) == &"none":
+				_box(tool, shift + Vector3(x0 + 0.06, (y0 + y1) * 0.5, (front + out) * 0.5), Vector3(0.12, floor_m, JETTY_M),
+						UV_WALL)
+			if index == last or slot(hall, 0, index + 1, level) == &"none":
+				_box(tool, shift + Vector3(x1 - 0.06, (y0 + y1) * 0.5, (front + out) * 0.5), Vector3(0.12, floor_m, JETTY_M),
+						UV_WALL)
 
 
 ## A chaminé da casa no telhado, no referencial do prédio: a peça do kit esticada até passar da cumeeira.
@@ -1656,6 +1726,13 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 	else:
 		_box(tool, center + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
 				Vector3(size.x + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	if hall.jetty:
+		# Fase 102: a cornija da frente acompanha o andar que avançou (só no corpo, se houver ala)
+		var winged := hall.wing != 0 and hall.floors() >= 2
+		var top_width := size.x - (hall.column_m() if winged else 0.0)
+		var top_x := hall.main_offset().x if winged else 0.0
+		_box(tool, center + Vector3(top_x, hall.height_m - CORNICE_M * 0.5, -size.y * 0.5 - JETTY_M * 0.5),
+				Vector3(top_width + CORNICE_OUT_M * 2.0, CORNICE_M, JETTY_M + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
 	if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
 		for level: int in range(1, hall.floors()):
 			_box(tool, center + Vector3(0.0, level * hall.floor_m(), 0.0),

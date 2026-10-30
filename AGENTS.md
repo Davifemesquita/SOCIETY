@@ -2115,6 +2115,13 @@ Regras que já custaram investigação:
   dos artesãos e engenheiros; `awning_cells`, `_awnings`). A lona usa as células (3..6, 1) da paleta (`UV_AWNING_COLORS`,
   `UV_CANVAS`), pintadas no `shaders/building_kit.gdshader`; o teste confere que nenhuma peça do kit cai nelas.
 
+### Enxaimel saliente (Fase 102, nossa)
+
+- **Plano** em `docs/plano_fase102.md`. `Spec.jetty` (operários e artesãos, cumeeira ao longo da frente, dois andares ou
+  mais): **o avanço está no `_cell_transform`** (face 0, andar 1 para cima, `JETTY_M`), então tudo o que se põe pela célula
+  acompanha; código novo que desenhe na fachada da frente sem passar por ele precisa somar o avanço. `_jetty` desenha a
+  viga do balanço, as mãos-francesas, o enxaimel e o fecho das pontas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2227,6 +2234,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 99 — Arcos (nossa) | **feita em 29/10/2026**, a última do roteiro das formas mais redondas: janelas com a cabeça em arco (tímpano de vidro e arquivolta de pedra) nos serviços de pedra e nas casas dos investidores; arcada com pilares, arcos e água de telhas na frente do mercado; plano em `docs/plano_fase99.md` |
 | 100 — Fumaça das casas (nossa) | **feita em 29/10/2026**, primeira do roteiro da rua habitada (Fases 100 a 104): baforadas saindo das chaminés das casas com morador, mais de manhã e à noite, deitando com o vento; plano em `docs/plano_fase100.md` |
 | 101 — Toldos listrados (nossa) | **feita em 29/10/2026**: toldo de lona listrada sobre a porta e as janelas do térreo da padaria, do açougue, da taverna e de um terço das casas dos artesãos e engenheiros; plano em `docs/plano_fase101.md` |
+| 102 — Enxaimel saliente (nossa) | **feita em 29/10/2026**: nas casas dos operários e artesãos com a cumeeira ao longo da frente, os andares de cima avançam sobre a rua numa viga com mãos-francesas, com o enxaimel (esteios e escoras) à mostra; plano em `docs/plano_fase102.md` |
 
 Pendências já vistas para fases futuras:
 

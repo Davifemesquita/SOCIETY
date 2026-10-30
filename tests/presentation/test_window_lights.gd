@@ -89,7 +89,9 @@ func test_model_windows_sit_on_the_facades_and_skip_the_door() -> void:
 	var half := spec.size_m().x * 0.5
 	for window: Transform3D in windows:
 		var offset := window.origin - Vector3(center.x, window.origin.y, center.z)
-		assert_float(maxf(absf(offset.x), absf(offset.z))).is_between(half, half + 0.2)
+		# Fase 102: as do andar saliente ficam JETTY_M mais para fora
+		var reach := half + 0.2 + (BuildingKit.JETTY_M if spec.jetty else 0.0)
+		assert_float(maxf(absf(offset.x), absf(offset.z))).is_between(half, reach)
 		assert_float(window.basis.z.normalized().dot(offset.normalized())).is_greater(0.5)
 		var flat := Vector2(window.origin.x - door.x, window.origin.z - door.z)
 		assert_bool(window.origin.y < spec.floor_m() and flat.length() < 2.0).is_false()
