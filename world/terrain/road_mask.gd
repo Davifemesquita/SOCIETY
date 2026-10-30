@@ -6,7 +6,7 @@ extends RefCounted
 ##    diagonal pura (um segmento a 45°, sem escada); na esquina em L, um segmento entre os meios dos dois lados arredonda o
 ##    canto de dentro; célula solta é um ponto; o trecho entre dois paralelepípedos não entra;
 ## g: calçamento (1 dentro da célula de paralelepípedo);
-## b: desgaste em frente das portas;
+## b: desgaste em frente das portas (e, desde a Fase 111, o terreiro das casas nas ilhas tropicais);
 ## a: poças na terra, no meio da rua.
 ## Função pura do estado da simulação (nada vai para o save). refresh() refaz só o retângulo das células que mudaram.
 
@@ -18,6 +18,10 @@ const DOOR_WEAR_RADIUS_M := 1.5
 ## largura, e o canto recuado da cerca.
 const TRAIL_RADIUS_M := 0.45
 const TRAIL_CORNER_M := 0.9
+## Fase 111: o terreiro das casas nas ilhas tropicais, no canal b: o lote da casa e mais YARD_REACH_M em volta, com a borda
+## somindo em YARD_SOFT_M.
+const YARD_REACH_M := 1.6
+const YARD_SOFT_M := 1.0
 ## Quantas células em volta de uma mudança o desenho pode mudar (segmento até a vizinha, mais a distância máxima).
 const MARGIN_CELLS := 3
 ## Os lados e as diagonais que cada célula desenha (os outros são da vizinha).
@@ -42,6 +46,7 @@ var _bytes := PackedByteArray()
 var _roads := PackedByteArray()
 var _doors: Dictionary[int, Vector2] = {}
 var _trails: Dictionary[int, PackedVector2Array] = {}
+var _yards: Dictionary[int, Rect2] = {}
 
 
 func _init(world: WorldState, data: GameData, island_id: int, per_cell: int, max_m: float) -> void:
@@ -59,6 +64,7 @@ func _init(world: WorldState, data: GameData, island_id: int, per_cell: int, max
 	_roads = _grid.roads.duplicate()
 	_doors = doors(world, data, island_id)
 	_trails = trails(world, data, island_id)
+	_yards = yards(world, data, island_id)
 	_draw(Rect2i(Vector2i.ZERO, _grid.size), false)
 	image = Image.create_from_data(_width, _height, false, Image.FORMAT_RGBA8, _bytes)
 	texture = ImageTexture.create_from_image(image)
@@ -110,6 +116,14 @@ func refresh() -> Rect2i:
 		if not paths.has(id):
 			area = _merge(area, _trail_cells(_trails[id]))
 	_trails = paths
+	var lots := yards(_world, _data, _island_id)
+	for id: int in lots:
+		if not _yards.has(id) or _yards[id] != lots[id]:
+			area = _merge(area, _yard_cells(lots[id]))
+	for id: int in _yards:
+		if not lots.has(id):
+			area = _merge(area, _yard_cells(_yards[id]))
+	_yards = lots
 	if area.size == Vector2i.ZERO:
 		return area
 	area = area.grow(MARGIN_CELLS).intersection(Rect2i(Vector2i.ZERO, _grid.size))
@@ -157,6 +171,28 @@ static func trails(world: WorldState, data: GameData, island_id: int) -> Diction
 	return result
 
 
+## Fase 111: o terreiro de cada casa da ilha tropical (m da grade): o lote crescido de YARD_REACH_M; vazio nas outras.
+static func yards(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Rect2]:
+	var result: Dictionary[int, Rect2] = {}
+	if not world.is_tropical(island_id, data):
+		return result
+	var cell_size := world.island(island_id).cell_size
+	for id: int in world.buildings:
+		var record := world.buildings[id]
+		if record.island_id != island_id or not record.is_house():
+			continue
+		var def := data.building(record.def_id)
+		var area := Footprint.rect(record.origin, def.size, record.rotation)
+		result[id] = Rect2(Vector2(area.position) * cell_size, Vector2(area.size) * cell_size).grow(YARD_REACH_M)
+	return result
+
+
+func _yard_cells(lot: Rect2) -> Rect2i:
+	var low := Vector2i((lot.position / _grid.cell_size).floor())
+	var high := Vector2i((lot.end / _grid.cell_size).ceil())
+	return Rect2i(low, high - low)
+
+
 func _trail_cells(points: PackedVector2Array) -> Rect2i:
 	var area := Rect2i()
 	for point: Vector2 in points:
@@ -202,6 +238,10 @@ func _draw(area: Rect2i, clear: bool) -> void:
 		var points := _trails[id]
 		for k: int in points.size() - 1:
 			_stamp_wear(points[k] / _grid.cell_size * _per_cell, points[k + 1] / _grid.cell_size * _per_cell, trail_px, clip)
+	var scale := _per_cell / _grid.cell_size
+	for id: int in _yards:
+		var lot := _yards[id]
+		_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip)
 
 
 func _draw_cell(cell: Vector2i, dirt: bool, clip: Rect2i) -> void:
@@ -317,6 +357,22 @@ func _stamp_wear(a: Vector2, b: Vector2, radius: float, clip: Rect2i) -> void:
 			if d >= 1.0:
 				continue
 			var value := int((1.0 - smoothstep(0.3, 1.0, d)) * 0.85 * 255.0)
+			var i := (y * _width + x) * 4 + 2
+			if value > _bytes[i]:
+				_bytes[i] = value
+
+
+## Fase 111: o terreiro no canal b, ficando com o maior: cheio dentro do retângulo (pixels) menos a borda e somindo até a
+## borda dele; só dentro de clip.
+func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i) -> void:
+	var box := Rect2i(Vector2i(lot.position.floor()), Vector2i(lot.size.ceil()) + Vector2i.ONE).intersection(clip)
+	for y: int in range(box.position.y, box.end.y):
+		for x: int in range(box.position.x, box.end.x):
+			var p := Vector2(x + 0.5, y + 0.5)
+			var inside := minf(minf(p.x - lot.position.x, lot.end.x - p.x), minf(p.y - lot.position.y, lot.end.y - p.y))
+			if inside <= 0.0:
+				continue
+			var value := int(smoothstep(0.0, soft, inside) * 0.9 * 255.0)
 			var i := (y * _width + x) * 4 + 2
 			if value > _bytes[i]:
 				_bytes[i] = value

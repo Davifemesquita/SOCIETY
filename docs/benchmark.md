@@ -1528,3 +1528,8 @@ porto no patamar das rodadas lentas desde a Fase 99.
 Área de trabalho escondida, alto, semente 1840, de volta ao **estado rápido** (jogo novo 11,3 s): 86,5 FPS, 1% low 44,3,
 0,1% low 39,2, pior quadro 27 ms, p50/p95/p99 11,0/14,8/21,3 ms, GPU 10,8 ms, carregar 5,2 s. É o patamar da Fase 104 no
 estado rápido (87,3 FPS, GPU 10,8 ms): a cintilação e as Fases 105 a 109 juntas não pesaram. Neutra.
+
+## Fase 111 — terreiro tropical (30/10/2026)
+
+Estado rápido (jogo novo 11,3 s): 86,6 FPS (antes 86,5), 1% low 44,6, pior quadro 32 ms, GPU 10,8 ms, carregar 5,2 s;
+objetos, draw calls e primitivas iguais (o terreiro é só a máscara, sem malha). Neutra.
