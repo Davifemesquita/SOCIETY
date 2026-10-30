@@ -2128,6 +2128,14 @@ Regras que já custaram investigação:
   duas águas ou abóbada), `skylight_panes` (no formato das janelas) e `_skylights`. **As vidraças entram em `windows()`**:
   acendem com a fábrica pela `WindowLightsView` e contam como janela em qualquer teste que conte a lista.
 
+### Lampião, grade e chaminé de tijolo (Fase 104, nossa)
+
+- **Plano** em `docs/plano_fase104.md`. A chaminé das casas é gerada (`_brick_chimney`, tijolo na célula (7, 1),
+  `UV_BRICK`, desenhado no shader); a peça `chimney.glb` do kit não é mais desenhada. `Spec.lantern` (serviços sem arcada
+  nem toldo e casas dos artesãos para cima sem toldo): `lantern_pane` entra em `windows()` e acende à noite. A grade do pátio
+  do museu é `_gallery_fence`. Antes de dar outra célula da paleta a uma peça gerada, confira (como os testes das Fases
+  101 e 104) que nenhuma peça do kit cai nela.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2242,6 +2250,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 101 — Toldos listrados (nossa) | **feita em 29/10/2026**: toldo de lona listrada sobre a porta e as janelas do térreo da padaria, do açougue, da taverna e de um terço das casas dos artesãos e engenheiros; plano em `docs/plano_fase101.md` |
 | 102 — Enxaimel saliente (nossa) | **feita em 29/10/2026**: nas casas dos operários e artesãos com a cumeeira ao longo da frente, os andares de cima avançam sobre a rua numa viga com mãos-francesas, com o enxaimel (esteios e escoras) à mostra; plano em `docs/plano_fase102.md` |
 | 103 — Claraboias (nossa) | **feita em 29/10/2026**: uma fileira de vidraças com caixilho de ferro em cada água (ou na abóbada) das fábricas grandes sem silhueta própria, acesas à noite com a fábrica produzindo; plano em `docs/plano_fase103.md` |
+| 104 — Lampião, grade e chaminé de tijolo (nossa) | **feita em 29/10/2026**, a última do roteiro da rua habitada: chaminé de tijolo com capitel e potes no lugar do bloco do kit; lampião de ferro ao lado da porta dos serviços e das casas dos artesãos para cima, aceso à noite; grade de ferro com portão no pátio do museu; plano em `docs/plano_fase104.md` |
 
 Pendências já vistas para fases futuras:
 

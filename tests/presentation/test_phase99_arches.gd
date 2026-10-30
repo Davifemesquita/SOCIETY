@@ -52,7 +52,9 @@ func test_each_window_gets_its_glass_fan() -> void:
 		var flat := spec._copy()
 		flat.arched = false
 		var added := _glass_triangles(BuildingKit.mesh(spec)) - _glass_triangles(BuildingKit.mesh(flat))
-		assert_int(added).is_equal(BuildingKit.windows(spec).size() * BuildingKit.ARCH_SEGMENTS)
+		# a lista das janelas também tem o lampião de parede (Fase 104), que não é janela em arco
+		var arched := BuildingKit.windows(spec).size() - int(spec.lantern)
+		assert_int(added).is_equal(arched * BuildingKit.ARCH_SEGMENTS)
 
 
 func test_the_arch_fits_inside_the_floor() -> void:

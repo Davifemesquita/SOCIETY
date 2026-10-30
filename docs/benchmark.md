@@ -1477,3 +1477,10 @@ formas de casa com e sem o avanço). Repetir num estado estável.
 patamar da Fase 92 no estado rápido (alto com VSync desligado, 86 FPS): as formas das Fases 95 a 103 juntas não pesaram.
 Objetos e draw calls do quadro com tudo visível 2738 · 978 (as claraboias das fábricas da cidade do benchmark), primitivas
 15.520.925 (+404).
+
+## Fase 104 — lampião, grade e chaminé de tijolo (29/10/2026)
+
+Mesmas condições da Fase 103 (área de trabalho escondida, alto, semente 1840, **estado rápido**, jogo novo 11,3 s): 87,3 FPS
+(antes 86,5), 1% low 46,2, pior quadro 26 ms, p50/p95/p99 10,9/14,6/20,3 ms, GPU 10,8 ms (igual), carregar 4,6 s.
+Objetos e draw calls iguais (2738 · 978); primitivas 15.520.925 → 15.582.625 (+0,4%: as chaminés de tijolo com os potes e
+os lampiões). Neutra; fecha o roteiro da rua habitada no mesmo patamar da Fase 92.

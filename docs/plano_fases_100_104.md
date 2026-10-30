@@ -25,3 +25,10 @@ telha.
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura (`tools/capture_phase95.tscn`,
 que já tem as ruas de cada classe e os prédios grandes) e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 29/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase100.md` a
+`docs/plano_fase104.md`), testes, captura em `tools/capture_phase95.tscn` e benchmark. Diferenças do roteiro: o toldo das
+casas tem uma cor por classe (três cores triplicavam as formas de casa); as claraboias ficaram nas fábricas sem silhueta
+própria; a grade de ferro foi para o pátio do museu, o único serviço de pedra com pátio.

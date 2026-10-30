@@ -341,11 +341,15 @@ func test_upper_houses_frame_their_windows_in_stone() -> void:
 		var plain := _house(tier)
 		plain.trim = TierDef.HouseTrim.NONE
 		assert_int(BuildingKit.triangles(spec) - BuildingKit.triangles(plain)).override_failure_message(String(tier)) \
-				.is_greater(BuildingKit.windows(spec).size() * 60)
+				.is_greater((BuildingKit.windows(spec).size() - int(spec.lantern)) * 60)
 	# a pedra de fecho passa da verga para cima: há vértice na altura do alto dela (em cada andar) nos
 	# engenheiros e investidores, e não nos artesãos
 	for tier: StringName in [&"artisans", &"engineers", &"investors"]:
 		var spec := _house(tier)
+		# só a fachada: as peças das Fases 102 e 104 podem cair na mesma altura por acaso
+		spec.lantern = false
+		spec.chimney = false
+		spec.jetty = false
 		var floor_m := spec.hall().floor_m()
 		var key_top := floor_m * (BuildingKit.WINDOW_CENTER + BuildingKit.WINDOW_HEIGHT * 0.5) \
 				+ BuildingKit.LINTEL_M * 0.5 + BuildingKit.KEYSTONE_M

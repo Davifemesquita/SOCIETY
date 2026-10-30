@@ -63,6 +63,10 @@ uniform vec4 awning_red : source_color = vec4(0.62, 0.17, 0.14, 1.0);
 uniform vec4 awning_green : source_color = vec4(0.2, 0.4, 0.26, 1.0);
 uniform vec4 awning_blue : source_color = vec4(0.2, 0.3, 0.5, 1.0);
 uniform vec4 awning_cream : source_color = vec4(0.88, 0.84, 0.72, 1.0);
+// Fase 104: o tijolo da chaminé
+uniform vec4 brick_dark : source_color = vec4(0.42, 0.18, 0.13, 1.0);
+uniform vec4 brick_light : source_color = vec4(0.62, 0.3, 0.21, 1.0);
+uniform vec4 brick_mortar : source_color = vec4(0.66, 0.63, 0.57, 1.0);
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -145,6 +149,17 @@ void fragment() {
 		color = cell.x == 3 ? awning_red.rgb : (cell.x == 4 ? awning_green.rgb
 				: (cell.x == 5 ? awning_blue.rgb : awning_cream.rgb));
 		color *= 0.9 + 0.2 * moss_noise(world_position.xz * 6.0 + world_position.y * 3.0);
+	} else if (cell == ivec2(7, 1)) {
+		// Fase 104: o tijolo da chaminé (célula (7, 1), que o kit não usa): fiadas desencontradas pela face, um tom por
+		// tijolo e a argamassa clara
+		vec2 face = abs(world_normal.y) > 0.7 ? world_position.xz
+				: (abs(world_normal.x) > abs(world_normal.z) ? world_position.zy : world_position.xy);
+		vec2 course = face / vec2(0.22, 0.075);
+		course.x += mod(floor(course.y), 2.0) * 0.5;
+		vec2 inside = fract(course);
+		float mortar = clamp(step(inside.x, 0.07) + step(inside.y, 0.14), 0.0, 1.0);
+		float tone = fract(sin(dot(floor(course), vec2(12.9898, 78.233))) * 43758.5453);
+		color = mix(mix(brick_dark.rgb, brick_light.rgb, tone), brick_mortar.rgb, mortar);
 	} else if (cell == ivec2(4, 3)) {
 		color = kit_luma / 0.55 * mix(mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), trim_paint_color.rgb, trim_paint);
 	} else if (cell == ivec2(3, 3)) {

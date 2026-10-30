@@ -97,6 +97,18 @@ const SKYLIGHT_AT := 0.45
 const SKYLIGHT_PANE_M := Vector2(1.1, 0.9)
 const SKYLIGHT_STEP_M := 1.6
 const SKYLIGHT_LIFT_M := 0.05
+## Fase 104: a chaminé de tijolo das casas (no lugar do bloco do kit): fuste de CHIMNEY_SIDE_M de lado até CHIMNEY_ABOVE_M
+## acima da cumeeira, o capitel e dois potes de CHIMNEY_POT_M; o tijolo é a célula (7, 1) da paleta, desenhado no shader.
+const CHIMNEY_SIDE_M := 0.6
+const CHIMNEY_ABOVE_M := 0.6
+const CHIMNEY_POT_M := 0.3
+const UV_BRICK := Vector2(7.5 / 8.0, 1.5 / 4.0)
+## Fase 104: o lampião de parede ao lado da porta, a LANTERN_AT do andar e LANTERN_OUT_M da parede, com a vidraça de
+## LANTERN_PANE_M (que acende à noite como as janelas); e a grade de ferro do pátio do museu, de GALLERY_FENCE_M.
+const LANTERN_AT := 0.72
+const LANTERN_OUT_M := 0.32
+const LANTERN_PANE_M := Vector2(0.18, 0.24)
+const GALLERY_FENCE_M := 1.2
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -140,7 +152,6 @@ const PIECES := {
 		&"door": "wall-wood-door", &"arch": "wall-wood-doorway-round",
 	},
 }
-const CHIMNEY := "chimney"
 ## Silhueta por cadeia (Fase 13, BuildingDef.silhouette): as peças do mesmo kit.
 const WINDMILL := "windmill"
 const WATERWHEEL := "watermill"
@@ -360,11 +371,13 @@ class Spec:
 	var jetty: bool = false
 	## Fase 103: as claraboias nas águas (ou na abóbada) das fábricas grandes.
 	var skylights: bool = false
+	## Fase 104: o lampião de parede ao lado da porta (serviços e casas dos artesãos para cima, sem toldo).
+	var lantern: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -398,6 +411,7 @@ class Spec:
 		copy.awning = awning
 		copy.jetty = jetty
 		copy.skylights = skylights
+		copy.lantern = lantern
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -477,6 +491,7 @@ class Spec:
 		copy.awning = awning
 		copy.jetty = jetty
 		copy.skylights = skylights
+		copy.lantern = lantern
 		return copy
 
 
@@ -538,6 +553,9 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 				and BuildingView.house_hash(record.id) / 11 % AWNING_HOUSE_SHARE == 0:
 			# uma cor por classe (cada forma nova custa ~18 ms; três cores triplicavam as casas com loja)
 			spec.awning = 1 if spec.trim == TierDef.HouseTrim.FLOWER_BOXES else 2
+		# Fase 104: o lampião de parede junto da porta (a casa com toldo já tem a loja)
+		spec.lantern = spec.awning == 0 and spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES,
+				TierDef.HouseTrim.PORTICO]
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -628,6 +646,9 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
 		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
+	# Fase 104: o lampião de parede dos serviços (o mercado tem a arcada; a taverna, o toldo)
+	spec.lantern = def.kind == BuildingDef.Kind.SERVICE and def.silhouette != BuildingDef.Silhouette.STALLS \
+			and def.id not in AWNING_SHOPS
 	# Fase 101: o toldo das lojas, na cor sorteada pelo tipo
 	if def.id in AWNING_SHOPS:
 		spec.awning = 1 + absi(hash(String(def.id))) % UV_AWNING_COLORS.size()
@@ -799,8 +820,11 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
 				var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(step * WINDOW_WIDTH, floor_m * WINDOW_HEIGHT, 1.0))
 				result.append(Transform3D(basis, origin))
-	# Fase 103: as claraboias também são vidro que acende
+	# Fase 103: as claraboias também são vidro que acende; e, desde a Fase 104, o lampião de parede
 	result.append_array(skylight_panes(spec))
+	var lamp: Variant = lantern_pane(spec)
+	if lamp != null:
+		result.append(lamp)
 	return result
 
 
@@ -945,13 +969,15 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_jetty(extra, spec)
 	if spec.skylights:
 		_skylights(extra, spec)
+	if spec.chimney:
+		_brick_chimney(extra, spec)
+	if spec.lantern:
+		_lantern(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
-	if spec.chimney:
-		_append_piece(tool, CHIMNEY, _chimney_place(spec))
 	var arrays := tool.commit_to_arrays()
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -1110,31 +1136,96 @@ static func _skylights(tool: SurfaceTool, spec: Spec) -> void:
 			_bar(tool, at + a + lift, at + b + lift, 0.06, UV_IRON)
 
 
-## A chaminé da casa no telhado, no referencial do prédio: a peça do kit esticada até passar da cumeeira.
-static func _chimney_place(spec: Spec) -> Transform3D:
-	var stack := spec.roof_m + 0.6
+## A chaminé da casa no telhado, no referencial do prédio: o meio do pé (na altura do beiral) e a altura do fuste, até
+## CHIMNEY_ABOVE_M acima da cumeeira.
+static func _chimney_base(spec: Spec) -> Vector3:
 	var body := spec.hall().size_m()
-	return Transform3D(Basis.IDENTITY, spec.hall_offset()) * Transform3D(Basis.from_scale(Vector3(3.0, stack, 3.0)),
-			Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5))
+	return spec.hall_offset() + Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5)
 
 
-## Fase 100: a boca da chaminé (o meio do alto da peça), no referencial do prédio; null sem chaminé ou sem o kit.
+static func _chimney_height(spec: Spec) -> float:
+	return spec.roof_m + CHIMNEY_ABOVE_M
+
+
+## Fase 100: a boca da chaminé (desde a Fase 104, o alto dos potes), no referencial do prédio; null sem chaminé.
 static func chimney_top(spec: Spec) -> Variant:
 	if spec == null or not spec.chimney:
 		return null
-	var place := _chimney_place(spec)
-	var box := AABB()
-	var first := true
-	for part: Array in _parts_of(CHIMNEY):
-		var mesh: Mesh = part[0]
-		var transform: Transform3D = part[1]
-		var piece := place * transform * mesh.get_aabb()
-		box = piece if first else box.merge(piece)
-		first = false
-	if first:
-		return null
-	return Vector3(box.get_center().x, box.end.y, box.get_center().z)
+	return _chimney_base(spec) + Vector3(0.0, _chimney_height(spec) + 0.12 + CHIMNEY_POT_M, 0.0)
 
+
+## Fase 104: a chaminé de tijolo — o fuste, o capitel em duas fiadas mais largas e dois potes de barro.
+static func _brick_chimney(tool: SurfaceTool, spec: Spec) -> void:
+	var base := _chimney_base(spec)
+	var height := _chimney_height(spec)
+	var side := CHIMNEY_SIDE_M
+	_box(tool, base + Vector3(0.0, height * 0.5, 0.0), Vector3(side, height, side), UV_BRICK)
+	_box(tool, base + Vector3(0.0, height - 0.09, 0.0), Vector3(side + 0.12, 0.08, side + 0.12), UV_BRICK)
+	_box(tool, base + Vector3(0.0, height + 0.06, 0.0), Vector3(side + 0.06, 0.12, side + 0.06), UV_BRICK)
+	for x: float in [-0.13, 0.13]:
+		var foot := base + Vector3(x, height + 0.12, 0.0)
+		_turned(tool, foot, [Vector2(0.1, 0.0), Vector2(0.08, CHIMNEY_POT_M * 0.85), Vector2(0.095, CHIMNEY_POT_M),
+				Vector2(0.06, CHIMNEY_POT_M)], 8, UV_ROOF_TRIM)
+
+
+## Fase 104: a vidraça do lampião de parede (no formato das janelas de windows()), ao lado da porta, no referencial do
+## prédio; null sem lampião.
+static func lantern_pane(spec: Spec) -> Variant:
+	if not spec.lantern:
+		return null
+	var hall := spec.hall()
+	var step := hall.size_m().x / hall.cells.x
+	var normal := _face_normal(0)
+	var wall := spec.hall_offset() + _wall_point(hall, 0, hall.door_index, 0)
+	var at := wall + Vector3.RIGHT * step * 0.5 + Vector3.UP * hall.floor_m() * LANTERN_AT + normal * LANTERN_OUT_M
+	var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(LANTERN_PANE_M.x, LANTERN_PANE_M.y, 1.0))
+	return Transform3D(basis, at)
+
+
+## O lampião: o braço de ferro com a voluta saindo da parede, o chapéu e o fundo de ferro, os montantes e a vidraça da frente.
+static func _lantern(tool: SurfaceTool, spec: Spec) -> void:
+	var pane: Variant = lantern_pane(spec)
+	if pane == null:
+		return
+	var place: Transform3D = pane
+	var normal := place.basis.z.normalized()
+	var at := place.origin
+	var half := LANTERN_PANE_M * 0.5
+	var wall := at - normal * LANTERN_OUT_M
+	_bar(tool, wall + Vector3.UP * (half.y + 0.12), at - normal * 0.1 + Vector3.UP * (half.y + 0.12), 0.04, UV_IRON)
+	_bar(tool, wall + Vector3.UP * (half.y - 0.15), wall + Vector3.UP * (half.y + 0.1) + normal * 0.18, 0.03, UV_IRON)
+	var center := at - normal * 0.1
+	_box(tool, center + Vector3.UP * (half.y + 0.04), Vector3(0.28, 0.06, 0.28), UV_IRON)
+	_turned(tool, center + Vector3.UP * (half.y + 0.07), [Vector2(0.12, 0.0), Vector2(0.0, 0.12)], 4, UV_IRON)
+	_box(tool, center - Vector3.UP * (half.y + 0.03), Vector3(0.22, 0.06, 0.22), UV_IRON)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		var x := Vector3.RIGHT * corner.x * 0.1
+		var z := normal * corner.y * 0.1
+		_bar(tool, center + x + z - Vector3.UP * half.y, center + x + z + Vector3.UP * half.y, 0.025, UV_IRON)
+	var right := place.basis.x * 0.5
+	var up := place.basis.y * 0.5
+	_quad(tool, at - right - up, at + right - up, at + right + up, at - right + up, normal, UV_GLASS)
+
+
+## Fase 104: a grade de ferro do pátio do museu — na frente (com o portão: dois pilares de pedra diante do caminho da
+## porta) e nos dois lados até a parede do corpo.
+static func _gallery_fence(tool: SurfaceTool, spec: Spec) -> void:
+	if spec.court_rows == 0:
+		return
+	var size := spec.size_m()
+	var front := -size.y * 0.5 + 0.12
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var left := -size.x * 0.5 + 0.12
+	var step := size.x / spec.cells.x
+	var door_x := -size.x * 0.5 + step * (spec.door_index + 0.5)
+	var gap := 0.75
+	_railing(tool, Vector3(left, 0.0, front), Vector3(door_x - gap, 0.0, front), UV_IRON, GALLERY_FENCE_M)
+	_railing(tool, Vector3(door_x + gap, 0.0, front), Vector3(-left, 0.0, front), UV_IRON, GALLERY_FENCE_M)
+	for x: float in [left, -left]:
+		_railing(tool, Vector3(x, 0.0, front), Vector3(x, 0.0, wall_z), UV_IRON, GALLERY_FENCE_M)
+	for x: float in [door_x - gap, door_x + gap]:
+		_box(tool, Vector3(x, (GALLERY_FENCE_M + 0.3) * 0.5, front), Vector3(0.34, GALLERY_FENCE_M + 0.3, 0.34), UV_LIGHT_STONE)
+		_box(tool, Vector3(x, GALLERY_FENCE_M + 0.34, front), Vector3(0.42, 0.08, 0.42), UV_LIGHT_STONE)
 
 ## As peças paradas da silhueta (Fase 13). As que giram ficam em rotor().
 static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
@@ -1205,6 +1296,7 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.MENAGERIE:
 			_pens(extra, spec)
 		BuildingDef.Silhouette.GALLERY:
+			_gallery_fence(extra, spec)
 			for spot: Vector3 in exhibit_spots(spec):
 				_box(extra, spot - Vector3(0.0, GALLERY_PEDESTAL_M * 0.5, 0.0), Vector3(0.7, GALLERY_PEDESTAL_M, 0.7), UV_LIGHT_STONE)
 				_box(extra, spot - Vector3(0.0, 0.05, 0.0), Vector3(0.82, 0.1, 0.82), UV_LIGHT_STONE)
