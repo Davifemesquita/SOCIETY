@@ -1515,3 +1515,10 @@ jogo), GPU 21,9 ms, carregar 10,7 s. Os barcos das cabanas de pesca da cidade do
 p50/p95/p99 26,8/35,8/37,8 ms (iguais), carregar 11,3 s. Três quadros soltos (160, 342 e 179 ms) baixam o 1% low para
 15,3: nenhum com pipeline compilada, CPU do render ~1 ms e tick zero; um deles com a GPU em 154 ms ao meio-dia, quando o
 facho nem aparece. O mesmo padrão das Fases 105 e 106 no estado lento, fora do trabalho do jogo. Neutra.
+
+## Fase 109 — largo calçado (30/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, **estado lento** (jogo novo 28,2 s): 36,6 FPS (antes 36,5), GPU 22,0 ms,
+p50/p95/p99 26,9/35,9/38,3 ms, pior quadro 171 ms, carregar 11,3 s. Objetos e draw calls 2739 · 991 (o MultiMesh das lajes);
+primitivas iguais (a cidade do benchmark não tem serviço de pedra com largo à vista). Neutra; fecha o roteiro cidade e
+porto no patamar das rodadas lentas desde a Fase 99.

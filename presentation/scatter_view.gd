@@ -278,6 +278,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 			continue
 		kinds[id] = def.kind
 		doors[Footprint.entrance_cell(record.origin, def.size, record.rotation)] = true
+	# Fase 109: o largo calçado em volta dos serviços também fica limpo
+	for cell: Vector2i in ForecourtView.cells(world, data, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 

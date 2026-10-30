@@ -24,3 +24,11 @@ grama.
 | 109 — Largo calçado | o chão de pedra na frente dos serviços (igreja, teatro, universidade, prefeitura, escola), da porta até a rua |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 30/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase105.md` a
+`docs/plano_fase109.md`), testes, captura e benchmark. Diferenças do roteiro: o cais de pedra (106) ficou só no
+entreposto (o píer segue de madeira), sem as escadas e em linha reta, depois de uma primeira versão pela escada das células; o farol (108)
+fica na ponta mais exposta ao mar perto do entreposto, não num quebra-mar; o largo (109) aparece nos lados e nos fundos dos
+serviços, porque a frente encosta na rua.

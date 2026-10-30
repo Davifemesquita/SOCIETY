@@ -2164,6 +2164,12 @@ Regras que já custaram investigação:
   aditivos girando à noite). **Efeito transparente sobre o mar precisa de `render_priority` acima da água**, senão ela o
   cobre. Captura em `tools/capture_phase108.tscn`.
 
+### Largo calçado (Fase 109, nossa)
+
+- **Plano** em `docs/plano_fase109.md`. `ForecourtView` (`GameScreen.forecourt_view`): `cells` (o anel livre e quase plano
+  em volta dos serviços de `PLAZA_SERVICES`) e `slabs` (lajes no relevo). O recheio deixa essas células limpas
+  (`ScatterView.island_context` as soma às portas). Captura em `tools/capture_phase109.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2283,6 +2289,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 106 — Cais de pedra (nossa) | **feita em 29/10/2026**: cais reto de cantaria dos dois lados do entreposto, no nível do cais de tábuas, com paredão para o mar, capeamento e cabeços, parando onde a terra sobe; plano em `docs/plano_fase106.md` |
 | 107 — Barcos de pesca (nossa) | **feita em 30/10/2026**: um barco a vela por cabana de pesca, que sai para o pesqueiro, pesca dando uma volta e retorna enquanto a cabana produz, e fica amarrado com ela parada; plano em `docs/plano_fase107.md` |
 | 108 — Farol (nossa) | **feita em 30/10/2026**: farol caiado com faixas vermelhas na ponta de terra mais exposta ao mar perto de cada entreposto, com a lanterna acesa e dois fachos girando à noite; plano em `docs/plano_fase108.md` |
+| 109 — Largo calçado (nossa) | **feita em 30/10/2026**, a última do roteiro cidade e porto: lajes de pedra em tons nas células livres em volta da igreja, do teatro, da universidade, da prefeitura, do museu e da escola, sem recheio em cima; plano em `docs/plano_fase109.md` |
 
 Pendências já vistas para fases futuras:
 
