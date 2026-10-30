@@ -2157,6 +2157,13 @@ Regras que já custaram investigação:
   pesca, `route` (amarra e pesqueiro em água funda), `pose` (ida, volta de pesca e regresso) e `phase_of` (pelo id), no
   tempo de jogo; amarrado com a cabana parada. Captura em `tools/capture_phase107.tscn`.
 
+### Farol (Fase 108, nossa)
+
+- **Plano** em `docs/plano_fase108.md`. `LighthouseView` (`GameScreen.lighthouse_view`): `site` (a ponta livre e baixa mais
+  exposta ao mar perto do entreposto, não reservada), `tower_mesh`, `lantern_mesh` (vidro dos postes) e `beam_mesh` (fachos
+  aditivos girando à noite). **Efeito transparente sobre o mar precisa de `render_priority` acima da água**, senão ela o
+  cobre. Captura em `tools/capture_phase108.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2275,6 +2282,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 105 — Árvores de quintal (nossa) | **feita em 29/10/2026**, primeira do roteiro cidade e porto (Fases 105 a 109): macieiras pequenas com fruta nas células livres junto das casas, pelo recheio; bananeira nas tropicais; plano em `docs/plano_fase105.md` |
 | 106 — Cais de pedra (nossa) | **feita em 29/10/2026**: cais reto de cantaria dos dois lados do entreposto, no nível do cais de tábuas, com paredão para o mar, capeamento e cabeços, parando onde a terra sobe; plano em `docs/plano_fase106.md` |
 | 107 — Barcos de pesca (nossa) | **feita em 30/10/2026**: um barco a vela por cabana de pesca, que sai para o pesqueiro, pesca dando uma volta e retorna enquanto a cabana produz, e fica amarrado com ela parada; plano em `docs/plano_fase107.md` |
+| 108 — Farol (nossa) | **feita em 30/10/2026**: farol caiado com faixas vermelhas na ponta de terra mais exposta ao mar perto de cada entreposto, com a lanterna acesa e dois fachos girando à noite; plano em `docs/plano_fase108.md` |
 
 Pendências já vistas para fases futuras:
 

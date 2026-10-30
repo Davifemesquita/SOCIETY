@@ -1508,3 +1508,10 @@ O 1% low caiu (11,1 contra 19,5) por três quadros soltos de 313 a 508 ms. O arq
 0,1% low 24,6, pior quadro 41 ms (desta vez sem as paradas soltas da Fase 106, o que reforça que elas eram de fora do
 jogo), GPU 21,9 ms, carregar 10,7 s. Os barcos das cabanas de pesca da cidade do benchmark somam 14 objetos e 2 draw calls
 (2748 · 988). Neutra.
+
+## Fase 108 — farol (30/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, **estado lento** (jogo novo 28,3 s): 36,5 FPS (antes 36,9), GPU 21,9 ms,
+p50/p95/p99 26,8/35,8/37,8 ms (iguais), carregar 11,3 s. Três quadros soltos (160, 342 e 179 ms) baixam o 1% low para
+15,3: nenhum com pipeline compilada, CPU do render ~1 ms e tick zero; um deles com a GPU em 154 ms ao meio-dia, quando o
+facho nem aparece. O mesmo padrão das Fases 105 e 106 no estado lento, fora do trabalho do jogo. Neutra.

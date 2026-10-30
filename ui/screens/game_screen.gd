@@ -79,6 +79,7 @@ var bird_view: BirdView
 var festival_view: FestivalView
 var harbor_view: HarborView
 var fishing_boat_view: FishingBoatView
+var lighthouse_view: LighthouseView
 var yard_view: YardView
 var chimney_smoke_view: ChimneySmokeView
 var decoration_view: DecorationView
@@ -245,6 +246,10 @@ func _ready() -> void:
 	fishing_boat_view.name = "FishingBoats"
 	add_child(fishing_boat_view)
 	fishing_boat_view.setup(simulation)
+	lighthouse_view = LighthouseView.new()
+	lighthouse_view.name = "Lighthouses"
+	add_child(lighthouse_view)
+	lighthouse_view.setup(simulation)
 	yard_view = YardView.new()
 	yard_view.name = "Yards"
 	add_child(yard_view)
