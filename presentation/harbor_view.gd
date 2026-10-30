@@ -12,6 +12,11 @@ extends Node3D
 ## As tábuas e as estacas levam a madeira gasta do `shaders/plank.gdshader`.
 ## Fase 21: o cabo dá duas voltas no fuste do cabeço (`hitch`) e sai dele do lado do barco, em vez de nascer
 ## no meio do ferro.
+## Fase 106: o cais de pedra. Ao longo da costa, dos dois lados do entreposto, uma plataforma reta de cantaria no nível
+## do cais de tábuas, de QUAY_DEPTH_M para o mar e STONE_QUAY_BACK_M para dentro, em lanços de STONE_QUAY_STEP_M até
+## STONE_QUAY_REACH_M de cada lado (parando onde a terra sobe), com o paredão descendo até SEA_WALL_BOTTOM_M, o
+## capeamento na beira e um cabeço a cada SEA_WALL_BOLLARD_EVERY lanços (stone_quay). A linha d'água desenhada é curva:
+## o cais segue a frente do entreposto, não a escada das células.
 
 ## Tábua: largura (ao longo da passarela), fresta, espessura e altura do tabuleiro acima do chão (ou da água).
 const BOARD_WIDTH_M := 0.3
@@ -58,12 +63,24 @@ const ROPE_COLOR := Color(0.62, 0.53, 0.38)
 const HITCH_TURNS := 2.0
 const HITCH_PITCH_M := 0.05
 const HITCH_SEGMENTS := 10
+## Fase 106: o cais de pedra.
+const STONE_QUAY_REACH_M := 14.0
+const STONE_QUAY_STEP_M := 2.0
+const STONE_QUAY_BACK_M := 2.5
+const STONE_QUAY_BELOW_DECK_M := 0.25
+const STONE_QUAY_RISE_M := 0.6
+const SEA_WALL_BOTTOM_M := -2.0
+const COPING_M := Vector2(0.18, 0.95)
+const SEA_WALL_BOLLARD_EVERY := 3
+const STONE_COLOR := Color(0.78, 0.76, 0.7)
 
 var _simulation: Simulation
 var _boards := MultiMeshInstance3D.new()
 var _piles := MultiMeshInstance3D.new()
 var _bollards := MultiMeshInstance3D.new()
 var _boats := MultiMeshInstance3D.new()
+var _walls := MultiMeshInstance3D.new()
+var _coping := MultiMeshInstance3D.new()
 var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
 var _ropes := MeshInstance3D.new()
 var _rope_spans: Array[PackedVector3Array] = []
@@ -100,8 +117,11 @@ func setup(simulation: Simulation) -> void:
 	hull.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var boat := boat_mesh()
 	boat.surface_set_material(0, hull)
+	# Fase 106: o lanço do cais e o capeamento, caixas de 1 m esticadas, na pedra das paredes (projetada pelo mundo)
+	var wall := BoxMesh.new()
+	var coping := BoxMesh.new()
 	var parts: Array = [[_boards, "Boards", board], [_piles, "Piles", pile], [_bollards, "Bollards", bollard],
-			[_boats, "Boats", boat]]
+			[_boats, "Boats", boat], [_walls, "SeaWall", wall], [_coping, "Coping", coping]]
 	for pile_kind: int in [GoodDef.Pile.BARREL, GoodDef.Pile.CRATE, GoodDef.Pile.SACK]:
 		var piece := CargoKit.mesh(pile_kind)
 		if piece != null:
@@ -114,6 +134,9 @@ func setup(simulation: Simulation) -> void:
 		layer.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		layer.multimesh.mesh = part[2]
 		add_child(layer)
+	for layer: MultiMeshInstance3D in [_walls, _coping]:
+		layer.material_override = BuildingMaterials.walls()
+		BuildingMaterials.dress(layer, BuildingMaterials.Wall.STONE, STONE_COLOR, 0.0)
 	for pile_kind: int in _cargo:
 		if CargoKit.tinted(pile_kind):
 			_cargo[pile_kind].multimesh.use_colors = true
@@ -140,6 +163,10 @@ func pile_count() -> int:
 
 func bollard_count() -> int:
 	return _bollards.multimesh.instance_count
+
+
+func wall_count() -> int:
+	return _walls.multimesh.instance_count
 
 
 func boat_count() -> int:
@@ -190,9 +217,12 @@ func rebuild() -> void:
 	_rope_spans.clear()
 	_hitches.clear()
 	var world := _simulation.world
+	var harbors: Array[BuildingRecord] = []
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
 		var def := _simulation.def_of(record)
+		if def.kind == BuildingDef.Kind.PIER or def.is_trading_post:
+			harbors.append(record)
 		var first_bollard := bollards.size()
 		var first_boat := boats.size()
 		if def.kind == BuildingDef.Kind.PIER:
@@ -209,8 +239,24 @@ func rebuild() -> void:
 		_moor_lines(bollards.slice(first_bollard), boats.slice(first_boat))
 	_fill(_boards, boards)
 	_fill(_piles, piles)
-	_fill(_bollards, bollards)
 	_fill(_boats, boats)
+	var walls: Array[Transform3D] = []
+	var coping: Array[Transform3D] = []
+	for record: BuildingRecord in harbors:
+		if not _simulation.def_of(record).is_trading_post:
+			continue
+		var segments := stone_quay(_simulation, record)
+		for i: int in segments.size():
+			var segment: Array = segments[i]
+			_quay_segment(segment, walls, coping)
+			if i % SEA_WALL_BOLLARD_EVERY == 1:
+				var front: Vector3 = segment[0]
+				var outward: Vector3 = segment[1]
+				var spot := front - outward * 0.35
+				bollards.append(Transform3D(Basis.IDENTITY, Vector3(spot.x, front.y + COPING_M.x + BOLLARD_HEIGHT_M * 0.5, spot.z)))
+	_fill(_bollards, bollards)
+	_fill(_walls, walls)
+	_fill(_coping, coping)
 	for pile_kind: int in _cargo:
 		var places: Array[Transform3D] = []
 		places.assign(cargo[pile_kind])
@@ -509,6 +555,53 @@ func _planks(from: Vector3, direction: Vector3, across: Vector3, length: float, 
 			piles.append(Transform3D(Basis.from_scale(Vector3(1.0, top - bottom, 1.0)),
 					Vector3(spot.x, (top + bottom) * 0.5, spot.z)))
 
+
+## Fase 106: os lanços do cais de pedra de um entreposto — cada um [meio da beira (no alto do cais), para o mar, largura].
+## Saem do meio da frente para os dois lados, ao longo da costa, até STONE_QUAY_REACH_M além do prédio; param do lado em
+## que a terra na beira sobe mais que STONE_QUAY_RISE_M acima do cais (a falésia ou o morro: o cais sumiria nele).
+static func stone_quay(simulation: Simulation, record: BuildingRecord) -> Array[Array]:
+	var segments: Array[Array] = []
+	var grid := simulation.world.island(record.island_id)
+	if grid == null or grid.flat:
+		return segments
+	var plan := walkway(simulation, record)
+	var half: Vector2 = plan["half"]
+	var start: Vector3 = plan["start"]
+	var direction: Vector3 = plan["direction"]
+	var top: float = plan["deck"] - STONE_QUAY_BELOW_DECK_M
+	var across := Vector3(-direction.z, 0.0, direction.x)
+	var width := (half.y if direction.x != 0.0 else half.x) * 2.0
+	var front := start + direction * QUAY_DEPTH_M
+	var reach := width * 0.5 + STONE_QUAY_REACH_M
+	var count := ceili(reach / STONE_QUAY_STEP_M)
+	for side: float in [-1.0, 1.0]:
+		for k: int in count:
+			var t := side * (k + 0.5) * STONE_QUAY_STEP_M
+			var edge := front + across * t
+			var inland := edge - direction * (QUAY_DEPTH_M + STONE_QUAY_BACK_M)
+			if simulation.world.surface_height(inland.x, inland.z) > top + STONE_QUAY_RISE_M:
+				break
+			segments.append([Vector3(edge.x, top, edge.z), direction, STONE_QUAY_STEP_M])
+	return segments
+
+
+## O lanço: a plataforma de pedra da beira para dentro, do fundo até o alto (a parte enterrada some no chão), e o
+## capeamento na beira, um pouco mais largo e saindo para o mar.
+func _quay_segment(segment: Array, walls: Array[Transform3D], coping: Array[Transform3D]) -> void:
+	var front: Vector3 = segment[0]
+	var outward: Vector3 = segment[1]
+	var length: float = segment[2]
+	var along := Vector3(-outward.z, 0.0, outward.x)
+	# base de mão direita (com +outward no z ela fica espelhada e as faces se invertem)
+	var basis := Basis(along, Vector3.UP, -outward)
+	var depth := QUAY_DEPTH_M + STONE_QUAY_BACK_M
+	var middle := front - outward * depth * 0.5
+	var height := front.y - SEA_WALL_BOTTOM_M
+	walls.append(Transform3D(basis * Basis.from_scale(Vector3(length + 0.01, height, depth)),
+			Vector3(middle.x, (front.y + SEA_WALL_BOTTOM_M) * 0.5, middle.z)))
+	var cap := front - outward * (COPING_M.y * 0.5 - 0.12)
+	coping.append(Transform3D(basis * Basis.from_scale(Vector3(length + 0.02, COPING_M.x, COPING_M.y)),
+			Vector3(cap.x, front.y + COPING_M.x * 0.5, cap.z)))
 
 static func _fill(layer: MultiMeshInstance3D, items: Array[Transform3D]) -> void:
 	layer.multimesh.instance_count = items.size()

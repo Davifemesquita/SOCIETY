@@ -2144,6 +2144,13 @@ Regras que já custaram investigação:
   antes não mudam. A captura com relevo é `tools/capture_phase105.tscn` (a da Fase 95 é na ilha plana, que não tem
   recheio).
 
+### Cais de pedra (Fase 106, nossa)
+
+- **Plano** em `docs/plano_fase106.md`. `HarborView.stone_quay` (lanços retos dos dois lados do entreposto, na linha do
+  cais de tábuas) e `_quay_segment`. **Nada que acompanhe a costa pela escada das células**: a linha d'água desenhada é
+  curva e não bate com ela. Base de MultiMesh tem de ser de mão direita (`Basis(along, UP, -outward)`), senão as faces
+  invertem.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2260,6 +2267,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 103 — Claraboias (nossa) | **feita em 29/10/2026**: uma fileira de vidraças com caixilho de ferro em cada água (ou na abóbada) das fábricas grandes sem silhueta própria, acesas à noite com a fábrica produzindo; plano em `docs/plano_fase103.md` |
 | 104 — Lampião, grade e chaminé de tijolo (nossa) | **feita em 29/10/2026**, a última do roteiro da rua habitada: chaminé de tijolo com capitel e potes no lugar do bloco do kit; lampião de ferro ao lado da porta dos serviços e das casas dos artesãos para cima, aceso à noite; grade de ferro com portão no pátio do museu; plano em `docs/plano_fase104.md` |
 | 105 — Árvores de quintal (nossa) | **feita em 29/10/2026**, primeira do roteiro cidade e porto (Fases 105 a 109): macieiras pequenas com fruta nas células livres junto das casas, pelo recheio; bananeira nas tropicais; plano em `docs/plano_fase105.md` |
+| 106 — Cais de pedra (nossa) | **feita em 29/10/2026**: cais reto de cantaria dos dois lados do entreposto, no nível do cais de tábuas, com paredão para o mar, capeamento e cabeços, parando onde a terra sobe; plano em `docs/plano_fase106.md` |
 
 Pendências já vistas para fases futuras:
 

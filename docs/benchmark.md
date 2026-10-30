@@ -1492,3 +1492,12 @@ os lampiões). Neutra; fecha o roteiro da rua habitada no mesmo patamar da Fase 
 rápido, mas está no patamar das rodadas lentas das Fases 99 a 101 (34,3 a 36,3 FPS). Objetos, draw calls e primitivas do
 quadro com tudo visível iguais aos da Fase 104 (2724 · 976 · ~15,58 milhões): a cidade do benchmark não tem quintal com
 recheio à vista. Neutra; repetir no estado rápido.
+
+## Fase 106 — cais de pedra (29/10/2026)
+
+Área de trabalho escondida, alto, semente 1840, **estado lento** (jogo novo 28,1 s): 36,2 FPS (antes 36,8), GPU 21,8 ms
+(igual), p50/p95/p99 26,8/36,0/37,9 ms (iguais), carregar 10,9 s. O cais soma 10 objetos e 10 draw calls no quadro com
+tudo visível (2734 · 986: as plataformas e os capeamentos dos entrepostos da cidade do benchmark) e 29.640 primitivas.
+O 1% low caiu (11,1 contra 19,5) por três quadros soltos de 313 a 508 ms. O arquivo de quadros mostra, nos três e no de
+317 ms da Fase 105, nenhuma pipeline compilada, GPU de 15 a 29 ms, CPU do render de 1 a 2 ms e tick de 0 a 3 ms: a parada
+é fora do trabalho que o jogo mede (o sistema ou o driver no estado lento), não o cais. Repetir no estado rápido.
