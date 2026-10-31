@@ -132,6 +132,8 @@ var lumber_yard_view: LumberYardView
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
 var ad_column_view: AdColumnView
+## Fase 152: as balizas com corrente na beira do largo calçado.
+var bollard_view: BollardView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -411,6 +413,10 @@ func _ready() -> void:
 	ad_column_view.name = "AdColumns"
 	add_child(ad_column_view)
 	ad_column_view.setup(simulation)
+	bollard_view = BollardView.new()
+	bollard_view.name = "Bollards"
+	add_child(bollard_view)
+	bollard_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

@@ -2439,6 +2439,12 @@ Regras que já custaram investigação:
   ao lado da porta, acima do toldo) e `_shop_sign` (braço de ferro, tábua com o painel creme e a figura do ofício, sem
   texto: `_sign_figure`, `_sign_ring`). Captura em `tools/capture_phase151.tscn`.
 
+### Balizas com corrente (Fase 152, nossa)
+
+- **Plano** em `docs/plano_fase152.md`. `BollardView` (`GameScreen.bollard_view`): `edges` (os lados do largo calçado da Fase
+  109 que dão para a estrada, com aberturas e sem o lado do poste de gás), `bollard_mesh` e `_chain`, numa malha só.
+  Captura em `tools/capture_phase152.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2601,6 +2607,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 149 — Cata-vento no pasto (nossa) | **feita em 31/10/2026**, a última do roteiro relógio, cais e cata-vento: torre de vigas junto do cocho de cada pasto com a roda de lâminas e o leme, virando para o vento e girando pela força dele; plano em `docs/plano_fase149.md` |
 | 150 — Coluna de anúncios (nossa) | **feita em 31/10/2026**, primeira do roteiro coluna, placa e velocípede (Fases 150 a 154): colunas redondas de cartazes coloridos com o chapéu de ferro no canto de dentro das esquinas calçadas; plano em `docs/plano_fase150.md` |
 | 151 — Placas das lojas (nossa) | **feita em 31/10/2026**: placa pendurada num braço de ferro ao lado da porta da padaria, do açougue, da taverna, do ourives, do relojoeiro, do óptico, da torrefação e da charutaria, com a figura do ofício pintada (sem texto); plano em `docs/plano_fase151.md` |
+| 152 — Balizas com corrente (nossa) | **feita em 31/10/2026**: balizas de ferro com correntes caindo em curva na beira do largo calçado dos serviços, de frente para a rua, com aberturas para entrar; plano em `docs/plano_fase152.md` |
 
 Pendências já vistas para fases futuras:
 
