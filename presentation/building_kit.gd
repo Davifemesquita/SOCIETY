@@ -109,6 +109,9 @@ const LANTERN_AT := 0.72
 const LANTERN_OUT_M := 0.32
 const LANTERN_PANE_M := Vector2(0.18, 0.24)
 const GALLERY_FENCE_M := 1.2
+## Fase 114: o gradil baixo de ferro na frente das casas dos engenheiros, na faixa entre a parede e a divisa do lote, com
+## o vão da porta: FRONT_RAIL_M de alto, os pilaretes nas pontas e no vão, as lanças no alto dos balaústres.
+const FRONT_RAIL_M := 0.85
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -973,6 +976,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_brick_chimney(extra, spec)
 	if spec.lantern:
 		_lantern(extra, spec)
+	if spec.trim == TierDef.HouseTrim.BALCONIES and spec.court_rows == 0:
+		_front_railing(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -1205,6 +1210,37 @@ static func _lantern(tool: SurfaceTool, spec: Spec) -> void:
 	var right := place.basis.x * 0.5
 	var up := place.basis.y * 0.5
 	_quad(tool, at - right - up, at + right - up, at + right + up, at - right + up, normal, UV_GLASS)
+
+
+## Fase 114: o trecho do gradil da frente, [x de, x até], de cada lado do vão da porta, no referencial do prédio; e a
+## linha dele (z), no meio da faixa entre a parede e a divisa.
+static func front_railing_spans(spec: Spec) -> Array[Vector2]:
+	var size := spec.size_m()
+	var step := size.x / spec.cells.x
+	var door_x := -size.x * 0.5 + step * (spec.door_index + 0.5)
+	var gap := step * 0.36
+	var spans: Array[Vector2] = []
+	for span: Vector2 in [Vector2(-size.x * 0.5, door_x - gap), Vector2(door_x + gap, size.x * 0.5)]:
+		if span.y - span.x > 0.3:
+			spans.append(span)
+	return spans
+
+
+static func front_railing_z(spec: Spec) -> float:
+	return -(spec.cells.y * spec.cell_m) * 0.5 + INSET_M * 0.25
+
+
+## O gradil: a grade de ferro dos trechos, os pilaretes nas pontas e uma lança no alto de cada balaústre.
+static func _front_railing(tool: SurfaceTool, spec: Spec) -> void:
+	var z := front_railing_z(spec)
+	for span: Vector2 in front_railing_spans(spec):
+		_railing(tool, Vector3(span.x, 0.0, z), Vector3(span.y, 0.0, z), UV_IRON, FRONT_RAIL_M, 0.025, 0.14)
+		for x: float in [span.x, span.y]:
+			_box(tool, Vector3(x, (FRONT_RAIL_M + 0.12) * 0.5, z), Vector3(0.07, FRONT_RAIL_M + 0.12, 0.07), UV_IRON)
+		var count := maxi(1, roundi((span.y - span.x) / 0.14))
+		for i: int in count + 1:
+			var x := lerpf(span.x, span.y, float(i) / count)
+			_turned(tool, Vector3(x, FRONT_RAIL_M, z), [Vector2(0.025, 0.0), Vector2(0.0, 0.1)], 4, UV_IRON)
 
 
 ## Fase 104: a grade de ferro do pátio do museu — na frente (com o portão: dois pilares de pedra diante do caminho da

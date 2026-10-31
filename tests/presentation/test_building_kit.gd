@@ -313,7 +313,13 @@ func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 	var engineers := _house(&"engineers")
 	var engineers_bare := _house(&"engineers")
 	engineers_bare.trim = TierDef.HouseTrim.NONE
-	assert_int(BuildingKit.triangles(engineers) - BuildingKit.triangles(engineers_bare)).is_less(
+	# (sem o gradil da frente da Fase 114, que é dos engenheiros e não da sacada)
+	var railing := SurfaceTool.new()
+	railing.begin(Mesh.PRIMITIVE_TRIANGLES)
+	BuildingKit._front_railing(railing, engineers)
+	var railing_vertices: PackedVector3Array = railing.commit_to_arrays()[Mesh.ARRAY_VERTEX]
+	var railing_triangles := railing_vertices.size() / 3
+	assert_int(BuildingKit.triangles(engineers) - BuildingKit.triangles(engineers_bare) - railing_triangles).is_less(
 			BuildingKit.triangles(investors) - BuildingKit.triangles(bare))
 	# consolos: o fundo da sacada fica CORBEL_M abaixo do piso dela
 	for tier: StringName in [&"engineers", &"investors"]:

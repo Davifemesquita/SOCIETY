@@ -21,3 +21,10 @@ a avenida da cidade é arborizada dos dois lados e as casas ricas têm gradil de
 | 114 — Gradil das casas ricas | gradil baixo de ferro com portão na frente das casas dos engenheiros e investidores, entre a casa e a rua |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 30/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase110.md` a
+`docs/plano_fase114.md`), testes, captura e benchmark, sem precisar abrir o Anno de novo (as capturas que este ciclo não
+tinha usado bastaram). Diferenças do roteiro: o gradil (114) ficou só nos engenheiros, porque a frente dos investidores já
+tem a sebe e o pórtico; a alameda (113) também aparece na ilha plana.

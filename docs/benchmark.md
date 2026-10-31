@@ -1545,3 +1545,9 @@ Estado rápido (jogo novo 11,3 s): 87,7 FPS (antes 86,7), 1% low 44,2, pior quad
 a cidade inteira calçada, o quadro com tudo visível passa de 58.811.300 para 59.107.420 primitivas (+0,5%: as árvores da
 alameda) e 14,3 ms, igual; calçar a cidade inteira de uma vez 441 ms e mais uma rua 40 ms, iguais (a busca da alameda
 anda só nas células calçadas). Neutra.
+
+## Fase 114 — gradil das casas ricas (30/10/2026)
+
+Estado rápido (jogo novo 11,2 s): 87,9 FPS (antes 87,7), 1% low 44,0, pior quadro 27 ms, GPU 10,7 ms, carregar 5,2 s;
+objetos e draw calls iguais; com a cidade calçada, 59.125.852 primitivas (+18 mil: os gradis das casas dos engenheiros).
+Neutra; fecha o roteiro sol, trópico e avenida no patamar de antes das Fases 95 a 114 (Fase 92: 86 FPS).

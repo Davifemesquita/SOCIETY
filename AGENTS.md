@@ -2193,6 +2193,11 @@ Regras que já custaram investigação:
   calçadas da vez, achadas pelo `find` do array) e a faia reduzida num MultiMesh do arquipélago, **sem alcance de
   visibilidade** (contaria do meio do arquipélago). O recheio deixa as células limpas. Captura em `tools/capture_phase113.tscn`.
 
+### Gradil das casas ricas (Fase 114, nossa)
+
+- **Plano** em `docs/plano_fase114.md`. `BuildingKit._front_railing` (casas de `HouseTrim.BALCONIES`, na faixa de `INSET_M`
+  entre a parede e a divisa, com o vão da porta).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2317,6 +2322,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 111 — Terreiro tropical (nossa) | **feita em 30/10/2026**: chão de terra batida em volta das casas das ilhas tropicais, pela máscara das estradas; plano em `docs/plano_fase111.md` |
 | 112 — Coqueiros na rua tropical (nossa) | **feita em 30/10/2026**: coqueiros pequenos na beira das ruas das ilhas tropicais, pelo recheio; plano em `docs/plano_fase112.md` |
 | 113 — Alameda (nossa) | **feita em 30/10/2026**: árvores plantadas a cada três células dos dois lados das ruas calçadas, onde a célula é livre; plano em `docs/plano_fase113.md` |
+| 114 — Gradil das casas ricas (nossa) | **feita em 30/10/2026**, a última do roteiro sol, trópico e avenida: gradil baixo de ferro com lanças e o vão da porta na frente das casas dos engenheiros; plano em `docs/plano_fase114.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -71,6 +71,8 @@ func _run() -> void:
 	# Fase 98: o mercado de lado (o arco da abóbada) e a tecelagem e a destilaria de perto (a abóbada e os tonéis)
 	await _shot("mercado_de_lado.png", grid.cell_world(Vector2i(ORIGIN.x + 9, big_y - 2)), 26.0, PI * 0.2)
 	await _shot("fabricas_de_perto.png", grid.cell_world(Vector2i(ORIGIN.x + 47, big_y - 2)), 30.0, PI * 0.2)
+	# Fase 114: o gradil das casas dos engenheiros, de perto
+	await _shot("gradil_de_perto.png", grid.cell_world(streets[3] + Vector2i(0, -1)), 12.0, 0.3)
 	# Fase 102: o andar saliente com enxaimel, de perto
 	await _shot("enxaimel_de_perto.png", grid.cell_world(streets[1] + Vector2i(0, -1)), 16.0, 0.35)
 	# Fase 103: as claraboias das fábricas, de dia e à noite
