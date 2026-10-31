@@ -1631,3 +1631,10 @@ Mesmo estado (jogo novo 11,6 s): 77,0 FPS (125: 77,9), 1% low 39,4, pior quadro 
 Mesmo estado (jogo novo 11,6 s): 77,9 FPS (126: 77,0), 1% low 41,4, pior quadro 29 ms, p50/p95/p99 12,2/16,6/22,4 ms, GPU
 11,8 ms, carregar 5,3 s; +5 objetos e draw calls e +23 mil primitivas (as cisternas dos entrepostos da cidade do
 benchmark). Neutra.
+
+## Fase 128 — jazidas à vista (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 76,9 FPS (127: 77,9), 1% low 39,6, pior quadro 36 ms, p50/p95/p99 12,3/16,6/23,4 ms, GPU
+11,9 ms, carregar 5,3 s; +25 objetos e draw calls (as cinco camadas: quatro de afloramento e a do minério) e +441 mil
+primitivas (+2,8%: os afloramentos de todas as jazidas livres do arquipélago, que o quadro com tudo visível pega de
+longe). Dentro da variação da máquina; se pesar, os afloramentos podem ganhar alcance de visibilidade por ilha.

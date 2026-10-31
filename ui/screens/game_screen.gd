@@ -98,6 +98,8 @@ var hawk_view: HawkView
 var river_stone_view: RiverStoneView
 ## Fase 123: o borrifo do mar batendo nos rochedos e nas falésias perto da câmera.
 var surf_spray_view: SurfSprayView
+## Fase 128: o afloramento e as pedras do minério nas jazidas ainda sem mina.
+var deposit_view: DepositView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -309,6 +311,10 @@ func _ready() -> void:
 		return rock_view.spray_sites() if rock_view != null else PackedVector3Array(),
 		func(x: float, z: float) -> float: return simulation.world.surface_height(x, z))
 	graphics.add_effect(surf_spray_view)
+	deposit_view = DepositView.new()
+	deposit_view.name = "Deposits"
+	add_child(deposit_view)
+	deposit_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

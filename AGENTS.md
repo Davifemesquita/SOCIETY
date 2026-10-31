@@ -2282,6 +2282,12 @@ Regras que já custaram investigação:
   largura do entreposto) e `FarmSiloView.cistern_mesh`. Captura: `CAPTURA_SO=porto` no `tools/capture_phase5.tscn`
   (`14b_cisternas.png`).
 
+### Jazidas à vista (Fase 128, nossa)
+
+- **Plano** em `docs/plano_fase128.md`. `DepositView` (`GameScreen.deposit_view`): `patches` (as células de jazida ligadas
+  pelos lados) e `places` (o afloramento no meio da mancha livre e as pedras do minério na cor do bem, `ORE_COLORS`); a mina
+  em cima tira os da mancha. Captura em `tools/capture_phase128.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2420,6 +2426,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 125 — Recife de coral (nossa) | **feita em 30/10/2026**, primeira do roteiro recife, alpendre e nuvens (Fases 125 a 129): manchas escuras de coral no mar raso das ilhas tropicais; plano em `docs/plano_fase125.md` |
 | 126 — Alpendre tropical (nossa) | **feita em 30/10/2026**: as casas dos operários e artesãos das ilhas tropicais recuam uma fileira e ganham alpendre de tábuas com esteios, guarda-corpo e telhado de uma água; plano em `docs/plano_fase126.md` |
 | 127 — Cisternas no cais (nossa) | **feita em 30/10/2026**: duas cisternas redondas de aduelas sobre soco de pedra no cais de pedra de cada entreposto, uma de cada lado; plano em `docs/plano_fase127.md` |
+| 128 — Jazidas à vista (nossa) | **feita em 30/10/2026**: um afloramento de rocha e pedras na cor do minério (carvão, ferro, ouro) sobre cada jazida ainda sem mina; plano em `docs/plano_fase128.md` |
 
 Pendências já vistas para fases futuras:
 
