@@ -2333,6 +2333,13 @@ Regras que já custaram investigação:
   `CHICKEN_EVERY`), `patch` (o trecho de cada galinha), `pose` (anda e bica, no tempo de jogo) e `chicken_mesh`, com a
   plumagem tingida pelo `INSTANCE_CUSTOM` no `shaders/chicken.gdshader`. Captura em `tools/capture_phase135.tscn`.
 
+### Vagoneta e rejeito (Fase 136, nossa)
+
+- **Plano** em `docs/plano_fase136.md`. `SpoilTipView` (`GameScreen.spoil_tip_view`): `sites` (duas células em linha num lado
+  de cada mina de `Silhouette.HEADFRAME`), `track` (da parede até a beira do monte), `_heap` e `_rails` numa malha só, e a
+  vagoneta (`cart_pose`, `loaded`, `phase_of`) indo e virando só com a mina produzindo. O recheio, os silos e as bombas
+  deixam as células limpas (`cells`). Captura em `tools/capture_phase136.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2479,6 +2486,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 133 — Bandeirolas da feira (nossa) | **feita em 31/10/2026**: quatro postes e duas cordas de bandeirolas em xis sobre o pátio das bancas de cada mercado, o ano todo; plano em `docs/plano_fase133.md` |
 | 134 — Ardósia nos prédios de pedra (nossa) | **feita em 31/10/2026**, a última do roteiro sapê, bueiro e ardósia: a igreja, a escola, o mercado, a prefeitura, o teatro, a universidade e o museu trocam as telhas por ardósia cinza-azulada; plano em `docs/plano_fase134.md` |
 | 135 — Galinhas no quintal (nossa) | **feita em 31/10/2026**, primeira do roteiro galinha, forno e mina (Fases 135 a 139): galinhas e um galo de vez em quando ciscando e andando no quintal cercado das casas dos camponeses, de dia; plano em `docs/plano_fase135.md` |
+| 136 — Vagoneta e rejeito (nossa) | **feita em 31/10/2026**: em cada mina, um trilho curto sobre cavaletes sai da parede até um monte de rejeito na cor do minério, com a vagoneta saindo cheia, virando na ponta e voltando enquanto a mina produz; plano em `docs/plano_fase136.md` |
 
 Pendências já vistas para fases futuras:
 

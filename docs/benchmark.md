@@ -1682,3 +1682,9 @@ dono (Fases 115 a 134) no patamar em que a máquina está desde a Fase 120 (~77 
 Mesmo estado (jogo novo 11,7 s): 76,3 FPS (134: 76,7), 1% low 39,4, pior quadro 31 ms, p50/p95/p99 12,3/17,1/23,6 ms, GPU
 11,9 ms, carregar 5,3 s; +1 objeto e draw call e +29.760 primitivas no quadro com tudo visível (o MultiMesh das galinhas dos
 quintais dos camponeses da cidade do benchmark). Neutra.
+
+## Fase 136 — vagoneta e rejeito (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 76,0 FPS (135: 76,3), 1% low 39,3, pior quadro 34 ms, p50/p95/p99 12,4/17,0/23,5 ms, GPU
+12,0 ms, carregar 5,4 s; primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem mina; +10 objetos e
+draw calls de variação, sem nada novo desenhado). Neutra.

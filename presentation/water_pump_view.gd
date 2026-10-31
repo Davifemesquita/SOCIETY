@@ -95,6 +95,9 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	taken.merge(AvenueView.cells(world, island_id))
 	for cell: Vector2i in TavernGardenView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 136: nem no trilho e no monte de rejeito das minas
+	for cell: Vector2i in SpoilTipView.cells(world, data, island_id):
+		taken[cell] = true
 	for cell: Vector2i in FarmSiloView.cells(world, data, island_id):
 		taken[cell] = true
 	for id: int in ids:

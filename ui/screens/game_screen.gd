@@ -108,6 +108,8 @@ var water_pump_view: WaterPumpView
 var market_bunting_view: MarketBuntingView
 ## Fase 135: as galinhas no quintal cercado das casas dos camponeses.
 var chicken_view: ChickenView
+## Fase 136: a vagoneta e o monte de rejeito das minas.
+var spoil_tip_view: SpoilTipView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -339,6 +341,10 @@ func _ready() -> void:
 	chicken_view.name = "Chickens"
 	add_child(chicken_view)
 	chicken_view.setup(simulation)
+	spoil_tip_view = SpoilTipView.new()
+	spoil_tip_view.name = "SpoilTips"
+	add_child(spoil_tip_view)
+	spoil_tip_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)
