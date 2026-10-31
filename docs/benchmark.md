@@ -1728,3 +1728,9 @@ Mesmo estado (jogo novo 11,5 s): 76,4 FPS (141: 77,9), 1% low 39,5, pior quadro 
 12,1 ms, carregar 5,3 s, construir com a ilha cheia 17,5 ms; +15 objetos e draw calls e +12.000 primitivas no quadro com
 tudo visível (os botes, os remadores e os remos diante dos entrepostos do benchmark). Neutra (a rodada da 141 foi das mais
 rápidas do patamar).
+
+## Fase 143 — cerca de estacas (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 76,7 FPS (142: 76,4), 1% low 39,3, pior quadro 31 ms, p50/p95/p99 12,3/16,8/23,4 ms, GPU
+12,1 ms, carregar 5,4 s, construir com a ilha cheia 17,7 ms; objetos e draw calls iguais e +501.816 primitivas no quadro com
+tudo visível (as estacas das casas dos operários da cidade do benchmark, dentro da malha de cada casa). Neutra.

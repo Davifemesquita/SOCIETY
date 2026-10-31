@@ -112,6 +112,9 @@ const GALLERY_FENCE_M := 1.2
 ## Fase 114: o gradil baixo de ferro na frente das casas dos engenheiros, na faixa entre a parede e a divisa do lote, com
 ## o vão da porta: FRONT_RAIL_M de alto, os pilaretes nas pontas e no vão, as lanças no alto dos balaústres.
 const FRONT_RAIL_M := 0.85
+## Fase 143: a cerca de estacas dos operários: a altura e o passo das estacas.
+const PICKET_M := 0.75
+const PICKET_STEP_M := 0.15
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -392,11 +395,13 @@ class Spec:
 	var lantern: bool = false
 	## Fase 124: o telhado de duas águas vira mansarda (as casas dos investidores sem ala).
 	var mansard: bool = false
+	## Fase 143: a cerca de estacas caiadas na frente das casas dos operários.
+	var picket: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -432,6 +437,7 @@ class Spec:
 		copy.skylights = skylights
 		copy.lantern = lantern
 		copy.mansard = mansard
+		copy.picket = picket
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -586,6 +592,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		# Fase 104: o lampião de parede junto da porta (a casa com toldo já tem a loja)
 		spec.lantern = spec.awning == 0 and spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES,
 				TierDef.HouseTrim.PORTICO]
+		# Fase 143: a cerca de estacas dos operários (sem o alpendre tropical, que tem o guarda-corpo dele)
+		spec.picket = spec.trim == TierDef.HouseTrim.NONE and spec.court_rows == 0
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -1005,6 +1013,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_lantern(extra, spec)
 	if spec.trim == TierDef.HouseTrim.BALCONIES and spec.court_rows == 0:
 		_front_railing(extra, spec)
+	if spec.picket and spec.court_rows == 0:
+		_front_picket(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -1255,6 +1265,23 @@ static func front_railing_spans(spec: Spec) -> Array[Vector2]:
 
 static func front_railing_z(spec: Spec) -> float:
 	return -(spec.cells.y * spec.cell_m) * 0.5 + INSET_M * 0.25
+
+
+## Fase 143: a cerca de estacas caiadas, nos mesmos trechos do gradil (a faixa entre a parede e a divisa, com o vão da
+## porta): as duas travessas, uma estaca a cada PICKET_STEP_M com a ponta em pirâmide e o mourão mais grosso nas pontas.
+static func _front_picket(tool: SurfaceTool, spec: Spec) -> void:
+	var z := front_railing_z(spec)
+	for span: Vector2 in front_railing_spans(spec):
+		var middle := (span.x + span.y) * 0.5
+		for height: float in [PICKET_M * 0.28, PICKET_M * 0.72]:
+			_box(tool, Vector3(middle, height, z + 0.03), Vector3(span.y - span.x, 0.06, 0.03), UV_CANVAS)
+		var count := maxi(1, roundi((span.y - span.x) / PICKET_STEP_M))
+		for i: int in count + 1:
+			var x := lerpf(span.x + 0.04, span.y - 0.04, float(i) / count)
+			_box(tool, Vector3(x, PICKET_M * 0.5, z), Vector3(0.07, PICKET_M, 0.025), UV_CANVAS)
+			_turned(tool, Vector3(x, PICKET_M, z), [Vector2(0.05, 0.0), Vector2(0.0, 0.08)], 4, UV_CANVAS)
+		for x: float in [span.x, span.y]:
+			_box(tool, Vector3(x, (PICKET_M + 0.1) * 0.5, z), Vector3(0.1, PICKET_M + 0.1, 0.1), UV_CANVAS)
 
 
 ## O gradil: a grade de ferro dos trechos, os pilaretes nas pontas e uma lança no alto de cada balaústre.

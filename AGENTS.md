@@ -2381,6 +2381,12 @@ Regras que já custaram investigação:
   cada entreposto), `pose` (os botes na roda, um em cada sentido, com o arranco da remada), `rower_pose` e `oar_pose`; o
   casco é o `HarborView.boat_mesh`. Captura em `tools/capture_phase142.tscn`.
 
+### Cerca de estacas (Fase 143, nossa)
+
+- **Plano** em `docs/plano_fase143.md`. `Spec.picket` (casas de `HouseTrim.NONE`, os operários, sem pátio; na chave) e
+  `BuildingKit._front_picket` (nos trechos do gradil da Fase 114, estacas com a ponta em pirâmide na célula `UV_CANVAS`,
+  pintada de creme pelo shader). Captura: `cerca_de_estacas.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2534,6 +2540,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 140 — Clareira do lenhador (nossa) | **feita em 31/10/2026**, primeira do roteiro toco, bote e boia (Fases 140 a 144): em volta de cada lenhador a mata recua no desenho, mais perto da cabana, e as células cortadas ficam com os tocos e umas toras caídas; plano em `docs/plano_fase140.md` |
 | 141 — Árvore seca (nossa) | **feita em 31/10/2026**: árvores secas e nuas, de galhos tortos e madeira cinzenta, de vez em quando na beira da mata e na costa das ilhas temperadas; plano em `docs/plano_fase141.md` |
 | 142 — Botes no porto (nossa) | **feita em 31/10/2026**: dois botes a remo por entreposto dando voltas na água funda diante dele, um em cada sentido, com o remador inclinando a cada remada e os remos varrendo; somem à noite; plano em `docs/plano_fase142.md` |
+| 143 — Cerca de estacas (nossa) | **feita em 31/10/2026**: cerquinha de estacas caiadas com a ponta em pirâmide e o vão da porta na frente das casas dos operários; plano em `docs/plano_fase143.md` |
 
 Pendências já vistas para fases futuras:
 
