@@ -7,7 +7,7 @@ extends RefCounted
 ##    canto de dentro; célula solta é um ponto; o trecho entre dois paralelepípedos não entra;
 ## g: calçamento (1 dentro da célula de paralelepípedo);
 ## b: desgaste em frente das portas (e, desde a Fase 111, o terreiro das casas nas ilhas tropicais; desde a Fase 118, o
-##    chão gasto dos pastos);
+##    chão gasto dos pastos; desde a Fase 165, o chão batido em volta dos prédios de produção);
 ## a: poças na terra, no meio da rua.
 ## Função pura do estado da simulação (nada vai para o save). refresh() refaz só o retângulo das células que mudaram.
 
@@ -23,6 +23,11 @@ const TRAIL_CORNER_M := 0.9
 ## somindo em YARD_SOFT_M.
 const YARD_REACH_M := 1.6
 const YARD_SOFT_M := 1.0
+## Fase 165: o chão batido em volta dos prédios de produção (o pátio de trabalho), em todas as ilhas: o lote e mais
+## WORKS_REACH_M em volta, com a borda somindo em WORKS_SOFT_M e recortada por WORKS_RAGGED_M de ruído.
+const WORKS_REACH_M := 2.0
+const WORKS_SOFT_M := 0.9
+const WORKS_RAGGED_M := 1.1
 ## Fase 118: o chão gasto do pasto, no canal b: uma mancha na porteira (onde os bichos se juntam), uma no cocho e
 ## PATCHES_PER_PASTURE soltas pelo hash, de borda recortada. O cocho fica TROUGH_INSET_M para dentro da cerca de trás, a
 ## TROUGH_SIDE_M do meio dela para um lado (pelo hash).
@@ -58,6 +63,7 @@ var _roads := PackedByteArray()
 var _doors: Dictionary[int, Vector2] = {}
 var _trails: Dictionary[int, PackedVector2Array] = {}
 var _yards: Dictionary[int, Rect2] = {}
+var _works: Dictionary[int, Rect2] = {}
 var _patches: Dictionary[int, PackedVector3Array] = {}
 
 
@@ -77,6 +83,7 @@ func _init(world: WorldState, data: GameData, island_id: int, per_cell: int, max
 	_doors = doors(world, data, island_id)
 	_trails = trails(world, data, island_id)
 	_yards = yards(world, data, island_id)
+	_works = works(world, data, island_id)
 	_patches = patches(world, data, island_id)
 	_draw(Rect2i(Vector2i.ZERO, _grid.size), false)
 	image = Image.create_from_data(_width, _height, false, Image.FORMAT_RGBA8, _bytes)
@@ -137,6 +144,14 @@ func refresh() -> Rect2i:
 		if not lots.has(id):
 			area = _merge(area, _yard_cells(_yards[id]))
 	_yards = lots
+	var worked := works(_world, _data, _island_id)
+	for id: int in worked:
+		if not _works.has(id) or _works[id] != worked[id]:
+			area = _merge(area, _yard_cells(worked[id]))
+	for id: int in _works:
+		if not worked.has(id):
+			area = _merge(area, _yard_cells(_works[id]))
+	_works = worked
 	var worn := patches(_world, _data, _island_id)
 	for id: int in worn:
 		if not _patches.has(id) or _patches[id] != worn[id]:
@@ -231,6 +246,47 @@ static func patches(world: WorldState, data: GameData, island_id: int) -> Dictio
 	return result
 
 
+## Fase 165: o pátio de chão batido de cada prédio de produção da ilha (m da grade): o lote crescido de WORKS_REACH_M. Campo,
+## pasto e as fazendas de campo (cuja terra lavrada é a da CropView) ficam de fora.
+static func works(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Rect2]:
+	var result: Dictionary[int, Rect2] = {}
+	var grid := world.island(island_id)
+	if grid == null:
+		return result
+	for id: int in world.buildings:
+		var record := world.buildings[id]
+		if record.island_id != island_id:
+			continue
+		var def := data.building(record.def_id)
+		if def == null or not def.is_production() or def.module_id != &"":
+			continue
+		var area := Footprint.rect(record.origin, def.size, record.rotation)
+		result[id] = Rect2(Vector2(area.position) * grid.cell_size, Vector2(area.size) * grid.cell_size).grow(WORKS_REACH_M)
+	return result
+
+
+## Fase 165: quanto a borda recortada entra no ponto p (pixels): um ruído de valor liso de duas oitavas, de 0 a amount.
+func _edge_noise(p: Vector2, amount: float, seed: int) -> float:
+	var step := amount * 2.5
+	return (_value_noise(p / step, seed) * 0.7 + _value_noise(p / (step * 0.4), seed + 7) * 0.3) * amount
+
+
+static func _value_noise(p: Vector2, seed: int) -> float:
+	var base := Vector2i(floori(p.x), floori(p.y))
+	var f := p - Vector2(base)
+	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
+	var top := lerpf(_node(base, seed), _node(base + Vector2i(1, 0), seed), f.x)
+	var bottom := lerpf(_node(base + Vector2i(0, 1), seed), _node(base + Vector2i(1, 1), seed), f.x)
+	return lerpf(top, bottom, f.y)
+
+
+static func _node(at: Vector2i, seed: int) -> float:
+	var h := (at.x * 374761393 + at.y * 668265263 + seed * 1442695041 + 977) & 0xFFFFFFFF
+	h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+	h ^= h >> 16
+	return float(h & 0xFFFF) / 65535.0
+
+
 ## Fase 111: o terreiro de cada casa da ilha tropical (m da grade): o lote crescido de YARD_REACH_M; vazio nas outras.
 static func yards(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Rect2]:
 	var result: Dictionary[int, Rect2] = {}
@@ -316,6 +372,9 @@ func _draw(area: Rect2i, clear: bool) -> void:
 	for id: int in _yards:
 		var lot := _yards[id]
 		_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip)
+	for id: int in _works:
+		var lot := _works[id]
+		_stamp_yard(Rect2(lot.position * scale, lot.size * scale), WORKS_SOFT_M * scale, clip, WORKS_RAGGED_M * scale, id)
 
 
 func _draw_cell(cell: Vector2i, dirt: bool, clip: Rect2i) -> void:
@@ -457,13 +516,16 @@ func _stamp_patch(center: Vector2, radius: float, seed_value: int, clip: Rect2i)
 
 
 ## Fase 111: o terreiro no canal b, ficando com o maior: cheio dentro do retângulo (pixels) menos a borda e somindo até a
-## borda dele; só dentro de clip.
-func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i) -> void:
+## borda dele; só dentro de clip. Fase 165: com ragged (pixels), a borda entra até essa medida por um ruído ao longo dela,
+## semeado por seed (o pátio das fábricas não é um retângulo).
+func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i, ragged: float = 0.0, seed: int = 0) -> void:
 	var box := Rect2i(Vector2i(lot.position.floor()), Vector2i(lot.size.ceil()) + Vector2i.ONE).intersection(clip)
 	for y: int in range(box.position.y, box.end.y):
 		for x: int in range(box.position.x, box.end.x):
 			var p := Vector2(x + 0.5, y + 0.5)
 			var inside := minf(minf(p.x - lot.position.x, lot.end.x - p.x), minf(p.y - lot.position.y, lot.end.y - p.y))
+			if ragged > 0.0:
+				inside -= _edge_noise(p, ragged, seed)
 			if inside <= 0.0:
 				continue
 			var value := int(smoothstep(0.0, soft, inside) * 0.9 * 255.0)

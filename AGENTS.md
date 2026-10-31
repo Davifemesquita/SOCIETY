@@ -2530,6 +2530,13 @@ Regras que já custaram investigação:
   `TreePits` no pé de cada árvore da alameda, alinhado com a rua; `pit_places` para os testes. Captura: `caldeiras.png` no
   `tools/capture_phase113.tscn`.
 
+### Chão batido das fábricas (Fase 165, nossa)
+
+- **Plano** em `docs/plano_fase165.md`, primeira do roteiro `docs/plano_fases_165_169.md` (chão batido, feno e gaivota; o Anno
+  não foi aberto: o dono estava no PC). `RoadMask.works` (o lote dos prédios de produção, menos as fazendas de campo, crescido de
+  `WORKS_REACH_M`) no canal b, pelo `_stamp_yard` com a borda recortada (`ragged`, `_edge_noise`). Captura em
+  `tools/capture_phase165.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2705,6 +2712,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 162 — Cascalho nas encostas (nossa) | **feita em 31/10/2026**: montinhos de pedrinhas soltas deitados nas encostas íngremes e acumulados no pé delas; plano em `docs/plano_fase162.md` |
 | 163 — Horta no quintal (nossa) | **feita em 31/10/2026**: canteiro com couves, alfaces e a tenda de feijão atrás de uma casa de camponeses ou operários a cada três, ao lado do varal e da fogueira das vizinhas; plano em `docs/plano_fase163.md` |
 | 164 — Caldeira das árvores (nossa) | **feita em 31/10/2026**, a última do roteiro cunhal, deriva e horta: anel de pedra com a terra e a grade de ferro no pé de cada árvore da alameda; plano em `docs/plano_fase164.md` |
+| 165 — Chão batido das fábricas (nossa) | **feita em 31/10/2026**, primeira do roteiro chão batido, feno e gaivota (Fases 165 a 169): terra batida de borda recortada em volta de todo prédio de produção; plano em `docs/plano_fase165.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -1877,3 +1877,10 @@ Neutra.
 Mesmo estado (jogo novo 11,7 s): 83,6 FPS (163: 82,6), 1% low 39,7, pior quadro 29 ms, p50/p95/p99 11,3/15,5/23,5 ms, GPU
 11,0 ms, montar tudo 9,5 s, carregar 5,6 s, construir com a ilha cheia 17,1 ms; +1 objeto e draw call (a camada das caldeiras)
 e primitivas iguais no quadro com tudo visível. Neutra; fecha o roteiro cunhal, deriva e horta.
+
+## Fase 165 — chão batido das fábricas (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 83,5 FPS (164: 83,6), 1% low 41,6, pior quadro 28 ms, p50/p95/p99 11,3/15,4/23,0 ms, GPU
+11,1 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 17,7 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (o pátio é só a máscara das estradas, e a cidade do benchmark fica na ilha plana, sem máscara).
+Neutra; abre o roteiro chão batido, feno e gaivota.
