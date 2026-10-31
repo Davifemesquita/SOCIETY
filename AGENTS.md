@@ -2263,6 +2263,13 @@ Regras que já custaram investigação:
   `_mansard` (água de baixo íngreme até o rebordo, a de cima quase plana, cumeeira na altura de antes) e `_dormers` (as
   lucarnas da água de baixo); a `_lucarnes` da Fase 39 pula a mansarda. Captura em `tools/capture_phase124.tscn`.
 
+### Recife de coral (Fase 125, nossa)
+
+- **Plano** em `docs/plano_fase125.md`, primeira do roteiro `docs/plano_fases_125_129.md` (recife, alpendre e nuvens).
+  `shaders/water.gdshader` (grupo `Reef`, `reef_at`) e `WaterView.reef_min_x` (a borda oeste das regiões tropicais).
+  **Hash de ruído em shader sem `sin`**: com as coordenadas do arquipélago o `fract(sin(...))` perde precisão na GPU e o
+  desenho sai em escada. Captura em `tools/capture_phase125.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2398,6 +2405,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 122 — Pedras no rio (nossa) | **feita em 30/10/2026**: matacões de rocha no leito raso dos rios, saindo da água com a espuma em volta, e seixos na margem baixa; plano em `docs/plano_fase122.md` |
 | 123 — Borrifo nas falésias (nossa) | **feita em 30/10/2026**: jatos de espuma subindo de tempos em tempos onde o mar bate nos rochedos e nas falésias perto da câmera, do lado do mar; plano em `docs/plano_fase123.md` |
 | 124 — Mansarda dos investidores (nossa) | **feita em 30/10/2026**, a última do roteiro fios, riacho e mansarda: telhado de mansarda (água de baixo íngreme com lucarnas, a de cima quase plana) nas casas dos investidores sem ala; plano em `docs/plano_fase124.md` |
+| 125 — Recife de coral (nossa) | **feita em 30/10/2026**, primeira do roteiro recife, alpendre e nuvens (Fases 125 a 129): manchas escuras de coral no mar raso das ilhas tropicais; plano em `docs/plano_fase125.md` |
 
 Pendências já vistas para fases futuras:
 

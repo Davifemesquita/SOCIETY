@@ -1614,3 +1614,9 @@ falésias, e os jatos parados não desenham). Neutra.
 Mesmo estado (jogo novo 11,6 s): 77,7 FPS (123: 77,2), 1% low 40,9, pior quadro 29 ms, p50/p95/p99 12,2/16,6/22,8 ms, GPU
 11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a cidade do benchmark não tem investidores). Neutra;
 fecha o roteiro fios, riacho e mansarda no patamar em que a máquina está desde a Fase 120 (~77,5 FPS, GPU ~11,8 ms).
+
+## Fase 125 — recife de coral (30/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,9 FPS (124: 77,7), 1% low 40,6, pior quadro 32 ms, p50/p95/p99 12,2/16,5/22,6 ms, GPU
+11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (o recife é só o shader da água, que já era desenhado).
+Neutra.

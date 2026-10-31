@@ -124,6 +124,18 @@ uniform float glint_open_m = 18.0;
 uniform float glint_fade_m = 900.0;
 group_uniforms;
 
+// Society (Fase 125): o recife de coral das ilhas tropicais. Manchas escuras e irregulares no raso (de reef_from_m a
+// reef_to_m da costa), por um ruído de duas oitavas de reef_cell_m, só a leste de reef_min_x (as regiões tropicais).
+group_uniforms Reef;
+uniform bool has_reef = false;
+uniform float reef_min_x = 1e9;
+uniform float reef_from_m = 4.0;
+uniform float reef_to_m = 34.0;
+uniform float reef_cell_m = 9.0;
+uniform float reef_share = 0.42;
+uniform vec4 reef_color : source_color = vec4(0.1, 0.3, 0.32, 0.55);
+group_uniforms;
+
 group_uniforms DepthFog;
 uniform vec4 color_deep : source_color;
 uniform vec4 color_shallow : source_color;
@@ -217,6 +229,32 @@ vec3 N_DEG(float x, float z, float t, float Steepness, float Amplitude, float Di
 	result.z = (-1.0) * (Direction.y * Frequency * Amplitude * (cos((Frequency * TAU * dot(Direction, vec2(x, z))) + Speed * (t+p))));
 	
 	return result;
+}
+
+// Society (Fase 125): ruído de valor liso (o recife). O hash é sem seno: com as coordenadas do arquipélago (centenas de
+// células) o fract(sin(...)) perdia precisão na GPU e as manchas saíam em escada.
+float reef_hash(vec2 p) {
+	vec3 q = fract(vec3(mod(p, 1024.0).xyx) * 0.1031);
+	q += dot(q, q.yzx + 33.33);
+	return fract((q.x + q.y) * q.z);
+}
+
+float reef_noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(reef_hash(i), reef_hash(i + vec2(1.0, 0.0)), f.x),
+			mix(reef_hash(i + vec2(0.0, 1.0)), reef_hash(i + vec2(1.0)), f.x), f.y);
+}
+
+// Quanto de recife no ponto (0 a 1): o ruído acima de 1 - reef_share, na faixa rasa, a leste de reef_min_x.
+float reef_at(vec2 xz, float shore_m) {
+	if (!has_reef || xz.x < reef_min_x) {
+		return 0.0;
+	}
+	float band = smoothstep(reef_from_m * 0.5, reef_from_m, shore_m) * (1.0 - smoothstep(reef_to_m * 0.7, reef_to_m, shore_m));
+	float n = reef_noise(xz / reef_cell_m) * 0.65 + reef_noise(xz / (reef_cell_m * 0.37) + 17.0) * 0.35;
+	return band * smoothstep(1.0 - reef_share, 1.0 - reef_share + 0.08, n);
 }
 
 // Society: distância até a costa com sinal no ponto (negativa na água); fora do mapa, mar fundo.
@@ -498,6 +536,8 @@ void fragment() {
 	if (has_coast && FRONT_FACING) {
 		float shelf = 1.0 - smoothstep(0.0, shelf_m, shore_m);
 		screen_color = mix(screen_color, color_shelf.rgb, color_shelf.a * shelf);
+		// Fase 125: o recife escurece o fundo raso das ilhas tropicais
+		screen_color = mix(screen_color, reef_color.rgb, reef_color.a * reef_at(world_coordinates.xz, shore_m));
 	}
 #endif
 
