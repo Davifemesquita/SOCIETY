@@ -56,3 +56,17 @@ func test_a_mine_takes_its_patch_away() -> void:
 func test_no_deposits_on_the_flat_island() -> void:
 	var sim := SimFixture.simulation()
 	assert_int(DepositView.places(sim.world, 0).size()).is_equal(0)
+
+
+func test_no_ore_on_roads() -> void:
+	# uma rua atravessando cada mancha: nenhuma pedra nem afloramento fica em cima dela
+	var grid := _sim.world.island(0)
+	for patch: Array in DepositView.patches(grid):
+		var cells: Array = patch[1]
+		var first: Vector2i = cells[0]
+		for cell: Vector2i in cells:
+			if cell.y == first.y:
+				grid.set_road(cell, IslandGrid.Road.PAVED)
+	for entry: Array in DepositView.places(_sim.world, 0):
+		var place: Transform3D = entry[1]
+		assert_bool(grid.has_road(grid.world_to_cell(place.origin))).is_false()

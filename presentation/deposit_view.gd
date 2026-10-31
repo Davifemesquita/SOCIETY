@@ -2,9 +2,10 @@ class_name DepositView
 extends Node3D
 ## Fase 128: as jazidas à vista. Cada mancha de jazida da ilha (as células de `IslandGrid.deposits` ligadas pelos lados)
 ## que ainda não tem prédio em cima ganha, no meio dela, um afloramento de rocha (as formas da `RockModel` com o material
-## da `RockView`) e, espalhadas pela mancha, pedras soltas na cor do minério (`ORE_COLORS`: carvão preto, ferro ferrugem,
-## ouro com o brilho amarelo) — dá para achar a jazida de longe, antes de abrir a mina. Com uma mina na mancha, o
-## afloramento some. Só apresentação; nada no save; refeito na obra, na demolição e ao trocar de mundo.
+## da `RockView`) e, espalhadas pela mancha (fora das ruas e dos trilhos), pedras soltas na cor do minério (`ORE_COLORS`:
+## carvão preto, ferro ferrugem, ouro com o brilho amarelo) — dá para achar a jazida de longe, antes de abrir a mina. Com
+## uma mina na mancha, o afloramento some. Só apresentação; nada no save; refeito na obra, na demolição, na estrada, no
+## trilho e ao trocar de mundo.
 
 enum Kind { OUTCROP, ORE }
 
@@ -57,6 +58,8 @@ func setup(simulation: Simulation) -> void:
 	add_child(_ores)
 	EventBus.building_placed.connect(_mark)
 	EventBus.building_removed.connect(_mark)
+	EventBus.roads_changed.connect(_mark)
+	EventBus.rails_changed.connect(_mark)
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
 
@@ -164,8 +167,11 @@ static func places(world: WorldState, island_id: int) -> Array:
 		var radius := lerpf(OUTCROP_RADIUS_M.x, OUTCROP_RADIUS_M.y, rng.randf())
 		var height := lerpf(OUTCROP_HEIGHT_M.x, OUTCROP_HEIGHT_M.y, rng.randf())
 		var basis := Basis(Vector3.UP, rng.randf() * TAU) * Basis.from_scale(Vector3(radius, height + OUTCROP_SINK_M, radius * 0.8))
-		result.append([Kind.OUTCROP, Transform3D(basis, Vector3(center.x, ground - OUTCROP_SINK_M, center.y)),
-				rng.randi() % RockModel.VARIANTS])
+		var variant := rng.randi() % RockModel.VARIANTS
+		# o afloramento não fica em cima de uma rua que passe no meio da mancha
+		var middle_cell := grid.world_to_cell(Vector3(center.x, 0.0, center.y))
+		if not (grid.has_road(middle_cell) or grid.has_rail(middle_cell)):
+			result.append([Kind.OUTCROP, Transform3D(basis, Vector3(center.x, ground - OUTCROP_SINK_M, center.y)), variant])
 		var color: Color = ORE_COLORS.get(good, ORE_DEFAULT)
 		var ores := roundi(cells.size() * ORE_PER_CELL)
 		for k: int in ores:
@@ -173,6 +179,9 @@ static func places(world: WorldState, island_id: int) -> Array:
 			var spot := grid.origin_m + (Vector2(cell) + Vector2(rng.randf_range(0.15, 0.85), rng.randf_range(0.15, 0.85))) \
 					* grid.cell_size
 			var size := lerpf(ORE_RADIUS_M.x, ORE_RADIUS_M.y, rng.randf())
+			# a pedra sorteada na rua ou no trilho não aparece (o sorteio segue igual para as outras)
+			if grid.has_road(cell) or grid.has_rail(cell):
+				continue
 			var y := grid.height_at(spot.x, spot.y) - size * ORE_SINK
 			var turn := Basis(Vector3.UP, rng.randf() * TAU) * Basis.from_scale(Vector3(size, size * 0.8, size * 1.1))
 			var tone := color.lightened(rng.randf_range(-0.1, 0.15))
