@@ -2426,6 +2426,13 @@ Regras que já custaram investigação:
   cocho de cada pasto), `tower_mesh` e a roda (`rotor_mesh`, `rotor_pose`) que vira para o vento e gira pela força
   (`turn`, `spin_of`). Captura em `tools/capture_phase149.tscn`.
 
+### Coluna de anúncios (Fase 150, nossa)
+
+- **Plano** em `docs/plano_fase150.md`, primeira do roteiro `docs/plano_fases_150_154.md` (coluna, placa e velocípede).
+  `AdColumnView` (`GameScreen.ad_column_view`): `cells` (o canto de dentro das esquinas calçadas, achado pelo `find` das
+  células calçadas) e `column_mesh` (cartazes coloridos sem texto, cornija e chapéu de ferro). O recheio deixa a célula
+  limpa. Captura em `tools/capture_phase150.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2586,6 +2593,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 147 — Mastros no cais (nossa) | **feita em 31/10/2026**: um mastro caiado com a bola dourada e uma flâmula de rabo de andorinha na ponta de cada lado do cais de pedra, tremulando para o lado do vento; plano em `docs/plano_fase147.md` |
 | 148 — Cavalete do lenhador (nossa) | **feita em 31/10/2026**: junto de cada lenhador, o cavalete de serrar com uma tora, o cepo com o machado cravado, a pilha de lenha rachada e as lascas no chão; plano em `docs/plano_fase148.md` |
 | 149 — Cata-vento no pasto (nossa) | **feita em 31/10/2026**, a última do roteiro relógio, cais e cata-vento: torre de vigas junto do cocho de cada pasto com a roda de lâminas e o leme, virando para o vento e girando pela força dele; plano em `docs/plano_fase149.md` |
+| 150 — Coluna de anúncios (nossa) | **feita em 31/10/2026**, primeira do roteiro coluna, placa e velocípede (Fases 150 a 154): colunas redondas de cartazes coloridos com o chapéu de ferro no canto de dentro das esquinas calçadas; plano em `docs/plano_fase150.md` |
 
 Pendências já vistas para fases futuras:
 

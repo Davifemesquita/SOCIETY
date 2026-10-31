@@ -320,6 +320,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 148: e o terreiro dos lenhadores
 	for cell: Vector2i in LumberYardView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 150: e as colunas de anúncios
+	for cell: Vector2i in AdColumnView.cells(world, data, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 

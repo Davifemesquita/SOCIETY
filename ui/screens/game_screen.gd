@@ -130,6 +130,8 @@ var quay_mast_view: QuayMastView
 var lumber_yard_view: LumberYardView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
+## Fase 150: as colunas de anúncios nas esquinas calçadas.
+var ad_column_view: AdColumnView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -405,6 +407,10 @@ func _ready() -> void:
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
 	windpump_view.setup(simulation, weather)
+	ad_column_view = AdColumnView.new()
+	ad_column_view.name = "AdColumns"
+	add_child(ad_column_view)
+	ad_column_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

@@ -1776,3 +1776,11 @@ Mesmo estado (jogo novo 11,6 s): 75,3 FPS (148: 76,2), 1% low 39,1, pior quadro 
 12,2 ms, montar tudo 9,5 s, carregar 5,4 s, construir com a ilha cheia 17,3 ms; +10 objetos e draw calls e primitivas iguais
 no quadro com tudo visível (as torres e as rodas dos pastos da cidade do benchmark, fora do quadro medido). Neutra, dentro da
 faixa do patamar (75 a 78 FPS); fecha o roteiro relógio, cais e cata-vento.
+
+## Fase 150 — coluna de anúncios (31/10/2026)
+
+Primeira rodada com a busca das esquinas andando célula por célula pela ilha inteira em GDScript: carregar 5,6 s (149: 5,4)
+e construir com a ilha cheia 18,6 ms (149: 17,3). Com a busca pelo `find` das células calçadas (como a alameda), mesmo
+estado (jogo novo 11,6 s): 75,0 FPS (149: 75,3), 1% low 39,6, pior quadro 31 ms, p50/p95/p99 12,6/17,1/23,4 ms, GPU 12,2 ms,
+montar tudo 9,8 s, carregar 5,5 s, construir com a ilha cheia 17,7 ms; +5 objetos e draw calls e primitivas iguais no quadro
+com tudo visível. Neutra.
