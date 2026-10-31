@@ -314,6 +314,8 @@ func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 	# a dos engenheiros continua de ferro: os balaústres finos da grade, sem o perfil torneado
 	var engineers := _house(&"engineers")
 	engineers.balcony_flowers = false
+	# (e sem os cunhais da Fase 160, que só os engenheiros têm)
+	engineers.quoins = false
 	var engineers_bare := _house(&"engineers")
 	engineers_bare.trim = TierDef.HouseTrim.NONE
 	# (sem o gradil da frente da Fase 114, que é dos engenheiros e não da sacada)

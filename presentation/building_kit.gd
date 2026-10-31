@@ -195,6 +195,12 @@ const BALCONY_FLOWERS_OUT_M := 0.16
 const BALCONY_FLOWERS_UP_M := 0.62
 ## A célula (3, 3) da paleta: folhagem com flores no shader do kit (a sebe e as floreiras).
 const UV_FOLIAGE := Vector2(3.5 / 8.0, 3.5 / 4.0)
+## Fase 160: os cunhais — a altura de cada fiada (com a junta), o lado comprido e o curto dos blocos e quanto saltam da parede.
+const QUOIN_COURSE_M := 0.36
+const QUOIN_JOINT_M := 0.035
+const QUOIN_LONG_M := 0.52
+const QUOIN_SHORT_M := 0.28
+const QUOIN_OUT_M := 0.05
 const PORTICO_HEIGHT := 0.95
 ## Ornamento das casas (Fase 18), dos artesãos para cima: cornija no alto das paredes, verga de pedra
 ## sobre cada janela e, nos engenheiros e investidores, a faixa entre os andares; o frontão no alto da
@@ -418,11 +424,13 @@ class Spec:
 	var shop_sign: int = 0
 	## Fase 153: as floreiras penduradas por fora do guarda-corpo das sacadas (engenheiros e investidores).
 	var balcony_flowers: bool = false
+	## Fase 160: os cunhais de pedra nas quinas do corpo (artesãos e engenheiros).
+	var quoins: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -461,6 +469,7 @@ class Spec:
 		copy.picket = picket
 		copy.shop_sign = shop_sign
 		copy.balcony_flowers = balcony_flowers
+		copy.quoins = quoins
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -617,6 +626,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 				TierDef.HouseTrim.PORTICO]
 		# Fase 153: as floreiras das sacadas dos engenheiros e investidores
 		spec.balcony_flowers = spec.trim in [TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]
+		# (os investidores ficam sem: a parede deles já é de pedra clara, e a casa está no teto de triângulos)
+		spec.quoins = spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES]
 		# Fase 143: a cerca de estacas dos operários (sem o alpendre tropical, que tem o guarda-corpo dele)
 		spec.picket = spec.trim == TierDef.HouseTrim.NONE and spec.court_rows == 0
 		return spec
@@ -2143,7 +2154,40 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 				if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
 					_window_frame(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m(), top,
 							not hall.arched)
+	if hall.quoins:
+		_quoins(tool, spec)
 
+
+## Fase 160: os cunhais — nas quatro quinas do corpo, da soleira até a cornija, blocos de pedra clara em fiadas de
+## QUOIN_COURSE_M, alternando o lado comprido (QUOIN_LONG_M) entre as duas faces da quina, saltados QUOIN_OUT_M da parede.
+## A quina do lado da ala (Fase 96) para no alto da ala; no balanço (Fase 102) a quina da frente sobe pela frente que
+## avançou.
+static func _quoins(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	var floor_m := hall.floor_m()
+	var winged := hall.wing != 0 and hall.floors() >= 2
+	for sx: float in [-1.0, 1.0]:
+		for sz: float in [-1.0, 1.0]:
+			var top := hall.height_m - CORNICE_M
+			if winged and signf(hall.wing) == sx:
+				top = hall.height_m - floor_m - CORNICE_M
+			var course := 0
+			var y := 0.0
+			while y + QUOIN_COURSE_M <= top + 0.001:
+				var corner := Vector3(sx * size.x * 0.5, 0.0, sz * size.y * 0.5)
+				if hall.jetty and sz < 0.0 and y >= floor_m:
+					corner.z -= JETTY_M
+				var long_x := course % 2 == 0
+				var reach := Vector2(QUOIN_LONG_M if long_x else QUOIN_SHORT_M, QUOIN_SHORT_M if long_x else QUOIN_LONG_M)
+				# o bloco vai da quina para dentro de cada face (reach) e sai QUOIN_OUT_M para fora delas
+				var low := Vector3(corner.x - sx * reach.x, y, corner.z - sz * reach.y)
+				var high := Vector3(corner.x + sx * QUOIN_OUT_M, y + QUOIN_COURSE_M - QUOIN_JOINT_M,
+						corner.z + sz * QUOIN_OUT_M)
+				_box(tool, center + (low + high) * 0.5, (high - low).abs(), UV_LIGHT_STONE)
+				y += QUOIN_COURSE_M
+				course += 1
 
 ## Guarnição de pedra da janela (Fase 25): as ombreiras dos dois lados do vão, do peitoril à verga, e a pedra
 ## de fecho no meio da verga. "wall" é o ponto da fachada no meio da célula, no chão do andar; "lintel_y", o

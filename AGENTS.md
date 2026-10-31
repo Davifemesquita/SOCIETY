@@ -2495,6 +2495,14 @@ Regras que já custaram investigação:
   monte de barro). Captura em `tools/capture_phase159.tscn` (a câmera do lado do pátio: o offset da câmera do `CameraRig` é
   (sen yaw, ·, cos yaw)).
 
+### Cunhais de pedra (Fase 160, nossa)
+
+- **Plano** em `docs/plano_fase160.md`, primeira do roteiro `docs/plano_fases_160_164.md` (cunhal, deriva e horta; o Anno não
+  foi aberto: o dono estava usando o PC, e as ideias vieram das capturas guardadas). `Spec.quoins` (artesãos e engenheiros; na
+  chave) e `BuildingKit._quoins` (blocos alternados nas quatro quinas, a da ala até o alto dela, a da frente pelo balanço). **A
+  casa dos investidores está no teto de 20.000 triângulos** do `test_building_kit.gd` (19.480): detalhe novo nela precisa caber.
+  Captura: `cunhais.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2665,6 +2673,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 157 — Caixas da colheita (nossa) | **feita em 31/10/2026**: perto da colheita, pares de caixotes e sacos de juta vão aparecendo entre as fileiras dos campos, e somem quando o campo é colhido; plano em `docs/plano_fase157.md` |
 | 158 — Carroça de lona (nossa) | **feita em 31/10/2026**: metade das carroças que levam saco ou caixote anda com os arcos de madeira e a lona sobre a caçamba, com a carga escondida debaixo dela; plano em `docs/plano_fase158.md` |
 | 159 — Tijolos secando (nossa) | **feita em 31/10/2026**, a última do roteiro carneirinho, papoula e colheita: ao lado de cada olaria, duas fileiras de tijolos crus secando em grade com as tábuas na cumeeira e o monte de barro escavado; plano em `docs/plano_fase159.md` |
+| 160 — Cunhais de pedra (nossa) | **feita em 31/10/2026**, primeira do roteiro cunhal, deriva e horta (Fases 160 a 164): blocos de pedra clara alternados nas quatro quinas das casas dos artesãos e engenheiros, da soleira à cornija; plano em `docs/plano_fase160.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -1845,3 +1845,10 @@ Mesmo estado (jogo novo 11,6 s): 83,1 FPS (158: 84,6), 1% low 38,6, pior quadro 
 10,9 ms, montar tudo 9,7 s, carregar 5,5 s, construir com a ilha cheia 18,2 ms (na faixa de 17 a 18 ms das fases de antes);
 objetos, draw calls e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem olaria). Neutra; fecha o
 roteiro carneirinho, papoula e colheita.
+
+## Fase 160 — cunhais de pedra (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 83,4 FPS (159: 83,1), 1% low 39,1, pior quadro 33 ms, p50/p95/p99 11,3/15,7/23,2 ms, GPU
+11,0 ms, montar tudo 9,4 s, carregar 5,5 s, construir com a ilha cheia 18,3 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (os blocos entram na malha de cada casa, e as casas com cunhal ficam fora do quadro medido). Neutra;
+abre o roteiro cunhal, deriva e horta.
