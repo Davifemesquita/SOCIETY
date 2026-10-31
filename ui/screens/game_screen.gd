@@ -104,6 +104,8 @@ var deposit_view: DepositView
 var manhole_view: ManholeView
 ## Fase 132: as bombas d'água junto das casas.
 var water_pump_view: WaterPumpView
+## Fase 133: as bandeirolas fixas sobre o pátio dos mercados.
+var market_bunting_view: MarketBuntingView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -327,6 +329,10 @@ func _ready() -> void:
 	water_pump_view.name = "WaterPumps"
 	add_child(water_pump_view)
 	water_pump_view.setup(simulation)
+	market_bunting_view = MarketBuntingView.new()
+	market_bunting_view.name = "MarketBunting"
+	add_child(market_bunting_view)
+	market_bunting_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

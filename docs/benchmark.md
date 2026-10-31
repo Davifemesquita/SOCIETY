@@ -1663,3 +1663,9 @@ tampas das ruas da cidade do benchmark). Neutra.
 Mesmo estado (jogo novo 11,5 s): 77,0 FPS (131: 77,4), 1% low 41,6, pior quadro 28 ms, p50/p95/p99 12,3/16,8/22,4 ms, GPU
 12,0 ms, carregar 5,3 s; +5 objetos e draw calls (a camada das bombas), primitivas iguais no quadro com tudo visível.
 Neutra.
+
+## Fase 133 — bandeirolas da feira (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,0 FPS (132: 77,0), 1% low 41,3, pior quadro 32 ms, p50/p95/p99 12,3/16,8/22,6 ms, GPU
+12,0 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem
+mercado; a camada vazia não desenha). Neutra.

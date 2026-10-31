@@ -2313,6 +2313,12 @@ Regras que já custaram investigação:
   casa a cada `PUMP_EVERY`, com a rua ao lado, e o lado da rua) e `pump_mesh`. O recheio deixa a célula limpa. Captura em
   `tools/capture_phase132.tscn`.
 
+### Bandeirolas da feira (Fase 133, nossa)
+
+- **Plano** em `docs/plano_fase133.md`. `MarketBuntingView` (`GameScreen.market_bunting_view`): `posts` (os quatro cantos
+  do pátio das bancas) e as cordas em xis com o poste e a corda da festa (`FestivalView._post`, `_string`). Captura em
+  `tools/capture_phase133.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2456,6 +2462,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 130 — Telhado de sapê (nossa) | **feita em 31/10/2026**, primeira do roteiro sapê, bueiro e ardósia (Fases 130 a 134): as casas dos camponeses trocam as tábuas do telhado por sapê, com fiadas grossas, fios de palha e o tom de palha velha; plano em `docs/plano_fase130.md` |
 | 131 — Bueiros na rua calçada (nossa) | **feita em 31/10/2026**: tampas redondas de ferro fundido no meio das ruas retas de paralelepípedo, pelo desenho da grade; plano em `docs/plano_fase131.md` |
 | 132 — Bomba d'água (nossa) | **feita em 31/10/2026**: bomba de ferro fundido com alavanca, bica, laje e baldes numa célula livre junto de uma casa a cada seis, virada para a rua; plano em `docs/plano_fase132.md` |
+| 133 — Bandeirolas da feira (nossa) | **feita em 31/10/2026**: quatro postes e duas cordas de bandeirolas em xis sobre o pátio das bancas de cada mercado, o ano todo; plano em `docs/plano_fase133.md` |
 
 Pendências já vistas para fases futuras:
 
