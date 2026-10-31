@@ -2537,6 +2537,14 @@ Regras que já custaram investigação:
   `WORKS_REACH_M`) no canal b, pelo `_stamp_yard` com a borda recortada (`ragged`, `_edge_noise`). Captura em
   `tools/capture_phase165.tscn`.
 
+### Medas de feno (Fase 166, nossa)
+
+- **Plano** em `docs/plano_fase166.md`. `HaystackView` (`GameScreen.haystack_view`): `cells` (a célula livre ao lado das fazendas
+  de ovelhas, porcos e trigo, mais perto do meio da face de +X da frente, fora do silo e das outras peças de célula) e
+  `stack_mesh` (corpo em barril, cúpula em anéis e a vara). O recheio e as bombas deixam a célula. **Anel girado em volta de +y:
+  o ângulo anda no sentido do `VertexShapes.cylinder`** (x = cos, z = −sen), senão as faces ficam para dentro. Captura em
+  `tools/capture_phase166.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2713,6 +2721,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 163 — Horta no quintal (nossa) | **feita em 31/10/2026**: canteiro com couves, alfaces e a tenda de feijão atrás de uma casa de camponeses ou operários a cada três, ao lado do varal e da fogueira das vizinhas; plano em `docs/plano_fase163.md` |
 | 164 — Caldeira das árvores (nossa) | **feita em 31/10/2026**, a última do roteiro cunhal, deriva e horta: anel de pedra com a terra e a grade de ferro no pé de cada árvore da alameda; plano em `docs/plano_fase164.md` |
 | 165 — Chão batido das fábricas (nossa) | **feita em 31/10/2026**, primeira do roteiro chão batido, feno e gaivota (Fases 165 a 169): terra batida de borda recortada em volta de todo prédio de produção; plano em `docs/plano_fase165.md` |
+| 166 — Medas de feno (nossa) | **feita em 31/10/2026**: duas medas de feno redondas com a vara no alto ao lado das fazendas de ovelhas, porcos e trigo; plano em `docs/plano_fase166.md` |
 
 Pendências já vistas para fases futuras:
 

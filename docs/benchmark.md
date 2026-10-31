@@ -1884,3 +1884,9 @@ Mesmo estado (jogo novo 11,6 s): 83,5 FPS (164: 83,6), 1% low 41,6, pior quadro 
 11,1 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 17,7 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (o pátio é só a máscara das estradas, e a cidade do benchmark fica na ilha plana, sem máscara).
 Neutra; abre o roteiro chão batido, feno e gaivota.
+
+## Fase 166 — medas de feno (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 81,7 FPS (165: 83,5), 1% low 40,0, pior quadro 28 ms, p50/p95/p99 11,5/15,7/23,3 ms, GPU
+11,2 ms, montar tudo 9,4 s, carregar 5,6 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem medas). Neutra.
