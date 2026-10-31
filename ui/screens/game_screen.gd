@@ -124,6 +124,8 @@ var buoy_view: BuoyView
 var clock_view: ClockView
 ## Fase 146: a grade de ferro e os lampiões no cais de pedra.
 var quay_rail_view: QuayRailView
+## Fase 147: os mastros com flâmulas nas pontas do cais de pedra.
+var quay_mast_view: QuayMastView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -387,6 +389,10 @@ func _ready() -> void:
 	quay_rail_view.name = "QuayRails"
 	add_child(quay_rail_view)
 	quay_rail_view.setup(simulation)
+	quay_mast_view = QuayMastView.new()
+	quay_mast_view.name = "QuayMasts"
+	add_child(quay_mast_view)
+	quay_mast_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

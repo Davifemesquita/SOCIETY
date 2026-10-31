@@ -1755,3 +1755,9 @@ visível. Dentro da faixa do patamar desde a Fase 120 (75 a 78 FPS); a refatora�
 Mesmo estado (jogo novo 11,5 s): 76,3 FPS (145: 75,1 e 75,7), 1% low 39,5, pior quadro 35 ms, p50/p95/p99 12,4/17,1/23,5 ms,
 GPU 12,0 ms, carregar 5,4 s, construir com a ilha cheia 17,6 ms; +15 objetos e draw calls e +91.800 primitivas no quadro com
 tudo visível (as grades e os lampiões dos cais de pedra do benchmark). Neutra.
+
+## Fase 147 — mastros no cais (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 75,6 FPS (146: 76,3), 1% low 39,5, pior quadro 29 ms, p50/p95/p99 12,4/17,1/23,7 ms, GPU
+12,1 ms, carregar 5,4 s, construir com a ilha cheia 17,8 ms; objetos, draw calls e primitivas iguais no quadro com tudo
+visível (os mastros ficam nas pontas do cais, fora do quadro medido). Neutra.

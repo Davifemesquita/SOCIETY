@@ -2407,6 +2407,12 @@ Regras que já custaram investigação:
   lanços do cais de pedra, aberta nos cabeços e na frente do entreposto) e `lamps` (o poste de gás da rua com o vidro aceso
   num lanço a cada `LAMP_EVERY`). Captura em `tools/capture_phase146.tscn`.
 
+### Mastros no cais (Fase 147, nossa)
+
+- **Plano** em `docs/plano_fase147.md`. `QuayMastView` (`GameScreen.quay_mast_view`): `masts` (na ponta de cada lado do cais de
+  pedra), `mast_mesh` e a flâmula de rabo de andorinha (`pennant_mesh`) como `WindFlag`, que o `WeatherView` vira com o
+  vento. Captura em `tools/capture_phase147.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2564,6 +2570,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 144 — Boias no porto (nossa) | **feita em 31/10/2026**, a última do roteiro toco, bote e boia: boias pintadas em pares marcando a entrada diante de cada entreposto, a vermelha de um lado e a verde do outro, balançando nas ondas; plano em `docs/plano_fase144.md` |
 | 145 — Relógio da igreja (nossa) | **feita em 31/10/2026**, primeira do roteiro relógio, cais e cata-vento (Fases 145 a 149): dois mostradores na torre da igreja com os ponteiros marcando a hora do jogo, acesos à noite; plano em `docs/plano_fase145.md` |
 | 146 — Grade e lampiões no cais (nossa) | **feita em 31/10/2026**: grade de ferro na beira do cais de pedra, aberta nos cabeços e diante do entreposto, e lampiões a gás acesos à noite; plano em `docs/plano_fase146.md` |
+| 147 — Mastros no cais (nossa) | **feita em 31/10/2026**: um mastro caiado com a bola dourada e uma flâmula de rabo de andorinha na ponta de cada lado do cais de pedra, tremulando para o lado do vento; plano em `docs/plano_fase147.md` |
 
 Pendências já vistas para fases futuras:
 
