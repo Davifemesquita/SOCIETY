@@ -72,6 +72,7 @@ var _cut: Dictionary[int, Dictionary] = {}
 ## Fase 140: lenhador → ilha, e os trechos a refazer no quadro seguinte.
 var _lumberjacks: Dictionary[int, int] = {}
 var _pending: Dictionary[String, bool] = {}
+var _recut_islands: Dictionary[int, bool] = {}
 
 
 func setup(world: WorldState, data: GameData = GameData.get_default(), config: GameConfig = null) -> void:
@@ -99,6 +100,7 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 			for cx: int in ceili(grid.size.x / float(CHUNK_CELLS)):
 				_build_chunk(index, Vector2i(cx, cy))
 	EventBus.trees_changed.connect(_on_trees_changed)
+	EventBus.roads_changed.connect(_recut)
 	EventBus.building_placed.connect(_on_buildings_changed)
 	EventBus.building_removed.connect(_on_buildings_changed)
 
@@ -150,6 +152,8 @@ func _count_layers(island_id: int, kind: String) -> int:
 
 
 func _on_trees_changed(island_id: int, area: Rect2i) -> void:
+	# Fase 148: as árvores caídas podem mudar o terreiro do lenhador
+	_recut(island_id)
 	var first := area.position / CHUNK_CELLS
 	var last := (area.end - Vector2i.ONE) / CHUNK_CELLS
 	for cy: int in range(first.y, last.y + 1):
@@ -168,13 +172,25 @@ func _on_buildings_changed(building_id: int) -> void:
 	elif _lumberjacks.has(building_id):
 		island_id = _lumberjacks[building_id]
 		_lumberjacks.erase(building_id)
-	if not _cut.has(island_id):
-		return
+	_recut(island_id)
+
+
+## Refaz o corte da ilha (com os lenhadores dela) e marca para o quadro seguinte os trechos das células que mudaram. Fase
+## 148: também quando uma estrada ou uma derrubada de árvores muda o lugar do terreiro do lenhador (só ilha com lenhador).
+func _recut(island_id: int) -> void:
+	if _cut.has(island_id):
+		_recut_islands[island_id] = true
+
+
+## O recálculo de fato (no quadro seguinte: a montagem de uma cidade manda centenas de estradas no mesmo quadro).
+func _recut_now(island_id: int) -> void:
 	var ids: Array[int] = []
 	for id: int in _lumberjacks:
 		if _lumberjacks[id] == island_id:
 			ids.append(id)
 	var before: Dictionary = _cut[island_id]
+	if ids.is_empty() and before.is_empty():
+		return
 	var after := StumpView.cut_cells_of(_world, _data, _config, island_id, ids)
 	for cell: Vector2i in before:
 		if not after.has(cell):
@@ -186,12 +202,15 @@ func _on_buildings_changed(building_id: int) -> void:
 
 
 func _process(_delta: float) -> void:
-	if not _pending.is_empty():
+	if not _pending.is_empty() or not _recut_islands.is_empty():
 		flush()
 
 
-## Refaz já os trechos marcados pelo corte (testes; o jogo espera o quadro seguinte).
+## Refaz já o corte das ilhas marcadas e os trechos que mudaram (testes; o jogo espera o quadro seguinte).
 func flush() -> void:
+	for island_id: int in _recut_islands:
+		_recut_now(island_id)
+	_recut_islands.clear()
 	for key: String in _pending:
 		var parts := key.split("/")
 		_build_chunk(parts[0].to_int(), Vector2i(parts[1].to_int(), parts[2].to_int()))

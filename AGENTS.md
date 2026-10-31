@@ -2413,6 +2413,13 @@ Regras que já custaram investigação:
   pedra), `mast_mesh` e a flâmula de rabo de andorinha (`pennant_mesh`) como `WindFlag`, que o `WeatherView` vira com o
   vento. Captura em `tools/capture_phase147.tscn`.
 
+### Cavalete do lenhador (Fase 148, nossa)
+
+- **Plano** em `docs/plano_fase148.md`. `LumberYardView` (`GameScreen.lumber_yard_view`): `cell_of` (a célula num lado do
+  lenhador) e `yard_mesh` (cavalete com a tora, cepo com o machado, lenha rachada e lascas). A clareira corta a célula
+  inteira sem toco (`StumpView.cut_cells_of`), e a `TreeView` refaz o corte também na estrada e na derrubada de árvores, no
+  quadro seguinte (`_recut`, `_recut_now`). Captura em `tools/capture_phase148.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2571,6 +2578,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 145 — Relógio da igreja (nossa) | **feita em 31/10/2026**, primeira do roteiro relógio, cais e cata-vento (Fases 145 a 149): dois mostradores na torre da igreja com os ponteiros marcando a hora do jogo, acesos à noite; plano em `docs/plano_fase145.md` |
 | 146 — Grade e lampiões no cais (nossa) | **feita em 31/10/2026**: grade de ferro na beira do cais de pedra, aberta nos cabeços e diante do entreposto, e lampiões a gás acesos à noite; plano em `docs/plano_fase146.md` |
 | 147 — Mastros no cais (nossa) | **feita em 31/10/2026**: um mastro caiado com a bola dourada e uma flâmula de rabo de andorinha na ponta de cada lado do cais de pedra, tremulando para o lado do vento; plano em `docs/plano_fase147.md` |
+| 148 — Cavalete do lenhador (nossa) | **feita em 31/10/2026**: junto de cada lenhador, o cavalete de serrar com uma tora, o cepo com o machado cravado, a pilha de lenha rachada e as lascas no chão; plano em `docs/plano_fase148.md` |
 
 Pendências já vistas para fases futuras:
 

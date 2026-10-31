@@ -68,9 +68,16 @@ func test_the_trees_go_and_the_stumps_come() -> void:
 	var cut := StumpView.cut_cells(_sim.world, _sim.data, _config, 0)
 	var grid := _sim.world.island(0)
 	var expected := 0
+	# Fase 148: o terreiro do lenhador fica cortado e sem toco
+	var yard := Vector2i(-1, -1)
+	var pair: Variant = LumberYardView.cell_of(_sim.world, _sim.data, _sim.world.building(id))
+	if pair is Array:
+		var both: Array = pair
+		yard = both[0]
 	for cell: Vector2i in cut:
 		assert_bool(trees.is_cut(0, cell)).is_true()
-		expected += mini(grid.trees[grid.index(cell)], TreeView.DRAWN_PER_CELL)
+		if cell != yard:
+			expected += mini(grid.trees[grid.index(cell)], TreeView.DRAWN_PER_CELL)
 	# as árvores das células cortadas saíram do desenho (e as do lote, derrubadas pela obra)
 	assert_int(before - trees.instance_count()).is_greater_equal(expected)
 	assert_int(stumps.stump_count()).is_equal(expected)

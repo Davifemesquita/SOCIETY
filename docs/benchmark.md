@@ -1761,3 +1761,11 @@ tudo visível (as grades e os lampiões dos cais de pedra do benchmark). Neutra.
 Mesmo estado (jogo novo 11,6 s): 75,6 FPS (146: 76,3), 1% low 39,5, pior quadro 29 ms, p50/p95/p99 12,4/17,1/23,7 ms, GPU
 12,1 ms, carregar 5,4 s, construir com a ilha cheia 17,8 ms; objetos, draw calls e primitivas iguais no quadro com tudo
 visível (os mastros ficam nas pontas do cais, fora do quadro medido). Neutra.
+
+## Fase 148 — cavalete do lenhador (31/10/2026)
+
+Primeira rodada com o corte da clareira refeito a cada estrada e derrubada de árvores: montar tudo 10,6 s (147: 10,2), 75,2
+FPS. Com o recálculo adiado para o quadro seguinte (juntando os pedidos), mesmo estado (jogo novo 11,6 s): 76,2 FPS (147:
+75,6), 1% low 39,9, pior quadro 32 ms, p50/p95/p99 12,4/17,1/23,2 ms, GPU 12,0 ms, montar tudo 9,6 s, carregar 5,4 s,
+construir com a ilha cheia 17,5 ms; +3 objetos e draw calls e +41.493 primitivas no quadro com tudo visível (os terreiros dos
+lenhadores da cidade do benchmark). Neutra.

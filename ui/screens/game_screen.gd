@@ -126,6 +126,8 @@ var clock_view: ClockView
 var quay_rail_view: QuayRailView
 ## Fase 147: os mastros com flâmulas nas pontas do cais de pedra.
 var quay_mast_view: QuayMastView
+## Fase 148: o cavalete, o cepo e a lenha rachada junto dos lenhadores.
+var lumber_yard_view: LumberYardView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -393,6 +395,10 @@ func _ready() -> void:
 	quay_mast_view.name = "QuayMasts"
 	add_child(quay_mast_view)
 	quay_mast_view.setup(simulation)
+	lumber_yard_view = LumberYardView.new()
+	lumber_yard_view.name = "LumberYards"
+	add_child(lumber_yard_view)
+	lumber_yard_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

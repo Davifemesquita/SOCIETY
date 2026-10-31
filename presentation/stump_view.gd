@@ -46,6 +46,10 @@ func setup(simulation: Simulation) -> void:
 	EventBus.building_placed.connect(_on_building_changed)
 	EventBus.building_removed.connect(_on_building_changed)
 	EventBus.trees_changed.connect(_on_trees_changed)
+	# Fase 148: uma estrada pode mudar o lugar do terreiro do lenhador (sem toco)
+	EventBus.roads_changed.connect(func(island_id: int) -> void:
+		if _lumberjacks.values().has(island_id):
+			_dirty[island_id] = true)
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
 
@@ -136,9 +140,21 @@ func _build_island(island_id: int) -> void:
 	if ids.is_empty():
 		return
 	var cut := cut_cells_of(world, _simulation.data, _simulation.config, island_id, ids)
+	# Fase 148: o terreiro do lenhador fica sem toco nem tora
+	var yards: Dictionary[Vector2i, bool] = {}
+	for id: int in ids:
+		if world.building(id) == null:
+			continue
+		var yard: Variant = LumberYardView.cell_of(world, _simulation.data, world.building(id))
+		if yard is Array:
+			var pair: Array = yard
+			var yard_cell: Vector2i = pair[0]
+			yards[yard_cell] = true
 	var stumps: Dictionary[Vector2i, Array] = {}
 	var logs: Dictionary[Vector2i, Array] = {}
 	for cell: Vector2i in cut:
+		if yards.has(cell):
+			continue
 		var chunk := cell / CHUNK_CELLS
 		if not stumps.has(chunk):
 			stumps[chunk] = []
@@ -215,6 +231,17 @@ static func cut_cells_of(world: WorldState, data: GameData, config: GameConfig, 
 				var chance := RING_CHANCE[clampi(ring, 0, radius)]
 				if float(absi(hash([id, cell])) % 1000) / 1000.0 < chance:
 					result[cell] = id
+	# Fase 148: o terreiro de cada lenhador fica cortado inteiro (sem árvore no desenho; a StumpView não põe toco nele)
+	for id: int in sorted:
+		var record := world.building(id)
+		if record == null:
+			continue
+		var yard: Variant = LumberYardView.cell_of(world, data, record)
+		if yard is Array:
+			var pair: Array = yard
+			var cell: Vector2i = pair[0]
+			if grid.trees[grid.index(cell)] > 0:
+				result[cell] = id
 	return result
 
 
