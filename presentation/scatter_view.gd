@@ -20,9 +20,11 @@ extends Node3D
 ## células baixas da costa (DRIFTWOOD_MAX_HEIGHT_M), inclinado com o terreno.
 ## Fase 162: o cascalho (SCREE), um montinho de pedrinhas chatas deitado no plano da encosta, no fim das listas OPEN,
 ## NEAR_FOREST e NEAR_SEA, só nas células de encosta (desnível de SCREE_MIN_RELIEF_M entre os cantos).
+## Fase 167: o capim alto (TALL_GRASS), uma touceira de folhas altas e espigadas que cobre a célula, no fim da lista OPEN, só nas
+## manchas do ruído dele (tall_grass_patch), fora dos canteiros de papoulas e das tropicais.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
@@ -32,7 +34,7 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 		Kind.SNAG, Kind.DRIFTWOOD]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES]
+		Kind.POPPIES, Kind.TALL_GRASS]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -79,7 +81,18 @@ const SNAG_HEIGHT_M := 4.2
 const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
-		[Kind.SCREE, SCREE_CHANCE]]
+		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE]]
+## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
+## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
+## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
+const TALL_GRASS_CHANCE := 0.9
+const TALL_GRASS_PATCH_CELLS := 7.0
+const TALL_GRASS_THRESHOLD := 0.66
+const TALL_GRASS_BLADES := 26
+const TALL_GRASS_RADIUS_M := 0.85
+const TALL_GRASS_HEIGHT_M := Vector2(0.55, 0.95)
+const TALL_GRASS_GREEN := Color(0.38, 0.5, 0.2)
+const TALL_GRASS_STRAW := Color(0.72, 0.68, 0.4)
 ## Fase 162: o cascalho — a chance por célula de encosta (no fim das listas do campo aberto, da beira da mata e da costa), o
 ## desnível mínimo entre os cantos da célula para contar como encosta, as pedrinhas do montinho e as cores da pedra.
 const SCREE_CHANCE := 0.55
@@ -113,6 +126,9 @@ const FLOWER_COLORS: Array[Color] = [Color(0.8, 0.15, 0.15), Color(0.9, 0.78, 0.
 ## Fase 156: os quatro nós do ruído dos canteiros da última célula conferida (ilha na terceira coordenada).
 static var _poppy_key := Vector3i(0, 0, -1)
 static var _poppy_nodes := PackedFloat32Array()
+## Fase 167: os mesmos, para o ruído das manchas de capim alto.
+static var _grass_key := Vector3i(0, 0, -1)
+static var _grass_nodes := PackedFloat32Array()
 
 var _world: WorldState
 var _simulation: Simulation
@@ -497,12 +513,15 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.SCREE and cell_relief(grid, cell) < SCREE_MIN_RELIEF_M:
 			# o cascalho só escorre pela encosta
 			continue
+		elif kind == Kind.TALL_GRASS and (tropical or not tall_grass_patch(island_id, cell) or poppy_patch(island_id, cell)):
+			# o capim alto só nas manchas dele das temperadas, e não por cima das papoulas
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
-		elif kind == Kind.POPPIES:
-			# o canteiro cobre a célula: quase no meio, para não entrar na rua do lado
+		elif kind == Kind.POPPIES or kind == Kind.TALL_GRASS:
+			# o canteiro e a touceira cobrem a célula: quase no meio, para não entrar na rua do lado
 			offset *= 0.3
 		elif lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
@@ -522,7 +541,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD:
@@ -560,6 +579,55 @@ static func poppy_patch(island_id: int, cell: Vector2i) -> bool:
 	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
 	return lerpf(lerpf(_poppy_nodes[0], _poppy_nodes[1], f.x), lerpf(_poppy_nodes[2], _poppy_nodes[3], f.x), f.y) \
 			> POPPY_THRESHOLD
+
+
+## Fase 167: se a célula fica numa mancha de capim alto — o mesmo ruído das papoulas, com outro passo e outra semente (as
+## manchas não coincidem com os canteiros), e os nós da última célula guardados à parte.
+static func tall_grass_patch(island_id: int, cell: Vector2i) -> bool:
+	var at := Vector2(cell) / TALL_GRASS_PATCH_CELLS
+	var base := Vector2i(floori(at.x), floori(at.y))
+	var salt := island_id + 7919
+	var key := Vector3i(base.x, base.y, island_id)
+	if key != _grass_key:
+		_grass_key = key
+		_grass_nodes = PackedFloat32Array([_poppy_node(salt, base), _poppy_node(salt, base + Vector2i(1, 0)),
+				_poppy_node(salt, base + Vector2i(0, 1)), _poppy_node(salt, base + Vector2i(1, 1))])
+	if maxf(maxf(_grass_nodes[0], _grass_nodes[1]), maxf(_grass_nodes[2], _grass_nodes[3])) <= TALL_GRASS_THRESHOLD:
+		return false
+	var f := at - Vector2(base)
+	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
+	return lerpf(lerpf(_grass_nodes[0], _grass_nodes[1], f.x), lerpf(_grass_nodes[2], _grass_nodes[3], f.x), f.y) \
+			> TALL_GRASS_THRESHOLD
+
+
+## Fase 167: a touceira de capim alto — TALL_GRASS_BLADES folhas finas num disco de TALL_GRASS_RADIUS_M, cada uma um triângulo
+## comprido (verde no pé, palha na ponta) inclinado para fora, e uma espiga em cada terceira folha. Normais para cima, como as
+## papoulas.
+static func tall_grass_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 167
+	var golden := PI * (3.0 - sqrt(5.0))
+	for i: int in TALL_GRASS_BLADES:
+		var reach := TALL_GRASS_RADIUS_M * sqrt((i + 0.5) / TALL_GRASS_BLADES)
+		var angle := golden * i + rng.randf_range(-0.3, 0.3)
+		var foot := Vector3(cos(angle) * reach, 0.0, sin(angle) * reach)
+		var height := rng.randf_range(TALL_GRASS_HEIGHT_M.x, TALL_GRASS_HEIGHT_M.y)
+		var lean := Vector3(cos(angle), 0.0, sin(angle)) * rng.randf_range(0.08, 0.25)
+		var tip := foot + lean + Vector3(0.0, height, 0.0)
+		var yaw := rng.randf() * TAU
+		var side := Vector3(cos(yaw), 0.0, sin(yaw)) * 0.025
+		_flat_tri(tool, foot - side, foot + side, tip, TALL_GRASS_GREEN)
+		var top_color := TALL_GRASS_GREEN.lerp(TALL_GRASS_STRAW, 0.7)
+		_flat_tri(tool, foot + side, tip, foot + side * 0.3 + Vector3(0.0, height * 0.5, 0.0) + lean * 0.5, top_color)
+		if i % 3 == 0:
+			# a espiga: um losango de palha na ponta
+			var up := (tip - foot).normalized()
+			var across := up.cross(Vector3.UP).normalized() * 0.03 if absf(up.y) < 0.99 else Vector3.RIGHT * 0.03
+			_flat_quad(tool, tip, tip + up * 0.08 + across, tip + up * 0.17, tip + up * 0.08 - across, TALL_GRASS_STRAW)
+	tool.index()
+	return tool.commit()
 
 
 static func _poppy_node(island_id: int, node: Vector2i) -> float:
@@ -706,6 +774,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return driftwood_mesh()
 	if kind == Kind.SCREE:
 		return scree_mesh()
+	if kind == Kind.TALL_GRASS:
+		return tall_grass_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:

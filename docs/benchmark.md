@@ -1890,3 +1890,9 @@ Neutra; abre o roteiro chão batido, feno e gaivota.
 Mesmo estado (jogo novo 11,6 s): 81,7 FPS (165: 83,5), 1% low 40,0, pior quadro 28 ms, p50/p95/p99 11,5/15,7/23,3 ms, GPU
 11,2 ms, montar tudo 9,4 s, carregar 5,6 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem medas). Neutra.
+
+## Fase 167 — capim alto nos terrenos vazios (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,8 FPS (166: 81,7), 1% low 39,2, pior quadro 33 ms, p50/p95/p99 11,3/15,7/23,7 ms, GPU
+11,1 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 16,9 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio). Neutra.

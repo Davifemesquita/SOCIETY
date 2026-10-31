@@ -2545,6 +2545,12 @@ Regras que já custaram investigação:
   o ângulo anda no sentido do `VertexShapes.cylinder`** (x = cos, z = −sen), senão as faces ficam para dentro. Captura em
   `tools/capture_phase166.tscn`.
 
+### Capim alto nos terrenos vazios (Fase 167, nossa)
+
+- **Plano** em `docs/plano_fase167.md`. `ScatterView.Kind.TALL_GRASS` (no fim do enum e da lista `OPEN`) só nas manchas de
+  `tall_grass_patch` (o ruído das papoulas com outro passo e semente), fora dos canteiros de papoulas e das tropicais;
+  `tall_grass_mesh`. Captura em `tools/capture_phase167.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2722,6 +2728,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 164 — Caldeira das árvores (nossa) | **feita em 31/10/2026**, a última do roteiro cunhal, deriva e horta: anel de pedra com a terra e a grade de ferro no pé de cada árvore da alameda; plano em `docs/plano_fase164.md` |
 | 165 — Chão batido das fábricas (nossa) | **feita em 31/10/2026**, primeira do roteiro chão batido, feno e gaivota (Fases 165 a 169): terra batida de borda recortada em volta de todo prédio de produção; plano em `docs/plano_fase165.md` |
 | 166 — Medas de feno (nossa) | **feita em 31/10/2026**: duas medas de feno redondas com a vara no alto ao lado das fazendas de ovelhas, porcos e trigo; plano em `docs/plano_fase166.md` |
+| 167 — Capim alto nos terrenos vazios (nossa) | **feita em 31/10/2026**: manchas de capim alto e espigado, verde no pé e cor de palha nas pontas, no campo aberto das ilhas temperadas, fora dos canteiros de papoulas; plano em `docs/plano_fase167.md` |
 
 Pendências já vistas para fases futuras:
 
