@@ -1700,3 +1700,9 @@ na cidade do benchmark). Neutra.
 Mesmo estado (jogo novo 11,6 s): 76,6 FPS (137: 76,5), 1% low 39,8, pior quadro 28 ms, p50/p95/p99 12,3/17,0/23,8 ms, GPU
 11,9 ms, carregar 5,4 s; objetos, draw calls e primitivas iguais (a chapa é a mesma malha com outra conta no shader do kit).
 Neutra.
+
+## Fase 139 — redes de pesca (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,2 FPS (138: 76,6), 1% low 39,9, pior quadro 30 ms, p50/p95/p99 12,3/16,7/23,3 ms, GPU
+11,9 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a cidade do benchmark não tem cabana de pesca). Neutra;
+fecha o roteiro galinha, forno e mina no patamar de ~77 FPS e GPU ~12 ms.

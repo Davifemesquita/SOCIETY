@@ -112,6 +112,8 @@ var chicken_view: ChickenView
 var spoil_tip_view: SpoilTipView
 ## Fase 137: a boca do forno acesa nas fábricas de forno.
 var furnace_glow_view: FurnaceGlowView
+## Fase 139: as redes de pesca secando ao lado das cabanas de pesca.
+var fish_net_view: FishNetView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -351,6 +353,10 @@ func _ready() -> void:
 	furnace_glow_view.name = "FurnaceGlows"
 	add_child(furnace_glow_view)
 	furnace_glow_view.setup(simulation)
+	fish_net_view = FishNetView.new()
+	fish_net_view.name = "FishNets"
+	add_child(fish_net_view)
+	fish_net_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

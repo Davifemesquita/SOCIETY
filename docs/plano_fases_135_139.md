@@ -18,3 +18,11 @@ nenhum modelo, textura, arquivo ou medida do jogo; tudo gerado no código.
 | 139 — Redes de pesca | a cabana de pesca ganha os cavaletes com as redes estendidas secando e as caixas de peixe |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase135.md` a
+`docs/plano_fase139.md`), testes, captura e benchmark. Diferenças do roteiro: as galinhas (135) andam cada uma no seu
+trecho do quintal (juntas, uma atravessava a outra); o monte de rejeito (136) também tira o lugar dos silos e das bombas
+d'água; a boca do forno (137) deixa uma poça de luz laranja no chão à noite; a chapa ondulada (138) também cobre as
+usinas, as conservas, as máquinas de costura e a fábrica de lâmpadas.

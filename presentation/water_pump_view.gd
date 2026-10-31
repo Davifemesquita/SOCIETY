@@ -98,6 +98,9 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	# Fase 136: nem no trilho e no monte de rejeito das minas
 	for cell: Vector2i in SpoilTipView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 139: nem nas redes de pesca
+	for cell: Vector2i in FishNetView.cells(world, data, island_id):
+		taken[cell] = true
 	for cell: Vector2i in FarmSiloView.cells(world, data, island_id):
 		taken[cell] = true
 	for id: int in ids:

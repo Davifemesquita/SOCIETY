@@ -2353,6 +2353,13 @@ Regras que já custaram investigação:
   `corrugated`, e o `shaders/building_kit.gdshader` troca as telhas por `iron_sheet_shade` (ondas, chapas sobrepostas e a
   ferrugem escorrendo das juntas), sem o relevo das telhas no mapa de normais. Captura em `tools/capture_phase138.tscn`.
 
+### Redes de pesca (Fase 139, nossa)
+
+- **Plano** em `docs/plano_fase139.md`. `FishNetView` (`GameScreen.fish_net_view`): `sites` (a célula livre ao lado de cada
+  cabana de pesca, mais para o mar, e o lado longe dela), dois cavaletes com a rede recortada em losangos no
+  `shaders/fish_net.gdshader` (alpha scissor pela UV em metros) e as caixas de peixe, numa malha de duas superfícies. O
+  recheio, os silos e as bombas deixam a célula limpa (`cells`). Captura em `tools/capture_phase139.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2502,6 +2509,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 136 — Vagoneta e rejeito (nossa) | **feita em 31/10/2026**: em cada mina, um trilho curto sobre cavaletes sai da parede até um monte de rejeito na cor do minério, com a vagoneta saindo cheia, virando na ponta e voltando enquanto a mina produz; plano em `docs/plano_fase136.md` |
 | 137 — Boca do forno acesa (nossa) | **feita em 31/10/2026**: a padaria, a olaria, a vidraria, a fundição e a de vigas de aço ganham uma boca de forno em arco de tijolo numa fachada do lado, com o fogo tremulando enquanto produzem e a luz laranja no chão à noite; plano em `docs/plano_fase137.md` |
 | 138 — Telhado de chapa ondulada (nossa) | **feita em 31/10/2026**: a olaria, a fundição, a vidraria, as usinas, a de vigas de aço, as conservas, as máquinas de costura e a de lâmpadas trocam as telhas por chapa de ferro ondulada, cinza com a ferrugem escorrendo das juntas; plano em `docs/plano_fase138.md` |
+| 139 — Redes de pesca (nossa) | **feita em 31/10/2026**, a última do roteiro galinha, forno e mina: ao lado de cada cabana de pesca, dois cavaletes com a rede estendida secando, as boias de cortiça, as caixas de peixe e o cesto; plano em `docs/plano_fase139.md` |
 
 Pendências já vistas para fases futuras:
 

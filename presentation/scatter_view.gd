@@ -304,6 +304,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 136: e o trilho e o monte de rejeito das minas
 	for cell: Vector2i in SpoilTipView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 139: e as redes de pesca
+	for cell: Vector2i in FishNetView.cells(world, data, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 
