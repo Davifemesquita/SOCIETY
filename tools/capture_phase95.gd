@@ -85,6 +85,9 @@ func _run() -> void:
 			break
 	# Fase 143: a cerca de estacas dos operários, de perto
 	await _shot("cerca_de_estacas.png", grid.cell_world(streets[1] + Vector2i(0, -1)), 12.0, 0.3)
+	# Fase 163: as hortas atrás das casas dos camponeses e dos operários, vistas dos fundos
+	await _shot("hortas_camponeses.png", grid.cell_world(Vector2i(ORIGIN.x + 9, ORIGIN.y - 1)), 15.0, PI + 0.4)
+	await _shot("hortas_operarios.png", grid.cell_world(Vector2i(ORIGIN.x + 9, ORIGIN.y + STREET_STEP - 1)), 13.0, PI - 0.4)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina
 	await _shot("cunhais.png", grid.cell_world(streets[2] + Vector2i(1, -1)), 13.0, 0.75)
 	# Fase 102: o andar saliente com enxaimel, de perto

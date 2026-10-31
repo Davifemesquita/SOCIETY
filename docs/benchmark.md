@@ -1864,3 +1864,10 @@ quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio)
 Mesmo estado (jogo novo 11,7 s): 83,6 FPS (161: 83,0), 1% low 39,1, pior quadro 35 ms, p50/p95/p99 11,3/15,5/23,4 ms, GPU
 11,0 ms, montar tudo 9,7 s, carregar 5,5 s, construir com a ilha cheia 16,9 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível. Neutra.
+
+## Fase 163 — horta no quintal (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 82,6 FPS (162: 83,6), 1% low 39,5, pior quadro 31 ms, p50/p95/p99 11,3/15,3/23,6 ms, GPU
+11,0 ms, montar tudo 9,4 s, carregar 5,6 s (162: 5,5; na oscilação de 0,1 s entre rodadas), construir com a ilha cheia 17,2 ms;
++2 objetos e draw calls e +15 mil primitivas no quadro com tudo visível (as hortas da cidade do benchmark, uma malha só).
+Neutra.

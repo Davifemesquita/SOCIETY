@@ -2516,6 +2516,14 @@ Regras que já custaram investigação:
   só nas células de encosta (`cell_relief` pelos cantos, a partir de `SCREE_MIN_RELIEF_M`), deitado no plano dela
   (`cell_normal`); `scree_mesh`. Captura em `tools/capture_phase162.tscn`.
 
+### Horta no quintal (Fase 163, nossa)
+
+- **Plano** em `docs/plano_fase163.md`. `KitchenGardenView` (`GameScreen.kitchen_garden_view`): `cells`/`spot` (a célula de trás
+  das casas de camponeses e operários no resto `GARDEN_REST` do id; **a mesma célula da fogueira, resto 0, e do varal, resto 1**)
+  e `garden_mesh` (canteiro, couves, alfaces e a tenda de feijão). O recheio e as bombas deixam a célula. **Não misture
+  `CropView._part` (põe normal) com `VertexShapes` (sem normal) no mesmo `SurfaceTool`**: o Godot reclama no log; aqui as folhas
+  vão por `_blob`, sem normal. Captura: `hortas_*.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2689,6 +2697,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 160 — Cunhais de pedra (nossa) | **feita em 31/10/2026**, primeira do roteiro cunhal, deriva e horta (Fases 160 a 164): blocos de pedra clara alternados nas quatro quinas das casas dos artesãos e engenheiros, da soleira à cornija; plano em `docs/plano_fase160.md` |
 | 161 — Madeira à deriva (nossa) | **feita em 31/10/2026**: troncos velhos, cinzentos de sal, com as raízes quebradas, largados na praia e nas pedras baixas da costa; plano em `docs/plano_fase161.md` |
 | 162 — Cascalho nas encostas (nossa) | **feita em 31/10/2026**: montinhos de pedrinhas soltas deitados nas encostas íngremes e acumulados no pé delas; plano em `docs/plano_fase162.md` |
+| 163 — Horta no quintal (nossa) | **feita em 31/10/2026**: canteiro com couves, alfaces e a tenda de feijão atrás de uma casa de camponeses ou operários a cada três, ao lado do varal e da fogueira das vizinhas; plano em `docs/plano_fase163.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -130,6 +130,8 @@ var quay_mast_view: QuayMastView
 var lumber_yard_view: LumberYardView
 ## Fase 159: o pátio de tijolos crus secando junto das olarias.
 var brick_yard_view: BrickYardView
+## Fase 163: a horta atrás de parte das casas dos camponeses e operários.
+var kitchen_garden_view: KitchenGardenView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -413,6 +415,10 @@ func _ready() -> void:
 	brick_yard_view.name = "BrickYards"
 	add_child(brick_yard_view)
 	brick_yard_view.setup(simulation)
+	kitchen_garden_view = KitchenGardenView.new()
+	kitchen_garden_view.name = "KitchenGardens"
+	add_child(kitchen_garden_view)
+	kitchen_garden_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
