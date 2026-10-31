@@ -73,6 +73,9 @@ func _run() -> void:
 	await _shot("fabricas_de_perto.png", grid.cell_world(Vector2i(ORIGIN.x + 47, big_y - 2)), 30.0, PI * 0.2)
 	# Fase 114: o gradil das casas dos engenheiros, de perto
 	await _shot("gradil_de_perto.png", grid.cell_world(streets[3] + Vector2i(0, -1)), 12.0, 0.3)
+	# Fase 153: as floreiras das sacadas dos engenheiros e investidores, de perto
+	await _shot("sacadas_floridas.png", grid.cell_world(streets[3] + Vector2i(0, -1)), 14.0, 0.25)
+	await _shot("sacadas_floridas_b.png", grid.cell_world(streets[4] + Vector2i(0, -1)), 16.0, 0.25)
 	# Fase 143: a cerca de estacas dos operários, de perto
 	await _shot("cerca_de_estacas.png", grid.cell_world(streets[1] + Vector2i(0, -1)), 12.0, 0.3)
 	# Fase 102: o andar saliente com enxaimel, de perto

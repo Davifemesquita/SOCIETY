@@ -1796,3 +1796,10 @@ quadro com tudo visível (a placa entra na malha de cada loja, e as lojas do ben
 Mesmo estado (jogo novo 11,6 s): 75,3 FPS (151: 75,3), 1% low 39,2, pior quadro 33 ms, p50/p95/p99 12,5/17,2/23,6 ms, GPU
 12,2 ms, montar tudo 9,7 s, carregar 5,4 s, construir com a ilha cheia 17,9 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem largo). Neutra.
+
+## Fase 153 — flores nas sacadas (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 75,1 FPS (152: 75,3), 1% low 40,0, pior quadro 31 ms, p50/p95/p99 12,6/17,1/23,6 ms, GPU
+12,2 ms, montar tudo 9,8 s, carregar 5,4 s, construir com a ilha cheia 18,1 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (as floreiras entram na malha de cada casa, e as casas com sacada ficam fora do quadro medido).
+Neutra.

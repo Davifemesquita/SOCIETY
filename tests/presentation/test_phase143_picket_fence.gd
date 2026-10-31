@@ -22,8 +22,11 @@ func test_only_the_workers_get_the_picket_fence() -> void:
 
 
 func test_the_fence_changes_the_shape_and_adds_triangles() -> void:
-	var with_fence := _spec(&"workers")
-	var without := _spec(&"workers")
+	# as duas formas da mesma casa (outra casa tem outra variação de telhado e ala)
+	var id := SimFixture.house(_sim, 20 + _sim.world.buildings.size() * 4, 12, &"workers", 5.0)
+	var record := _sim.world.building(id)
+	var with_fence := BuildingKit.spec_for(_sim, record, _sim.world.island(0).cell_size)
+	var without := BuildingKit.spec_for(_sim, record, _sim.world.island(0).cell_size)
 	without.picket = false
 	assert_str(with_fence.key()).is_not_equal(without.key())
 	assert_int(BuildingKit.triangles(with_fence)).is_greater(BuildingKit.triangles(without))

@@ -2445,6 +2445,13 @@ Regras que já custaram investigação:
   109 que dão para a estrada, com aberturas e sem o lado do poste de gás), `bollard_mesh` e `_chain`, numa malha só.
   Captura em `tools/capture_phase152.tscn`.
 
+### Flores nas sacadas (Fase 153, nossa)
+
+- **Plano** em `docs/plano_fase153.md`. `Spec.balcony_flowers` (engenheiros e investidores; na chave) e `_balcony_box` (a caixa
+  de madeira e a folhagem com flores na célula (3, 3) da paleta, `UV_FOLIAGE`, por fora do guarda-corpo). **Teste que
+  compara a forma com e sem um detalhe usa a mesma casa** (cada id tem a sua variação). Captura: `sacadas_floridas.png` no
+  `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2608,6 +2615,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 150 — Coluna de anúncios (nossa) | **feita em 31/10/2026**, primeira do roteiro coluna, placa e velocípede (Fases 150 a 154): colunas redondas de cartazes coloridos com o chapéu de ferro no canto de dentro das esquinas calçadas; plano em `docs/plano_fase150.md` |
 | 151 — Placas das lojas (nossa) | **feita em 31/10/2026**: placa pendurada num braço de ferro ao lado da porta da padaria, do açougue, da taverna, do ourives, do relojoeiro, do óptico, da torrefação e da charutaria, com a figura do ofício pintada (sem texto); plano em `docs/plano_fase151.md` |
 | 152 — Balizas com corrente (nossa) | **feita em 31/10/2026**: balizas de ferro com correntes caindo em curva na beira do largo calçado dos serviços, de frente para a rua, com aberturas para entrar; plano em `docs/plano_fase152.md` |
+| 153 — Flores nas sacadas (nossa) | **feita em 31/10/2026**: floreiras de madeira com folhagem e flores vermelhas, rosas e amarelas penduradas por fora do guarda-corpo das sacadas dos engenheiros e investidores; plano em `docs/plano_fase153.md` |
 
 Pendências já vistas para fases futuras:
 

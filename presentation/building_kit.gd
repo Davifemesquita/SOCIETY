@@ -189,6 +189,12 @@ const PLANKS := "planks-half"
 const FENCE_M := 1.0
 const BALCONY_OUT_M := 0.8
 const FLOWER_BOX_OUT_M := 0.16
+## Fase 153: a floreira das sacadas sai tanto além da frente da sacada e fica tanto acima do piso dela (por fora do
+## guarda-corpo, logo abaixo do corrimão).
+const BALCONY_FLOWERS_OUT_M := 0.16
+const BALCONY_FLOWERS_UP_M := 0.62
+## A célula (3, 3) da paleta: folhagem com flores no shader do kit (a sebe e as floreiras).
+const UV_FOLIAGE := Vector2(3.5 / 8.0, 3.5 / 4.0)
 const PORTICO_HEIGHT := 0.95
 ## Ornamento das casas (Fase 18), dos artesãos para cima: cornija no alto das paredes, verga de pedra
 ## sobre cada janela e, nos engenheiros e investidores, a faixa entre os andares; o frontão no alto da
@@ -410,11 +416,13 @@ class Spec:
 	var picket: bool = false
 	## Fase 151: a placa da loja pendurada no braço de ferro ao lado da porta (0 sem; 1.., a figura do ofício).
 	var shop_sign: int = 0
+	## Fase 153: as floreiras penduradas por fora do guarda-corpo das sacadas (engenheiros e investidores).
+	var balcony_flowers: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -452,6 +460,7 @@ class Spec:
 		copy.mansard = mansard
 		copy.picket = picket
 		copy.shop_sign = shop_sign
+		copy.balcony_flowers = balcony_flowers
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -606,6 +615,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		# Fase 104: o lampião de parede junto da porta (a casa com toldo já tem a loja)
 		spec.lantern = spec.awning == 0 and spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES,
 				TierDef.HouseTrim.PORTICO]
+		# Fase 153: as floreiras das sacadas dos engenheiros e investidores
+		spec.balcony_flowers = spec.trim in [TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]
 		# Fase 143: a cerca de estacas dos operários (sem o alpendre tropical, que tem o guarda-corpo dele)
 		spec.picket = spec.trim == TierDef.HouseTrim.NONE and spec.court_rows == 0
 		return spec
@@ -1311,6 +1322,19 @@ static func shop_sign_center(spec: Spec) -> Vector3:
 	var arm := hall.floor_m() * (AWNING_AT if spec.awning > 0 else 0.62) + SIGN_ABOVE_AWNING_M
 	var out := SIGN_OUT_M + SIGN_BOARD_M.z * 0.5
 	return wall + _face_normal(0) * out + Vector3.UP * (arm - SIGN_GAP_M - SIGN_BOARD_M.y * 0.5)
+
+
+## Fase 153: a floreira da sacada com o meio da caixa em at (referencial canônico, a fachada da frente com a normal −Z): a
+## caixa de madeira de comprimento width ao longo da parede e a folhagem com flores transbordando (a célula (3, 3) da
+## paleta, que o shader do kit pinta de folha e flor).
+static func _balcony_box(tool: SurfaceTool, at: Vector3, width: float) -> void:
+	_box(tool, at, Vector3(width, 0.2, 0.22), UV_TIMBER)
+	_box(tool, at + Vector3(0.0, 0.16, 0.0), Vector3(width - 0.04, 0.16, 0.2), UV_FOLIAGE)
+	for k: int in 3:
+		var x := (k - 1) * width * 0.32
+		_box(tool, at + Vector3(x, 0.27, -0.02), Vector3(width * 0.26, 0.12, 0.18), UV_FOLIAGE)
+		# os ramos que pendem por fora da caixa
+		_box(tool, at + Vector3(x + width * 0.08, 0.0, -0.13), Vector3(width * 0.14, 0.26, 0.04), UV_FOLIAGE)
 
 
 ## A placa: o braço de ferro com a mão-francesa, as duas argolas, a tábua de madeira escura com a moldura e a figura do
@@ -2025,6 +2049,11 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 					# o piso de tábuas vai da parede (x = 0 da peça) até a frente da sacada
 					_append_piece(tool, PLANKS, offset * _face_place(hall, 0, index, level,
 							Vector3(BALCONY_OUT_M * 2.0, 2.0, 1.0), BALCONY_OUT_M, -0.12))
+					# Fase 153: a floreira pendurada por fora do guarda-corpo, uma por célula
+					if hall.balcony_flowers:
+						var spot := spec.hall_offset() + _wall_point(hall, 0, index, level) \
+								+ _face_normal(0) * (BALCONY_OUT_M + BALCONY_FLOWERS_OUT_M) + Vector3.UP * BALCONY_FLOWERS_UP_M
+						_balcony_box(extra, spot, hall.size_m().x / hall.cells.x * 0.62)
 				# grade de ferro na frente e nas duas pontas da sacada corrida
 				var floor_y := level * hall.floor_m()
 				var half := hall.size_m() * 0.5
