@@ -18,3 +18,11 @@ medida do jogo; tudo gerado no código.
 | 149 — Cata-vento no pasto | o cata-vento de lâminas sobre a torre de vigas junto do cocho de cada pasto, girando com o vento |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase145.md` a
+`docs/plano_fase149.md`), testes, captura e benchmark. Diferenças do roteiro: o relógio (145) pediu a conta do lugar do
+modelo com o desvio de meio grau (`BuildingView.model_place`), senão a parede da torre o cobria; a grade (146) fica aberta
+também diante do entreposto, onde os barcos encostam; o terreiro do lenhador (148) fez a `TreeView` refazer o corte da
+clareira também na estrada e na derrubada de árvores, no quadro seguinte.

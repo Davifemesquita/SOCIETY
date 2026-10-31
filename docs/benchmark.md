@@ -1769,3 +1769,10 @@ FPS. Com o recálculo adiado para o quadro seguinte (juntando os pedidos), mesmo
 75,6), 1% low 39,9, pior quadro 32 ms, p50/p95/p99 12,4/17,1/23,2 ms, GPU 12,0 ms, montar tudo 9,6 s, carregar 5,4 s,
 construir com a ilha cheia 17,5 ms; +3 objetos e draw calls e +41.493 primitivas no quadro com tudo visível (os terreiros dos
 lenhadores da cidade do benchmark). Neutra.
+
+## Fase 149 — cata-vento no pasto (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 75,3 FPS (148: 76,2), 1% low 39,1, pior quadro 33 ms, p50/p95/p99 12,6/17,2/23,6 ms, GPU
+12,2 ms, montar tudo 9,5 s, carregar 5,4 s, construir com a ilha cheia 17,3 ms; +10 objetos e draw calls e primitivas iguais
+no quadro com tudo visível (as torres e as rodas dos pastos da cidade do benchmark, fora do quadro medido). Neutra, dentro da
+faixa do patamar (75 a 78 FPS); fecha o roteiro relógio, cais e cata-vento.
