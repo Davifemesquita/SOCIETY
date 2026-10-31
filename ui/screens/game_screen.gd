@@ -90,6 +90,8 @@ var farm_silo_view: FarmSiloView
 var pasture_trough_view: PastureTroughView
 ## Fase 119: as poças de luz no chão à noite, debaixo dos postes, das fogueiras e nas portas das casas.
 var light_pool_view: LightPoolView
+## Fase 120: os postes e os fios pelas ruas em volta das usinas.
+var power_line_view: PowerLineView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -282,6 +284,10 @@ func _ready() -> void:
 	light_pool_view.name = "LightPools"
 	add_child(light_pool_view)
 	light_pool_view.setup(simulation, lamp_view)
+	power_line_view = PowerLineView.new()
+	power_line_view.name = "PowerLines"
+	add_child(power_line_view)
+	power_line_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

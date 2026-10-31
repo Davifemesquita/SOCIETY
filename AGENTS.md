@@ -2230,6 +2230,13 @@ Regras que já custaram investigação:
   das casas com morador), discos no chão somados pelo `shaders/light_pool.gdshader` (aceso pelo global `night_light`, sem
   luz de verdade), escondidos de dia; a `LampView` avisa com o sinal `rebuilt`. Captura em `tools/capture_phase119.tscn`.
 
+### Postes e fios (Fase 120, nossa)
+
+- **Plano** em `docs/plano_fase120.md`, primeira do roteiro `docs/plano_fases_120_124.md` (fios, riacho e mansarda).
+  `PowerLineView` (`GameScreen.power_line_view`): `poles` (ruas até o raio das usinas, resto `POLE_REST` de `x + 3y`, longe
+  dos postes de gás), `links` só com vão livre (`clear_span`: fio por cima de prédio entrava na parede) e dois fios por
+  ligação pelo `HarborView.rope_span`. Captura em `tools/capture_phase120.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2360,6 +2367,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 117 — Silos das fazendas (nossa) | **feita em 30/10/2026**: silo de aduelas com telhado cônico ou caixa d'água sobre pés numa célula livre atrás de cada fazenda; plano em `docs/plano_fase117.md` |
 | 118 — Chão gasto no pasto (nossa) | **feita em 30/10/2026**: manchas de terra pisada na porteira, no cocho e soltas dentro de cada pasto, e um cocho de madeira com água junto da cerca de trás; plano em `docs/plano_fase118.md` |
 | 119 — Poças de luz à noite (nossa) | **feita em 30/10/2026**, a última do roteiro fazenda, taverna e estaleiro: disco de luz quente no chão debaixo de cada poste e fogueira e diante da porta das casas com morador, só à noite e sem luz de verdade; plano em `docs/plano_fase119.md` |
+| 120 — Postes e fios (nossa) | **feita em 30/10/2026**, primeira do roteiro fios, riacho e mansarda (Fases 120 a 124): postes de madeira com travessa e isoladores pelas ruas em volta de cada usina, com dois fios caindo em curva de um poste ao outro, sem passar por cima dos prédios; plano em `docs/plano_fase120.md` |
 
 Pendências já vistas para fases futuras:
 

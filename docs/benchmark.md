@@ -1585,3 +1585,9 @@ Mesmo estado (jogo novo 11,5 s): 80,3 FPS (118: 81,1), 1% low 42,1, pior quadro 
 11,5 ms, carregar 5,2 s. O quadro com tudo visível é de dia, quando a camada das poças fica escondida: objetos, draw calls e
 primitivas iguais aos da 118; o dia inteiro passa pela noite com as poças acesas e a média não mudou. Neutra; fecha o
 roteiro fazenda, taverna e estaleiro no patamar em que a máquina está desde a Fase 115 (~80 FPS, GPU ~11,5 ms).
+
+## Fase 120 — postes e fios (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,8 FPS (119: 80,3), 1% low 40,5, pior quadro 29 ms, p50/p95/p99 12,2/16,6/22,8 ms, GPU
+11,8 ms (119: 11,5), carregar 5,2 s. A cidade do benchmark não tem usina: nenhum poste é desenhado (+5 objetos e draw calls
+da camada vazia, primitivas iguais às da 119). A diferença é da máquina, dentro do que ela varia entre rodadas.
