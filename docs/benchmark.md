@@ -1832,3 +1832,9 @@ quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio)
 Mesmo estado (jogo novo 11,5 s): 84,6 FPS (156: 84,3), 1% low 40,3, pior quadro 37 ms, p50/p95/p99 11,1/15,2/22,8 ms, GPU
 10,9 ms, montar tudo 9,5 s, carregar 5,5 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível. Neutra (dez peças por campo, escondidas até o fim do ciclo, em dois MultiMesh).
+
+## Fase 158 — carroça de lona (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 84,6 FPS (157: 84,6), 1% low 41,3, pior quadro 29 ms, p50/p95/p99 11,1/15,3/22,6 ms, GPU
+10,9 ms, montar tudo 9,3 s, carregar 5,4 s, construir com a ilha cheia 16,9 ms, multidão na CPU 0,29 ms; +5 objetos e draw
+calls (a camada das lonas) e primitivas iguais no quadro com tudo visível. Neutra.

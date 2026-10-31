@@ -4,7 +4,8 @@ extends Node3D
 ## só, para o MultiMesh) com a carga na forma do bem (Fase 13: sacos, barris, caixotes, toras ou monte,
 ## as peças do CargoKit, uma por tonelada) na ida e vazia na volta, puxada por um cavalo (Fase 13, o bicho
 ## da AnimalView andando); sem o modelo, uma caixa marrom. Só lê as carroças da simulação; a posição é interpolada entre o tick anterior e o
-## atual, para andar liso a 60 quadros com 5 ticks por segundo (seção 12).
+## atual, para andar liso a 60 quadros com 5 ticks por segundo (seção 12). Fase 158: parte das carroças que levam saco ou
+## caixote anda com os arcos e a lona por cima da caçamba (covers).
 
 const BODY_COLOR := Color(0.42, 0.3, 0.2)
 const BODY_SIZE := Vector3(1.4, 0.8, 2.3)
@@ -40,6 +41,23 @@ const BACK_M := 1.27
 const WOOD_COLOR := Color(0.4, 0.27, 0.16)
 const LEATHER_COLOR := Color(0.18, 0.1, 0.06)
 const BRASS_COLOR := Color(0.7, 0.55, 0.25)
+## Carroça de lona (Fase 158): a carroça de um prédio a cada COVER_EVERY (pelo id, no resto COVER_REST) cujo bem vai em saco
+## ou caixote (COVERED_PILES; toras, barris e montes vão à mostra) leva os arcos e a lona sobre a caçamba, na ida e na volta,
+## e a carga fica escondida debaixo dela. Medidas no referencial da carroça (o chão em y = −HEIGHT_M), tiradas do modelo do
+## kit: as tábuas da caçamba vão de z −0,59 a 1,35, com os lados a ±0,63 m e a borda a 0,54 m.
+const COVER_EVERY := 2
+const COVER_REST := 0
+const COVERED_PILES: Array[int] = [GoodDef.Pile.SACK, GoodDef.Pile.CRATE]
+const CANVAS_CENTER_Z := 0.39
+const CANVAS_HALF_M := 0.94
+const CANVAS_RADIUS_M := 0.62
+const CANVAS_FOOT_M := 0.48
+## A lona sobe um pouco mais que meia volta (o toldo da carroça é mais alto que largo).
+const CANVAS_RISE := 1.15
+const CANVAS_SEGMENTS := 10
+const CANVAS_COLOR := Color(0.86, 0.82, 0.7)
+const CANVAS_INSIDE := Color(0.16, 0.13, 0.1)
+const HOOP_WIDTH_M := 0.06
 
 var _simulation: Simulation
 var _cell_size: float
@@ -50,6 +68,9 @@ var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
 ## O cavalo de cada carroça (null sem o modelo do bicho) e o arreio dele (Fase 18).
 var _horses: MultiMeshInstance3D
 var _harness: MultiMeshInstance3D
+## Fase 158: a lona das carroças cobertas e, por carroça da casa, se ela é coberta (o bem da casa não muda).
+var _covers := MultiMeshInstance3D.new()
+var _covered: Dictionary[int, bool] = {}
 
 
 func setup(simulation: Simulation, cell_size: float) -> void:
@@ -81,6 +102,11 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		layer.multimesh = _multimesh(mesh, CargoKit.tinted(pile))
 		add_child(layer)
 		_cargo[pile] = layer
+	_covers.name = "Covers"
+	_covers.multimesh = _multimesh(canvas_mesh(), false)
+	_covers.multimesh.visible_instance_count = 0
+	add_child(_covers)
+	EventBus.world_replaced.connect(func() -> void: _covered.clear())
 	_horses = AnimalView.layer(&"horse")
 	if _horses != null:
 		_horses.name = "Horses"
@@ -190,6 +216,74 @@ static func model_mesh() -> ArrayMesh:
 	return mesh
 
 
+## Fase 158: se a carroça do prédio home_id, cujo bem vai na pilha pile (GoodDef.Pile), anda de lona.
+static func covers(pile: int, home_id: int) -> bool:
+	return pile in COVERED_PILES and posmod(home_id, COVER_EVERY) == COVER_REST
+
+
+## Fase 158: a lona sobre a caçamba, no referencial da carroça — a meia volta da lona (um pouco mais alta que larga) de ponta
+## a ponta, três arcos de madeira (as pontas e o meio) saltando dela e, um pouco para dentro de cada ponta, o escuro de
+## dentro. Sem esconder a face de trás: pela ponta aberta se vê o lado de dentro.
+static func canvas_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var front := CANVAS_CENTER_Z - CANVAS_HALF_M
+	var back := CANVAS_CENTER_Z + CANVAS_HALF_M
+	_arch(tool, CANVAS_RADIUS_M, front, back, CANVAS_COLOR)
+	for z: float in [front, CANVAS_CENTER_Z, back]:
+		var from := clampf(z - HOOP_WIDTH_M * 0.5, front, back - HOOP_WIDTH_M)
+		_arch(tool, CANVAS_RADIUS_M + 0.02, from, from + HOOP_WIDTH_M, WOOD_COLOR)
+	for z: float in [front + 0.06, back - 0.06]:
+		for i: int in CANVAS_SEGMENTS:
+			tool.set_normal(Vector3(0.0, 0.0, signf(z - CANVAS_CENTER_Z)))
+			tool.set_color(CANVAS_INSIDE)
+			tool.add_vertex(Vector3(0.0, CANVAS_FOOT_M, z))
+			for k: int in [i, i + 1]:
+				var angle := PI * k / CANVAS_SEGMENTS
+				tool.set_normal(Vector3(0.0, 0.0, signf(z - CANVAS_CENTER_Z)))
+				tool.set_color(CANVAS_INSIDE)
+				tool.add_vertex(_arch_point(CANVAS_RADIUS_M * 0.96, angle, z))
+	var mesh := tool.commit()
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	material.vertex_color_is_srgb = true
+	material.roughness = 0.95
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+## A meia volta de raio radius entre z = from e z = to, com a normal para fora.
+static func _arch(tool: SurfaceTool, radius: float, from: float, to: float, color: Color) -> void:
+	for i: int in CANVAS_SEGMENTS:
+		var a := PI * i / CANVAS_SEGMENTS
+		var b := PI * (i + 1) / CANVAS_SEGMENTS
+		for corner: Array in [[a, from], [b, from], [b, to], [a, from], [b, to], [a, to]]:
+			var angle: float = corner[0]
+			var z: float = corner[1]
+			tool.set_normal(Vector3(cos(angle), sin(angle), 0.0))
+			tool.set_color(color)
+			tool.add_vertex(_arch_point(radius, angle, z))
+
+
+static func _arch_point(radius: float, angle: float, z: float) -> Vector3:
+	return Vector3(cos(angle) * radius, CANVAS_FOOT_M + sin(angle) * radius * CANVAS_RISE, z)
+
+
+## Fase 158: quantas carroças de lona estão na rua.
+func visible_covers() -> int:
+	return _covers.multimesh.visible_instance_count
+
+
+func _is_covered(cart: Cart) -> bool:
+	if not _covered.has(cart.home_id):
+		var home := _simulation.world.building(cart.home_id)
+		var def := _simulation.def_of(home) if home != null else null
+		var good := _simulation.data.good(def.output) if def != null and def.output != &"" else null
+		_covered[cart.home_id] = good != null and covers(good.pile, cart.home_id)
+	return _covered[cart.home_id]
+
+
 func _multimesh(mesh: Mesh, colored: bool) -> MultiMesh:
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -243,6 +337,7 @@ func _process(_delta: float) -> void:
 	var items: Dictionary[int, Array] = {}
 	for kind: int in _cargo:
 		items[kind] = []
+	var covered: Array[Transform3D] = []
 	for index: int in away.size():
 		var cart := away[index]
 		var grid := world.island(world.building(cart.home_id).island_id)
@@ -258,6 +353,11 @@ func _process(_delta: float) -> void:
 			AnimalView.place(_horses.multimesh, index, &"horse", Transform3D(basis, place + basis * Vector3(0.0, 0.0, horse_offset())),
 					cart.home_id, &"walk")
 			_harness.multimesh.set_instance_transform(index, Transform3D(basis, place + Vector3(0.0, HEIGHT_M, 0.0)))
+		if _is_covered(cart):
+			# a lona por cima; a carga vai debaixo dela (passaria pela lona)
+			covered.append(Transform3D(basis, place + Vector3(0.0, HEIGHT_M, 0.0)))
+			_loads.multimesh.set_instance_transform(index, Transform3D(basis.scaled(Vector3.ZERO), place))
+			continue
 		var tons := cart.tons()
 		var good := _cargo_good(cart)
 		var pile := good.pile if good != null else GoodDef.Pile.NONE
@@ -271,6 +371,11 @@ func _process(_delta: float) -> void:
 		var load_basis := basis.scaled(Vector3.ONE * clampf(tons / 2.0, 0.0, 1.0)) if tons > 0.0 else basis.scaled(Vector3.ZERO)
 		_loads.multimesh.set_instance_transform(index, Transform3D(load_basis, place + Vector3(0.0, HEIGHT_M + 0.45, 0.0)))
 		_loads.multimesh.set_instance_color(index, _cargo_color(cart))
+	if _covers.multimesh.instance_count < covered.size():
+		_covers.multimesh.instance_count = covered.size() + 16
+	_covers.multimesh.visible_instance_count = covered.size()
+	for index: int in covered.size():
+		_covers.multimesh.set_instance_transform(index, covered[index])
 	for kind: int in items:
 		var multimesh := _cargo[kind].multimesh
 		var list: Array = items[kind]

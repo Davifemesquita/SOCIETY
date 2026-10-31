@@ -236,6 +236,6 @@ static func glow_mesh() -> ArrayMesh:
 				center + Vector3(cos(a0), sin(a0), 0.0) * HALF_W]:
 			tool.set_uv(Vector2((point.x + HALF_W) / (HALF_W * 2.0), (point.y - HEARTH_M) / top))
 			tool.add_vertex(point)
-	tool.set_normal(Vector3(0.0, 0.0, 1.0))
+	# a normal vem do generate_normals: um set_normal depois dos vértices sem normal só dava erro no log
 	tool.generate_normals()
 	return tool.commit()
