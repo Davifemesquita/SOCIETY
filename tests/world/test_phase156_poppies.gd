@@ -15,12 +15,22 @@ func before_test() -> void:
 
 
 func test_the_poppies_are_the_last_rule_of_the_open_field_and_the_road_side() -> void:
-	var open: Array = ScatterView.OPEN.back()
-	var road: Array = ScatterView.NEAR_ROAD.back()
-	assert_int(open[0]).is_equal(ScatterView.Kind.POPPIES)
-	assert_int(road[0]).is_equal(ScatterView.Kind.POPPIES)
-	# depois das peças que já existiam antes delas (as que vieram depois vão no fim do enum)
+	# entraram no fim das duas listas: antes delas só peças mais velhas, depois só as que vieram depois (fim do enum)
+	for rules: Array[Array] in [ScatterView.OPEN, ScatterView.NEAR_ROAD]:
+		assert_bool(_appended(rules, ScatterView.Kind.POPPIES)).is_true()
 	assert_int(ScatterView.Kind.POPPIES).is_greater(ScatterView.Kind.SNAG)
+
+
+## Se a peça está na lista com só peças mais velhas antes dela e só mais novas depois (o sorteio de antes não mudou).
+func _appended(rules: Array[Array], kind: int) -> bool:
+	var seen := false
+	for rule: Array in rules:
+		var other: int = rule[0]
+		if other == kind:
+			seen = true
+		elif (other > kind) != seen:
+			return false
+	return seen
 
 
 func test_the_patches_cover_a_small_share_of_the_land_in_clumps() -> void:

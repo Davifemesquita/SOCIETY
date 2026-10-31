@@ -15,9 +15,21 @@ func before_test() -> void:
 
 
 func test_the_driftwood_is_the_last_rule_of_the_coast() -> void:
-	var coast: Array = ScatterView.NEAR_SEA.back()
-	assert_int(coast[0]).is_equal(ScatterView.Kind.DRIFTWOOD)
+	# entrou no fim da lista: antes dela só peças mais velhas, depois só as que vieram depois (fim do enum)
+	assert_bool(_appended(ScatterView.NEAR_SEA, ScatterView.Kind.DRIFTWOOD)).is_true()
 	assert_int(ScatterView.Kind.DRIFTWOOD).is_greater(ScatterView.Kind.POPPIES)
+
+
+## Se a peça está na lista com só peças mais velhas antes dela e só mais novas depois (o sorteio de antes não mudou).
+func _appended(rules: Array[Array], kind: int) -> bool:
+	var seen := false
+	for rule: Array in rules:
+		var other: int = rule[0]
+		if other == kind:
+			seen = true
+		elif (other > kind) != seen:
+			return false
+	return seen
 
 
 func test_driftwood_washes_up_low_on_the_coast() -> void:

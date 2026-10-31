@@ -14,12 +14,22 @@ func before_test() -> void:
 
 
 func test_the_snag_is_the_last_rule_of_the_forest_edge_and_the_coast() -> void:
-	var forest: Array = ScatterView.NEAR_FOREST.back()
-	var coast: Array = ScatterView.NEAR_SEA.back()
-	assert_int(forest[0]).is_equal(ScatterView.Kind.SNAG)
-	assert_int(coast[0]).is_equal(ScatterView.Kind.SNAG)
-	# depois das peças que já existiam antes dela (as que vieram depois, como as papoulas da Fase 156, vão no fim do enum)
+	# entrou no fim das duas listas: antes dela só peças mais velhas, depois só as que vieram depois (fim do enum)
+	for rules: Array[Array] in [ScatterView.NEAR_FOREST, ScatterView.NEAR_SEA]:
+		assert_bool(_appended(rules, ScatterView.Kind.SNAG)).is_true()
 	assert_int(ScatterView.Kind.SNAG).is_greater(ScatterView.Kind.STREET_PALM)
+
+
+## Se a peça está na lista com só peças mais velhas antes dela e só mais novas depois (o sorteio de antes não mudou).
+func _appended(rules: Array[Array], kind: int) -> bool:
+	var seen := false
+	for rule: Array in rules:
+		var other: int = rule[0]
+		if other == kind:
+			seen = true
+		elif (other > kind) != seen:
+			return false
+	return seen
 
 
 func test_snags_grow_on_temperate_islands_only() -> void:
