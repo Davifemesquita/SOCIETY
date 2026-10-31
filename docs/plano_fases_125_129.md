@@ -18,3 +18,10 @@ ideia**: nenhum modelo, textura, arquivo ou medida do jogo; tudo gerado no códi
 | 129 — Sombra das nuvens | manchas de sombra das nuvens correndo devagar pelo chão e pelo mar, na direção do vento, mais com o céu nublado |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 30/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase125.md` a
+`docs/plano_fase129.md`), testes, captura e benchmark. Diferenças do roteiro: o alpendre (126) é a varanda da Fase 23 nas
+casas dos operários e artesãos, que recuam uma fileira; as cisternas (127) ficam no cais de pedra; as sombras das nuvens
+(129) passam pelo chão e pelo mar, não pela mata.

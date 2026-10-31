@@ -1638,3 +1638,10 @@ Mesmo estado (jogo novo 11,5 s): 76,9 FPS (127: 77,9), 1% low 39,6, pior quadro 
 11,9 ms, carregar 5,3 s; +25 objetos e draw calls (as cinco camadas: quatro de afloramento e a do minério) e +441 mil
 primitivas (+2,8%: os afloramentos de todas as jazidas livres do arquipélago, que o quadro com tudo visível pega de
 longe). Dentro da variação da máquina; se pesar, os afloramentos podem ganhar alcance de visibilidade por ilha.
+
+## Fase 129 — sombra das nuvens (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,5 FPS (128: 76,9), 1% low 40,2, pior quadro 45 ms (um quadro solto; o p99 ficou em
+22,8 ms), p50/p95/p99 12,2/16,9/22,8 ms, GPU 11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a sombra é
+uma conta a mais nos shaders do terreno e da água). Neutra; fecha o roteiro recife, alpendre e nuvens no patamar em que a
+máquina está desde a Fase 120 (~77,5 FPS, GPU ~11,8 ms).

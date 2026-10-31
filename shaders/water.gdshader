@@ -33,6 +33,7 @@ render_mode blend_mix,depth_draw_always,cull_disabled,diffuse_burley,specular_sc
 #define REFRACTION_SCALING // refraction refracts distant objects way too much; scale it down with distance.
 
 #include "res://shaders/coast_waves.gdshaderinc"
+#include "res://shaders/cloud_shadow.gdshaderinc"
 
 uniform bool freeze_time = false; // Toki wo tomare.
 uniform vec4 albedo: source_color;
@@ -605,6 +606,10 @@ void fragment() {
 	// água suja é fosca: menos reflexo do céu
 	ROUGHNESS = mix(ROUGHNESS, 0.55, murk);
 	SPECULAR = mix(SPECULAR, 0.1, murk);
+	// Society (Fase 129): a sombra das nuvens também passa pelo mar (a cor da água sai pela EMISSION com a refração)
+	float cloud_dim = 1.0 - cloud_shadow(world_coordinates.xz, sun_direction.y) * 0.8;
+	ALBEDO *= cloud_dim;
+	EMISSION *= cloud_dim;
 
 	// Society (Fase 110): a cintilação do sol (no espaço da câmera: o reflexo da vista contra a direção do sol)
 	vec3 sun_view = normalize((VIEW_MATRIX * vec4(sun_direction, 0.0)).xyz);

@@ -2288,6 +2288,12 @@ Regras que já custaram investigação:
   pelos lados) e `places` (o afloramento no meio da mancha livre e as pedras do minério na cor do bem, `ORE_COLORS`); a mina
   em cima tira os da mancha. Captura em `tools/capture_phase128.tscn`.
 
+### Sombra das nuvens (Fase 129, nossa)
+
+- **Plano** em `docs/plano_fase129.md`. `shaders/cloud_shadow.gdshaderinc` (incluído pelo terreno e pela água) e os globais
+  `cloud_cover` (a cobertura do `WeatherCycle`) e `cloud_offset` (que a `WeatherView.drift_clouds` soma com o vento a cada
+  quadro). Captura em `tools/capture_phase129.tscn` (põe a cobertura direto no global, com a `WeatherView` parada).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2427,6 +2433,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 126 — Alpendre tropical (nossa) | **feita em 30/10/2026**: as casas dos operários e artesãos das ilhas tropicais recuam uma fileira e ganham alpendre de tábuas com esteios, guarda-corpo e telhado de uma água; plano em `docs/plano_fase126.md` |
 | 127 — Cisternas no cais (nossa) | **feita em 30/10/2026**: duas cisternas redondas de aduelas sobre soco de pedra no cais de pedra de cada entreposto, uma de cada lado; plano em `docs/plano_fase127.md` |
 | 128 — Jazidas à vista (nossa) | **feita em 30/10/2026**: um afloramento de rocha e pedras na cor do minério (carvão, ferro, ouro) sobre cada jazida ainda sem mina; plano em `docs/plano_fase128.md` |
+| 129 — Sombra das nuvens (nossa) | **feita em 30/10/2026**, a última do roteiro recife, alpendre e nuvens: manchas de sombra das nuvens correndo pelo chão e pelo mar na direção do vento, mais com o céu nublado; plano em `docs/plano_fase129.md` |
 
 Pendências já vistas para fases futuras:
 

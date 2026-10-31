@@ -29,6 +29,10 @@ render_mode cull_back;
 
 #include "res://shaders/wet_surface.gdshaderinc"
 #include "res://shaders/coast_waves.gdshaderinc"
+#include "res://shaders/cloud_shadow.gdshaderinc"
+
+// Fase 129: a altura do sol, para a sombra das nuvens só de dia.
+global uniform vec3 sun_direction;
 
 uniform sampler2D grass_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D grass_normal : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
@@ -354,6 +358,8 @@ void fragment() {
 	ground_n.a *= mix(1.0, 0.45, wet_line);
 	// o fundo do mar não molha (já está debaixo d'água)
 	ALBEDO = wet_albedo(ground_a.rgb, land);
+	// Fase 129: a sombra das nuvens correndo pelo chão
+	ALBEDO *= 1.0 - cloud_shadow(world_position.xz, sun_direction.y);
 	NORMAL_MAP = ground_n.rgb;
 	ROUGHNESS = wet_roughness(ground_n.a, land);
 }

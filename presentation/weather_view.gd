@@ -4,7 +4,13 @@ extends Node3D
 ## à neblina (de distância e volumétrica), ao chão molhado (uniforme global wetness, que os
 ## shaders de prédio, estrada e terreno usam) e à chuva (partículas em volta do ponto que a câmera
 ## olha). Desde a Fase 22, o vento: uniformes globais wind_direction e wind_strength (a vegetação
-## balança por eles) e as bandeiras de mastro (WindFlag) giradas a cada quadro. Nenhuma regra de jogo aqui.
+## balança por eles) e as bandeiras de mastro (WindFlag) giradas a cada quadro. Desde a Fase 129, as sombras das nuvens:
+## os globais cloud_cover (a cobertura do céu) e cloud_offset (quanto elas já andaram com o vento). Nenhuma regra de jogo
+## aqui.
+
+## Fase 129: as sombras das nuvens andam CLOUD_DRIFT_M_S com o ar parado e mais CLOUD_WIND_M_S × a força do vento.
+const CLOUD_DRIFT_M_S := 1.5
+const CLOUD_WIND_M_S := 7.0
 
 var sample := WeatherCycle.Sample.new()
 
@@ -21,6 +27,9 @@ var _base_volumetric: float = 0.0
 var hours_override: float = -1.0
 ## Relógio das bandeiras: anda com a velocidade do jogo e para na pausa.
 var wind_time: float = 0.0
+## Fase 129: quanto as sombras das nuvens já andaram (m, no plano x/z): soma o vento a cada quadro (global cloud_offset),
+## então a direção muda sem as sombras saltarem; para na pausa.
+var cloud_offset := Vector2.ZERO
 
 
 func setup(config: GameConfig, simulation: Simulation, sky: SkyAdapter, clouds: CloudsAdapter, camera: StrategyCamera) -> void:
@@ -49,9 +58,17 @@ func set_quality(preset: GraphicsPresetDef) -> void:
 
 
 func _process(delta: float) -> void:
-	wind_time += delta * GameClock.clock.speed_multiplier()
+	var step := delta * GameClock.clock.speed_multiplier()
+	wind_time += step
 	refresh()
+	drift_clouds(step)
 	blow_flags()
+
+
+## Fase 129: anda as sombras das nuvens seconds de jogo na direção do vento.
+func drift_clouds(seconds: float) -> void:
+	cloud_offset += sample.wind_direction * (CLOUD_DRIFT_M_S + CLOUD_WIND_M_S * sample.wind) * seconds
+	RenderingServer.global_shader_parameter_set(&"cloud_offset", cloud_offset)
 
 
 func blow_flags() -> void:
@@ -73,6 +90,7 @@ func refresh() -> void:
 	RenderingServer.global_shader_parameter_set(&"wetness", sample.wetness)
 	RenderingServer.global_shader_parameter_set(&"wind_direction", sample.wind_direction)
 	RenderingServer.global_shader_parameter_set(&"wind_strength", sample.wind)
+	RenderingServer.global_shader_parameter_set(&"cloud_cover", sample.coverage)
 	var drops := roundi(_config.rain_max_drops * _particles_ratio * sample.rain)
 	_rain.emitting = drops > 0
 	if drops > 0:

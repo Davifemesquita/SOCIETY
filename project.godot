@@ -89,3 +89,11 @@ wind_strength={
 "type": "float",
 "value": 0.0
 }
+cloud_cover={
+"type": "float",
+"value": 0.0
+}
+cloud_offset={
+"type": "vec2",
+"value": Vector2(0, 0)
+}
