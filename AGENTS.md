@@ -2301,6 +2301,12 @@ Regras que já custaram investigação:
   `shaders/building_kit.gdshader` troca as telhas por `thatch_shade` (fiadas, fios e palha velha). Captura em
   `tools/capture_phase130.tscn`.
 
+### Bueiros na rua calçada (Fase 131, nossa)
+
+- **Plano** em `docs/plano_fase131.md`. `ManholeView` (`GameScreen.manhole_view`): `cells` (paralelepípedo da vez pela grade,
+  no meio de rua reta) e `cover_mesh`. **O que se põe sobre o paralelepípedo parte de `PavedDual.LIFT_M`**: pela altura da
+  estrada fica debaixo do calçamento. Captura em `tools/capture_phase131.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2442,6 +2448,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 128 — Jazidas à vista (nossa) | **feita em 30/10/2026**: um afloramento de rocha e pedras na cor do minério (carvão, ferro, ouro) sobre cada jazida ainda sem mina; plano em `docs/plano_fase128.md` |
 | 129 — Sombra das nuvens (nossa) | **feita em 30/10/2026**, a última do roteiro recife, alpendre e nuvens: manchas de sombra das nuvens correndo pelo chão e pelo mar na direção do vento, mais com o céu nublado; plano em `docs/plano_fase129.md` |
 | 130 — Telhado de sapê (nossa) | **feita em 31/10/2026**, primeira do roteiro sapê, bueiro e ardósia (Fases 130 a 134): as casas dos camponeses trocam as tábuas do telhado por sapê, com fiadas grossas, fios de palha e o tom de palha velha; plano em `docs/plano_fase130.md` |
+| 131 — Bueiros na rua calçada (nossa) | **feita em 31/10/2026**: tampas redondas de ferro fundido no meio das ruas retas de paralelepípedo, pelo desenho da grade; plano em `docs/plano_fase131.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -100,6 +100,8 @@ var river_stone_view: RiverStoneView
 var surf_spray_view: SurfSprayView
 ## Fase 128: o afloramento e as pedras do minério nas jazidas ainda sem mina.
 var deposit_view: DepositView
+## Fase 131: as tampas de bueiro nas ruas de paralelepípedo.
+var manhole_view: ManholeView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -315,6 +317,10 @@ func _ready() -> void:
 	deposit_view.name = "Deposits"
 	add_child(deposit_view)
 	deposit_view.setup(simulation)
+	manhole_view = ManholeView.new()
+	manhole_view.name = "Manholes"
+	add_child(manhole_view)
+	manhole_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

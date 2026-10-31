@@ -1651,3 +1651,9 @@ máquina está desde a Fase 120 (~77,5 FPS, GPU ~11,8 ms).
 Mesmo estado (jogo novo 11,6 s): 77,0 FPS (129: 77,5), 1% low 40,7, pior quadro 29 ms, p50/p95/p99 12,3/16,7/23,1 ms, GPU
 11,9 ms, carregar 5,4 s; objetos, draw calls e primitivas iguais (o sapê é a mesma malha com outra conta no shader do kit).
 Neutra.
+
+## Fase 131 — bueiros na rua calçada (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,4 FPS (130: 77,0), 1% low 42,1, pior quadro 28 ms, p50/p95/p99 12,3/16,7/22,2 ms, GPU
+11,9 ms, carregar 5,3 s; +1 objeto e draw call (a camada das tampas) e, com a cidade calçada, +200 mil primitivas (as
+tampas das ruas da cidade do benchmark). Neutra.
