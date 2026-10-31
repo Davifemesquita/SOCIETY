@@ -1,10 +1,10 @@
 class_name ManholeView
 extends Node3D
 ## Fase 131: os bueiros. Nas células de paralelepípedo, uma a cada MANHOLE_EVERY pelo desenho da grade
-## (`posmod(5x + 3y, MANHOLE_EVERY) = 0`), e só onde a célula tem estrada dos dois lados de uma direção (o meio da rua, não
-## a esquina nem a ponta), uma tampa redonda de ferro fundido rente ao calçamento, com o aro e a grade em cruz
-## (`cells`, `cover_mesh`). Sem ponte (a ponte de pedra tem o tabuleiro dela). Só apresentação; nada no save; refeito quando
-## a estrada muda e ao trocar de mundo.
+## (`posmod(5x + 3y, MANHOLE_EVERY) = 0`, fora das células dos postes de gás e dos postes dos fios), e só onde a célula tem
+## estrada dos dois lados de uma direção (o meio da rua, não a esquina nem a ponta), uma tampa redonda de ferro fundido
+## rente ao calçamento, com o aro e a grade em cruz (`cells`, `cover_mesh`). Sem ponte (a ponte de pedra tem o tabuleiro
+## dela). Só apresentação; nada no save; refeito quando a estrada muda e ao trocar de mundo.
 
 const MANHOLE_EVERY := 7
 const RADIUS_M := 0.42
@@ -81,6 +81,10 @@ static func cells(grid: IslandGrid) -> Array[Vector2i]:
 			continue
 		var cell := grid.cell_at(index)
 		if posmod(5 * cell.x + 3 * cell.y, MANHOLE_EVERY) != 0:
+			continue
+		# a célula do poste de gás (Fase 13) e a do poste dos fios (Fase 120): a tampa ficava debaixo do pé deles
+		var lamp_rest := posmod(cell.x + 3 * cell.y, LampView.LAMP_EVERY)
+		if lamp_rest == 0 or lamp_rest == PowerLineView.POLE_REST:
 			continue
 		if not grid.ground.is_empty() and grid.ground[index] == IslandGrid.Ground.RIVER:
 			continue

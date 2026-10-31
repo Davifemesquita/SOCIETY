@@ -45,3 +45,11 @@ func test_the_cover_sits_above_the_paving() -> void:
 	# o calçamento da grade dual fica PavedDual.LIFT_M acima do chão: abaixo dele a tampa sumia
 	assert_float(ManholeView.LIFT_M).is_greater(PavedDual.LIFT_M)
 	assert_float(ManholeView.LIFT_M).is_less(PavedDual.LIFT_M + PavedDual.CURB_HEIGHT_M)
+
+
+func test_no_cover_under_a_lamp_or_a_pole() -> void:
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(5, 20), Vector2i(100, 20)), true))
+	for cell: Vector2i in ManholeView.cells(_sim.world.island(0)):
+		var rest := posmod(cell.x + 3 * cell.y, LampView.LAMP_EVERY)
+		assert_int(rest).is_not_equal(0)
+		assert_int(rest).is_not_equal(PowerLineView.POLE_REST)
