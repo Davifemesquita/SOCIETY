@@ -82,6 +82,8 @@ var fishing_boat_view: FishingBoatView
 var lighthouse_view: LighthouseView
 ## Fase 115: a carreira dos estaleiros, com o casco em obra.
 var shipway_view: ShipwayView
+## Fase 116: as mesas e os guarda-sóis em volta das tavernas.
+var tavern_garden_view: TavernGardenView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -258,6 +260,10 @@ func _ready() -> void:
 	shipway_view.name = "Shipways"
 	add_child(shipway_view)
 	shipway_view.setup(simulation)
+	tavern_garden_view = TavernGardenView.new()
+	tavern_garden_view.name = "TavernGardens"
+	add_child(tavern_garden_view)
+	tavern_garden_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

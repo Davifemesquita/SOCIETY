@@ -2205,6 +2205,13 @@ Regras que já custaram investigação:
   caminho), `ramp_mesh` e o casco em obra (`hull_mesh` pelo progresso da encomenda, `hull_transform` com a popa para o mar),
   refeito só quando muda de degrau. Captura em `tools/capture_phase115.tscn`.
 
+### Mesas da taverna (Fase 116, nossa)
+
+- **Plano** em `docs/plano_fase116.md`. `TavernGardenView` (`GameScreen.tavern_garden_view`): `cells` (até `MAX_TABLES`
+  células livres em volta de cada taverna, fora do largo e da alameda), mesa com bancos e guarda-sol listrado (duas malhas:
+  gomos brancos e gomos tingidos pela instância), fechado à noite (`set_furled`). O recheio deixa as células limpas.
+  Captura em `tools/capture_phase116.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2331,6 +2338,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 113 — Alameda (nossa) | **feita em 30/10/2026**: árvores plantadas a cada três células dos dois lados das ruas calçadas, onde a célula é livre; plano em `docs/plano_fase113.md` |
 | 114 — Gradil das casas ricas (nossa) | **feita em 30/10/2026**, a última do roteiro sol, trópico e avenida: gradil baixo de ferro com lanças e o vão da porta na frente das casas dos engenheiros; plano em `docs/plano_fase114.md` |
 | 115 — Carreira do estaleiro (nossa) | **feita em 30/10/2026**, primeira do roteiro fazenda, taverna e estaleiro (Fases 115 a 119): rampa de madeira do estaleiro até a água, com o casco em obra crescendo pelo progresso da encomenda (quilha, cavername, costado, borda, andaime) e sumindo quando o navio fica pronto; plano em `docs/plano_fase115.md` |
+| 116 — Mesas da taverna (nossa) | **feita em 30/10/2026**: mesas redondas com bancos e guarda-sóis listrados na cor da taverna nas células livres em volta dela, fechados à noite; plano em `docs/plano_fase116.md` |
 
 Pendências já vistas para fases futuras:
 

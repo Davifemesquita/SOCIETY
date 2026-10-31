@@ -1557,3 +1557,11 @@ Neutra; fecha o roteiro sol, trópico e avenida no patamar de antes das Fases 95
 Área de trabalho escondida, alto, semente 1840 (jogo novo 11,5 s): 80,8 FPS (antes 87,9), 1% low 42,8, pior quadro 29 ms,
 p50/p95/p99 11,8/16,0/22,0 ms, GPU 11,5 ms, carregar 5,2 s; objetos, draw calls e primitivas iguais (a cidade do benchmark
 não tem estaleiro, então nada da fase é desenhado). A queda é da máquina, não da fase: ver a repetição na Fase 116.
+
+## Fase 116 — mesas da taverna (30/10/2026)
+
+Mesmo estado da Fase 115 (jogo novo 11,5 s): 79,8 FPS (115: 80,8), 1% low 40,0, pior quadro 32 ms, p50/p95/p99
+11,9/16,1/23,2 ms, GPU 11,6 ms (115: 11,5), carregar 5,2 s. O quadro com tudo visível ganha 15 objetos e 15 draw calls (as
+camadas das mesas e dos guarda-sóis) e as mesmas primitivas; com a cidade calçada, +720 primitivas (as mesas à vista).
+Neutra. A queda desde a Fase 114 é da máquina: na Fase 115 o quadro desenhou exatamente o mesmo (objetos, draw calls e
+primitivas iguais) e caiu igual.
