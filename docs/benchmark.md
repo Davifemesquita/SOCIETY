@@ -1741,3 +1741,11 @@ Mesmo estado (jogo novo 11,5 s): 77,3 FPS (143: 76,7), 1% low 39,4, pior quadro 
 12,0 ms, carregar 5,4 s, construir com a ilha cheia 17,5 ms; +10 objetos e draw calls e +30.720 primitivas no quadro com
 tudo visível (as boias diante dos entrepostos do benchmark). Neutra; fecha o roteiro toco, bote e boia no patamar de ~77 FPS
 e GPU ~12 ms.
+
+## Fase 145 — relógio da igreja (31/10/2026)
+
+Duas rodadas no mesmo estado (jogo novo 11,5 e 11,6 s): 75,1 e 75,7 FPS (144: 77,3), 1% low 38,8 e 39,4, pior quadro 36 e
+31 ms, p50/p95/p99 12,5/17,1/23,8 ms, GPU 12,1–12,2 ms (144: 12,0), carregar 5,4 s, construir com a ilha cheia 17,4–17,7 ms;
++4 objetos e draw calls (os mostradores e ponteiros da igreja da cidade do benchmark) e primitivas iguais no quadro com tudo
+visível. Dentro da faixa do patamar desde a Fase 120 (75 a 78 FPS); a refatoração do lugar do modelo
+(`BuildingView.model_place`) não muda o desenho.

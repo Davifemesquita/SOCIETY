@@ -354,6 +354,23 @@ static func inverted(record: BuildingRecord, wall_layer: int) -> bool:
 			and BuildingKit.variation_hash(record) / 8748 % INVERTED_EVERY == 0
 
 
+## Onde o modelo do kit do prédio fica no mundo: o piso no canto mais alto do lote (Fase 39), o giro da rotação e o desvio
+## mínimo de posição e giro pela variação. As peças presas na fachada (o relógio da Fase 145) usam a mesma conta: com o
+## giro de meio grau, a parede passava na frente delas.
+static func model_place(grid: IslandGrid, record: BuildingRecord, area: Rect2i) -> Transform3D:
+	return Transform3D(Basis(Vector3.UP, model_yaw(record)), BuildingKit.seat(grid, area) + model_offset(record))
+
+
+static func model_offset(record: BuildingRecord) -> Vector3:
+	var pick := BuildingKit.variation_hash(record)
+	return Vector3(pick / 81 % 3 - 1, 0.0, pick / 243 % 3 - 1) * JITTER_M
+
+
+static func model_yaw(record: BuildingRecord) -> float:
+	var pick := BuildingKit.variation_hash(record)
+	return -PI * 0.5 * posmod(record.rotation, 4) + deg_to_rad(JITTER_DEG) * (pick / 729 % 3 - 1)
+
+
 ## Fase 130: o telhado de sapê — as casas da classe com o detalhe de quintal cercado (os camponeses).
 static func thatched(simulation: Simulation, record: BuildingRecord) -> bool:
 	if not record.is_house():
@@ -519,9 +536,8 @@ func _add(building_id: int) -> void:
 		body.mesh = BuildingKit.mesh(spec)
 		# Fase 39: o piso no canto mais alto do lote, com um desvio mínimo de posição e giro pela variação
 		root.position = BuildingKit.seat(_grid(record), area)
-		var pick := BuildingKit.variation_hash(record)
-		body.position = Vector3(pick / 81 % 3 - 1, 0.0, pick / 243 % 3 - 1) * JITTER_M
-		body.rotation.y = -PI * 0.5 * posmod(record.rotation, 4) + deg_to_rad(JITTER_DEG) * (pick / 729 % 3 - 1)
+		body.position = model_offset(record)
+		body.rotation.y = model_yaw(record)
 		body.material_override = BuildingMaterials.kit()
 		var tier := _simulation.data.tier(record.tier) if record.is_house() else null
 		var wall_layer := tier.wall_material if tier != null else def.wall_material

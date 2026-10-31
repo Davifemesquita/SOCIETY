@@ -2393,6 +2393,14 @@ Regras que já custaram investigação:
   entreposto, além do cais de pedra, a vermelha no +través do mar), `pose` (afundada, subindo, descendo e tombando) e
   `buoy_mesh`. Captura em `tools/capture_phase144.tscn`.
 
+### Relógio da igreja (Fase 145, nossa)
+
+- **Plano** em `docs/plano_fase145.md`, primeira do roteiro `docs/plano_fases_145_149.md` (relógio, cais e cata-vento).
+  `ClockView` (`GameScreen.clock_view`): `dials` (dois mostradores na torre do campanário, `Silhouette.BELFRY`), o disco
+  aceso à noite pelo `shaders/night_glow.gdshader`, a moldura e os ponteiros marcando a hora do jogo (`hand_angles`).
+  **Peça presa na fachada usa `BuildingView.model_place`** (o lugar do modelo com o desvio de meio grau da variação; sem
+  ele a parede passava na frente). Captura em `tools/capture_phase145.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2548,6 +2556,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 142 — Botes no porto (nossa) | **feita em 31/10/2026**: dois botes a remo por entreposto dando voltas na água funda diante dele, um em cada sentido, com o remador inclinando a cada remada e os remos varrendo; somem à noite; plano em `docs/plano_fase142.md` |
 | 143 — Cerca de estacas (nossa) | **feita em 31/10/2026**: cerquinha de estacas caiadas com a ponta em pirâmide e o vão da porta na frente das casas dos operários; plano em `docs/plano_fase143.md` |
 | 144 — Boias no porto (nossa) | **feita em 31/10/2026**, a última do roteiro toco, bote e boia: boias pintadas em pares marcando a entrada diante de cada entreposto, a vermelha de um lado e a verde do outro, balançando nas ondas; plano em `docs/plano_fase144.md` |
+| 145 — Relógio da igreja (nossa) | **feita em 31/10/2026**, primeira do roteiro relógio, cais e cata-vento (Fases 145 a 149): dois mostradores na torre da igreja com os ponteiros marcando a hora do jogo, acesos à noite; plano em `docs/plano_fase145.md` |
 
 Pendências já vistas para fases futuras:
 

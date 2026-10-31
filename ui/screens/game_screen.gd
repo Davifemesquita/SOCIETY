@@ -120,6 +120,8 @@ var stump_view: StumpView
 var rowboat_view: RowboatView
 ## Fase 144: as boias marcando a entrada diante dos entrepostos.
 var buoy_view: BuoyView
+## Fase 145: os mostradores do relógio na torre da igreja.
+var clock_view: ClockView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -375,6 +377,10 @@ func _ready() -> void:
 	buoy_view.name = "Buoys"
 	add_child(buoy_view)
 	buoy_view.setup(simulation)
+	clock_view = ClockView.new()
+	clock_view.name = "Clocks"
+	add_child(clock_view)
+	clock_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)
