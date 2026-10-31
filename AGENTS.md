@@ -2503,6 +2503,13 @@ Regras que já custaram investigação:
   casa dos investidores está no teto de 20.000 triângulos** do `test_building_kit.gd` (19.480): detalhe novo nela precisa caber.
   Captura: `cunhais.png` no `tools/capture_phase95.tscn`.
 
+### Madeira à deriva (Fase 161, nossa)
+
+- **Plano** em `docs/plano_fase161.md`. `ScatterView.Kind.DRIFTWOOD` (no fim do enum e da lista `NEAR_SEA`) só nas células baixas
+  da costa (`DRIFTWOOD_MAX_HEIGHT_M`) e de chão pouco inclinado (`DRIFTWOOD_MAX_SLOPE`), deitado com o terreno; `driftwood_mesh`.
+  **Peça nova do recheio vai no fim do enum**: os testes das peças de antes conferem só a ordem relativa. Captura em
+  `tools/capture_phase161.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2674,6 +2681,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 158 — Carroça de lona (nossa) | **feita em 31/10/2026**: metade das carroças que levam saco ou caixote anda com os arcos de madeira e a lona sobre a caçamba, com a carga escondida debaixo dela; plano em `docs/plano_fase158.md` |
 | 159 — Tijolos secando (nossa) | **feita em 31/10/2026**, a última do roteiro carneirinho, papoula e colheita: ao lado de cada olaria, duas fileiras de tijolos crus secando em grade com as tábuas na cumeeira e o monte de barro escavado; plano em `docs/plano_fase159.md` |
 | 160 — Cunhais de pedra (nossa) | **feita em 31/10/2026**, primeira do roteiro cunhal, deriva e horta (Fases 160 a 164): blocos de pedra clara alternados nas quatro quinas das casas dos artesãos e engenheiros, da soleira à cornija; plano em `docs/plano_fase160.md` |
+| 161 — Madeira à deriva (nossa) | **feita em 31/10/2026**: troncos velhos, cinzentos de sal, com as raízes quebradas, largados na praia e nas pedras baixas da costa; plano em `docs/plano_fase161.md` |
 
 Pendências já vistas para fases futuras:
 

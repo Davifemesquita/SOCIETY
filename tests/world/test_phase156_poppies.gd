@@ -19,7 +19,8 @@ func test_the_poppies_are_the_last_rule_of_the_open_field_and_the_road_side() ->
 	var road: Array = ScatterView.NEAR_ROAD.back()
 	assert_int(open[0]).is_equal(ScatterView.Kind.POPPIES)
 	assert_int(road[0]).is_equal(ScatterView.Kind.POPPIES)
-	assert_int(ScatterView.Kind.POPPIES).is_equal(ScatterView.Kind.size() - 1)
+	# depois das peças que já existiam antes delas (as que vieram depois vão no fim do enum)
+	assert_int(ScatterView.Kind.POPPIES).is_greater(ScatterView.Kind.SNAG)
 
 
 func test_the_patches_cover_a_small_share_of_the_land_in_clumps() -> void:

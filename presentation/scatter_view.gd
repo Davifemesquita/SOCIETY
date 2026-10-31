@@ -16,16 +16,18 @@ extends Node3D
 ## temperadas, no fim das listas NEAR_FOREST e NEAR_SEA. Fase 156: as papoulas (POPPIES), um canteiro de flores vermelhas
 ## que cobre a célula, no fim das listas OPEN e NEAR_ROAD, só onde o ruído dos canteiros (poppy_patch) passa do limite: as
 ## manchas juntas no prado, não flores soltas. Só nas temperadas.
+## Fase 161: a madeira à deriva (DRIFTWOOD), um tronco seco e esbranquiçado deitado no chão, no fim da lista NEAR_SEA, só nas
+## células baixas da costa (DRIFTWOOD_MAX_HEIGHT_M), inclinado com o terreno.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES }
+		POPPIES, DRIFTWOOD }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
-		Kind.SNAG]
+		Kind.SNAG, Kind.DRIFTWOOD]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
 		Kind.POPPIES]
@@ -55,7 +57,17 @@ const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.F
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
 const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
-const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08], [Kind.SNAG, SNAG_COAST_CHANCE]]
+const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08], [Kind.SNAG, SNAG_COAST_CHANCE],
+		[Kind.DRIFTWOOD, DRIFTWOOD_CHANCE]]
+## Fase 161: a madeira à deriva — a chance por célula da costa, só até DRIFTWOOD_MAX_HEIGHT_M (na praia e nas pedras baixas,
+## não no alto da falésia), o comprimento do tronco e as cores da madeira lavada pelo sal.
+const DRIFTWOOD_CHANCE := 0.06
+const DRIFTWOOD_MAX_HEIGHT_M := 3.2
+const DRIFTWOOD_LENGTH_M := 2.2
+## A inclinação máxima (subida por comprimento) do chão sob o tronco: ~25°.
+const DRIFTWOOD_MAX_SLOPE := 0.45
+const DRIFTWOOD_BLEACHED := Color(0.6, 0.56, 0.5)
+const DRIFTWOOD_DARK := Color(0.4, 0.36, 0.31)
 ## Fase 141: a árvore seca — a chance por célula na beira da mata e na costa, a altura do tronco e as cores da madeira
 ## velha, cinzenta.
 const SNAG_FOREST_CHANCE := 0.015
@@ -460,6 +472,10 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				< POPPY_MIN_HEIGHT_M):
 			# as papoulas só nos canteiros das temperadas, acima da areia da praia
 			continue
+		elif kind == Kind.DRIFTWOOD and grid.height_at(grid.origin_m.x + (cell.x + 0.5) * grid.cell_size,
+				grid.origin_m.y + (cell.y + 0.5) * grid.cell_size) > DRIFTWOOD_MAX_HEIGHT_M:
+			# a madeira à deriva fica na praia e nas pedras baixas, não no alto da falésia
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG:
 			# no meio da célula: a copa não encosta na parede da casa
@@ -488,6 +504,14 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 					Kind.POPPIES:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
+		if kind == Kind.DRIFTWOOD:
+			# deitado no chão: o tronco (x da peça) inclina com o terreno entre as duas pontas
+			var along := basis.x.normalized() * DRIFTWOOD_LENGTH_M * 0.5 * scale
+			var rise := grid.height_at(x + along.x, z + along.z) - grid.height_at(x - along.x, z - along.z)
+			if absf(rise) > DRIFTWOOD_LENGTH_M * scale * DRIFTWOOD_MAX_SLOPE:
+				# na encosta íngreme o tronco não para: rolaria para o mar
+				continue
+			basis = basis * Basis(Vector3.BACK, atan2(rise, DRIFTWOOD_LENGTH_M * scale))
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
 
@@ -557,6 +581,30 @@ static func poppy_mesh() -> ArrayMesh:
 	return tool.commit()
 
 
+## Fase 161: o tronco à deriva, deitado ao longo de x, meio afundado no chão: dois lanços tortos afinando para a ponta, a
+## toiça das raízes quebradas numa ponta e dois tocos de galho, tudo na madeira lavada pelo sal (as pontas mais escuras).
+static func driftwood_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var half := DRIFTWOOD_LENGTH_M * 0.5
+	var root := Vector3(-half, 0.14, 0.0)
+	var bend := Vector3(-0.1, 0.12, 0.07)
+	var tip := Vector3(half, 0.08, 0.16)
+	VertexShapes.cylinder(tool, root, bend, 0.19, DRIFTWOOD_BLEACHED, 8)
+	VertexShapes.cylinder(tool, bend, tip, 0.13, DRIFTWOOD_BLEACHED, 8)
+	VertexShapes.cylinder(tool, tip, tip + Vector3(0.02, 0.0, 0.004), 0.128, DRIFTWOOD_DARK, 8)
+	# a toiça: cinco raízes curtas abrindo da ponta grossa
+	for k: int in 5:
+		var angle := TAU * k / 5.0 + 0.3
+		var out := Vector3(-0.26, sin(angle) * 0.3, cos(angle) * 0.32)
+		VertexShapes.cylinder(tool, root, root + out, 0.06, DRIFTWOOD_DARK if k % 2 == 0 else DRIFTWOOD_BLEACHED, 5)
+	# os tocos dos galhos quebrados
+	VertexShapes.cylinder(tool, Vector3(0.3, 0.12, 0.09), Vector3(0.52, 0.32, 0.36), 0.04, DRIFTWOOD_BLEACHED, 5)
+	VertexShapes.cylinder(tool, Vector3(-0.45, 0.14, -0.04), Vector3(-0.62, 0.3, -0.33), 0.035, DRIFTWOOD_BLEACHED, 5)
+	tool.generate_normals()
+	return tool.commit()
+
+
 static func _flat_tri(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
 	for point: Vector3 in [a, b, c]:
 		tool.set_color(color)
@@ -577,6 +625,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return snag_mesh()
 	if kind == Kind.POPPIES:
 		return poppy_mesh()
+	if kind == Kind.DRIFTWOOD:
+		return driftwood_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
