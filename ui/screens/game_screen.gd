@@ -92,6 +92,8 @@ var pasture_trough_view: PastureTroughView
 var light_pool_view: LightPoolView
 ## Fase 120: os postes e os fios pelas ruas em volta das usinas.
 var power_line_view: PowerLineView
+## Fase 121: o gavião planando sobre cada cidade.
+var hawk_view: HawkView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -288,6 +290,10 @@ func _ready() -> void:
 	power_line_view.name = "PowerLines"
 	add_child(power_line_view)
 	power_line_view.setup(simulation)
+	hawk_view = HawkView.new()
+	hawk_view.name = "Hawks"
+	add_child(hawk_view)
+	hawk_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

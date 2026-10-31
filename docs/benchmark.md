@@ -1591,3 +1591,8 @@ roteiro fazenda, taverna e estaleiro no patamar em que a máquina está desde a 
 Mesmo estado (jogo novo 11,5 s): 77,8 FPS (119: 80,3), 1% low 40,5, pior quadro 29 ms, p50/p95/p99 12,2/16,6/22,8 ms, GPU
 11,8 ms (119: 11,5), carregar 5,2 s. A cidade do benchmark não tem usina: nenhum poste é desenhado (+5 objetos e draw calls
 da camada vazia, primitivas iguais às da 119). A diferença é da máquina, dentro do que ela varia entre rodadas.
+
+## Fase 121 — gavião sobre a cidade (30/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 77,6 FPS (120: 77,8), 1% low 41,9, pior quadro 28 ms, p50/p95/p99 12,2/16,6/22,5 ms, GPU
+11,8 ms, carregar 5,3 s; +5 objetos e draw calls e +315 primitivas (o gavião sobre a cidade do benchmark). Neutra.
