@@ -80,6 +80,8 @@ var festival_view: FestivalView
 var harbor_view: HarborView
 var fishing_boat_view: FishingBoatView
 var lighthouse_view: LighthouseView
+## Fase 115: a carreira dos estaleiros, com o casco em obra.
+var shipway_view: ShipwayView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -252,6 +254,10 @@ func _ready() -> void:
 	lighthouse_view.name = "Lighthouses"
 	add_child(lighthouse_view)
 	lighthouse_view.setup(simulation)
+	shipway_view = ShipwayView.new()
+	shipway_view.name = "Shipways"
+	add_child(shipway_view)
+	shipway_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

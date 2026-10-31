@@ -2198,6 +2198,13 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase114.md`. `BuildingKit._front_railing` (casas de `HouseTrim.BALCONIES`, na faixa de `INSET_M`
   entre a parede e a divisa, com o vão da porta).
 
+### Carreira do estaleiro (Fase 115, nossa)
+
+- **Plano** em `docs/plano_fase115.md`, primeira do roteiro `docs/plano_fases_115_119.md` (fazenda, taverna e estaleiro).
+  `ShipwayView` (`GameScreen.shipway_view`): `site` (a rampa do lado do mar até a água funda, sem prédio nem estrada no
+  caminho), `ramp_mesh` e o casco em obra (`hull_mesh` pelo progresso da encomenda, `hull_transform` com a popa para o mar),
+  refeito só quando muda de degrau. Captura em `tools/capture_phase115.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2323,6 +2330,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 112 — Coqueiros na rua tropical (nossa) | **feita em 30/10/2026**: coqueiros pequenos na beira das ruas das ilhas tropicais, pelo recheio; plano em `docs/plano_fase112.md` |
 | 113 — Alameda (nossa) | **feita em 30/10/2026**: árvores plantadas a cada três células dos dois lados das ruas calçadas, onde a célula é livre; plano em `docs/plano_fase113.md` |
 | 114 — Gradil das casas ricas (nossa) | **feita em 30/10/2026**, a última do roteiro sol, trópico e avenida: gradil baixo de ferro com lanças e o vão da porta na frente das casas dos engenheiros; plano em `docs/plano_fase114.md` |
+| 115 — Carreira do estaleiro (nossa) | **feita em 30/10/2026**, primeira do roteiro fazenda, taverna e estaleiro (Fases 115 a 119): rampa de madeira do estaleiro até a água, com o casco em obra crescendo pelo progresso da encomenda (quilha, cavername, costado, borda, andaime) e sumindo quando o navio fica pronto; plano em `docs/plano_fase115.md` |
 
 Pendências já vistas para fases futuras:
 

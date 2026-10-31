@@ -1551,3 +1551,9 @@ anda só nas células calçadas). Neutra.
 Estado rápido (jogo novo 11,2 s): 87,9 FPS (antes 87,7), 1% low 44,0, pior quadro 27 ms, GPU 10,7 ms, carregar 5,2 s;
 objetos e draw calls iguais; com a cidade calçada, 59.125.852 primitivas (+18 mil: os gradis das casas dos engenheiros).
 Neutra; fecha o roteiro sol, trópico e avenida no patamar de antes das Fases 95 a 114 (Fase 92: 86 FPS).
+
+## Fase 115 — carreira do estaleiro (30/10/2026)
+
+Área de trabalho escondida, alto, semente 1840 (jogo novo 11,5 s): 80,8 FPS (antes 87,9), 1% low 42,8, pior quadro 29 ms,
+p50/p95/p99 11,8/16,0/22,0 ms, GPU 11,5 ms, carregar 5,2 s; objetos, draw calls e primitivas iguais (a cidade do benchmark
+não tem estaleiro, então nada da fase é desenhado). A queda é da máquina, não da fase: ver a repetição na Fase 116.
