@@ -76,6 +76,13 @@ func _run() -> void:
 	# Fase 153: as floreiras das sacadas dos engenheiros e investidores, de perto
 	await _shot("sacadas_floridas.png", grid.cell_world(streets[3] + Vector2i(0, -1)), 14.0, 0.25)
 	await _shot("sacadas_floridas_b.png", grid.cell_world(streets[4] + Vector2i(0, -1)), 16.0, 0.25)
+	# Fase 154: o velocípede encostado numa casa dos artesãos, de perto
+	for id: int in _sim.world.building_ids():
+		var bike: Variant = VelocipedeView.spot(_sim, _sim.world.building(id))
+		if bike is Transform3D:
+			var bike_at: Transform3D = bike
+			await _shot("velocipede.png", bike_at.origin, 7.0, 0.35)
+			break
 	# Fase 143: a cerca de estacas dos operários, de perto
 	await _shot("cerca_de_estacas.png", grid.cell_world(streets[1] + Vector2i(0, -1)), 12.0, 0.3)
 	# Fase 102: o andar saliente com enxaimel, de perto

@@ -2452,6 +2452,12 @@ Regras que já custaram investigação:
   compara a forma com e sem um detalhe usa a mesma casa** (cada id tem a sua variação). Captura: `sacadas_floridas.png` no
   `tools/capture_phase95.tscn`.
 
+### Velocípede encostado (Fase 154, nossa)
+
+- **Plano** em `docs/plano_fase154.md`. `VelocipedeView` (`GameScreen.velocipede_view`): `spot` (na célula ao lado da porta de
+  uma casa dos artesãos a cada `BIKE_EVERY`, no lugar do modelo com `BuildingView.model_place`) e `bike_mesh` (roda grande,
+  rodinha, quadro curvo, guidão e selim). Captura: `velocipede.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2616,6 +2622,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 151 — Placas das lojas (nossa) | **feita em 31/10/2026**: placa pendurada num braço de ferro ao lado da porta da padaria, do açougue, da taverna, do ourives, do relojoeiro, do óptico, da torrefação e da charutaria, com a figura do ofício pintada (sem texto); plano em `docs/plano_fase151.md` |
 | 152 — Balizas com corrente (nossa) | **feita em 31/10/2026**: balizas de ferro com correntes caindo em curva na beira do largo calçado dos serviços, de frente para a rua, com aberturas para entrar; plano em `docs/plano_fase152.md` |
 | 153 — Flores nas sacadas (nossa) | **feita em 31/10/2026**: floreiras de madeira com folhagem e flores vermelhas, rosas e amarelas penduradas por fora do guarda-corpo das sacadas dos engenheiros e investidores; plano em `docs/plano_fase153.md` |
+| 154 — Velocípede encostado (nossa) | **feita em 31/10/2026**, a última do roteiro coluna, placa e velocípede: um velocípede de roda grande encostado na parede da frente, ao lado da porta, de uma casa dos artesãos a cada quatro; plano em `docs/plano_fase154.md` |
 
 Pendências já vistas para fases futuras:
 

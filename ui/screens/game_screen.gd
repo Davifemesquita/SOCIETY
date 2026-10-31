@@ -134,6 +134,8 @@ var windpump_view: WindpumpView
 var ad_column_view: AdColumnView
 ## Fase 152: as balizas com corrente na beira do largo calçado.
 var bollard_view: BollardView
+## Fase 154: o velocípede encostado na frente de umas casas dos artesãos.
+var velocipede_view: VelocipedeView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -417,6 +419,10 @@ func _ready() -> void:
 	bollard_view.name = "Bollards"
 	add_child(bollard_view)
 	bollard_view.setup(simulation)
+	velocipede_view = VelocipedeView.new()
+	velocipede_view.name = "Velocipedes"
+	add_child(velocipede_view)
+	velocipede_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)
