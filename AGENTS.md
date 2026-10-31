@@ -2472,6 +2472,14 @@ Regras que já custaram investigação:
   por dezenas de milhares de células), nas temperadas e acima da areia (`POPPY_MIN_HEIGHT_M`); `poppy_mesh` (~10 triângulos
   por flor). Captura em `tools/capture_phase156.tscn`.
 
+### Caixas da colheita (Fase 157, nossa)
+
+- **Plano** em `docs/plano_fase157.md`. Na `CropView`, `harvest_shown_at` (nenhum antes do degrau `HARVEST_FROM`, todos no
+  cheio), `_harvest_places` (pares de caixotes ou sacos do `CargoKit` no vão entre as fileiras, em cache pelo lote) e os
+  MultiMesh `HarvestCrates` e `HarvestSacks` (a peça escondida fica encolhida a zero; `harvest_count` e `harvest_places` para os
+  testes). **O material dos sacos do `CargoKit` lê a cor da instância como linear**: cor nova para ele vai com
+  `srgb_to_linear()`. Captura em `tools/capture_phase157.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2639,6 +2647,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 154 — Velocípede encostado (nossa) | **feita em 31/10/2026**, a última do roteiro coluna, placa e velocípede: um velocípede de roda grande encostado na parede da frente, ao lado da porta, de uma casa dos artesãos a cada quatro; plano em `docs/plano_fase154.md` |
 | 155 — Carneirinhos no mar (nossa) | **feita em 31/10/2026**, primeira do roteiro carneirinho, papoula e colheita (Fases 155 a 159): manchas de espuma que nascem, andam com o vento e se desfazem em renda no mar aberto, mais com o vento forte; plano em `docs/plano_fase155.md` |
 | 156 — Papoulas no prado (nossa) | **feita em 31/10/2026**: canteiros de papoulas vermelhas no capim aberto e na beira das estradas das ilhas temperadas, juntos em manchas e fora da areia da praia; plano em `docs/plano_fase156.md` |
+| 157 — Caixas da colheita (nossa) | **feita em 31/10/2026**: perto da colheita, pares de caixotes e sacos de juta vão aparecendo entre as fileiras dos campos, e somem quando o campo é colhido; plano em `docs/plano_fase157.md` |
 
 Pendências já vistas para fases futuras:
 

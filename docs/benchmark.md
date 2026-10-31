@@ -1826,3 +1826,9 @@ Primeira rodada (com o ruído dos canteiros calculado inteiro em cada célula): 
 jogo novo 11,5 s: 84,3 FPS (a máquina no estado rápido), 1% low 41,4, pior quadro 32 ms, p50/p95/p99 11,3/15,3/22,8 ms, GPU
 11,0 ms, montar tudo 9,2 s, carregar 5,4 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio). Neutra.
+
+## Fase 157 — caixas da colheita (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 84,6 FPS (156: 84,3), 1% low 40,3, pior quadro 37 ms, p50/p95/p99 11,1/15,2/22,8 ms, GPU
+10,9 ms, montar tudo 9,5 s, carregar 5,5 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível. Neutra (dez peças por campo, escondidas até o fim do ciclo, em dois MultiMesh).

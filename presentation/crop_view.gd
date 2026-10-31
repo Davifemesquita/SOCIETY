@@ -15,6 +15,7 @@ extends Node3D
 ## alinhados nunca na mesma direção), com cabeceira nas pontas; cada campo tem o seu tom de terra e de planta; sebe
 ## (ou muro de pedra seca no lote em encosta) em cada divisa, uma vez por aresta, com a porteira na entrada; nada disso
 ## nas ilhas tropicais (proposta à espera do dono). O pasto também perdeu a caixa: cerca e capim ficam no chão.
+## Fase 157: perto da colheita, caixotes e sacos vão aparecendo entre as fileiras do campo, e somem quando ele é colhido.
 
 const REFRESH_SECONDS := 0.5
 ## O crescimento anda em degraus (menos reescrita), e a planta nova já aparece com este tamanho.
@@ -25,6 +26,17 @@ const MARGIN_M := 0.65
 const JITTER_M := 0.08
 ## Cereal verde no começo do ciclo (a cor da instância multiplica a do vértice).
 const GREEN_TINT := Color(0.55, 1.0, 0.45)
+## Colheita (Fase 157): HARVEST_SPOTS lugares por campo, entre as fileiras, onde caixotes e sacos vão aparecendo a partir do
+## degrau HARVEST_FROM do crescimento (todos no degrau cheio) e somem na colheita; as peças do CargoKit em HARVEST_SCALE.
+const HARVEST_SPOTS := 5
+const HARVEST_FROM := 12
+const HARVEST_SCALE := 0.62
+## A juta dos sacos da colheita (mais escura que a dos sacos do estoque: no meio da planta clara eles sumiam), puxada de leve
+## para a cor do bem.
+const HARVEST_SACK := Color(0.42, 0.32, 0.2)
+## As plantas que se colhem em caixote (as outras, em saco); a batata, nos dois.
+const HARVEST_CRATES: Array[int] = [BuildingDef.Crop.VINE, BuildingDef.Crop.BROADLEAF]
+const HARVEST_MIXED: Array[int] = [BuildingDef.Crop.TUBER]
 
 ## Leiras (Fase 19): altura, quanto da fileira cada uma ocupa, espaço no campo sem dono e a cor da terra
 ## lavrada (úmida) e seca.
@@ -89,6 +101,12 @@ var _place_cache: Dictionary[String, Array] = {}
 ## leira, quantidade de leiras].
 var _fields: Dictionary[int, Array] = {}
 var _growth: Dictionary[int, int] = {}
+## Fase 157: os caixotes e os sacos da colheita; por campo, os lugares [lugar, saco?, índice na camada] e quantos estão à
+## vista (lista à parte: sem tela o MultiMesh devolve transformações zeradas).
+var _crates := MultiMeshInstance3D.new()
+var _sacks := MultiMeshInstance3D.new()
+var _harvest: Dictionary[int, Array] = {}
+var _harvest_shown: Dictionary[int, int] = {}
 var _range_m: float = 260.0
 var _refresh_left: float = 0.0
 var _dirty: bool = false
@@ -134,6 +152,18 @@ func setup(simulation: Simulation) -> void:
 		if layer in [_hedges, _walls]:
 			# milhares de peças: sem sombra
 			layer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(layer)
+	for pair: Array in [[_crates, "HarvestCrates", GoodDef.Pile.CRATE], [_sacks, "HarvestSacks", GoodDef.Pile.SACK]]:
+		var layer: MultiMeshInstance3D = pair[0]
+		var name_text: String = pair[1]
+		var pile: int = pair[2]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_colors = true
+		multimesh.mesh = CargoKit.mesh(pile)
+		multimesh.visible_instance_count = 0
+		layer.name = name_text
+		layer.multimesh = multimesh
 		add_child(layer)
 	_apply_range()
 	EventBus.building_placed.connect(func(_building_id: int) -> void: _dirty = true)
@@ -202,6 +232,19 @@ func soil_mesh() -> ArrayMesh:
 	return _soil.mesh as ArrayMesh
 
 
+## Fase 157: caixotes e sacos da colheita à vista no campo, e os lugares de todos eles (mundo, mesmo os escondidos).
+func harvest_count(field_id: int) -> int:
+	return _harvest_shown.get(field_id, 0)
+
+
+func harvest_places(field_id: int) -> Array[Transform3D]:
+	var result: Array[Transform3D] = []
+	for spot: Array in _harvest.get(field_id, []):
+		var place: Transform3D = spot[0]
+		result.append(place)
+	return result
+
+
 ## Quanto o campo cresceu (0..1, em degraus); -1 se ele não tem plantas.
 func growth_of(field_id: int) -> float:
 	return float(_growth[field_id]) / GROWTH_STEPS if _growth.has(field_id) else -1.0
@@ -229,6 +272,11 @@ func rebuild() -> void:
 	_dirty = false
 	_fields.clear()
 	_growth.clear()
+	_harvest.clear()
+	_harvest_shown.clear()
+	# a cor de cada caixote e saco da colheita (os lugares ficam no _harvest)
+	var crates: Array[Color] = []
+	var sacks: Array[Color] = []
 	var world := _simulation.world
 	var derived := _simulation.derived_state()
 	var lists: Dictionary[int, Array] = {}
@@ -267,6 +315,18 @@ func rebuild() -> void:
 		list.append_array(places)
 		for place: Transform3D in rows:
 			furrows.append([place, DRY_SOIL])
+		var produce := _simulation.data.good(_simulation.def_of(farm).output)
+		var sack_color := HARVEST_SACK.lerp(produce.color, 0.15) if produce != null else HARVEST_SACK
+		var spots: Array = []
+		for piece: Array in _cached_harvest(record, def, crop):
+			var place: Transform3D = piece[0]
+			var sack: bool = piece[1]
+			var spot: int = piece[2]
+			var into := sacks if sack else crates
+			spots.append([place, sack, into.size(), spot])
+			# o material dos sacos lê a cor da instância como linear (o do estoque também): a juta vai convertida
+			into.append(sack_color.srgb_to_linear() if sack else Color.WHITE)
+		_harvest[building_id] = spots
 	for crop: int in lists:
 		var multimesh := _layers[crop].multimesh
 		var count: int = lists[crop].size()
@@ -303,6 +363,16 @@ func rebuild() -> void:
 			var color: Color = item[1]
 			multimesh.set_instance_transform(index, place)
 			multimesh.set_instance_color(index, color)
+	for pair: Array in [[_crates, crates], [_sacks, sacks]]:
+		var layer: MultiMeshInstance3D = pair[0]
+		var colors: Array[Color] = pair[1]
+		var multimesh := layer.multimesh
+		if multimesh.instance_count < colors.size():
+			multimesh.visible_instance_count = -1
+			multimesh.instance_count = colors.size() + 32
+		multimesh.visible_instance_count = colors.size()
+		for index: int in colors.size():
+			multimesh.set_instance_color(index, colors[index])
 	for field_id: int in _fields:
 		_draw_field(field_id)
 
@@ -400,6 +470,29 @@ func _draw_field(field_id: int) -> void:
 	var furrow_total: int = field[6]
 	for index: int in furrow_total:
 		_furrows.multimesh.set_instance_color(first_furrow + index, soil)
+	_draw_harvest(field_id, step)
+
+
+## Fase 157: mostra os caixotes e sacos da colheita que o degrau do campo pede; os outros ficam encolhidos a zero.
+func _draw_harvest(field_id: int, step: int) -> void:
+	var pieces: Array = _harvest.get(field_id, [])
+	var shown := harvest_shown_at(step) if not pieces.is_empty() else 0
+	_harvest_shown[field_id] = shown
+	for piece: Array in pieces:
+		var place: Transform3D = piece[0]
+		var sack: bool = piece[1]
+		var index: int = piece[2]
+		var spot: int = piece[3]
+		var layer := _sacks if sack else _crates
+		layer.multimesh.set_instance_transform(index, place if spot < shown
+				else Transform3D(Basis.from_scale(Vector3.ZERO), place.origin))
+
+
+## Quantos lugares da colheita aparecem no degrau do crescimento: nenhum antes de HARVEST_FROM, todos no degrau cheio.
+static func harvest_shown_at(step: int) -> int:
+	if step < HARVEST_FROM:
+		return 0
+	return ceili(HARVEST_SPOTS * float(step - HARVEST_FROM + 1) / (GROWTH_STEPS - HARVEST_FROM + 1))
 
 
 ## Lugares das plantas no campo (mundo, tamanho cheio): fileiras pelo espaço da planta, com a folga da
@@ -439,6 +532,45 @@ func _cached_plants(record: BuildingRecord, def: BuildingDef, crop: int) -> Arra
 	if not _place_cache.has(key):
 		_place_cache[key] = _plant_places(record, def, crop)
 	return _place_cache[key]
+
+
+func _cached_harvest(record: BuildingRecord, def: BuildingDef, crop: int) -> Array:
+	var key := "h|%d|%s|%d|%d" % [record.id, record.origin, record.rotation, crop]
+	if not _place_cache.has(key):
+		_place_cache[key] = _harvest_places(record, def, crop)
+	return _place_cache[key]
+
+
+## Fase 157: as peças da colheita do campo (mundo, já no tamanho delas): cada lugar no vão entre duas fileiras, num ponto
+## sorteado pelo id ao longo delas (fora da cabeceira), girado à toa, com um par de peças; [lugar, saco?, lugar da peça] —
+## caixote nas plantas de HARVEST_CRATES, alternando na de HARVEST_MIXED, saco nas outras.
+func _harvest_places(record: BuildingRecord, def: BuildingDef, crop: int) -> Array:
+	var grid := _simulation.world.island(record.island_id)
+	var area := Footprint.rect(record.origin, def.size, record.rotation)
+	var center := grid.rect_world(area)
+	var frame := _row_frame(record)
+	var cell_size := _simulation.config.cell_size_m
+	var half := Vector2(area.size) * cell_size * 0.5 - Vector2(HEADLAND_M, MARGIN_M)
+	var spacing: Vector2 = SPACING[crop]
+	var rows := maxi(1, floori(half.y * 2.0 / spacing.y) + 1)
+	var start := -(rows - 1) * spacing.y * 0.5
+	var random := RandomNumberGenerator.new()
+	random.seed = hash([record.id, &"colheita"])
+	var result: Array = []
+	var item := CargoKit.ITEM_M * HARVEST_SCALE
+	for i: int in HARVEST_SPOTS:
+		var gap := random.randi_range(0, maxi(rows - 2, 0))
+		var along := random.randf_range(-half.x + 0.6, half.x - 0.6)
+		var sack := crop not in HARVEST_CRATES and (crop not in HARVEST_MIXED or i % 2 == 0)
+		var turn := random.randf() * TAU
+		# o par: duas peças lado a lado ao longo do vão, cada uma girada à toa (caixote em cima de caixote parecia um
+		# caixote sobre pernas)
+		for piece: int in 2:
+			var point := center + frame * Vector3(along + (piece - 0.5) * item * 1.05, 0.0, start + (gap + 0.5) * spacing.y)
+			point.y = grid.height_at(point.x, point.z) + SOIL_M
+			var basis := Basis(Vector3.UP, turn + piece * random.randf_range(0.2, 0.7))
+			result.append([Transform3D(basis.scaled(Vector3.ONE * HARVEST_SCALE), point), sack, i])
+	return result
 
 
 func _cached_furrows(record: BuildingRecord, def: BuildingDef, spacing: float) -> Array:
