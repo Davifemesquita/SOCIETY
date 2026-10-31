@@ -2340,6 +2340,13 @@ Regras que já custaram investigação:
   vagoneta (`cart_pose`, `loaded`, `phase_of`) indo e virando só com a mina produzindo. O recheio, os silos e as bombas
   deixam as células limpas (`cells`). Captura em `tools/capture_phase136.tscn`.
 
+### Boca do forno acesa (Fase 137, nossa)
+
+- **Plano** em `docs/plano_fase137.md`. `FurnaceGlowView` (`GameScreen.furnace_glow_view`): `mouth` (no térreo de uma fachada do
+  lado das fábricas de `FURNACES`, na parede lisa mais perto do meio), `frame_mesh` (arco de tijolo, soleira e portinhola),
+  `glow_mesh` com o fogo do `shaders/furnace_glow.gdshader` (aceso produzindo, `INSTANCE_CUSTOM.r`) e a poça de luz da
+  Fase 119 à noite. Captura em `tools/capture_phase137.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2487,6 +2494,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 134 — Ardósia nos prédios de pedra (nossa) | **feita em 31/10/2026**, a última do roteiro sapê, bueiro e ardósia: a igreja, a escola, o mercado, a prefeitura, o teatro, a universidade e o museu trocam as telhas por ardósia cinza-azulada; plano em `docs/plano_fase134.md` |
 | 135 — Galinhas no quintal (nossa) | **feita em 31/10/2026**, primeira do roteiro galinha, forno e mina (Fases 135 a 139): galinhas e um galo de vez em quando ciscando e andando no quintal cercado das casas dos camponeses, de dia; plano em `docs/plano_fase135.md` |
 | 136 — Vagoneta e rejeito (nossa) | **feita em 31/10/2026**: em cada mina, um trilho curto sobre cavaletes sai da parede até um monte de rejeito na cor do minério, com a vagoneta saindo cheia, virando na ponta e voltando enquanto a mina produz; plano em `docs/plano_fase136.md` |
+| 137 — Boca do forno acesa (nossa) | **feita em 31/10/2026**: a padaria, a olaria, a vidraria, a fundição e a de vigas de aço ganham uma boca de forno em arco de tijolo numa fachada do lado, com o fogo tremulando enquanto produzem e a luz laranja no chão à noite; plano em `docs/plano_fase137.md` |
 
 Pendências já vistas para fases futuras:
 

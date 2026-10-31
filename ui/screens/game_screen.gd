@@ -110,6 +110,8 @@ var market_bunting_view: MarketBuntingView
 var chicken_view: ChickenView
 ## Fase 136: a vagoneta e o monte de rejeito das minas.
 var spoil_tip_view: SpoilTipView
+## Fase 137: a boca do forno acesa nas fábricas de forno.
+var furnace_glow_view: FurnaceGlowView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -345,6 +347,10 @@ func _ready() -> void:
 	spoil_tip_view.name = "SpoilTips"
 	add_child(spoil_tip_view)
 	spoil_tip_view.setup(simulation)
+	furnace_glow_view = FurnaceGlowView.new()
+	furnace_glow_view.name = "FurnaceGlows"
+	add_child(furnace_glow_view)
+	furnace_glow_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

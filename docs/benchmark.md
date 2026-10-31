@@ -1688,3 +1688,9 @@ quintais dos camponeses da cidade do benchmark). Neutra.
 Mesmo estado (jogo novo 11,7 s): 76,0 FPS (135: 76,3), 1% low 39,3, pior quadro 34 ms, p50/p95/p99 12,4/17,0/23,5 ms, GPU
 12,0 ms, carregar 5,4 s; primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem mina; +10 objetos e
 draw calls de variação, sem nada novo desenhado). Neutra.
+
+## Fase 137 — boca do forno acesa (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 76,5 FPS (136: 76,0), 1% low 38,9, pior quadro 35 ms, p50/p95/p99 12,4/16,9/23,0 ms, GPU
+12,0 ms, carregar 5,3 s; primitivas iguais no quadro com tudo visível (+7 objetos e draw calls, sem boca de forno à vista
+na cidade do benchmark). Neutra.
