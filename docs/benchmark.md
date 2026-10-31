@@ -1572,3 +1572,9 @@ Mesmo estado (jogo novo 11,5 s): 80,8 FPS (116: 79,8), 1% low 41,8, pior quadro 
 11,5 ms, carregar 5,2 s; +10 objetos e draw calls (as duas camadas dos silos), primitivas iguais. Neutra. As primitivas do
 quadro com a cidade calçada variam algumas dezenas de milhares de uma rodada para outra (59.107.420 aqui, 59.126.572 na
 116) por causa da ocultação: não servem para medir uma peça pequena.
+
+## Fase 118 — chão gasto no pasto (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 81,1 FPS (117: 80,8), 1% low 41,5, pior quadro 29 ms, p50/p95/p99 11,8/16,0/22,5 ms, GPU
+11,4 ms, carregar 5,2 s; +5 objetos e draw calls (a camada dos cochos), primitivas iguais; calçar a cidade inteira 446 ms e
+mais uma rua 40 ms, iguais (as manchas entram na máscara só na área do pasto que mudou). Neutra.

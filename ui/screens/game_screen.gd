@@ -86,6 +86,8 @@ var shipway_view: ShipwayView
 var tavern_garden_view: TavernGardenView
 ## Fase 117: silos e caixas d'água ao lado das fazendas.
 var farm_silo_view: FarmSiloView
+## Fase 118: o cocho de cada pasto (as manchas de chão gasto ficam na máscara das estradas).
+var pasture_trough_view: PastureTroughView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -270,6 +272,10 @@ func _ready() -> void:
 	farm_silo_view.name = "FarmSilos"
 	add_child(farm_silo_view)
 	farm_silo_view.setup(simulation)
+	pasture_trough_view = PastureTroughView.new()
+	pasture_trough_view.name = "PastureTroughs"
+	add_child(pasture_trough_view)
+	pasture_trough_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

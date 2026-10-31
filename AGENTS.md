@@ -2218,6 +2218,12 @@ Regras que já custaram investigação:
   cada fazenda de `FARMS`), silo de aduelas ou caixa d'água sobre pés (`kind_of`, pelo resto do id: o `hash` de ids pequenos
   puxa para um lado). O recheio deixa a célula limpa. Captura em `tools/capture_phase117.tscn`.
 
+### Chão gasto no pasto (Fase 118, nossa)
+
+- **Plano** em `docs/plano_fase118.md`. `RoadMask.patches` (manchas de borda recortada no canal b: porteira, cocho e duas
+  soltas pelo hash, comparadas no `refresh` como as trilhas) e `RoadMask.trough_of` (o cocho junto da cerca de trás), que a
+  `PastureTroughView` (`GameScreen.pasture_trough_view`) desenha. Captura em `tools/capture_phase118.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2346,6 +2352,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 115 — Carreira do estaleiro (nossa) | **feita em 30/10/2026**, primeira do roteiro fazenda, taverna e estaleiro (Fases 115 a 119): rampa de madeira do estaleiro até a água, com o casco em obra crescendo pelo progresso da encomenda (quilha, cavername, costado, borda, andaime) e sumindo quando o navio fica pronto; plano em `docs/plano_fase115.md` |
 | 116 — Mesas da taverna (nossa) | **feita em 30/10/2026**: mesas redondas com bancos e guarda-sóis listrados na cor da taverna nas células livres em volta dela, fechados à noite; plano em `docs/plano_fase116.md` |
 | 117 — Silos das fazendas (nossa) | **feita em 30/10/2026**: silo de aduelas com telhado cônico ou caixa d'água sobre pés numa célula livre atrás de cada fazenda; plano em `docs/plano_fase117.md` |
+| 118 — Chão gasto no pasto (nossa) | **feita em 30/10/2026**: manchas de terra pisada na porteira, no cocho e soltas dentro de cada pasto, e um cocho de madeira com água junto da cerca de trás; plano em `docs/plano_fase118.md` |
 
 Pendências já vistas para fases futuras:
 
