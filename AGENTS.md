@@ -2524,6 +2524,12 @@ Regras que já custaram investigação:
   `CropView._part` (põe normal) com `VertexShapes` (sem normal) no mesmo `SurfaceTool`**: o Godot reclama no log; aqui as folhas
   vão por `_blob`, sem normal. Captura: `hortas_*.png` no `tools/capture_phase95.tscn`.
 
+### Caldeira das árvores (Fase 164, nossa)
+
+- **Plano** em `docs/plano_fase164.md`. Na `AvenueView`, `pit_mesh` (anel de pedra, terra e grade de ferro) num MultiMesh
+  `TreePits` no pé de cada árvore da alameda, alinhado com a rua; `pit_places` para os testes. Captura: `caldeiras.png` no
+  `tools/capture_phase113.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2698,6 +2704,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 161 — Madeira à deriva (nossa) | **feita em 31/10/2026**: troncos velhos, cinzentos de sal, com as raízes quebradas, largados na praia e nas pedras baixas da costa; plano em `docs/plano_fase161.md` |
 | 162 — Cascalho nas encostas (nossa) | **feita em 31/10/2026**: montinhos de pedrinhas soltas deitados nas encostas íngremes e acumulados no pé delas; plano em `docs/plano_fase162.md` |
 | 163 — Horta no quintal (nossa) | **feita em 31/10/2026**: canteiro com couves, alfaces e a tenda de feijão atrás de uma casa de camponeses ou operários a cada três, ao lado do varal e da fogueira das vizinhas; plano em `docs/plano_fase163.md` |
+| 164 — Caldeira das árvores (nossa) | **feita em 31/10/2026**, a última do roteiro cunhal, deriva e horta: anel de pedra com a terra e a grade de ferro no pé de cada árvore da alameda; plano em `docs/plano_fase164.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -18,3 +18,11 @@ troncos secos esbranquiçados largados nas pedras da costa (`c9_13`), o cascalho
 | 164 — Caldeira das árvores | o anel de pedra em volta do pé de cada árvore da alameda nas ruas calçadas |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase160.md` a
+`docs/plano_fase164.md`), testes, captura e benchmark. Diferenças do roteiro: os cunhais (160) ficaram só nos artesãos e
+engenheiros (a casa dos investidores já está no teto de triângulos e tem a parede de pedra clara); a madeira à deriva (161) só
+no chão pouco inclinado; os testes das peças do recheio passaram a conferir a ordem relativa na lista (o da árvore seca quebrou
+quando a madeira à deriva entrou depois dela); a horta (163) ficou só com couve, alface e feijão.

@@ -47,6 +47,8 @@ func _run() -> void:
 	await _shot(game, "alameda.png", street, 32.0, 0.5)
 	await _shot(game, "alameda_de_perto.png", street, 16.0, 1.2)
 	await _shot(game, "alameda_de_cima.png", street, 60.0, 0.0)
+	# Fase 164: a caldeira no pé das árvores, de perto
+	await _shot(game, "caldeiras.png", street, 8.0, 0.8)
 	get_tree().quit()
 
 

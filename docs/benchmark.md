@@ -1871,3 +1871,9 @@ Mesmo estado (jogo novo 11,6 s): 82,6 FPS (162: 83,6), 1% low 39,5, pior quadro 
 11,0 ms, montar tudo 9,4 s, carregar 5,6 s (162: 5,5; na oscilação de 0,1 s entre rodadas), construir com a ilha cheia 17,2 ms;
 +2 objetos e draw calls e +15 mil primitivas no quadro com tudo visível (as hortas da cidade do benchmark, uma malha só).
 Neutra.
+
+## Fase 164 — caldeira das árvores (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 83,6 FPS (163: 82,6), 1% low 39,7, pior quadro 29 ms, p50/p95/p99 11,3/15,5/23,5 ms, GPU
+11,0 ms, montar tudo 9,5 s, carregar 5,6 s, construir com a ilha cheia 17,1 ms; +1 objeto e draw call (a camada das caldeiras)
+e primitivas iguais no quadro com tudo visível. Neutra; fecha o roteiro cunhal, deriva e horta.
