@@ -2244,6 +2244,12 @@ Regras que já custaram investigação:
   gerada aqui no `shaders/bird.gdshader`. **A câmera da partida fica presa ao chão**: a captura
   (`tools/capture_phase121.tscn`) põe a `Camera3D` à mão e para o processamento da `StrategyCamera`.
 
+### Pedras no rio (Fase 122, nossa)
+
+- **Plano** em `docs/plano_fase122.md`. `RiverStoneView` (`GameScreen.river_stone_view`): `places` (matacões da `RockModel`
+  no leito raso dos rios, saindo da água, fora das pontes; seixos na margem baixa e livre). Os rios do v4 correm quase todos
+  em gargantas: a captura (`tools/capture_phase122.tscn`) procura a margem mais baixa.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2376,6 +2382,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 119 — Poças de luz à noite (nossa) | **feita em 30/10/2026**, a última do roteiro fazenda, taverna e estaleiro: disco de luz quente no chão debaixo de cada poste e fogueira e diante da porta das casas com morador, só à noite e sem luz de verdade; plano em `docs/plano_fase119.md` |
 | 120 — Postes e fios (nossa) | **feita em 30/10/2026**, primeira do roteiro fios, riacho e mansarda (Fases 120 a 124): postes de madeira com travessa e isoladores pelas ruas em volta de cada usina, com dois fios caindo em curva de um poste ao outro, sem passar por cima dos prédios; plano em `docs/plano_fase120.md` |
 | 121 — Gavião sobre a cidade (nossa) | **feita em 30/10/2026**: um gavião (mais nas cidades grandes) planando em círculos largos e altos sobre cada cidade, batendo a asa de vez em quando, de dia; plano em `docs/plano_fase121.md` |
+| 122 — Pedras no rio (nossa) | **feita em 30/10/2026**: matacões de rocha no leito raso dos rios, saindo da água com a espuma em volta, e seixos na margem baixa; plano em `docs/plano_fase122.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -1596,3 +1596,9 @@ da camada vazia, primitivas iguais às da 119). A diferença é da máquina, den
 
 Mesmo estado (jogo novo 11,7 s): 77,6 FPS (120: 77,8), 1% low 41,9, pior quadro 28 ms, p50/p95/p99 12,2/16,6/22,5 ms, GPU
 11,8 ms, carregar 5,3 s; +5 objetos e draw calls e +315 primitivas (o gavião sobre a cidade do benchmark). Neutra.
+
+## Fase 122 — pedras no rio (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,2 FPS (121: 77,6), 1% low 40,4, pior quadro 35 ms, p50/p95/p99 12,2/16,7/22,6 ms, GPU
+11,9 ms, carregar 5,3 s; +20 objetos e draw calls (as quatro camadas das pedras) e +78 mil primitivas (as pedras à vista no
+quadro com tudo visível). Neutra.

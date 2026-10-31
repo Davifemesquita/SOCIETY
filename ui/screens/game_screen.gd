@@ -94,6 +94,8 @@ var light_pool_view: LightPoolView
 var power_line_view: PowerLineView
 ## Fase 121: o gavião planando sobre cada cidade.
 var hawk_view: HawkView
+## Fase 122: matacões no leito dos rios e seixos na margem.
+var river_stone_view: RiverStoneView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -294,6 +296,10 @@ func _ready() -> void:
 	hawk_view.name = "Hawks"
 	add_child(hawk_view)
 	hawk_view.setup(simulation)
+	river_stone_view = RiverStoneView.new()
+	river_stone_view.name = "RiverStones"
+	add_child(river_stone_view)
+	river_stone_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)
