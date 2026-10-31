@@ -1858,3 +1858,9 @@ abre o roteiro cunhal, deriva e horta.
 Mesmo estado (jogo novo 11,6 s): 83,0 FPS (160: 83,4), 1% low 41,0, pior quadro 28 ms, p50/p95/p99 11,4/15,3/23,1 ms, GPU
 11,1 ms, montar tudo 9,3 s, carregar 5,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio). Neutra.
+
+## Fase 162 — cascalho nas encostas (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 83,6 FPS (161: 83,0), 1% low 39,1, pior quadro 35 ms, p50/p95/p99 11,3/15,5/23,4 ms, GPU
+11,0 ms, montar tudo 9,7 s, carregar 5,5 s, construir com a ilha cheia 16,9 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível. Neutra.

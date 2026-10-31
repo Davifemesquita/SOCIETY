@@ -2510,6 +2510,12 @@ Regras que já custaram investigação:
   **Peça nova do recheio vai no fim do enum**: os testes das peças de antes conferem só a ordem relativa. Captura em
   `tools/capture_phase161.tscn`.
 
+### Cascalho nas encostas (Fase 162, nossa)
+
+- **Plano** em `docs/plano_fase162.md`. `ScatterView.Kind.SCREE` (no fim do enum e das listas `OPEN`, `NEAR_FOREST` e `NEAR_SEA`)
+  só nas células de encosta (`cell_relief` pelos cantos, a partir de `SCREE_MIN_RELIEF_M`), deitado no plano dela
+  (`cell_normal`); `scree_mesh`. Captura em `tools/capture_phase162.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2682,6 +2688,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 159 — Tijolos secando (nossa) | **feita em 31/10/2026**, a última do roteiro carneirinho, papoula e colheita: ao lado de cada olaria, duas fileiras de tijolos crus secando em grade com as tábuas na cumeeira e o monte de barro escavado; plano em `docs/plano_fase159.md` |
 | 160 — Cunhais de pedra (nossa) | **feita em 31/10/2026**, primeira do roteiro cunhal, deriva e horta (Fases 160 a 164): blocos de pedra clara alternados nas quatro quinas das casas dos artesãos e engenheiros, da soleira à cornija; plano em `docs/plano_fase160.md` |
 | 161 — Madeira à deriva (nossa) | **feita em 31/10/2026**: troncos velhos, cinzentos de sal, com as raízes quebradas, largados na praia e nas pedras baixas da costa; plano em `docs/plano_fase161.md` |
+| 162 — Cascalho nas encostas (nossa) | **feita em 31/10/2026**: montinhos de pedrinhas soltas deitados nas encostas íngremes e acumulados no pé delas; plano em `docs/plano_fase162.md` |
 
 Pendências já vistas para fases futuras:
 

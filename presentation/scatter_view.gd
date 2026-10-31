@@ -18,9 +18,11 @@ extends Node3D
 ## manchas juntas no prado, não flores soltas. Só nas temperadas.
 ## Fase 161: a madeira à deriva (DRIFTWOOD), um tronco seco e esbranquiçado deitado no chão, no fim da lista NEAR_SEA, só nas
 ## células baixas da costa (DRIFTWOOD_MAX_HEIGHT_M), inclinado com o terreno.
+## Fase 162: o cascalho (SCREE), um montinho de pedrinhas chatas deitado no plano da encosta, no fim das listas OPEN,
+## NEAR_FOREST e NEAR_SEA, só nas células de encosta (desnível de SCREE_MIN_RELIEF_M entre os cantos).
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD }
+		POPPIES, DRIFTWOOD, SCREE }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
@@ -51,14 +53,15 @@ const YARD_LEAF := Color(0.24, 0.42, 0.16)
 const YARD_BARK := Color(0.32, 0.24, 0.17)
 const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
-const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE]]
+const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
+		[Kind.SCREE, SCREE_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
 const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
 const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08], [Kind.SNAG, SNAG_COAST_CHANCE],
-		[Kind.DRIFTWOOD, DRIFTWOOD_CHANCE]]
+		[Kind.DRIFTWOOD, DRIFTWOOD_CHANCE], [Kind.SCREE, SCREE_CHANCE]]
 ## Fase 161: a madeira à deriva — a chance por célula da costa, só até DRIFTWOOD_MAX_HEIGHT_M (na praia e nas pedras baixas,
 ## não no alto da falésia), o comprimento do tronco e as cores da madeira lavada pelo sal.
 const DRIFTWOOD_CHANCE := 0.06
@@ -75,7 +78,16 @@ const SNAG_COAST_CHANCE := 0.02
 const SNAG_HEIGHT_M := 4.2
 const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
-const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE]]
+const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
+		[Kind.SCREE, SCREE_CHANCE]]
+## Fase 162: o cascalho — a chance por célula de encosta (no fim das listas do campo aberto, da beira da mata e da costa), o
+## desnível mínimo entre os cantos da célula para contar como encosta, as pedrinhas do montinho e as cores da pedra.
+const SCREE_CHANCE := 0.55
+const SCREE_MIN_RELIEF_M := 1.1
+const SCREE_STONES := 9
+const SCREE_RADIUS_M := 0.8
+const SCREE_DARK := Color(0.37, 0.34, 0.3)
+const SCREE_LIGHT := Color(0.53, 0.49, 0.43)
 ## Fase 156: as papoulas — a chance por célula dentro de um canteiro, o ruído dos canteiros (nós a cada POPPY_PATCH_CELLS,
 ## canteiro onde passa de POPPY_THRESHOLD), as flores do canteiro num disco de POPPY_RADIUS_M, a altura das hastes e as
 ## cores.
@@ -476,6 +488,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				grid.origin_m.y + (cell.y + 0.5) * grid.cell_size) > DRIFTWOOD_MAX_HEIGHT_M:
 			# a madeira à deriva fica na praia e nas pedras baixas, não no alto da falésia
 			continue
+		elif kind == Kind.SCREE and cell_relief(grid, cell) < SCREE_MIN_RELIEF_M:
+			# o cascalho só escorre pela encosta
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG:
 			# no meio da célula: a copa não encosta na parede da casa
@@ -501,7 +516,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES:
+					Kind.POPPIES, Kind.SCREE:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD:
@@ -512,6 +527,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				# na encosta íngreme o tronco não para: rolaria para o mar
 				continue
 			basis = basis * Basis(Vector3.BACK, atan2(rise, DRIFTWOOD_LENGTH_M * scale))
+		elif kind == Kind.SCREE:
+			# deitado no plano da encosta (as pedrinhas encostam no chão de cima a baixo), meio afundado
+			var normal := cell_normal(grid, cell)
+			basis = Basis(Quaternion(Vector3.UP, normal)) * basis
+			y -= 0.04
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
 
@@ -581,6 +601,57 @@ static func poppy_mesh() -> ArrayMesh:
 	return tool.commit()
 
 
+## Fase 162: o desnível entre o canto mais alto e o mais baixo da célula (zero na ilha plana).
+static func cell_relief(grid: IslandGrid, cell: Vector2i) -> float:
+	if grid.corner_heights.is_empty():
+		return 0.0
+	var row := grid.size.x + 1
+	var at := cell.y * row + cell.x
+	var a := grid.corner_heights[at]
+	var b := grid.corner_heights[at + 1]
+	var c := grid.corner_heights[at + row]
+	var d := grid.corner_heights[at + row + 1]
+	return maxf(maxf(a, b), maxf(c, d)) - minf(minf(a, b), minf(c, d))
+
+
+## Fase 162: a normal do plano que melhor passa pelos quatro cantos da célula.
+static func cell_normal(grid: IslandGrid, cell: Vector2i) -> Vector3:
+	if grid.corner_heights.is_empty():
+		return Vector3.UP
+	var row := grid.size.x + 1
+	var at := cell.y * row + cell.x
+	var a := grid.corner_heights[at]
+	var b := grid.corner_heights[at + 1]
+	var c := grid.corner_heights[at + row]
+	var d := grid.corner_heights[at + row + 1]
+	var dx := ((b + d) - (a + c)) * 0.5 / grid.cell_size
+	var dz := ((c + d) - (a + b)) * 0.5 / grid.cell_size
+	return Vector3(-dx, 1.0, -dz).normalized()
+
+
+## Fase 162: o cascalho — SCREE_STONES pedrinhas angulosas e chatas espalhadas num disco de SCREE_RADIUS_M (mais miúdas para
+## a borda), em dois tons de pedra, meio afundadas.
+static func scree_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 162
+	for i: int in SCREE_STONES:
+		var reach := SCREE_RADIUS_M * sqrt((i + 0.5) / SCREE_STONES)
+		var angle := PI * (3.0 - sqrt(5.0)) * i + rng.randf_range(-0.4, 0.4)
+		var size := lerpf(0.2, 0.08, float(i) / SCREE_STONES) * rng.randf_range(0.8, 1.2)
+		var stone := Transform3D(Basis(Vector3.UP, rng.randf() * TAU) * Basis(Vector3.RIGHT, rng.randf_range(-0.3, 0.3))
+				.scaled(Vector3(1.3, 0.55, 1.0)), Vector3(cos(angle) * reach, size * 0.25, sin(angle) * reach))
+		var sphere := SphereMesh.new()
+		sphere.radius = size
+		sphere.height = size * 2.0
+		sphere.radial_segments = 5
+		sphere.rings = 2
+		CropView._part(tool, sphere, stone, SCREE_DARK if i % 3 != 1 else SCREE_LIGHT)
+	tool.index()
+	return tool.commit()
+
+
 ## Fase 161: o tronco à deriva, deitado ao longo de x, meio afundado no chão: dois lanços tortos afinando para a ponta, a
 ## toiça das raízes quebradas numa ponta e dois tocos de galho, tudo na madeira lavada pelo sal (as pontas mais escuras).
 static func driftwood_mesh() -> ArrayMesh:
@@ -627,6 +698,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return poppy_mesh()
 	if kind == Kind.DRIFTWOOD:
 		return driftwood_mesh()
+	if kind == Kind.SCREE:
+		return scree_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
