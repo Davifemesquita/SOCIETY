@@ -137,6 +137,23 @@ uniform float reef_share = 0.42;
 uniform vec4 reef_color : source_color = vec4(0.1, 0.3, 0.32, 0.55);
 group_uniforms;
 
+// Society (Fase 155): carneirinhos, manchas de espuma que nascem e se desfazem no mar aberto, mais com o vento forte (global
+// sea_whitecaps, de 0 a 1, que a WeatherView tira da força do vento). No máximo uma por célula de whitecap_cell_m, sorteada de
+// novo a cada volta de whitecap_period_s (cada célula na sua fase); a mancha é comprida de través ao vento (wind_direction),
+// acende depressa, se desfaz no resto de whitecap_life da volta e anda com o vento, crescendo um pouco.
+global uniform float sea_whitecaps;
+global uniform vec2 wind_direction;
+group_uniforms Whitecaps;
+uniform float whitecap_cell_m = 8.0;
+uniform float whitecap_period_s = 6.0;
+uniform float whitecap_life = 0.55;
+uniform float whitecap_share = 0.4;
+uniform float whitecap_open_m = 30.0;
+uniform float whitecap_drift_m_s = 0.8;
+uniform float whitecap_strength = 0.85;
+uniform float whitecap_fade_m = 700.0;
+group_uniforms;
+
 group_uniforms DepthFog;
 uniform vec4 color_deep : source_color;
 uniform vec4 color_shallow : source_color;
@@ -256,6 +273,47 @@ float reef_at(vec2 xz, float shore_m) {
 	float band = smoothstep(reef_from_m * 0.5, reef_from_m, shore_m) * (1.0 - smoothstep(reef_to_m * 0.7, reef_to_m, shore_m));
 	float n = reef_noise(xz / reef_cell_m) * 0.65 + reef_noise(xz / (reef_cell_m * 0.37) + 17.0) * 0.35;
 	return band * smoothstep(1.0 - reef_share, 1.0 - reef_share + 0.08, n);
+}
+
+// Quanto de carneirinho no ponto (0 a 1). A mancha e a deriva cabem na célula dela (jitter, raios e deriva somam menos de
+// meia célula), então basta olhar a célula do ponto.
+float whitecap_at(vec2 xz, float shore_m, float time) {
+	if (sea_whitecaps <= 0.01) {
+		return 0.0;
+	}
+	float open_sea = smoothstep(whitecap_open_m * 0.5, whitecap_open_m, shore_m);
+	if (open_sea <= 0.0) {
+		return 0.0;
+	}
+	vec2 cell = floor(xz / whitecap_cell_m);
+	float turn = time / whitecap_period_s + reef_hash(cell + 91.0);
+	float cycle = floor(turn);
+	float f = turn - cycle;
+	if (f > whitecap_life || reef_hash(cell + vec2(cycle * 13.0, cycle * 7.0)) > whitecap_share * sea_whitecaps) {
+		return 0.0;
+	}
+	vec2 wind = length(wind_direction) > 0.01 ? normalize(wind_direction) : vec2(1.0, 0.0);
+	vec2 across = vec2(-wind.y, wind.x);
+	vec2 jitter = vec2(reef_hash(cell + vec2(cycle, 3.0)), reef_hash(cell + vec2(5.0, cycle))) - 0.5;
+	float size = mix(0.6, 1.25, reef_hash(cell + vec2(cycle * 3.0, 11.0)));
+	vec2 center = (cell + 0.5 + jitter * 0.2) * whitecap_cell_m
+			+ wind * whitecap_drift_m_s * whitecap_period_s * (f - whitecap_life * 0.5);
+	// a borda torta pelo ruído (metros), a crista fina na frente e a espuma arrastada atrás
+	vec2 warp = vec2(reef_noise(xz * 0.9 + 3.0), reef_noise(xz * 0.9 + 41.0)) - 0.5;
+	vec2 d = xz - center + warp * 1.6;
+	float along = dot(d, wind);
+	float reach = whitecap_cell_m * size * (along > 0.0 ? 0.07 : 0.2);
+	float grow = mix(0.7, 1.15, f / whitecap_life) * size;
+	float shape = length(vec2(along / reach, dot(d, across) / (whitecap_cell_m * 0.36 * grow)));
+	float blob = 1.0 - smoothstep(0.15, 1.0, shape);
+	float life = smoothstep(0.0, 0.06, f) * (1.0 - smoothstep(0.12, whitecap_life, f));
+	// renda: furos macios pelo ruído, em riscas ao longo do vento; quanto mais fraca a mancha (na borda, ao se desfazer),
+	// mais furos
+	float amount = blob * life;
+	vec2 streak = vec2(dot(xz, wind) * 0.8, dot(xz, across) * 2.6);
+	float lace = reef_noise(streak + cycle * 5.3) * 0.55 + reef_noise(xz * 4.0 - 7.0) * 0.45;
+	float holes = smoothstep(0.25 + (1.0 - amount) * 0.5, 0.75 + (1.0 - amount) * 0.25, lace);
+	return holes * amount * open_sea;
 }
 
 // Society: distância até a costa com sinal no ponto (negativa na água); fora do mapa, mar fundo.
@@ -596,6 +654,13 @@ void fragment() {
 		EMISSION *= 1.0 - coast_foam;
 		ALBEDO = mix(ALBEDO, shore_foam_color, coast_foam);
 	}
+
+	// Society (Fase 155): os carneirinhos no mar aberto, rendados pela textura da espuma
+	float caps = whitecap_at(world_coordinates.xz, shore_m, TIME * float(!freeze_time));
+	caps = clamp(caps * mix(0.7, 1.0, foam_tex.a) * 1.3, 0.0, 1.0) * whitecap_strength;
+	caps *= 1.0 - smoothstep(whitecap_fade_m * 0.5, whitecap_fade_m, length(VERTEX));
+	EMISSION *= 1.0 - caps;
+	ALBEDO = mix(ALBEDO, shore_foam_color, caps);
 
 
 	// Society: poluição turva a água (depois da espuma: ela também fica suja)

@@ -5,12 +5,15 @@ extends Node3D
 ## shaders de prédio, estrada e terreno usam) e à chuva (partículas em volta do ponto que a câmera
 ## olha). Desde a Fase 22, o vento: uniformes globais wind_direction e wind_strength (a vegetação
 ## balança por eles) e as bandeiras de mastro (WindFlag) giradas a cada quadro. Desde a Fase 129, as sombras das nuvens:
-## os globais cloud_cover (a cobertura do céu) e cloud_offset (quanto elas já andaram com o vento). Nenhuma regra de jogo
-## aqui.
+## os globais cloud_cover (a cobertura do céu) e cloud_offset (quanto elas já andaram com o vento). Desde a Fase 155, os
+## carneirinhos do mar aberto: o global sea_whitecaps (whitecaps_of). Nenhuma regra de jogo aqui.
 
 ## Fase 129: as sombras das nuvens andam CLOUD_DRIFT_M_S com o ar parado e mais CLOUD_WIND_M_S × a força do vento.
 const CLOUD_DRIFT_M_S := 1.5
 const CLOUD_WIND_M_S := 7.0
+## Fase 155: sem carneirinhos até WHITECAP_CALM de força do vento; a partir de WHITECAP_FULL, todos.
+const WHITECAP_CALM := 0.12
+const WHITECAP_FULL := 0.85
 
 var sample := WeatherCycle.Sample.new()
 
@@ -71,6 +74,12 @@ func drift_clouds(seconds: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"cloud_offset", cloud_offset)
 
 
+## Fase 155: quanto do mar aberto fica com carneirinhos (0 a 1) com o vento nessa força: nada com o ar quase parado,
+## subindo em linha até o vento forte de chuva.
+static func whitecaps_of(wind: float) -> float:
+	return clampf((wind - WHITECAP_CALM) / (WHITECAP_FULL - WHITECAP_CALM), 0.0, 1.0)
+
+
 func blow_flags() -> void:
 	for node: Node in get_tree().get_nodes_in_group(WindFlag.GROUP):
 		(node as WindFlag).blow(sample.wind_direction, sample.wind, wind_time)
@@ -91,6 +100,7 @@ func refresh() -> void:
 	RenderingServer.global_shader_parameter_set(&"wind_direction", sample.wind_direction)
 	RenderingServer.global_shader_parameter_set(&"wind_strength", sample.wind)
 	RenderingServer.global_shader_parameter_set(&"cloud_cover", sample.coverage)
+	RenderingServer.global_shader_parameter_set(&"sea_whitecaps", whitecaps_of(sample.wind))
 	var drops := roundi(_config.rain_max_drops * _particles_ratio * sample.rain)
 	_rain.emitting = drops > 0
 	if drops > 0:

@@ -2458,6 +2458,13 @@ Regras que já custaram investigação:
   uma casa dos artesãos a cada `BIKE_EVERY`, no lugar do modelo com `BuildingView.model_place`) e `bike_mesh` (roda grande,
   rodinha, quadro curvo, guidão e selim). Captura: `velocipede.png` no `tools/capture_phase95.tscn`.
 
+### Carneirinhos no mar (Fase 155, nossa)
+
+- **Plano** em `docs/plano_fase155.md`, primeira do roteiro `docs/plano_fases_155_159.md` (carneirinho, papoula e colheita).
+  Global `sea_whitecaps` (`WeatherView.whitecaps_of`, pela força do vento) e o grupo `Whitecaps` do `shaders/water.gdshader`
+  (`whitecap_at`: uma mancha por célula sorteada a cada volta, comprida de través ao vento, andando com ele e se desfazendo em
+  renda). Captura em `tools/capture_phase155.tscn` (põe o vento direto nos globais, com a `WeatherView` parada).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2623,6 +2630,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 152 — Balizas com corrente (nossa) | **feita em 31/10/2026**: balizas de ferro com correntes caindo em curva na beira do largo calçado dos serviços, de frente para a rua, com aberturas para entrar; plano em `docs/plano_fase152.md` |
 | 153 — Flores nas sacadas (nossa) | **feita em 31/10/2026**: floreiras de madeira com folhagem e flores vermelhas, rosas e amarelas penduradas por fora do guarda-corpo das sacadas dos engenheiros e investidores; plano em `docs/plano_fase153.md` |
 | 154 — Velocípede encostado (nossa) | **feita em 31/10/2026**, a última do roteiro coluna, placa e velocípede: um velocípede de roda grande encostado na parede da frente, ao lado da porta, de uma casa dos artesãos a cada quatro; plano em `docs/plano_fase154.md` |
+| 155 — Carneirinhos no mar (nossa) | **feita em 31/10/2026**, primeira do roteiro carneirinho, papoula e colheita (Fases 155 a 159): manchas de espuma que nascem, andam com o vento e se desfazem em renda no mar aberto, mais com o vento forte; plano em `docs/plano_fase155.md` |
 
 Pendências já vistas para fases futuras:
 

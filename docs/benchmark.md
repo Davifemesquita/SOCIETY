@@ -1810,3 +1810,10 @@ Mesmo estado (jogo novo 11,8 s): 75,3 FPS (153: 75,1), 1% low 38,7, pior quadro 
 12,2 ms, montar tudo 9,7 s, carregar 5,4 s, construir com a ilha cheia 18,1 ms; +5 objetos e draw calls e primitivas iguais
 no quadro com tudo visível. Neutra; fecha o roteiro coluna, placa e velocípede e os quatro ciclos do segundo pedido do dono
 (Fases 135 a 154), no patamar de 75 a 78 FPS (GPU ~12 ms) em que a máquina está desde a Fase 120.
+
+## Fase 155 — carneirinhos no mar (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 76,5 FPS (154: 75,3), 1% low 38,3, pior quadro 62 ms, p50/p95/p99 12,3/16,8/23,5 ms, GPU
+12,1 ms, montar tudo 9,8 s, carregar 5,4 s, construir com a ilha cheia 18,0 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (os carneirinhos são só a conta a mais no shader da água). Neutra; abre o roteiro carneirinho,
+papoula e colheita.
