@@ -1896,3 +1896,9 @@ quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem medas). 
 Mesmo estado (jogo novo 11,7 s): 82,8 FPS (166: 81,7), 1% low 39,2, pior quadro 33 ms, p50/p95/p99 11,3/15,7/23,7 ms, GPU
 11,1 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 16,9 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio). Neutra.
+
+## Fase 168 — gaivotas no cais (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 84,0 FPS (167: 82,8), 1% low 40,6, pior quadro 31 ms, p50/p95/p99 11,3/15,2/23,1 ms, GPU
+11,0 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 17,4 ms; +1 objeto e draw call (a camada das gaivotas
+pousadas) e +7 mil primitivas no quadro com tudo visível. Neutra.

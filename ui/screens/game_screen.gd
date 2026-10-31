@@ -78,6 +78,8 @@ var bird_view: BirdView
 ## Fase 65: bandeirolas e fogos nas praças da ilha em festa.
 var festival_view: FestivalView
 var harbor_view: HarborView
+## Fase 168: as gaivotas pousadas nos cabeços do cais.
+var perched_gull_view: PerchedGullView
 var fishing_boat_view: FishingBoatView
 var lighthouse_view: LighthouseView
 ## Fase 115: a carreira dos estaleiros, com o casco em obra.
@@ -306,6 +308,10 @@ func _ready() -> void:
 	harbor_view.name = "Harbor"
 	add_child(harbor_view)
 	harbor_view.setup(simulation)
+	perched_gull_view = PerchedGullView.new()
+	perched_gull_view.name = "PerchedGulls"
+	add_child(perched_gull_view)
+	perched_gull_view.setup(harbor_view, simulation.config)
 	fishing_boat_view = FishingBoatView.new()
 	fishing_boat_view.name = "FishingBoats"
 	add_child(fishing_boat_view)

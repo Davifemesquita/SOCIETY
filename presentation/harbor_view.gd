@@ -76,10 +76,15 @@ const SEA_WALL_BOLLARD_EVERY := 3
 const CISTERN_CLEAR_M := 1.6
 const STONE_COLOR := Color(0.78, 0.76, 0.7)
 
+## Fase 168: o desenho foi refeito (as gaivotas pousadas acompanham os cabeços).
+signal rebuilt
+
 var _simulation: Simulation
 var _boards := MultiMeshInstance3D.new()
 var _piles := MultiMeshInstance3D.new()
 var _bollards := MultiMeshInstance3D.new()
+## Fase 168: os cabeços do último desenho (as gaivotas pousam neles).
+var bollard_places: Array[Transform3D] = []
 var _boats := MultiMeshInstance3D.new()
 var _walls := MultiMeshInstance3D.new()
 var _coping := MultiMeshInstance3D.new()
@@ -272,6 +277,7 @@ func rebuild() -> void:
 				var outward: Vector3 = segment[1]
 				var spot := front - outward * 0.35
 				bollards.append(Transform3D(Basis.IDENTITY, Vector3(spot.x, front.y + COPING_M.x + BOLLARD_HEIGHT_M * 0.5, spot.z)))
+	bollard_places = bollards
 	_fill(_bollards, bollards)
 	_fill(_walls, walls)
 	_fill(_coping, coping)
@@ -284,6 +290,7 @@ func rebuild() -> void:
 			for i: int in places.size():
 				_cargo[pile_kind].multimesh.set_instance_color(i, CargoKit.SACK_COLOR)
 	_ropes.mesh = rope_mesh(_rope_spans + _hitches, _rope_material)
+	rebuilt.emit()
 
 
 ## Cabos da proa e da popa de cada barco até o cabeço mais perto (do mesmo píer ou cais), dentro de ROPE_MAX_M.
