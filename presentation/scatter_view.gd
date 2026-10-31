@@ -13,9 +13,12 @@ extends Node3D
 ## bananeira. Ela vem por último na lista: o sorteio das peças de antes não muda. Fase 112: na beira das ruas das ilhas
 ## tropicais, coqueiros pequenos (o da Fase 58, reduzido a STREET_PALM_SCALE), também no fim da lista NEAR_ROAD.
 ## Fase 141: a árvore seca (SNAG), nua e de galhos tortos, de vez em quando na beira da mata e na costa das ilhas
-## temperadas, no fim das listas NEAR_FOREST e NEAR_SEA.
+## temperadas, no fim das listas NEAR_FOREST e NEAR_SEA. Fase 156: as papoulas (POPPIES), um canteiro de flores vermelhas
+## que cobre a célula, no fim das listas OPEN e NEAR_ROAD, só onde o ruído dos canteiros (poppy_patch) passa do limite: as
+## manchas juntas no prado, não flores soltas. Só nas temperadas.
 
-enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG }
+enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
+		POPPIES }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
@@ -24,7 +27,8 @@ const VISIBLE_MARGIN_M := 20.0
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
 		Kind.SNAG]
 ## As plantas (material da folhagem, balançam).
-const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE]
+const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
+		Kind.POPPIES]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -47,7 +51,7 @@ const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
-		[Kind.STREET_PALM, STREET_PALM_CHANCE]]
+		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
 const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
@@ -59,7 +63,21 @@ const SNAG_COAST_CHANCE := 0.02
 const SNAG_HEIGHT_M := 4.2
 const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
-const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04]]
+const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE]]
+## Fase 156: as papoulas — a chance por célula dentro de um canteiro, o ruído dos canteiros (nós a cada POPPY_PATCH_CELLS,
+## canteiro onde passa de POPPY_THRESHOLD), as flores do canteiro num disco de POPPY_RADIUS_M, a altura das hastes e as
+## cores.
+const POPPY_CHANCE := 0.95
+const POPPY_PATCH_CELLS := 5.0
+const POPPY_THRESHOLD := 0.76
+const POPPY_FLOWERS := 26
+const POPPY_RADIUS_M := 0.82
+const POPPY_HEIGHT_M := Vector2(0.32, 0.55)
+const POPPY_RED := Color(0.86, 0.1, 0.06)
+const POPPY_DARK := Color(0.62, 0.05, 0.04)
+const POPPY_STEM := Color(0.3, 0.45, 0.18)
+## Acima da areia: o terreno pinta a praia até ~2,4 m (beach_top_m do shaders/terrain.gdshader) perto do mar.
+const POPPY_MIN_HEIGHT_M := 2.8
 ## O capim do recheio é a touceira das plantações aumentada (a de 30 cm some a 50 m).
 const TUFT_SCALE := Vector2(1.4, 2.4)
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
@@ -67,6 +85,10 @@ const AROUND: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1)
 		Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]
 const FLOWER_COLORS: Array[Color] = [Color(0.8, 0.15, 0.15), Color(0.9, 0.78, 0.25), Color(0.85, 0.5, 0.65),
 		Color(0.9, 0.9, 0.85), Color(0.5, 0.45, 0.8)]
+
+## Fase 156: os quatro nós do ruído dos canteiros da última célula conferida (ilha na terceira coordenada).
+static var _poppy_key := Vector3i(0, 0, -1)
+static var _poppy_nodes := PackedFloat32Array()
 
 var _world: WorldState
 var _simulation: Simulation
@@ -430,10 +452,18 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.SNAG and tropical:
 			# a árvore seca só nas temperadas
 			continue
+		elif kind == Kind.POPPIES and (tropical or not poppy_patch(island_id, cell) or grid.height_at(
+				grid.origin_m.x + (cell.x + 0.5) * grid.cell_size, grid.origin_m.y + (cell.y + 0.5) * grid.cell_size)
+				< POPPY_MIN_HEIGHT_M):
+			# as papoulas só nos canteiros das temperadas, acima da areia da praia
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
+		elif kind == Kind.POPPIES:
+			# o canteiro cobre a célula: quase no meio, para não entrar na rua do lado
+			offset *= 0.3
 		elif lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
 			offset = Vector2(lean) * 0.32 + Vector2(-lean.y, lean.x) * rng.randf_range(-0.35, 0.35)
@@ -451,11 +481,89 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		match kind:
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
-			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG:
+			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
+					Kind.POPPIES:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
+
+
+## Fase 156: se a célula fica num canteiro de papoulas — o ruído de valor da ilha (nós a cada POPPY_PATCH_CELLS, liso
+## entre eles) acima de POPPY_THRESHOLD. O hash dos nós é aritmético: o recheio passa por dezenas de milhares de células no
+## jogo novo, e o hash() de um Array custaria décimos de segundo.
+static func poppy_patch(island_id: int, cell: Vector2i) -> bool:
+	var at := Vector2(cell) / POPPY_PATCH_CELLS
+	var base := Vector2i(floori(at.x), floori(at.y))
+	# as células vizinhas da mesma fileira caem nos mesmos quatro nós: guarda os da última
+	var key := Vector3i(base.x, base.y, island_id)
+	if key != _poppy_key:
+		_poppy_key = key
+		_poppy_nodes = PackedFloat32Array([_poppy_node(island_id, base), _poppy_node(island_id, base + Vector2i(1, 0)),
+				_poppy_node(island_id, base + Vector2i(0, 1)), _poppy_node(island_id, base + Vector2i(1, 1))])
+	if maxf(maxf(_poppy_nodes[0], _poppy_nodes[1]), maxf(_poppy_nodes[2], _poppy_nodes[3])) <= POPPY_THRESHOLD:
+		return false
+	var f := at - Vector2(base)
+	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
+	return lerpf(lerpf(_poppy_nodes[0], _poppy_nodes[1], f.x), lerpf(_poppy_nodes[2], _poppy_nodes[3], f.x), f.y) \
+			> POPPY_THRESHOLD
+
+
+static func _poppy_node(island_id: int, node: Vector2i) -> float:
+	var h := (node.x * 374761393 + node.y * 668265263 + island_id * 1442695041 + 977) & 0xFFFFFFFF
+	h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+	h ^= h >> 16
+	return float(h & 0xFFFF) / 65535.0
+
+
+## Fase 156: o canteiro de papoulas — POPPY_FLOWERS flores num disco de POPPY_RADIUS_M (espiral de ângulo áureo com um
+## desvio fixo), cada uma com a haste fina (um quadro em pé) e a taça de quatro pétalas abertas, e umas folhas rentes ao
+## chão. Uns 10 triângulos por flor: os canteiros são centenas. Normais para cima (o prado inteiro com a mesma luz).
+static func poppy_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 156
+	var golden := PI * (3.0 - sqrt(5.0))
+	for i: int in POPPY_FLOWERS:
+		var radius := POPPY_RADIUS_M * sqrt((i + 0.5) / POPPY_FLOWERS) * rng.randf_range(0.8, 1.05)
+		var angle := golden * i + rng.randf_range(-0.3, 0.3)
+		var foot := Vector3(cos(angle) * radius, 0.0, sin(angle) * radius)
+		var height := rng.randf_range(POPPY_HEIGHT_M.x, POPPY_HEIGHT_M.y)
+		var top := foot + Vector3(rng.randf_range(-0.05, 0.05), height, rng.randf_range(-0.05, 0.05))
+		var yaw := rng.randf() * TAU
+		var side := Vector3(cos(yaw), 0.0, sin(yaw)) * 0.008
+		_flat_quad(tool, foot - side, foot + side, top + side, top - side, POPPY_STEM)
+		# a taça: quatro pétalas do miolo até a borda aberta (a da frente mais escura dá o volume)
+		var cup := rng.randf_range(0.06, 0.085)
+		for k: int in 4:
+			var a := yaw + TAU * k / 4.0
+			var b := yaw + TAU * (k + 1) / 4.0
+			var rim_a := top + Vector3(cos(a) * cup, cup * 0.7, sin(a) * cup)
+			var rim_b := top + Vector3(cos(b) * cup, cup * 0.7, sin(b) * cup)
+			var tip := top + Vector3(cos((a + b) * 0.5) * cup * 1.3, cup * 0.9, sin((a + b) * 0.5) * cup * 1.3)
+			_flat_tri(tool, top, rim_a, rim_b, POPPY_DARK if k % 2 == 0 else POPPY_RED)
+			_flat_tri(tool, rim_a, tip, rim_b, POPPY_RED)
+	for k: int in 6:
+		var a := TAU * k / 6.0 + 0.3
+		var at := Vector3(cos(a), 0.0, sin(a)) * POPPY_RADIUS_M * 0.5
+		var out := Vector3(cos(a), 0.0, sin(a))
+		var across := Vector3(-out.z, 0.0, out.x)
+		_flat_tri(tool, at - across * 0.06, at + across * 0.06, at + out * 0.3 + Vector3(0.0, 0.12, 0.0), POPPY_STEM)
+	tool.index()
+	return tool.commit()
+
+
+static func _flat_tri(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
+	for point: Vector3 in [a, b, c]:
+		tool.set_color(color)
+		tool.set_normal(Vector3.UP)
+		tool.add_vertex(point)
+
+
+static func _flat_quad(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, color: Color) -> void:
+	_flat_tri(tool, a, b, c, color)
+	_flat_tri(tool, a, c, d, color)
 
 
 ## A malha de cada peça, com a base em y = 0 (cor no vértice; a das flores vem da instância).
@@ -464,6 +572,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return TreeModel.mesh(TreeModel.Species.COCONUT_PALM, 0)
 	if kind == Kind.SNAG:
 		return snag_mesh()
+	if kind == Kind.POPPIES:
+		return poppy_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:

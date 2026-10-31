@@ -2465,6 +2465,13 @@ Regras que já custaram investigação:
   (`whitecap_at`: uma mancha por célula sorteada a cada volta, comprida de través ao vento, andando com ele e se desfazendo em
   renda). Captura em `tools/capture_phase155.tscn` (põe o vento direto nos globais, com a `WeatherView` parada).
 
+### Papoulas no prado (Fase 156, nossa)
+
+- **Plano** em `docs/plano_fase156.md`. `ScatterView.Kind.POPPIES` (no fim do enum e das listas `OPEN` e `NEAR_ROAD`) só nas
+  células de canteiro (`poppy_patch`, ruído de valor com hash aritmético e os nós da última célula guardados: o recheio passa
+  por dezenas de milhares de células), nas temperadas e acima da areia (`POPPY_MIN_HEIGHT_M`); `poppy_mesh` (~10 triângulos
+  por flor). Captura em `tools/capture_phase156.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2631,6 +2638,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 153 — Flores nas sacadas (nossa) | **feita em 31/10/2026**: floreiras de madeira com folhagem e flores vermelhas, rosas e amarelas penduradas por fora do guarda-corpo das sacadas dos engenheiros e investidores; plano em `docs/plano_fase153.md` |
 | 154 — Velocípede encostado (nossa) | **feita em 31/10/2026**, a última do roteiro coluna, placa e velocípede: um velocípede de roda grande encostado na parede da frente, ao lado da porta, de uma casa dos artesãos a cada quatro; plano em `docs/plano_fase154.md` |
 | 155 — Carneirinhos no mar (nossa) | **feita em 31/10/2026**, primeira do roteiro carneirinho, papoula e colheita (Fases 155 a 159): manchas de espuma que nascem, andam com o vento e se desfazem em renda no mar aberto, mais com o vento forte; plano em `docs/plano_fase155.md` |
+| 156 — Papoulas no prado (nossa) | **feita em 31/10/2026**: canteiros de papoulas vermelhas no capim aberto e na beira das estradas das ilhas temperadas, juntos em manchas e fora da areia da praia; plano em `docs/plano_fase156.md` |
 
 Pendências já vistas para fases futuras:
 

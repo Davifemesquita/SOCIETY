@@ -1817,3 +1817,12 @@ Mesmo estado (jogo novo 11,6 s): 76,5 FPS (154: 75,3), 1% low 38,3, pior quadro 
 12,1 ms, montar tudo 9,8 s, carregar 5,4 s, construir com a ilha cheia 18,0 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (os carneirinhos são só a conta a mais no shader da água). Neutra; abre o roteiro carneirinho,
 papoula e colheita.
+
+## Fase 156 — papoulas no prado (31/10/2026)
+
+Primeira rodada (com o ruído dos canteiros calculado inteiro em cada célula): 82,1 FPS, GPU 11,1 ms, carregar 5,6 s (155:
+5,4). O recheio do arquipélago inteiro passava ~80 ms no sorteio dos canteiros (1,5 µs por célula); guardando os quatro nós da
+última célula (as vizinhas da mesma fileira repetem) e recusando sem a conta quando nenhum nó passa do limite, 0,8 µs. Com isso,
+jogo novo 11,5 s: 84,3 FPS (a máquina no estado rápido), 1% low 41,4, pior quadro 32 ms, p50/p95/p99 11,3/15,3/22,8 ms, GPU
+11,0 ms, montar tudo 9,2 s, carregar 5,4 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio). Neutra.
