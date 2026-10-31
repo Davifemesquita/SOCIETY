@@ -36,6 +36,8 @@ instance uniform float trim_paint = 0.0;
 instance uniform vec4 side_shade = vec4(0.0);
 // Fase 130: o telhado de sapê (as casas dos camponeses), no lugar das telhas da Fase 95
 instance uniform float thatch = 0.0;
+// Fase 134: o telhado de ardósia (os serviços de pedra), no lugar das telhas
+instance uniform float slate = 0.0;
 
 // Fase 39: vidro (célula (0, 1), que o kit não usa): escuro, liso, com o céu refletido no ângulo raso
 uniform vec4 glass_color : source_color = vec4(0.17, 0.21, 0.25, 1.0);
@@ -63,6 +65,12 @@ uniform vec4 thatch_color : source_color = vec4(0.6, 0.5, 0.32, 1.0);
 uniform vec4 thatch_old : source_color = vec4(0.38, 0.35, 0.24, 1.0);
 uniform float thatch_course_m = 0.55;
 uniform float thatch_strand_m = 0.045;
+
+// Fase 134: a ardósia — placas retangulares de slate_width_m em fiadas de slate_row_m desencontradas, a borda de baixo
+// reta com a sombra embaixo, a junta fina e um tom cinza-azulado por placa
+uniform vec4 slate_color : source_color = vec4(0.27, 0.3, 0.34, 1.0);
+uniform float slate_row_m = 0.26;
+uniform float slate_width_m = 0.34;
 
 // Fase 97: a pátina do cobre (cúpulas e torreões)
 uniform vec4 copper_dark : source_color = vec4(0.22, 0.42, 0.38, 1.0);
@@ -160,6 +168,24 @@ vec3 thatch_shade(vec3 base, vec3 p, vec3 n) {
 	return straw;
 }
 
+// Fase 134: a cor da ardósia no ponto p (normal n): placas retangulares, a sombra sob a borda reta, a junta e o tom de
+// cada placa; near apaga o desenho de longe.
+vec3 slate_shade(vec3 p, vec3 n, float near) {
+	vec2 down = normalize(n.xz);
+	vec2 across = vec2(-down.y, down.x);
+	float s = dot(p.xz, down) / max(n.y, 0.2) / slate_row_m;
+	float row = floor(s);
+	float f = fract(s);
+	float c = dot(p.xz, across) / slate_width_m + 0.5 * mod(row, 2.0);
+	float cf = fract(c) - 0.5;
+	float under = smoothstep(0.86, 0.93, f);
+	float seam = smoothstep(0.44, 0.5, abs(cf));
+	float tone = thatch_hash(vec2(row, floor(c)));
+	vec3 color = slate_color.rgb * (0.82 + 0.36 * tone);
+	color = mix(color, color * vec3(0.92, 0.96, 1.08), step(0.7, tone));
+	return color * (1.0 - (under * 0.55 + seam * 0.4) * near);
+}
+
 vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, float index) {
 	vec3 p = position / meters;
 	return texture(stack, vec3(p.zy, index)) * weights.x
@@ -239,6 +265,10 @@ void fragment() {
 				vec3 far_straw = mix(thatch_color.rgb, thatch_old.rgb, 0.5);
 				color = mix(far_straw * 0.9, straw, near);
 				roughness = 0.95;
+			} else if (slate > 0.5) {
+				// Fase 134: a ardósia, lisa e um pouco brilhante
+				color = slate_shade(world_position, world_normal, near);
+				roughness = 0.55;
 			} else {
 				color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;
 			}
@@ -246,6 +276,9 @@ void fragment() {
 			// a capa da cumeeira e o beiral do sapê: palha mais escura e lisa
 			color = mix(thatch_old.rgb, color, 0.3) * 0.85;
 			roughness = 0.95;
+		} else if (roof && slate > 0.5) {
+			// a capa, o beiral redondo e o telhado plano da ardósia: a cor dela, lisa
+			color = slate_color.rgb * 0.9;
 		}
 	}
 	float above = world_position.y - base_height;

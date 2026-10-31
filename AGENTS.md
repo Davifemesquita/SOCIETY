@@ -2319,6 +2319,13 @@ Regras que já custaram investigação:
   do pátio das bancas) e as cordas em xis com o poste e a corda da festa (`FestivalView._post`, `_string`). Captura em
   `tools/capture_phase133.tscn`.
 
+### Ardósia nos prédios de pedra (Fase 134, nossa)
+
+- **Plano** em `docs/plano_fase134.md`. `BuildingView.SLATE_ROOFS` põe o parâmetro de instância `slate`, e o
+  `shaders/building_kit.gdshader` troca as telhas por `slate_shade` (placas retangulares cinza-azuladas). As bancas do
+  mercado, peças do kit na célula do telhado, ficam de ardósia junto. Captura: a rua dos prédios grandes do
+  `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2463,6 +2470,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 131 — Bueiros na rua calçada (nossa) | **feita em 31/10/2026**: tampas redondas de ferro fundido no meio das ruas retas de paralelepípedo, pelo desenho da grade; plano em `docs/plano_fase131.md` |
 | 132 — Bomba d'água (nossa) | **feita em 31/10/2026**: bomba de ferro fundido com alavanca, bica, laje e baldes numa célula livre junto de uma casa a cada seis, virada para a rua; plano em `docs/plano_fase132.md` |
 | 133 — Bandeirolas da feira (nossa) | **feita em 31/10/2026**: quatro postes e duas cordas de bandeirolas em xis sobre o pátio das bancas de cada mercado, o ano todo; plano em `docs/plano_fase133.md` |
+| 134 — Ardósia nos prédios de pedra (nossa) | **feita em 31/10/2026**, a última do roteiro sapê, bueiro e ardósia: a igreja, a escola, o mercado, a prefeitura, o teatro, a universidade e o museu trocam as telhas por ardósia cinza-azulada; plano em `docs/plano_fase134.md` |
 
 Pendências já vistas para fases futuras:
 

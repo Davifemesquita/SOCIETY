@@ -1669,3 +1669,10 @@ Neutra.
 Mesmo estado (jogo novo 11,5 s): 77,0 FPS (132: 77,0), 1% low 41,3, pior quadro 32 ms, p50/p95/p99 12,3/16,8/22,6 ms, GPU
 12,0 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem
 mercado; a camada vazia não desenha). Neutra.
+
+## Fase 134 — ardósia nos prédios de pedra (31/10/2026)
+
+Mesmo estado (jogo novo 12,9 s, uma rodada mais lenta só ali; carregar 5,3 s, igual): 76,7 FPS (133: 77,0), 1% low 41,9,
+pior quadro 32 ms, p50/p95/p99 12,4/16,8/22,4 ms, GPU 12,0 ms; objetos, draw calls e primitivas iguais (a ardósia é a mesma
+malha com outra conta no shader do kit). Neutra; fecha o roteiro sapê, bueiro e ardósia e os quatro ciclos pedidos pelo
+dono (Fases 115 a 134) no patamar em que a máquina está desde a Fase 120 (~77 FPS, GPU ~12 ms).

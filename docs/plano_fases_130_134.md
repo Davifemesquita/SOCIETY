@@ -18,3 +18,11 @@ código.
 | 134 — Ardósia nos prédios de pedra | os serviços de pedra (igreja, escola, mercado, prefeitura) trocam as telhas por ardósia: placas retangulares cinza-azuladas em fiadas |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase130.md` a
+`docs/plano_fase134.md`), testes, captura e benchmark. Diferenças do roteiro: os bueiros (131) pulam as células dos postes;
+a bomba d'água (132) fica numa casa a cada seis; as bancas do mercado ficaram de ardósia junto com o telhado (134). No
+caminho, duas correções em fases anteriores: as pedras do minério (128) saíram de cima das ruas, e os bueiros (131) de
+debaixo dos postes.

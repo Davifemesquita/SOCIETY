@@ -63,6 +63,9 @@ const NON_HOUSE_SHIFT := 0.35
 const INVERTED_EVERY := 5
 const JITTER_M := 0.01
 const JITTER_DEG := 0.5
+## Fase 134: os serviços de pedra com o telhado de ardósia (o shader do kit troca as telhas por ela).
+const SLATE_ROOFS: Array[StringName] = [&"church", &"school", &"market", &"town_hall", &"theater", &"university",
+		&"museum"]
 ## Fase 79: quanto o bicho inclina para a frente bebendo (rad).
 const DRINK_TILT := 0.12
 
@@ -533,6 +536,8 @@ func _add(building_id: int) -> void:
 		body.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, record))
 		# Fase 130: o telhado de sapê das casas dos camponeses
 		body.set_instance_shader_parameter(&"thatch", 1.0 if thatched(_simulation, record) else 0.0)
+		# Fase 134: o telhado de ardósia dos serviços de pedra
+		body.set_instance_shader_parameter(&"slate", 1.0 if record.def_id in SLATE_ROOFS else 0.0)
 		_lots[building_id] = [record.island_id, area]
 		_add_plinth(body, record, spec, area)
 		if def.is_exhibit_hall():
