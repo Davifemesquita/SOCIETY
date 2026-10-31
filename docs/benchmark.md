@@ -1645,3 +1645,9 @@ Mesmo estado (jogo novo 11,5 s): 77,5 FPS (128: 76,9), 1% low 40,2, pior quadro 
 22,8 ms), p50/p95/p99 12,2/16,9/22,8 ms, GPU 11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a sombra é
 uma conta a mais nos shaders do terreno e da água). Neutra; fecha o roteiro recife, alpendre e nuvens no patamar em que a
 máquina está desde a Fase 120 (~77,5 FPS, GPU ~11,8 ms).
+
+## Fase 130 — telhado de sapê (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,0 FPS (129: 77,5), 1% low 40,7, pior quadro 29 ms, p50/p95/p99 12,3/16,7/23,1 ms, GPU
+11,9 ms, carregar 5,4 s; objetos, draw calls e primitivas iguais (o sapê é a mesma malha com outra conta no shader do kit).
+Neutra.

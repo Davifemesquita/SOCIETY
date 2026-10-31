@@ -34,6 +34,8 @@ instance uniform float soot = 0.0;
 // referencial canônico (frente −Z, +X, fundo +Z, −X), de 0 a 1 pela parte da divisa ocupada por prédio vizinho
 instance uniform float trim_paint = 0.0;
 instance uniform vec4 side_shade = vec4(0.0);
+// Fase 130: o telhado de sapê (as casas dos camponeses), no lugar das telhas da Fase 95
+instance uniform float thatch = 0.0;
 
 // Fase 39: vidro (célula (0, 1), que o kit não usa): escuro, liso, com o céu refletido no ângulo raso
 uniform vec4 glass_color : source_color = vec4(0.17, 0.21, 0.25, 1.0);
@@ -54,6 +56,13 @@ uniform float tile_row_m = 0.34;
 uniform float tile_width_m = 0.27;
 uniform float tile_strength = 0.38;
 uniform float tile_fade_far = 80.0;
+
+// Fase 130: o sapê — fiadas grossas de thatch_course_m ao longo da água, com a borda de baixo de cada fiada mais escura e
+// irregular, os fios de palha descendo a água (ruído esticado) e o tom de palha velha, mais escuro e esverdeado no pé
+uniform vec4 thatch_color : source_color = vec4(0.6, 0.5, 0.32, 1.0);
+uniform vec4 thatch_old : source_color = vec4(0.38, 0.35, 0.24, 1.0);
+uniform float thatch_course_m = 0.55;
+uniform float thatch_strand_m = 0.045;
 
 // Fase 97: a pátina do cobre (cúpulas e torreões)
 uniform vec4 copper_dark : source_color = vec4(0.22, 0.42, 0.38, 1.0);
@@ -115,6 +124,40 @@ float roof_tile_shade(vec3 p, vec3 n) {
 	float covered = 1.0 - smoothstep(0.0, 0.35, f);
 	float tone = fract(sin(dot(vec2(row, floor(c)), vec2(12.9898, 78.233))) * 43758.5453);
 	return clamp(under * 0.9 + seam * 0.45 + covered * 0.25 + (tone - 0.5) * 0.35, 0.0, 1.0);
+}
+
+// Fase 130: ruído de valor com hash sem seno (com coordenadas de mundo grandes o fract(sin(...)) sai em escada na GPU).
+float thatch_hash(vec2 p) {
+	vec3 q = fract(vec3(mod(p, 1024.0).xyx) * 0.1031);
+	q += dot(q, q.yzx + 33.33);
+	return fract((q.x + q.y) * q.z);
+}
+
+float value_noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(thatch_hash(i), thatch_hash(i + vec2(1.0, 0.0)), f.x),
+			mix(thatch_hash(i + vec2(0.0, 1.0)), thatch_hash(i + vec2(1.0)), f.x), f.y);
+}
+
+// Fase 130: a cor do sapê no ponto p (normal n): as fiadas, os fios e o pé envelhecido; a base é a cor do telhado.
+vec3 thatch_shade(vec3 base, vec3 p, vec3 n) {
+	vec2 down = normalize(n.xz);
+	vec2 across = vec2(-down.y, down.x);
+	float s = dot(p.xz, down) / max(n.y, 0.2);
+	float a = dot(p.xz, across);
+	// a borda de cada fiada ondula um pouco ao longo da água
+	float wave = (value_noise(vec2(a * 1.7, floor(s / thatch_course_m) * 3.1)) - 0.5) * 0.25;
+	float f = fract(s / thatch_course_m + wave);
+	float lip = smoothstep(0.72, 0.98, f);
+	// os fios: ruído fino de través, esticado ao longo da água
+	float strand = value_noise(vec2(a / thatch_strand_m, s * 2.0));
+	vec3 straw = mix(thatch_color.rgb, thatch_old.rgb, 0.35 + 0.4 * value_noise(p.xz * 0.6));
+	straw = mix(straw, base, 0.25);
+	straw *= 0.72 + 0.48 * strand;
+	straw *= 1.0 - lip * 0.45;
+	return straw;
 }
 
 vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, float index) {
@@ -190,7 +233,19 @@ void fragment() {
 		// Fase 95: as telhas, só nas águas viradas para cima (não na capa, no beiral nem embaixo do telhado)
 		if (roof && cell.x == 0 && world_normal.y > 0.25 && world_normal.y < 0.97) {
 			float near = 1.0 - smoothstep(tile_fade_far * 0.5, tile_fade_far, length(VERTEX));
-			color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;
+			if (thatch > 0.5) {
+				// Fase 130: o sapê, de perto com as fiadas e os fios, de longe só o tom de palha
+				vec3 straw = thatch_shade(color, world_position, world_normal);
+				vec3 far_straw = mix(thatch_color.rgb, thatch_old.rgb, 0.5);
+				color = mix(far_straw * 0.9, straw, near);
+				roughness = 0.95;
+			} else {
+				color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;
+			}
+		} else if (roof && thatch > 0.5) {
+			// a capa da cumeeira e o beiral do sapê: palha mais escura e lisa
+			color = mix(thatch_old.rgb, color, 0.3) * 0.85;
+			roughness = 0.95;
 		}
 	}
 	float above = world_position.y - base_height;

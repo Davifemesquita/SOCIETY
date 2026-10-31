@@ -2294,6 +2294,13 @@ Regras que já custaram investigação:
   `cloud_cover` (a cobertura do `WeatherCycle`) e `cloud_offset` (que a `WeatherView.drift_clouds` soma com o vento a cada
   quadro). Captura em `tools/capture_phase129.tscn` (põe a cobertura direto no global, com a `WeatherView` parada).
 
+### Telhado de sapê (Fase 130, nossa)
+
+- **Plano** em `docs/plano_fase130.md`, primeira do roteiro `docs/plano_fases_130_134.md` (sapê, bueiro e ardósia).
+  `BuildingView.thatched` (as casas de `HouseTrim.YARD`) põe o parâmetro de instância `thatch`, e o
+  `shaders/building_kit.gdshader` troca as telhas por `thatch_shade` (fiadas, fios e palha velha). Captura em
+  `tools/capture_phase130.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2434,6 +2441,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 127 — Cisternas no cais (nossa) | **feita em 30/10/2026**: duas cisternas redondas de aduelas sobre soco de pedra no cais de pedra de cada entreposto, uma de cada lado; plano em `docs/plano_fase127.md` |
 | 128 — Jazidas à vista (nossa) | **feita em 30/10/2026**: um afloramento de rocha e pedras na cor do minério (carvão, ferro, ouro) sobre cada jazida ainda sem mina; plano em `docs/plano_fase128.md` |
 | 129 — Sombra das nuvens (nossa) | **feita em 30/10/2026**, a última do roteiro recife, alpendre e nuvens: manchas de sombra das nuvens correndo pelo chão e pelo mar na direção do vento, mais com o céu nublado; plano em `docs/plano_fase129.md` |
+| 130 — Telhado de sapê (nossa) | **feita em 31/10/2026**, primeira do roteiro sapê, bueiro e ardósia (Fases 130 a 134): as casas dos camponeses trocam as tábuas do telhado por sapê, com fiadas grossas, fios de palha e o tom de palha velha; plano em `docs/plano_fase130.md` |
 
 Pendências já vistas para fases futuras:
 

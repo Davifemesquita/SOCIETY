@@ -348,6 +348,14 @@ static func inverted(record: BuildingRecord, wall_layer: int) -> bool:
 			and BuildingKit.variation_hash(record) / 8748 % INVERTED_EVERY == 0
 
 
+## Fase 130: o telhado de sapê — as casas da classe com o detalhe de quintal cercado (os camponeses).
+static func thatched(simulation: Simulation, record: BuildingRecord) -> bool:
+	if not record.is_house():
+		return false
+	var tier := simulation.data.tier(record.tier)
+	return tier != null and tier.house_trim == TierDef.HouseTrim.YARD
+
+
 ## Sombra de contato (Fase 39): para cada fachada do referencial canônico (frente, +X, fundo, −X), a parte da divisa de
 ## fora dela ocupada por prédio de verdade (campo, píer e decoração não contam).
 static func side_shade(simulation: Simulation, record: BuildingRecord) -> Vector4:
@@ -523,6 +531,8 @@ func _add(building_id: int) -> void:
 		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, roof_color, root.position.y, soot)
 		body.set_instance_shader_parameter(&"trim_paint", 1.0 if inverted(record, wall_layer) else 0.0)
 		body.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, record))
+		# Fase 130: o telhado de sapê das casas dos camponeses
+		body.set_instance_shader_parameter(&"thatch", 1.0 if thatched(_simulation, record) else 0.0)
 		_lots[building_id] = [record.island_id, area]
 		_add_plinth(body, record, spec, area)
 		if def.is_exhibit_hall():
