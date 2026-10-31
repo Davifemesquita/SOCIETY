@@ -1602,3 +1602,9 @@ Mesmo estado (jogo novo 11,7 s): 77,6 FPS (120: 77,8), 1% low 41,9, pior quadro 
 Mesmo estado (jogo novo 11,5 s): 77,2 FPS (121: 77,6), 1% low 40,4, pior quadro 35 ms, p50/p95/p99 12,2/16,7/22,6 ms, GPU
 11,9 ms, carregar 5,3 s; +20 objetos e draw calls (as quatro camadas das pedras) e +78 mil primitivas (as pedras à vista no
 quadro com tudo visível). Neutra.
+
+## Fase 123 — borrifo nas falésias (30/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,2 FPS (122: 77,2), 1% low 40,0, pior quadro 31 ms, p50/p95/p99 12,3/16,6/23,2 ms, GPU
+11,9 ms, carregar 5,2 s; objetos, draw calls e primitivas iguais aos da 122 (o trajeto do benchmark não passa perto das
+falésias, e os jatos parados não desenham). Neutra.

@@ -46,6 +46,8 @@ enum Kind { STACK, CLIFF }
 
 var _counts: Dictionary[int, int] = {}
 var _material: StandardMaterial3D
+## Fase 123: onde o mar bate na rocha (x, z e o raio da rocha), para o borrifo da SurfSprayView.
+var _spray_sites := PackedVector3Array()
 
 
 func setup(terrain: TerrainView, world: WorldState, config: GameConfig) -> void:
@@ -67,6 +69,7 @@ func setup(terrain: TerrainView, world: WorldState, config: GameConfig) -> void:
 			var variant: int = entry[0]
 			var place: Transform3D = entry[1]
 			var b := place.basis
+			_spray_sites.append(Vector3(place.origin.x, place.origin.z, Vector2(b.x.x, b.x.z).length()))
 			buffers[variant].append_array(PackedFloat32Array([b.x.x, b.y.x, b.z.x, place.origin.x, b.x.y, b.y.y, b.z.y,
 					place.origin.y, b.x.z, b.y.z, b.z.z, place.origin.z]))
 		for variant: int in RockModel.VARIANTS:
@@ -83,6 +86,11 @@ func setup(terrain: TerrainView, world: WorldState, config: GameConfig) -> void:
 			node.material_override = _material
 			node.visibility_range_end = VISIBLE_UNTIL_M
 			add_child(node)
+
+
+## Fase 123: onde o mar bate na rocha — x, z e o raio de cada rocha de rochedo e de falésia (todas encostam no mar).
+func spray_sites() -> PackedVector3Array:
+	return _spray_sites
 
 
 ## Rochas desenhadas (todas, ou de um tipo).

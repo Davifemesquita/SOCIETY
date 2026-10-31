@@ -96,6 +96,8 @@ var power_line_view: PowerLineView
 var hawk_view: HawkView
 ## Fase 122: matacões no leito dos rios e seixos na margem.
 var river_stone_view: RiverStoneView
+## Fase 123: o borrifo do mar batendo nos rochedos e nas falésias perto da câmera.
+var surf_spray_view: SurfSprayView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -300,6 +302,13 @@ func _ready() -> void:
 	river_stone_view.name = "RiverStones"
 	add_child(river_stone_view)
 	river_stone_view.setup(simulation)
+	surf_spray_view = SurfSprayView.new()
+	surf_spray_view.name = "SurfSpray"
+	add_child(surf_spray_view)
+	surf_spray_view.setup(func() -> PackedVector3Array:
+		return rock_view.spray_sites() if rock_view != null else PackedVector3Array(),
+		func(x: float, z: float) -> float: return simulation.world.surface_height(x, z))
+	graphics.add_effect(surf_spray_view)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)
