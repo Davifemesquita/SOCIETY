@@ -118,6 +118,8 @@ var fish_net_view: FishNetView
 var stump_view: StumpView
 ## Fase 142: os botes a remo dando voltas diante dos entrepostos.
 var rowboat_view: RowboatView
+## Fase 144: as boias marcando a entrada diante dos entrepostos.
+var buoy_view: BuoyView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -369,6 +371,10 @@ func _ready() -> void:
 	rowboat_view.name = "Rowboats"
 	add_child(rowboat_view)
 	rowboat_view.setup(simulation)
+	buoy_view = BuoyView.new()
+	buoy_view.name = "Buoys"
+	add_child(buoy_view)
+	buoy_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

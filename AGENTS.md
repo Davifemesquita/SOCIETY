@@ -2387,6 +2387,12 @@ Regras que já custaram investigação:
   `BuildingKit._front_picket` (nos trechos do gradil da Fase 114, estacas com a ponta em pirâmide na célula `UV_CANVAS`,
   pintada de creme pelo shader). Captura: `cerca_de_estacas.png` no `tools/capture_phase95.tscn`.
 
+### Boias no porto (Fase 144, nossa)
+
+- **Plano** em `docs/plano_fase144.md`. `BuoyView` (`GameScreen.buoy_view`): `spots` (pares mar adentro diante de cada
+  entreposto, além do cais de pedra, a vermelha no +través do mar), `pose` (afundada, subindo, descendo e tombando) e
+  `buoy_mesh`. Captura em `tools/capture_phase144.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2541,6 +2547,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 141 — Árvore seca (nossa) | **feita em 31/10/2026**: árvores secas e nuas, de galhos tortos e madeira cinzenta, de vez em quando na beira da mata e na costa das ilhas temperadas; plano em `docs/plano_fase141.md` |
 | 142 — Botes no porto (nossa) | **feita em 31/10/2026**: dois botes a remo por entreposto dando voltas na água funda diante dele, um em cada sentido, com o remador inclinando a cada remada e os remos varrendo; somem à noite; plano em `docs/plano_fase142.md` |
 | 143 — Cerca de estacas (nossa) | **feita em 31/10/2026**: cerquinha de estacas caiadas com a ponta em pirâmide e o vão da porta na frente das casas dos operários; plano em `docs/plano_fase143.md` |
+| 144 — Boias no porto (nossa) | **feita em 31/10/2026**, a última do roteiro toco, bote e boia: boias pintadas em pares marcando a entrada diante de cada entreposto, a vermelha de um lado e a verde do outro, balançando nas ondas; plano em `docs/plano_fase144.md` |
 
 Pendências já vistas para fases futuras:
 

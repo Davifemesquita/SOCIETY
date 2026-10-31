@@ -1734,3 +1734,10 @@ rápidas do patamar).
 Mesmo estado (jogo novo 11,5 s): 76,7 FPS (142: 76,4), 1% low 39,3, pior quadro 31 ms, p50/p95/p99 12,3/16,8/23,4 ms, GPU
 12,1 ms, carregar 5,4 s, construir com a ilha cheia 17,7 ms; objetos e draw calls iguais e +501.816 primitivas no quadro com
 tudo visível (as estacas das casas dos operários da cidade do benchmark, dentro da malha de cada casa). Neutra.
+
+## Fase 144 — boias no porto (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,3 FPS (143: 76,7), 1% low 39,4, pior quadro 34 ms, p50/p95/p99 12,3/16,8/23,7 ms, GPU
+12,0 ms, carregar 5,4 s, construir com a ilha cheia 17,5 ms; +10 objetos e draw calls e +30.720 primitivas no quadro com
+tudo visível (as boias diante dos entrepostos do benchmark). Neutra; fecha o roteiro toco, bote e boia no patamar de ~77 FPS
+e GPU ~12 ms.

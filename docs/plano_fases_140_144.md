@@ -18,3 +18,10 @@ textura, arquivo ou medida do jogo; tudo gerado no código.
 | 144 — Boias no porto | boias de amarração pintadas boiando e balançando no mar em volta do cais de cada entreposto |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase140.md` a
+`docs/plano_fase144.md`), testes, captura e benchmark. Diferenças do roteiro: a clareira (140) só refaz o corte quando um
+lenhador entra ou sai (a primeira versão refazia tudo a cada prédio e encareceu a obra em 11 ms); a árvore seca (141) ficou
+mais rara e escura depois da primeira captura; as boias (144) foram para além do cais de pedra.
