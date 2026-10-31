@@ -1715,3 +1715,9 @@ que entra ou sai refaz o corte, só na ilha dele, no quadro seguinte; camadas po
 77,8 FPS (139: 77,2), 1% low 39,0, pior quadro 34 ms, p50/p95/p99 12,2/16,6/23,5 ms, GPU 11,9 ms, montar tudo 10,1 s,
 construir com a ilha cheia 18,1 ms, carregar 5,3 s; +17 objetos e draw calls e +52.165 primitivas no quadro com tudo
 visível (os tocos e as toras dos lenhadores da cidade do benchmark). Neutra.
+
+## Fase 141 — árvore seca (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,9 FPS (140: 77,8), 1% low 38,8, pior quadro 33 ms, p50/p95/p99 12,2/16,7/23,8 ms, GPU
+11,9 ms, carregar 5,3 s, construir com a ilha cheia 17,7 ms; objetos, draw calls e primitivas iguais no quadro com tudo
+visível (o recheio só desenha perto da câmera). Neutra.

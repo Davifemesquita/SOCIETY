@@ -2369,6 +2369,12 @@ Regras que já custaram investigação:
   no quadro seguinte (refazer tudo a cada prédio custava 11 ms na obra com a ilha cheia). Captura em
   `tools/capture_phase140.tscn`.
 
+### Árvore seca (Fase 141, nossa)
+
+- **Plano** em `docs/plano_fase141.md`. `ScatterView.Kind.SNAG` (no fim do enum e no fim das listas `NEAR_FOREST` e
+  `NEAR_SEA`, para o sorteio de antes não mudar) e `snag_mesh` (tronco nu torto com cinco galhos, madeira cinzenta); só
+  nas ilhas temperadas. Captura em `tools/capture_phase141.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2520,6 +2526,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 138 — Telhado de chapa ondulada (nossa) | **feita em 31/10/2026**: a olaria, a fundição, a vidraria, as usinas, a de vigas de aço, as conservas, as máquinas de costura e a de lâmpadas trocam as telhas por chapa de ferro ondulada, cinza com a ferrugem escorrendo das juntas; plano em `docs/plano_fase138.md` |
 | 139 — Redes de pesca (nossa) | **feita em 31/10/2026**, a última do roteiro galinha, forno e mina: ao lado de cada cabana de pesca, dois cavaletes com a rede estendida secando, as boias de cortiça, as caixas de peixe e o cesto; plano em `docs/plano_fase139.md` |
 | 140 — Clareira do lenhador (nossa) | **feita em 31/10/2026**, primeira do roteiro toco, bote e boia (Fases 140 a 144): em volta de cada lenhador a mata recua no desenho, mais perto da cabana, e as células cortadas ficam com os tocos e umas toras caídas; plano em `docs/plano_fase140.md` |
+| 141 — Árvore seca (nossa) | **feita em 31/10/2026**: árvores secas e nuas, de galhos tortos e madeira cinzenta, de vez em quando na beira da mata e na costa das ilhas temperadas; plano em `docs/plano_fase141.md` |
 
 Pendências já vistas para fases futuras:
 

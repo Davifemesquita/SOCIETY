@@ -12,14 +12,17 @@ extends Node3D
 ## quintal (macieira pequena, no meio da célula, não encostada na parede) nas células junto das casas; na tropical, a
 ## bananeira. Ela vem por último na lista: o sorteio das peças de antes não muda. Fase 112: na beira das ruas das ilhas
 ## tropicais, coqueiros pequenos (o da Fase 58, reduzido a STREET_PALM_SCALE), também no fim da lista NEAR_ROAD.
+## Fase 141: a árvore seca (SNAG), nua e de galhos tortos, de vez em quando na beira da mata e na costa das ilhas
+## temperadas, no fim das listas NEAR_FOREST e NEAR_SEA.
 
-enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM }
+enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
-const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM]
+const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
+		Kind.SNAG]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE]
 const BANANA_SHARE := 0.4
@@ -42,13 +45,20 @@ const YARD_LEAF := Color(0.24, 0.42, 0.16)
 const YARD_BARK := Color(0.32, 0.24, 0.17)
 const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
-const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12]]
+const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
 const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
-const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08]]
+const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08], [Kind.SNAG, SNAG_COAST_CHANCE]]
+## Fase 141: a árvore seca — a chance por célula na beira da mata e na costa, a altura do tronco e as cores da madeira
+## velha, cinzenta.
+const SNAG_FOREST_CHANCE := 0.015
+const SNAG_COAST_CHANCE := 0.02
+const SNAG_HEIGHT_M := 4.2
+const SNAG_WOOD := Color(0.4, 0.37, 0.33)
+const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04]]
 ## O capim do recheio é a touceira das plantações aumentada (a de 30 cm some a 50 m).
 const TUFT_SCALE := Vector2(1.4, 2.4)
@@ -411,8 +421,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.STREET_PALM and not tropical:
 			# coqueiro de rua só nas tropicais (o sorteio já foi feito: as outras peças da célula não mudam)
 			continue
+		elif kind == Kind.SNAG and tropical:
+			# a árvore seca só nas temperadas
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM:
+		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
 		elif lean != Vector2i.ZERO:
@@ -432,7 +445,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		match kind:
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
-			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM:
+			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		var list: Array = result[kind]
@@ -443,6 +456,8 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 static func piece_mesh(kind: int) -> ArrayMesh:
 	if kind == Kind.STREET_PALM:
 		return TreeModel.mesh(TreeModel.Species.COCONUT_PALM, 0)
+	if kind == Kind.SNAG:
+		return snag_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -559,3 +574,28 @@ static func _leaf(tool: SurfaceTool, base: Vector3, angle: float, length: float,
 				tool.set_color(color)
 				tool.set_normal(normal)
 				tool.add_vertex(point)
+
+
+## Fase 141: a árvore seca, com o pé no zero: o tronco nu em três lanços tortos, afinando até a ponta quebrada, e cinco
+## galhos subindo abertos para os lados, cada um com um ramo; madeira velha, cinzenta, mais escura embaixo.
+static func snag_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var joints: Array[Vector3] = [Vector3.ZERO, Vector3(0.12, SNAG_HEIGHT_M * 0.38, 0.05),
+			Vector3(-0.08, SNAG_HEIGHT_M * 0.72, 0.12), Vector3(0.1, SNAG_HEIGHT_M, -0.04)]
+	var radii: Array[float] = [0.19, 0.13, 0.08, 0.04]
+	for k: int in 3:
+		VertexShapes.cylinder(tool, joints[k] + Vector3(0.0, -0.05 if k == 0 else 0.0, 0.0), joints[k + 1],
+				radii[k], SNAG_DARK if k == 0 else SNAG_WOOD, 7)
+	for k: int in 5:
+		var along := 0.42 + 0.11 * k
+		var foot := joints[1].lerp(joints[3], (along - 0.38) / 0.62) if along > 0.38 else joints[1]
+		var angle := TAU * k / 5.0 + 0.7
+		var out := Vector3(cos(angle), 0.0, sin(angle))
+		var tip := foot + out * (1.1 - 0.12 * k) + Vector3(0.0, 0.9 - 0.08 * k, 0.0)
+		VertexShapes.cylinder(tool, foot, tip, 0.05 - 0.005 * k, SNAG_WOOD, 5)
+		var twig_root := foot.lerp(tip, 0.6)
+		var side := Vector3(-out.z, 0.0, out.x) * (1.0 if k % 2 == 0 else -1.0)
+		VertexShapes.cylinder(tool, twig_root, twig_root + side * 0.45 + Vector3(0.0, 0.4, 0.0), 0.022, SNAG_WOOD, 4)
+	tool.generate_normals()
+	return tool.commit()
