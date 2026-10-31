@@ -310,6 +310,17 @@ const LUCARNE_W := 0.9
 const LUCARNE_H := 0.75
 const LUCARNE_AT := 0.62
 const LUCARNE_PEAK_M := 0.32
+## Fase 124: a mansarda das casas dos investidores. A água de baixo, íngreme, sobe MANSARD_LOWER da altura do telhado do
+## beiral (MANSARD_EAVE_M para fora da parede) até o rebordo (MANSARD_INSET_M para dentro dela); a de cima, quase plana,
+## fecha em quatro águas. Na água de baixo da frente e de trás, lucarnas de DORMER_W de largura e DORMER_H de altura,
+## com a frente a DORMER_AT da água e o telhadinho DORMER_PEAK_M acima dela.
+const MANSARD_LOWER := 0.72
+const MANSARD_INSET_M := 0.75
+const MANSARD_EAVE_M := 0.25
+const DORMER_W := 0.85
+const DORMER_H := 1.2
+const DORMER_AT := 0.3
+const DORMER_PEAK_M := 0.35
 ## Vidro e caixilho nas janelas: o kit só tem o vão. O vidro fica na espessura da parede (x da peça), o caixilho em
 ## cruz logo à frente dele, MULLION_M de largura.
 const UV_GLASS := Vector2(0.5 / 8.0, 1.5 / 4.0)
@@ -376,11 +387,13 @@ class Spec:
 	var skylights: bool = false
 	## Fase 104: o lampião de parede ao lado da porta (serviços e casas dos artesãos para cima, sem toldo).
 	var lantern: bool = false
+	## Fase 124: o telhado de duas águas vira mansarda (as casas dos investidores sem ala).
+	var mansard: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -415,6 +428,7 @@ class Spec:
 		copy.jetty = jetty
 		copy.skylights = skylights
 		copy.lantern = lantern
+		copy.mansard = mansard
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -454,6 +468,7 @@ class Spec:
 		copy.lucarnes = 0
 		copy.chimney = false
 		copy.overhang_m = minf(overhang_m, 0.3)
+		copy.mansard = false
 		# o telhado da ala cruza o do corpo: com a cumeeira do corpo ao longo de x, a da ala corre em z
 		copy.roof = Roof.GABLE_Z if roof == Roof.GABLE_X else Roof.HIP
 		# cabe no andar que a ala tirou: a cumeeira dela fica abaixo do beiral do corpo (mais alto virava uma agulha)
@@ -495,6 +510,7 @@ class Spec:
 		copy.jetty = jetty
 		copy.skylights = skylights
 		copy.lantern = lantern
+		copy.mansard = mansard
 		return copy
 
 
@@ -546,6 +562,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 			spec.wing = -1
 		# Fase 97: o torreão de canto das casas dos investidores (três andares ou mais)
 		spec.turret = spec.trim == TierDef.HouseTrim.PORTICO and spec.floors() >= 3
+		# Fase 124: a mansarda das casas dos investidores de duas águas sem ala (a ala tem o telhado cruzado)
+		spec.mansard = spec.trim == TierDef.HouseTrim.PORTICO and spec.roof != Roof.FLAT and spec.wing == 0
 		# Fase 102: o andar saliente com enxaimel dos operários e artesãos
 		spec.jetty = spec.trim in [TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES] and spec.roof == Roof.GABLE_X \
 				and spec.floors() >= 2
@@ -2340,6 +2358,8 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				var start: Vector3 = edge[0]
 				var finish: Vector3 = edge[1]
 				_rod(tool, start, finish, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+		_ when spec.mansard:
+			_mansard(tool, spec)
 		_ when spec.vault:
 			_vault(tool, spec)
 		_:
@@ -2376,6 +2396,91 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				var tip := _uv_point(along_x, end * (hu + o), ridge, 0.0)
 				_quad(tool, side_a, side_a + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
 				_quad(tool, side_b, side_b + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
+
+
+## Fase 124: os três níveis da mansarda — [meia medida do beiral, do rebordo e da cumeeira (x e z), alturas do beiral,
+## do rebordo e da cumeeira].
+static func mansard_levels(spec: Spec) -> Array:
+	var half := spec.size_m() * 0.5
+	var eave := half + Vector2.ONE * MANSARD_EAVE_M
+	var curb := half - Vector2.ONE * MANSARD_INSET_M
+	var ridge := Vector2(maxf(curb.x - curb.y, 0.0), maxf(curb.y - curb.x, 0.0))
+	var top := spec.height_m
+	return [eave, curb, ridge, top - 0.05, top + spec.roof_m * MANSARD_LOWER, top + spec.roof_m]
+
+
+## Fase 124: a mansarda — a água de baixo íngreme do beiral ao rebordo, a de cima quase plana em quatro águas, o fundo do
+## beiral, o beiral e o rebordo redondos, os espigões e a cumeeira com a capa, e as lucarnas da frente e de trás.
+static func _mansard(tool: SurfaceTool, spec: Spec) -> void:
+	var levels := mansard_levels(spec)
+	var eave: Vector2 = levels[0]
+	var curb: Vector2 = levels[1]
+	var ridge: Vector2 = levels[2]
+	var low: float = levels[3]
+	var mid: float = levels[4]
+	var high: float = levels[5]
+	var signs: Array[Vector2] = [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]
+	var e: Array[Vector3] = []
+	var k: Array[Vector3] = []
+	var r: Array[Vector3] = []
+	for s: Vector2 in signs:
+		e.append(Vector3(s.x * eave.x, low, s.y * eave.y))
+		k.append(Vector3(s.x * curb.x, mid, s.y * curb.y))
+		r.append(Vector3(s.x * ridge.x, high, s.y * ridge.y))
+	var outs: Array[Vector3] = [Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(-1, 0, 0)]
+	for i: int in 4:
+		var j := (i + 1) % 4
+		_quad(tool, e[i], e[j], k[j], k[i], outs[i] + Vector3.UP * 0.3, UV_ROOF)
+		_quad(tool, k[i], k[j], r[j], r[i], outs[i] * 0.4 + Vector3.UP, UV_ROOF)
+		_rod(tool, e[i], e[j], EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+		_rod(tool, k[i], k[j], RIDGE_CAP_M * 0.7, RIDGE_SIDES, UV_ROOF_TRIM)
+		_rod(tool, k[i], r[i], RIDGE_CAP_M * 0.6, RIDGE_SIDES, UV_ROOF_TRIM, true)
+	_quad(tool, e[0], e[1], e[2], e[3], Vector3.DOWN, UV_ROOF)
+	if r[0].distance_to(r[2]) > 0.01:
+		_rod(tool, r[0], r[2], RIDGE_CAP_M, RIDGE_SIDES, UV_ROOF_TRIM, true)
+	_dormers(tool, spec, levels)
+
+
+## Fase 124: as lucarnas na água de baixo da frente (−z) e de trás (+z), uma por célula menos as pontas: a parede da
+## frente em pé a DORMER_AT da água, o corpo entrando até o rebordo, o telhadinho de duas águas e o vidro com o caixilho.
+static func _dormers(tool: SurfaceTool, spec: Spec, levels: Array) -> void:
+	var eave: Vector2 = levels[0]
+	var curb: Vector2 = levels[1]
+	var low: float = levels[3]
+	var mid: float = levels[4]
+	var count := maxi(spec.cells.x - 1, 1)
+	var span := curb.x * 2.0 - DORMER_W
+	if span <= 0.0:
+		return
+	var face_z := lerpf(eave.y, curb.y, DORMER_AT)
+	var sill := lerpf(low, mid, DORMER_AT)
+	var crown := minf(sill + DORMER_H, mid - 0.15)
+	var half := DORMER_W * 0.5
+	for side: float in [-1.0, 1.0]:
+		var out := Vector3(0.0, 0.0, side)
+		for i: int in count:
+			var x := -span * 0.5 + span * (i + 0.5) / count
+			var front := side * face_z
+			var back := side * curb.y
+			_box(tool, Vector3(x, (sill + crown) * 0.5, (front + back) * 0.5), Vector3(DORMER_W, crown - sill,
+					absf(front - back)), UV_WALL)
+			var peak := crown + DORMER_PEAK_M
+			for s: float in [-1.0, 1.0]:
+				_quad(tool, Vector3(x + s * (half + 0.08), crown - 0.03, front + side * 0.1),
+						Vector3(x + s * (half + 0.08), crown - 0.03, back), Vector3(x, peak, back),
+						Vector3(x, peak, front + side * 0.1), Vector3(s, 1.0, 0.0), UV_ROOF)
+			_triangle(tool, Vector3(x - half, crown, front + side * 0.005), Vector3(x + half, crown, front + side * 0.005),
+					Vector3(x, peak - 0.04, front + side * 0.005), out, UV_WALL)
+			var glass_z := front + side * 0.01
+			var glass_low := sill + 0.15
+			var glass_high := crown - 0.12
+			var glass_x := DORMER_W * 0.3
+			_quad(tool, Vector3(x - glass_x, glass_low, glass_z), Vector3(x + glass_x, glass_low, glass_z),
+					Vector3(x + glass_x, glass_high, glass_z), Vector3(x - glass_x, glass_high, glass_z), out, UV_GLASS)
+			var bar_z := front + side * 0.02
+			_quad(tool, Vector3(x - MULLION_M * 0.5, glass_low, bar_z), Vector3(x + MULLION_M * 0.5, glass_low, bar_z),
+					Vector3(x + MULLION_M * 0.5, glass_high, bar_z), Vector3(x - MULLION_M * 0.5, glass_high, bar_z), out,
+					UV_TIMBER)
 
 
 ## Fase 98: a altura da abóbada em v (de -largura a +largura, com o beiral): o arco de círculo que passa pelo beiral dos
@@ -2514,7 +2619,7 @@ static func lucarne_fits(roof_m: float) -> bool:
 
 
 static func _lucarnes(tool: SurfaceTool, spec: Spec) -> void:
-	if spec.lucarnes <= 0 or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z] or not lucarne_fits(spec.roof_m):
+	if spec.lucarnes <= 0 or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z] or spec.mansard or not lucarne_fits(spec.roof_m):
 		return
 	var size := spec.size_m()
 	var along_x := spec.roof == Roof.GABLE_X

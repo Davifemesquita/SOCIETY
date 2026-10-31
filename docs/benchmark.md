@@ -1608,3 +1608,9 @@ quadro com tudo visível). Neutra.
 Mesmo estado (jogo novo 11,6 s): 77,2 FPS (122: 77,2), 1% low 40,0, pior quadro 31 ms, p50/p95/p99 12,3/16,6/23,2 ms, GPU
 11,9 ms, carregar 5,2 s; objetos, draw calls e primitivas iguais aos da 122 (o trajeto do benchmark não passa perto das
 falésias, e os jatos parados não desenham). Neutra.
+
+## Fase 124 — mansarda dos investidores (30/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,7 FPS (123: 77,2), 1% low 40,9, pior quadro 29 ms, p50/p95/p99 12,2/16,6/22,8 ms, GPU
+11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a cidade do benchmark não tem investidores). Neutra;
+fecha o roteiro fios, riacho e mansarda no patamar em que a máquina está desde a Fase 120 (~77,5 FPS, GPU ~11,8 ms).

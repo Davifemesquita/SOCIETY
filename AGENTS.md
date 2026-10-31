@@ -2257,6 +2257,12 @@ Regras que já custaram investigação:
   da rocha) e um punhado de jatos `one_shot` reaproveitados, parados na pausa. Partículas só sobem com o relógio andando: a
   captura (`tools/capture_phase123.tscn`) põe o jogo a 1x.
 
+### Mansarda dos investidores (Fase 124, nossa)
+
+- **Plano** em `docs/plano_fase124.md`. `Spec.mansard` (investidores de duas águas sem ala; na chave), `mansard_levels`,
+  `_mansard` (água de baixo íngreme até o rebordo, a de cima quase plana, cumeeira na altura de antes) e `_dormers` (as
+  lucarnas da água de baixo); a `_lucarnes` da Fase 39 pula a mansarda. Captura em `tools/capture_phase124.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2391,6 +2397,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 121 — Gavião sobre a cidade (nossa) | **feita em 30/10/2026**: um gavião (mais nas cidades grandes) planando em círculos largos e altos sobre cada cidade, batendo a asa de vez em quando, de dia; plano em `docs/plano_fase121.md` |
 | 122 — Pedras no rio (nossa) | **feita em 30/10/2026**: matacões de rocha no leito raso dos rios, saindo da água com a espuma em volta, e seixos na margem baixa; plano em `docs/plano_fase122.md` |
 | 123 — Borrifo nas falésias (nossa) | **feita em 30/10/2026**: jatos de espuma subindo de tempos em tempos onde o mar bate nos rochedos e nas falésias perto da câmera, do lado do mar; plano em `docs/plano_fase123.md` |
+| 124 — Mansarda dos investidores (nossa) | **feita em 30/10/2026**, a última do roteiro fios, riacho e mansarda: telhado de mansarda (água de baixo íngreme com lucarnas, a de cima quase plana) nas casas dos investidores sem ala; plano em `docs/plano_fase124.md` |
 
 Pendências já vistas para fases futuras:
 

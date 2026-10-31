@@ -17,3 +17,10 @@ Como sempre, **só a ideia**: nenhum modelo, textura, arquivo ou medida do jogo;
 | 124 — Mansarda dos investidores | o telhado das casas dos investidores vira mansarda: a água de baixo íngreme e a de cima quase plana, com as lucarnas na de baixo |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 30/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase120.md` a
+`docs/plano_fase124.md`), testes, captura e benchmark. Diferenças do roteiro: os fios (120) só ligam postes com o vão
+livre de prédios; os seixos do rio (122) só ficam na margem baixa, porque os rios do terreno v4 correm quase todos em
+gargantas; a mansarda (124) não entra nas casas com ala nem nas de telhado plano.
