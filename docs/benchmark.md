@@ -1657,3 +1657,9 @@ Neutra.
 Mesmo estado (jogo novo 11,5 s): 77,4 FPS (130: 77,0), 1% low 42,1, pior quadro 28 ms, p50/p95/p99 12,3/16,7/22,2 ms, GPU
 11,9 ms, carregar 5,3 s; +1 objeto e draw call (a camada das tampas) e, com a cidade calçada, +200 mil primitivas (as
 tampas das ruas da cidade do benchmark). Neutra.
+
+## Fase 132 — bomba d'água (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 77,0 FPS (131: 77,4), 1% low 41,6, pior quadro 28 ms, p50/p95/p99 12,3/16,8/22,4 ms, GPU
+12,0 ms, carregar 5,3 s; +5 objetos e draw calls (a camada das bombas), primitivas iguais no quadro com tudo visível.
+Neutra.

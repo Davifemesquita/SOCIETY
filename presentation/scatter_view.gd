@@ -298,6 +298,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 117: e os silos das fazendas
 	for cell: Vector2i in FarmSiloView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 132: e as bombas d'água
+	for cell: Vector2i in WaterPumpView.cells(world, data, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 

@@ -102,6 +102,8 @@ var surf_spray_view: SurfSprayView
 var deposit_view: DepositView
 ## Fase 131: as tampas de bueiro nas ruas de paralelepípedo.
 var manhole_view: ManholeView
+## Fase 132: as bombas d'água junto das casas.
+var water_pump_view: WaterPumpView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -321,6 +323,10 @@ func _ready() -> void:
 	manhole_view.name = "Manholes"
 	add_child(manhole_view)
 	manhole_view.setup(simulation)
+	water_pump_view = WaterPumpView.new()
+	water_pump_view.name = "WaterPumps"
+	add_child(water_pump_view)
+	water_pump_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)
