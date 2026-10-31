@@ -128,6 +128,8 @@ var quay_rail_view: QuayRailView
 var quay_mast_view: QuayMastView
 ## Fase 148: o cavalete, o cepo e a lenha rachada junto dos lenhadores.
 var lumber_yard_view: LumberYardView
+## Fase 159: o pátio de tijolos crus secando junto das olarias.
+var brick_yard_view: BrickYardView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -407,6 +409,10 @@ func _ready() -> void:
 	lumber_yard_view.name = "LumberYards"
 	add_child(lumber_yard_view)
 	lumber_yard_view.setup(simulation)
+	brick_yard_view = BrickYardView.new()
+	brick_yard_view.name = "BrickYards"
+	add_child(brick_yard_view)
+	brick_yard_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

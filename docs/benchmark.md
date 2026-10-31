@@ -1838,3 +1838,10 @@ quadro com tudo visível. Neutra (dez peças por campo, escondidas até o fim do
 Mesmo estado (jogo novo 11,6 s): 84,6 FPS (157: 84,6), 1% low 41,3, pior quadro 29 ms, p50/p95/p99 11,1/15,3/22,6 ms, GPU
 10,9 ms, montar tudo 9,3 s, carregar 5,4 s, construir com a ilha cheia 16,9 ms, multidão na CPU 0,29 ms; +5 objetos e draw
 calls (a camada das lonas) e primitivas iguais no quadro com tudo visível. Neutra.
+
+## Fase 159 — tijolos secando (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 83,1 FPS (158: 84,6), 1% low 38,6, pior quadro 31 ms, p50/p95/p99 11,2/15,9/24,0 ms, GPU
+10,9 ms, montar tudo 9,7 s, carregar 5,5 s, construir com a ilha cheia 18,2 ms (na faixa de 17 a 18 ms das fases de antes);
+objetos, draw calls e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem olaria). Neutra; fecha o
+roteiro carneirinho, papoula e colheita.

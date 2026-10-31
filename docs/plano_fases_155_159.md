@@ -18,3 +18,11 @@ ruas (`c9_08`) e o barreiro de terra vermelha (`c9_11`), que aqui vira o pátio 
 | 159 — Tijolos secando | junto de cada olaria, o pátio com as fileiras de tijolos crus secando e o barreiro escavado |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase155.md` a
+`docs/plano_fase159.md`), testes, captura e benchmark. Diferenças do roteiro: as papoulas (156) ficaram fora da areia da praia e
+o ruído dos canteiros guarda os nós da última célula (o carregar subia 0,2 s); a colheita (157) vai em pares de peças, com a
+juta dos sacos mais escura; a lona (158) vale para metade das carroças de saco e caixote, e no caminho saiu um erro antigo da
+boca do forno do log; o pátio de tijolos (159) evita o lado da boca do forno.

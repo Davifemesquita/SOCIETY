@@ -345,6 +345,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 150: e as colunas de anúncios
 	for cell: Vector2i in AdColumnView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 159: e o pátio de tijolos das olarias
+	for cell: Vector2i in BrickYardView.cells(world, data, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 

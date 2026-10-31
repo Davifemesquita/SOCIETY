@@ -2487,6 +2487,14 @@ Regras que já custaram investigação:
   carga da carroça coberta não aparece. Captura em `tools/capture_phase158.tscn` (ilha plana, mira a carroça de lona mais
   adiantada).
 
+### Tijolos secando (Fase 159, nossa)
+
+- **Plano** em `docs/plano_fase159.md`. `BrickYardView` (`GameScreen.brick_yard_view`): `sites` (três células em fila ao longo
+  de um lado da olaria; **o lado de +X da frente fica por último, porque é o da boca do forno da Fase 137**), `cells` (o
+  recheio, os silos e as bombas deixam limpas) e `yard_mesh` (fileiras de tijolos crus em grade com as tábuas na cumeeira e o
+  monte de barro). Captura em `tools/capture_phase159.tscn` (a câmera do lado do pátio: o offset da câmera do `CameraRig` é
+  (sen yaw, ·, cos yaw)).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2656,6 +2664,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 156 — Papoulas no prado (nossa) | **feita em 31/10/2026**: canteiros de papoulas vermelhas no capim aberto e na beira das estradas das ilhas temperadas, juntos em manchas e fora da areia da praia; plano em `docs/plano_fase156.md` |
 | 157 — Caixas da colheita (nossa) | **feita em 31/10/2026**: perto da colheita, pares de caixotes e sacos de juta vão aparecendo entre as fileiras dos campos, e somem quando o campo é colhido; plano em `docs/plano_fase157.md` |
 | 158 — Carroça de lona (nossa) | **feita em 31/10/2026**: metade das carroças que levam saco ou caixote anda com os arcos de madeira e a lona sobre a caçamba, com a carga escondida debaixo dela; plano em `docs/plano_fase158.md` |
+| 159 — Tijolos secando (nossa) | **feita em 31/10/2026**, a última do roteiro carneirinho, papoula e colheita: ao lado de cada olaria, duas fileiras de tijolos crus secando em grade com as tábuas na cumeeira e o monte de barro escavado; plano em `docs/plano_fase159.md` |
 
 Pendências já vistas para fases futuras:
 

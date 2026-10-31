@@ -18,7 +18,8 @@ func test_the_snag_is_the_last_rule_of_the_forest_edge_and_the_coast() -> void:
 	var coast: Array = ScatterView.NEAR_SEA.back()
 	assert_int(forest[0]).is_equal(ScatterView.Kind.SNAG)
 	assert_int(coast[0]).is_equal(ScatterView.Kind.SNAG)
-	assert_int(ScatterView.Kind.SNAG).is_equal(ScatterView.Kind.size() - 1)
+	# depois das peças que já existiam antes dela (as que vieram depois, como as papoulas da Fase 156, vão no fim do enum)
+	assert_int(ScatterView.Kind.SNAG).is_greater(ScatterView.Kind.STREET_PALM)
 
 
 func test_snags_grow_on_temperate_islands_only() -> void:
