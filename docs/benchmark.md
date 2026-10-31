@@ -1676,3 +1676,9 @@ Mesmo estado (jogo novo 12,9 s, uma rodada mais lenta só ali; carregar 5,3 s, i
 pior quadro 32 ms, p50/p95/p99 12,4/16,8/22,4 ms, GPU 12,0 ms; objetos, draw calls e primitivas iguais (a ardósia é a mesma
 malha com outra conta no shader do kit). Neutra; fecha o roteiro sapê, bueiro e ardósia e os quatro ciclos pedidos pelo
 dono (Fases 115 a 134) no patamar em que a máquina está desde a Fase 120 (~77 FPS, GPU ~12 ms).
+
+## Fase 135 — galinhas no quintal (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 76,3 FPS (134: 76,7), 1% low 39,4, pior quadro 31 ms, p50/p95/p99 12,3/17,1/23,6 ms, GPU
+11,9 ms, carregar 5,3 s; +1 objeto e draw call e +29.760 primitivas no quadro com tudo visível (o MultiMesh das galinhas dos
+quintais dos camponeses da cidade do benchmark). Neutra.

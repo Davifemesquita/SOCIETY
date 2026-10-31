@@ -106,6 +106,8 @@ var manhole_view: ManholeView
 var water_pump_view: WaterPumpView
 ## Fase 133: as bandeirolas fixas sobre o pátio dos mercados.
 var market_bunting_view: MarketBuntingView
+## Fase 135: as galinhas no quintal cercado das casas dos camponeses.
+var chicken_view: ChickenView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -333,6 +335,10 @@ func _ready() -> void:
 	market_bunting_view.name = "MarketBunting"
 	add_child(market_bunting_view)
 	market_bunting_view.setup(simulation)
+	chicken_view = ChickenView.new()
+	chicken_view.name = "Chickens"
+	add_child(chicken_view)
+	chicken_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

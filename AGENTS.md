@@ -2326,6 +2326,13 @@ Regras que já custaram investigação:
   mercado, peças do kit na célula do telhado, ficam de ardósia junto. Captura: a rua dos prédios grandes do
   `tools/capture_phase95.tscn`.
 
+### Galinhas no quintal (Fase 135, nossa)
+
+- **Plano** em `docs/plano_fase135.md`, primeira do roteiro `docs/plano_fases_135_139.md` (galinha, forno e mina).
+  `ChickenView` (`GameScreen.chicken_view`): `yards` (a fileira da frente do lote das casas de `HouseTrim.YARD`, uma a cada
+  `CHICKEN_EVERY`), `patch` (o trecho de cada galinha), `pose` (anda e bica, no tempo de jogo) e `chicken_mesh`, com a
+  plumagem tingida pelo `INSTANCE_CUSTOM` no `shaders/chicken.gdshader`. Captura em `tools/capture_phase135.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2471,6 +2478,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 132 — Bomba d'água (nossa) | **feita em 31/10/2026**: bomba de ferro fundido com alavanca, bica, laje e baldes numa célula livre junto de uma casa a cada seis, virada para a rua; plano em `docs/plano_fase132.md` |
 | 133 — Bandeirolas da feira (nossa) | **feita em 31/10/2026**: quatro postes e duas cordas de bandeirolas em xis sobre o pátio das bancas de cada mercado, o ano todo; plano em `docs/plano_fase133.md` |
 | 134 — Ardósia nos prédios de pedra (nossa) | **feita em 31/10/2026**, a última do roteiro sapê, bueiro e ardósia: a igreja, a escola, o mercado, a prefeitura, o teatro, a universidade e o museu trocam as telhas por ardósia cinza-azulada; plano em `docs/plano_fase134.md` |
+| 135 — Galinhas no quintal (nossa) | **feita em 31/10/2026**, primeira do roteiro galinha, forno e mina (Fases 135 a 139): galinhas e um galo de vez em quando ciscando e andando no quintal cercado das casas dos camponeses, de dia; plano em `docs/plano_fase135.md` |
 
 Pendências já vistas para fases futuras:
 
