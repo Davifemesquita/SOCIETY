@@ -302,6 +302,8 @@ func test_upper_class_houses_get_cornice_lintels_pediment_and_iron_railings() ->
 ## peitoril.
 func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 	var investors := _house(&"investors")
+	# (sem as floreiras da Fase 153, que os engenheiros têm em mais andares: aqui só a grade e a balaustrada)
+	investors.balcony_flowers = false
 	var bare := _house(&"investors")
 	bare.trim = TierDef.HouseTrim.NONE
 	# cada balaústre: os segmentos do perfil em BALUSTER_SIDES faces, dois triângulos cada, um a cada
@@ -311,6 +313,7 @@ func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 	assert_int(BuildingKit.triangles(investors) - BuildingKit.triangles(bare)).is_greater(front * baluster)
 	# a dos engenheiros continua de ferro: os balaústres finos da grade, sem o perfil torneado
 	var engineers := _house(&"engineers")
+	engineers.balcony_flowers = false
 	var engineers_bare := _house(&"engineers")
 	engineers_bare.trim = TierDef.HouseTrim.NONE
 	# (sem o gradil da frente da Fase 114, que é dos engenheiros e não da sacada)

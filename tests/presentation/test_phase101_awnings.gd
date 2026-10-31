@@ -56,6 +56,8 @@ func test_some_artisan_and_engineer_houses_have_a_shop_downstairs() -> void:
 
 func test_the_awning_hangs_over_the_ground_floor_front() -> void:
 	var spec := _spec(&"bakery")
+	# (a placa da padaria, Fase 151, também usa a lona creme e as cores: aqui só o toldo)
+	spec.shop_sign = 0
 	var plain := spec._copy()
 	plain.awning = 0
 	var mesh := BuildingKit.mesh(spec)
