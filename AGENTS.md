@@ -2375,6 +2375,12 @@ Regras que já custaram investigação:
   `NEAR_SEA`, para o sorteio de antes não mudar) e `snag_mesh` (tronco nu torto com cinco galhos, madeira cinzenta); só
   nas ilhas temperadas. Captura em `tools/capture_phase141.tscn`.
 
+### Botes no porto (Fase 142, nossa)
+
+- **Plano** em `docs/plano_fase142.md`. `RowboatView` (`GameScreen.rowboat_view`): `loop` (a roda de água funda diante de
+  cada entreposto), `pose` (os botes na roda, um em cada sentido, com o arranco da remada), `rower_pose` e `oar_pose`; o
+  casco é o `HarborView.boat_mesh`. Captura em `tools/capture_phase142.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2527,6 +2533,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 139 — Redes de pesca (nossa) | **feita em 31/10/2026**, a última do roteiro galinha, forno e mina: ao lado de cada cabana de pesca, dois cavaletes com a rede estendida secando, as boias de cortiça, as caixas de peixe e o cesto; plano em `docs/plano_fase139.md` |
 | 140 — Clareira do lenhador (nossa) | **feita em 31/10/2026**, primeira do roteiro toco, bote e boia (Fases 140 a 144): em volta de cada lenhador a mata recua no desenho, mais perto da cabana, e as células cortadas ficam com os tocos e umas toras caídas; plano em `docs/plano_fase140.md` |
 | 141 — Árvore seca (nossa) | **feita em 31/10/2026**: árvores secas e nuas, de galhos tortos e madeira cinzenta, de vez em quando na beira da mata e na costa das ilhas temperadas; plano em `docs/plano_fase141.md` |
+| 142 — Botes no porto (nossa) | **feita em 31/10/2026**: dois botes a remo por entreposto dando voltas na água funda diante dele, um em cada sentido, com o remador inclinando a cada remada e os remos varrendo; somem à noite; plano em `docs/plano_fase142.md` |
 
 Pendências já vistas para fases futuras:
 

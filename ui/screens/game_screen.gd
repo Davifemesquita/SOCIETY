@@ -116,6 +116,8 @@ var furnace_glow_view: FurnaceGlowView
 var fish_net_view: FishNetView
 ## Fase 140: os tocos e as toras da clareira em volta dos lenhadores.
 var stump_view: StumpView
+## Fase 142: os botes a remo dando voltas diante dos entrepostos.
+var rowboat_view: RowboatView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -363,6 +365,10 @@ func _ready() -> void:
 	stump_view.name = "Stumps"
 	add_child(stump_view)
 	stump_view.setup(simulation)
+	rowboat_view = RowboatView.new()
+	rowboat_view.name = "Rowboats"
+	add_child(rowboat_view)
+	rowboat_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

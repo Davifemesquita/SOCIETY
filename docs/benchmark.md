@@ -1721,3 +1721,10 @@ visível (os tocos e as toras dos lenhadores da cidade do benchmark). Neutra.
 Mesmo estado (jogo novo 11,5 s): 77,9 FPS (140: 77,8), 1% low 38,8, pior quadro 33 ms, p50/p95/p99 12,2/16,7/23,8 ms, GPU
 11,9 ms, carregar 5,3 s, construir com a ilha cheia 17,7 ms; objetos, draw calls e primitivas iguais no quadro com tudo
 visível (o recheio só desenha perto da câmera). Neutra.
+
+## Fase 142 — botes no porto (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 76,4 FPS (141: 77,9), 1% low 39,5, pior quadro 32 ms, p50/p95/p99 12,4/16,8/23,7 ms, GPU
+12,1 ms, carregar 5,3 s, construir com a ilha cheia 17,5 ms; +15 objetos e draw calls e +12.000 primitivas no quadro com
+tudo visível (os botes, os remadores e os remos diante dos entrepostos do benchmark). Neutra (a rodada da 141 foi das mais
+rápidas do patamar).
