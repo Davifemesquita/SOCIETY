@@ -2276,6 +2276,12 @@ Regras que já custaram investigação:
   andares nas ilhas tropicais ganham `Silhouette.VERANDA` com `court_rows = 1` (a varanda da Fase 23), sem enxaimel, toldo
   nem ala. Captura em `tools/capture_phase126.tscn`.
 
+### Cisternas no cais (Fase 127, nossa)
+
+- **Plano** em `docs/plano_fase127.md`. `HarborView.cistern_places` (no cais de pedra da Fase 106, uma de cada lado, fora da
+  largura do entreposto) e `FarmSiloView.cistern_mesh`. Captura: `CAPTURA_SO=porto` no `tools/capture_phase5.tscn`
+  (`14b_cisternas.png`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2413,6 +2419,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 124 — Mansarda dos investidores (nossa) | **feita em 30/10/2026**, a última do roteiro fios, riacho e mansarda: telhado de mansarda (água de baixo íngreme com lucarnas, a de cima quase plana) nas casas dos investidores sem ala; plano em `docs/plano_fase124.md` |
 | 125 — Recife de coral (nossa) | **feita em 30/10/2026**, primeira do roteiro recife, alpendre e nuvens (Fases 125 a 129): manchas escuras de coral no mar raso das ilhas tropicais; plano em `docs/plano_fase125.md` |
 | 126 — Alpendre tropical (nossa) | **feita em 30/10/2026**: as casas dos operários e artesãos das ilhas tropicais recuam uma fileira e ganham alpendre de tábuas com esteios, guarda-corpo e telhado de uma água; plano em `docs/plano_fase126.md` |
+| 127 — Cisternas no cais (nossa) | **feita em 30/10/2026**: duas cisternas redondas de aduelas sobre soco de pedra no cais de pedra de cada entreposto, uma de cada lado; plano em `docs/plano_fase127.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -181,6 +181,11 @@ func _harbor(grid: IslandGrid) -> void:
 	var quay_direction: Vector3 = quay["direction"]
 	print("barcos ", _game.harbor_view.boat_count(), " carga ", _game.harbor_view.cargo_count())
 	await _shot("14_cais.png", quay_start + quay_direction * 2.0, 22.0, atan2(quay_direction.x, quay_direction.z) + 0.5)
+	# as cisternas no cais de pedra, dos dois lados do entreposto (Fase 127)
+	var cisterns := HarborView.cistern_places(_sim, _sim.world.building(post_id))
+	print("cisternas ", _game.harbor_view.cistern_count())
+	if not cisterns.is_empty():
+		await _shot("14b_cisternas.png", cisterns[0].origin, 16.0, atan2(quay_direction.x, quay_direction.z) + 0.7)
 
 
 ## Estrada de terra atravessando o rio na primeira célula de rio do meio para fora (Fase 14).

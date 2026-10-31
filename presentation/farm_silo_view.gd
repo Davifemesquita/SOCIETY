@@ -20,6 +20,9 @@ const ROOF_RISE_M := 1.1
 const TANK_RADIUS_M := 0.95
 const TANK_HEIGHT_M := 1.5
 const LEGS_M := 3.2
+## Fase 127: a cisterna do cais (cistern_mesh).
+const CISTERN_RADIUS_M := 0.95
+const CISTERN_HEIGHT_M := 1.9
 const STAVE_LIGHT := Color(0.58, 0.45, 0.31)
 const STAVE_DARK := Color(0.5, 0.38, 0.26)
 const IRON := Color(0.2, 0.2, 0.21)
@@ -200,6 +203,24 @@ static func tank_mesh() -> ArrayMesh:
 		var t := (rung + 0.5) / 9.0
 		var at := ladder + Vector3(0.25 * t, (LEGS_M + 0.1) * t, 0.0)
 		VertexShapes.strut(tool, at + Vector3(0.0, 0.0, -0.18), at + Vector3(0.0, 0.0, 0.18), 0.02, 0.02, LEG_WOOD)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 127: a cisterna do cais — baixa e larga, de aduelas com três arcos, sobre um soco de pedra, com a tampa cônica
+## rasa e uma bica de ferro; de raio CISTERN_RADIUS_M e altura CISTERN_HEIGHT_M, a base em y = 0.
+static func cistern_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var radius := CISTERN_RADIUS_M
+	VertexShapes.cylinder(tool, Vector3.ZERO, Vector3(0.0, 0.35, 0.0), radius + 0.1, STONE, SILO_STAVES)
+	_staves(tool, 0.35, CISTERN_HEIGHT_M, radius)
+	for k: int in 3:
+		var y := 0.35 + (CISTERN_HEIGHT_M - 0.35) * (k + 0.5) / 3.0
+		VertexShapes.cylinder(tool, Vector3(0.0, y - 0.035, 0.0), Vector3(0.0, y + 0.035, 0.0), radius + 0.03, IRON,
+				SILO_STAVES)
+	_cone(tool, CISTERN_HEIGHT_M, radius + 0.08, 0.32, ROOF)
+	VertexShapes.strut(tool, Vector3(radius, 0.6, 0.0), Vector3(radius + 0.25, 0.55, 0.0), 0.03, 0.03, IRON)
 	tool.generate_normals()
 	return tool.commit()
 

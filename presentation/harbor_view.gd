@@ -72,6 +72,8 @@ const STONE_QUAY_RISE_M := 0.6
 const SEA_WALL_BOTTOM_M := -2.0
 const COPING_M := Vector2(0.18, 0.95)
 const SEA_WALL_BOLLARD_EVERY := 3
+## Fase 127: as cisternas ficam a pelo menos isto além da largura do entreposto, no cais de pedra.
+const CISTERN_CLEAR_M := 1.6
 const STONE_COLOR := Color(0.78, 0.76, 0.7)
 
 var _simulation: Simulation
@@ -81,6 +83,7 @@ var _bollards := MultiMeshInstance3D.new()
 var _boats := MultiMeshInstance3D.new()
 var _walls := MultiMeshInstance3D.new()
 var _coping := MultiMeshInstance3D.new()
+var _cisterns := MultiMeshInstance3D.new()
 var _cargo: Dictionary[int, MultiMeshInstance3D] = {}
 var _ropes := MeshInstance3D.new()
 var _rope_spans: Array[PackedVector3Array] = []
@@ -120,8 +123,16 @@ func setup(simulation: Simulation) -> void:
 	# Fase 106: o lanço do cais e o capeamento, caixas de 1 m esticadas, na pedra das paredes (projetada pelo mundo)
 	var wall := BoxMesh.new()
 	var coping := BoxMesh.new()
+	# Fase 127: a cisterna do cais, de aduelas com a cor no vértice
+	var cistern := FarmSiloView.cistern_mesh()
+	var painted := StandardMaterial3D.new()
+	painted.vertex_color_use_as_albedo = true
+	painted.vertex_color_is_srgb = true
+	painted.roughness = 0.85
+	cistern.surface_set_material(0, painted)
 	var parts: Array = [[_boards, "Boards", board], [_piles, "Piles", pile], [_bollards, "Bollards", bollard],
-			[_boats, "Boats", boat], [_walls, "SeaWall", wall], [_coping, "Coping", coping]]
+			[_boats, "Boats", boat], [_walls, "SeaWall", wall], [_coping, "Coping", coping],
+			[_cisterns, "Cisterns", cistern]]
 	for pile_kind: int in [GoodDef.Pile.BARREL, GoodDef.Pile.CRATE, GoodDef.Pile.SACK]:
 		var piece := CargoKit.mesh(pile_kind)
 		if piece != null:
@@ -163,6 +174,10 @@ func pile_count() -> int:
 
 func bollard_count() -> int:
 	return _bollards.multimesh.instance_count
+
+
+func cistern_count() -> int:
+	return _cisterns.multimesh.instance_count
 
 
 func wall_count() -> int:
@@ -212,6 +227,7 @@ func rebuild() -> void:
 	var bollards: Array[Transform3D] = []
 	var boats: Array[Transform3D] = []
 	var cargo: Dictionary[int, Array] = {}
+	var cisterns: Array[Transform3D] = []
 	for pile_kind: int in _cargo:
 		cargo[pile_kind] = []
 	_rope_spans.clear()
@@ -235,7 +251,9 @@ func rebuild() -> void:
 			_moor(boats, start + direction * (length - BOAT_LENGTH_M * 0.6)
 					+ across * (WALK_WIDTH_M * 0.5 + BOAT_BEAM_M * 0.7), direction, direction)
 		elif def.is_trading_post:
-			_quay(walkway(_simulation, record), boards, piles, bollards, boats, cargo)
+			var plan := walkway(_simulation, record)
+			_quay(plan, boards, piles, bollards, boats, cargo)
+			cisterns.append_array(cistern_places(_simulation, record))
 		_moor_lines(bollards.slice(first_bollard), boats.slice(first_boat))
 	_fill(_boards, boards)
 	_fill(_piles, piles)
@@ -257,6 +275,7 @@ func rebuild() -> void:
 	_fill(_bollards, bollards)
 	_fill(_walls, walls)
 	_fill(_coping, coping)
+	_fill(_cisterns, cisterns)
 	for pile_kind: int in _cargo:
 		var places: Array[Transform3D] = []
 		places.assign(cargo[pile_kind])
@@ -414,6 +433,33 @@ func _quay(plan: Dictionary, boards: Array[Transform3D], piles: Array[Transform3
 	for side: float in [-1.0, 1.0]:
 		_moor(boats, start + direction * (QUAY_DEPTH_M + BOAT_BEAM_M * 0.8) + across * side * width * 0.25, across,
 				direction)
+
+
+## Fase 127: as cisternas do entreposto — uma de cada lado, no primeiro lanço do cais de pedra que passa CISTERN_CLEAR_M
+## da largura do prédio (o cais de tábuas e a carga ficam livres), no meio da plataforma, assentada no alto dela. Sem cais
+## de pedra daquele lado (a ilha plana, a terra subindo), sem cisterna.
+static func cistern_places(simulation: Simulation, record: BuildingRecord) -> Array[Transform3D]:
+	var result: Array[Transform3D] = []
+	var segments := stone_quay(simulation, record)
+	if segments.is_empty():
+		return result
+	var plan := walkway(simulation, record)
+	var half: Vector2 = plan["half"]
+	var start: Vector3 = plan["start"]
+	var direction: Vector3 = plan["direction"]
+	var across := Vector3(-direction.z, 0.0, direction.x)
+	var width := (half.y if direction.x != 0.0 else half.x) * 2.0
+	for side: float in [-1.0, 1.0]:
+		for segment: Array in segments:
+			var front: Vector3 = segment[0]
+			var t := (front - start).dot(across)
+			if t * side < width * 0.5 + CISTERN_CLEAR_M:
+				continue
+			var outward: Vector3 = segment[1]
+			var spot := front - outward * ((QUAY_DEPTH_M + STONE_QUAY_BACK_M) * 0.5)
+			result.append(Transform3D(Basis(Vector3.UP, side * 0.7), Vector3(spot.x, front.y, spot.z)))
+			break
+	return result
 
 
 ## Barco a remo de comprido em along, boiando com a quilha BOAT_DRAFT_M abaixo da água. Se ali ainda é praia

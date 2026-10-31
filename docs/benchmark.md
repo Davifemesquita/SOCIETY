@@ -1625,3 +1625,9 @@ Neutra.
 
 Mesmo estado (jogo novo 11,6 s): 77,0 FPS (125: 77,9), 1% low 39,4, pior quadro 36 ms, p50/p95/p99 12,3/16,7/23,2 ms, GPU
 11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a cidade do benchmark é temperada). Neutra.
+
+## Fase 127 — cisternas no cais (30/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,9 FPS (126: 77,0), 1% low 41,4, pior quadro 29 ms, p50/p95/p99 12,2/16,6/22,4 ms, GPU
+11,8 ms, carregar 5,3 s; +5 objetos e draw calls e +23 mil primitivas (as cisternas dos entrepostos da cidade do
+benchmark). Neutra.
