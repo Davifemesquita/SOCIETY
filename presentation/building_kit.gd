@@ -115,6 +115,17 @@ const FRONT_RAIL_M := 0.85
 ## Fase 143: a cerca de estacas dos operários: a altura e o passo das estacas.
 const PICKET_M := 0.75
 const PICKET_STEP_M := 0.15
+## Fase 151: as lojas com a placa pendurada e a figura de cada uma: 1 pão (bronze), 2 presunto (vermelho), 3 caneca (bronze),
+## 4 anel (bronze), 5 relógio (pedra clara e ferro), 6 óculos (ferro), 7 xícara (azul), 8 charuto (madeira e vermelho), sobre
+## o painel creme.
+const SHOP_SIGNS: Dictionary[StringName, int] = {&"bakery": 1, &"butcher": 2, &"tavern": 3, &"goldsmith": 4,
+		&"clockmaker": 5, &"optician": 6, &"coffee_roaster": 7, &"cigar_factory": 8}
+## A placa: a tábua (ao longo da normal, de alto, de grosso), quanto sai da parede, a folga sob o braço e a altura do braço
+## (acima do toldo, ou no térreo sem ele).
+const SIGN_BOARD_M := Vector3(0.05, 0.46, 0.62)
+const SIGN_OUT_M := 0.18
+const SIGN_GAP_M := 0.08
+const SIGN_ABOVE_AWNING_M := 0.65
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -397,11 +408,13 @@ class Spec:
 	var mansard: bool = false
 	## Fase 143: a cerca de estacas caiadas na frente das casas dos operários.
 	var picket: bool = false
+	## Fase 151: a placa da loja pendurada no braço de ferro ao lado da porta (0 sem; 1.., a figura do ofício).
+	var shop_sign: int = 0
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -438,6 +451,7 @@ class Spec:
 		copy.lantern = lantern
 		copy.mansard = mansard
 		copy.picket = picket
+		copy.shop_sign = shop_sign
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -690,6 +704,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	# Fase 101: o toldo das lojas, na cor sorteada pelo tipo
 	if def.id in AWNING_SHOPS:
 		spec.awning = 1 + absi(hash(String(def.id))) % UV_AWNING_COLORS.size()
+	# Fase 151: a placa pendurada das lojas, com a figura do ofício
+	spec.shop_sign = SHOP_SIGNS.get(def.id, 0)
 	# Fase 98: a abóbada no lugar das duas águas (o mercado e as fábricas de nave comprida)
 	spec.vault = def.id in VAULTED and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z]
 	# Fase 103: as claraboias das fábricas grandes
@@ -1015,6 +1031,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_front_railing(extra, spec)
 	if spec.picket and spec.court_rows == 0:
 		_front_picket(extra, spec)
+	if spec.shop_sign > 0:
+		_shop_sign(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
@@ -1282,6 +1300,90 @@ static func _front_picket(tool: SurfaceTool, spec: Spec) -> void:
 			_turned(tool, Vector3(x, PICKET_M, z), [Vector2(0.05, 0.0), Vector2(0.0, 0.08)], 4, UV_CANVAS)
 		for x: float in [span.x, span.y]:
 			_box(tool, Vector3(x, (PICKET_M + 0.1) * 0.5, z), Vector3(0.1, PICKET_M + 0.1, 0.1), UV_CANVAS)
+
+
+## Fase 151: onde fica a placa da loja (referencial canônico): o meio da tábua, pendurada do braço que sai da parede na
+## divisa de −X da célula da porta, acima do toldo (ou a meia altura do térreo sem ele). A normal da fachada é −Z.
+static func shop_sign_center(spec: Spec) -> Vector3:
+	var hall := spec.hall()
+	var step := hall.size_m().x / hall.cells.x
+	var wall := spec.hall_offset() + _wall_point(hall, 0, hall.door_index, 0) + Vector3.LEFT * step * 0.5
+	var arm := hall.floor_m() * (AWNING_AT if spec.awning > 0 else 0.62) + SIGN_ABOVE_AWNING_M
+	var out := SIGN_OUT_M + SIGN_BOARD_M.z * 0.5
+	return wall + _face_normal(0) * out + Vector3.UP * (arm - SIGN_GAP_M - SIGN_BOARD_M.y * 0.5)
+
+
+## A placa: o braço de ferro com a mão-francesa, as duas argolas, a tábua de madeira escura com a moldura e a figura do
+## ofício dos dois lados (formas simples, sem texto).
+static func _shop_sign(tool: SurfaceTool, spec: Spec) -> void:
+	var center := shop_sign_center(spec)
+	var normal := _face_normal(0)
+	var top := center + Vector3.UP * (SIGN_BOARD_M.y * 0.5 + SIGN_GAP_M)
+	var wall := top - normal * (SIGN_OUT_M + SIGN_BOARD_M.z * 0.5)
+	var tip := top + normal * (SIGN_BOARD_M.z * 0.5 + 0.06)
+	_bar(tool, wall, tip, 0.035, UV_IRON)
+	_bar(tool, wall + Vector3.DOWN * 0.32, wall + normal * 0.32, 0.025, UV_IRON)
+	for along: float in [-0.22, 0.22]:
+		var ring := top + normal * along
+		_bar(tool, ring, ring + Vector3.DOWN * SIGN_GAP_M, 0.015, UV_IRON)
+	_box(tool, center, SIGN_BOARD_M, UV_TIMBER)
+	for side: float in [-1.0, 1.0]:
+		# o painel pintado de creme dentro da moldura de madeira, e a figura sobre ele
+		_box(tool, center + Vector3.RIGHT * side * (SIGN_BOARD_M.x * 0.5 + 0.004),
+				Vector3(0.008, SIGN_BOARD_M.y - 0.09, SIGN_BOARD_M.z - 0.09), UV_CANVAS)
+		var face := center + Vector3.RIGHT * side * (SIGN_BOARD_M.x * 0.5 + 0.012)
+		_sign_figure(tool, face, side, spec.shop_sign)
+
+
+## A figura de um lado da placa (o plano yz, saindo para side em x).
+static func _sign_figure(tool: SurfaceTool, at: Vector3, side: float, figure: int) -> void:
+	var out := Vector3.RIGHT * side * 0.012
+	match figure:
+		1:
+			# pão: um anel torcido de bronze
+			_sign_ring(tool, at + out, 0.13, 0.035, UV_BRONZE)
+			_box(tool, at + out + Vector3(0.0, -0.02, 0.0), Vector3(0.02, 0.04, 0.2), UV_BRONZE)
+		2:
+			# presunto: a peça larga embaixo e o osso em cima
+			_box(tool, at + out + Vector3(0.0, -0.05, 0.0), Vector3(0.02, 0.17, 0.2), UV_AWNING_COLORS[0])
+			_box(tool, at + out + Vector3(0.0, 0.09, 0.0), Vector3(0.02, 0.12, 0.05), UV_LIGHT_STONE)
+		3:
+			# caneca: o corpo, a espuma e a asa
+			_box(tool, at + out + Vector3(0.0, -0.03, -0.02), Vector3(0.02, 0.2, 0.15), UV_BRONZE)
+			_box(tool, at + out + Vector3(0.0, 0.09, -0.02), Vector3(0.02, 0.05, 0.17), UV_LIGHT_STONE)
+			_box(tool, at + out + Vector3(0.0, -0.03, 0.08), Vector3(0.02, 0.12, 0.04), UV_BRONZE)
+		4:
+			# anel com a pedra
+			_sign_ring(tool, at + out + Vector3(0.0, -0.03, 0.0), 0.1, 0.028, UV_BRONZE)
+			_box(tool, at + out + Vector3(0.0, 0.1, 0.0), Vector3(0.02, 0.06, 0.06), UV_AWNING_COLORS[0])
+		5:
+			# relógio: o mostrador claro e os ponteiros
+			_box(tool, at + out, Vector3(0.02, 0.26, 0.26), UV_LIGHT_STONE)
+			_box(tool, at + out * 2.0 + Vector3(0.0, 0.04, 0.0), Vector3(0.02, 0.1, 0.02), UV_IRON)
+			_box(tool, at + out * 2.0 + Vector3(0.0, 0.0, 0.04), Vector3(0.02, 0.02, 0.09), UV_IRON)
+		6:
+			# óculos: as duas lentes e a ponte
+			for z: float in [-0.1, 0.1]:
+				_sign_ring(tool, at + out + Vector3(0.0, 0.0, z), 0.07, 0.022, UV_IRON)
+			_box(tool, at + out + Vector3(0.0, 0.03, 0.0), Vector3(0.02, 0.02, 0.07), UV_IRON)
+		7:
+			# xícara no pires (azul sobre o creme)
+			_box(tool, at + out, Vector3(0.02, 0.14, 0.15), UV_AWNING_COLORS[2])
+			_box(tool, at + out + Vector3(0.0, -0.09, 0.0), Vector3(0.02, 0.03, 0.26), UV_AWNING_COLORS[2])
+			_box(tool, at + out + Vector3(0.0, 0.02, 0.1), Vector3(0.02, 0.07, 0.04), UV_AWNING_COLORS[2])
+		8:
+			# charuto com a cinta
+			_box(tool, at + out, Vector3(0.02, 0.06, 0.34), UV_TIMBER)
+			_box(tool, at + out * 2.0 + Vector3(0.0, 0.0, -0.08), Vector3(0.02, 0.07, 0.04), UV_AWNING_COLORS[0])
+
+
+## Um anel no plano yz (a figura da placa), em 10 lanços.
+static func _sign_ring(tool: SurfaceTool, center: Vector3, radius: float, thickness: float, uv: Vector2) -> void:
+	for k: int in 10:
+		var a0 := TAU * k / 10.0
+		var a1 := TAU * (k + 1) / 10.0
+		_bar(tool, center + Vector3(0.0, sin(a0), cos(a0)) * radius, center + Vector3(0.0, sin(a1), cos(a1)) * radius,
+				thickness, uv)
 
 
 ## O gradil: a grade de ferro dos trechos, os pilaretes nas pontas e uma lança no alto de cada balaústre.

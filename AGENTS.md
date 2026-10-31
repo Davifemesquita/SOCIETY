@@ -2433,6 +2433,12 @@ Regras que já custaram investigação:
   células calçadas) e `column_mesh` (cartazes coloridos sem texto, cornija e chapéu de ferro). O recheio deixa a célula
   limpa. Captura em `tools/capture_phase150.tscn`.
 
+### Placas das lojas (Fase 151, nossa)
+
+- **Plano** em `docs/plano_fase151.md`. `BuildingKit.SHOP_SIGNS` / `Spec.shop_sign` (na chave): `shop_sign_center` (meia célula
+  ao lado da porta, acima do toldo) e `_shop_sign` (braço de ferro, tábua com o painel creme e a figura do ofício, sem
+  texto: `_sign_figure`, `_sign_ring`). Captura em `tools/capture_phase151.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2594,6 +2600,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 148 — Cavalete do lenhador (nossa) | **feita em 31/10/2026**: junto de cada lenhador, o cavalete de serrar com uma tora, o cepo com o machado cravado, a pilha de lenha rachada e as lascas no chão; plano em `docs/plano_fase148.md` |
 | 149 — Cata-vento no pasto (nossa) | **feita em 31/10/2026**, a última do roteiro relógio, cais e cata-vento: torre de vigas junto do cocho de cada pasto com a roda de lâminas e o leme, virando para o vento e girando pela força dele; plano em `docs/plano_fase149.md` |
 | 150 — Coluna de anúncios (nossa) | **feita em 31/10/2026**, primeira do roteiro coluna, placa e velocípede (Fases 150 a 154): colunas redondas de cartazes coloridos com o chapéu de ferro no canto de dentro das esquinas calçadas; plano em `docs/plano_fase150.md` |
+| 151 — Placas das lojas (nossa) | **feita em 31/10/2026**: placa pendurada num braço de ferro ao lado da porta da padaria, do açougue, da taverna, do ourives, do relojoeiro, do óptico, da torrefação e da charutaria, com a figura do ofício pintada (sem texto); plano em `docs/plano_fase151.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -1784,3 +1784,9 @@ e construir com a ilha cheia 18,6 ms (149: 17,3). Com a busca pelo `find` das c�
 estado (jogo novo 11,6 s): 75,0 FPS (149: 75,3), 1% low 39,6, pior quadro 31 ms, p50/p95/p99 12,6/17,1/23,4 ms, GPU 12,2 ms,
 montar tudo 9,8 s, carregar 5,5 s, construir com a ilha cheia 17,7 ms; +5 objetos e draw calls e primitivas iguais no quadro
 com tudo visível. Neutra.
+
+## Fase 151 — placas das lojas (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 75,3 FPS (150: 75,0), 1% low 39,6, pior quadro 30 ms, p50/p95/p99 12,5/17,1/23,7 ms, GPU
+12,2 ms, montar tudo 9,6 s, carregar 5,4 s, construir com a ilha cheia 17,7 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (a placa entra na malha de cada loja, e as lojas do benchmark ficam fora do quadro medido). Neutra.
