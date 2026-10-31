@@ -1694,3 +1694,9 @@ draw calls de variação, sem nada novo desenhado). Neutra.
 Mesmo estado (jogo novo 11,6 s): 76,5 FPS (136: 76,0), 1% low 38,9, pior quadro 35 ms, p50/p95/p99 12,4/16,9/23,0 ms, GPU
 12,0 ms, carregar 5,3 s; primitivas iguais no quadro com tudo visível (+7 objetos e draw calls, sem boca de forno à vista
 na cidade do benchmark). Neutra.
+
+## Fase 138 — telhado de chapa ondulada (31/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 76,6 FPS (137: 76,5), 1% low 39,8, pior quadro 28 ms, p50/p95/p99 12,3/17,0/23,8 ms, GPU
+11,9 ms, carregar 5,4 s; objetos, draw calls e primitivas iguais (a chapa é a mesma malha com outra conta no shader do kit).
+Neutra.

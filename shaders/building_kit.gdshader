@@ -38,6 +38,8 @@ instance uniform vec4 side_shade = vec4(0.0);
 instance uniform float thatch = 0.0;
 // Fase 134: o telhado de ardósia (os serviços de pedra), no lugar das telhas
 instance uniform float slate = 0.0;
+// Fase 138: o telhado de chapa de ferro ondulada (as fábricas pesadas), no lugar das telhas
+instance uniform float corrugated = 0.0;
 
 // Fase 39: vidro (célula (0, 1), que o kit não usa): escuro, liso, com o céu refletido no ângulo raso
 uniform vec4 glass_color : source_color = vec4(0.17, 0.21, 0.25, 1.0);
@@ -71,6 +73,14 @@ uniform float thatch_strand_m = 0.045;
 uniform vec4 slate_color : source_color = vec4(0.27, 0.3, 0.34, 1.0);
 uniform float slate_row_m = 0.26;
 uniform float slate_width_m = 0.34;
+
+// Fase 138: a chapa ondulada — ondas de corrugation_m descendo a água, chapas de sheet_width_m por sheet_length_m
+// sobrepostas, ferro cinza com a ferrugem escorrendo da junta de cima de cada chapa e em manchas
+uniform vec4 sheet_color : source_color = vec4(0.5, 0.52, 0.54, 1.0);
+uniform vec4 rust_color : source_color = vec4(0.4, 0.23, 0.14, 1.0);
+uniform float corrugation_m = 0.12;
+uniform float sheet_length_m = 1.6;
+uniform float sheet_width_m = 0.9;
 
 // Fase 97: a pátina do cobre (cúpulas e torreões)
 uniform vec4 copper_dark : source_color = vec4(0.22, 0.42, 0.38, 1.0);
@@ -186,6 +196,27 @@ vec3 slate_shade(vec3 p, vec3 n, float near) {
 	return color * (1.0 - (under * 0.55 + seam * 0.4) * near);
 }
 
+// Fase 138: a cor da chapa ondulada no ponto p (normal n) em rgb e a ferrugem em a: a crista clara e o vale escuro de cada
+// onda, o tom de cada chapa, a sombra na junta de baixo e a ferrugem; near apaga o desenho de longe.
+vec4 iron_sheet_shade(vec3 p, vec3 n, float near) {
+	vec2 down = normalize(n.xz);
+	vec2 across = vec2(-down.y, down.x);
+	float s = dot(p.xz, down) / max(n.y, 0.2);
+	float c = dot(p.xz, across);
+	float wave = sin(c / corrugation_m * 6.2831853);
+	float row = floor(s / sheet_length_m);
+	float f = fract(s / sheet_length_m);
+	float column = floor(c / sheet_width_m + 0.37 * mod(row, 2.0));
+	float tone = thatch_hash(vec2(row, column));
+	vec3 color = sheet_color.rgb * (0.84 + 0.24 * tone);
+	float streak = (1.0 - smoothstep(0.0, 0.6, f)) * smoothstep(0.4, 0.8, value_noise(vec2(c * 3.0, row * 7.0)));
+	float patches = smoothstep(0.55, 0.85, value_noise(p.xz * 0.45 + vec2(row * 0.7)));
+	float rust = clamp(streak * 0.6 + patches * 0.5 + tone * 0.2 - 0.1, 0.0, 0.85);
+	color = mix(color, rust_color.rgb * (0.8 + 0.3 * tone), rust);
+	float lap = smoothstep(0.94, 0.99, f);
+	return vec4(color * (1.0 + 0.18 * wave * near) * (1.0 - lap * 0.4 * near), rust);
+}
+
 vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, float index) {
 	vec3 p = position / meters;
 	return texture(stack, vec3(p.zy, index)) * weights.x
@@ -269,6 +300,13 @@ void fragment() {
 				// Fase 134: a ardósia, lisa e um pouco brilhante
 				color = slate_shade(world_position, world_normal, near);
 				roughness = 0.55;
+			} else if (corrugated > 0.5) {
+				// Fase 138: a chapa ondulada, mais lisa onde não enferrujou
+				vec4 sheet = iron_sheet_shade(world_position, world_normal, near);
+				color = sheet.rgb;
+				roughness = mix(0.42, 0.85, sheet.a);
+				// a chapa é lisa: sem o relevo das telhas do mapa de normais
+				NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 			} else {
 				color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;
 			}
@@ -279,6 +317,11 @@ void fragment() {
 		} else if (roof && slate > 0.5) {
 			// a capa, o beiral redondo e o telhado plano da ardósia: a cor dela, lisa
 			color = slate_color.rgb * 0.9;
+		} else if (roof && corrugated > 0.5) {
+			// a capa, o beiral e o telhado plano da chapa: o ferro escurecido
+			color = mix(sheet_color.rgb, rust_color.rgb, 0.3) * 0.85;
+			roughness = 0.6;
+			NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 		}
 	}
 	float above = world_position.y - base_height;
