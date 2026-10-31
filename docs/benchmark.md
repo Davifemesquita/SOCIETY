@@ -1578,3 +1578,10 @@ quadro com a cidade calçada variam algumas dezenas de milhares de uma rodada pa
 Mesmo estado (jogo novo 11,5 s): 81,1 FPS (117: 80,8), 1% low 41,5, pior quadro 29 ms, p50/p95/p99 11,8/16,0/22,5 ms, GPU
 11,4 ms, carregar 5,2 s; +5 objetos e draw calls (a camada dos cochos), primitivas iguais; calçar a cidade inteira 446 ms e
 mais uma rua 40 ms, iguais (as manchas entram na máscara só na área do pasto que mudou). Neutra.
+
+## Fase 119 — poças de luz à noite (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 80,3 FPS (118: 81,1), 1% low 42,1, pior quadro 30 ms, p50/p95/p99 11,8/16,0/22,5 ms, GPU
+11,5 ms, carregar 5,2 s. O quadro com tudo visível é de dia, quando a camada das poças fica escondida: objetos, draw calls e
+primitivas iguais aos da 118; o dia inteiro passa pela noite com as poças acesas e a média não mudou. Neutra; fecha o
+roteiro fazenda, taverna e estaleiro no patamar em que a máquina está desde a Fase 115 (~80 FPS, GPU ~11,5 ms).

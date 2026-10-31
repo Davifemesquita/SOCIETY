@@ -31,3 +31,10 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
   base na água.
 - Cascalho de tálus no pé da serra: parecido demais com as pedras soltas das Fases 36 e 57.
 - Píer de passeio com coretos entrando no mar: prédio novo (simulação e menu), não só apresentação.
+
+## Estado
+
+**Concluído em 30/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase115.md` a
+`docs/plano_fase119.md`), testes, captura e benchmark. Diferenças do roteiro: as mesas da taverna (116) ficam até seis por
+taverna, as mais perto da porta; os silos (117) alternam com a caixa d'água pelo resto do id da fazenda; o cocho (118)
+fica em todo pasto, com ou sem bicho, como as trilhas da Fase 40.

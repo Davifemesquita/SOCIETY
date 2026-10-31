@@ -88,6 +88,8 @@ var tavern_garden_view: TavernGardenView
 var farm_silo_view: FarmSiloView
 ## Fase 118: o cocho de cada pasto (as manchas de chão gasto ficam na máscara das estradas).
 var pasture_trough_view: PastureTroughView
+## Fase 119: as poças de luz no chão à noite, debaixo dos postes, das fogueiras e nas portas das casas.
+var light_pool_view: LightPoolView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -276,6 +278,10 @@ func _ready() -> void:
 	pasture_trough_view.name = "PastureTroughs"
 	add_child(pasture_trough_view)
 	pasture_trough_view.setup(simulation)
+	light_pool_view = LightPoolView.new()
+	light_pool_view.name = "LightPools"
+	add_child(light_pool_view)
+	light_pool_view.setup(simulation, lamp_view)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

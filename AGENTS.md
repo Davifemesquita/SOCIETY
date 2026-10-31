@@ -2224,6 +2224,12 @@ Regras que já custaram investigação:
   soltas pelo hash, comparadas no `refresh` como as trilhas) e `RoadMask.trough_of` (o cocho junto da cerca de trás), que a
   `PastureTroughView` (`GameScreen.pasture_trough_view`) desenha. Captura em `tools/capture_phase118.tscn`.
 
+### Poças de luz à noite (Fase 119, nossa)
+
+- **Plano** em `docs/plano_fase119.md`. `LightPoolView` (`GameScreen.light_pool_view`): `pools` (postes, fogueiras e portas
+  das casas com morador), discos no chão somados pelo `shaders/light_pool.gdshader` (aceso pelo global `night_light`, sem
+  luz de verdade), escondidos de dia; a `LampView` avisa com o sinal `rebuilt`. Captura em `tools/capture_phase119.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2353,6 +2359,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 116 — Mesas da taverna (nossa) | **feita em 30/10/2026**: mesas redondas com bancos e guarda-sóis listrados na cor da taverna nas células livres em volta dela, fechados à noite; plano em `docs/plano_fase116.md` |
 | 117 — Silos das fazendas (nossa) | **feita em 30/10/2026**: silo de aduelas com telhado cônico ou caixa d'água sobre pés numa célula livre atrás de cada fazenda; plano em `docs/plano_fase117.md` |
 | 118 — Chão gasto no pasto (nossa) | **feita em 30/10/2026**: manchas de terra pisada na porteira, no cocho e soltas dentro de cada pasto, e um cocho de madeira com água junto da cerca de trás; plano em `docs/plano_fase118.md` |
+| 119 — Poças de luz à noite (nossa) | **feita em 30/10/2026**, a última do roteiro fazenda, taverna e estaleiro: disco de luz quente no chão debaixo de cada poste e fogueira e diante da porta das casas com morador, só à noite e sem luz de verdade; plano em `docs/plano_fase119.md` |
 
 Pendências já vistas para fases futuras:
 
