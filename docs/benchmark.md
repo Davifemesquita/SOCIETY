@@ -1565,3 +1565,10 @@ Mesmo estado da Fase 115 (jogo novo 11,5 s): 79,8 FPS (115: 80,8), 1% low 40,0, 
 camadas das mesas e dos guarda-sóis) e as mesmas primitivas; com a cidade calçada, +720 primitivas (as mesas à vista).
 Neutra. A queda desde a Fase 114 é da máquina: na Fase 115 o quadro desenhou exatamente o mesmo (objetos, draw calls e
 primitivas iguais) e caiu igual.
+
+## Fase 117 — silos das fazendas (30/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 80,8 FPS (116: 79,8), 1% low 41,8, pior quadro 33 ms, p50/p95/p99 11,8/16,1/22,2 ms, GPU
+11,5 ms, carregar 5,2 s; +10 objetos e draw calls (as duas camadas dos silos), primitivas iguais. Neutra. As primitivas do
+quadro com a cidade calçada variam algumas dezenas de milhares de uma rodada para outra (59.107.420 aqui, 59.126.572 na
+116) por causa da ocultação: não servem para medir uma peça pequena.

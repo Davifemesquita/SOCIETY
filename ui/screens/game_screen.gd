@@ -84,6 +84,8 @@ var lighthouse_view: LighthouseView
 var shipway_view: ShipwayView
 ## Fase 116: as mesas e os guarda-sóis em volta das tavernas.
 var tavern_garden_view: TavernGardenView
+## Fase 117: silos e caixas d'água ao lado das fazendas.
+var farm_silo_view: FarmSiloView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -264,6 +266,10 @@ func _ready() -> void:
 	tavern_garden_view.name = "TavernGardens"
 	add_child(tavern_garden_view)
 	tavern_garden_view.setup(simulation)
+	farm_silo_view = FarmSiloView.new()
+	farm_silo_view.name = "FarmSilos"
+	add_child(farm_silo_view)
+	farm_silo_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

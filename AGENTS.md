@@ -2212,6 +2212,12 @@ Regras que já custaram investigação:
   gomos brancos e gomos tingidos pela instância), fechado à noite (`set_furled`). O recheio deixa as células limpas.
   Captura em `tools/capture_phase116.tscn`.
 
+### Silos das fazendas (Fase 117, nossa)
+
+- **Plano** em `docs/plano_fase117.md`. `FarmSiloView` (`GameScreen.farm_silo_view`): `cells` (a célula livre atrás de
+  cada fazenda de `FARMS`), silo de aduelas ou caixa d'água sobre pés (`kind_of`, pelo resto do id: o `hash` de ids pequenos
+  puxa para um lado). O recheio deixa a célula limpa. Captura em `tools/capture_phase117.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2339,6 +2345,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 114 — Gradil das casas ricas (nossa) | **feita em 30/10/2026**, a última do roteiro sol, trópico e avenida: gradil baixo de ferro com lanças e o vão da porta na frente das casas dos engenheiros; plano em `docs/plano_fase114.md` |
 | 115 — Carreira do estaleiro (nossa) | **feita em 30/10/2026**, primeira do roteiro fazenda, taverna e estaleiro (Fases 115 a 119): rampa de madeira do estaleiro até a água, com o casco em obra crescendo pelo progresso da encomenda (quilha, cavername, costado, borda, andaime) e sumindo quando o navio fica pronto; plano em `docs/plano_fase115.md` |
 | 116 — Mesas da taverna (nossa) | **feita em 30/10/2026**: mesas redondas com bancos e guarda-sóis listrados na cor da taverna nas células livres em volta dela, fechados à noite; plano em `docs/plano_fase116.md` |
+| 117 — Silos das fazendas (nossa) | **feita em 30/10/2026**: silo de aduelas com telhado cônico ou caixa d'água sobre pés numa célula livre atrás de cada fazenda; plano em `docs/plano_fase117.md` |
 
 Pendências já vistas para fases futuras:
 
