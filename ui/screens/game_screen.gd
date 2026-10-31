@@ -122,6 +122,8 @@ var rowboat_view: RowboatView
 var buoy_view: BuoyView
 ## Fase 145: os mostradores do relógio na torre da igreja.
 var clock_view: ClockView
+## Fase 146: a grade de ferro e os lampiões no cais de pedra.
+var quay_rail_view: QuayRailView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -381,6 +383,10 @@ func _ready() -> void:
 	clock_view.name = "Clocks"
 	add_child(clock_view)
 	clock_view.setup(simulation)
+	quay_rail_view = QuayRailView.new()
+	quay_rail_view.name = "QuayRails"
+	add_child(quay_rail_view)
+	quay_rail_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

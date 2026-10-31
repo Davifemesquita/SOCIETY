@@ -1749,3 +1749,9 @@ Duas rodadas no mesmo estado (jogo novo 11,5 e 11,6 s): 75,1 e 75,7 FPS (144: 77
 +4 objetos e draw calls (os mostradores e ponteiros da igreja da cidade do benchmark) e primitivas iguais no quadro com tudo
 visível. Dentro da faixa do patamar desde a Fase 120 (75 a 78 FPS); a refatoração do lugar do modelo
 (`BuildingView.model_place`) não muda o desenho.
+
+## Fase 146 — grade e lampiões no cais (31/10/2026)
+
+Mesmo estado (jogo novo 11,5 s): 76,3 FPS (145: 75,1 e 75,7), 1% low 39,5, pior quadro 35 ms, p50/p95/p99 12,4/17,1/23,5 ms,
+GPU 12,0 ms, carregar 5,4 s, construir com a ilha cheia 17,6 ms; +15 objetos e draw calls e +91.800 primitivas no quadro com
+tudo visível (as grades e os lampiões dos cais de pedra do benchmark). Neutra.
