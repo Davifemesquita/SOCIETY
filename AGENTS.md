@@ -2360,6 +2360,15 @@ Regras que já custaram investigação:
   `shaders/fish_net.gdshader` (alpha scissor pela UV em metros) e as caixas de peixe, numa malha de duas superfícies. O
   recheio, os silos e as bombas deixam a célula limpa (`cells`). Captura em `tools/capture_phase139.tscn`.
 
+### Clareira do lenhador (Fase 140, nossa)
+
+- **Plano** em `docs/plano_fase140.md`, primeira do roteiro `docs/plano_fases_140_144.md` (toco, bote e boia).
+  `StumpView` (`GameScreen.stump_view`): `cut_cells` / `cut_cells_of` (as células de mata em volta de cada lenhador que o
+  desenho corta, mais perto mais cortadas) e os tocos e toras por trecho; a `TreeView` não desenha as árvores delas
+  (`is_cut`). As duas guardam os lenhadores pelo id: **só um lenhador que entra ou sai refaz o corte**, só na ilha dele e
+  no quadro seguinte (refazer tudo a cada prédio custava 11 ms na obra com a ilha cheia). Captura em
+  `tools/capture_phase140.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2510,6 +2519,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 137 — Boca do forno acesa (nossa) | **feita em 31/10/2026**: a padaria, a olaria, a vidraria, a fundição e a de vigas de aço ganham uma boca de forno em arco de tijolo numa fachada do lado, com o fogo tremulando enquanto produzem e a luz laranja no chão à noite; plano em `docs/plano_fase137.md` |
 | 138 — Telhado de chapa ondulada (nossa) | **feita em 31/10/2026**: a olaria, a fundição, a vidraria, as usinas, a de vigas de aço, as conservas, as máquinas de costura e a de lâmpadas trocam as telhas por chapa de ferro ondulada, cinza com a ferrugem escorrendo das juntas; plano em `docs/plano_fase138.md` |
 | 139 — Redes de pesca (nossa) | **feita em 31/10/2026**, a última do roteiro galinha, forno e mina: ao lado de cada cabana de pesca, dois cavaletes com a rede estendida secando, as boias de cortiça, as caixas de peixe e o cesto; plano em `docs/plano_fase139.md` |
+| 140 — Clareira do lenhador (nossa) | **feita em 31/10/2026**, primeira do roteiro toco, bote e boia (Fases 140 a 144): em volta de cada lenhador a mata recua no desenho, mais perto da cabana, e as células cortadas ficam com os tocos e umas toras caídas; plano em `docs/plano_fase140.md` |
 
 Pendências já vistas para fases futuras:
 

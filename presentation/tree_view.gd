@@ -13,6 +13,8 @@ extends Node3D
 ## (TerrainDetail), não na altura lisa da simulação.
 ## Desde a Fase 57 as pedras são a rocha gerada da Fase 56 (`RockModel`, com o material da `RockView`): faces
 ## partidas, quatro formas, no lugar das lajes lisas do Kenney.
+## Desde a Fase 140 as células de mata cortadas em volta dos lenhadores (`StumpView.cut_cells`) ficam sem árvore no
+## desenho (a simulação ainda as conta); refeitas quando um prédio entra ou sai.
 
 const CHUNK_CELLS := 64
 ## Folhosas e coníferas: [espécie, variante] do TreeModel.
@@ -64,11 +66,21 @@ var _tropical: Dictionary[int, bool] = {}
 ## chave "ilha/cx/cy" → os MultiMeshInstance3D do trecho, um por modelo.
 var _chunks: Dictionary[String, Array] = {}
 var _config: GameConfig
+var _data: GameData
+## Fase 140: ilha → as células de mata cortadas em volta dos lenhadores (sem árvore no desenho).
+var _cut: Dictionary[int, Dictionary] = {}
+## Fase 140: lenhador → ilha, e os trechos a refazer no quadro seguinte.
+var _lumberjacks: Dictionary[int, int] = {}
+var _pending: Dictionary[String, bool] = {}
 
 
 func setup(world: WorldState, data: GameData = GameData.get_default(), config: GameConfig = null) -> void:
 	_world = world
 	_config = config if config != null else GameConfig.get_default()
+	_data = data
+	for id: int in world.buildings:
+		if world.buildings[id].def_id == &"lumberjack":
+			_lumberjacks[id] = world.buildings[id].island_id
 	_add_trees(BROADLEAF + CONIFER)
 	for variant: int in ROCKS:
 		_models.append(_stone(RockModel.mesh(variant)))
@@ -82,10 +94,13 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 		var grid := world.island(index)
 		if grid.flat:
 			continue
+		_cut[index] = StumpView.cut_cells(world, data, _config, index)
 		for cy: int in ceili(grid.size.y / float(CHUNK_CELLS)):
 			for cx: int in ceili(grid.size.x / float(CHUNK_CELLS)):
 				_build_chunk(index, Vector2i(cx, cy))
 	EventBus.trees_changed.connect(_on_trees_changed)
+	EventBus.building_placed.connect(_on_buildings_changed)
+	EventBus.building_removed.connect(_on_buildings_changed)
 
 
 ## Os modelos de [espécie, variante] do TreeModel, perto e longe, já em metros.
@@ -142,6 +157,53 @@ func _on_trees_changed(island_id: int, area: Rect2i) -> void:
 			_build_chunk(island_id, Vector2i(cx, cy))
 
 
+## Fase 140: um lenhador entrou ou saiu: refaz o corte da ilha dele e marca para o quadro seguinte os trechos das células
+## que mudaram (vários lenhadores no mesmo quadro refazem o trecho uma vez). Outros prédios não mexem no corte.
+func _on_buildings_changed(building_id: int) -> void:
+	var record := _world.building(building_id)
+	var island_id := -1
+	if record != null and record.def_id == &"lumberjack":
+		_lumberjacks[building_id] = record.island_id
+		island_id = record.island_id
+	elif _lumberjacks.has(building_id):
+		island_id = _lumberjacks[building_id]
+		_lumberjacks.erase(building_id)
+	if not _cut.has(island_id):
+		return
+	var ids: Array[int] = []
+	for id: int in _lumberjacks:
+		if _lumberjacks[id] == island_id:
+			ids.append(id)
+	var before: Dictionary = _cut[island_id]
+	var after := StumpView.cut_cells_of(_world, _data, _config, island_id, ids)
+	for cell: Vector2i in before:
+		if not after.has(cell):
+			_pending["%d/%d/%d" % [island_id, cell.x / CHUNK_CELLS, cell.y / CHUNK_CELLS]] = true
+	for cell: Vector2i in after:
+		if not before.has(cell):
+			_pending["%d/%d/%d" % [island_id, cell.x / CHUNK_CELLS, cell.y / CHUNK_CELLS]] = true
+	_cut[island_id] = after
+
+
+func _process(_delta: float) -> void:
+	if not _pending.is_empty():
+		flush()
+
+
+## Refaz já os trechos marcados pelo corte (testes; o jogo espera o quadro seguinte).
+func flush() -> void:
+	for key: String in _pending:
+		var parts := key.split("/")
+		_build_chunk(parts[0].to_int(), Vector2i(parts[1].to_int(), parts[2].to_int()))
+	_pending.clear()
+
+
+## Fase 140: a célula está cortada no desenho (sem árvore).
+func is_cut(island_id: int, cell: Vector2i) -> bool:
+	var cut: Dictionary = _cut.get(island_id, {})
+	return cut.has(cell)
+
+
 ## Refaz o trecho: junta as árvores (e pedras) das células dele por modelo e escreve os buffers.
 func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 	var key := "%d/%d/%d" % [island_id, chunk.x, chunk.y]
@@ -153,6 +215,7 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 		_chunks.erase(key)
 	var grid := _world.island(island_id)
 	var tropical := _tropical.has(island_id)
+	var cut: Dictionary = _cut.get(island_id, {})
 	# cada entrada: [modelo, 12 floats da transformação]; o buffer de cada modelo é montado numa
 	# variável local (array empacotado dentro de outro array pode ser alterado numa cópia)
 	var entries: Array[Array] = []
@@ -162,6 +225,9 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 			var cell := Vector2i(x, y)
 			var index := grid.index(cell)
 			var count := grid.trees[index]
+			if count > 0 and cut.has(cell):
+				# Fase 140: cortada em volta do lenhador (os tocos são da StumpView)
+				continue
 			if count > 0:
 				var high := grid.cell_height(cell) >= CONIFER_HEIGHT_M
 				for n: int in mini(count, DRAWN_PER_CELL):

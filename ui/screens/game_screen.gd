@@ -114,6 +114,8 @@ var spoil_tip_view: SpoilTipView
 var furnace_glow_view: FurnaceGlowView
 ## Fase 139: as redes de pesca secando ao lado das cabanas de pesca.
 var fish_net_view: FishNetView
+## Fase 140: os tocos e as toras da clareira em volta dos lenhadores.
+var stump_view: StumpView
 var forecourt_view: ForecourtView
 var avenue_view: AvenueView
 var yard_view: YardView
@@ -357,6 +359,10 @@ func _ready() -> void:
 	fish_net_view.name = "FishNets"
 	add_child(fish_net_view)
 	fish_net_view.setup(simulation)
+	stump_view = StumpView.new()
+	stump_view.name = "Stumps"
+	add_child(stump_view)
+	stump_view.setup(simulation)
 	forecourt_view = ForecourtView.new()
 	forecourt_view.name = "Forecourts"
 	add_child(forecourt_view)

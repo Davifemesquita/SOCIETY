@@ -1706,3 +1706,12 @@ Neutra.
 Mesmo estado (jogo novo 11,6 s): 77,2 FPS (138: 76,6), 1% low 39,9, pior quadro 30 ms, p50/p95/p99 12,3/16,7/23,3 ms, GPU
 11,9 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a cidade do benchmark não tem cabana de pesca). Neutra;
 fecha o roteiro galinha, forno e mina no patamar de ~77 FPS e GPU ~12 ms.
+
+## Fase 140 — clareira do lenhador (31/10/2026)
+
+Primeira rodada com o corte refeito para todos os lenhadores de todas as ilhas a cada prédio construído: montar tudo 12,5 s
+(139: 9,7) e construir com a ilha cheia 28,6 ms (139: 17,7), +130 objetos (camadas por lenhador). Corrigida (só um lenhador
+que entra ou sai refaz o corte, só na ilha dele, no quadro seguinte; camadas por trecho), mesmo estado (jogo novo 11,5 s):
+77,8 FPS (139: 77,2), 1% low 39,0, pior quadro 34 ms, p50/p95/p99 12,2/16,6/23,5 ms, GPU 11,9 ms, montar tudo 10,1 s,
+construir com a ilha cheia 18,1 ms, carregar 5,3 s; +17 objetos e draw calls e +52.165 primitivas no quadro com tudo
+visível (os tocos e as toras dos lenhadores da cidade do benchmark). Neutra.
