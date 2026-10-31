@@ -1620,3 +1620,8 @@ fecha o roteiro fios, riacho e mansarda no patamar em que a máquina está desde
 Mesmo estado (jogo novo 11,6 s): 77,9 FPS (124: 77,7), 1% low 40,6, pior quadro 32 ms, p50/p95/p99 12,2/16,5/22,6 ms, GPU
 11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (o recife é só o shader da água, que já era desenhado).
 Neutra.
+
+## Fase 126 — alpendre tropical (30/10/2026)
+
+Mesmo estado (jogo novo 11,6 s): 77,0 FPS (125: 77,9), 1% low 39,4, pior quadro 36 ms, p50/p95/p99 12,3/16,7/23,2 ms, GPU
+11,8 ms, carregar 5,3 s; objetos, draw calls e primitivas iguais (a cidade do benchmark é temperada). Neutra.

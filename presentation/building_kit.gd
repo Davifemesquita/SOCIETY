@@ -284,6 +284,9 @@ const VERANDA_RAIL_STEP_M := 0.24
 const VERANDA_EAVE := 0.95
 const VERANDA_WALL := 1.15
 const VERANDA_OVERHANG_M := 0.25
+## Fase 126: as casas das ilhas tropicais com estes detalhes (operários e artesãos, dois andares ou mais) ganham a varanda
+## na fileira da frente, no lugar do enxaimel saliente e do toldo.
+const PORCH_TRIMS: Array[int] = [TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES]
 ## Plataforma de carga do armazém (Fase 23): a fileira da frente vira plataforma na altura da caçamba da
 ## carroça, de tijolo com tampo de tábuas e defensa de madeira, com uma rampa de pedra em cada ponta. Com o
 ## nível 1 ganha alpendre em mãos-francesas de ferro e portas de carga em células alternadas; no 2 (o que
@@ -552,10 +555,16 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 			spec.lucarnes = 1 if spec.cells.x <= 3 else 2
 		spec.window_style = BuildingView.house_hash(record.id) / 3 % 2
 		spec.trim = tier.house_trim
+		var porch := spec.trim in PORCH_TRIMS and spec.cells.y > 2 and spec.floors() >= 2 \
+				and simulation.world.is_tropical(record.island_id, simulation.data)
 		if spec.trim == TierDef.HouseTrim.YARD and spec.cells.y > 2:
 			# a fileira da frente vira quintal cercado; a casa fica nas de trás, recuada das divisas dos lados
 			spec.court_rows = 1
 			spec.hall_side_gap_m = YARD_SIDE_GAP_M
+		elif porch:
+			# Fase 126: nas ilhas tropicais a fileira da frente vira alpendre de tábuas (a varanda da Fase 23)
+			spec.court_rows = 1
+			spec.silhouette = BuildingDef.Silhouette.VERANDA
 		elif spec.cells.x >= 3 and spec.roof != Roof.FLAT and spec.floors() >= 2 \
 				and BuildingView.house_hash(record.id) / 7 % WING_SHARE == 0:
 			# Fase 96: metade das casas de dois andares para cima ganha a ala mais baixa num lado (a chaminé fica no outro)
@@ -566,11 +575,11 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.mansard = spec.trim == TierDef.HouseTrim.PORTICO and spec.roof != Roof.FLAT and spec.wing == 0
 		# Fase 102: o andar saliente com enxaimel dos operários e artesãos
 		spec.jetty = spec.trim in [TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES] and spec.roof == Roof.GABLE_X \
-				and spec.floors() >= 2
+				and spec.floors() >= 2 and not porch
 		# Fase 99: as janelas em arco das casas dos investidores
 		spec.arched = spec.trim == TierDef.HouseTrim.PORTICO
 		# Fase 101: uma casa em AWNING_HOUSE_SHARE dos artesãos e engenheiros tem loja no térreo, com o toldo
-		if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES] \
+		if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES] and not porch \
 				and BuildingView.house_hash(record.id) / 11 % AWNING_HOUSE_SHARE == 0:
 			# uma cor por classe (cada forma nova custa ~18 ms; três cores triplicavam as casas com loja)
 			spec.awning = 1 if spec.trim == TierDef.HouseTrim.FLOWER_BOXES else 2

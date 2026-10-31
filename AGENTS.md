@@ -2270,6 +2270,12 @@ Regras que já custaram investigação:
   **Hash de ruído em shader sem `sin`**: com as coordenadas do arquipélago o `fract(sin(...))` perde precisão na GPU e o
   desenho sai em escada. Captura em `tools/capture_phase125.tscn`.
 
+### Alpendre tropical (Fase 126, nossa)
+
+- **Plano** em `docs/plano_fase126.md`. No `BuildingKit.spec_for`, as casas de `PORCH_TRIMS` (operários e artesãos) de dois
+  andares nas ilhas tropicais ganham `Silhouette.VERANDA` com `court_rows = 1` (a varanda da Fase 23), sem enxaimel, toldo
+  nem ala. Captura em `tools/capture_phase126.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2406,6 +2412,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 123 — Borrifo nas falésias (nossa) | **feita em 30/10/2026**: jatos de espuma subindo de tempos em tempos onde o mar bate nos rochedos e nas falésias perto da câmera, do lado do mar; plano em `docs/plano_fase123.md` |
 | 124 — Mansarda dos investidores (nossa) | **feita em 30/10/2026**, a última do roteiro fios, riacho e mansarda: telhado de mansarda (água de baixo íngreme com lucarnas, a de cima quase plana) nas casas dos investidores sem ala; plano em `docs/plano_fase124.md` |
 | 125 — Recife de coral (nossa) | **feita em 30/10/2026**, primeira do roteiro recife, alpendre e nuvens (Fases 125 a 129): manchas escuras de coral no mar raso das ilhas tropicais; plano em `docs/plano_fase125.md` |
+| 126 — Alpendre tropical (nossa) | **feita em 30/10/2026**: as casas dos operários e artesãos das ilhas tropicais recuam uma fileira e ganham alpendre de tábuas com esteios, guarda-corpo e telhado de uma água; plano em `docs/plano_fase126.md` |
 
 Pendências já vistas para fases futuras:
 
