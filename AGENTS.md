@@ -2784,6 +2784,13 @@ Regras que já custaram investigação:
   separada em `WaterPumpView.taken_cells` e `beside_street`: **peça nova junto da rua usa as duas** (e a lista das tomadas
   ganha a peça nova, para a bomba e o poço desviarem dela). Captura em `tools/capture_phase201.tscn`.
 
+### Secadouro de peixe (Fase 202, nossa)
+
+- **Plano** em `docs/plano_fase202.md`. `FishRackView` (`GameScreen.fish_rack_view`): `sites`/`cells` (a célula livre ao lado de
+  cada cabana de pesca das temperadas, na metade da terra, fora das redes e do barco virado; o recheio e as bombas a deixam) e
+  `rack_mesh` (as varas em X e os peixes de `_fish`, lâminas dos dois lados), num MultiMesh. Captura em
+  `tools/capture_phase202.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2996,6 +3003,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 199 — Rede na varanda (nossa) | **feita em 01/11/2026**, a última do roteiro cemitério, pato e rede: a rede de dormir listrada pendurada entre dois esteios da varanda de parte das casas das ilhas tropicais, ao lado da porta, balançando de leve; plano em `docs/plano_fase199.md` |
 | 200 — Gato na porta (nossa) | **feita em 01/11/2026**, primeira do roteiro gato, poço e carrinho (Fases 200 a 204): um gato ruivo, preto, cinza, branco ou creme sentado ao lado da porta de parte das casas (as que não têm cão), virando a cabeça de vez em quando; plano em `docs/plano_fase200.md` |
 | 201 — Poço da vila (nossa) | **feita em 01/11/2026**: o poço de pedra em fiadas com o telhadinho de duas águas, o sarilho e o balde numa célula livre junto da rua, ao lado de parte das casas dos camponeses; plano em `docs/plano_fase201.md` |
+| 202 — Secadouro de peixe (nossa) | **feita em 01/11/2026**: as varas cruzadas com os peixes abertos pendurados secando, do lado da terra de cada cabana de pesca das ilhas temperadas; plano em `docs/plano_fase202.md` |
 
 Pendências já vistas para fases futuras:
 

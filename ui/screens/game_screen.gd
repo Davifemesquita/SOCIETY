@@ -190,6 +190,8 @@ var hammock_view: HammockView
 var cat_view: CatView
 ## Fase 201: o poço de pedra com o telhadinho e o sarilho junto das casas dos camponeses.
 var well_view: WellView
+## Fase 202: o secadouro com os peixes pendurados ao lado das cabanas de pesca das ilhas temperadas.
+var fish_rack_view: FishRackView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -585,6 +587,10 @@ func _ready() -> void:
 	well_view.name = "Wells"
 	add_child(well_view)
 	well_view.setup(simulation)
+	fish_rack_view = FishRackView.new()
+	fish_rack_view.name = "FishRacks"
+	add_child(fish_rack_view)
+	fish_rack_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

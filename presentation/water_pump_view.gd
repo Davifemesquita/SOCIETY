@@ -130,6 +130,9 @@ static func taken_cells(world: WorldState, data: GameData, island_id: int) -> Di
 	# Fase 197: nem na casinha do cão
 	for cell: Vector2i in KennelView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 202: nem nos secadouros de peixe
+	for cell: Vector2i in FishRackView.cells(world, data, island_id):
+		taken[cell] = true
 	# Fase 195: nem no cemitério
 	for cell: Vector2i in GraveyardView.cells(world, data, island_id):
 		taken[cell] = true

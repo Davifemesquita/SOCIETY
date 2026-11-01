@@ -2125,3 +2125,9 @@ se refazia a cada `building_state_changed`, que dispara a cada troca de estado d
 Mesmo estado (jogo novo 11,8 s): 80,1 FPS (200: 80,5), 1% low 40,2, pior quadro 36 ms, p50/p95/p99 11,8/16,0/22,9 ms, GPU
 11,6 ms, montar tudo 9,3 s, carregar 6,1 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e
 primitivas iguais no quadro com tudo visível (a cidade do benchmark é plana e de operários). Neutra.
+
+## Fase 202 — secadouro de peixe (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 79,7 FPS (201: 80,1), 1% low 40,5, pior quadro 35 ms, p50/p95/p99 11,8/16,1/22,8 ms, GPU
+11,6 ms, montar tudo 9,3 s, carregar 6,0 s, construir com a ilha cheia 17,8 ms; +5 objetos e draw calls (a camada) e
+primitivas iguais no quadro com tudo visível (o benchmark não tem cabana de pesca). Neutra.
