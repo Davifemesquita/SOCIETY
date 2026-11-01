@@ -274,6 +274,8 @@ var ship_timber_view: ShipTimberView
 var glass_crate_view: GlassCrateView
 ## Fase 249: os montes de pedras tiradas da terra num canto de parte dos campos das ilhas temperadas.
 var field_stone_view: FieldStoneView
+## Fase 250: a balança decimal de plataforma com os sacos e os pesos ao lado de cada armazém.
+var scale_view: ScaleView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -837,6 +839,10 @@ func _ready() -> void:
 	field_stone_view.name = "FieldStones"
 	add_child(field_stone_view)
 	field_stone_view.setup(simulation)
+	scale_view = ScaleView.new()
+	scale_view.name = "Scales"
+	add_child(scale_view)
+	scale_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

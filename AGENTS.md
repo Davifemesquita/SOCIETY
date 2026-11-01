@@ -3111,6 +3111,13 @@ Regras que já custaram investigação:
   `STONE_EVERY` das temperadas, num canto da cabeceira pelo `CropView._row_frame`, além do fim das fileiras) e `heap_mesh`, num
   MultiMesh. Captura em `tools/capture_phase249.tscn`.
 
+### Balança de carga no armazém (Fase 250, nossa)
+
+- **Plano** em `docs/plano_fase250.md`, primeira do roteiro `docs/plano_fases_250_254.md` (balança, cabra e canoa; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `ScaleView` (`GameScreen.scale_view`): `sites`/`cells` (as duas células de lado do
+  armazém pelo `SideYard`; o recheio e as bombas as deixam) e `scale_mesh` (`_sack`, o saco amarrado), num MultiMesh. Captura em
+  `tools/capture_phase250.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3371,6 +3378,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 247 — Madeira curvada no estaleiro (nossa) | **feita em 01/11/2026**: a pilha de tábuas e as cavernas curvas em U esperando a vez de entrar no casco, no lado de cada estaleiro, longe da carreira; plano em `docs/plano_fase247.md` |
 | 248 — Caixotes de vidro (nossa) | **feita em 01/11/2026**: o cavalete com as chapas de vidro de pé e os caixotes de ripas com palha e vidraças no lado de cada vidraria e janelaria; plano em `docs/plano_fase248.md` |
 | 249 — Montes de pedra nos campos (nossa) | **feita em 01/11/2026**, a última do roteiro coelho, cogumelo e pedra: os montes baixos de pedras tiradas da terra arada num canto da cabeceira de parte dos campos das ilhas temperadas; plano em `docs/plano_fase249.md` |
+| 250 — Balança de carga no armazém (nossa) | **feita em 01/11/2026**, primeira do roteiro balança, cabra e canoa (Fases 250 a 254): a balança decimal de plataforma com os pesos, um saco em cima e os sacos amarrados esperando no lado de cada armazém; plano em `docs/plano_fase250.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -2444,3 +2444,9 @@ visível (a cidade do benchmark não tem vidraria). Neutra.
 A máquina seguiu no estado lento: 69,9 FPS (248: 70,3), 1% low 36,6, p50/p95/p99 13,6/18,1/25,4 ms, GPU 13,0 ms, montar tudo 9,4 s,
 carregar 6,4 s, construir com a ilha cheia 17,4 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
 visível. Neutra; fecha o roteiro coelho, cogumelo e pedra.
+
+## Fase 250 — balança de carga no armazém (01/11/2026)
+
+A máquina voltou ao estado rápido: 77,9 FPS (249, no lento: 69,9), 1% low 39,3, p50/p95/p99 12,2/16,3/24,1 ms, GPU 11,8 ms, montar
+tudo 9,3 s, carregar 6,4 s, construir com a ilha cheia 18,5 ms (o vaivém das últimas fases, de 17,0 a 19,7); +5 objetos e draw
+calls (a camada) e +8 mil primitivas no quadro com tudo visível (as balanças dos armazéns da cidade do benchmark). Neutra.
