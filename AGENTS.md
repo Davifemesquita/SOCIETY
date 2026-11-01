@@ -3118,6 +3118,12 @@ Regras que já custaram investigação:
   armazém pelo `SideYard`; o recheio e as bombas as deixam) e `scale_mesh` (`_sack`, o saco amarrado), num MultiMesh. Captura em
   `tools/capture_phase250.tscn`.
 
+### Cabras nas encostas (Fase 251, nossa)
+
+- **Plano** em `docs/plano_fase251.md`. `GoatView` (`GameScreen.goat_view`): `herds` (encosta livre de `MIN_RELIEF_M`, longe das
+  vilas pela regra das focas), `goats` (a primeira na pedra), `head_pitch` e as malhas do corpo, da cabeça e da pedra, em três
+  MultiMesh. Captura em `tools/capture_phase251.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3379,6 +3385,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 248 — Caixotes de vidro (nossa) | **feita em 01/11/2026**: o cavalete com as chapas de vidro de pé e os caixotes de ripas com palha e vidraças no lado de cada vidraria e janelaria; plano em `docs/plano_fase248.md` |
 | 249 — Montes de pedra nos campos (nossa) | **feita em 01/11/2026**, a última do roteiro coelho, cogumelo e pedra: os montes baixos de pedras tiradas da terra arada num canto da cabeceira de parte dos campos das ilhas temperadas; plano em `docs/plano_fase249.md` |
 | 250 — Balança de carga no armazém (nossa) | **feita em 01/11/2026**, primeira do roteiro balança, cabra e canoa (Fases 250 a 254): a balança decimal de plataforma com os pesos, um saco em cima e os sacos amarrados esperando no lado de cada armazém; plano em `docs/plano_fase250.md` |
+| 251 — Cabras nas encostas (nossa) | **feita em 01/11/2026**: grupos de cabras malhadas de chifres para trás pastando nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra; plano em `docs/plano_fase251.md` |
 
 Pendências já vistas para fases futuras:
 

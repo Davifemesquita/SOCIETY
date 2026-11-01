@@ -2450,3 +2450,10 @@ visível. Neutra; fecha o roteiro coelho, cogumelo e pedra.
 A máquina voltou ao estado rápido: 77,9 FPS (249, no lento: 69,9), 1% low 39,3, p50/p95/p99 12,2/16,3/24,1 ms, GPU 11,8 ms, montar
 tudo 9,3 s, carregar 6,4 s, construir com a ilha cheia 18,5 ms (o vaivém das últimas fases, de 17,0 a 19,7); +5 objetos e draw
 calls (a camada) e +8 mil primitivas no quadro com tudo visível (as balanças dos armazéns da cidade do benchmark). Neutra.
+
+## Fase 251 — cabras nas encostas (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,5 FPS (250: 77,9), 1% low 39,5, p50/p95/p99 12,2/16,5/23,9 ms, GPU 11,9 ms (250: 11,8), montar
+tudo 9,3 s, carregar 6,4 s, construir com a ilha cheia 17,6 ms; +15 objetos e draw calls (as três camadas, com as passadas de
+sombra) e +386 mil primitivas no quadro com tudo visível (os grupos das encostas das colônias, com a sombra, como os cervos da
+Fase 235). Neutra.

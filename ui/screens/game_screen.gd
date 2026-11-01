@@ -276,6 +276,8 @@ var glass_crate_view: GlassCrateView
 var field_stone_view: FieldStoneView
 ## Fase 250: a balança decimal de plataforma com os sacos e os pesos ao lado de cada armazém.
 var scale_view: ScaleView
+## Fase 251: as cabras nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra.
+var goat_view: GoatView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -843,6 +845,10 @@ func _ready() -> void:
 	scale_view.name = "Scales"
 	add_child(scale_view)
 	scale_view.setup(simulation)
+	goat_view = GoatView.new()
+	goat_view.name = "Goats"
+	add_child(goat_view)
+	goat_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
