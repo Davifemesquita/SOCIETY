@@ -170,6 +170,8 @@ var seal_view: SealView
 var beehive_view: BeehiveView
 ## Fase 191: o pombal no poste no canto de parte das fazendas, com os pombos pousados.
 var dovecote_view: DovecoteView
+## Fase 192: o varal com a roupa atravessando a rua entre casas de operários frente a frente.
+var street_laundry_view: StreetLaundryView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -525,6 +527,10 @@ func _ready() -> void:
 	dovecote_view.name = "Dovecotes"
 	add_child(dovecote_view)
 	dovecote_view.setup(simulation)
+	street_laundry_view = StreetLaundryView.new()
+	street_laundry_view.name = "StreetLaundry"
+	add_child(street_laundry_view)
+	street_laundry_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

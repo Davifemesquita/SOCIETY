@@ -2054,3 +2054,9 @@ nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra; abre o rotei
 Mesmo estado (jogo novo 11,8 s): 81,0 FPS (190: 80,8), 1% low 39,9, pior quadro 30 ms, p50/p95/p99 11,6/16,0/23,2 ms, GPU
 11,5 ms, montar tudo 9,2 s, carregar 5,8 s, construir com a ilha cheia 17,4 ms; +10 objetos e draw calls (os pombais e os
 pombos nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra.
+
+## Fase 192 — roupa sobre a rua (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 81,1 FPS (191: 81,0), 1% low 40,8, pior quadro 29 ms, p50/p95/p99 11,7/15,8/23,1 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,5 ms; +2 objetos e draw calls e +49 mil primitivas
+no quadro com tudo visível (os varais das ruas de operários do benchmark). Neutra.

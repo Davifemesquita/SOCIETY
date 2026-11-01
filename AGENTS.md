@@ -2714,6 +2714,13 @@ Regras que já custaram investigação:
   de +X das fazendas de `FARMS` do resto certo, se livre), `dovecote_mesh` e os pombos pousados da `BirdView` nos `PERCHES`,
   virando pelo `PerchedGullView.heading_at`. Captura em `tools/capture_phase191.tscn`.
 
+### Roupa sobre a rua (Fase 192, nossa)
+
+- **Plano** em `docs/plano_fase192.md`. `StreetLaundryView` (`GameScreen.street_laundry_view`): `lines` (a casa de operários do resto
+  certo com uma rua de uma célula diante dela e outra casa de operários virada para a rua do outro lado: o varal de beira a
+  beira, a `HEIGHT_M`), o cabo pelo `HarborView.rope_span` e a roupa nas cores do `YardView.CLOTH_COLORS`, numa malha só.
+  Captura em `tools/capture_phase192.tscn` (ilha plana, a câmera posta na rua).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2916,6 +2923,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 189 — Focas nas pedras (nossa) | **feita em 01/11/2026**, a última do roteiro hera, estaca e arco-íris: grupos de focas malhadas deitadas na costa baixa das ilhas temperadas, longe das vilas, viradas para o mar, erguendo a cabeça de tempos em tempos; plano em `docs/plano_fase189.md` |
 | 190 — Colmeias de palha (nossa) | **feita em 01/11/2026**, primeira do roteiro colmeia, pombal e varal (Fases 190 a 194): o banco com três colmeias de palha trançada ao lado das fazendas de lúpulo, vinhedo e batata, com as abelhas zunindo em volta de dia; plano em `docs/plano_fase190.md` |
 | 191 — Pombal (nossa) | **feita em 01/11/2026**: o pombal de tábua no alto de um poste no canto da frente de metade das fazendas de gado, trigo e batata, com os pombos pousados no telhadinho e nos poleiros; plano em `docs/plano_fase191.md` |
+| 192 — Roupa sobre a rua (nossa) | **feita em 01/11/2026**: o varal com a roupa colorida atravessando no alto a rua de terra entre casas de operários frente a frente; plano em `docs/plano_fase192.md` |
 
 Pendências já vistas para fases futuras:
 
