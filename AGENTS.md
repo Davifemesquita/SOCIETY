@@ -3105,6 +3105,12 @@ Regras que já custaram investigação:
   da vidraria e da janelaria pelo `SideYard`, o −X primeiro, longe da boca do forno, fora do carrinho de mão; o recheio e as bombas
   as deixam) e `crate_mesh` (`_crate`), num MultiMesh. Captura em `tools/capture_phase248.tscn`.
 
+### Montes de pedra nos campos (Fase 249, nossa)
+
+- **Plano** em `docs/plano_fase249.md`. `FieldStoneView` (`GameScreen.field_stone_view`): `spot` (um campo com dono a cada
+  `STONE_EVERY` das temperadas, num canto da cabeceira pelo `CropView._row_frame`, além do fim das fileiras) e `heap_mesh`, num
+  MultiMesh. Captura em `tools/capture_phase249.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3364,6 +3370,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 246 — Tronco caído com cogumelos (nossa) | **feita em 01/11/2026**: troncos velhos caídos na beira da mata das ilhas temperadas, cobertos de musgo, com as orelhas-de-pau de lado e os cogumelos vermelhos no chão; plano em `docs/plano_fase246.md` |
 | 247 — Madeira curvada no estaleiro (nossa) | **feita em 01/11/2026**: a pilha de tábuas e as cavernas curvas em U esperando a vez de entrar no casco, no lado de cada estaleiro, longe da carreira; plano em `docs/plano_fase247.md` |
 | 248 — Caixotes de vidro (nossa) | **feita em 01/11/2026**: o cavalete com as chapas de vidro de pé e os caixotes de ripas com palha e vidraças no lado de cada vidraria e janelaria; plano em `docs/plano_fase248.md` |
+| 249 — Montes de pedra nos campos (nossa) | **feita em 01/11/2026**, a última do roteiro coelho, cogumelo e pedra: os montes baixos de pedras tiradas da terra arada num canto da cabeceira de parte dos campos das ilhas temperadas; plano em `docs/plano_fase249.md` |
 
 Pendências já vistas para fases futuras:
 

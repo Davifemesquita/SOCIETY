@@ -2438,3 +2438,9 @@ visível (a cidade do benchmark não tem estaleiro). Neutra.
 A máquina seguiu no estado lento: 70,3 FPS (247: 69,9), 1% low 37,7, p50/p95/p99 13,6/18,0/25,3 ms, GPU 13,0 ms, montar tudo 9,3 s,
 carregar 6,4 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
 visível (a cidade do benchmark não tem vidraria). Neutra.
+
+## Fase 249 — montes de pedra nos campos (01/11/2026)
+
+A máquina seguiu no estado lento: 69,9 FPS (248: 70,3), 1% low 36,6, p50/p95/p99 13,6/18,1/25,4 ms, GPU 13,0 ms, montar tudo 9,4 s,
+carregar 6,4 s, construir com a ilha cheia 17,4 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
+visível. Neutra; fecha o roteiro coelho, cogumelo e pedra.

@@ -272,6 +272,8 @@ var rabbit_view: RabbitView
 var ship_timber_view: ShipTimberView
 ## Fase 248: o cavalete com as chapas de vidro e os caixotes com palha ao lado de cada vidraria e janelaria.
 var glass_crate_view: GlassCrateView
+## Fase 249: os montes de pedras tiradas da terra num canto de parte dos campos das ilhas temperadas.
+var field_stone_view: FieldStoneView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -831,6 +833,10 @@ func _ready() -> void:
 	glass_crate_view.name = "GlassCrates"
 	add_child(glass_crate_view)
 	glass_crate_view.setup(simulation)
+	field_stone_view = FieldStoneView.new()
+	field_stone_view.name = "FieldStones"
+	add_child(field_stone_view)
+	field_stone_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
