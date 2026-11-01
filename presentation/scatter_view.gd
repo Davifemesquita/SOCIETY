@@ -24,7 +24,7 @@ extends Node3D
 ## manchas do ruído dele (tall_grass_patch), fora dos canteiros de papoulas e das tropicais.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS }
 
 const CHUNK_CELLS := 32
 const VISIBLE_UNTIL_M := 220.0
@@ -34,7 +34,7 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 		Kind.SNAG, Kind.DRIFTWOOD]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES, Kind.TALL_GRASS]
+		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -85,6 +85,19 @@ const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH,
 ## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
 ## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
 ## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
+## Fase 179: os juncos — a chance por célula de terra encostada no rio (pelo lado), só até REEDS_MAX_HEIGHT_M (a margem baixa,
+## não o alto da garganta), as touceiras por célula, as folhas de cada uma num disco de REEDS_RADIUS_M, a altura delas e as
+## cores (verde, a ponta seca e a espiga marrom da taboa). Sorteio próprio, depois das outras peças da célula: o de antes não
+## muda.
+const REEDS_CHANCE := 0.8
+const REEDS_MAX_HEIGHT_M := 1.8
+const REEDS_CLUMPS := 2
+const REEDS_BLADES := 22
+const REEDS_RADIUS_M := 0.45
+const REEDS_HEIGHT_M := Vector2(0.9, 1.6)
+const REED_GREEN := Color(0.3, 0.44, 0.18)
+const REED_DRY := Color(0.58, 0.55, 0.32)
+const CATTAIL := Color(0.33, 0.21, 0.12)
 const TALL_GRASS_CHANCE := 0.9
 const TALL_GRASS_PATCH_CELLS := 7.0
 const TALL_GRASS_THRESHOLD := 0.66
@@ -444,6 +457,7 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 			var sea := false
 			var house := Vector2i.ZERO
 			var works := Vector2i.ZERO
+			var river := Vector2i.ZERO
 			for step: Vector2i in AROUND:
 				var ox := x + step.x
 				var oy := y + step.y
@@ -461,6 +475,8 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 					road = true
 				if ground[j] == IslandGrid.Ground.SEA:
 					sea = true
+				elif ground[j] == IslandGrid.Ground.RIVER:
+					river = step
 				var building := occupancy[j]
 				if building != 0 and kinds.has(building):
 					var kind := kinds[building]
@@ -484,7 +500,32 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 			elif sea:
 				rules = NEAR_SEA
 			_cell_items(grid, config, island_id, cell, rules, lean, tropical, result)
+			if river != Vector2i.ZERO:
+				_reeds(grid, config, island_id, cell, river, result)
 	return result
+
+
+## Fase 179: as touceiras de junco da célula encostada no rio (do lado "river"): só na margem baixa, na beira da água,
+## espalhadas ao longo dela; sorteio próprio da célula (as outras peças não mudam).
+static func _reeds(grid: IslandGrid, config: GameConfig, island_id: int, cell: Vector2i, river: Vector2i,
+		result: Dictionary) -> void:
+	var middle_x := grid.origin_m.x + (cell.x + 0.5) * grid.cell_size
+	var middle_z := grid.origin_m.y + (cell.y + 0.5) * grid.cell_size
+	if grid.height_at(middle_x, middle_z) > REEDS_MAX_HEIGHT_M:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([island_id, cell, &"junco"])
+	if rng.randf() >= REEDS_CHANCE:
+		return
+	var list: Array = result[Kind.REEDS]
+	for clump: int in rng.randi_range(1, REEDS_CLUMPS):
+		var offset := Vector2(river) * rng.randf_range(0.3, 0.45) + Vector2(-river.y, river.x) * rng.randf_range(-0.4, 0.4)
+		var x := grid.origin_m.x + (cell.x + 0.5 + offset.x) * grid.cell_size
+		var z := grid.origin_m.y + (cell.y + 0.5 + offset.y) * grid.cell_size
+		var y := grid.height_at(x, z) + TerrainDetail.offset_at(grid, config, x, z)
+		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * rng.randf_range(0.8, 1.2))
+		var shade := rng.randf_range(0.85, 1.1)
+		list.append([Transform3D(basis, Vector3(x, y, z)), Color(shade, shade, shade)])
 
 
 ## As peças de uma célula: cada regra sorteia pela célula; encostadas no prédio do lado "lean" (se houver). Na ilha
@@ -639,6 +680,39 @@ static func tall_grass_mesh() -> ArrayMesh:
 	return tool.commit()
 
 
+## Fase 179: a touceira de junco — REEDS_BLADES folhas compridas e estreitas num disco de REEDS_RADIUS_M, quase de pé (verde
+## no pé, a ponta secando), e a cada quarta folha a haste da taboa com a espiga marrom em cruz. Normais para cima, como o
+## capim alto.
+static func reeds_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 179
+	var golden := PI * (3.0 - sqrt(5.0))
+	for i: int in REEDS_BLADES:
+		var reach := REEDS_RADIUS_M * sqrt((i + 0.5) / REEDS_BLADES)
+		var angle := golden * i + rng.randf_range(-0.3, 0.3)
+		var out := Vector3(cos(angle), 0.0, sin(angle))
+		var foot := out * reach
+		var height := rng.randf_range(REEDS_HEIGHT_M.x, REEDS_HEIGHT_M.y)
+		var tip := foot + out * rng.randf_range(0.05, 0.2) + Vector3(0.0, height, 0.0)
+		var yaw := rng.randf() * TAU
+		var side := Vector3(cos(yaw), 0.0, sin(yaw)) * 0.02
+		var knee := foot + (tip - foot) * 0.6
+		_flat_quad(tool, foot - side, foot + side, knee + side * 0.7, knee - side * 0.7, REED_GREEN)
+		_flat_tri(tool, knee - side * 0.7, knee + side * 0.7, tip, REED_GREEN.lerp(REED_DRY, 0.6))
+		if i % 4 == 0:
+			# a taboa: a haste reta e a espiga em cruz, um pouco abaixo da ponta das folhas
+			var top := foot + Vector3(0.0, height * 0.92, 0.0)
+			var stalk := Vector3(0.012, 0.0, 0.0)
+			_flat_quad(tool, foot - stalk, foot + stalk, top + stalk, top - stalk, REED_GREEN)
+			for across: Vector3 in [Vector3(0.035, 0.0, 0.0), Vector3(0.0, 0.0, 0.035)]:
+				_flat_quad(tool, top - across, top + across, top + across + Vector3(0.0, 0.2, 0.0),
+						top - across + Vector3(0.0, 0.2, 0.0), CATTAIL)
+	tool.index()
+	return tool.commit()
+
+
 static func _poppy_node(island_id: int, node: Vector2i) -> float:
 	var h := (node.x * 374761393 + node.y * 668265263 + island_id * 1442695041 + 977) & 0xFFFFFFFF
 	h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
@@ -785,6 +859,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return scree_mesh()
 	if kind == Kind.TALL_GRASS:
 		return tall_grass_mesh()
+	if kind == Kind.REEDS:
+		return reeds_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:

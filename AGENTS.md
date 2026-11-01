@@ -2622,6 +2622,12 @@ Regras que já custaram investigação:
   instância, escondido de dia; o `shaders/firefly.gdshader` os faz vagar e piscar no tempo visual, acesos pelo `night_light`.
   Captura em `tools/capture_phase178.tscn`.
 
+### Juncos na margem (Fase 179, nossa)
+
+- **Plano** em `docs/plano_fase179.md`. `ScatterView.Kind.REEDS` (no fim do enum e nas `PLANTS`) e `reeds_mesh`; `_reeds` põe as
+  touceiras na terra encostada no rio, na margem baixa (`REEDS_MAX_HEIGHT_M`), com **sorteio próprio depois das outras peças da
+  célula** (a regra dela não muda, e o recheio de antes sai igual). Captura em `tools/capture_phase179.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2811,6 +2817,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 176 — Cegonha na chaminé (nossa) | **feita em 31/10/2026**: o ninho de gravetos com a cegonha de pé, virando de tempos em tempos, no alto da chaminé de uma a cada quatro casas dos camponeses e operários das ilhas temperadas; a chaminé com ninho não fumega; plano em `docs/plano_fase176.md` |
 | 177 — Postigos nas janelas (nossa) | **feita em 31/10/2026**: as duas folhas de madeira abertas dos lados de cada janela das casas dos camponeses, operários e artesãos, pintadas de verde, azul, vermelho ou ocre pelo prédio, com as réguas da veneziana; plano em `docs/plano_fase177.md` |
 | 178 — Vaga-lumes no prado (nossa) | **feita em 31/10/2026**: enxames de pontinhos de luz verde-amarela vagando baixo e piscando na beira da mata e no capim aberto, longe das casas e das estradas, ao anoitecer e à noite; plano em `docs/plano_fase178.md` |
+| 179 — Juncos na margem (nossa) | **feita em 31/10/2026**, a última do roteiro espantalho, cegonha e vaga-lume: touceiras de junco alto com as espigas marrons da taboa na margem baixa dos rios, balançando com o vento; plano em `docs/plano_fase179.md` |
 
 Pendências já vistas para fases futuras:
 

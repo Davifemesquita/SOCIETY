@@ -1965,3 +1965,10 @@ Mesmo estado (jogo novo 11,7 s): 82,0 FPS (177: 82,0), 1% low 40,8, pior quadro 
 11,3 ms, montar tudo 9,3 s, carregar 5,9 s (177: 5,8; a oscilação de sempre: de dia os vaga-lumes nem são montados),
 construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (às 10h a camada fica
 escondida). O dia inteiro do benchmark passa pela noite com os vaga-lumes acesos sem mudar o FPS médio. Neutra.
+
+## Fase 179 — juncos na margem (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 81,6 FPS (178: 82,0), 1% low 39,8, pior quadro 32 ms, p50/p95/p99 11,6/15,8/23,4 ms, GPU
+11,4 ms, montar tudo 9,3 s, carregar 5,8 s, construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (a câmera dele não passa pelas margens de rio). Neutra; fecha o roteiro espantalho, cegonha e
+vaga-lume, no patamar de 81 a 83 FPS (GPU 11,1 a 11,4 ms).
