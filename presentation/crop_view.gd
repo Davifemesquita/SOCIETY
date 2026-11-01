@@ -419,11 +419,20 @@ func _pasture(record: BuildingRecord, def: BuildingDef, fences: Array, tufts: Ar
 				var origin := low + start + direction * from
 				origin.y = grid.height_at(origin.x, origin.z)
 				fences.append([Transform3D(Basis(Vector3.UP, turn).scaled_local(Vector3(length, 1.0, 1.0)), origin), wood])
+	# Fase 227: o capim não nasce dentro do lamaçal do pasto dos porcos
+	var mud := Vector2(INF, INF)
+	var owner_id: int = _simulation.derived_state().module_owner.get(record.id, 0)
+	var owner := _simulation.world.building(owner_id)
+	if owner != null and owner.def_id == MudWallowView.PIG_FARM:
+		var spot := MudWallowView.spot(_simulation.world, _simulation.data, record)
+		mud = Vector2(spot.origin.x, spot.origin.z)
 	for i: int in area.size.x * area.size.y * TUFTS_PER_CELL:
 		var random := RandomNumberGenerator.new()
 		random.seed = hash([record.id, &"tuft", i])
 		var point := low + Vector3(random.randf_range(0.3, area.size.x * cell_size - 0.3), 0.0,
 				random.randf_range(0.3, area.size.y * cell_size - 0.3))
+		if Vector2(point.x, point.z).distance_to(mud) < MudWallowView.RADIUS_M.x * (1.0 + MudWallowView.RAGGED) + MudWallowView.RIM_M:
+			continue
 		point.y = grid.height_at(point.x, point.z)
 		var shade := random.randf_range(0.8, 1.15)
 		tufts.append([Transform3D(Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3.ONE * random.randf_range(0.7, 1.3)),

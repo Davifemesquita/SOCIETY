@@ -2964,6 +2964,12 @@ Regras que já custaram investigação:
   fazenda de ovelhas pelo `SideYard`, fora das medas, do silo e da carroça de feno) e `bale_mesh` (os fardos estufados com as
   cordas em volta, o cepo com a tesoura e o velo), num MultiMesh. Captura em `tools/capture_phase226.tscn`.
 
+### Lamaçal do chiqueiro (Fase 227, nossa)
+
+- **Plano** em `docs/plano_fase227.md`. `MudWallowView` (`GameScreen.mud_wallow_view`): `spot` (em cada pasto de fazenda de porcos,
+  do lado oposto ao cocho, pelo `module_owner`) e `mud_mesh` (a lama de borda recortada com a orla e os torrões), num MultiMesh
+  sem sombra; a `CropView` não põe capim dentro dela. Captura em `tools/capture_phase227.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3201,6 +3207,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 224 — Relógio de sol no largo (nossa) | **feita em 01/11/2026**, a última do roteiro bomba, barril e lençol: a coluna de pedra torneada com o mostrador de bronze e o gnomon num canto do largo calçado da igreja, do teatro, da universidade, da prefeitura, do museu e da escola; plano em `docs/plano_fase224.md` |
 | 225 — Lanterna na popa (nossa) | **feita em 01/11/2026**, primeira do roteiro lanterna, lã e morcego (Fases 225 a 229): a lanterna de ferro num pau na ré de cada navio, acesa à noite; plano em `docs/plano_fase225.md` |
 | 226 — Fardos de lã (nossa) | **feita em 01/11/2026**: os fardos de juta amarrados com cordas, o cepo de tosquia com a tesoura e o velo solto no lado das fazendas de ovelhas; plano em `docs/plano_fase226.md` |
+| 227 — Lamaçal do chiqueiro (nossa) | **feita em 01/11/2026**: a poça de lama escura e molhada com a orla pisada e os torrões em cada pasto das fazendas de porcos, sem capim dentro; plano em `docs/plano_fase227.md` |
 
 Pendências já vistas para fases futuras:
 

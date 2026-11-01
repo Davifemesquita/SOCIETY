@@ -232,6 +232,8 @@ var linen_view: LinenView
 var sundial_view: SundialView
 ## Fase 226: os fardos de lã, o cepo de tosquia e o velo no lado de cada fazenda de ovelhas.
 var wool_bale_view: WoolBaleView
+## Fase 227: a poça de lama em cada pasto das fazendas de porcos.
+var mud_wallow_view: MudWallowView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -711,6 +713,10 @@ func _ready() -> void:
 	wool_bale_view.name = "WoolBales"
 	add_child(wool_bale_view)
 	wool_bale_view.setup(simulation)
+	mud_wallow_view = MudWallowView.new()
+	mud_wallow_view.name = "MudWallows"
+	add_child(mud_wallow_view)
+	mud_wallow_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

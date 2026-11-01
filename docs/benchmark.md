@@ -2295,3 +2295,9 @@ morcego.
 A máquina seguiu no estado rápido: 77,2 FPS (225: 77,0), 1% low 39,0, p50/p95/p99 12,2/17,5/23,9 ms, GPU 11,9 ms, montar tudo
 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem fazenda de ovelhas). Neutra.
+
+## Fase 227 — lamaçal do chiqueiro (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,1 FPS (226: 77,2), 1% low 39,5, p50/p95/p99 12,3/17,4/23,8 ms, GPU 12,0 ms, montar tudo
+9,4 s, carregar 6,2 s, construir com a ilha cheia 17,4 ms; +1 objeto e draw call (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem fazenda de porcos). Neutra.
