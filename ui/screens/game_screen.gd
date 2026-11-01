@@ -192,6 +192,8 @@ var cat_view: CatView
 var well_view: WellView
 ## Fase 202: o secadouro com os peixes pendurados ao lado das cabanas de pesca das ilhas temperadas.
 var fish_rack_view: FishRackView
+## Fase 203: o carrinho de feira com a fruta e o guarda-sol junto de cada mercado.
+var market_cart_view: MarketCartView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -591,6 +593,10 @@ func _ready() -> void:
 	fish_rack_view.name = "FishRacks"
 	add_child(fish_rack_view)
 	fish_rack_view.setup(simulation)
+	market_cart_view = MarketCartView.new()
+	market_cart_view.name = "MarketCarts"
+	add_child(market_cart_view)
+	market_cart_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

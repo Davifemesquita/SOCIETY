@@ -106,6 +106,8 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 			ids.append(id)
 	ids.sort()
 	var taken := WaterPumpView.taken_cells(world, data, island_id)
+	for cell: Vector2i in MarketCartView.cells(world, data, island_id):
+		taken[cell] = true
 	for cell: Vector2i in WaterPumpView.cells(world, data, island_id):
 		taken[cell] = true
 	return WaterPumpView.beside_street(world, data, island_id, ids, taken)

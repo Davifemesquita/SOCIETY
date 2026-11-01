@@ -2791,6 +2791,13 @@ Regras que já custaram investigação:
   `rack_mesh` (as varas em X e os peixes de `_fish`, lâminas dos dois lados), num MultiMesh. Captura em
   `tools/capture_phase202.tscn`.
 
+### Carrinho de feira (Fase 203, nossa)
+
+- **Plano** em `docs/plano_fase203.md`. `MarketCartView` (`GameScreen.market_cart_view`): `cells` (a célula da rua ao lado de cada
+  mercado, pela busca da bomba) e `cart_mesh`, num MultiMesh. **Peça que usa `WaterPumpView.taken_cells` não pode entrar nela**
+  (a lista chamaria a si mesma): a bomba e o poço desviam do carrinho à parte, nas buscas deles. Captura em
+  `tools/capture_phase203.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3004,6 +3011,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 200 — Gato na porta (nossa) | **feita em 01/11/2026**, primeira do roteiro gato, poço e carrinho (Fases 200 a 204): um gato ruivo, preto, cinza, branco ou creme sentado ao lado da porta de parte das casas (as que não têm cão), virando a cabeça de vez em quando; plano em `docs/plano_fase200.md` |
 | 201 — Poço da vila (nossa) | **feita em 01/11/2026**: o poço de pedra em fiadas com o telhadinho de duas águas, o sarilho e o balde numa célula livre junto da rua, ao lado de parte das casas dos camponeses; plano em `docs/plano_fase201.md` |
 | 202 — Secadouro de peixe (nossa) | **feita em 01/11/2026**: as varas cruzadas com os peixes abertos pendurados secando, do lado da terra de cada cabana de pesca das ilhas temperadas; plano em `docs/plano_fase202.md` |
+| 203 — Carrinho de feira (nossa) | **feita em 01/11/2026**: o carrinho de mão de duas rodas com o tabuleiro de frutas e verduras e o guarda-sol listrado, numa célula junto da rua ao lado de cada mercado; plano em `docs/plano_fase203.md` |
 
 Pendências já vistas para fases futuras:
 

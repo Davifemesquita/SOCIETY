@@ -90,7 +90,11 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	if ids.is_empty():
 		return result
 	ids.sort()
-	return beside_street(world, data, island_id, ids, taken_cells(world, data, island_id))
+	var taken := taken_cells(world, data, island_id)
+	# Fase 203: nem no carrinho de feira (fica fora de taken_cells: o carrinho usa a lista)
+	for cell: Vector2i in MarketCartView.cells(world, data, island_id):
+		taken[cell] = true
+	return beside_street(world, data, island_id, ids, taken)
 
 
 ## As células que outras peças já tomam em volta das casas e dos serviços (o largo, a alameda, as mesas, os silos, as hortas,
