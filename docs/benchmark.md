@@ -2261,3 +2261,10 @@ A máquina seguiu no estado rápido: 77,2 FPS (220: 77,3), 1% low 38,5, p50/p95/
 9,5 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (as pilhas da cidade do benchmark ficam fora do quadro medido). A primeira rodada deu o carregar em 6,5 s: cada
 pátio de lado refazia as buscas dos de antes; com elas guardadas (`SideYard.remember`) voltou a 6,1. Neutra.
+
+## Fase 222 — covos no cais (01/11/2026)
+
+A máquina seguiu no estado rápido: 78,1 FPS (221: 77,2), 1% low 39,3, p50/p95/p99 12,1/17,3/24,1 ms, GPU 11,9 ms, montar tudo
+9,5 s, carregar 6,2 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e +0,10 milhão de primitivas no
+quadro com tudo visível (as pilhas dos cais das colônias). A primeira malha (arcos de seis lanços, o cabo em catorze, as boias
+de dez lados) punha +0,16 milhão e deu 76,9 FPS; com menos faces, neutra.

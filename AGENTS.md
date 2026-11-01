@@ -2928,6 +2928,13 @@ Regras que já custaram investigação:
   `VertexShapes.cylinder`. **As buscas de lado ficam guardadas** (`SideYard.remember`, na memória da Fase 204): pátio novo
   de lado chama `sites` por ela. Captura em `tools/capture_phase221.tscn`.
 
+### Covos no cais (Fase 222, nossa)
+
+- **Plano** em `docs/plano_fase222.md`. `LobsterPotView` (`GameScreen.lobster_pot_view`): `pots` (nos primeiros lanços livres do cais
+  de pedra, até `PILES_PER_POST` afastadas, longe das outras peças do cais e dos bancos) e `pot_mesh` (covos de vime em meia-lua, o
+  cabo enrolado e as boias), num MultiMesh. **Peça nova do cais procura lanço livre**: os restos fixos (bancos, cabeços) já se
+  sobrepõem a lampiões, mastros e escadas. Captura em `tools/capture_phase222.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3160,6 +3167,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 219 — Balanço e gangorra na escola (nossa) | **feita em 01/11/2026**, a última do roteiro tábua, cortina e andorinha: o balanço de madeira com dois assentos nas cordas e a gangorra pintada no lado de cada escola; a busca do lado livre virou o `SideYard`; plano em `docs/plano_fase219.md` |
 | 220 — Bomba de incêndio no quartel (nossa) | **feita em 01/11/2026**, primeira do roteiro bomba, barril e lençol (Fases 220 a 224): a bomba de mão vermelha sobre rodas com os cilindros de latão e os braços dos bombeadores, o carretel da mangueira, a escada e os baldes de couro no lado de cada quartel; plano em `docs/plano_fase220.md` |
 | 221 — Barris na cervejaria (nossa) | **feita em 01/11/2026**: a pirâmide de barris deitados sobre os calços e dois barris de pé com o funil no lado da cervejaria, das destilarias e da adega; plano em `docs/plano_fase221.md` |
+| 222 — Covos no cais (nossa) | **feita em 01/11/2026**: pilhas de covos de vime em meia-lua com o cabo enrolado e as boias de cortiça nos lanços livres do cais de pedra dos entrepostos; plano em `docs/plano_fase222.md` |
 
 Pendências já vistas para fases futuras:
 

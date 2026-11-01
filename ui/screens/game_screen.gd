@@ -224,6 +224,8 @@ var playground_view: PlaygroundView
 var fire_pump_view: FirePumpView
 ## Fase 221: a pirâmide de barris no lado da cervejaria, das destilarias e da adega.
 var barrel_rack_view: BarrelRackView
+## Fase 222: as pilhas de covos, o cabo enrolado e as boias em parte dos lanços do cais de pedra.
+var lobster_pot_view: LobsterPotView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -687,6 +689,10 @@ func _ready() -> void:
 	barrel_rack_view.name = "BarrelRacks"
 	add_child(barrel_rack_view)
 	barrel_rack_view.setup(simulation)
+	lobster_pot_view = LobsterPotView.new()
+	lobster_pot_view.name = "LobsterPots"
+	add_child(lobster_pot_view)
+	lobster_pot_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
