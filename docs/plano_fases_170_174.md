@@ -17,3 +17,10 @@ modelo, textura, arquivo ou medida do jogo; tudo gerado no código.
 | 174 — Banco na porta | o banco de tábua encostado na parede da frente, ao lado da porta, de parte das casas dos camponeses |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase170.md` a
+`docs/plano_fase174.md`), testes, captura e benchmark (173 e 174 medidas juntas). Diferenças do roteiro: a lenha (171) e o
+banco (174) pediram uma rua nova de casas espaçadas na captura das ruas (com as casas coladas não há célula do lado); o banco
+fica dentro do quintal cercado, além dos vasos da porta.

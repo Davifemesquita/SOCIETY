@@ -2583,6 +2583,17 @@ Regras que já custaram investigação:
   prédio de produção a cada `BARROW_EVERY`, no pátio da Fase 165; o recheio e as bombas a deixam) e `barrow_mesh`, num
   MultiMesh. Captura em `tools/capture_phase172.tscn`.
 
+### Tina de lavar (Fase 173, nossa)
+
+- **Plano** em `docs/plano_fase173.md`. Na `YardView`, `tub_place` (ao lado de cada varal, mais para longe da casa) e `tub_mesh`
+  num MultiMesh `Washtubs` (`tub_count`, `tub_transform`). Captura: `tina_de_lavar.png` no `tools/capture_phase95.tscn`.
+
+### Banco na porta (Fase 174, nossa)
+
+- **Plano** em `docs/plano_fase174.md`. `DoorBenchView` (`GameScreen.door_bench_view`): `spot` (no quintal cercado da frente de
+  parte das casas dos camponeses, encostado na parede além dos vasos, no lugar do modelo) e `bench_mesh`, num MultiMesh. Captura:
+  `banco_na_porta.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2766,6 +2777,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 170 — Barranco de terra vermelha (nossa) | **feita em 31/10/2026**, primeira do roteiro laterita, lenha e carrinho (Fases 170 a 174): a margem dos rios das ilhas tropicais em laterita vermelha, no lugar da lama escura; plano em `docs/plano_fase170.md` |
 | 171 — Lenha na parede (nossa) | **feita em 31/10/2026**: a pilha de lenha rachada com a cobertura de tábuas encostada na parede do lado de parte das casas dos camponeses e operários; plano em `docs/plano_fase171.md` |
 | 172 — Carrinho de mão (nossa) | **feita em 31/10/2026**: o carrinho de mão de madeira parado no pátio de chão batido atrás de metade das oficinas; plano em `docs/plano_fase172.md` |
+| 173 — Tina de lavar (nossa) | **feita em 31/10/2026**: a tina de aduelas com a água ensaboada e a tábua de esfregar ao lado de cada varal; plano em `docs/plano_fase173.md` |
+| 174 — Banco na porta (nossa) | **feita em 31/10/2026**, a última do roteiro laterita, lenha e carrinho: o banco de tábua encostado na parede da frente, no quintal cercado de parte das casas dos camponeses; plano em `docs/plano_fase174.md` |
 
 Pendências já vistas para fases futuras:
 
