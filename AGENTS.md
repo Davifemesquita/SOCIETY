@@ -2836,6 +2836,13 @@ Regras que já custaram investigação:
   lado da tecelagem, o de trás primeiro, como o pátio de tijolos da Fase 159; o recheio e as bombas as deixam) e `tenter_mesh`,
   num MultiMesh. Captura: `ramas_de_tecido.png` no `tools/capture_phase95.tscn`.
 
+### Lanterna nas carroças (Fase 209, nossa)
+
+- **Plano** em `docs/plano_fase209.md`. `CartView.lantern_mesh`, `lantern_glass_mesh` e `with_lantern` (a armação e o vidro como
+  superfícies a mais da malha do corpo, no `night_glow` com o alfa 0 do vértice marcando o vidro). **Peça presa num objeto que
+  anda vai na malha dele**: camada própria reposicionada a cada quadro custa caro com centenas de instâncias. Captura em
+  `tools/capture_phase209.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3055,6 +3062,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 206 — Bebedouro de cavalos (nossa) | **feita em 01/11/2026**: o cocho comprido de pedra com a água, a coluna da bica e a argola de amarrar, encostado na parede do lado de cada taverna, ao lado das mesas; plano em `docs/plano_fase206.md` |
 | 207 — Pinheiro-anão na encosta (nossa) | **feita em 01/11/2026**: pinheiros baixos e tortos, com as almofadas de agulhas achatadas pelo vento, agarrados nas encostas íngremes das ilhas temperadas; plano em `docs/plano_fase207.md` |
 | 208 — Rama de tecido (nossa) | **feita em 01/11/2026**: duas ramas de madeira com os panos tingidos de garança e anil esticados secando, numa fila de três células atrás de cada tecelagem; plano em `docs/plano_fase208.md` |
+| 209 — Lanterna nas carroças (nossa) | **feita em 01/11/2026**, a última do roteiro estandarte, bebedouro e lanterna: a lanterna de ferro pendurada num braço na frente de cada carroça, acesa à noite, na própria malha da carroça; plano em `docs/plano_fase209.md` |
 
 Pendências já vistas para fases futuras:
 

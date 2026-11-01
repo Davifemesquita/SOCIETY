@@ -2171,3 +2171,11 @@ quadro com tudo visível (os pinheiros nos trechos à vista). Neutra.
 CPU do render 1,6 ms, tick 0,14 ms (tudo mais lento junto). No mesmo estado, **sem a rama** (A/B): 71,8 FPS, GPU 12,5 ms.
 Montar tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais
 no quadro com tudo visível (a cidade do benchmark não tem tecelagem). Neutra.
+
+## Fase 209 — lanterna nas carroças (01/11/2026)
+
+A máquina seguiu no estado lento da Fase 208: 71,6 FPS (sem a lanterna, no mesmo estado: 71,8), 1% low 38,6, p50/p95/p99
+13,2/17,7/24,6 ms, GPU 12,6 ms, montar tudo 9,4 s, carregar 6,0 s, construir com a ilha cheia 17,7 ms; +10 objetos e draw
+calls (as duas superfícies a mais da malha das carroças) e +66 mil primitivas no quadro com tudo visível (200 carroças). A
+primeira versão, com a lanterna em duas camadas próprias reposicionadas a cada quadro, deu 71,1. Neutra; fecha o roteiro
+estandarte, bebedouro e lanterna.

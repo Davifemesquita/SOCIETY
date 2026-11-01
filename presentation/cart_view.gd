@@ -16,6 +16,11 @@ const BED_M := 0.8
 const CARGO_SCALE := 0.75
 const CARGO_SLOTS: Array[float] = [-0.45, 0.45]
 const HEIGHT_M := 0.5
+## Fase 209: onde fica o vidro da lanterna no referencial da carroça (o mesmo do corpo, com a origem HEIGHT_M acima do chão): na
+## ponta do braço que sai para a frente da haste no canto da frente, à esquerda.
+const LANTERN_AT := Vector3(-0.42, 0.98, -0.86)
+const LANTERN_IRON := Color(0.14, 0.14, 0.15)
+const LANTERN_POLE := Color(0.35, 0.26, 0.18)
 const MODEL_PATH := "res://assets/models/props/cart.glb"
 const MODEL_TEXTURE := "res://assets/models/props/Textures/colormap.png"
 ## Comprimento da carroça de modelo no mundo, e o giro que põe a frente dela (os varais) em −Z (para
@@ -84,7 +89,8 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 		body_material.albedo_color = BODY_COLOR
 		box.material = body_material
 		body = box
-	_bodies.multimesh = _multimesh(body, false)
+	# Fase 209: a lanterna vai na malha do corpo
+	_bodies.multimesh = _multimesh(with_lantern(body), false)
 	var cargo := BoxMesh.new()
 	cargo.size = CARGO_SIZE
 	var cargo_material := StandardMaterial3D.new()
@@ -268,6 +274,65 @@ static func _arch(tool: SurfaceTool, radius: float, from: float, to: float, colo
 
 static func _arch_point(radius: float, angle: float, z: float) -> Vector3:
 	return Vector3(cos(angle) * radius, CANVAS_FOOT_M + sin(angle) * radius * CANVAS_RISE, z)
+
+
+
+## A haste de madeira no canto da frente da caçamba, o braço de ferro para a frente e a armação da lanterna pendurada nele (os
+## quatro montantes, a base, o chapéu de quatro águas e a argola), no referencial da instância da carroça.
+static func lantern_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var foot := Vector3(LANTERN_AT.x, 0.2, -0.6)
+	var top := Vector3(LANTERN_AT.x, LANTERN_AT.y + 0.32, -0.6)
+	VertexShapes.strut(tool, foot, top, 0.025, 0.025, LANTERN_POLE)
+	VertexShapes.strut(tool, top, Vector3(LANTERN_AT.x, top.y, LANTERN_AT.z), 0.012, 0.012, LANTERN_IRON)
+	VertexShapes.strut(tool, Vector3(LANTERN_AT.x, top.y, LANTERN_AT.z), LANTERN_AT + Vector3(0.0, 0.14, 0.0), 0.006, 0.006,
+			LANTERN_IRON)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		var x := corner.x * 0.055
+		var z := corner.y * 0.055
+		VertexShapes.strut(tool, LANTERN_AT + Vector3(x, -0.08, z), LANTERN_AT + Vector3(x, 0.08, z), 0.008, 0.008, LANTERN_IRON)
+	VertexShapes.box(tool, LANTERN_AT + Vector3(0.0, -0.09, 0.0), Vector3(0.07, 0.012, 0.07), LANTERN_IRON)
+	var peak := LANTERN_AT + Vector3(0.0, 0.17, 0.0)
+	var eave: Array[Vector3] = [LANTERN_AT + Vector3(-0.07, 0.09, -0.07), LANTERN_AT + Vector3(0.07, 0.09, -0.07),
+			LANTERN_AT + Vector3(0.07, 0.09, 0.07), LANTERN_AT + Vector3(-0.07, 0.09, 0.07)]
+	for k: int in 4:
+		VertexShapes.tri(tool, eave[k], eave[(k + 1) % 4], peak, LANTERN_IRON)
+		VertexShapes.tri(tool, eave[k], peak, eave[(k + 1) % 4], LANTERN_IRON)
+	tool.generate_normals()
+	var mesh := tool.commit()
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	material.vertex_color_is_srgb = true
+	material.roughness = 0.6
+	mesh.surface_set_material(0, material)
+	return mesh
+
+
+## O vidro da lanterna, no material dos lampiões da rua (shaders/night_glow.gdshader: apagado de dia, aceso à noite). O vidro
+## é marcado pelo alfa 0 da cor do vértice (a chama é 1): a camada das carroças não tem cor de instância.
+static func lantern_glass_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	VertexShapes.box(tool, LANTERN_AT, Vector3(0.05, 0.075, 0.05), Color(LampView.LAMP_COLOR, 0.0))
+	tool.generate_normals()
+	var mesh := tool.commit()
+	mesh.surface_set_material(0, LampView._glow_material())
+	return mesh
+
+
+## Fase 209: o corpo da carroça com a lanterna (a armação e o vidro) nas superfícies de depois: a lanterna anda com o corpo, na
+## mesma instância, sem camada nem conta a mais a cada quadro (com 200 carroças na rua, duas camadas a mais custavam ~0,7 FPS).
+static func with_lantern(body: Mesh) -> ArrayMesh:
+	var result := ArrayMesh.new()
+	for part: Mesh in [body, lantern_mesh(), lantern_glass_mesh()]:
+		for surface: int in part.get_surface_count():
+			result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, part.surface_get_arrays(surface))
+			var material := part.surface_get_material(surface)
+			if part is PrimitiveMesh and material == null:
+				material = (part as PrimitiveMesh).material
+			result.surface_set_material(result.get_surface_count() - 1, material)
+	return result
 
 
 ## Fase 158: quantas carroças de lona estão na rua.
