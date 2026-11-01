@@ -3028,6 +3028,13 @@ Regras que já custaram investigação:
   até o cepo e a pata tocarem o chão), num MultiMesh. **As peças do cais de pedra já tomam todos os lanços junto da beira**: peça
   nova procura o fundo do cais. Captura em `tools/capture_phase236.tscn`.
 
+### Marco de légua (Fase 237, nossa)
+
+- **Plano** em `docs/plano_fase237.md`. `MilestoneView` (`GameScreen.milestone_view`): `stones` (célula de terra do desenho
+  `posmod(7x + 13y, STONE_EVERY)`, no meio de um trecho reto de `RUN_CELLS` para cada lado, fora das vilas pela regra das placas e
+  dos postes de fio; na beira do lado livre, a face para a estrada) e `stone_mesh`, num MultiMesh. **As estradas retas e compridas
+  são raras no relevo da semente 1840**: a captura (`tools/capture_phase237.tscn`) procura onde a obra passa.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3275,6 +3282,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 234 — Fogareiro de castanhas (nossa) | **feita em 01/11/2026**, a última do roteiro sinal, cormorão e castanha: o carrinho do vendedor de castanhas com o fogareiro de ferro e as brasas acesas à noite no canto de parte das esquinas calçadas; plano em `docs/plano_fase234.md` |
 | 235 — Cervos na beira da mata (nossa) | **feita em 01/11/2026**, primeira do roteiro cervo, âncora e marco (Fases 235 a 239): grupos de corças com um veado de galhada pastando na beira da mata das ilhas temperadas, longe das vilas, erguendo a cabeça de vez em quando; plano em `docs/plano_fase235.md` |
 | 236 — Âncora no cais (nossa) | **feita em 01/11/2026**: a âncora velha de ferro deitada com um braço erguido, o cepo de madeira e a amarra enrolada ao lado, no fundo do cais de pedra de cada entreposto; plano em `docs/plano_fase236.md` |
+| 237 — Marco de légua (nossa) | **feita em 01/11/2026**: o marco de pedra de topo redondo com a inscrição e o musgo no pé na beira das estradas de terra retas e compridas fora das vilas, um a cada 23 células; plano em `docs/plano_fase237.md` |
 
 Pendências já vistas para fases futuras:
 

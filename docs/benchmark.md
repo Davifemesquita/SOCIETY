@@ -2363,3 +2363,9 @@ estado lento (233: 69,5 FPS e GPU 13,0).
 A máquina seguiu no estado lento: 70,1 FPS (235: 70,2), 1% low 36,7, p50/p95/p99 13,5/18,0/25,5 ms, GPU 13,0 ms, montar tudo 9,4 s,
 carregar 6,3 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada, com as passadas de sombra) e +22 mil
 primitivas no quadro com tudo visível (as âncoras dos cais das colônias). Neutra.
+
+## Fase 237 — marco de légua (01/11/2026)
+
+A máquina seguiu no estado lento: 70,9 FPS (236: 70,1), 1% low 36,6, p50/p95/p99 13,4/18,0/25,4 ms, GPU 12,9 ms, montar tudo 9,4 s,
+carregar 6,3 s, construir com a ilha cheia 17,0 ms; +5 objetos e draw calls (a camada) e +5 mil primitivas no quadro com tudo
+visível (a cidade do benchmark quase não tem estrada reta e comprida fora da vila). Neutra.
