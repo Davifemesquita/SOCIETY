@@ -2701,6 +2701,13 @@ Regras que já custaram investigação:
   quatro deitadas, a cabeça para o mar); o corpo parado (`body_mesh`) e a cabeça (`head_mesh`) erguendo pelo `head_lift`, em
   dois MultiMesh. Captura em `tools/capture_phase189.tscn`.
 
+### Colmeias de palha (Fase 190, nossa)
+
+- **Plano** em `docs/plano_fase190.md`, primeira do roteiro `docs/plano_fases_190_194.md` (colmeia, pombal e varal; o Anno não foi
+  aberto: o dono estava no PC). `BeehiveView` (`GameScreen.beehive_view`): `cells` (a célula livre do lado de −X das fazendas de
+  `FARMS`, o oposto das medas) e `hive_mesh` (o banco com três colmeias de palha), e as abelhas no `shaders/bee.gdshader`. O
+  recheio deixa a célula. As capturas das Fases 191 e 193 herdam o `tools/capture_phase190.gd` (`_shoot`, `_away_from_farm`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2901,6 +2908,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 187 — Placa na encruzilhada (nossa) | **feita em 01/11/2026**: o poste de madeira com uma tábua em seta apontando cada estrada nos cruzamentos e entroncamentos das estradas de terra fora das vilas; plano em `docs/plano_fase187.md` |
 | 188 — Arco-íris (nossa) | **feita em 01/11/2026**: o arco-íris no céu do lado oposto ao sol logo depois da chuva, sumindo em pouco mais de uma hora; plano em `docs/plano_fase188.md` |
 | 189 — Focas nas pedras (nossa) | **feita em 01/11/2026**, a última do roteiro hera, estaca e arco-íris: grupos de focas malhadas deitadas na costa baixa das ilhas temperadas, longe das vilas, viradas para o mar, erguendo a cabeça de tempos em tempos; plano em `docs/plano_fase189.md` |
+| 190 — Colmeias de palha (nossa) | **feita em 01/11/2026**, primeira do roteiro colmeia, pombal e varal (Fases 190 a 194): o banco com três colmeias de palha trançada ao lado das fazendas de lúpulo, vinhedo e batata, com as abelhas zunindo em volta de dia; plano em `docs/plano_fase190.md` |
 
 Pendências já vistas para fases futuras:
 

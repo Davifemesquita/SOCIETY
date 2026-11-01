@@ -166,6 +166,8 @@ var signpost_view: SignpostView
 var rainbow_view: RainbowView
 ## Fase 189: as focas deitadas na costa baixa das ilhas temperadas, longe das vilas.
 var seal_view: SealView
+## Fase 190: as colmeias de palha com as abelhas ao lado de parte das fazendas.
+var beehive_view: BeehiveView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -513,6 +515,10 @@ func _ready() -> void:
 	seal_view.name = "Seals"
 	add_child(seal_view)
 	seal_view.setup(simulation)
+	beehive_view = BeehiveView.new()
+	beehive_view.name = "Beehives"
+	add_child(beehive_view)
+	beehive_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
