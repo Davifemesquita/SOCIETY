@@ -2824,6 +2824,12 @@ Regras que já custaram investigação:
   buscas de célula se consultam em cadeia** (as mesas, os silos, as medas, a lista das tomadas): antes de fazer uma peça
   desviar de outra, confira que a outra não chega nela, senão a busca chama a si mesma. Captura em `tools/capture_phase206.tscn`.
 
+### Pinheiro-anão na encosta (Fase 207, nossa)
+
+- **Plano** em `docs/plano_fase207.md`. `ScatterView.Kind.ROCK_PINE` (no fim do enum e das listas `OPEN` e `NEAR_FOREST`, entre as
+  `PLANTS`) só nas células de desnível `ROCK_PINE_MIN_RELIEF_M` das temperadas, de pé; `rock_pine_mesh`. Captura em
+  `tools/capture_phase207.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3041,6 +3047,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 204 — Guarda-sol de palha (nossa) | **feita em 01/11/2026**, a última do roteiro gato, poço e carrinho: guarda-sóis de folha de palmeira com o banco de toras na areia em volta do entreposto e das cabanas de pesca das ilhas tropicais, além do cais de pedra; e as buscas junto da rua guardadas até a próxima obra (o carregar voltou de 6,4 para 6,0 s); plano em `docs/plano_fase204.md` |
 | 205 — Estandartes na fachada (nossa) | **feita em 01/11/2026**, primeira do roteiro estandarte, bebedouro e lanterna (Fases 205 a 209): estandartes de rabo de andorinha na cor do prédio, com o galão dourado, pendurados num braço de ferro de cada lado da porta da prefeitura, do teatro, da universidade, do museu e da escola, balançando com o vento; plano em `docs/plano_fase205.md` |
 | 206 — Bebedouro de cavalos (nossa) | **feita em 01/11/2026**: o cocho comprido de pedra com a água, a coluna da bica e a argola de amarrar, encostado na parede do lado de cada taverna, ao lado das mesas; plano em `docs/plano_fase206.md` |
+| 207 — Pinheiro-anão na encosta (nossa) | **feita em 01/11/2026**: pinheiros baixos e tortos, com as almofadas de agulhas achatadas pelo vento, agarrados nas encostas íngremes das ilhas temperadas; plano em `docs/plano_fase207.md` |
 
 Pendências já vistas para fases futuras:
 

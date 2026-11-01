@@ -22,9 +22,11 @@ extends Node3D
 ## NEAR_FOREST e NEAR_SEA, só nas células de encosta (desnível de SCREE_MIN_RELIEF_M entre os cantos).
 ## Fase 167: o capim alto (TALL_GRASS), uma touceira de folhas altas e espigadas que cobre a célula, no fim da lista OPEN, só nas
 ## manchas do ruído dele (tall_grass_patch), fora dos canteiros de papoulas e das tropicais.
+## Fase 207: o pinheiro-anão (ROCK_PINE), baixo e torto, com as almofadas de agulhas achatadas pelo vento, no fim das listas OPEN
+## e NEAR_FOREST, só nas encostas íngremes (desnível de ROCK_PINE_MIN_RELIEF_M entre os cantos) das temperadas.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -34,10 +36,10 @@ const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
-		Kind.SNAG, Kind.DRIFTWOOD]
+		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS]
+		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -59,7 +61,7 @@ const YARD_BARK := Color(0.32, 0.24, 0.17)
 const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
-		[Kind.SCREE, SCREE_CHANCE]]
+		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
@@ -84,7 +86,7 @@ const SNAG_HEIGHT_M := 4.2
 const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
-		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE]]
+		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE]]
 ## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
 ## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
 ## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
@@ -102,6 +104,14 @@ const REED_GREEN := Color(0.3, 0.44, 0.18)
 const REED_DRY := Color(0.58, 0.55, 0.32)
 const CATTAIL := Color(0.33, 0.21, 0.12)
 const TALL_GRASS_CHANCE := 0.9
+## Fase 207: o pinheiro-anão — a chance por célula de encosta (depois do cascalho e do capim alto), o desnível mínimo da célula
+## (mais íngreme que o do cascalho), a altura e as cores (a casca e as agulhas em dois verdes escuros).
+const ROCK_PINE_CHANCE := 0.16
+const ROCK_PINE_MIN_RELIEF_M := 1.4
+const ROCK_PINE_HEIGHT_M := 2.2
+const ROCK_PINE_BARK := Color(0.36, 0.26, 0.2)
+const ROCK_PINE_NEEDLES := Color(0.12, 0.24, 0.12)
+const ROCK_PINE_NEEDLES_LIGHT := Color(0.18, 0.31, 0.15)
 const TALL_GRASS_PATCH_CELLS := 7.0
 const TALL_GRASS_THRESHOLD := 0.66
 const TALL_GRASS_BLADES := 26
@@ -597,11 +607,14 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.SCREE and cell_relief(grid, cell) < SCREE_MIN_RELIEF_M:
 			# o cascalho só escorre pela encosta
 			continue
+		elif kind == Kind.ROCK_PINE and (tropical or cell_relief(grid, cell) < ROCK_PINE_MIN_RELIEF_M):
+			# o pinheiro-anão só agarrado nas encostas íngremes das temperadas
+			continue
 		elif kind == Kind.TALL_GRASS and (tropical or not tall_grass_patch(island_id, cell) or poppy_patch(island_id, cell)):
 			# o capim alto só nas manchas dele das temperadas, e não por cima das papoulas
 			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG:
+		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG or kind == Kind.ROCK_PINE:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
 		elif kind == Kind.POPPIES or kind == Kind.TALL_GRASS:
@@ -625,7 +638,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD:
@@ -641,6 +654,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			var normal := cell_normal(grid, cell)
 			basis = Basis(Quaternion(Vector3.UP, normal)) * basis
 			y -= 0.04
+		elif kind == Kind.ROCK_PINE:
+			# de pé (a árvore cresce para cima, não com a encosta), o pé enterrado para não ficar no ar do lado de baixo
+			y -= 0.25
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
 
@@ -895,6 +911,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return tall_grass_mesh()
 	if kind == Kind.REEDS:
 		return reeds_mesh()
+	if kind == Kind.ROCK_PINE:
+		return rock_pine_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1034,5 +1052,34 @@ static func snag_mesh() -> ArrayMesh:
 		var twig_root := foot.lerp(tip, 0.6)
 		var side := Vector3(-out.z, 0.0, out.x) * (1.0 if k % 2 == 0 else -1.0)
 		VertexShapes.cylinder(tool, twig_root, twig_root + side * 0.45 + Vector3(0.0, 0.4, 0.0), 0.022, SNAG_WOOD, 4)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 207: o pinheiro-anão com o pé em y = 0 — o tronco baixo e torto em três lances, um galho comprido deitado para o lado
+## (o vento das encostas o empurra) e as almofadas de agulhas achatadas no alto, na ponta do galho e no meio, em dois verdes.
+static func rock_pine_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var h := ROCK_PINE_HEIGHT_M
+	var joints: Array[Vector3] = [Vector3(0.0, -0.3, 0.0), Vector3(0.22, h * 0.32, 0.08), Vector3(0.08, h * 0.62, 0.3),
+			Vector3(0.32, h * 0.9, 0.26)]
+	var radii: Array[float] = [0.14, 0.1, 0.07, 0.045]
+	for k: int in 3:
+		VertexShapes.cylinder(tool, joints[k], joints[k + 1], radii[k], ROCK_PINE_BARK, 6)
+	var branch_tip := Vector3(-0.95, h * 0.6, 0.05)
+	VertexShapes.cylinder(tool, joints[1].lerp(joints[2], 0.4), branch_tip, 0.05, ROCK_PINE_BARK, 5)
+	var pads: Array[Array] = [[joints[3] + Vector3(0.0, 0.12, 0.0), Vector3(0.62, 0.26, 0.55), ROCK_PINE_NEEDLES],
+			[branch_tip + Vector3(-0.05, 0.08, 0.0), Vector3(0.58, 0.22, 0.46), ROCK_PINE_NEEDLES_LIGHT],
+			[joints[2] + Vector3(0.12, 0.05, 0.05), Vector3(0.46, 0.2, 0.42), ROCK_PINE_NEEDLES_LIGHT],
+			[joints[1] + Vector3(0.12, 0.08, -0.18), Vector3(0.4, 0.18, 0.36), ROCK_PINE_NEEDLES]]
+	for pad: Array in pads:
+		var at: Vector3 = pad[0]
+		var size: Vector3 = pad[1]
+		var color: Color = pad[2]
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(size), at), color)
+		# um tufo menor por cima, mais claro, para a almofada não sair lisa
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(size * Vector3(0.6, 0.7, 0.6)), at + Vector3(0.08, size.y * 0.6,
+				-0.05)), ROCK_PINE_NEEDLES_LIGHT)
 	tool.generate_normals()
 	return tool.commit()
