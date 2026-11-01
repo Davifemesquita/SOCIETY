@@ -2060,3 +2060,10 @@ pombos nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra.
 Mesmo estado (jogo novo 11,8 s): 81,1 FPS (191: 81,0), 1% low 40,8, pior quadro 29 ms, p50/p95/p99 11,7/15,8/23,1 ms, GPU
 11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,5 ms; +2 objetos e draw calls e +49 mil primitivas
 no quadro com tudo visível (os varais das ruas de operários do benchmark). Neutra.
+
+## Fase 193 — carroça de feno parada (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 80,4 FPS (192: 81,1), 1% low 40,0, pior quadro 29 ms, p50/p95/p99 11,8/16,0/23,5 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,2 ms; +10 objetos e draw calls (as carroças e as
+cargas nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra no quadro (GPU igual); o FPS médio segue descendo
+devagar com os objetos a mais deste pedido.

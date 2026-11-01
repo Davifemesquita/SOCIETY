@@ -2721,6 +2721,12 @@ Regras que já custaram investigação:
   beira, a `HEIGHT_M`), o cabo pelo `HarborView.rope_span` e a roupa nas cores do `YardView.CLOTH_COLORS`, numa malha só.
   Captura em `tools/capture_phase192.tscn` (ilha plana, a câmera posta na rua).
 
+### Carroça de feno parada (Fase 193, nossa)
+
+- **Plano** em `docs/plano_fase193.md`. `HayWagonView` (`GameScreen.hay_wagon_view`): `cells` (a célula livre vizinha das medas da
+  Fase 166, numa fazenda a cada `WAGON_EVERY`), `wagon_place` (o `CartView.model_mesh` sem cavalo, tombado para a frente) e
+  `load_mesh` (o feno em camadas moles, `PerchedGullView._blob`). O recheio deixa a célula. Captura em `tools/capture_phase193.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2924,6 +2930,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 190 — Colmeias de palha (nossa) | **feita em 01/11/2026**, primeira do roteiro colmeia, pombal e varal (Fases 190 a 194): o banco com três colmeias de palha trançada ao lado das fazendas de lúpulo, vinhedo e batata, com as abelhas zunindo em volta de dia; plano em `docs/plano_fase190.md` |
 | 191 — Pombal (nossa) | **feita em 01/11/2026**: o pombal de tábua no alto de um poste no canto da frente de metade das fazendas de gado, trigo e batata, com os pombos pousados no telhadinho e nos poleiros; plano em `docs/plano_fase191.md` |
 | 192 — Roupa sobre a rua (nossa) | **feita em 01/11/2026**: o varal com a roupa colorida atravessando no alto a rua de terra entre casas de operários frente a frente; plano em `docs/plano_fase192.md` |
+| 193 — Carroça de feno parada (nossa) | **feita em 01/11/2026**: a carroça carregada de feno, sem o cavalo, tombada para a frente com os varais no chão, ao lado das medas de metade das fazendas; plano em `docs/plano_fase193.md` |
 
 Pendências já vistas para fases futuras:
 

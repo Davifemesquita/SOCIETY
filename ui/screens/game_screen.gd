@@ -172,6 +172,8 @@ var beehive_view: BeehiveView
 var dovecote_view: DovecoteView
 ## Fase 192: o varal com a roupa atravessando a rua entre casas de operários frente a frente.
 var street_laundry_view: StreetLaundryView
+## Fase 193: a carroça carregada de feno parada ao lado das medas de parte das fazendas.
+var hay_wagon_view: HayWagonView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -531,6 +533,10 @@ func _ready() -> void:
 	street_laundry_view.name = "StreetLaundry"
 	add_child(street_laundry_view)
 	street_laundry_view.setup(simulation)
+	hay_wagon_view = HayWagonView.new()
+	hay_wagon_view.name = "HayWagons"
+	add_child(hay_wagon_view)
+	hay_wagon_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
