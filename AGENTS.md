@@ -2741,6 +2741,14 @@ Regras que já custaram investigação:
   tombo e o tom pelo hash) e `walls` (o muro baixo nas bordas, aberto no portão), em quatro MultiMesh. O recheio e as bombas
   deixam as células. Captura em `tools/capture_phase195.tscn`.
 
+### Patos na água (Fase 196, nossa)
+
+- **Plano** em `docs/plano_fase196.md`. `DuckView` (`GameScreen.duck_view`): `candidates` (os bandos que o terreno permite, uma vez
+  por mundo: a água rasa da beira de terra baixa e a roda sobre fundo de `RING_FLOOR_M`, a `LAND_CLEAR_M` da terra, fora da
+  espuma da linha d'água), `flocks` (sem os perto dos portos), `pose` e `dabble` (a roda no tempo de jogo, o mergulho girando
+  no peito). **Busca pela grade inteira em GDScript pesa**: leia o `PackedByteArray` direto e pule cedo o que não serve antes de
+  chamar função por célula. Captura em `tools/capture_phase196.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2947,6 +2955,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 193 — Carroça de feno parada (nossa) | **feita em 01/11/2026**: a carroça carregada de feno, sem o cavalo, tombada para a frente com os varais no chão, ao lado das medas de metade das fazendas; plano em `docs/plano_fase193.md` |
 | 194 — Escada do cais (nossa) | **feita em 01/11/2026**, a última do roteiro colmeia, pombal e varal: o lance de degraus de pedra descendo do cais de pedra até dentro da água, encostado no paredão, com a argola de ferro, dos dois lados de cada entreposto; plano em `docs/plano_fase194.md` |
 | 195 — Cemitério da igreja (nossa) | **feita em 01/11/2026**, primeira do roteiro cemitério, pato e rede (Fases 195 a 199): lápides de topo redondo, cruzes e obeliscos em fileiras atrás da igreja, além do largo, umas tombando, dentro de um muro baixo de pedra com o portão virado para ela; plano em `docs/plano_fase195.md` |
+| 196 — Patos na água (nossa) | **feita em 01/11/2026**: bandos de patos nadando em roda na água calma da costa, longe da espuma e dos portos, a pata com os patinhos em fila ou patos e patas juntos, mergulhando a cabeça de vez em quando, de dia; plano em `docs/plano_fase196.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -2083,3 +2083,10 @@ Mesmo estado (jogo novo 11,8 s): 81,5 FPS (194: 80,4), 1% low 41,0, pior quadro 
 11,4 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,1 ms; +20 objetos e draw calls (as três pedras e o
 muro, quatro camadas) e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem igreja). Neutra; abre o
 roteiro cemitério, pato e rede.
+
+## Fase 196 — patos na água (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 80,1 FPS (195: 81,5), 1% low 39,9, pior quadro 30 ms, p50/p95/p99 11,8/16,0/23,3 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,0 ms; +2 objetos e draw calls (as duas camadas, sem
+sombra) e +35 mil primitivas no quadro com tudo visível. A primeira versão da busca dos bandos levava 226 ms e punha ~0,25 s
+no jogo novo e no carregar; com a busca refeita (12 ms) os dois voltaram. Neutra.
