@@ -30,7 +30,7 @@ var _dirty := true
 
 func setup(simulation: Simulation) -> void:
 	_simulation = simulation
-	var material := RockView.material()
+	var material := RockView.sea_material()
 	for variant: int in RockModel.VARIANTS:
 		var layer := MultiMeshInstance3D.new()
 		layer.name = "RiverStones_%d" % variant

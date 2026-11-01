@@ -2659,6 +2659,13 @@ Regras que já custaram investigação:
   de borco ao longo da costa) e `oar_places_of` (os remos do `RowboatView` na areia). O recheio deixa as três células (`cells`,
   no `ScatterView.island_context`). Captura em `tools/capture_phase183.tscn`.
 
+### Limo na pedra (Fase 184, nossa)
+
+- **Plano** em `docs/plano_fase184.md`. `RockView.sea_material` (`shaders/sea_rock.gdshader`: a rocha triplanar de sempre com a faixa
+  de limo e sargaço junto da linha d'água, a pedra molhada acima e a crosta da maré em manchas) nos rochedos, nas rochas da
+  falésia e nos matacões do rio; as pedras soltas dos barrancos e das jazidas seguem com o `RockView.material`. Captura em
+  `tools/capture_phase184.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2853,6 +2860,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 181 — Caixa de correio (nossa) | **feita em 31/10/2026**: a caixa de correio de ferro fundido, redonda e vermelha, com a boca e a plaquinha, encostada na calçada de parte das células das ruas calçadas, virada para a rua; plano em `docs/plano_fase181.md` |
 | 182 — Galo do cata-vento (nossa) | **feita em 31/10/2026**: a haste de ferro com a rosa dos ventos e o galo de bronze recortado no alto da cumeeira das fazendas das ilhas temperadas, virando a cabeça para o lado de onde vem o vento; plano em `docs/plano_fase182.md` |
 | 183 — Barco na areia (nossa) | **feita em 31/10/2026**: o bote de pesca virado de borco na praia, com uma ponta apoiada e os dois remos deitados na areia, ao lado de cada cabana de pesca; plano em `docs/plano_fase183.md` |
+| 184 — Limo na pedra (nossa) | **feita em 31/10/2026**, a última do roteiro borboleta, correio e galo: a faixa escura de limo e sargaço, a pedra molhada e a crosta clara da maré nos rochedos, nas rochas da falésia e nas pedras do rio, junto da linha d'água; plano em `docs/plano_fase184.md` |
 
 Pendências já vistas para fases futuras:
 

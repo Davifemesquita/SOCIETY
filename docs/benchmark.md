@@ -2002,3 +2002,10 @@ fazenda à vista). O carregar vem subindo devagar neste ciclo (5,7 s na 177, 6,0
 Mesmo estado (jogo novo 11,7 s): 82,1 FPS (182: 81,6), 1% low 40,2, pior quadro 35 ms, p50/p95/p99 11,5/15,6/23,0 ms, GPU
 11,3 ms, montar tudo 9,2 s, carregar 5,7 s (182: 6,0: era a oscilação entre rodadas), construir com a ilha cheia 17,0 ms; +10
 objetos e draw calls (os barcos e os remos nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra.
+
+## Fase 184 — limo na pedra (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 81,2 FPS (183: 82,1), 1% low 40,6, pior quadro 34 ms, p50/p95/p99 11,6/15,9/22,8 ms, GPU
+11,4 ms, montar tudo 9,4 s, carregar 5,8 s, construir com a ilha cheia 17,4 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (só o material das rochas do mar mudou). Neutra; fecha o roteiro borboleta, correio e galo, no
+patamar de 81 a 82 FPS (GPU 11,3 a 11,4 ms).

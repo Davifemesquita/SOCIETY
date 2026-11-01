@@ -45,13 +45,13 @@ const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1),
 enum Kind { STACK, CLIFF }
 
 var _counts: Dictionary[int, int] = {}
-var _material: StandardMaterial3D
+var _material: ShaderMaterial
 ## Fase 123: onde o mar bate na rocha (x, z e o raio da rocha), para o borrifo da SurfSprayView.
 var _spray_sites := PackedVector3Array()
 
 
 func setup(terrain: TerrainView, world: WorldState, config: GameConfig) -> void:
-	_material = material()
+	_material = sea_material()
 	for index: int in world.islands.size():
 		var region := terrain.region_heights(index)
 		if region.is_empty():
@@ -114,6 +114,19 @@ static func material() -> StandardMaterial3D:
 	result.uv1_world_triplanar = true
 	result.uv1_scale = Vector3.ONE / TEXTURE_M
 	result.roughness = 0.92
+	return result
+
+
+## Fase 184: a rocha do mar — a mesma textura triplanar com a faixa de limo e alga junto da linha d'água
+## (`shaders/sea_rock.gdshader`): os rochedos, as rochas da falésia e os matacões do rio. As pedras soltas dos barrancos e
+## as das jazidas, longe da água, seguem com o material de sempre.
+static func sea_material() -> ShaderMaterial:
+	var result := ShaderMaterial.new()
+	result.shader = load("res://shaders/sea_rock.gdshader") as Shader
+	result.set_shader_parameter("albedo_height", load("res://assets/terrain/rock_albedo_height.png"))
+	result.set_shader_parameter("normal_roughness", load("res://assets/terrain/rock_normal_roughness.png"))
+	result.set_shader_parameter("tint", TINT)
+	result.set_shader_parameter("texture_m", TEXTURE_M)
 	return result
 
 
