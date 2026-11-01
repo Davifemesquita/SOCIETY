@@ -2639,6 +2639,12 @@ Regras que já custaram investigação:
   árvores dizem a ilha, o demolido sai pela ilha guardada; as borboletas e os vaga-lumes (Fase 178) refazem só ela, com o hash
   aritmético `FireflyView.cell_hash` (o `hash()` de um Array por ponto custava dezenas de ms).
 
+### Caixa de correio (Fase 181, nossa)
+
+- **Plano** em `docs/plano_fase181.md`. `PostBoxView` (`GameScreen.post_box_view`): `spots` (células calçadas do desenho
+  `posmod(7x + 13y, POST_EVERY)`, fora das dos postes de gás e da escada diagonal, no lado da calçada como o poste) e `box_mesh`
+  (sólido de revolução por `_lathe`), num MultiMesh. Captura: `caixa_de_correio.png` no `tools/capture_phase150.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2830,6 +2836,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 178 — Vaga-lumes no prado (nossa) | **feita em 31/10/2026**: enxames de pontinhos de luz verde-amarela vagando baixo e piscando na beira da mata e no capim aberto, longe das casas e das estradas, ao anoitecer e à noite; plano em `docs/plano_fase178.md` |
 | 179 — Juncos na margem (nossa) | **feita em 31/10/2026**, a última do roteiro espantalho, cegonha e vaga-lume: touceiras de junco alto com as espigas marrons da taboa na margem baixa dos rios, balançando com o vento; plano em `docs/plano_fase179.md` |
 | 180 — Borboletas nos canteiros (nossa) | **feita em 31/10/2026**, primeira do roteiro borboleta, correio e galo (Fases 180 a 184): borboletas brancas, amarelas, laranja e azuis esvoaçando e batendo as asas sobre os canteiros de papoulas das ilhas temperadas e no capim aberto das tropicais, de dia; plano em `docs/plano_fase180.md` |
+| 181 — Caixa de correio (nossa) | **feita em 31/10/2026**: a caixa de correio de ferro fundido, redonda e vermelha, com a boca e a plaquinha, encostada na calçada de parte das células das ruas calçadas, virada para a rua; plano em `docs/plano_fase181.md` |
 
 Pendências já vistas para fases futuras:
 

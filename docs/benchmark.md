@@ -1981,3 +1981,11 @@ quadro com tudo visível (as borboletas à vista às 10h). Medido à parte (num 
 cada obra (no quadro seguinte); com o hash aritmético e a refação só da ilha que mudou, a ilha principal leva ~2,4 ms, e os
 vaga-lumes da Fase 178 (~10 ms no arquipélago inteiro à noite) ganharam o mesmo. Neutra; abre o roteiro borboleta, correio e
 galo.
+
+## Fase 181 — caixa de correio (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,0 FPS (180: 82,2), 1% low 41,3, pior quadro 36 ms, p50/p95/p99 11,5/15,8/22,6 ms, GPU
+11,3 ms, montar tudo 9,3 s, carregar 5,8 s; +5 objetos e draw calls (a camada das caixas nas ilhas) e primitivas quase iguais
+no quadro com tudo visível. Construir com a ilha cheia deu 20,5 ms (o de sempre fica entre 17 e 18): a medida é o comando e o
+que as vistas fazem na hora, e a vista nova só escuta a troca de estradas (o mercado do benchmark não mexe nelas). Conferido
+de novo na Fase 182.

@@ -57,6 +57,22 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(_out_dir.path_join("coluna_de_perto.png"))
 		print("capturado coluna_de_perto.png")
+	# Fase 181: a caixa de correio na calçada, de perto, com a câmera posta à mão do lado da rua
+	print("caixas de correio ", _game.post_box_view.box_count())
+	if not _game.post_box_view.places.is_empty():
+		var box := _game.post_box_view.places[0]
+		var eye := box.origin + box.basis.z.normalized() * 3.2 + box.basis.x.normalized() * 1.4 + Vector3(0.0, 1.9, 0.0)
+		_game.avenue_view.visible = false
+		_game.camera.set_process(false)
+		_game.camera.camera.global_transform = Transform3D(Basis.looking_at(box.origin + Vector3(0.0, 0.8, 0.0) - eye,
+				Vector3.UP), eye)
+		for frame: int in 30:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(_out_dir.path_join("caixa_de_correio.png"))
+		print("capturado caixa_de_correio.png")
+		_game.camera.set_process(true)
+		await _shot("caixas_de_correio_longe.png", box.origin, 26.0, 0.8, 6.0)
 	get_tree().quit()
 
 

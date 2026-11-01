@@ -152,6 +152,8 @@ var stork_view: StorkView
 var firefly_view: FireflyView
 ## Fase 180: as borboletas esvoaçando sobre os canteiros de papoulas, de dia.
 var butterfly_view: ButterflyView
+## Fase 181: a caixa de correio de ferro na calçada de parte das ruas calçadas.
+var post_box_view: PostBoxView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -479,6 +481,10 @@ func _ready() -> void:
 	butterfly_view.name = "Butterflies"
 	add_child(butterfly_view)
 	butterfly_view.setup(simulation)
+	post_box_view = PostBoxView.new()
+	post_box_view.name = "PostBoxes"
+	add_child(post_box_view)
+	post_box_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
