@@ -2457,3 +2457,9 @@ A máquina seguiu no estado rápido: 77,5 FPS (250: 77,9), 1% low 39,5, p50/p95/
 tudo 9,3 s, carregar 6,4 s, construir com a ilha cheia 17,6 ms; +15 objetos e draw calls (as três camadas, com as passadas de
 sombra) e +386 mil primitivas no quadro com tudo visível (os grupos das encostas das colônias, com a sombra, como os cervos da
 Fase 235). Neutra.
+
+## Fase 252 — carruagem à porta do teatro (01/11/2026)
+
+A máquina seguiu no estado rápido: 78,1 FPS (251: 77,5), 1% low 38,9, p50/p95/p99 12,1/16,4/24,2 ms, GPU 11,8 ms, montar tudo 9,3 s,
+carregar 6,4 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
+visível (a cidade do benchmark não tem teatro). Neutra.

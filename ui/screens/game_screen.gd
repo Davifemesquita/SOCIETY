@@ -278,6 +278,8 @@ var field_stone_view: FieldStoneView
 var scale_view: ScaleView
 ## Fase 251: as cabras nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra.
 var goat_view: GoatView
+## Fase 252: a carruagem fechada parada sem os cavalos na rua diante de cada teatro.
+var carriage_view: CarriageView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -849,6 +851,10 @@ func _ready() -> void:
 	goat_view.name = "Goats"
 	add_child(goat_view)
 	goat_view.setup(simulation)
+	carriage_view = CarriageView.new()
+	carriage_view.name = "Carriages"
+	add_child(carriage_view)
+	carriage_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

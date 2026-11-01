@@ -3124,6 +3124,12 @@ Regras que já custaram investigação:
   vilas pela regra das focas), `goats` (a primeira na pedra), `head_pitch` e as malhas do corpo, da cabeça e da pedra, em três
   MultiMesh. Captura em `tools/capture_phase251.tscn`.
 
+### Carruagem à porta do teatro (Fase 252, nossa)
+
+- **Plano** em `docs/plano_fase252.md`. `CarriageView` (`GameScreen.carriage_view`): `spot` (a célula de estrada das
+  `Footprint.front_cells` do teatro mais perto do meio da fachada, ao longo da rua) e `carriage_mesh`, num MultiMesh. Captura em
+  `tools/capture_phase252.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3386,6 +3392,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 249 — Montes de pedra nos campos (nossa) | **feita em 01/11/2026**, a última do roteiro coelho, cogumelo e pedra: os montes baixos de pedras tiradas da terra arada num canto da cabeceira de parte dos campos das ilhas temperadas; plano em `docs/plano_fase249.md` |
 | 250 — Balança de carga no armazém (nossa) | **feita em 01/11/2026**, primeira do roteiro balança, cabra e canoa (Fases 250 a 254): a balança decimal de plataforma com os pesos, um saco em cima e os sacos amarrados esperando no lado de cada armazém; plano em `docs/plano_fase250.md` |
 | 251 — Cabras nas encostas (nossa) | **feita em 01/11/2026**: grupos de cabras malhadas de chifres para trás pastando nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra; plano em `docs/plano_fase251.md` |
+| 252 — Carruagem à porta do teatro (nossa) | **feita em 01/11/2026**: a carruagem fechada laqueada de vinho, sem os cavalos, parada na rua diante da entrada de cada teatro; plano em `docs/plano_fase252.md` |
 
 Pendências já vistas para fases futuras:
 
