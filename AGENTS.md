@@ -2912,6 +2912,14 @@ Regras que já custaram investigação:
   `PlaygroundView` (`GameScreen.playground_view`): `sites`/`cells` e `playground_mesh` (o balanço em cavalete e a gangorra), num
   MultiMesh. Captura em `tools/capture_phase219.tscn`.
 
+### Bomba de incêndio no quartel (Fase 220, nossa)
+
+- **Plano** em `docs/plano_fase220.md`, primeira do roteiro `docs/plano_fases_220_224.md` (bomba, barril e lençol; o Anno não foi
+  aberto: o dono estava no PC). `FirePumpView` (`GameScreen.fire_pump_view`): `sites`/`cells` (as duas células de lado do quartel
+  pelo `SideYard`, fora dos pátios de lado de antes; o recheio e as bombas as deixam) e `pump_mesh` (a bomba de mão vermelha com
+  os cilindros de latão e os braços, o carretel, a escada e os baldes na parede), num MultiMesh. Captura em
+  `tools/capture_phase220.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3142,6 +3150,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 217 — Cortinas nas janelas (nossa) | **feita em 01/11/2026**: os dois panos presos dos lados e a sanefa em cada janela das casas, em renda, creme, rosa ou verde-sálvia pela casa, com as pregas; plano em `docs/plano_fase217.md` |
 | 218 — Andorinhas no campanário (nossa) | **feita em 01/11/2026**: um bando de andorinhas de costas azul-escuras e cauda em forquilha dando voltas rápidas em volta da torre de cada igreja, batendo as asas em rajadas, de dia; plano em `docs/plano_fase218.md` |
 | 219 — Balanço e gangorra na escola (nossa) | **feita em 01/11/2026**, a última do roteiro tábua, cortina e andorinha: o balanço de madeira com dois assentos nas cordas e a gangorra pintada no lado de cada escola; a busca do lado livre virou o `SideYard`; plano em `docs/plano_fase219.md` |
+| 220 — Bomba de incêndio no quartel (nossa) | **feita em 01/11/2026**, primeira do roteiro bomba, barril e lençol (Fases 220 a 224): a bomba de mão vermelha sobre rodas com os cilindros de latão e os braços dos bombeadores, o carretel da mangueira, a escada e os baldes de couro no lado de cada quartel; plano em `docs/plano_fase220.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -220,6 +220,8 @@ var coal_heap_view: CoalHeapView
 var swallow_view: SwallowView
 ## Fase 219: o balanço e a gangorra no lado de cada escola.
 var playground_view: PlaygroundView
+## Fase 220: a bomba de incêndio de mão, o carretel, a escada e os baldes no lado de cada quartel.
+var fire_pump_view: FirePumpView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -675,6 +677,10 @@ func _ready() -> void:
 	playground_view.name = "Playgrounds"
 	add_child(playground_view)
 	playground_view.setup(simulation)
+	fire_pump_view = FirePumpView.new()
+	fire_pump_view.name = "FirePumps"
+	add_child(fire_pump_view)
+	fire_pump_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
