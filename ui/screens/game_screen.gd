@@ -244,6 +244,8 @@ var rail_signal_view: RailSignalView
 var cormorant_view: CormorantView
 ## Fase 232: o tapete estendido no peitoril de uma janela de cima de parte das casas.
 var window_rug_view: WindowRugView
+## Fase 233: as cabines de banho de rodas na areia perto dos entrepostos das ilhas temperadas.
+var bathing_machine_view: BathingMachineView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -747,6 +749,10 @@ func _ready() -> void:
 	window_rug_view.name = "WindowRugs"
 	add_child(window_rug_view)
 	window_rug_view.setup(simulation)
+	bathing_machine_view = BathingMachineView.new()
+	bathing_machine_view.name = "BathingMachines"
+	add_child(bathing_machine_view)
+	bathing_machine_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

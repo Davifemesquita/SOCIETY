@@ -2334,3 +2334,9 @@ A máquina seguiu no estado lento: 69,9 FPS (231: 70,8), 1% low 37,7, p50/p95/p9
 tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; +1 objeto e draw call e +6 mil primitivas no quadro com tudo
 visível (os tapetes das casas de operários da cidade do benchmark). A primeira malha (a franja em nove fios, com sombra) punha +50
 mil primitivas e GPU 13,0 ms; com cinco fios e sem sombra, neutra.
+
+## Fase 233 — cabines de banho (01/11/2026)
+
+A máquina seguiu no estado lento: 69,5 FPS (232: 69,9), 1% low 36,6, p50/p95/p99 13,7/18,3/25,1 ms, GPU 13,0 ms (232: 12,9), montar
+tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e +68 mil primitivas no quadro
+com tudo visível (as cabines das praias das colônias, a maior parte nas rodas de raios). Neutra dentro do vaivém do estado lento.
