@@ -2022,3 +2022,10 @@ arco-íris.
 Mesmo estado (jogo novo 11,8 s): 81,6 FPS (185: 81,4), 1% low 41,6, pior quadro 31 ms, p50/p95/p99 11,6/15,8/22,6 ms, GPU
 11,4 ms, montar tudo 9,2 s, carregar 5,9 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls e +48 mil primitivas
 no quadro com tudo visível (os feixes diante dos entrepostos do benchmark). Neutra.
+
+## Fase 187 — placa na encruzilhada (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 80,9 FPS (186: 81,6), 1% low 40,0, pior quadro 30 ms, p50/p95/p99 11,6/15,9/23,4 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 5,8 s, construir com a ilha cheia 17,1 ms; +10 objetos e draw calls (os postes e as
+tábuas nas ilhas) e +3 mil primitivas no quadro com tudo visível. Neutra no quadro; o FPS médio vem descendo devagar neste
+pedido (83 na Fase 175, 81 agora, GPU de 11,1 para 11,5 ms), cada fase somando um pouco de objetos e primitivas.

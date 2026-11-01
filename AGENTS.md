@@ -2681,6 +2681,12 @@ Regras que já custaram investigação:
   MultiMesh. **Objeto que entra fundo na água vira coluna branca pela espuma por profundidade**: o pé fica a `FOOT_M` (meio
   metro). Captura em `tools/capture_phase186.tscn`.
 
+### Placa na encruzilhada (Fase 187, nossa)
+
+- **Plano** em `docs/plano_fase187.md`. `SignpostView` (`GameScreen.signpost_view`): `junctions` (as células de terra com três ou
+  quatro estradas pelos lados, sem casa a até `TOWN_CELLS`; o poste no lado sem estrada ou no canto entre duas) e uma tábua
+  por estrada (`arm_mesh`, o +x apontando), em dois MultiMesh. Captura em `tools/capture_phase187.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2878,6 +2884,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 184 — Limo na pedra (nossa) | **feita em 31/10/2026**, a última do roteiro borboleta, correio e galo: a faixa escura de limo e sargaço, a pedra molhada e a crosta clara da maré nos rochedos, nas rochas da falésia e nas pedras do rio, junto da linha d'água; plano em `docs/plano_fase184.md` |
 | 185 — Hera nas paredes (nossa) | **feita em 01/11/2026**, primeira do roteiro hera, estaca e arco-íris (Fases 185 a 189): a hera subindo em colunas pelas paredes da igreja e dos serviços de pedra e de parte das casas de alvenaria das ilhas temperadas; plano em `docs/plano_fase185.md` |
 | 186 — Estacas na água (nossa) | **feita em 01/11/2026**: feixes de cinco estacas de madeira amarradas com cabo e o limo junto da água, cravados diante de cada entreposto e na ponta dos píeres; plano em `docs/plano_fase186.md` |
+| 187 — Placa na encruzilhada (nossa) | **feita em 01/11/2026**: o poste de madeira com uma tábua em seta apontando cada estrada nos cruzamentos e entroncamentos das estradas de terra fora das vilas; plano em `docs/plano_fase187.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -160,6 +160,8 @@ var weathercock_view: WeathercockView
 var beach_boat_view: BeachBoatView
 ## Fase 186: os feixes de estacas de atracação na água diante do entreposto e dos píeres.
 var mooring_pile_view: MooringPileView
+## Fase 187: a placa de madeira nas encruzilhadas das estradas de terra fora das vilas.
+var signpost_view: SignpostView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -499,6 +501,10 @@ func _ready() -> void:
 	mooring_pile_view.name = "MooringPiles"
 	add_child(mooring_pile_view)
 	mooring_pile_view.setup(simulation)
+	signpost_view = SignpostView.new()
+	signpost_view.name = "Signposts"
+	add_child(signpost_view)
+	signpost_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
