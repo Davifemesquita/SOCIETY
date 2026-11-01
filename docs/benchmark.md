@@ -1916,3 +1916,9 @@ nas ilhas) e +10 mil primitivas no quadro com tudo visível. Neutra; fecha o rot
 Mesmo estado (jogo novo 11,7 s): 82,0 FPS (169: 83,0), 1% low 40,0, pior quadro 31 ms, p50/p95/p99 11,4/15,4/23,6 ms, GPU
 11,1 ms, montar tudo 9,5 s, carregar 5,7 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (é só um uniforme no material das ilhas tropicais). Neutra; abre o roteiro laterita, lenha e carrinho.
+
+## Fase 171 — lenha na parede (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,4 FPS (170: 82,0), 1% low 39,7, pior quadro 35 ms, p50/p95/p99 11,4/15,3/23,4 ms, GPU
+11,1 ms, montar tudo 9,4 s, carregar 5,7 s, construir com a ilha cheia 17,0 ms; +5 objetos e draw calls (a camada das pilhas)
+e primitivas iguais no quadro com tudo visível. Neutra.

@@ -2571,6 +2571,12 @@ Regras que já custaram investigação:
   não foi aberto: o dono estava no PC). O material do terreno das ilhas tropicais leva `mud_tint` =
   `TerrainView.TROPICAL_MUD_TINT`: a margem dos rios em laterita vermelha. Captura em `tools/capture_phase170.tscn`.
 
+### Lenha na parede (Fase 171, nossa)
+
+- **Plano** em `docs/plano_fase171.md`. `LogPileView` (`GameScreen.log_pile_view`): `spot`/`_cell`/`cells` (a parede de +X do
+  corpo das casas de camponeses e operários do resto certo, na célula do lado livre; o recheio e as bombas a deixam) e
+  `pile_mesh`, num MultiMesh. Captura: `lenha_*.png` no `tools/capture_phase95.tscn` (rua nova de casas espaçadas).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2752,6 +2758,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 168 — Gaivotas no cais (nossa) | **feita em 31/10/2026**: gaivotas de pé em parte dos cabeços dos píeres e do cais, virando a cabeça de tempos em tempos; plano em `docs/plano_fase168.md` |
 | 169 — Barril de chuva (nossa) | **feita em 31/10/2026**, a última do roteiro chão batido, feno e gaivota: o barril de aduelas com a calha descendo do beiral, na quina de trás de metade das casas dos camponeses e operários; plano em `docs/plano_fase169.md` |
 | 170 — Barranco de terra vermelha (nossa) | **feita em 31/10/2026**, primeira do roteiro laterita, lenha e carrinho (Fases 170 a 174): a margem dos rios das ilhas tropicais em laterita vermelha, no lugar da lama escura; plano em `docs/plano_fase170.md` |
+| 171 — Lenha na parede (nossa) | **feita em 31/10/2026**: a pilha de lenha rachada com a cobertura de tábuas encostada na parede do lado de parte das casas dos camponeses e operários; plano em `docs/plano_fase171.md` |
 
 Pendências já vistas para fases futuras:
 

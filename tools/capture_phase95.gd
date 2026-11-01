@@ -57,6 +57,14 @@ func _run() -> void:
 		var size := Footprint.rotated_size(def.size, 2)
 		_sim.execute(PlaceBuildingCommand.new(0, def_id, Vector2i(x, big_y - size.y), 2))
 		x += size.x + 1
+	# Fase 171: uma rua de casas de camponeses e operários com uma célula livre entre elas (a lenha na parede do lado)
+	var spaced_y := big_y + 12
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(ORIGIN.x, spaced_y), Vector2i(ORIGIN.x + 40, spaced_y))))
+	for i: int in 8:
+		var result := _sim.execute(PlaceBuildingCommand.new(0, &"house", Vector2i(ORIGIN.x + 1 + i * 5, spaced_y - 3), 2))
+		if result.ok():
+			_sim.world.building(result.placed[0]).tier = &"peasants" if i % 2 == 0 else &"workers"
+			_sim.world.building(result.placed[0]).residents = 5.0
 	_game.building_view.rebuild()
 	_set_hour(10.0)
 	for row: int in TIERS.size():
@@ -88,6 +96,13 @@ func _run() -> void:
 	# Fase 163: as hortas atrás das casas dos camponeses e dos operários, vistas dos fundos
 	await _shot("hortas_camponeses.png", grid.cell_world(Vector2i(ORIGIN.x + 9, ORIGIN.y - 1)), 15.0, PI + 0.4)
 	await _shot("hortas_operarios.png", grid.cell_world(Vector2i(ORIGIN.x + 9, ORIGIN.y + STREET_STEP - 1)), 13.0, PI - 0.4)
+	# Fase 171: a lenha na parede do lado, na rua de casas espaçadas
+	var spaced := grid.cell_world(Vector2i(ORIGIN.x + 20, ORIGIN.y + TIERS.size() * STREET_STEP + 3 + 12))
+	await _shot("lenha_na_parede.png", spaced, 18.0, -0.6)
+	for pile: Transform3D in _game.log_pile_view.places:
+		if pile.origin.distance_to(spaced) < 24.0:
+			await _shot("lenha_de_perto.png", pile.origin, 6.0, -0.9)
+			break
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina
