@@ -256,6 +256,8 @@ var anchor_view: AnchorView
 var milestone_view: MilestoneView
 ## Fase 238: o mastro com a bandeira da cidade no alto da cúpula da prefeitura, virando com o vento.
 var town_flag_view: TownFlagView
+## Fase 240: o lagar de pisar uvas e a prensa de fuso ao lado de cada vinhedo.
+var wine_press_view: WinePressView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -783,6 +785,10 @@ func _ready() -> void:
 	town_flag_view.name = "TownFlags"
 	add_child(town_flag_view)
 	town_flag_view.setup(simulation)
+	wine_press_view = WinePressView.new()
+	wine_press_view.name = "WinePresses"
+	add_child(wine_press_view)
+	wine_press_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

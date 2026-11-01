@@ -2381,3 +2381,9 @@ com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais no quadro com 
 A máquina seguiu no estado lento: 70,0 FPS (238: 70,1), 1% low 36,6, p50/p95/p99 13,6/18,1/25,7 ms, GPU 13,0 ms, montar tudo 9,3 s,
 carregar 6,3 s, construir com a ilha cheia 17,4 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (o quadro
 fica longe das praias: o recheio só aparece até 220 m). Neutra; fecha o roteiro cervo, âncora e marco.
+
+## Fase 240 — lagar no vinhedo (01/11/2026)
+
+A máquina seguiu no estado lento: 70,5 FPS (239: 70,0), 1% low 35,9, p50/p95/p99 13,6/18,0/25,8 ms, GPU 13,0 ms, montar tudo 9,4 s,
+carregar 6,3 s, construir com a ilha cheia 17,4 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
+visível (a cidade do benchmark não tem vinhedo). Neutra.

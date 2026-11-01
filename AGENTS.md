@@ -3047,6 +3047,13 @@ Regras que já custaram investigação:
   planas da costa (`SEAWEED_MAX_HEIGHT_M`, `SEAWEED_MAX_RELIEF_M`), deitada no plano da célula; `seaweed_mesh` (uma faixa torta de
   bolos chatos encostados, não bolos soltos: soltos pareciam bichos ou contas). Captura em `tools/capture_phase239.tscn`.
 
+### Lagar no vinhedo (Fase 240, nossa)
+
+- **Plano** em `docs/plano_fase240.md`, primeira do roteiro `docs/plano_fases_240_244.md` (lagar, terreiro e estacas; o Anno não
+  foi aberto: a sessão não tinha o controle da tela). `WinePressView` (`GameScreen.wine_press_view`): `sites`/`cells` (as duas
+  células de lado do vinhedo pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e
+  `press_mesh` (a tina com o mosto, a prensa de fuso e os cestos), num MultiMesh. Captura em `tools/capture_phase240.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3297,6 +3304,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 237 — Marco de légua (nossa) | **feita em 01/11/2026**: o marco de pedra de topo redondo com a inscrição e o musgo no pé na beira das estradas de terra retas e compridas fora das vilas, um a cada 23 células; plano em `docs/plano_fase237.md` |
 | 238 — Bandeira na prefeitura (nossa) | **feita em 01/11/2026**: o mastro de ferro com a bandeira da cidade (vermelha com o losango dourado) no alto da cúpula de cada prefeitura, virando e tremulando com o vento; plano em `docs/plano_fase238.md` |
 | 239 — Algas na praia (nossa) | **feita em 01/11/2026**, a última do roteiro cervo, âncora e marco: a faixa torta de sargaço escuro com as fitas soltas, deixada pela maré na areia baixa e plana junto do mar; plano em `docs/plano_fase239.md` |
+| 240 — Lagar no vinhedo (nossa) | **feita em 01/11/2026**, primeira do roteiro lagar, terreiro e estacas (Fases 240 a 244): a tina de pisar uvas com o mosto, a prensa de fuso e os cestos de uva no lado de cada vinhedo; plano em `docs/plano_fase240.md` |
 
 Pendências já vistas para fases futuras:
 
