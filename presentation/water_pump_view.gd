@@ -18,9 +18,47 @@ var _simulation: Simulation
 var _pumps := MultiMeshInstance3D.new()
 var _dirty := true
 
+## Fase 204: as listas das buscas junto da rua (as células tomadas, as bombas, os carrinhos de feira) guardadas por ilha
+## enquanto o mundo não muda. O recheio, a bomba, o poço e o carrinho as pediam várias vezes depois de cada obra, e com a cidade
+## cheia cada uma percorre todos os prédios (o carregar do benchmark subiu ~0,4 s). Só com esta vista na árvore: ela esquece
+## tudo a cada obra, demolição, estrada, trilho, árvore derrubada, subida de classe e troca de mundo (as vistas só refazem no
+## quadro seguinte); sem ela (testes, ferramentas) nada fica guardado.
+static var _memo: Dictionary = {}
+static var _memo_world: WorldState = null
+static var _memo_on := false
+
+
+## O valor guardado em key para o mundo world, ou o de compute (guardado se a memória está ligada).
+static func remembered(world: WorldState, key: String, compute: Callable) -> Variant:
+	if not _memo_on:
+		return compute.call()
+	if _memo_world != world:
+		_memo.clear()
+		_memo_world = world
+	if not _memo.has(key):
+		_memo[key] = compute.call()
+	return _memo[key]
+
+
+static func forget() -> void:
+	_memo.clear()
+
+
+func _exit_tree() -> void:
+	_memo_on = false
+	_memo.clear()
+	_memo_world = null
+
 
 func setup(simulation: Simulation) -> void:
 	_simulation = simulation
+	_memo_on = true
+	_memo.clear()
+	for changed: Signal in [EventBus.building_placed, EventBus.building_removed, EventBus.roads_changed,
+			EventBus.rails_changed, EventBus.house_upgraded]:
+		changed.connect(func(_id: int) -> void: forget())
+	EventBus.trees_changed.connect(func(_island_id: int, _area: Rect2i) -> void: forget())
+	EventBus.world_replaced.connect(forget)
 	var material := StandardMaterial3D.new()
 	material.vertex_color_use_as_albedo = true
 	material.vertex_color_is_srgb = true
@@ -78,6 +116,14 @@ func rebuild() -> void:
 ## As células das bombas na ilha → o lado da rua (para onde a bica vira): para uma casa a cada PUMP_EVERY, a célula livre
 ## encostada nela, com estrada num dos lados, mais perto da porta. Vazio na ilha plana.
 static func cells(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, Vector2i]:
+	var found: Dictionary[Vector2i, Vector2i] = remembered(world, "pumps/%d" % island_id,
+			func() -> Dictionary[Vector2i, Vector2i]: return _cells_now(world, data, island_id))
+	var copy: Dictionary[Vector2i, Vector2i] = {}
+	copy.merge(found)
+	return copy
+
+
+static func _cells_now(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, Vector2i]:
 	var result: Dictionary[Vector2i, Vector2i] = {}
 	var grid := world.island(island_id)
 	if grid == null or grid.flat:
@@ -100,6 +146,14 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 ## As células que outras peças já tomam em volta das casas e dos serviços (o largo, a alameda, as mesas, os silos, as hortas,
 ## a lenha...): a bomba e o poço da Fase 201 ficam fora delas.
 static func taken_cells(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, bool]:
+	var found: Dictionary[Vector2i, bool] = remembered(world, "taken/%d" % island_id,
+			func() -> Dictionary[Vector2i, bool]: return _taken_now(world, data, island_id))
+	var copy: Dictionary[Vector2i, bool] = {}
+	copy.merge(found)
+	return copy
+
+
+static func _taken_now(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, bool]:
 	var taken: Dictionary[Vector2i, bool] = {}
 	taken.merge(ForecourtView.cells(world, data, island_id))
 	taken.merge(AvenueView.cells(world, island_id))

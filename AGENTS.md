@@ -2798,6 +2798,16 @@ Regras que já custaram investigação:
   (a lista chamaria a si mesma): a bomba e o poço desviam do carrinho à parte, nas buscas deles. Captura em
   `tools/capture_phase203.tscn`.
 
+### Guarda-sol de palha (Fase 204, nossa)
+
+- **Plano** em `docs/plano_fase204.md`. `PalapaView` (`GameScreen.palapa_view`): `cells` (a areia livre perto do mar em volta do
+  entreposto e da cabana de pesca das tropicais, a partir de `near_of`, que no entreposto passa do cais de pedra) e
+  `palapa_mesh`, num MultiMesh. **O cais de pedra é só desenho**: a célula debaixo dele parece livre; peça que procura areia em
+  volta do entreposto precisa da folga. **O recheio se refaz até `ScatterView.FAR_REACH` em volta de um prédio novo**: peça cuja
+  célula fica longe do prédio que a cria entra lá. **As buscas junto da rua ficam guardadas** (`WaterPumpView.remembered`,
+  esquecidas a cada obra, estrada, trilho, árvore, subida de classe e troca de mundo, só com a vista da bomba na árvore): lista
+  nova cara do mesmo tipo entra nela. Captura em `tools/capture_phase204.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3012,6 +3022,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 201 — Poço da vila (nossa) | **feita em 01/11/2026**: o poço de pedra em fiadas com o telhadinho de duas águas, o sarilho e o balde numa célula livre junto da rua, ao lado de parte das casas dos camponeses; plano em `docs/plano_fase201.md` |
 | 202 — Secadouro de peixe (nossa) | **feita em 01/11/2026**: as varas cruzadas com os peixes abertos pendurados secando, do lado da terra de cada cabana de pesca das ilhas temperadas; plano em `docs/plano_fase202.md` |
 | 203 — Carrinho de feira (nossa) | **feita em 01/11/2026**: o carrinho de mão de duas rodas com o tabuleiro de frutas e verduras e o guarda-sol listrado, numa célula junto da rua ao lado de cada mercado; plano em `docs/plano_fase203.md` |
+| 204 — Guarda-sol de palha (nossa) | **feita em 01/11/2026**, a última do roteiro gato, poço e carrinho: guarda-sóis de folha de palmeira com o banco de toras na areia em volta do entreposto e das cabanas de pesca das ilhas tropicais, além do cais de pedra; e as buscas junto da rua guardadas até a próxima obra (o carregar voltou de 6,4 para 6,0 s); plano em `docs/plano_fase204.md` |
 
 Pendências já vistas para fases futuras:
 

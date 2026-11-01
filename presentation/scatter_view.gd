@@ -27,6 +27,9 @@ enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, 
 		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS }
 
 const CHUNK_CELLS := 32
+## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
+## atrás da igreja, Fase 195; os guarda-sóis em volta do entreposto e da cabana de pesca, Fase 204).
+const FAR_REACH: Dictionary[StringName, int] = {&"church": 6, &"trading_post": 20, &"fishery": 13}
 const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
@@ -274,7 +277,8 @@ func _on_building_changed(building_id: int) -> void:
 			_mark_changed_occupancy(index)
 		return
 	var def := _data.building(record.def_id)
-	_mark(record.island_id, Footprint.rect(record.origin, def.size, record.rotation).grow(2))
+	var reach: int = FAR_REACH.get(record.def_id, 2)
+	_mark(record.island_id, Footprint.rect(record.origin, def.size, record.rotation).grow(reach))
 
 
 ## Depois de uma demolição: os trechos onde a ocupação mudou desde o último desenho.
@@ -427,6 +431,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 		doors[cell] = true
 	# Fase 202: e os secadouros de peixe
 	for cell: Vector2i in FishRackView.cells(world, data, island_id):
+		doors[cell] = true
+	# Fase 204: e os guarda-sóis de palha das praias tropicais
+	for cell: Vector2i in PalapaView.cells(world, data, island_id):
 		doors[cell] = true
 	# Fase 203: e o carrinho de feira
 	for cell: Vector2i in MarketCartView.cells(world, data, island_id):

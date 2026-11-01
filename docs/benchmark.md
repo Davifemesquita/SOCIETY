@@ -2137,3 +2137,11 @@ primitivas iguais no quadro com tudo visível (o benchmark não tem cabana de pe
 Mesmo estado (jogo novo 11,8 s): 80,5 FPS (202: 79,7), 1% low 40,3, pior quadro 28 ms, p50/p95/p99 11,7/16,0/23,1 ms, GPU
 11,5 ms, montar tudo 9,3 s, carregar 6,3 s (na faixa de 5,9 a 6,3 das últimas rodadas), construir com a ilha cheia 17,5 ms;
 +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo visível (a cidade do benchmark é plana). Neutra.
+
+## Fase 204 — guarda-sol de palha (01/11/2026)
+
+Mesmo estado (jogo novo 11,9 s): 80,8 FPS (203: 80,5), 1% low 40,2, pior quadro 32 ms, p50/p95/p99 11,7/16,0/23,1 ms, GPU
+11,4 ms, montar tudo 9,3 s, carregar 6,0 s, construir com a ilha cheia 16,8 ms; +5 objetos e draw calls (a camada) e +5 mil
+primitivas no quadro com tudo visível. Antes da memória das buscas junto da rua o carregar estava em 6,4 s (as listas das
+células tomadas, das bombas e dos carrinhos eram refeitas várias vezes, cada uma pelos ~800 prédios da cidade); com ela voltou
+a 6,0. Neutra; fecha o roteiro gato, poço e carrinho.

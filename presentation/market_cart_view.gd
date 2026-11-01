@@ -85,8 +85,17 @@ func rebuild() -> void:
 		_carts.multimesh.set_instance_transform(i, places[i])
 
 
-## As células dos carrinhos na ilha → o lado da rua. Vazio na ilha plana.
+## As células dos carrinhos na ilha → o lado da rua (guardadas na memória da bomba enquanto o mundo não muda). Vazio na ilha
+## plana.
 static func cells(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, Vector2i]:
+	var found: Dictionary[Vector2i, Vector2i] = WaterPumpView.remembered(world, "carts/%d" % island_id,
+			func() -> Dictionary[Vector2i, Vector2i]: return _cells_now(world, data, island_id))
+	var copy: Dictionary[Vector2i, Vector2i] = {}
+	copy.merge(found)
+	return copy
+
+
+static func _cells_now(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, Vector2i]:
 	var grid := world.island(island_id)
 	if grid == null or grid.flat:
 		var none: Dictionary[Vector2i, Vector2i] = {}
