@@ -103,6 +103,15 @@ func _run() -> void:
 		if pile.origin.distance_to(spaced) < 24.0:
 			await _shot("lenha_de_perto.png", pile.origin, 6.0, -0.9)
 			break
+	# Fase 173: a tina de lavar ao lado do varal, de perto
+	for line: int in _game.yard_view.tub_count():
+		var tub := _game.yard_view.tub_transform(line)
+		if tub.origin != Vector3.ZERO:
+			await _shot("tina_de_lavar.png", tub.origin, 6.0, PI + 0.6)
+			break
+	# Fase 174: o banco na porta das casas dos camponeses, de perto
+	if not _game.door_bench_view.places.is_empty():
+		await _shot("banco_na_porta.png", _game.door_bench_view.places[0].origin, 7.0, 0.4)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

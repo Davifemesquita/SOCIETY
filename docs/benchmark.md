@@ -1929,3 +1929,11 @@ Mesmo estado (jogo novo 11,7 s): 83,1 FPS (171: 82,4), 1% low 39,3, pior quadro 
 11,0 ms, montar tudo 9,3 s, carregar 5,8 s (171: 5,7), construir com a ilha cheia 17,1 ms; +5 objetos e draw calls e +31 mil
 primitivas no quadro com tudo visível (os carrinhos das oficinas do benchmark). O carregar a mais é a oscilação entre rodadas:
 medido à parte, montar os carrinhos de 400 oficinas leva 2 ms e refazer, 0,8 ms. Neutra.
+
+## Fases 173 e 174 — tina de lavar e banco na porta (31/10/2026)
+
+Medidas juntas (as duas são peças pequenas de quintal num MultiMesh cada). Mesmo estado (jogo novo 11,6 s): 83,2 FPS (172:
+83,1), 1% low 41,4, pior quadro 27 ms, p50/p95/p99 11,3/15,3/22,9 ms, GPU 11,1 ms, montar tudo 9,3 s, carregar 5,7 s,
+construir com a ilha cheia 17,3 ms; +5 objetos e draw calls e +24 mil primitivas no quadro com tudo visível. Neutras; fecham o
+roteiro laterita, lenha e carrinho e os quatro ciclos do terceiro pedido do dono (Fases 155 a 174), no patamar de 81 a 85 FPS
+(GPU ~11 ms) em que a máquina ficou nesta rodada.
