@@ -18,6 +18,9 @@ const CHUNK_VERTICES := 64
 ## Fase 38: a terra batida das estradas (camada 0 das texturas das estradas) pintada no terreno.
 const ROAD_ALBEDO := preload("res://assets/materials/roads_albedo_rough.png")
 const ROAD_NORMAL := preload("res://assets/materials/roads_normal.png")
+## Fase 170: a cor da lama da margem do rio nas ilhas tropicais (a laterita, terra vermelha), sobre a textura da areia; nas
+## temperadas fica a do shader (marrom escura).
+const TROPICAL_MUD_TINT := Vector3(0.42, 0.2, 0.11)
 
 var _world: WorldState
 var _config: GameConfig
@@ -157,6 +160,9 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	for key: String in textures:
 		material.set_shader_parameter(StringName(key), textures[key])
 	material.set_shader_parameter(&"surface_weights", _surfaces[index])
+	# Fase 170: na ilha tropical, a margem do rio é de terra vermelha (laterita), não de lama escura
+	if _world.is_tropical(index, _data):
+		material.set_shader_parameter(&"mud_tint", TROPICAL_MUD_TINT)
 	var size := (side - 1) * _config.cell_size_m
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
 	# a distância até a água sai uma vez só: o bake e o campo da costa (Fase 35) a dividem

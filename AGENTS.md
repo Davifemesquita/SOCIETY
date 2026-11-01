@@ -2562,8 +2562,14 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase169.md`. `RainBarrelView` (`GameScreen.rain_barrel_view`): `spot` (a quina de −X de trás das casas
   de camponeses e operários do resto certo, no lugar do modelo, com a calha até o beiral ou o da ala), `_cell`/`cells` (a célula
   só pelo lote, sem a `Simulation`, para o recheio, as bombas, os silos e as medas a deixarem limpa), `barrel_body_mesh` e o cano
-  esticado até o beiral (`pipe_mesh`, `pipe_place`), em dois MultiMesh. Captura:
-  `barris_de_chuva.png` no `tools/capture_phase95.tscn`.
+  esticado até o beiral (`pipe_mesh`, `pipe_place`), em dois MultiMesh (a malha inteira refeita em GDScript custava ~120 ms
+  com 300 barris). Captura: `barris_de_chuva.png` no `tools/capture_phase95.tscn`.
+
+### Barranco de terra vermelha (Fase 170, nossa)
+
+- **Plano** em `docs/plano_fase170.md`, primeira do roteiro `docs/plano_fases_170_174.md` (laterita, lenha e carrinho; o Anno
+  não foi aberto: o dono estava no PC). O material do terreno das ilhas tropicais leva `mud_tint` =
+  `TerrainView.TROPICAL_MUD_TINT`: a margem dos rios em laterita vermelha. Captura em `tools/capture_phase170.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -2745,6 +2751,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 167 — Capim alto nos terrenos vazios (nossa) | **feita em 31/10/2026**: manchas de capim alto e espigado, verde no pé e cor de palha nas pontas, no campo aberto das ilhas temperadas, fora dos canteiros de papoulas; plano em `docs/plano_fase167.md` |
 | 168 — Gaivotas no cais (nossa) | **feita em 31/10/2026**: gaivotas de pé em parte dos cabeços dos píeres e do cais, virando a cabeça de tempos em tempos; plano em `docs/plano_fase168.md` |
 | 169 — Barril de chuva (nossa) | **feita em 31/10/2026**, a última do roteiro chão batido, feno e gaivota: o barril de aduelas com a calha descendo do beiral, na quina de trás de metade das casas dos camponeses e operários; plano em `docs/plano_fase169.md` |
+| 170 — Barranco de terra vermelha (nossa) | **feita em 31/10/2026**, primeira do roteiro laterita, lenha e carrinho (Fases 170 a 174): a margem dos rios das ilhas tropicais em laterita vermelha, no lugar da lama escura; plano em `docs/plano_fase170.md` |
 
 Pendências já vistas para fases futuras:
 
