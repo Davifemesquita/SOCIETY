@@ -137,9 +137,8 @@ static func _cells_now(world: WorldState, data: GameData, island_id: int) -> Dic
 		return result
 	ids.sort()
 	var taken := taken_cells(world, data, island_id)
-	# Fase 203: nem no carrinho de feira (fica fora de taken_cells: o carrinho usa a lista)
-	for cell: Vector2i in MarketCartView.cells(world, data, island_id):
-		taken[cell] = true
+	# Fases 203 e 206: nem no carrinho de feira nem no bebedouro (ficam fora de taken_cells: eles usam a lista)
+	taken.merge(street_pieces(world, data, island_id))
 	return beside_street(world, data, island_id, ids, taken)
 
 
@@ -265,3 +264,14 @@ static func pump_mesh() -> ArrayMesh:
 			VertexShapes.cylinder(tool, bucket + Vector3(0.0, h, 0.0), bucket + Vector3(0.0, h + 0.025, 0.0), 0.135, HOOP, 10)
 	tool.generate_normals()
 	return tool.commit()
+
+
+## As peças junto da rua escolhidas antes das bombas e dos poços (o carrinho de feira da Fase 203 e o bebedouro da Fase 206):
+## a bomba e o poço desviam delas. Ficam fora de taken_cells porque elas mesmas a usam (a lista chamaria a si mesma).
+static func street_pieces(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, bool]:
+	var result: Dictionary[Vector2i, bool] = {}
+	for cell: Vector2i in MarketCartView.cells(world, data, island_id):
+		result[cell] = true
+	for cell: Vector2i in HorseTroughView.cells(world, data, island_id):
+		result[cell] = true
+	return result

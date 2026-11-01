@@ -2816,6 +2816,14 @@ Regras que já custaram investigação:
   com o `shaders/banner.gdshader` (a cor do prédio e a fase no dado da instância; o balanço pelo vento global, menor que o braço,
   para o pano nunca entrar na parede). Captura: `estandartes.png` no `tools/capture_phase95.tscn`.
 
+### Bebedouro de cavalos (Fase 206, nossa)
+
+- **Plano** em `docs/plano_fase206.md`. `HorseTroughView` (`GameScreen.horse_trough_view`): `cells` (a célula encostada na taverna
+  pelo lado mais perto da porta, fora das tomadas e do carrinho, guardada na memória da bomba) e `trough_mesh`, num MultiMesh. A
+  bomba e o poço desviam das peças escolhidas antes deles pela `WaterPumpView.street_pieces` (o carrinho e o bebedouro). **As
+  buscas de célula se consultam em cadeia** (as mesas, os silos, as medas, a lista das tomadas): antes de fazer uma peça
+  desviar de outra, confira que a outra não chega nela, senão a busca chama a si mesma. Captura em `tools/capture_phase206.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3032,6 +3040,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 203 — Carrinho de feira (nossa) | **feita em 01/11/2026**: o carrinho de mão de duas rodas com o tabuleiro de frutas e verduras e o guarda-sol listrado, numa célula junto da rua ao lado de cada mercado; plano em `docs/plano_fase203.md` |
 | 204 — Guarda-sol de palha (nossa) | **feita em 01/11/2026**, a última do roteiro gato, poço e carrinho: guarda-sóis de folha de palmeira com o banco de toras na areia em volta do entreposto e das cabanas de pesca das ilhas tropicais, além do cais de pedra; e as buscas junto da rua guardadas até a próxima obra (o carregar voltou de 6,4 para 6,0 s); plano em `docs/plano_fase204.md` |
 | 205 — Estandartes na fachada (nossa) | **feita em 01/11/2026**, primeira do roteiro estandarte, bebedouro e lanterna (Fases 205 a 209): estandartes de rabo de andorinha na cor do prédio, com o galão dourado, pendurados num braço de ferro de cada lado da porta da prefeitura, do teatro, da universidade, do museu e da escola, balançando com o vento; plano em `docs/plano_fase205.md` |
+| 206 — Bebedouro de cavalos (nossa) | **feita em 01/11/2026**: o cocho comprido de pedra com a água, a coluna da bica e a argola de amarrar, encostado na parede do lado de cada taverna, ao lado das mesas; plano em `docs/plano_fase206.md` |
 
 Pendências já vistas para fases futuras:
 

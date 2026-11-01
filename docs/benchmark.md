@@ -2152,3 +2152,9 @@ Mesmo estado (jogo novo 11,9 s): 80,0 FPS (204: 80,8), 1% low 40,6, pior quadro 
 11,5 ms, montar tudo 9,4 s, carregar 6,0 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e
 primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem esses serviços). Neutra; abre o roteiro
 estandarte, bebedouro e lanterna.
+
+## Fase 206 — bebedouro de cavalos (01/11/2026)
+
+Mesmo estado (jogo novo 12,0 s): 80,1 FPS (205: 80,0), 1% low 40,5, pior quadro 34 ms, p50/p95/p99 11,8/16,0/23,0 ms, GPU
+11,5 ms, montar tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,6 ms; +5 objetos e draw calls (a camada) e
+primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem taverna em terra com relevo). Neutra.

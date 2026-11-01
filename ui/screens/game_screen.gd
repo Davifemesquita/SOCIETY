@@ -198,6 +198,8 @@ var market_cart_view: MarketCartView
 var palapa_view: PalapaView
 ## Fase 205: os estandartes pendurados de cada lado da porta dos serviços, balançando com o vento.
 var banner_view: BannerView
+## Fase 206: o bebedouro de cavalos de pedra junto da rua, ao lado das tavernas.
+var horse_trough_view: HorseTroughView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -609,6 +611,10 @@ func _ready() -> void:
 	banner_view.name = "Banners"
 	add_child(banner_view)
 	banner_view.setup(simulation)
+	horse_trough_view = HorseTroughView.new()
+	horse_trough_view.name = "HorseTroughs"
+	add_child(horse_trough_view)
+	horse_trough_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
