@@ -20,4 +20,7 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
 
 ## Estado
 
-Em andamento.
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase185.md` a
+`docs/plano_fase189.md`), testes, captura e benchmark. Diferenças do roteiro: as estacas ficaram com o pé a meio metro da
+água (mais fundo, a espuma por profundidade desenhava uma coluna branca); o arco-íris aparece logo depois da chuva de um dia
+chuvoso, com o sol abaixo de 40 graus; as focas saíram de costas para o mar na primeira versão (o teste pegou).
