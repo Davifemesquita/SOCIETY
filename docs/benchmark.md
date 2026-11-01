@@ -2426,3 +2426,9 @@ log): o `scatter_view.gd` da fase seguinte foi editado com ela rodando, e o Godo
 A máquina seguiu no estado lento: 70,9 FPS (245: 70,0), 1% low 36,0, p50/p95/p99 13,5/18,0/25,3 ms, GPU 12,9 ms, montar tudo 9,4 s,
 carregar 6,3 s, construir com a ilha cheia 17,3 ms; +1 objeto e draw call e +8 mil primitivas no quadro com tudo visível (os
 troncos da mata perto da cidade do benchmark). Neutra.
+
+## Fase 247 — madeira curvada no estaleiro (01/11/2026)
+
+A máquina seguiu no estado lento: 69,9 FPS (246: 70,9), 1% low 36,2, p50/p95/p99 13,6/18,1/25,7 ms, GPU 13,0 ms, montar tudo 9,4 s,
+carregar 6,3 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
+visível (a cidade do benchmark não tem estaleiro). Neutra.

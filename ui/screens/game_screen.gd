@@ -268,6 +268,8 @@ var steel_beam_view: SteelBeamView
 var hop_pole_view: HopPoleView
 ## Fase 245: os coelhos no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando.
 var rabbit_view: RabbitView
+## Fase 247: as tábuas e as cavernas curvas esperando ao lado de cada estaleiro.
+var ship_timber_view: ShipTimberView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -819,6 +821,10 @@ func _ready() -> void:
 	rabbit_view.name = "Rabbits"
 	add_child(rabbit_view)
 	rabbit_view.setup(simulation)
+	ship_timber_view = ShipTimberView.new()
+	ship_timber_view.name = "ShipTimbers"
+	add_child(ship_timber_view)
+	ship_timber_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -3093,6 +3093,12 @@ Regras que já custaram investigação:
   temperadas e no chão de pouco desnível, deitado com o chão pela conta da madeira à deriva; `mossy_log_mesh` (o tronco, o musgo,
   as orelhas-de-pau e os cogumelos). Captura em `tools/capture_phase246.tscn`.
 
+### Madeira curvada no estaleiro (Fase 247, nossa)
+
+- **Plano** em `docs/plano_fase247.md`. `ShipTimberView` (`GameScreen.ship_timber_view`): `sites`/`cells` (as duas células de lado
+  do estaleiro pelo `SideYard`, com a fileira do lado do mar tomada para a carreira; o recheio e as bombas as deixam) e
+  `timber_mesh` (`_rib`, a caverna em U), num MultiMesh. Captura em `tools/capture_phase247.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3350,6 +3356,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 244 — Estacas de lúpulo (nossa) | **feita em 01/11/2026**, a última do roteiro lagar, terreiro e estacas: as estacas compridas deitadas nos cavaletes e o feixe amarrado encostado na parede, no lado de cada fazenda de lúpulo; plano em `docs/plano_fase244.md` |
 | 245 — Coelhos no prado (nossa) | **feita em 01/11/2026**, primeira do roteiro coelho, cogumelo e pedra (Fases 245 a 249): tocas de coelhos pardos de rabo branco pastando no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando; plano em `docs/plano_fase245.md` |
 | 246 — Tronco caído com cogumelos (nossa) | **feita em 01/11/2026**: troncos velhos caídos na beira da mata das ilhas temperadas, cobertos de musgo, com as orelhas-de-pau de lado e os cogumelos vermelhos no chão; plano em `docs/plano_fase246.md` |
+| 247 — Madeira curvada no estaleiro (nossa) | **feita em 01/11/2026**: a pilha de tábuas e as cavernas curvas em U esperando a vez de entrar no casco, no lado de cada estaleiro, longe da carreira; plano em `docs/plano_fase247.md` |
 
 Pendências já vistas para fases futuras:
 
