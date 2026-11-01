@@ -2694,6 +2694,13 @@ Regras que já custaram investigação:
   `DISTANCE_M` da câmera a cada quadro; nada com o sol baixo ou alto demais) e `ring_mesh` no `shaders/rainbow.gdshader`
   (somado, cortado no mar). `hours_override` prende a hora nas capturas. Captura em `tools/capture_phase188.tscn`.
 
+### Focas nas pedras (Fase 189, nossa)
+
+- **Plano** em `docs/plano_fase189.md`. `SealView` (`GameScreen.seal_view`): `colonies` (pontos a cada `COLONY_STEP` células, a
+  célula da costa baixa e livre mais perto, longe dos prédios por blocos de `WILD_CELLS`; só temperadas) e `seals` (duas a
+  quatro deitadas, a cabeça para o mar); o corpo parado (`body_mesh`) e a cabeça (`head_mesh`) erguendo pelo `head_lift`, em
+  dois MultiMesh. Captura em `tools/capture_phase189.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2893,6 +2900,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 186 — Estacas na água (nossa) | **feita em 01/11/2026**: feixes de cinco estacas de madeira amarradas com cabo e o limo junto da água, cravados diante de cada entreposto e na ponta dos píeres; plano em `docs/plano_fase186.md` |
 | 187 — Placa na encruzilhada (nossa) | **feita em 01/11/2026**: o poste de madeira com uma tábua em seta apontando cada estrada nos cruzamentos e entroncamentos das estradas de terra fora das vilas; plano em `docs/plano_fase187.md` |
 | 188 — Arco-íris (nossa) | **feita em 01/11/2026**: o arco-íris no céu do lado oposto ao sol logo depois da chuva, sumindo em pouco mais de uma hora; plano em `docs/plano_fase188.md` |
+| 189 — Focas nas pedras (nossa) | **feita em 01/11/2026**, a última do roteiro hera, estaca e arco-íris: grupos de focas malhadas deitadas na costa baixa das ilhas temperadas, longe das vilas, viradas para o mar, erguendo a cabeça de tempos em tempos; plano em `docs/plano_fase189.md` |
 
 Pendências já vistas para fases futuras:
 

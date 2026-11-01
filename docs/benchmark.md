@@ -2035,3 +2035,10 @@ pedido (83 na Fase 175, 81 agora, GPU de 11,1 para 11,5 ms), cada fase somando u
 Mesmo estado (jogo novo 11,7 s): 81,5 FPS (187: 80,9), 1% low 40,4, pior quadro 29 ms, p50/p95/p99 11,5/15,7/23,4 ms, GPU
 11,4 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (o anel só aparece depois da chuva). Neutra.
+
+## Fase 189 — focas nas pedras (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 81,2 FPS (188: 81,5), 1% low 41,2, pior quadro 29 ms, p50/p95/p99 11,6/15,7/22,8 ms, GPU
+11,5 ms, montar tudo 9,2 s, carregar 5,8 s, construir com a ilha cheia 16,9 ms; +10 objetos e draw calls (os corpos e as
+cabeças nas ilhas) e +347 mil primitivas no quadro com tudo visível (os grupos da costa da câmera do benchmark). Neutra; fecha
+o roteiro hera, estaca e arco-íris.

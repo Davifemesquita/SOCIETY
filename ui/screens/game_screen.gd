@@ -164,6 +164,8 @@ var mooring_pile_view: MooringPileView
 var signpost_view: SignpostView
 ## Fase 188: o arco-íris quando a chuva passa e o sol volta.
 var rainbow_view: RainbowView
+## Fase 189: as focas deitadas na costa baixa das ilhas temperadas, longe das vilas.
+var seal_view: SealView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -507,6 +509,10 @@ func _ready() -> void:
 	signpost_view.name = "Signposts"
 	add_child(signpost_view)
 	signpost_view.setup(simulation)
+	seal_view = SealView.new()
+	seal_view.name = "Seals"
+	add_child(seal_view)
+	seal_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
