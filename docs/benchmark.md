@@ -2103,3 +2103,10 @@ Neutra (GPU igual).
 Mesmo estado (jogo novo 11,8 s): 80,2 FPS (197: 79,7), 1% low 40,6, pior quadro 33 ms, p50/p95/p99 11,7/16,0/23,1 ms, GPU
 11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e +6 mil
 primitivas no quadro com tudo visível. Neutra.
+
+## Fase 199 — rede na varanda (01/11/2026)
+
+Mesmo estado (jogo novo 11,9 s): 79,8 FPS (198: 80,2), 1% low 40,3, pior quadro 35 ms, p50/p95/p99 11,8/16,6/22,9 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e
+primitivas iguais no quadro com tudo visível (o benchmark não tem casa com alpendre). Neutra; fecha o roteiro cemitério, pato e
+rede.

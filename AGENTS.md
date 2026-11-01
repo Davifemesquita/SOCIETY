@@ -2761,6 +2761,13 @@ Regras que já custaram investigação:
   resto `BENCH_REST`, para dentro da beira, a `CLEAR_M` dos lampiões, das cisternas, dos mastros e das escadas) com o banco de
   praça da decoração (`DecorationView._bench`), num MultiMesh. Captura em `tools/capture_phase198.tscn`.
 
+### Rede na varanda (Fase 199, nossa)
+
+- **Plano** em `docs/plano_fase199.md`. `HammockView` (`GameScreen.hammock_view`): `hang` (pela forma: o vão do lado da porta entre
+  dois esteios da varanda, `post_xs` com a conta da `BuildingKit._veranda`), `spot` (no lugar do modelo), `hammock_mesh` (o pano
+  listrado, as varas e os cabos) e `swing` (o balanço em volta dos nós), num MultiMesh sem descarte de face. Mudou a varanda,
+  confira `post_xs`. Captura em `tools/capture_phase199.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2970,6 +2977,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 196 — Patos na água (nossa) | **feita em 01/11/2026**: bandos de patos nadando em roda na água calma da costa, longe da espuma e dos portos, a pata com os patinhos em fila ou patos e patas juntos, mergulhando a cabeça de vez em quando, de dia; plano em `docs/plano_fase196.md` |
 | 197 — Casinha do cão (nossa) | **feita em 01/11/2026**: a casinha de tábuas com telhado de duas águas, a porta em arco e a tigela de água ao lado das casas que têm cão na porta, virada para a rua; plano em `docs/plano_fase197.md` |
 | 198 — Bancos no cais (nossa) | **feita em 01/11/2026**: bancos de praça de pés de ferro e tábuas no cais de pedra dos entrepostos, entre os cabeços, de costas para a cidade e virados para o mar, longe dos lampiões, das cisternas, dos mastros e das escadas; plano em `docs/plano_fase198.md` |
+| 199 — Rede na varanda (nossa) | **feita em 01/11/2026**, a última do roteiro cemitério, pato e rede: a rede de dormir listrada pendurada entre dois esteios da varanda de parte das casas das ilhas tropicais, ao lado da porta, balançando de leve; plano em `docs/plano_fase199.md` |
 
 Pendências já vistas para fases futuras:
 

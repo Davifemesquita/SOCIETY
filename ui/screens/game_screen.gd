@@ -184,6 +184,8 @@ var duck_view: DuckView
 var kennel_view: KennelView
 ## Fase 198: os bancos no cais de pedra, virados para o mar.
 var quay_bench_view: QuayBenchView
+## Fase 199: a rede listrada na varanda das casas das ilhas tropicais, balançando de leve.
+var hammock_view: HammockView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -567,6 +569,10 @@ func _ready() -> void:
 	quay_bench_view.name = "QuayBenches"
 	add_child(quay_bench_view)
 	quay_bench_view.setup(simulation)
+	hammock_view = HammockView.new()
+	hammock_view.name = "Hammocks"
+	add_child(hammock_view)
+	hammock_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
