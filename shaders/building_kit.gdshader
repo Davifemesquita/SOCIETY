@@ -40,6 +40,8 @@ instance uniform float thatch = 0.0;
 instance uniform float slate = 0.0;
 // Fase 138: o telhado de chapa de ferro ondulada (as fábricas pesadas), no lugar das telhas
 instance uniform float corrugated = 0.0;
+// Fase 185: a hera nas paredes (0 sem; até 1, quanto ela sobe), posta pela BuildingView
+instance uniform float ivy = 0.0;
 
 // Fase 39: vidro (célula (0, 1), que o kit não usa): escuro, liso, com o céu refletido no ângulo raso
 uniform vec4 glass_color : source_color = vec4(0.17, 0.21, 0.25, 1.0);
@@ -94,6 +96,10 @@ uniform vec4 awning_cream : source_color = vec4(0.88, 0.84, 0.72, 1.0);
 uniform vec4 brick_dark : source_color = vec4(0.42, 0.18, 0.13, 1.0);
 uniform vec4 brick_light : source_color = vec4(0.62, 0.3, 0.21, 1.0);
 uniform vec4 brick_mortar : source_color = vec4(0.66, 0.63, 0.57, 1.0);
+// Fase 185: a hera — as folhas em dois verdes, até ivy_reach_m de altura nas colunas mais cheias
+uniform vec4 ivy_dark : source_color = vec4(0.1, 0.18, 0.07, 1.0);
+uniform vec4 ivy_light : source_color = vec4(0.24, 0.36, 0.12, 1.0);
+uniform float ivy_reach_m = 7.0;
 // Fase 177: as cores dos postigos (uma por prédio, pelo lugar dele) e a largura das réguas da veneziana
 uniform vec4 shutter_green : source_color = vec4(0.22, 0.36, 0.24, 1.0);
 uniform vec4 shutter_blue : source_color = vec4(0.24, 0.34, 0.46, 1.0);
@@ -358,6 +364,18 @@ void fragment() {
 		float moss = (1.0 - smoothstep(0.0, moss_height, above)) * smoothstep(0.45, 0.75,
 				moss_noise(world_position.xz * 1.7 + world_position.y * 0.9)) * (1.0 - abs(world_normal.y));
 		color = mix(color, moss_color.rgb * (0.7 + 0.6 * kit_luma), moss * moss_strength);
+		if (ivy > 0.0 && wall && abs(world_normal.y) < 0.5) {
+			// Fase 185: a hera sobe do chão em colunas de altura sorteada ao longo da parede, com a borda de cima recortada e as
+			// folhas em manchas de dois verdes
+			float along = dot(world_position.xz, normalize(vec2(-world_normal.z, world_normal.x)));
+			float reach = ivy * ivy_reach_m * smoothstep(0.3, 0.85, moss_noise(vec2(along * 0.32, 4.7)));
+			float ragged = reach + 0.6 * (moss_noise(vec2(along * 2.6, world_position.y * 1.3)) - 0.5);
+			float leaf = moss_noise(vec2(along, world_position.y) * 8.0);
+			float cover = (1.0 - smoothstep(ragged - 0.35, ragged, above)) * step(0.2, reach)
+					* smoothstep(0.15, 0.4, leaf + 0.2);
+			color = mix(color, mix(ivy_dark.rgb, ivy_light.rgb, leaf), cover * 0.94);
+			roughness = mix(roughness, 0.7, cover);
+		}
 		// sombra de contato: a fachada que dá para o prédio vizinho escurece de baixo para cima
 		color *= 1.0 - contact * contact_strength * (1.0 - smoothstep(0.0, contact_height, above));
 		color *= 1.0 - soot * 0.55;

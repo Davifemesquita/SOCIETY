@@ -2009,3 +2009,10 @@ Mesmo estado (jogo novo 11,7 s): 81,2 FPS (183: 82,1), 1% low 40,6, pior quadro 
 11,4 ms, montar tudo 9,4 s, carregar 5,8 s, construir com a ilha cheia 17,4 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (só o material das rochas do mar mudou). Neutra; fecha o roteiro borboleta, correio e galo, no
 patamar de 81 a 82 FPS (GPU 11,3 a 11,4 ms).
+
+## Fase 185 — hera nas paredes (01/11/2026)
+
+Mesmo estado (jogo novo 11,7 s): 81,4 FPS (184: 81,2), 1% low 41,1, pior quadro 29 ms, p50/p95/p99 11,6/15,9/23,0 ms, GPU
+11,4 ms, montar tudo 9,3 s, carregar 5,8 s, construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais no
+quadro com tudo visível (é um parâmetro de instância e um trecho do shader do kit). Neutra; abre o roteiro hera, estaca e
+arco-íris.

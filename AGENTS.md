@@ -2666,6 +2666,14 @@ Regras que já custaram investigação:
   falésia e nos matacões do rio; as pedras soltas dos barrancos e das jazidas seguem com o `RockView.material`. Captura em
   `tools/capture_phase184.tscn`.
 
+### Hera nas paredes (Fase 185, nossa)
+
+- **Plano** em `docs/plano_fase185.md`, primeira do roteiro `docs/plano_fases_185_189.md` (hera, estaca e arco-íris; o Anno não foi
+  aberto: o dono estava no PC). `BuildingView.ivy_of` põe o parâmetro de instância `ivy` (cheio nos serviços de pedra de
+  `IVY_SERVICES`, menos numa casa a cada `IVY_HOUSE_EVERY` dos artesãos para cima, nada nas tropicais) e o
+  `shaders/building_kit.gdshader` desenha a hera só nas células de parede, em colunas subindo do chão. **Parâmetro de instância
+  não aparece no `get_shader_uniform_list`** (o teste confere os uniformes comuns). Captura: as ruas do `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2861,6 +2869,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 182 — Galo do cata-vento (nossa) | **feita em 31/10/2026**: a haste de ferro com a rosa dos ventos e o galo de bronze recortado no alto da cumeeira das fazendas das ilhas temperadas, virando a cabeça para o lado de onde vem o vento; plano em `docs/plano_fase182.md` |
 | 183 — Barco na areia (nossa) | **feita em 31/10/2026**: o bote de pesca virado de borco na praia, com uma ponta apoiada e os dois remos deitados na areia, ao lado de cada cabana de pesca; plano em `docs/plano_fase183.md` |
 | 184 — Limo na pedra (nossa) | **feita em 31/10/2026**, a última do roteiro borboleta, correio e galo: a faixa escura de limo e sargaço, a pedra molhada e a crosta clara da maré nos rochedos, nas rochas da falésia e nas pedras do rio, junto da linha d'água; plano em `docs/plano_fase184.md` |
+| 185 — Hera nas paredes (nossa) | **feita em 01/11/2026**, primeira do roteiro hera, estaca e arco-íris (Fases 185 a 189): a hera subindo em colunas pelas paredes da igreja e dos serviços de pedra e de parte das casas de alvenaria das ilhas temperadas; plano em `docs/plano_fase185.md` |
 
 Pendências já vistas para fases futuras:
 

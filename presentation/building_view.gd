@@ -67,6 +67,12 @@ const JITTER_DEG := 0.5
 const SLATE_ROOFS: Array[StringName] = [&"church", &"school", &"market", &"town_hall", &"theater", &"university",
 		&"museum"]
 ## Fase 138: as fábricas pesadas com o telhado de chapa de ferro ondulada.
+## Fase 185: a hera — os serviços de pedra cobertos até o alto, as casas de alvenaria em parte e menos.
+const IVY_SERVICES: Array[StringName] = [&"church", &"school", &"town_hall", &"university", &"museum", &"theater"]
+const IVY_TIERS: Array[StringName] = [&"artisans", &"engineers", &"investors"]
+const IVY_FULL := 1.0
+const IVY_HOUSE := 0.55
+const IVY_HOUSE_EVERY := 4
 const IRON_ROOFS: Array[StringName] = [&"brickworks", &"furnace", &"glassworks", &"power_station", &"steel_beam_works",
 		&"oil_power_station", &"sewing_machine_factory", &"cannery", &"lamp_factory"]
 ## Fase 79: quanto o bicho inclina para a frente bebendo (rad).
@@ -371,6 +377,19 @@ static func model_yaw(record: BuildingRecord) -> float:
 	return -PI * 0.5 * posmod(record.rotation, 4) + deg_to_rad(JITTER_DEG) * (pick / 729 % 3 - 1)
 
 
+## Fase 185: quanto a hera sobe nas paredes do prédio (0 sem; o shader do kit a desenha só nas células de parede), só nas
+## ilhas temperadas: IVY_FULL nos serviços de pedra de IVY_SERVICES; IVY_HOUSE numa casa a cada IVY_HOUSE_EVERY dos artesãos
+## para cima (as de alvenaria); nada no resto.
+static func ivy_of(simulation: Simulation, record: BuildingRecord) -> float:
+	if simulation.world.is_tropical(record.island_id, simulation.data):
+		return 0.0
+	if record.def_id in IVY_SERVICES:
+		return IVY_FULL
+	if record.is_house() and record.tier in IVY_TIERS and posmod(house_hash(record.id) / 5, IVY_HOUSE_EVERY) == 0:
+		return IVY_HOUSE
+	return 0.0
+
+
 ## Fase 130: o telhado de sapê — as casas da classe com o detalhe de quintal cercado (os camponeses).
 static func thatched(simulation: Simulation, record: BuildingRecord) -> bool:
 	if not record.is_house():
@@ -559,6 +578,8 @@ func _add(building_id: int) -> void:
 		body.set_instance_shader_parameter(&"slate", 1.0 if record.def_id in SLATE_ROOFS else 0.0)
 		# Fase 138: a chapa ondulada das fábricas pesadas
 		body.set_instance_shader_parameter(&"corrugated", 1.0 if record.def_id in IRON_ROOFS else 0.0)
+		# Fase 185: a hera nas paredes de pedra e de alvenaria velhas
+		body.set_instance_shader_parameter(&"ivy", ivy_of(_simulation, record))
 		_lots[building_id] = [record.island_id, area]
 		_add_plinth(body, record, spec, area)
 		if def.is_exhibit_hall():
