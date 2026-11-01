@@ -121,6 +121,9 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 		taken[cell] = true
 	for cell: Vector2i in FarmSiloView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 195: nem no cemitério
+	for cell: Vector2i in GraveyardView.cells(world, data, island_id):
+		taken[cell] = true
 	for id: int in ids:
 		var record := world.buildings[id]
 		var def := data.building(record.def_id)

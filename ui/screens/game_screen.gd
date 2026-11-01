@@ -176,6 +176,8 @@ var street_laundry_view: StreetLaundryView
 var hay_wagon_view: HayWagonView
 ## Fase 194: a escada de pedra descendo do cais de pedra até a água, com a argola de ferro.
 var quay_stairs_view: QuayStairsView
+## Fase 195: o cemitério atrás da igreja, com as lápides, as cruzes e o muro baixo de pedra.
+var graveyard_view: GraveyardView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -543,6 +545,10 @@ func _ready() -> void:
 	quay_stairs_view.name = "QuayStairs"
 	add_child(quay_stairs_view)
 	quay_stairs_view.setup(simulation)
+	graveyard_view = GraveyardView.new()
+	graveyard_view.name = "Graveyards"
+	add_child(graveyard_view)
+	graveyard_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

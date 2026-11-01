@@ -2733,6 +2733,14 @@ Regras que já custaram investigação:
   cais de pedra que passa `STAIR_CLEAR_M` da largura do entreposto, de cada lado), `step_places` (os degraus de pedra até dentro
   da água, encostados no paredão, na pedra das paredes do cais) e a argola (`ring_mesh`). Captura em `tools/capture_phase194.tscn`.
 
+### Cemitério da igreja (Fase 195, nossa)
+
+- **Plano** em `docs/plano_fase195.md`, primeira do roteiro `docs/plano_fases_195_199.md` (cemitério, pato e rede; o Anno não foi
+  aberto: o dono estava no PC). `GraveyardView` (`GameScreen.graveyard_view`): `layout`/`cells` (as fileiras livres atrás da
+  igreja, além do anel do largo da Fase 109, e o portão), `graves_of` (as covas com a lápide virada para a igreja, o tipo, o
+  tombo e o tom pelo hash) e `walls` (o muro baixo nas bordas, aberto no portão), em quatro MultiMesh. O recheio e as bombas
+  deixam as células. Captura em `tools/capture_phase195.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2938,6 +2946,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 192 — Roupa sobre a rua (nossa) | **feita em 01/11/2026**: o varal com a roupa colorida atravessando no alto a rua de terra entre casas de operários frente a frente; plano em `docs/plano_fase192.md` |
 | 193 — Carroça de feno parada (nossa) | **feita em 01/11/2026**: a carroça carregada de feno, sem o cavalo, tombada para a frente com os varais no chão, ao lado das medas de metade das fazendas; plano em `docs/plano_fase193.md` |
 | 194 — Escada do cais (nossa) | **feita em 01/11/2026**, a última do roteiro colmeia, pombal e varal: o lance de degraus de pedra descendo do cais de pedra até dentro da água, encostado no paredão, com a argola de ferro, dos dois lados de cada entreposto; plano em `docs/plano_fase194.md` |
+| 195 — Cemitério da igreja (nossa) | **feita em 01/11/2026**, primeira do roteiro cemitério, pato e rede (Fases 195 a 199): lápides de topo redondo, cruzes e obeliscos em fileiras atrás da igreja, além do largo, umas tombando, dentro de um muro baixo de pedra com o portão virado para ela; plano em `docs/plano_fase195.md` |
 
 Pendências já vistas para fases futuras:
 

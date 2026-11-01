@@ -2076,3 +2076,10 @@ argolas nas ilhas) e +26 mil primitivas no quadro com tudo visível. Neutra; fec
 quatro ciclos do quarto pedido do dono (Fases 175 a 194). Ao longo deles o FPS médio desceu de ~83 para ~80,5 e a GPU de 11,1
 para 11,5 ms, com +100 objetos e draw calls (5 por vista nova, uma camada por ilha) e +1,5 milhão de primitivas no quadro com
 tudo visível; montar, carregar e construir ficaram onde estavam.
+
+## Fase 195 — cemitério da igreja (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 81,5 FPS (194: 80,4), 1% low 41,0, pior quadro 28 ms, p50/p95/p99 11,6/15,9/22,8 ms, GPU
+11,4 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,1 ms; +20 objetos e draw calls (as três pedras e o
+muro, quatro camadas) e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem igreja). Neutra; abre o
+roteiro cemitério, pato e rede.
