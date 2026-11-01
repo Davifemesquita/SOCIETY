@@ -162,6 +162,8 @@ var beach_boat_view: BeachBoatView
 var mooring_pile_view: MooringPileView
 ## Fase 187: a placa de madeira nas encruzilhadas das estradas de terra fora das vilas.
 var signpost_view: SignpostView
+## Fase 188: o arco-íris quando a chuva passa e o sol volta.
+var rainbow_view: RainbowView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -513,6 +515,10 @@ func _ready() -> void:
 	weathercock_view.name = "Weathercocks"
 	add_child(weathercock_view)
 	weathercock_view.setup(simulation, weather)
+	rainbow_view = RainbowView.new()
+	rainbow_view.name = "Rainbow"
+	add_child(rainbow_view)
+	rainbow_view.setup(simulation, sky)
 	ad_column_view = AdColumnView.new()
 	ad_column_view.name = "AdColumns"
 	add_child(ad_column_view)
