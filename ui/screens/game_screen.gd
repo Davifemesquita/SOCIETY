@@ -250,6 +250,8 @@ var bathing_machine_view: BathingMachineView
 var chestnut_roaster_view: ChestnutRoasterView
 ## Fase 235: os cervos pastando na beira da mata das ilhas temperadas, longe das vilas.
 var deer_view: DeerView
+## Fase 236: a âncora velha de ferro deitada no cais de pedra dos entrepostos, com a amarra enrolada ao lado.
+var anchor_view: AnchorView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -765,6 +767,10 @@ func _ready() -> void:
 	deer_view.name = "Deer"
 	add_child(deer_view)
 	deer_view.setup(simulation)
+	anchor_view = AnchorView.new()
+	anchor_view.name = "Anchors"
+	add_child(anchor_view)
+	anchor_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

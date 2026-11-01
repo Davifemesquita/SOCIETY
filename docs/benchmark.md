@@ -2357,3 +2357,9 @@ A máquina seguiu no estado lento: 70,2 FPS (234: 71,2), 1% low 36,5, p50/p95/p9
 montar tudo 9,4 s, carregar 6,3 s, construir com a ilha cheia 17,2 ms; +15 objetos e draw calls (as três camadas, com as passadas
 de sombra) e +360 mil primitivas no quadro com tudo visível (os rebanhos das colônias, com a sombra). Neutra dentro do vaivém do
 estado lento (233: 69,5 FPS e GPU 13,0).
+
+## Fase 236 — âncora no cais (01/11/2026)
+
+A máquina seguiu no estado lento: 70,1 FPS (235: 70,2), 1% low 36,7, p50/p95/p99 13,5/18,0/25,5 ms, GPU 13,0 ms, montar tudo 9,4 s,
+carregar 6,3 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada, com as passadas de sombra) e +22 mil
+primitivas no quadro com tudo visível (as âncoras dos cais das colônias). Neutra.
