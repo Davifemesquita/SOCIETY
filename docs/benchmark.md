@@ -1989,3 +1989,10 @@ Mesmo estado (jogo novo 11,7 s): 82,0 FPS (180: 82,2), 1% low 41,3, pior quadro 
 no quadro com tudo visível. Construir com a ilha cheia deu 20,5 ms (o de sempre fica entre 17 e 18): a medida é o comando e o
 que as vistas fazem na hora, e a vista nova só escuta a troca de estradas (o mercado do benchmark não mexe nelas). Conferido
 de novo na Fase 182.
+
+## Fase 182 — galo do cata-vento (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 81,6 FPS (181: 82,0), 1% low 40,5, pior quadro 29 ms, p50/p95/p99 11,5/15,7/22,9 ms, GPU
+11,4 ms, montar tudo 9,3 s, carregar 6,0 s (181: 5,8), construir com a ilha cheia 17,0 ms (os 20,5 ms da 181 eram oscilação);
++10 objetos e draw calls (a haste e o galo nas ilhas) e primitivas iguais no quadro com tudo visível (o benchmark não tem
+fazenda à vista). O carregar vem subindo devagar neste ciclo (5,7 s na 177, 6,0 s agora): fica de olho.

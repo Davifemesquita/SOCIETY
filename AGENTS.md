@@ -2645,6 +2645,13 @@ Regras que já custaram investigação:
   `posmod(7x + 13y, POST_EVERY)`, fora das dos postes de gás e da escada diagonal, no lado da calçada como o poste) e `box_mesh`
   (sólido de revolução por `_lathe`), num MultiMesh. Captura: `caixa_de_correio.png` no `tools/capture_phase150.tscn`.
 
+### Galo do cata-vento (Fase 182, nossa)
+
+- **Plano** em `docs/plano_fase182.md`. `WeathercockView` (`GameScreen.weathercock_view`, com o `WeatherView`): `spot` (o alto da
+  cumeeira das fazendas de `FARMS` das temperadas, no lugar do modelo), `mast_mesh` e `cock_mesh` (o galo em chapa recortada,
+  `_plate`, visto dos dois lados), virando a cabeça para o vento (`turn`). Captura em `tools/capture_phase182.tscn` (a câmera à
+  mão no alto do telhado, com as árvores em volta derrubadas).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2837,6 +2844,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 179 — Juncos na margem (nossa) | **feita em 31/10/2026**, a última do roteiro espantalho, cegonha e vaga-lume: touceiras de junco alto com as espigas marrons da taboa na margem baixa dos rios, balançando com o vento; plano em `docs/plano_fase179.md` |
 | 180 — Borboletas nos canteiros (nossa) | **feita em 31/10/2026**, primeira do roteiro borboleta, correio e galo (Fases 180 a 184): borboletas brancas, amarelas, laranja e azuis esvoaçando e batendo as asas sobre os canteiros de papoulas das ilhas temperadas e no capim aberto das tropicais, de dia; plano em `docs/plano_fase180.md` |
 | 181 — Caixa de correio (nossa) | **feita em 31/10/2026**: a caixa de correio de ferro fundido, redonda e vermelha, com a boca e a plaquinha, encostada na calçada de parte das células das ruas calçadas, virada para a rua; plano em `docs/plano_fase181.md` |
+| 182 — Galo do cata-vento (nossa) | **feita em 31/10/2026**: a haste de ferro com a rosa dos ventos e o galo de bronze recortado no alto da cumeeira das fazendas das ilhas temperadas, virando a cabeça para o lado de onde vem o vento; plano em `docs/plano_fase182.md` |
 
 Pendências já vistas para fases futuras:
 

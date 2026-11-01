@@ -154,6 +154,8 @@ var firefly_view: FireflyView
 var butterfly_view: ButterflyView
 ## Fase 181: a caixa de correio de ferro na calçada de parte das ruas calçadas.
 var post_box_view: PostBoxView
+## Fase 182: o galo de bronze no alto da cumeeira das fazendas, virando com o vento.
+var weathercock_view: WeathercockView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -489,6 +491,10 @@ func _ready() -> void:
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
 	windpump_view.setup(simulation, weather)
+	weathercock_view = WeathercockView.new()
+	weathercock_view.name = "Weathercocks"
+	add_child(weathercock_view)
+	weathercock_view.setup(simulation, weather)
 	ad_column_view = AdColumnView.new()
 	ad_column_view.name = "AdColumns"
 	add_child(ad_column_view)
