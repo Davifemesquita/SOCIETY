@@ -2469,3 +2469,11 @@ visível (a cidade do benchmark não tem teatro). Neutra.
 A máquina seguiu no estado rápido: 78,1 FPS (252: 78,1), 1% low 39,0, p50/p95/p99 12,1/16,4/24,1 ms, GPU 11,8 ms, montar tudo 9,2 s,
 carregar 6,3 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
 visível (a cidade do benchmark não tem fazenda de batata). Neutra.
+
+## Fase 254 — canoas na margem do rio (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,7 FPS (253: 78,1), 1% low 39,2, p50/p95/p99 12,2/16,3/24,1 ms, GPU 11,9 ms, montar tudo 9,3 s,
+carregar 6,3 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e +600 primitivas no quadro com tudo
+visível. Neutra. A primeira rodada deu carregar 6,6 s: a busca das margens varria a vizinhança de cada ponto da rede e custava
+~160 ms a cada refazer (na carga e no quadro seguinte a cada obra); partindo das células de rio pelo `find` nativo, ~36 ms, com as
+mesmas canoas. Fecha o roteiro balança, cabra e canoa e os quatro ciclos do sétimo pedido do dono (Fases 235 a 254).

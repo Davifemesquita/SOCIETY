@@ -3136,6 +3136,15 @@ Regras que já custaram investigação:
   da fazenda pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e `basket_mesh`
   (`_basket`, `_potato`), num MultiMesh. Captura em `tools/capture_phase253.tscn`.
 
+### Canoas na margem do rio (Fase 254, nossa)
+
+- **Plano** em `docs/plano_fase254.md`. `CanoeView` (`GameScreen.canoe_view`): `banks` (terra livre e baixa com o rio do lado, numa
+  rede de pontos, longe das vilas pela regra das focas), `place_of` (de comprido ao longo da margem, deitada com o chão) e
+  `canoe_mesh` (o casco em seções, como o barco da `HarborView`), num MultiMesh sem descarte de face. **Busca rara pela grade sai
+  das células raras**: as margens partem das células de rio pelo `find` nativo (varrer a vizinhança de cada ponto custava 160 ms
+  a cada obra; os bichos das Fases 235, 245 e 251 ainda varrem, de 27 a 44 ms). Captura em
+  `tools/capture_phase254.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3400,6 +3409,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 251 — Cabras nas encostas (nossa) | **feita em 01/11/2026**: grupos de cabras malhadas de chifres para trás pastando nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra; plano em `docs/plano_fase251.md` |
 | 252 — Carruagem à porta do teatro (nossa) | **feita em 01/11/2026**: a carruagem fechada laqueada de vinho, sem os cavalos, parada na rua diante da entrada de cada teatro; plano em `docs/plano_fase252.md` |
 | 253 — Cestos de batata (nossa) | **feita em 01/11/2026**: os cestos de vime cheios de batata, um tombado com as batatas rolando, os sacos e o forcado no lado de cada fazenda de batata; plano em `docs/plano_fase253.md` |
+| 254 — Canoas na margem do rio (nossa) | **feita em 01/11/2026**, a última do roteiro balança, cabra e canoa: a canoa escavada com o remo e o banco dentro, puxada para a margem baixa dos rios, de comprido ao longo dela, longe das vilas; plano em `docs/plano_fase254.md` |
 
 Pendências já vistas para fases futuras:
 
