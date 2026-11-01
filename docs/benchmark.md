@@ -2420,3 +2420,9 @@ A máquina seguiu no estado lento: 70,0 FPS (244: 70,3), 1% low 37,1, p50/p95/p9
 carregar 6,4 s, construir com a ilha cheia 17,2 ms; +1 objeto e draw call e +74 mil primitivas no quadro com tudo visível (os
 coelhos, sem sombra). Neutra. A primeira rodada saiu inválida (carregar 3,0 s, o dia a partir das 07:00 e erros de compilação no
 log): o `scatter_view.gd` da fase seguinte foi editado com ela rodando, e o Godot carrega os scripts sob demanda.
+
+## Fase 246 — tronco caído com cogumelos (01/11/2026)
+
+A máquina seguiu no estado lento: 70,9 FPS (245: 70,0), 1% low 36,0, p50/p95/p99 13,5/18,0/25,3 ms, GPU 12,9 ms, montar tudo 9,4 s,
+carregar 6,3 s, construir com a ilha cheia 17,3 ms; +1 objeto e draw call e +8 mil primitivas no quadro com tudo visível (os
+troncos da mata perto da cidade do benchmark). Neutra.

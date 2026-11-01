@@ -26,9 +26,11 @@ extends Node3D
 ## e NEAR_FOREST, só nas encostas íngremes (desnível de ROCK_PINE_MIN_RELIEF_M entre os cantos) das temperadas.
 ## Fase 239: as algas (SEAWEED), uma faixa chata e torta de sargaço com as fitas soltas no chão, no fim da lista NEAR_SEA, só nas
 ## células baixas e planas da areia (SEAWEED_MAX_HEIGHT_M, SEAWEED_MAX_RELIEF_M), onde a maré as deixa.
+## Fase 246: o tronco caído (MOSSY_LOG), velho e coberto de musgo, com os cogumelos, no fim da lista NEAR_FOREST, só nas
+## temperadas, deitado com o chão como a madeira à deriva.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -38,7 +40,7 @@ const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
-		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE]
+		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
 		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE]
@@ -63,7 +65,7 @@ const YARD_BARK := Color(0.32, 0.24, 0.17)
 const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
-		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE]]
+		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE], [Kind.MOSSY_LOG, MOSSY_LOG_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
@@ -125,6 +127,17 @@ const SEAWEED_LUMPS := 7
 const SEAWEED_DARK := Color(0.17, 0.18, 0.09)
 const SEAWEED_BROWN := Color(0.26, 0.21, 0.1)
 const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
+## Fase 246: o tronco caído — a chance por célula da beira da mata (depois do pinheiro-anão), só nas temperadas e com o chão
+## pouco inclinado (a mesma conta da madeira à deriva), o comprimento e as cores (a casca escura, a madeira do corte, o musgo e os
+## cogumelos: a orelha-de-pau castanha e os chapéus vermelhos de pintas).
+const MOSSY_LOG_CHANCE := 0.07
+const MOSSY_LOG_M := 2.0
+const LOG_BARK := Color(0.3, 0.24, 0.18)
+const LOG_WOOD := Color(0.56, 0.44, 0.3)
+const LOG_MOSS := Color(0.26, 0.38, 0.14)
+const BRACKET := Color(0.62, 0.48, 0.3)
+const TOADSTOOL := Color(0.72, 0.14, 0.1)
+const STEM := Color(0.9, 0.86, 0.76)
 const TALL_GRASS_PATCH_CELLS := 7.0
 const TALL_GRASS_THRESHOLD := 0.66
 const TALL_GRASS_BLADES := 26
@@ -684,7 +697,10 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				+ (cell.x + 0.5) * grid.cell_size, grid.origin_m.y + (cell.y + 0.5) * grid.cell_size) > SEAWEED_MAX_HEIGHT_M):
 			# as algas só na areia baixa e plana, onde a maré chega
 			continue
-		var offset :=Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
+		elif kind == Kind.MOSSY_LOG and (tropical or cell_relief(grid, cell) > SCREE_MIN_RELIEF_M):
+			# o tronco caído só nas matas das temperadas, no chão pouco inclinado
+			continue
+		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG or kind == Kind.ROCK_PINE:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
@@ -709,17 +725,18 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
-		if kind == Kind.DRIFTWOOD:
+		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
 			# deitado no chão: o tronco (x da peça) inclina com o terreno entre as duas pontas
-			var along := basis.x.normalized() * DRIFTWOOD_LENGTH_M * 0.5 * scale
+			var length := DRIFTWOOD_LENGTH_M if kind == Kind.DRIFTWOOD else MOSSY_LOG_M
+			var along := basis.x.normalized() * length * 0.5 * scale
 			var rise := grid.height_at(x + along.x, z + along.z) - grid.height_at(x - along.x, z - along.z)
-			if absf(rise) > DRIFTWOOD_LENGTH_M * scale * DRIFTWOOD_MAX_SLOPE:
-				# na encosta íngreme o tronco não para: rolaria para o mar
+			if absf(rise) > length * scale * DRIFTWOOD_MAX_SLOPE:
+				# na encosta íngreme o tronco não para: rolaria para baixo
 				continue
-			basis = basis * Basis(Vector3.BACK, atan2(rise, DRIFTWOOD_LENGTH_M * scale))
+			basis = basis * Basis(Vector3.BACK, atan2(rise, length * scale))
 		elif kind == Kind.SCREE:
 			# deitado no plano da encosta (as pedrinhas encostam no chão de cima a baixo), meio afundado
 			var normal := cell_normal(grid, cell)
@@ -990,6 +1007,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return rock_pine_mesh()
 	if kind == Kind.SEAWEED:
 		return seaweed_mesh()
+	if kind == Kind.MOSSY_LOG:
+		return mossy_log_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1182,5 +1201,39 @@ static func seaweed_mesh() -> ArrayMesh:
 		var tip := knee + Vector3(0.3, -0.01, -side * 0.06)
 		VertexShapes.strut(tool, root, knee, 0.03, 0.006, colors[(k + 1) % 3])
 		VertexShapes.strut(tool, knee, tip, 0.022, 0.005, colors[(k + 2) % 3])
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 246: o tronco caído com o pé em y = 0, deitado ao longo de x e meio afundado no chão: o tronco de casca escura em dois lances
+## tortos, o corte claro numa ponta e a ponta quebrada na outra, as almofadas de musgo por cima, três orelhas-de-pau de lado e um
+## punhado de cogumelos de chapéu vermelho no chão junto dele.
+static func mossy_log_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var half := MOSSY_LOG_M * 0.5
+	var root := Vector3(-half, 0.16, 0.0)
+	var bend := Vector3(0.1, 0.15, 0.06)
+	var tip := Vector3(half, 0.12, -0.04)
+	VertexShapes.cylinder(tool, root, bend, 0.22, LOG_BARK, 8)
+	VertexShapes.cylinder(tool, bend, tip, 0.18, LOG_BARK, 8)
+	VertexShapes.cylinder(tool, root - Vector3(0.012, 0.0, 0.0), root + Vector3(0.002, 0.0, 0.0), 0.2, LOG_WOOD, 8)
+	VertexShapes.cylinder(tool, tip, tip + Vector3(0.05, 0.03, 0.02), 0.12, LOG_BARK.darkened(0.2), 6)
+	# o musgo em almofadas chatas no alto do tronco
+	for k: int in 4:
+		var t := 0.15 + 0.22 * k
+		var on := root.lerp(tip, t) + Vector3(0.0, 0.19 - 0.02 * k, 0.03 * (k % 2))
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.3, 0.07, 0.17)), on), LOG_MOSS.darkened(0.08 * (k % 2)))
+	# as orelhas-de-pau saindo de lado, em prateleira
+	for k: int in 3:
+		var at := root.lerp(tip, 0.3 + 0.18 * k) + Vector3(0.0, -0.02 + 0.05 * k, 0.25)
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.12, 0.03, 0.1)), at), BRACKET)
+	# os cogumelos no chão, junto do tronco do outro lado
+	for k: int in 3:
+		var foot := Vector3(-0.4 + 0.22 * k, 0.0, -0.3 - 0.06 * (k % 2))
+		var height := 0.1 + 0.03 * k
+		VertexShapes.cylinder(tool, foot, foot + Vector3(0.0, height, 0.0), 0.018, STEM, 5)
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.06, 0.03, 0.06)), foot + Vector3(0.0, height, 0.0)),
+				TOADSTOOL)
 	tool.generate_normals()
 	return tool.commit()

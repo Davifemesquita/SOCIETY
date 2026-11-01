@@ -3087,6 +3087,12 @@ Regras que já custaram investigação:
   sombra. Captura em `tools/capture_phase245.tscn`. **Não edite `.gd` do projeto com um benchmark ou uma captura rodando**: o
   Godot carrega os scripts sob demanda e pega o arquivo pela metade (a primeira medida desta fase saiu inválida assim).
 
+### Tronco caído com cogumelos (Fase 246, nossa)
+
+- **Plano** em `docs/plano_fase246.md`. `ScatterView.Kind.MOSSY_LOG` (no fim do enum e da lista `NEAR_FOREST`, com sombra) só nas
+  temperadas e no chão de pouco desnível, deitado com o chão pela conta da madeira à deriva; `mossy_log_mesh` (o tronco, o musgo,
+  as orelhas-de-pau e os cogumelos). Captura em `tools/capture_phase246.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3343,6 +3349,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 243 — Vigas de aço empilhadas (nossa) | **feita em 01/11/2026**: a pilha de vigas de ferro em I em camadas sobre os dormentes, com uma viga solta no chão, no lado de cada fábrica de vigas de aço; plano em `docs/plano_fase243.md` |
 | 244 — Estacas de lúpulo (nossa) | **feita em 01/11/2026**, a última do roteiro lagar, terreiro e estacas: as estacas compridas deitadas nos cavaletes e o feixe amarrado encostado na parede, no lado de cada fazenda de lúpulo; plano em `docs/plano_fase244.md` |
 | 245 — Coelhos no prado (nossa) | **feita em 01/11/2026**, primeira do roteiro coelho, cogumelo e pedra (Fases 245 a 249): tocas de coelhos pardos de rabo branco pastando no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando; plano em `docs/plano_fase245.md` |
+| 246 — Tronco caído com cogumelos (nossa) | **feita em 01/11/2026**: troncos velhos caídos na beira da mata das ilhas temperadas, cobertos de musgo, com as orelhas-de-pau de lado e os cogumelos vermelhos no chão; plano em `docs/plano_fase246.md` |
 
 Pendências já vistas para fases futuras:
 
