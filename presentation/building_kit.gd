@@ -3185,7 +3185,17 @@ static func _dome(tool: SurfaceTool, spec: Spec) -> void:
 		var angle := PI * 0.5 * step / 4.0
 		cap.append(Vector2(cos(angle) * small * 1.15, crown + small * 1.6 + sin(angle) * small))
 	_turned(tool, center, cap, 8, UV_COPPER)
-	_rod(tool, Vector3(0.0, crown + small * 2.5, 0.0), Vector3(0.0, crown + small * 2.5 + 0.9, 0.0), 0.05, 6, UV_COPPER)
+	var finial := dome_finial(spec)
+	_rod(tool, finial, finial + Vector3(0.0, 0.9, 0.0), 0.05, 6, UV_COPPER)
+
+
+## Fase 238: o pé do remate da cúpula (no alto da capinha do lanternim), no referencial do prédio; é onde sobe o mastro da
+## bandeira da prefeitura.
+static func dome_finial(spec: Spec) -> Vector3:
+	var size := spec.size_m()
+	var radius := minf(minf(size.x, size.y) * DOME_SHARE, DOME_MAX_M)
+	var crown := spec.height_m + spec.roof_m + DRUM_M + radius * DOME_RISE
+	return Vector3(0.0, crown + radius * 0.2 * 2.5, 0.0)
 
 
 ## Fase 97: o torreão redondo no canto da frente de +X (no referencial do corpo), em balanço do primeiro andar: o cone de

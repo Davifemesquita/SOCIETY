@@ -3035,6 +3035,12 @@ Regras que já custaram investigação:
   dos postes de fio; na beira do lado livre, a face para a estrada) e `stone_mesh`, num MultiMesh. **As estradas retas e compridas
   são raras no relevo da semente 1840**: a captura (`tools/capture_phase237.tscn`) procura onde a obra passa.
 
+### Bandeira na prefeitura (Fase 238, nossa)
+
+- **Plano** em `docs/plano_fase238.md`. `TownFlagView` (`GameScreen.town_flag_view`): `foot_of` (o remate da cúpula pelo
+  `BuildingKit.dome_finial`, que o `_dome` também usa, no lugar do modelo), `pole_mesh` e `flag_mesh` (a bandeira da cidade, sem
+  nenhuma de verdade) numa `WindFlag`, um nó por prefeitura. Captura em `tools/capture_phase238.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3283,6 +3289,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 235 — Cervos na beira da mata (nossa) | **feita em 01/11/2026**, primeira do roteiro cervo, âncora e marco (Fases 235 a 239): grupos de corças com um veado de galhada pastando na beira da mata das ilhas temperadas, longe das vilas, erguendo a cabeça de vez em quando; plano em `docs/plano_fase235.md` |
 | 236 — Âncora no cais (nossa) | **feita em 01/11/2026**: a âncora velha de ferro deitada com um braço erguido, o cepo de madeira e a amarra enrolada ao lado, no fundo do cais de pedra de cada entreposto; plano em `docs/plano_fase236.md` |
 | 237 — Marco de légua (nossa) | **feita em 01/11/2026**: o marco de pedra de topo redondo com a inscrição e o musgo no pé na beira das estradas de terra retas e compridas fora das vilas, um a cada 23 células; plano em `docs/plano_fase237.md` |
+| 238 — Bandeira na prefeitura (nossa) | **feita em 01/11/2026**: o mastro de ferro com a bandeira da cidade (vermelha com o losango dourado) no alto da cúpula de cada prefeitura, virando e tremulando com o vento; plano em `docs/plano_fase238.md` |
 
 Pendências já vistas para fases futuras:
 
