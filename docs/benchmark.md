@@ -2016,3 +2016,9 @@ Mesmo estado (jogo novo 11,7 s): 81,4 FPS (184: 81,2), 1% low 41,1, pior quadro 
 11,4 ms, montar tudo 9,3 s, carregar 5,8 s, construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (é um parâmetro de instância e um trecho do shader do kit). Neutra; abre o roteiro hera, estaca e
 arco-íris.
+
+## Fase 186 — estacas na água (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 81,6 FPS (185: 81,4), 1% low 41,6, pior quadro 31 ms, p50/p95/p99 11,6/15,8/22,6 ms, GPU
+11,4 ms, montar tudo 9,2 s, carregar 5,9 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls e +48 mil primitivas
+no quadro com tudo visível (os feixes diante dos entrepostos do benchmark). Neutra.

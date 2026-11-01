@@ -158,6 +158,8 @@ var post_box_view: PostBoxView
 var weathercock_view: WeathercockView
 ## Fase 183: o barco virado na areia, com os remos, junto das cabanas de pesca.
 var beach_boat_view: BeachBoatView
+## Fase 186: os feixes de estacas de atracação na água diante do entreposto e dos píeres.
+var mooring_pile_view: MooringPileView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -493,6 +495,10 @@ func _ready() -> void:
 	beach_boat_view.name = "BeachBoats"
 	add_child(beach_boat_view)
 	beach_boat_view.setup(simulation)
+	mooring_pile_view = MooringPileView.new()
+	mooring_pile_view.name = "MooringPiles"
+	add_child(mooring_pile_view)
+	mooring_pile_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -2674,6 +2674,13 @@ Regras que já custaram investigação:
   `shaders/building_kit.gdshader` desenha a hera só nas células de parede, em colunas subindo do chão. **Parâmetro de instância
   não aparece no `get_shader_uniform_list`** (o teste confere os uniformes comuns). Captura: as ruas do `tools/capture_phase95.tscn`.
 
+### Estacas na água (Fase 186, nossa)
+
+- **Plano** em `docs/plano_fase186.md`. `MooringPileView` (`GameScreen.mooring_pile_view`): `spots` (diante do entreposto e na ponta
+  do píer, pelo `HarborView.seaward`, onde boia) e `cluster_mesh` (cinco estacas amarradas, com o limo junto da água), num
+  MultiMesh. **Objeto que entra fundo na água vira coluna branca pela espuma por profundidade**: o pé fica a `FOOT_M` (meio
+  metro). Captura em `tools/capture_phase186.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2870,6 +2877,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 183 — Barco na areia (nossa) | **feita em 31/10/2026**: o bote de pesca virado de borco na praia, com uma ponta apoiada e os dois remos deitados na areia, ao lado de cada cabana de pesca; plano em `docs/plano_fase183.md` |
 | 184 — Limo na pedra (nossa) | **feita em 31/10/2026**, a última do roteiro borboleta, correio e galo: a faixa escura de limo e sargaço, a pedra molhada e a crosta clara da maré nos rochedos, nas rochas da falésia e nas pedras do rio, junto da linha d'água; plano em `docs/plano_fase184.md` |
 | 185 — Hera nas paredes (nossa) | **feita em 01/11/2026**, primeira do roteiro hera, estaca e arco-íris (Fases 185 a 189): a hera subindo em colunas pelas paredes da igreja e dos serviços de pedra e de parte das casas de alvenaria das ilhas temperadas; plano em `docs/plano_fase185.md` |
+| 186 — Estacas na água (nossa) | **feita em 01/11/2026**: feixes de cinco estacas de madeira amarradas com cabo e o limo junto da água, cravados diante de cada entreposto e na ponta dos píeres; plano em `docs/plano_fase186.md` |
 
 Pendências já vistas para fases futuras:
 
