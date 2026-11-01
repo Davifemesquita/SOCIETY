@@ -16,3 +16,12 @@ oficinas (`c5_09`). Como sempre, **só a ideia**: nenhum modelo, textura, arquiv
 | 209 — Lanterna nas carroças | a lanterna pendurada na frente de cada carroça, acesa à noite |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase205.md` a
+`docs/plano_fase209.md`), testes, captura e benchmark; as três pastas da suíte passaram no fim (world 434, presentation 359, ui
+167; o teste dos juncos da Fase 179 exigia que eles fossem a última peça do recheio e passou a conferir só a ordem). Diferenças
+do roteiro: o bebedouro fica encostado na parede do lado da taverna, não junto da rua (as mesas pegam as células da frente, e
+dar a vez a ele fazia as buscas chamarem umas às outras); a lanterna vai na malha da própria carroça (em camadas próprias custava
+~0,7 FPS); nas Fases 208 e 209 a máquina estava no estado lento, e os A/B mostraram as duas neutras.

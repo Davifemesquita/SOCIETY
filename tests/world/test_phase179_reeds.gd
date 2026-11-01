@@ -25,8 +25,9 @@ func _reeds(island_id: int) -> Array:
 	return found
 
 
-func test_the_reeds_are_the_newest_piece_and_sway() -> void:
-	assert_int(ScatterView.Kind.REEDS).is_equal(ScatterView.Kind.values().max())
+func test_the_reeds_come_after_the_older_pieces_and_sway() -> void:
+	# peça nova vai no fim do enum: as de antes não mudam de número (a Fase 207 pôs o pinheiro-anão depois)
+	assert_int(ScatterView.Kind.REEDS).is_greater(ScatterView.Kind.TALL_GRASS)
 	assert_bool(ScatterView.Kind.REEDS in ScatterView.PLANTS).is_true()
 
 
