@@ -2320,3 +2320,10 @@ A máquina começou a passar ao estado lento: 75,5 FPS (229: 77,3), 1% low 38,2,
 tudo 9,5 s, carregar 6,1 s, construir com a ilha cheia 16,9 ms; +6 objetos e draw calls (as duas camadas) e primitivas iguais no
 quadro com tudo visível (a cidade do benchmark não tem trilho). O A/B sem a vista, logo depois, deu 71,4 FPS e GPU 12,7 ms: a queda
 é da máquina, não do sinal. Neutra; abre o roteiro sinal, cormorão e castanha.
+
+## Fase 231 — cormorões nas estacas (01/11/2026)
+
+A máquina passou ao estado lento: 70,8 FPS (sem os cormorões, no mesmo estado: 71,2), 1% low 36,8, p50/p95/p99 13,5/17,7/25,4 ms,
+GPU 12,9 ms (sem: 12,9), montar tudo 9,4 s, carregar 6,2 s, construir com a ilha cheia 17,0 ms; +1 objeto e draw call e +3 mil
+primitivas no quadro com tudo visível (os cormorões dos cais das colônias). A primeira rodada, com a sombra dos cormorões ligada,
+deu 70,3 FPS e GPU 13,1 ms; sem a sombra, neutra.

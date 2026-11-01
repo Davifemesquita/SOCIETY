@@ -240,6 +240,8 @@ var oil_barrel_view: OilBarrelView
 var bat_view: BatView
 ## Fase 230: o poste de sinal de braço na ponta de cada linha de trilho.
 var rail_signal_view: RailSignalView
+## Fase 231: os cormorões de asas abertas no alto das estacas de atracação.
+var cormorant_view: CormorantView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -735,6 +737,10 @@ func _ready() -> void:
 	rail_signal_view.name = "RailSignals"
 	add_child(rail_signal_view)
 	rail_signal_view.setup(simulation)
+	cormorant_view = CormorantView.new()
+	cormorant_view.name = "Cormorants"
+	add_child(cormorant_view)
+	cormorant_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -2989,6 +2989,12 @@ Regras que já custaram investigação:
   trilho), `place_of` (ao lado da linha, à direita de quem chega), `signal_mesh` (o poste, a escada e o braço) e `glass_mesh` (no
   `shaders/night_glow.gdshader`), em dois MultiMesh. Captura em `tools/capture_phase230.tscn`.
 
+### Cormorões nas estacas (Fase 231, nossa)
+
+- **Plano** em `docs/plano_fase231.md`. `CormorantView` (`GameScreen.cormorant_view`): `perches` (no alto da estaca do meio de um a
+  cada `PERCH_EVERY` feixes de atracação da Fase 186, o primeiro sempre) e `cormorant_mesh` (de asas abertas), num MultiMesh sem
+  descarte de face; some à noite. Captura em `tools/capture_phase231.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3230,6 +3236,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 228 — Barris de petróleo (nossa) | **feita em 01/11/2026**: os barris de madeira enegrecidos pelo óleo, em pé e deitados sobre os calços, e a mancha de óleo no chão no lado de cada poço de petróleo; plano em `docs/plano_fase228.md` |
 | 229 — Morcegos ao anoitecer (nossa) | **feita em 01/11/2026**, a última do roteiro lanterna, lã e morcego: os morcegos esvoaçando em zigue-zague em volta da torre de cada igreja, do anoitecer à madrugada; plano em `docs/plano_fase229.md` |
 | 230 — Sinal no trilho (nossa) | **feita em 01/11/2026**, primeira do roteiro sinal, cormorão e castanha (Fases 230 a 234): o poste de sinal de braço vermelho com a escada e a lanterna acesa à noite em cada ponta de linha do trilho; plano em `docs/plano_fase230.md` |
+| 231 — Cormorões nas estacas (nossa) | **feita em 01/11/2026**: o cormorão de pé com as asas abertas secando no alto das estacas de atracação diante dos entrepostos e dos píeres, de dia; plano em `docs/plano_fase231.md` |
 
 Pendências já vistas para fases futuras:
 
