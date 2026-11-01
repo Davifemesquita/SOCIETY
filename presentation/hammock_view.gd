@@ -53,7 +53,7 @@ func setup(simulation: Simulation) -> void:
 	add_child(_hammocks)
 	EventBus.building_placed.connect(_mark)
 	EventBus.building_removed.connect(_mark)
-	EventBus.building_state_changed.connect(_mark)
+	EventBus.house_upgraded.connect(_mark)
 	EventBus.world_replaced.connect(rebuild)
 	rebuild()
 

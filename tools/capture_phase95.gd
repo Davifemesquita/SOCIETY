@@ -116,6 +116,11 @@ func _run() -> void:
 	if not _game.kennel_view.places.is_empty():
 		await _shot("casinha_do_cao.png", _game.kennel_view.places[0].origin, 7.0, 0.5)
 		await _shot("casinha_do_cao_rua.png", _game.kennel_view.places[0].origin, 16.0, -0.4)
+	# Fase 200: o gato sentado ao lado da porta, de perto e da rua
+	if not _game.cat_view.places.is_empty():
+		var cat := _game.cat_view.places[0]
+		await _shot("gato_na_porta.png", cat.origin, 5.0, atan2(-cat.basis.z.x, -cat.basis.z.z) + 0.4)
+		await _shot("gato_da_rua.png", cat.origin, 14.0, atan2(-cat.basis.z.x, -cat.basis.z.z) - 0.3)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

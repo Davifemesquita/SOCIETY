@@ -2768,6 +2768,15 @@ Regras que já custaram investigação:
   listrado, as varas e os cabos) e `swing` (o balanço em volta dos nós), num MultiMesh sem descarte de face. Mudou a varanda,
   confira `post_xs`. Captura em `tools/capture_phase199.tscn`.
 
+### Gato na porta (Fase 200, nossa)
+
+- **Plano** em `docs/plano_fase200.md`, primeira do roteiro `docs/plano_fases_200_204.md` (gato, poço e carrinho; o Anno não foi
+  aberto: o dono estava no PC). `CatView` (`GameScreen.cat_view`): `spot` (ao lado da porta das casas do resto certo sem cão,
+  pela conta da porta do banco da Fase 174), `body_mesh` e `head_mesh` (a pelagem na cor da instância) e o giro da cabeça no
+  `shaders/cat_head.gdshader` (`glance`, `glance_data`), em dois MultiMesh sem sombra. **Subida de classe é o sinal
+  `house_upgraded`**: o `building_state_changed` dispara a cada troca de estado das fábricas, e uma vista de casas que se refaz
+  nele (chamando `spec_for` em centenas delas) pesa no quadro. Captura: `gato_na_porta.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2978,6 +2987,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 197 — Casinha do cão (nossa) | **feita em 01/11/2026**: a casinha de tábuas com telhado de duas águas, a porta em arco e a tigela de água ao lado das casas que têm cão na porta, virada para a rua; plano em `docs/plano_fase197.md` |
 | 198 — Bancos no cais (nossa) | **feita em 01/11/2026**: bancos de praça de pés de ferro e tábuas no cais de pedra dos entrepostos, entre os cabeços, de costas para a cidade e virados para o mar, longe dos lampiões, das cisternas, dos mastros e das escadas; plano em `docs/plano_fase198.md` |
 | 199 — Rede na varanda (nossa) | **feita em 01/11/2026**, a última do roteiro cemitério, pato e rede: a rede de dormir listrada pendurada entre dois esteios da varanda de parte das casas das ilhas tropicais, ao lado da porta, balançando de leve; plano em `docs/plano_fase199.md` |
+| 200 — Gato na porta (nossa) | **feita em 01/11/2026**, primeira do roteiro gato, poço e carrinho (Fases 200 a 204): um gato ruivo, preto, cinza, branco ou creme sentado ao lado da porta de parte das casas (as que não têm cão), virando a cabeça de vez em quando; plano em `docs/plano_fase200.md` |
 
 Pendências já vistas para fases futuras:
 

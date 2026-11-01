@@ -186,6 +186,8 @@ var kennel_view: KennelView
 var quay_bench_view: QuayBenchView
 ## Fase 199: a rede listrada na varanda das casas das ilhas tropicais, balançando de leve.
 var hammock_view: HammockView
+## Fase 200: o gato sentado ao lado da porta de parte das casas, virando a cabeça de vez em quando.
+var cat_view: CatView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -573,6 +575,10 @@ func _ready() -> void:
 	hammock_view.name = "Hammocks"
 	add_child(hammock_view)
 	hammock_view.setup(simulation)
+	cat_view = CatView.new()
+	cat_view.name = "Cats"
+	add_child(cat_view)
+	cat_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

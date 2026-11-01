@@ -2110,3 +2110,12 @@ Mesmo estado (jogo novo 11,9 s): 79,8 FPS (198: 80,2), 1% low 40,3, pior quadro 
 11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e
 primitivas iguais no quadro com tudo visível (o benchmark não tem casa com alpendre). Neutra; fecha o roteiro cemitério, pato e
 rede.
+
+## Fase 200 — gato na porta (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 80,5 FPS (199: 79,8), 1% low 40,2, pior quadro 36 ms, p50/p95/p99 11,7/16,0/23,3 ms, GPU
+11,4 ms, montar tudo 9,3 s, carregar 6,0 s, construir com a ilha cheia 17,1 ms; +2 objetos e draw calls (as duas camadas, sem
+sombra) e +71 mil primitivas no quadro com tudo visível (~120 gatos na cidade do benchmark). A primeira versão ficou em 78,7
+FPS, 1% low 36,8 e p95 17,5 (sem o gato, na mesma hora: 80,1, 40,6 e 16,3): as cabeças viravam na CPU a cada quadro e a vista
+se refazia a cada `building_state_changed`, que dispara a cada troca de estado das fábricas. Com o giro no shader e só o
+`house_upgraded`, neutra; a rede da Fase 199 ouvia o mesmo sinal e foi corrigida junto.
