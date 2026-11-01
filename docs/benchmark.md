@@ -2221,3 +2221,9 @@ A máquina voltou ao estado rápido: 78,6 FPS (214, no lento: 71,5), 1% low 40,1
 montar tudo 9,4 s, carregar 6,2 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e +0,31 milhão de
 primitivas no quadro com tudo visível (as pilhas das serrarias da cidade do benchmark, ~1.700 triângulos por célula). Neutra;
 abre o roteiro tábua, cortina e andorinha.
+
+## Fase 216 — monte de carvão na usina (01/11/2026)
+
+A máquina seguiu no estado rápido: 78,6 FPS (215: 78,6), 1% low 39,5, p50/p95/p99 11,9/17,4/23,7 ms, GPU 11,7 ms, montar tudo
+9,5 s, carregar 6,1 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem usina a carvão). Neutra.

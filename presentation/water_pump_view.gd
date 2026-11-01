@@ -193,6 +193,9 @@ static func _taken_now(world: WorldState, data: GameData, island_id: int) -> Dic
 	# Fase 215: nem nas tábuas das serrarias
 	for cell: Vector2i in PlankStackView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 216: nem nos montes de carvão das usinas
+	for cell: Vector2i in CoalHeapView.cells(world, data, island_id):
+		taken[cell] = true
 	# Fase 211: nem nas mós dos moinhos
 	for cell: Vector2i in MillstoneView.cells(world, data, island_id):
 		taken[cell] = true

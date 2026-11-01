@@ -214,6 +214,8 @@ var oven_wood_view: OvenWoodView
 var ladder_view: LadderView
 ## Fase 215: as pilhas de tábuas secando no lado da serraria oposto à roda d'água.
 var plank_stack_view: PlankStackView
+## Fase 216: o monte de carvão na baia de tábuas ao lado de cada usina a carvão.
+var coal_heap_view: CoalHeapView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -657,6 +659,10 @@ func _ready() -> void:
 	plank_stack_view.name = "PlankStacks"
 	add_child(plank_stack_view)
 	plank_stack_view.setup(simulation)
+	coal_heap_view = CoalHeapView.new()
+	coal_heap_view.name = "CoalHeaps"
+	add_child(coal_heap_view)
+	coal_heap_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
