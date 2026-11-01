@@ -212,6 +212,8 @@ var topiary_view: TopiaryView
 var oven_wood_view: OvenWoodView
 ## Fase 214: a escada de mão encostada na parede do lado de parte das casas, com o balde no pé.
 var ladder_view: LadderView
+## Fase 215: as pilhas de tábuas secando no lado da serraria oposto à roda d'água.
+var plank_stack_view: PlankStackView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -651,6 +653,10 @@ func _ready() -> void:
 	ladder_view.name = "Ladders"
 	add_child(ladder_view)
 	ladder_view.setup(simulation)
+	plank_stack_view = PlankStackView.new()
+	plank_stack_view.name = "PlankStacks"
+	add_child(plank_stack_view)
+	plank_stack_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

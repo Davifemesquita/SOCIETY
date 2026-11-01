@@ -2876,6 +2876,13 @@ Regras que já custaram investigação:
   das casas de duas águas do resto certo, na metade de trás, com a célula do lado livre; o recheio e as bombas a deixam) e
   `ladder_mesh` (esticada até o beiral), num MultiMesh. Captura: `escada_de_mao.png` no `tools/capture_phase95.tscn`.
 
+### Tábuas secando na serraria (Fase 215, nossa)
+
+- **Plano** em `docs/plano_fase215.md`, primeira do roteiro `docs/plano_fases_215_219.md` (tábua, cortina e andorinha; o Anno não
+  foi aberto: o dono estava no PC). `PlankStackView` (`GameScreen.plank_stack_view`): `sites`/`cells` (as duas células do meio do
+  lado de −X do modelo, oposto à roda d'água, ou dos fundos; o recheio e as bombas as deixam) e `stack_mesh` (camadas de tábuas
+  com os tabiques sobre dormentes e a cobertura de tábuas velhas), num MultiMesh. Captura em `tools/capture_phase215.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3101,6 +3108,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 212 — Buxo na porta (nossa) | **feita em 01/11/2026**: dois vasos de pedra com o buxo podado em bola, um de cada lado da porta das casas dos investidores, por fora das colunas; plano em `docs/plano_fase212.md` |
 | 213 — Lenha da padaria (nossa) | **feita em 01/11/2026**: a pilha de lenha miúda sob uma tábua e a pá de forno de pé, encostadas na parede ao lado da boca do forno de cada padaria; plano em `docs/plano_fase213.md` |
 | 214 — Escada de mão (nossa) | **feita em 01/11/2026**, a última do roteiro pombo, mó e buxo: a escada de madeira encostada na parede do lado de parte das casas, do chão até o beiral, com o balde de lata no pé; plano em `docs/plano_fase214.md` |
+| 215 — Tábuas secando na serraria (nossa) | **feita em 01/11/2026**, primeira do roteiro tábua, cortina e andorinha (Fases 215 a 219): as pilhas de tábuas em camadas com os tabiques, sobre dormentes e cobertas por tábuas velhas, no lado de cada serraria oposto à roda d'água; plano em `docs/plano_fase215.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -2214,3 +2214,10 @@ quinto pedido do dono (Fases 195 a 214). Ao longo deles o FPS médio ficou em ~8
 caiu para ~71 quando ela passou ao lento (208 em diante, o dono usando o PC); os A/B das Fases 200, 208, 209 e 210 mostraram as
 fases neutras no mesmo estado. Montar, carregar e construir ficaram onde estavam (o carregar subiu 0,4 s nas Fases 201 a 204 e
 voltou com a memória das buscas junto da rua).
+
+## Fase 215 — tábuas secando na serraria (01/11/2026)
+
+A máquina voltou ao estado rápido: 78,6 FPS (214, no lento: 71,5), 1% low 40,1, p50/p95/p99 12,0/17,4/23,5 ms, GPU 11,8 ms,
+montar tudo 9,4 s, carregar 6,2 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e +0,31 milhão de
+primitivas no quadro com tudo visível (as pilhas das serrarias da cidade do benchmark, ~1.700 triângulos por célula). Neutra;
+abre o roteiro tábua, cortina e andorinha.
