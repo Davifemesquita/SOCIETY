@@ -262,6 +262,8 @@ var wine_press_view: WinePressView
 var coffee_yard_view: CoffeeYardView
 ## Fase 242: o varal com as folhas de tabaco secando ao lado de cada plantação de tabaco.
 var tobacco_rack_view: TobaccoRackView
+## Fase 243: a pilha de vigas de ferro em I sobre os dormentes ao lado de cada fábrica de vigas de aço.
+var steel_beam_view: SteelBeamView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -801,6 +803,10 @@ func _ready() -> void:
 	tobacco_rack_view.name = "TobaccoRacks"
 	add_child(tobacco_rack_view)
 	tobacco_rack_view.setup(simulation)
+	steel_beam_view = SteelBeamView.new()
+	steel_beam_view.name = "SteelBeams"
+	add_child(steel_beam_view)
+	steel_beam_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -2399,3 +2399,10 @@ calls (a camada) e primitivas iguais no quadro com tudo visível (a cidade do be
 A máquina seguiu no estado lento: 70,4 FPS (241: 70,1), 1% low 36,7, p50/p95/p99 13,6/18,0/25,4 ms, GPU 13,0 ms, montar tudo 9,3 s,
 carregar 6,4 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
 visível (a cidade do benchmark não tem plantação de tabaco). Neutra.
+
+## Fase 243 — vigas de aço empilhadas (01/11/2026)
+
+A máquina seguiu no estado lento: 69,7 FPS (242: 70,4), 1% low 35,3, p50/p95/p99 13,7/18,0/26,0 ms, GPU 13,1 ms, montar tudo 9,4 s,
+carregar 6,4 s; construir com a ilha cheia deu 19,7 ms nesta rodada (242: 17,3), mas o laço de medida sem tela (`-- --so-tick`)
+com o mesmo código deu 17,1 ms, como nas fases de antes: vaivém da máquina. +5 objetos e draw calls (a camada) e primitivas
+iguais no quadro com tudo visível (a cidade do benchmark não tem fábrica de vigas). Neutra.
