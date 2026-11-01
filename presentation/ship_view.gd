@@ -602,8 +602,12 @@ func _model(def: ShipDef, sails: Color) -> Node3D:
 	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
 		var mesh: MeshInstance3D = node
 		mesh.material_override = material
+	# Fase 225: a lanterna de popa, acesa à noite. A busca do casco é lida uma vez para ela e para o cordame, e antes de os dois
+	# entrarem no modelo: ela lê todas as malhas dele, e as do cordame e da lanterna não são do casco
+	var points := ShipRigging.hull_points(model)
+	var lantern := SternLantern.node(scale_factor, points)
 	# Fase 26: o cordame e a carga no convés, no espaço do modelo (ShipRigging)
-	var rigging := ShipRigging.rigging(model, scale_factor, _material(ShipRigging.ROPE_COLOR))
+	var rigging := ShipRigging.rigging(model, scale_factor, _material(ShipRigging.ROPE_COLOR), points)
 	if rigging != null:
 		rigging.visibility_range_end = _detail_range_m
 		var deck := Node3D.new()
@@ -613,6 +617,8 @@ func _model(def: ShipDef, sails: Color) -> Node3D:
 		deck.set_meta(&"goods", "")
 		model.add_child(rigging)
 		model.add_child(deck)
+	if lantern != null:
+		model.add_child(lantern)
 	return model
 
 

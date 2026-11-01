@@ -137,13 +137,17 @@ static func deck_slot(main: Vector3, index: int) -> Vector3:
 
 
 ## O cordame pronto, filho do modelo (no espaço dele): "scale_factor" é quanto o ShipView estica o modelo, para
-## o cabo sair com ROPE_RADIUS_M no mundo. Sem bandeira no modelo, null.
-static func rigging(model: Node3D, scale_factor: float, material: Material) -> MeshInstance3D:
+## o cabo sair com ROPE_RADIUS_M no mundo; "points", os triângulos do casco já lidos (vazio: lê aqui). Sem bandeira no
+## modelo, null.
+static func rigging(model: Node3D, scale_factor: float, material: Material,
+		points := PackedVector3Array()) -> MeshInstance3D:
 	var tops := mast_tops(model)
 	if tops.is_empty():
 		return null
 	var node := MeshInstance3D.new()
 	node.name = "Rigging"
-	node.mesh = HarborView.rope_mesh(spans(tops, hull_points(model)), material, ROPE_RADIUS_M / scale_factor)
+	if points.is_empty():
+		points = hull_points(model)
+	node.mesh = HarborView.rope_mesh(spans(tops, points), material, ROPE_RADIUS_M / scale_factor)
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return node

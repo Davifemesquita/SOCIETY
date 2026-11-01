@@ -2948,6 +2948,16 @@ Regras que já custaram investigação:
   com relevo. Captura em `tools/capture_phase224.tscn` (a câmera à mão do lado de fora do canto: entre os prédios a da partida
   fica dentro deles).
 
+### Lanterna na popa (Fase 225, nossa)
+
+- **Plano** em `docs/plano_fase225.md`, primeira do roteiro `docs/plano_fases_225_229.md` (lanterna, lã e morcego; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `SternLantern` (`presentation/stern_lantern.gd`, chamada pelo `ShipView._model`):
+  `stern_point` (a ré do casco pelos triângulos dele), `node` (filha do modelo, com a escala desfeita, a partir dos triângulos do
+  casco lidos uma vez para ela e para o cordame), `frame_mesh` e `glass_mesh`
+  (no `shaders/night_glow.gdshader`). **Peça nova no modelo do navio é montada antes do cordame**: a busca do casco
+  (`ShipRigging.hull_points`) lê todas as malhas do modelo e quebra nas que não têm índice. Captura em
+  `tools/capture_phase225.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3183,6 +3193,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 222 — Covos no cais (nossa) | **feita em 01/11/2026**: pilhas de covos de vime em meia-lua com o cabo enrolado e as boias de cortiça nos lanços livres do cais de pedra dos entrepostos; plano em `docs/plano_fase222.md` |
 | 223 — Lençóis no hospital (nossa) | **feita em 01/11/2026**: dois varais compridos com os lençóis brancos enfunados e o cesto de vime no lado de cada hospital; plano em `docs/plano_fase223.md` |
 | 224 — Relógio de sol no largo (nossa) | **feita em 01/11/2026**, a última do roteiro bomba, barril e lençol: a coluna de pedra torneada com o mostrador de bronze e o gnomon num canto do largo calçado da igreja, do teatro, da universidade, da prefeitura, do museu e da escola; plano em `docs/plano_fase224.md` |
+| 225 — Lanterna na popa (nossa) | **feita em 01/11/2026**, primeira do roteiro lanterna, lã e morcego (Fases 225 a 229): a lanterna de ferro num pau na ré de cada navio, acesa à noite; plano em `docs/plano_fase225.md` |
 
 Pendências já vistas para fases futuras:
 
