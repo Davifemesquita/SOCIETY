@@ -148,6 +148,8 @@ var door_bench_view: DoorBenchView
 var scarecrow_view: ScarecrowView
 ## Fase 176: o ninho com a cegonha na chaminé de parte das casas dos camponeses e operários.
 var stork_view: StorkView
+## Fase 178: os vaga-lumes piscando no capim e na beira da mata à noite.
+var firefly_view: FireflyView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -467,6 +469,10 @@ func _ready() -> void:
 	stork_view.name = "Storks"
 	add_child(stork_view)
 	stork_view.setup(simulation)
+	firefly_view = FireflyView.new()
+	firefly_view.name = "Fireflies"
+	add_child(firefly_view)
+	firefly_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

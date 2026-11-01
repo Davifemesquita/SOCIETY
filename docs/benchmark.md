@@ -1958,3 +1958,10 @@ Mesmo estado (jogo novo 11,7 s): 82,0 FPS (176: 83,1), 1% low 41,0, pior quadro 
 mil primitivas no quadro com tudo visível (duas folhas de 12 triângulos por janela em todas as casas dos camponeses,
 operários e artesãos). O pouco que a GPU subiu está dentro da oscilação entre rodadas; a malha das casas não muda de número
 (os postigos valem para a classe inteira).
+
+## Fase 178 — vaga-lumes no prado (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,0 FPS (177: 82,0), 1% low 40,8, pior quadro 28 ms, p50/p95/p99 11,5/15,6/23,0 ms, GPU
+11,3 ms, montar tudo 9,3 s, carregar 5,9 s (177: 5,8; a oscilação de sempre: de dia os vaga-lumes nem são montados),
+construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (às 10h a camada fica
+escondida). O dia inteiro do benchmark passa pela noite com os vaga-lumes acesos sem mudar o FPS médio. Neutra.

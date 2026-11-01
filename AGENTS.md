@@ -2615,6 +2615,13 @@ Regras que já custaram investigação:
   numa das quatro cores de postigo pelo lugar do prédio (`shutter_pick`, hash inteiro da origem do modelo), com as réguas.
   Captura: as ruas do `tools/capture_phase95.tscn`.
 
+### Vaga-lumes no prado (Fase 178, nossa)
+
+- **Plano** em `docs/plano_fase178.md`. `FireflyView` (`GameScreen.firefly_view`): `swarms` (a rede de pontos a cada
+  `SWARM_STEP` células, em terra livre longe de prédio e estrada, mais na beira da mata) e `flies`, num MultiMesh com o dado da
+  instância, escondido de dia; o `shaders/firefly.gdshader` os faz vagar e piscar no tempo visual, acesos pelo `night_light`.
+  Captura em `tools/capture_phase178.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2803,6 +2810,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 175 — Espantalho no campo (nossa) | **feita em 31/10/2026**, primeira do roteiro espantalho, cegonha e vaga-lume (Fases 175 a 179): um espantalho de pau com casaco, chapéu e palha saindo das mangas no vão do meio de um a cada três campos de trigo e de batata; plano em `docs/plano_fase175.md` |
 | 176 — Cegonha na chaminé (nossa) | **feita em 31/10/2026**: o ninho de gravetos com a cegonha de pé, virando de tempos em tempos, no alto da chaminé de uma a cada quatro casas dos camponeses e operários das ilhas temperadas; a chaminé com ninho não fumega; plano em `docs/plano_fase176.md` |
 | 177 — Postigos nas janelas (nossa) | **feita em 31/10/2026**: as duas folhas de madeira abertas dos lados de cada janela das casas dos camponeses, operários e artesãos, pintadas de verde, azul, vermelho ou ocre pelo prédio, com as réguas da veneziana; plano em `docs/plano_fase177.md` |
+| 178 — Vaga-lumes no prado (nossa) | **feita em 31/10/2026**: enxames de pontinhos de luz verde-amarela vagando baixo e piscando na beira da mata e no capim aberto, longe das casas e das estradas, ao anoitecer e à noite; plano em `docs/plano_fase178.md` |
 
 Pendências já vistas para fases futuras:
 
