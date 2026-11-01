@@ -20,4 +20,8 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
 
 ## Estado
 
-Em andamento.
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase180.md` a
+`docs/plano_fase184.md`), testes, captura e benchmark. Diferenças do roteiro: as borboletas cresceram depois da primeira
+captura (sumiam nas papoulas), e refazer o arquipélago a cada obra custava ~48 ms, o que trouxe o `IslandDirty` (a ilha que
+mudou) também para os vaga-lumes da Fase 178; o limo ganhou a crosta da maré, porque sozinho se confundia com o musgo da
+rocha.
