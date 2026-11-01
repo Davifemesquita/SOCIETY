@@ -2890,6 +2890,13 @@ Regras que já custaram investigação:
   monte de duas cristas pelo `height_at`, em faces chapadas com `set_smooth_group(-1)`, e a pá), num MultiMesh. Captura em
   `tools/capture_phase216.tscn`.
 
+### Cortinas nas janelas (Fase 217, nossa)
+
+- **Plano** em `docs/plano_fase217.md`. `Spec.curtains` (todas as casas; na chave) e `BuildingKit._curtains` (dois panos franzidos
+  e a sanefa em cada janela do corpo, em `CURTAIN_X`, entre o vidro e o caixilho) na célula (0, 0) da paleta (`UV_CURTAIN`: a
+  fileira de cima inteira o kit não usa), pintada pelo `shaders/building_kit.gdshader` numa cor de pano por casa
+  (`curtain_pick`), com as pregas. Captura em `tools/capture_phase217.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3117,6 +3124,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 214 — Escada de mão (nossa) | **feita em 01/11/2026**, a última do roteiro pombo, mó e buxo: a escada de madeira encostada na parede do lado de parte das casas, do chão até o beiral, com o balde de lata no pé; plano em `docs/plano_fase214.md` |
 | 215 — Tábuas secando na serraria (nossa) | **feita em 01/11/2026**, primeira do roteiro tábua, cortina e andorinha (Fases 215 a 219): as pilhas de tábuas em camadas com os tabiques, sobre dormentes e cobertas por tábuas velhas, no lado de cada serraria oposto à roda d'água; plano em `docs/plano_fase215.md` |
 | 216 — Monte de carvão na usina (nossa) | **feita em 01/11/2026**: a baia de tábuas com o monte de carvão em pedras escorrendo para fora, as pedras soltas no pé e a pá cravada, no lado de cada usina a carvão; plano em `docs/plano_fase216.md` |
+| 217 — Cortinas nas janelas (nossa) | **feita em 01/11/2026**: os dois panos presos dos lados e a sanefa em cada janela das casas, em renda, creme, rosa ou verde-sálvia pela casa, com as pregas; plano em `docs/plano_fase217.md` |
 
 Pendências já vistas para fases futuras:
 

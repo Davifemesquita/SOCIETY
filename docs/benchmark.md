@@ -2227,3 +2227,10 @@ abre o roteiro tábua, cortina e andorinha.
 A máquina seguiu no estado rápido: 78,6 FPS (215: 78,6), 1% low 39,5, p50/p95/p99 11,9/17,4/23,7 ms, GPU 11,7 ms, montar tudo
 9,5 s, carregar 6,1 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem usina a carvão). Neutra.
+
+## Fase 217 — cortinas nas janelas (01/11/2026)
+
+A máquina seguiu no estado rápido: 78,0 FPS (216: 78,6), 1% low 37,8, p50/p95/p99 11,9/17,6/24,1 ms, GPU 11,8 ms (216: 11,7),
+montar tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; objetos e draw calls iguais (as cortinas vão na malha
+das casas) e +0,19 milhão de primitivas no quadro com tudo visível (seis triângulos por janela). O 0,1% low (28,5) e o pior
+quadro (42 ms) caíram porque uma importação do projeto rodou junto no fim da medida; a Fase 218 confere. Neutra.

@@ -204,6 +204,16 @@ const SHUTTER_TRIMS: Array[int] = [TierDef.HouseTrim.YARD, TierDef.HouseTrim.NON
 const SHUTTER_GAP_M := 0.03
 const SHUTTER_OUT_M := 0.05
 const SHUTTER_THICK_M := 0.035
+## Fase 217: as cortinas — nas janelas do corpo das casas, os dois panos presos dos lados do vidro (franzidos embaixo, na
+## abraçadeira) e a sanefa em cima, logo à frente do vidro (CURTAIN_X, entre ele e o caixilho); cada pano cobre de
+## CURTAIN_MIN a CURTAIN_MAX do vão, pela janela. A célula UV_CURTAIN da paleta, que o kit não usa, pintada pelo shader numa
+## cor de pano por casa, com as pregas.
+const UV_CURTAIN := Vector2(0.5 / 8.0, 0.5 / 4.0)
+const CURTAIN_X := 0.447
+const CURTAIN_MIN := 0.3
+const CURTAIN_MAX := 0.42
+const CURTAIN_TIE := 0.45
+const VALANCE := 0.2
 const QUOIN_COURSE_M := 0.36
 const QUOIN_JOINT_M := 0.035
 const QUOIN_LONG_M := 0.52
@@ -436,11 +446,13 @@ class Spec:
 	var quoins: bool = false
 	## Fase 177: os postigos abertos dos lados das janelas (camponeses, operários e artesãos).
 	var shutters: bool = false
+	## Fase 217: as cortinas nas janelas do corpo (todas as casas).
+	var curtains: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins), int(shutters)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins), int(shutters), int(curtains)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -481,6 +493,7 @@ class Spec:
 		copy.balcony_flowers = balcony_flowers
 		copy.quoins = quoins
 		copy.shutters = shutters
+		copy.curtains = curtains
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -643,6 +656,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.picket = spec.trim == TierDef.HouseTrim.NONE and spec.court_rows == 0
 		# Fase 177: os postigos das casas mais simples (todas da classe: uma forma a mais por casa custaria o dobro de malhas)
 		spec.shutters = spec.trim in SHUTTER_TRIMS
+		# Fase 217: as cortinas em todas as casas
+		spec.curtains = true
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -1050,6 +1065,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 	if hall.turret:
 		_turret(extra, hall, offset)
 	_glazing(extra, hall, offset)
+	if hall.curtains:
+		_curtains(extra, hall, offset)
 	_silhouette(tool, extra, spec)
 	_trim(tool, extra, spec)
 	if spec.shutters:
@@ -2937,6 +2954,36 @@ static func _glazing(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void
 				_quad(tool, place * Vector3(MULLION_X, middle - bar_y, -half_w), place * Vector3(MULLION_X, middle - bar_y, half_w),
 						place * Vector3(MULLION_X, middle + bar_y, half_w), place * Vector3(MULLION_X, middle + bar_y, -half_w), out,
 						UV_TIMBER)
+
+
+## Fase 217: as cortinas — em cada janela do corpo (no mesmo referencial do vidro, pelo _cell_transform: o balanço do enxaimel
+## e as rotações acompanham), logo à frente dele: os dois panos presos dos lados do vão, cada um de CURTAIN_MIN a CURTAIN_MAX
+## dele no alto (pela janela, sem sorteio) e franzidos até CURTAIN_TIE disso embaixo, e a sanefa de VALANCE do vão em cima.
+static func _curtains(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
+	var half_w := WINDOW_WIDTH * 0.5
+	var half_h := WINDOW_HEIGHT * 0.5
+	var top := WINDOW_CENTER + half_h
+	var bottom := WINDOW_CENTER - half_h
+	var valance := top - WINDOW_HEIGHT * VALANCE
+	for face: int in 4:
+		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
+		for level: int in spec.floors():
+			for index: int in count:
+				if slot(spec, face, index, level) != &"window":
+					continue
+				var place := offset * _cell_transform(spec, face, index, level)
+				var out := place.basis.x.normalized()
+				for side: float in [-1.0, 1.0]:
+					var share := CURTAIN_MIN + (CURTAIN_MAX - CURTAIN_MIN) * float(posmod(face * 7 + index * 5 + level * 3
+							+ int(side) * 2, 5)) / 4.0
+					var edge := side * half_w
+					var inner := edge - side * share * WINDOW_WIDTH
+					var tied := edge - side * share * WINDOW_WIDTH * CURTAIN_TIE
+					_quad(tool, place * Vector3(CURTAIN_X, bottom, edge), place * Vector3(CURTAIN_X, bottom, tied),
+							place * Vector3(CURTAIN_X, valance, inner), place * Vector3(CURTAIN_X, valance, edge), out,
+							UV_CURTAIN)
+				_quad(tool, place * Vector3(CURTAIN_X, valance, -half_w), place * Vector3(CURTAIN_X, valance, half_w),
+						place * Vector3(CURTAIN_X, top, half_w), place * Vector3(CURTAIN_X, top, -half_w), out, UV_CURTAIN)
 
 
 ## Plinto e degraus do prédio no barranco (Fase 39), no referencial canônico: a pedra desce do piso até "depth" abaixo

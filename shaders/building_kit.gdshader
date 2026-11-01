@@ -106,11 +106,18 @@ uniform vec4 shutter_blue : source_color = vec4(0.24, 0.34, 0.46, 1.0);
 uniform vec4 shutter_red : source_color = vec4(0.48, 0.18, 0.14, 1.0);
 uniform vec4 shutter_ochre : source_color = vec4(0.6, 0.47, 0.27, 1.0);
 uniform float shutter_slat_m = 0.09;
+// Fase 217: as cores das cortinas (uma por casa, pelo lugar dela) e o passo das pregas
+uniform vec4 curtain_lace : source_color = vec4(0.88, 0.87, 0.82, 1.0);
+uniform vec4 curtain_cream : source_color = vec4(0.83, 0.74, 0.56, 1.0);
+uniform vec4 curtain_rose : source_color = vec4(0.66, 0.36, 0.33, 1.0);
+uniform vec4 curtain_sage : source_color = vec4(0.47, 0.55, 0.43, 1.0);
+uniform float curtain_pleat_m = 0.05;
 
 varying vec3 world_position;
 varying vec3 world_normal;
 varying float contact;
 varying flat float shutter_pick;
+varying flat float curtain_pick;
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -118,6 +125,7 @@ void vertex() {
 	uint h = uint(int(floor(MODEL_MATRIX[3].x * 0.5))) * 2654435761u ^ uint(int(floor(MODEL_MATRIX[3].z * 0.5))) * 2246822519u;
 	h ^= h >> 15u;
 	shutter_pick = float(h % 4u);
+	curtain_pick = float((h >> 7u) % 4u);
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	// a fachada pela normal no referencial do prédio
 	contact = 0.0;
@@ -277,6 +285,15 @@ void fragment() {
 		float mortar = clamp(step(inside.x, 0.07) + step(inside.y, 0.14), 0.0, 1.0);
 		float tone = fract(sin(dot(floor(course), vec2(12.9898, 78.233))) * 43758.5453);
 		color = mix(mix(brick_dark.rgb, brick_light.rgb, tone), brick_mortar.rgb, mortar);
+	} else if (cell == ivec2(0, 0)) {
+		// Fase 217: as cortinas (célula (0, 0), que o kit não usa): o pano numa das quatro cores pela casa, as pregas descendo
+		// (a sombra entre elas, sumindo de longe como as telhas)
+		vec3 cloth = curtain_pick < 0.5 ? curtain_lace.rgb : (curtain_pick < 1.5 ? curtain_cream.rgb
+				: (curtain_pick < 2.5 ? curtain_rose.rgb : curtain_sage.rgb));
+		float along = dot(world_position.xz, normalize(vec2(-world_normal.z, world_normal.x) + vec2(1e-5)));
+		float near = 1.0 - smoothstep(tile_fade_far * 0.25, tile_fade_far * 0.5, length(VERTEX));
+		float pleat = 0.5 + 0.5 * sin(along / curtain_pleat_m * TAU);
+		color = cloth * mix(1.0, 0.78 + 0.22 * pleat, near);
 	} else if (cell == ivec2(1, 1)) {
 		// Fase 177: os postigos (célula (1, 1), que o kit não usa): a tinta numa das quatro cores pelo prédio, as réguas da
 		// veneziana atravessadas (a sombra embaixo de cada uma) e a madeira aparecendo onde a tinta gastou
