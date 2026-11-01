@@ -144,6 +144,10 @@ func _run() -> void:
 		var out := mill.basis.z.normalized()
 		await _shot("mos_no_moinho.png", mill.origin, 7.0, atan2(out.x, out.z) + 0.5)
 		await _shot("mos_de_longe.png", mill.origin, 18.0, atan2(out.x, out.z) - 0.4)
+	# Fase 212: o buxo na porta das casas dos investidores, de perto
+	if not _game.topiary_view.places.is_empty():
+		var pot := _game.topiary_view.places[0]
+		await _shot("buxo_na_porta.png", pot.origin, 8.0, 0.35)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

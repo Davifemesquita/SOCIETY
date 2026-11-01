@@ -2192,3 +2192,9 @@ primitivas no quadro com tudo visível. A primeira malha do pombo (bolas de muit
 A máquina seguiu no estado lento: 71,0 FPS (210: 71,5), 1% low 37,0, p50/p95/p99 13,3/18,1/24,9 ms, GPU 12,7 ms, montar tudo
 9,3 s, carregar 6,3 s, construir com a ilha cheia 17,8 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem moinho). Neutra.
+
+## Fase 212 — buxo na porta (01/11/2026)
+
+A máquina seguiu no estado lento: 71,3 FPS (211: 71,0), 1% low 38,4, p50/p95/p99 13,3/18,0/24,5 ms, GPU 12,6 ms, montar tudo
+9,3 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark é de operários). Neutra.
