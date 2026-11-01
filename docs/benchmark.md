@@ -2413,3 +2413,10 @@ A máquina seguiu no estado lento: 70,3 FPS (243: 69,7), 1% low 36,7, p50/p95/p9
 carregar 6,3 s, construir com a ilha cheia 17,0 ms (o 19,7 da Fase 243 foi vaivém); +5 objetos e draw calls (a camada) e
 primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem fazenda de lúpulo). Neutra; fecha o roteiro lagar,
 terreiro e estacas.
+
+## Fase 245 — coelhos no prado (01/11/2026)
+
+A máquina seguiu no estado lento: 70,0 FPS (244: 70,3), 1% low 37,1, p50/p95/p99 13,6/18,2/25,6 ms, GPU 13,1 ms, montar tudo 9,3 s,
+carregar 6,4 s, construir com a ilha cheia 17,2 ms; +1 objeto e draw call e +74 mil primitivas no quadro com tudo visível (os
+coelhos, sem sombra). Neutra. A primeira rodada saiu inválida (carregar 3,0 s, o dia a partir das 07:00 e erros de compilação no
+log): o `scatter_view.gd` da fase seguinte foi editado com ela rodando, e o Godot carrega os scripts sob demanda.

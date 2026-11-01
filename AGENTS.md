@@ -3079,6 +3079,14 @@ Regras que já custaram investigação:
   fazenda pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e `pole_mesh` (os cavaletes
   com as estacas deitadas e o feixe de pé), num MultiMesh. Captura em `tools/capture_phase244.tscn`.
 
+### Coelhos no prado (Fase 245, nossa)
+
+- **Plano** em `docs/plano_fase245.md`, primeira do roteiro `docs/plano_fases_245_249.md` (coelho, cogumelo e pedra; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `RabbitView` (`GameScreen.rabbit_view`): `warrens` (capim aberto longe das vilas
+  pela regra das focas), `rabbits`, `sit_up` (o coelho sentando, girado em volta do pé de trás) e `rabbit_mesh`, num MultiMesh sem
+  sombra. Captura em `tools/capture_phase245.tscn`. **Não edite `.gd` do projeto com um benchmark ou uma captura rodando**: o
+  Godot carrega os scripts sob demanda e pega o arquivo pela metade (a primeira medida desta fase saiu inválida assim).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3334,6 +3342,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 242 — Tabaco secando (nossa) | **feita em 01/11/2026**: o varal de varas com as réstias de folhas de tabaco penduradas, verdes, douradas e curadas, e o cesto de folhas no lado de cada plantação de tabaco; plano em `docs/plano_fase242.md` |
 | 243 — Vigas de aço empilhadas (nossa) | **feita em 01/11/2026**: a pilha de vigas de ferro em I em camadas sobre os dormentes, com uma viga solta no chão, no lado de cada fábrica de vigas de aço; plano em `docs/plano_fase243.md` |
 | 244 — Estacas de lúpulo (nossa) | **feita em 01/11/2026**, a última do roteiro lagar, terreiro e estacas: as estacas compridas deitadas nos cavaletes e o feixe amarrado encostado na parede, no lado de cada fazenda de lúpulo; plano em `docs/plano_fase244.md` |
+| 245 — Coelhos no prado (nossa) | **feita em 01/11/2026**, primeira do roteiro coelho, cogumelo e pedra (Fases 245 a 249): tocas de coelhos pardos de rabo branco pastando no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando; plano em `docs/plano_fase245.md` |
 
 Pendências já vistas para fases futuras:
 
