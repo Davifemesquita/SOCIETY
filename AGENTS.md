@@ -2777,6 +2777,13 @@ Regras que já custaram investigação:
   `house_upgraded`**: o `building_state_changed` dispara a cada troca de estado das fábricas, e uma vista de casas que se refaz
   nele (chamando `spec_for` em centenas delas) pesa no quadro. Captura: `gato_na_porta.png` no `tools/capture_phase95.tscn`.
 
+### Poço da vila (Fase 201, nossa)
+
+- **Plano** em `docs/plano_fase201.md`. `WellView` (`GameScreen.well_view`): `cells` (as casas dos camponeses do resto certo, fora
+  das da bomba, pela busca da bomba) e `well_mesh` (o bocal em fiadas, `_ring`), num MultiMesh. A busca da bomba d'água foi
+  separada em `WaterPumpView.taken_cells` e `beside_street`: **peça nova junto da rua usa as duas** (e a lista das tomadas
+  ganha a peça nova, para a bomba e o poço desviarem dela). Captura em `tools/capture_phase201.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2988,6 +2995,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 198 — Bancos no cais (nossa) | **feita em 01/11/2026**: bancos de praça de pés de ferro e tábuas no cais de pedra dos entrepostos, entre os cabeços, de costas para a cidade e virados para o mar, longe dos lampiões, das cisternas, dos mastros e das escadas; plano em `docs/plano_fase198.md` |
 | 199 — Rede na varanda (nossa) | **feita em 01/11/2026**, a última do roteiro cemitério, pato e rede: a rede de dormir listrada pendurada entre dois esteios da varanda de parte das casas das ilhas tropicais, ao lado da porta, balançando de leve; plano em `docs/plano_fase199.md` |
 | 200 — Gato na porta (nossa) | **feita em 01/11/2026**, primeira do roteiro gato, poço e carrinho (Fases 200 a 204): um gato ruivo, preto, cinza, branco ou creme sentado ao lado da porta de parte das casas (as que não têm cão), virando a cabeça de vez em quando; plano em `docs/plano_fase200.md` |
+| 201 — Poço da vila (nossa) | **feita em 01/11/2026**: o poço de pedra em fiadas com o telhadinho de duas águas, o sarilho e o balde numa célula livre junto da rua, ao lado de parte das casas dos camponeses; plano em `docs/plano_fase201.md` |
 
 Pendências já vistas para fases futuras:
 

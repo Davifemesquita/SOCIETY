@@ -2119,3 +2119,9 @@ sombra) e +71 mil primitivas no quadro com tudo visível (~120 gatos na cidade d
 FPS, 1% low 36,8 e p95 17,5 (sem o gato, na mesma hora: 80,1, 40,6 e 16,3): as cabeças viravam na CPU a cada quadro e a vista
 se refazia a cada `building_state_changed`, que dispara a cada troca de estado das fábricas. Com o giro no shader e só o
 `house_upgraded`, neutra; a rede da Fase 199 ouvia o mesmo sinal e foi corrigida junto.
+
+## Fase 201 — poço da vila (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 80,1 FPS (200: 80,5), 1% low 40,2, pior quadro 36 ms, p50/p95/p99 11,8/16,0/22,9 ms, GPU
+11,6 ms, montar tudo 9,3 s, carregar 6,1 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e
+primitivas iguais no quadro com tudo visível (a cidade do benchmark é plana e de operários). Neutra.

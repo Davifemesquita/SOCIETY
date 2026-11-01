@@ -90,6 +90,12 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	if ids.is_empty():
 		return result
 	ids.sort()
+	return beside_street(world, data, island_id, ids, taken_cells(world, data, island_id))
+
+
+## As células que outras peças já tomam em volta das casas e dos serviços (o largo, a alameda, as mesas, os silos, as hortas,
+## a lenha...): a bomba e o poço da Fase 201 ficam fora delas.
+static func taken_cells(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, bool]:
 	var taken: Dictionary[Vector2i, bool] = {}
 	taken.merge(ForecourtView.cells(world, data, island_id))
 	taken.merge(AvenueView.cells(world, island_id))
@@ -127,6 +133,15 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	# Fase 195: nem no cemitério
 	for cell: Vector2i in GraveyardView.cells(world, data, island_id):
 		taken[cell] = true
+	return taken
+
+
+## Para cada prédio de ids (em ordem), a célula livre encostada nele (sem prédio, estrada, trilho, árvore nem uma das taken, e
+## quase plana) com estrada num dos lados e mais perto da porta → o lado da rua.
+static func beside_street(world: WorldState, data: GameData, island_id: int, ids: Array[int],
+		taken: Dictionary[Vector2i, bool]) -> Dictionary[Vector2i, Vector2i]:
+	var result: Dictionary[Vector2i, Vector2i] = {}
+	var grid := world.island(island_id)
 	for id: int in ids:
 		var record := world.buildings[id]
 		var def := data.building(record.def_id)
