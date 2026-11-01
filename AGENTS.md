@@ -2958,6 +2958,12 @@ Regras que já custaram investigação:
   (`ShipRigging.hull_points`) lê todas as malhas do modelo e quebra nas que não têm índice. Captura em
   `tools/capture_phase225.tscn`.
 
+### Fardos de lã (Fase 226, nossa)
+
+- **Plano** em `docs/plano_fase226.md`. `WoolBaleView` (`GameScreen.wool_bale_view`): `sites`/`cells` (as duas células de lado da
+  fazenda de ovelhas pelo `SideYard`, fora das medas, do silo e da carroça de feno) e `bale_mesh` (os fardos estufados com as
+  cordas em volta, o cepo com a tesoura e o velo), num MultiMesh. Captura em `tools/capture_phase226.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3194,6 +3200,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 223 — Lençóis no hospital (nossa) | **feita em 01/11/2026**: dois varais compridos com os lençóis brancos enfunados e o cesto de vime no lado de cada hospital; plano em `docs/plano_fase223.md` |
 | 224 — Relógio de sol no largo (nossa) | **feita em 01/11/2026**, a última do roteiro bomba, barril e lençol: a coluna de pedra torneada com o mostrador de bronze e o gnomon num canto do largo calçado da igreja, do teatro, da universidade, da prefeitura, do museu e da escola; plano em `docs/plano_fase224.md` |
 | 225 — Lanterna na popa (nossa) | **feita em 01/11/2026**, primeira do roteiro lanterna, lã e morcego (Fases 225 a 229): a lanterna de ferro num pau na ré de cada navio, acesa à noite; plano em `docs/plano_fase225.md` |
+| 226 — Fardos de lã (nossa) | **feita em 01/11/2026**: os fardos de juta amarrados com cordas, o cepo de tosquia com a tesoura e o velo solto no lado das fazendas de ovelhas; plano em `docs/plano_fase226.md` |
 
 Pendências já vistas para fases futuras:
 

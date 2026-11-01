@@ -230,6 +230,8 @@ var lobster_pot_view: LobsterPotView
 var linen_view: LinenView
 ## Fase 224: o relógio de sol de pedra num canto do largo calçado de cada serviço.
 var sundial_view: SundialView
+## Fase 226: os fardos de lã, o cepo de tosquia e o velo no lado de cada fazenda de ovelhas.
+var wool_bale_view: WoolBaleView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -705,6 +707,10 @@ func _ready() -> void:
 	sundial_view.name = "Sundials"
 	add_child(sundial_view)
 	sundial_view.setup(simulation)
+	wool_bale_view = WoolBaleView.new()
+	wool_bale_view.name = "WoolBales"
+	add_child(wool_bale_view)
+	wool_bale_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

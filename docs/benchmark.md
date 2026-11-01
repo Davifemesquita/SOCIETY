@@ -2289,3 +2289,9 @@ A máquina seguiu no estado rápido: 77,0 FPS (224: 77,1), 1% low 39,5, p50/p95/
 das lanternas dos navios à vista) e +868 primitivas no quadro com tudo visível. A primeira rodada deu montar tudo em 9,7 s; com o
 casco lido uma vez para a lanterna e o cordame e as malhas da lanterna divididas, 9,5. Neutra; abre o roteiro lanterna, lã e
 morcego.
+
+## Fase 226 — fardos de lã (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,2 FPS (225: 77,0), 1% low 39,0, p50/p95/p99 12,2/17,5/23,9 ms, GPU 11,9 ms, montar tudo
+9,4 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem fazenda de ovelhas). Neutra.
