@@ -2254,3 +2254,10 @@ fecha o roteiro tábua, cortina e andorinha.
 A máquina seguiu no estado rápido: 77,3 FPS (219: 78,1), 1% low 39,3, p50/p95/p99 12,2/17,5/23,9 ms, GPU 11,9 ms, montar tudo
 9,4 s, carregar 6,3 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem quartel). Neutra; abre o roteiro bomba, barril e lençol.
+
+## Fase 221 — barris na cervejaria (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,2 FPS (220: 77,3), 1% low 38,5, p50/p95/p99 12,3/17,6/23,9 ms, GPU 11,9 ms, montar tudo
+9,5 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (as pilhas da cidade do benchmark ficam fora do quadro medido). A primeira rodada deu o carregar em 6,5 s: cada
+pátio de lado refazia as buscas dos de antes; com elas guardadas (`SideYard.remember`) voltou a 6,1. Neutra.

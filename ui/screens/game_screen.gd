@@ -222,6 +222,8 @@ var swallow_view: SwallowView
 var playground_view: PlaygroundView
 ## Fase 220: a bomba de incêndio de mão, o carretel, a escada e os baldes no lado de cada quartel.
 var fire_pump_view: FirePumpView
+## Fase 221: a pirâmide de barris no lado da cervejaria, das destilarias e da adega.
+var barrel_rack_view: BarrelRackView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -681,6 +683,10 @@ func _ready() -> void:
 	fire_pump_view.name = "FirePumps"
 	add_child(fire_pump_view)
 	fire_pump_view.setup(simulation)
+	barrel_rack_view = BarrelRackView.new()
+	barrel_rack_view.name = "BarrelRacks"
+	add_child(barrel_rack_view)
+	barrel_rack_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

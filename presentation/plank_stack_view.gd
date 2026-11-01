@@ -90,6 +90,10 @@ func rebuild() -> void:
 
 ## As pilhas da ilha: id da serraria → [as duas células, o lado da área para onde elas ficam] (`SideYard.pick`).
 static func sites(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
+	return SideYard.remember(world, "planks/%d" % island_id, _search.bind(world, data, island_id))
+
+
+static func _search(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
 	var taken: Dictionary[Vector2i, bool] = {}
 	return SideYard.pick(world, data, island_id, KINDS, ORDER, taken)
 

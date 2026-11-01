@@ -92,3 +92,13 @@ static func place(grid: IslandGrid, cells: Array[Vector2i], side: Vector2i) -> T
 	at.y = minf(BuildingKit.corner_range(grid, Rect2i(cells[0], Vector2i.ONE)).x,
 			BuildingKit.corner_range(grid, Rect2i(cells[1], Vector2i.ONE)).x)
 	return Transform3D(Basis(Vector3(side.y, 0.0, -side.x), Vector3.UP, Vector3(side.x, 0.0, side.y)), at)
+
+
+## Os pátios de lado guardados (Fase 221): cada vista de pátio pede as células das de antes, e cada pedido refazia a busca delas,
+## com o largo e a alameda; com a cidade cheia o carregar do benchmark subiu ~0,3 s. A memória é a das buscas junto da rua
+## (`WaterPumpView.remembered`, esquecida a cada obra, estrada, trilho, árvore e troca de mundo); quem chama recebe uma cópia.
+static func remember(world: WorldState, key: String, compute: Callable) -> Dictionary[int, Array]:
+	var found: Dictionary[int, Array] = WaterPumpView.remembered(world, "sideyard/" + key, compute)
+	var copy: Dictionary[int, Array] = {}
+	copy.merge(found)
+	return copy

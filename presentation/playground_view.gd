@@ -87,6 +87,10 @@ func rebuild() -> void:
 ## Os pátios da ilha: id da escola → [as duas células, o lado da área para onde elas ficam] (`SideYard.pick`), fora das tábuas
 ## e do carvão de um vizinho encostado.
 static func sites(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
+	return SideYard.remember(world, "playground/%d" % island_id, _search.bind(world, data, island_id))
+
+
+static func _search(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
 	var taken: Dictionary[Vector2i, bool] = {}
 	for cell: Vector2i in PlankStackView.cells(world, data, island_id):
 		taken[cell] = true

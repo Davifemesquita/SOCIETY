@@ -90,6 +90,10 @@ func rebuild() -> void:
 ## As bombas da ilha: id do quartel → [as duas células, o lado da área para onde elas ficam] (`SideYard.pick`), fora dos pátios
 ## de lado de antes (tábuas, carvão e escola).
 static func sites(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
+	return SideYard.remember(world, "fire_pump/%d" % island_id, _search.bind(world, data, island_id))
+
+
+static func _search(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
 	var taken: Dictionary[Vector2i, bool] = {}
 	for cell: Vector2i in PlaygroundView.cells(world, data, island_id):
 		taken[cell] = true

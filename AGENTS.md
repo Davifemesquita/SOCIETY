@@ -2920,6 +2920,14 @@ Regras que já custaram investigação:
   os cilindros de latão e os braços, o carretel, a escada e os baldes na parede), num MultiMesh. Captura em
   `tools/capture_phase220.tscn`.
 
+### Barris na cervejaria (Fase 221, nossa)
+
+- **Plano** em `docs/plano_fase221.md`. `BarrelRackView` (`GameScreen.barrel_rack_view`): `sites`/`cells` (as duas células de lado
+  da cervejaria, das destilarias e da adega pelo `SideYard`) e `rack_mesh` (a pirâmide de barris torneados sobre os calços e dois
+  de pé com o funil), num MultiMesh. **O torneado anda de +x para +z**: as faces vão no sentido contrário ao do
+  `VertexShapes.cylinder`. **As buscas de lado ficam guardadas** (`SideYard.remember`, na memória da Fase 204): pátio novo
+  de lado chama `sites` por ela. Captura em `tools/capture_phase221.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3151,6 +3159,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 218 — Andorinhas no campanário (nossa) | **feita em 01/11/2026**: um bando de andorinhas de costas azul-escuras e cauda em forquilha dando voltas rápidas em volta da torre de cada igreja, batendo as asas em rajadas, de dia; plano em `docs/plano_fase218.md` |
 | 219 — Balanço e gangorra na escola (nossa) | **feita em 01/11/2026**, a última do roteiro tábua, cortina e andorinha: o balanço de madeira com dois assentos nas cordas e a gangorra pintada no lado de cada escola; a busca do lado livre virou o `SideYard`; plano em `docs/plano_fase219.md` |
 | 220 — Bomba de incêndio no quartel (nossa) | **feita em 01/11/2026**, primeira do roteiro bomba, barril e lençol (Fases 220 a 224): a bomba de mão vermelha sobre rodas com os cilindros de latão e os braços dos bombeadores, o carretel da mangueira, a escada e os baldes de couro no lado de cada quartel; plano em `docs/plano_fase220.md` |
+| 221 — Barris na cervejaria (nossa) | **feita em 01/11/2026**: a pirâmide de barris deitados sobre os calços e dois barris de pé com o funil no lado da cervejaria, das destilarias e da adega; plano em `docs/plano_fase221.md` |
 
 Pendências já vistas para fases futuras:
 
