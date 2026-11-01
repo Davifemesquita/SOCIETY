@@ -94,13 +94,24 @@ uniform vec4 awning_cream : source_color = vec4(0.88, 0.84, 0.72, 1.0);
 uniform vec4 brick_dark : source_color = vec4(0.42, 0.18, 0.13, 1.0);
 uniform vec4 brick_light : source_color = vec4(0.62, 0.3, 0.21, 1.0);
 uniform vec4 brick_mortar : source_color = vec4(0.66, 0.63, 0.57, 1.0);
+// Fase 177: as cores dos postigos (uma por prédio, pelo lugar dele) e a largura das réguas da veneziana
+uniform vec4 shutter_green : source_color = vec4(0.22, 0.36, 0.24, 1.0);
+uniform vec4 shutter_blue : source_color = vec4(0.24, 0.34, 0.46, 1.0);
+uniform vec4 shutter_red : source_color = vec4(0.48, 0.18, 0.14, 1.0);
+uniform vec4 shutter_ochre : source_color = vec4(0.6, 0.47, 0.27, 1.0);
+uniform float shutter_slat_m = 0.09;
 
 varying vec3 world_position;
 varying vec3 world_normal;
 varying float contact;
+varying flat float shutter_pick;
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	// Fase 177: a cor dos postigos pelo lugar do prédio (hash inteiro: sem o sin, que perde precisão longe da origem)
+	uint h = uint(int(floor(MODEL_MATRIX[3].x * 0.5))) * 2654435761u ^ uint(int(floor(MODEL_MATRIX[3].z * 0.5))) * 2246822519u;
+	h ^= h >> 15u;
+	shutter_pick = float(h % 4u);
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	// a fachada pela normal no referencial do prédio
 	contact = 0.0;
@@ -260,6 +271,15 @@ void fragment() {
 		float mortar = clamp(step(inside.x, 0.07) + step(inside.y, 0.14), 0.0, 1.0);
 		float tone = fract(sin(dot(floor(course), vec2(12.9898, 78.233))) * 43758.5453);
 		color = mix(mix(brick_dark.rgb, brick_light.rgb, tone), brick_mortar.rgb, mortar);
+	} else if (cell == ivec2(1, 1)) {
+		// Fase 177: os postigos (célula (1, 1), que o kit não usa): a tinta numa das quatro cores pelo prédio, as réguas da
+		// veneziana atravessadas (a sombra embaixo de cada uma) e a madeira aparecendo onde a tinta gastou
+		vec3 paint = shutter_pick < 0.5 ? shutter_green.rgb : (shutter_pick < 1.5 ? shutter_blue.rgb
+				: (shutter_pick < 2.5 ? shutter_red.rgb : shutter_ochre.rgb));
+		float slat = fract(world_position.y / shutter_slat_m);
+		float louver = 0.78 + 0.22 * smoothstep(0.0, 0.4, slat) - 0.18 * smoothstep(0.82, 1.0, slat);
+		float wear = moss_noise(world_position.xz * 9.0 + vec2(world_position.y * 6.0));
+		color = mix(paint, trim_wood.rgb, smoothstep(0.72, 0.95, wear) * 0.55) * louver;
 	} else if (cell == ivec2(4, 3)) {
 		color = kit_luma / 0.55 * mix(mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), trim_paint_color.rgb, trim_paint);
 	} else if (cell == ivec2(3, 3)) {

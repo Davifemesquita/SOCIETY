@@ -196,6 +196,14 @@ const BALCONY_FLOWERS_UP_M := 0.62
 ## A célula (3, 3) da paleta: folhagem com flores no shader do kit (a sebe e as floreiras).
 const UV_FOLIAGE := Vector2(3.5 / 8.0, 3.5 / 4.0)
 ## Fase 160: os cunhais — a altura de cada fiada (com a junta), o lado comprido e o curto dos blocos e quanto saltam da parede.
+## Fase 177: os postigos — as duas folhas de madeira abertas dos lados de cada janela das casas de SHUTTER_TRIMS (camponeses,
+## operários e artesãos), cada uma da metade do vão, SHUTTER_GAP_M além dele (passa do caixilho do kit), na altura do vão; a
+## célula (1, 1) da paleta, que o kit não usa, pintada pelo shader numa das cores de postigo pelo prédio, com as réguas.
+const UV_SHUTTER := Vector2(1.5 / 8.0, 1.5 / 4.0)
+const SHUTTER_TRIMS: Array[int] = [TierDef.HouseTrim.YARD, TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES]
+const SHUTTER_GAP_M := 0.03
+const SHUTTER_OUT_M := 0.05
+const SHUTTER_THICK_M := 0.035
 const QUOIN_COURSE_M := 0.36
 const QUOIN_JOINT_M := 0.035
 const QUOIN_LONG_M := 0.52
@@ -426,11 +434,13 @@ class Spec:
 	var balcony_flowers: bool = false
 	## Fase 160: os cunhais de pedra nas quinas do corpo (artesãos e engenheiros).
 	var quoins: bool = false
+	## Fase 177: os postigos abertos dos lados das janelas (camponeses, operários e artesãos).
+	var shutters: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins), int(shutters)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -470,6 +480,7 @@ class Spec:
 		copy.shop_sign = shop_sign
 		copy.balcony_flowers = balcony_flowers
 		copy.quoins = quoins
+		copy.shutters = shutters
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -630,6 +641,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.quoins = spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES]
 		# Fase 143: a cerca de estacas dos operários (sem o alpendre tropical, que tem o guarda-corpo dele)
 		spec.picket = spec.trim == TierDef.HouseTrim.NONE and spec.court_rows == 0
+		# Fase 177: os postigos das casas mais simples (todas da classe: uma forma a mais por casa custaria o dobro de malhas)
+		spec.shutters = spec.trim in SHUTTER_TRIMS
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -1039,6 +1052,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 	_glazing(extra, hall, offset)
 	_silhouette(tool, extra, spec)
 	_trim(tool, extra, spec)
+	if spec.shutters:
+		_shutters(extra, spec)
 	if spec.awning > 0:
 		_awnings(extra, spec)
 	if spec.jetty:
@@ -2156,6 +2171,32 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 							not hall.arched)
 	if hall.quoins:
 		_quoins(tool, spec)
+
+
+## Fase 177: os postigos — em cada janela do corpo (o que a ala tira fica de fora: o slot dela é &"none"), as duas folhas
+## abertas encostadas na parede, uma de cada lado do vão, cada uma da metade dele e da altura dele.
+static func _shutters(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	var floor_m := hall.floor_m()
+	var height := floor_m * WINDOW_HEIGHT
+	for face: int in 4:
+		var along_x := face % 2 == 0
+		var lateral := Vector3.RIGHT if along_x else Vector3.BACK
+		var count := hall.cells.x if along_x else hall.cells.y
+		var step := (size.x if along_x else size.y) / count
+		var opening := step * WINDOW_WIDTH
+		var leaf := opening * 0.5
+		var box := Vector3(leaf, height, SHUTTER_THICK_M) if along_x else Vector3(SHUTTER_THICK_M, height, leaf)
+		for level: int in hall.floors():
+			for index: int in count:
+				if slot(hall, face, index, level) != &"window":
+					continue
+				var middle := center + _wall_point(hall, face, index, level) + _face_normal(face) * SHUTTER_OUT_M \
+						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
+				for side: float in [-1.0, 1.0]:
+					_box(tool, middle + lateral * side * (opening * 0.5 + SHUTTER_GAP_M + leaf * 0.5), box, UV_SHUTTER)
 
 
 ## Fase 160: os cunhais — nas quatro quinas do corpo, da soleira até a cornija, blocos de pedra clara em fiadas de

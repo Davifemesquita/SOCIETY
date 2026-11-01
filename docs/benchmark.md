@@ -1950,3 +1950,11 @@ dono à vista). Neutra; abre o roteiro espantalho, cegonha e vaga-lume.
 Mesmo estado (jogo novo 11,8 s): 83,1 FPS (175: 83,3), 1% low 39,9, pior quadro 32 ms, p50/p95/p99 11,4/15,5/23,3 ms, GPU
 11,2 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 17,0 ms; +10 objetos e draw calls (os ninhos e as
 cegonhas nas ilhas) e +263 mil primitivas no quadro com tudo visível. Neutra.
+
+## Fase 177 — postigos nas janelas (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,0 FPS (176: 83,1), 1% low 41,0, pior quadro 36 ms, p50/p95/p99 11,5/15,7/22,7 ms, GPU
+11,4 ms (176: 11,2), montar tudo 9,4 s, carregar 5,8 s, construir com a ilha cheia 17,3 ms; objetos e draw calls iguais e +749
+mil primitivas no quadro com tudo visível (duas folhas de 12 triângulos por janela em todas as casas dos camponeses,
+operários e artesãos). O pouco que a GPU subiu está dentro da oscilação entre rodadas; a malha das casas não muda de número
+(os postigos valem para a classe inteira).

@@ -2608,6 +2608,13 @@ Regras que já custaram investigação:
   `PerchedGullView.heading_at`. **A chaminé com ninho não fumega** (`ChimneySmokeView.chimney_world` a pula). Captura em
   `tools/capture_phase176.tscn` (a câmera à mão: a da partida fica presa ao chão).
 
+### Postigos nas janelas (Fase 177, nossa)
+
+- **Plano** em `docs/plano_fase177.md`. `Spec.shutters` (todas as casas de `SHUTTER_TRIMS`; na chave) e `BuildingKit._shutters`
+  (duas folhas por janela do corpo, na célula (1, 1) da paleta, `UV_SHUTTER`). O `shaders/building_kit.gdshader` pinta a célula
+  numa das quatro cores de postigo pelo lugar do prédio (`shutter_pick`, hash inteiro da origem do modelo), com as réguas.
+  Captura: as ruas do `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2795,6 +2802,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 174 — Banco na porta (nossa) | **feita em 31/10/2026**, a última do roteiro laterita, lenha e carrinho: o banco de tábua encostado na parede da frente, no quintal cercado de parte das casas dos camponeses; plano em `docs/plano_fase174.md` |
 | 175 — Espantalho no campo (nossa) | **feita em 31/10/2026**, primeira do roteiro espantalho, cegonha e vaga-lume (Fases 175 a 179): um espantalho de pau com casaco, chapéu e palha saindo das mangas no vão do meio de um a cada três campos de trigo e de batata; plano em `docs/plano_fase175.md` |
 | 176 — Cegonha na chaminé (nossa) | **feita em 31/10/2026**: o ninho de gravetos com a cegonha de pé, virando de tempos em tempos, no alto da chaminé de uma a cada quatro casas dos camponeses e operários das ilhas temperadas; a chaminé com ninho não fumega; plano em `docs/plano_fase176.md` |
+| 177 — Postigos nas janelas (nossa) | **feita em 31/10/2026**: as duas folhas de madeira abertas dos lados de cada janela das casas dos camponeses, operários e artesãos, pintadas de verde, azul, vermelho ou ocre pelo prédio, com as réguas da veneziana; plano em `docs/plano_fase177.md` |
 
 Pendências já vistas para fases futuras:
 
