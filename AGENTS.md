@@ -2870,6 +2870,12 @@ Regras que já custaram investigação:
   confere a célula do lado**: com o vizinho encostado, entraria na parede dele. Captura: `lenha_da_padaria.png` no
   `tools/capture_phase95.tscn` (a padaria sozinha no fim da rua espaçada).
 
+### Escada de mão (Fase 214, nossa)
+
+- **Plano** em `docs/plano_fase214.md`. `LadderView` (`GameScreen.ladder_view`): `spot`/`_cell`/`cells` (a parede de −X do corpo
+  das casas de duas águas do resto certo, na metade de trás, com a célula do lado livre; o recheio e as bombas a deixam) e
+  `ladder_mesh` (esticada até o beiral), num MultiMesh. Captura: `escada_de_mao.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3094,6 +3100,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 211 — Mós no moinho (nossa) | **feita em 01/11/2026**: duas mós de pedra de pé encostadas na parede do lado de cada moinho, com a pilha de sacos de farinha ao lado; plano em `docs/plano_fase211.md` |
 | 212 — Buxo na porta (nossa) | **feita em 01/11/2026**: dois vasos de pedra com o buxo podado em bola, um de cada lado da porta das casas dos investidores, por fora das colunas; plano em `docs/plano_fase212.md` |
 | 213 — Lenha da padaria (nossa) | **feita em 01/11/2026**: a pilha de lenha miúda sob uma tábua e a pá de forno de pé, encostadas na parede ao lado da boca do forno de cada padaria; plano em `docs/plano_fase213.md` |
+| 214 — Escada de mão (nossa) | **feita em 01/11/2026**, a última do roteiro pombo, mó e buxo: a escada de madeira encostada na parede do lado de parte das casas, do chão até o beiral, com o balde de lata no pé; plano em `docs/plano_fase214.md` |
 
 Pendências já vistas para fases futuras:
 

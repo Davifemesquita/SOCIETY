@@ -155,6 +155,11 @@ func _run() -> void:
 		var wood := _game.oven_wood_view.places[_game.oven_wood_view.places.size() - 1]
 		var out := wood.basis.z.normalized()
 		await _aimed("lenha_da_padaria.png", wood.origin + Vector3(0.0, 0.8, 0.0), 7.0, atan2(out.x, out.z) + 0.35)
+	# Fase 214: a escada de mão encostada no lado de uma casa, de perto
+	if not _game.ladder_view.places.is_empty():
+		var ladder := _game.ladder_view.places[0]
+		var out := ladder.basis.z.normalized()
+		await _aimed("escada_de_mao.png", ladder.origin + Vector3(0.0, 1.6, 0.0), 8.0, atan2(out.x, out.z) + 0.6)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

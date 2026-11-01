@@ -2204,3 +2204,13 @@ tudo visível (a cidade do benchmark é de operários). Neutra.
 A máquina seguiu no estado lento: 70,9 FPS (212: 71,3), 1% low 38,1, p50/p95/p99 13,4/18,0/24,5 ms, GPU 12,7 ms, montar tudo
 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem padaria). Neutra.
+
+## Fase 214 — escada de mão (01/11/2026)
+
+A máquina seguiu no estado lento: 71,5 FPS (213: 70,9), 1% low 38,1, p50/p95/p99 13,3/17,9/24,8 ms, GPU 12,6 ms, montar tudo
+9,3 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (as casas do benchmark encostam umas nas outras). Neutra; fecha o roteiro pombo, mó e buxo e os quatro ciclos do
+quinto pedido do dono (Fases 195 a 214). Ao longo deles o FPS médio ficou em ~80 com a máquina no estado rápido (195 a 207) e
+caiu para ~71 quando ela passou ao lento (208 em diante, o dono usando o PC); os A/B das Fases 200, 208, 209 e 210 mostraram as
+fases neutras no mesmo estado. Montar, carregar e construir ficaram onde estavam (o carregar subiu 0,4 s nas Fases 201 a 204 e
+voltou com a memória das buscas junto da rua).
