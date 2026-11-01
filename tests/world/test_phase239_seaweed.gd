@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Algas na praia (Fase 239): a peça nova vem no fim da lista da costa (o sorteio das peças de antes não muda) e no fim do enum;
-## aparece nas ilhas, só nas células baixas e planas junto do mar, deitada no chão; a malha é uma faixa chata e comprida.
+## Algas na praia (Fase 239): a peça nova vem no fim da lista da costa (o sorteio das peças de antes não muda) e depois das outras
+## no enum; aparece nas ilhas, só nas células baixas e planas junto do mar, deitada no chão; a malha é uma faixa chata e comprida.
 
 var _config: GameConfig
 var _world: WorldState
@@ -15,7 +15,7 @@ func before_test() -> void:
 
 func test_the_seaweed_is_the_last_rule_of_the_coast() -> void:
 	assert_bool(_appended(ScatterView.NEAR_SEA, ScatterView.Kind.SEAWEED)).is_true()
-	assert_int(ScatterView.Kind.SEAWEED).is_equal(ScatterView.Kind.size() - 1)
+	assert_int(ScatterView.Kind.SEAWEED).is_greater(ScatterView.Kind.ROCK_PINE)
 	assert_bool(ScatterView.Kind.SEAWEED in ScatterView.PLANTS).is_false()
 	assert_bool(ScatterView.Kind.SEAWEED in ScatterView.SHADOWED).is_false()
 

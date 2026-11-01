@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 ## Tronco caído com cogumelos (Fase 246): a peça nova vem no fim da lista da beira da mata (o sorteio das peças de antes não muda) e
-## no fim do enum; aparece nas ilhas temperadas, perto da mata e deitada com o chão, nunca nas tropicais; a malha é comprida e baixa.
+## depois das outras no enum; aparece nas ilhas temperadas, perto da mata e deitada com o chão, nunca nas tropicais; a malha é
+## comprida e baixa.
 
 var _config: GameConfig
 var _world: WorldState
@@ -15,7 +16,7 @@ func before_test() -> void:
 
 func test_the_log_is_the_last_rule_of_the_forest_edge() -> void:
 	assert_bool(_appended(ScatterView.NEAR_FOREST, ScatterView.Kind.MOSSY_LOG)).is_true()
-	assert_int(ScatterView.Kind.MOSSY_LOG).is_equal(ScatterView.Kind.size() - 1)
+	assert_int(ScatterView.Kind.MOSSY_LOG).is_greater(ScatterView.Kind.SEAWEED)
 	assert_bool(ScatterView.Kind.MOSSY_LOG in ScatterView.SHADOWED).is_true()
 	assert_bool(ScatterView.Kind.MOSSY_LOG in ScatterView.PLANTS).is_false()
 
