@@ -2301,3 +2301,9 @@ tudo visível (a cidade do benchmark não tem fazenda de ovelhas). Neutra.
 A máquina seguiu no estado rápido: 77,1 FPS (226: 77,2), 1% low 39,5, p50/p95/p99 12,3/17,4/23,8 ms, GPU 12,0 ms, montar tudo
 9,4 s, carregar 6,2 s, construir com a ilha cheia 17,4 ms; +1 objeto e draw call (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem fazenda de porcos). Neutra.
+
+## Fase 228 — barris de petróleo (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,3 FPS (227: 77,1), 1% low 38,8, p50/p95/p99 12,3/17,4/24,2 ms, GPU 11,9 ms, montar tudo
+9,4 s, carregar 6,1 s, construir com a ilha cheia 17,6 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem poço de petróleo). Neutra.

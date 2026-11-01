@@ -2970,6 +2970,12 @@ Regras que já custaram investigação:
   do lado oposto ao cocho, pelo `module_owner`) e `mud_mesh` (a lama de borda recortada com a orla e os torrões), num MultiMesh
   sem sombra; a `CropView` não põe capim dentro dela. Captura em `tools/capture_phase227.tscn`.
 
+### Barris de petróleo (Fase 228, nossa)
+
+- **Plano** em `docs/plano_fase228.md`. `OilBarrelView` (`GameScreen.oil_barrel_view`): `sites`/`cells` (as duas células de lado do
+  poço de petróleo pelo `SideYard`) e `barrels_mesh` (os barris da Fase 221 enegrecidos, em pé e deitados, e a mancha de óleo),
+  num MultiMesh. Captura em `tools/capture_phase228.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3208,6 +3214,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 225 — Lanterna na popa (nossa) | **feita em 01/11/2026**, primeira do roteiro lanterna, lã e morcego (Fases 225 a 229): a lanterna de ferro num pau na ré de cada navio, acesa à noite; plano em `docs/plano_fase225.md` |
 | 226 — Fardos de lã (nossa) | **feita em 01/11/2026**: os fardos de juta amarrados com cordas, o cepo de tosquia com a tesoura e o velo solto no lado das fazendas de ovelhas; plano em `docs/plano_fase226.md` |
 | 227 — Lamaçal do chiqueiro (nossa) | **feita em 01/11/2026**: a poça de lama escura e molhada com a orla pisada e os torrões em cada pasto das fazendas de porcos, sem capim dentro; plano em `docs/plano_fase227.md` |
+| 228 — Barris de petróleo (nossa) | **feita em 01/11/2026**: os barris de madeira enegrecidos pelo óleo, em pé e deitados sobre os calços, e a mancha de óleo no chão no lado de cada poço de petróleo; plano em `docs/plano_fase228.md` |
 
 Pendências já vistas para fases futuras:
 
