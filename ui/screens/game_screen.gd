@@ -228,6 +228,8 @@ var barrel_rack_view: BarrelRackView
 var lobster_pot_view: LobsterPotView
 ## Fase 223: os varais com os lençóis brancos no lado de cada hospital.
 var linen_view: LinenView
+## Fase 224: o relógio de sol de pedra num canto do largo calçado de cada serviço.
+var sundial_view: SundialView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -699,6 +701,10 @@ func _ready() -> void:
 	linen_view.name = "Linen"
 	add_child(linen_view)
 	linen_view.setup(simulation)
+	sundial_view = SundialView.new()
+	sundial_view.name = "Sundials"
+	add_child(sundial_view)
+	sundial_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -2941,6 +2941,13 @@ Regras que já custaram investigação:
   pelo `SideYard`) e `linen_mesh` (dois varais com os lençóis enfunados e o cesto), num MultiMesh sem descarte de face. Captura em
   `tools/capture_phase223.tscn`.
 
+### Relógio de sol no largo (Fase 224, nossa)
+
+- **Plano** em `docs/plano_fase224.md`. `SundialView` (`GameScreen.sundial_view`): `cells` (o canto do anel do largo da Fase 109 mais
+  para a frente, um por serviço) e `dial_mesh` (a coluna torneada com o mostrador de bronze e o gnomon), num MultiMesh, só na ilha
+  com relevo. Captura em `tools/capture_phase224.tscn` (a câmera à mão do lado de fora do canto: entre os prédios a da partida
+  fica dentro deles).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3175,6 +3182,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 221 — Barris na cervejaria (nossa) | **feita em 01/11/2026**: a pirâmide de barris deitados sobre os calços e dois barris de pé com o funil no lado da cervejaria, das destilarias e da adega; plano em `docs/plano_fase221.md` |
 | 222 — Covos no cais (nossa) | **feita em 01/11/2026**: pilhas de covos de vime em meia-lua com o cabo enrolado e as boias de cortiça nos lanços livres do cais de pedra dos entrepostos; plano em `docs/plano_fase222.md` |
 | 223 — Lençóis no hospital (nossa) | **feita em 01/11/2026**: dois varais compridos com os lençóis brancos enfunados e o cesto de vime no lado de cada hospital; plano em `docs/plano_fase223.md` |
+| 224 — Relógio de sol no largo (nossa) | **feita em 01/11/2026**, a última do roteiro bomba, barril e lençol: a coluna de pedra torneada com o mostrador de bronze e o gnomon num canto do largo calçado da igreja, do teatro, da universidade, da prefeitura, do museu e da escola; plano em `docs/plano_fase224.md` |
 
 Pendências já vistas para fases futuras:
 

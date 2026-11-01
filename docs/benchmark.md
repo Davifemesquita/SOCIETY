@@ -2275,3 +2275,9 @@ A máquina seguiu no estado rápido: 76,8 FPS (222: 78,1; a mesma cena, só +5 o
 máquina), 1% low 39,1, p50/p95/p99 12,4/17,4/23,9 ms, GPU 12,0 ms, montar tudo 9,6 s, carregar 6,1 s, construir com a ilha
 cheia 17,8 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem
 hospital). Neutra.
+
+## Fase 224 — relógio de sol no largo (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,1 FPS (223: 76,8), 1% low 38,9, p50/p95/p99 12,3/17,5/24,0 ms, GPU 12,0 ms, montar tudo
+9,4 s, carregar 6,2 s, construir com a ilha cheia 17,0 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem serviço com largo). Neutra; fecha o roteiro bomba, barril e lençol.
