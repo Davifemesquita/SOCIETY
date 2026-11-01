@@ -131,6 +131,9 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	# Fase 159: nem no pátio de tijolos das olarias
 	for cell: Vector2i in BrickYardView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 169: nem nos barris de chuva
+	for cell: Vector2i in RainBarrelView.cells(world, data, island_id):
+		taken[cell] = true
 	for id: int in ids:
 		var record := world.buildings[id]
 		var def := data.building(record.def_id)

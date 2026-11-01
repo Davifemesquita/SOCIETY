@@ -18,3 +18,10 @@ código.
 | 169 — Barril de chuva | o barril que recolhe a água do telhado, com a calha descendo, no canto de parte das casas |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase165.md` a
+`docs/plano_fase169.md`), testes, captura e benchmark. Diferenças do roteiro: o chão batido (165) ficou com a borda recortada só
+na beirada (o recorte do tamanho do pátio deixava grama junto da parede); as medas (166) também nas fazendas de trigo; o barril
+de chuva (169) fica atrás das casas, na quina de −X (na frente não há lugar: a cerca de estacas e a rua).

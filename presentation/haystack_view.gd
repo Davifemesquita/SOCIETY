@@ -98,7 +98,8 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	taken.merge(AvenueView.cells(world, island_id))
 	for source: Dictionary in [TavernGardenView.cells(world, data, island_id), FarmSiloView.cells(world, data, island_id),
 			SpoilTipView.cells(world, data, island_id), FishNetView.cells(world, data, island_id),
-			BrickYardView.cells(world, data, island_id), KitchenGardenView.cells(world, data, island_id)]:
+			BrickYardView.cells(world, data, island_id), KitchenGardenView.cells(world, data, island_id),
+			RainBarrelView.cells(world, data, island_id)]:
 		for cell: Vector2i in source:
 			taken[cell] = true
 	for id: int in ids:

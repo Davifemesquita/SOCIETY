@@ -136,6 +136,8 @@ var brick_yard_view: BrickYardView
 var kitchen_garden_view: KitchenGardenView
 ## Fase 166: as medas de feno ao lado das fazendas de gado e de trigo.
 var haystack_view: HaystackView
+## Fase 169: o barril de chuva atrás de parte das casas dos camponeses e operários.
+var rain_barrel_view: RainBarrelView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -431,6 +433,10 @@ func _ready() -> void:
 	haystack_view.name = "Haystacks"
 	add_child(haystack_view)
 	haystack_view.setup(simulation)
+	rain_barrel_view = RainBarrelView.new()
+	rain_barrel_view.name = "RainBarrels"
+	add_child(rain_barrel_view)
+	rain_barrel_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

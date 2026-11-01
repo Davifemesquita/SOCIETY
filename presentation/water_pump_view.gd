@@ -110,6 +110,9 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	# Fase 166: nem nas medas de feno
 	for cell: Vector2i in HaystackView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 169: nem nos barris de chuva
+	for cell: Vector2i in RainBarrelView.cells(world, data, island_id):
+		taken[cell] = true
 	for cell: Vector2i in FarmSiloView.cells(world, data, island_id):
 		taken[cell] = true
 	for id: int in ids:

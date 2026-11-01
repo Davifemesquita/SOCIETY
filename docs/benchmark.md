@@ -1902,3 +1902,11 @@ quadro com tudo visível (a cidade do benchmark fica na ilha plana, sem recheio)
 Mesmo estado (jogo novo 11,7 s): 84,0 FPS (167: 82,8), 1% low 40,6, pior quadro 31 ms, p50/p95/p99 11,3/15,2/23,1 ms, GPU
 11,0 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 17,4 ms; +1 objeto e draw call (a camada das gaivotas
 pousadas) e +7 mil primitivas no quadro com tudo visível. Neutra.
+
+## Fase 169 — barril de chuva (31/10/2026)
+
+Primeira rodada, com todos os barris numa malha refeita em GDScript a cada obra: carregar 5,75 s (168: 5,6). Medido à parte,
+refazer 300 barris custava ~120 ms; com o barril e o cano em dois MultiMesh (o cano de 1 m esticado até o beiral), 16 ms. Com
+isso, jogo novo 11,7 s: 83,0 FPS (168: 84,0), 1% low 40,2, pior quadro 28 ms, p50/p95/p99 11,3/15,3/23,0 ms, GPU 11,1 ms,
+montar tudo 9,3 s, carregar 5,7 s, construir com a ilha cheia 17,7 ms; +10 objetos e draw calls (as duas camadas dos barris
+nas ilhas) e +10 mil primitivas no quadro com tudo visível. Neutra; fecha o roteiro chão batido, feno e gaivota.
