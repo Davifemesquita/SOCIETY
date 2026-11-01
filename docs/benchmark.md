@@ -2090,3 +2090,10 @@ Mesmo estado (jogo novo 11,8 s): 80,1 FPS (195: 81,5), 1% low 39,9, pior quadro 
 11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,0 ms; +2 objetos e draw calls (as duas camadas, sem
 sombra) e +35 mil primitivas no quadro com tudo visível. A primeira versão da busca dos bandos levava 226 ms e punha ~0,25 s
 no jogo novo e no carregar; com a busca refeita (12 ms) os dois voltaram. Neutra.
+
+## Fase 197 — casinha do cão (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 79,7 FPS (196: 80,1), 1% low 39,0, pior quadro 38 ms, p50/p95/p99 11,8/16,1/23,8 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 6,0 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e
+primitivas iguais no quadro com tudo visível (as casas do benchmark encostam umas nas outras e não sobra a célula do lado).
+Neutra (GPU igual).

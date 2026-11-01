@@ -180,6 +180,8 @@ var quay_stairs_view: QuayStairsView
 var graveyard_view: GraveyardView
 ## Fase 196: os bandos de patos nadando em roda na água rasa da costa, de dia.
 var duck_view: DuckView
+## Fase 197: a casinha do cão ao lado das casas que têm cão na porta.
+var kennel_view: KennelView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -555,6 +557,10 @@ func _ready() -> void:
 	duck_view.name = "Ducks"
 	add_child(duck_view)
 	duck_view.setup(simulation)
+	kennel_view = KennelView.new()
+	kennel_view.name = "Kennels"
+	add_child(kennel_view)
+	kennel_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

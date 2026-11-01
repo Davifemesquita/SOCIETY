@@ -2749,6 +2749,12 @@ Regras que já custaram investigação:
   no peito). **Busca pela grade inteira em GDScript pesa**: leia o `PackedByteArray` direto e pule cedo o que não serve antes de
   chamar função por célula. Captura em `tools/capture_phase196.tscn`.
 
+### Casinha do cão (Fase 197, nossa)
+
+- **Plano** em `docs/plano_fase197.md`. `KennelView` (`GameScreen.kennel_view`): `spot`/`_cell`/`cells` (a célula do lado de −X do
+  lote, na fileira da frente, das casas com cão do `AnimalView.DOG_EVERY`; o recheio e as bombas a deixam) e `kennel_mesh`, num
+  MultiMesh. Captura: `casinha_do_cao.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2956,6 +2962,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 194 — Escada do cais (nossa) | **feita em 01/11/2026**, a última do roteiro colmeia, pombal e varal: o lance de degraus de pedra descendo do cais de pedra até dentro da água, encostado no paredão, com a argola de ferro, dos dois lados de cada entreposto; plano em `docs/plano_fase194.md` |
 | 195 — Cemitério da igreja (nossa) | **feita em 01/11/2026**, primeira do roteiro cemitério, pato e rede (Fases 195 a 199): lápides de topo redondo, cruzes e obeliscos em fileiras atrás da igreja, além do largo, umas tombando, dentro de um muro baixo de pedra com o portão virado para ela; plano em `docs/plano_fase195.md` |
 | 196 — Patos na água (nossa) | **feita em 01/11/2026**: bandos de patos nadando em roda na água calma da costa, longe da espuma e dos portos, a pata com os patinhos em fila ou patos e patas juntos, mergulhando a cabeça de vez em quando, de dia; plano em `docs/plano_fase196.md` |
+| 197 — Casinha do cão (nossa) | **feita em 01/11/2026**: a casinha de tábuas com telhado de duas águas, a porta em arco e a tigela de água ao lado das casas que têm cão na porta, virada para a rua; plano em `docs/plano_fase197.md` |
 
 Pendências já vistas para fases futuras:
 

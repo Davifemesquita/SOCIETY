@@ -112,6 +112,10 @@ func _run() -> void:
 	# Fase 174: o banco na porta das casas dos camponeses, de perto
 	if not _game.door_bench_view.places.is_empty():
 		await _shot("banco_na_porta.png", _game.door_bench_view.places[0].origin, 7.0, 0.4)
+	# Fase 197: a casinha do cão ao lado das casas com cão, de perto
+	if not _game.kennel_view.places.is_empty():
+		await _shot("casinha_do_cao.png", _game.kennel_view.places[0].origin, 7.0, 0.5)
+		await _shot("casinha_do_cao_rua.png", _game.kennel_view.places[0].origin, 16.0, -0.4)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina
