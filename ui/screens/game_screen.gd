@@ -238,6 +238,8 @@ var mud_wallow_view: MudWallowView
 var oil_barrel_view: OilBarrelView
 ## Fase 229: os morcegos esvoaçando em volta da torre de cada igreja, à noite.
 var bat_view: BatView
+## Fase 230: o poste de sinal de braço na ponta de cada linha de trilho.
+var rail_signal_view: RailSignalView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -729,6 +731,10 @@ func _ready() -> void:
 	bat_view.name = "Bats"
 	add_child(bat_view)
 	bat_view.setup(simulation)
+	rail_signal_view = RailSignalView.new()
+	rail_signal_view.name = "RailSignals"
+	add_child(rail_signal_view)
+	rail_signal_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -2313,3 +2313,10 @@ tudo visível (a cidade do benchmark não tem poço de petróleo). Neutra.
 A máquina seguiu no estado rápido: 77,3 FPS (228: 77,3), 1% low 39,2, p50/p95/p99 12,3/17,4/23,6 ms, GPU 12,0 ms, montar tudo
 9,5 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (a
 cidade do benchmark não tem igreja, e o bando sem torre fica escondido). Neutra; fecha o roteiro lanterna, lã e morcego.
+
+## Fase 230 — sinal no trilho (01/11/2026)
+
+A máquina começou a passar ao estado lento: 75,5 FPS (229: 77,3), 1% low 38,2, p50/p95/p99 12,5/18,0/24,0 ms, GPU 12,2 ms, montar
+tudo 9,5 s, carregar 6,1 s, construir com a ilha cheia 16,9 ms; +6 objetos e draw calls (as duas camadas) e primitivas iguais no
+quadro com tudo visível (a cidade do benchmark não tem trilho). O A/B sem a vista, logo depois, deu 71,4 FPS e GPU 12,7 ms: a queda
+é da máquina, não do sinal. Neutra; abre o roteiro sinal, cormorão e castanha.
