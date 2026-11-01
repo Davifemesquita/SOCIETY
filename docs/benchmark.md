@@ -1937,3 +1937,10 @@ Medidas juntas (as duas são peças pequenas de quintal num MultiMesh cada). Mes
 construir com a ilha cheia 17,3 ms; +5 objetos e draw calls e +24 mil primitivas no quadro com tudo visível. Neutras; fecham o
 roteiro laterita, lenha e carrinho e os quatro ciclos do terceiro pedido do dono (Fases 155 a 174), no patamar de 81 a 85 FPS
 (GPU ~11 ms) em que a máquina ficou nesta rodada.
+
+## Fase 175 — espantalho no campo (31/10/2026)
+
+Mesmo estado (jogo novo 11,8 s): 83,3 FPS (174: 83,2), 1% low 40,8, pior quadro 28 ms, p50/p95/p99 11,3/15,4/22,7 ms, GPU
+11,1 ms, montar tudo 9,3 s, carregar 5,7 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada dos
+espantalhos nas ilhas) e primitivas iguais no quadro com tudo visível (o benchmark não tem campo de trigo nem de batata com
+dono à vista). Neutra; abre o roteiro espantalho, cegonha e vaga-lume.

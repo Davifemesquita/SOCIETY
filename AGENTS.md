@@ -2594,6 +2594,13 @@ Regras que já custaram investigação:
   parte das casas dos camponeses, encostado na parede além dos vasos, no lugar do modelo) e `bench_mesh`, num MultiMesh. Captura:
   `banco_na_porta.png` no `tools/capture_phase95.tscn`.
 
+### Espantalho no campo (Fase 175, nossa)
+
+- **Plano** em `docs/plano_fase175.md`, primeira do roteiro `docs/plano_fases_175_179.md` (espantalho, cegonha e vaga-lume; o
+  Anno não foi aberto: o dono estava no PC). `ScarecrowView` (`GameScreen.scarecrow_view`): `spot` (um campo a cada
+  `SCARECROW_EVERY` cuja fazenda, pelo `module_owner`, planta uma das `CROPS`; no vão do meio entre as fileiras, pela conta da
+  `CropView`) e `scarecrow_mesh`, num MultiMesh. Captura em `tools/capture_phase175.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2779,6 +2786,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 172 — Carrinho de mão (nossa) | **feita em 31/10/2026**: o carrinho de mão de madeira parado no pátio de chão batido atrás de metade das oficinas; plano em `docs/plano_fase172.md` |
 | 173 — Tina de lavar (nossa) | **feita em 31/10/2026**: a tina de aduelas com a água ensaboada e a tábua de esfregar ao lado de cada varal; plano em `docs/plano_fase173.md` |
 | 174 — Banco na porta (nossa) | **feita em 31/10/2026**, a última do roteiro laterita, lenha e carrinho: o banco de tábua encostado na parede da frente, no quintal cercado de parte das casas dos camponeses; plano em `docs/plano_fase174.md` |
+| 175 — Espantalho no campo (nossa) | **feita em 31/10/2026**, primeira do roteiro espantalho, cegonha e vaga-lume (Fases 175 a 179): um espantalho de pau com casaco, chapéu e palha saindo das mangas no vão do meio de um a cada três campos de trigo e de batata; plano em `docs/plano_fase175.md` |
 
 Pendências já vistas para fases futuras:
 

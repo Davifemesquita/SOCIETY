@@ -144,6 +144,8 @@ var log_pile_view: LogPileView
 var wheelbarrow_view: WheelbarrowView
 ## Fase 174: o banco de tábua na porta de parte das casas dos camponeses.
 var door_bench_view: DoorBenchView
+## Fase 175: o espantalho no meio de parte dos campos de trigo e de batata.
+var scarecrow_view: ScarecrowView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -455,6 +457,10 @@ func _ready() -> void:
 	door_bench_view.name = "DoorBenches"
 	add_child(door_bench_view)
 	door_bench_view.setup(simulation)
+	scarecrow_view = ScarecrowView.new()
+	scarecrow_view.name = "Scarecrows"
+	add_child(scarecrow_view)
+	scarecrow_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
