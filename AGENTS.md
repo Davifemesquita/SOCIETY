@@ -2628,6 +2628,17 @@ Regras que já custaram investigação:
   touceiras na terra encostada no rio, na margem baixa (`REEDS_MAX_HEIGHT_M`), com **sorteio próprio depois das outras peças da
   célula** (a regra dela não muda, e o recheio de antes sai igual). Captura em `tools/capture_phase179.tscn`.
 
+### Borboletas nos canteiros (Fase 180, nossa)
+
+- **Plano** em `docs/plano_fase180.md`, primeira do roteiro `docs/plano_fases_180_184.md` (borboleta, correio e galo; o Anno não
+  foi aberto: o dono estava no PC). `ButterflyView` (`GameScreen.butterfly_view`): `groups` (a rede de pontos a cada
+  `GROUP_STEP` células, sobre as papoulas nas temperadas e no capim aberto nas tropicais) e `butterfly_mesh`, num MultiMesh com
+  o dado da instância, escondido à noite; o `shaders/butterfly.gdshader` as faz esvoaçar e bater as asas no tempo visual.
+  Captura em `tools/capture_phase180.tscn`.
+- **`IslandDirty`** (`presentation/island_dirty.gd`): quais ilhas uma vista do arquipélago inteiro refaz — a obra, a estrada e as
+  árvores dizem a ilha, o demolido sai pela ilha guardada; as borboletas e os vaga-lumes (Fase 178) refazem só ela, com o hash
+  aritmético `FireflyView.cell_hash` (o `hash()` de um Array por ponto custava dezenas de ms).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2818,6 +2829,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 177 — Postigos nas janelas (nossa) | **feita em 31/10/2026**: as duas folhas de madeira abertas dos lados de cada janela das casas dos camponeses, operários e artesãos, pintadas de verde, azul, vermelho ou ocre pelo prédio, com as réguas da veneziana; plano em `docs/plano_fase177.md` |
 | 178 — Vaga-lumes no prado (nossa) | **feita em 31/10/2026**: enxames de pontinhos de luz verde-amarela vagando baixo e piscando na beira da mata e no capim aberto, longe das casas e das estradas, ao anoitecer e à noite; plano em `docs/plano_fase178.md` |
 | 179 — Juncos na margem (nossa) | **feita em 31/10/2026**, a última do roteiro espantalho, cegonha e vaga-lume: touceiras de junco alto com as espigas marrons da taboa na margem baixa dos rios, balançando com o vento; plano em `docs/plano_fase179.md` |
+| 180 — Borboletas nos canteiros (nossa) | **feita em 31/10/2026**, primeira do roteiro borboleta, correio e galo (Fases 180 a 184): borboletas brancas, amarelas, laranja e azuis esvoaçando e batendo as asas sobre os canteiros de papoulas das ilhas temperadas e no capim aberto das tropicais, de dia; plano em `docs/plano_fase180.md` |
 
 Pendências já vistas para fases futuras:
 

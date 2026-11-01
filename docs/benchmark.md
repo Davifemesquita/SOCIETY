@@ -1972,3 +1972,12 @@ Mesmo estado (jogo novo 11,7 s): 81,6 FPS (178: 82,0), 1% low 39,8, pior quadro 
 11,4 ms, montar tudo 9,3 s, carregar 5,8 s, construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais no
 quadro com tudo visível (a câmera dele não passa pelas margens de rio). Neutra; fecha o roteiro espantalho, cegonha e
 vaga-lume, no patamar de 81 a 83 FPS (GPU 11,1 a 11,4 ms).
+
+## Fase 180 — borboletas nos canteiros (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,2 FPS (179: 81,6), 1% low 40,9, pior quadro 29 ms, p50/p95/p99 11,5/15,8/23,0 ms, GPU
+11,3 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,6 ms; +1 objeto e draw call e +5 mil primitivas no
+quadro com tudo visível (as borboletas à vista às 10h). Medido à parte (num teste): os grupos do arquipélago levavam ~48 ms a
+cada obra (no quadro seguinte); com o hash aritmético e a refação só da ilha que mudou, a ilha principal leva ~2,4 ms, e os
+vaga-lumes da Fase 178 (~10 ms no arquipélago inteiro à noite) ganharam o mesmo. Neutra; abre o roteiro borboleta, correio e
+galo.

@@ -21,7 +21,9 @@ var _simulation: Simulation
 var _flies := MultiMeshInstance3D.new()
 ## Onde fica cada vaga-lume (testes: sem tela o MultiMesh devolve transformações zeradas).
 var places: Array[Vector3] = []
-var _dirty := true
+## Os vaga-lumes de cada ilha (refeitos só na ilha que mudou: IslandDirty).
+var _by_island: Dictionary[int, Array] = {}
+var _changes := IslandDirty.new()
 
 
 func setup(simulation: Simulation) -> void:
@@ -40,9 +42,9 @@ func setup(simulation: Simulation) -> void:
 	_flies.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_flies.visible = false
 	add_child(_flies)
-	EventBus.building_placed.connect(_mark)
-	EventBus.building_removed.connect(_mark)
-	EventBus.roads_changed.connect(_mark)
+	EventBus.building_placed.connect(_mark_building)
+	EventBus.building_removed.connect(_mark_building)
+	EventBus.roads_changed.connect(_mark_island)
 	EventBus.trees_changed.connect(_mark_area)
 	EventBus.world_replaced.connect(_on_world_replaced)
 
@@ -51,16 +53,21 @@ func fly_count() -> int:
 	return places.size()
 
 
-func _mark(_id: int) -> void:
-	_dirty = true
+func _mark_building(building_id: int) -> void:
+	_changes.mark_building(_simulation.world, building_id)
 
 
-func _mark_area(_island_id: int, _area: Rect2i) -> void:
-	_dirty = true
+func _mark_island(island_id: int) -> void:
+	_changes.mark_island(island_id)
+
+
+func _mark_area(island_id: int, _area: Rect2i) -> void:
+	_changes.mark_island(island_id)
 
 
 func _on_world_replaced() -> void:
-	_dirty = true
+	_by_island.clear()
+	_changes.mark_all()
 
 
 func _process(_delta: float) -> void:
@@ -68,21 +75,24 @@ func _process(_delta: float) -> void:
 		return
 	var night := DayClock.night_factor(_simulation.config, GameClock.clock.hour())
 	_flies.visible = night >= SHOW_AT
-	if _flies.visible and _dirty:
+	if _flies.visible and _changes.pending():
 		rebuild()
 
 
 func rebuild() -> void:
-	_dirty = false
 	places.clear()
 	var world := _simulation.world
+	for island_id: int in _changes.take(world):
+		_by_island[island_id] = flies(world, island_id)
 	for island_id: int in world.islands.size():
-		places.append_array(flies(world, island_id))
+		if _by_island.has(island_id):
+			var list: Array[Vector3] = _by_island[island_id]
+			places.append_array(list)
 	var multimesh := _flies.multimesh
 	multimesh.instance_count = places.size()
 	for i: int in places.size():
 		multimesh.set_instance_transform(i, Transform3D(Basis.IDENTITY, places[i]))
-		var seed := absi(hash([i, &"vaga-lume"]))
+		var seed := cell_hash(i, 0, 0, 178)
 		multimesh.set_instance_custom_data(i, Color(float(seed % 997) / 997.0, float(seed / 997 % 991) / 991.0,
 				float(seed / 997 / 991 % 13) / 13.0, 0.0))
 
@@ -102,7 +112,7 @@ static func swarms(world: WorldState, island_id: int) -> Array[Vector3]:
 	var occupancy := grid.occupancy
 	for y: int in range(CLEAR_CELLS, height - CLEAR_CELLS, SWARM_STEP):
 		for x: int in range(CLEAR_CELLS, width - CLEAR_CELLS, SWARM_STEP):
-			var pick := absi(hash([island_id, x, y, &"enxame"]))
+			var pick := cell_hash(island_id, x, y, 1781)
 			var cell := Vector2i(clampi(x + pick % 3 - 1, CLEAR_CELLS, width - 1 - CLEAR_CELLS),
 					clampi(y + pick / 3 % 3 - 1, CLEAR_CELLS, height - 1 - CLEAR_CELLS))
 			var index := cell.y * width + cell.x
@@ -133,7 +143,7 @@ static func flies(world: WorldState, island_id: int) -> Array[Vector3]:
 	var grid := world.island(island_id)
 	for center: Vector3 in swarms(world, island_id):
 		var random := RandomNumberGenerator.new()
-		random.seed = hash([island_id, center, &"vaga-lumes"])
+		random.seed = cell_hash(island_id, roundi(center.x * 10.0), roundi(center.z * 10.0), 1782)
 		for k: int in FLIES:
 			var angle := random.randf() * TAU
 			var reach := sqrt(random.randf()) * SPREAD_M
@@ -141,3 +151,11 @@ static func flies(world: WorldState, island_id: int) -> Array[Vector3]:
 			var z := center.z + sin(angle) * reach
 			result.append(Vector3(x, grid.height_at(x, z) + random.randf_range(LOW_M, HIGH_M), z))
 	return result
+
+
+## Hash inteiro de uma célula (sem o hash() de um Array, que custava dezenas de ms ao passar por todas as ilhas): positivo, de
+## 32 bits.
+static func cell_hash(island_id: int, x: int, y: int, salt: int) -> int:
+	var h := (x * 374761393 + y * 668265263 + island_id * 1442695041 + salt * 2246822519) & 0xFFFFFFFF
+	h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+	return h ^ (h >> 16)

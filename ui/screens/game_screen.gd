@@ -150,6 +150,8 @@ var scarecrow_view: ScarecrowView
 var stork_view: StorkView
 ## Fase 178: os vaga-lumes piscando no capim e na beira da mata à noite.
 var firefly_view: FireflyView
+## Fase 180: as borboletas esvoaçando sobre os canteiros de papoulas, de dia.
+var butterfly_view: ButterflyView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -473,6 +475,10 @@ func _ready() -> void:
 	firefly_view.name = "Fireflies"
 	add_child(firefly_view)
 	firefly_view.setup(simulation)
+	butterfly_view = ButterflyView.new()
+	butterfly_view.name = "Butterflies"
+	add_child(butterfly_view)
+	butterfly_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
