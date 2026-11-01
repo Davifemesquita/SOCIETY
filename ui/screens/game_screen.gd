@@ -156,6 +156,8 @@ var butterfly_view: ButterflyView
 var post_box_view: PostBoxView
 ## Fase 182: o galo de bronze no alto da cumeeira das fazendas, virando com o vento.
 var weathercock_view: WeathercockView
+## Fase 183: o barco virado na areia, com os remos, junto das cabanas de pesca.
+var beach_boat_view: BeachBoatView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -487,6 +489,10 @@ func _ready() -> void:
 	post_box_view.name = "PostBoxes"
 	add_child(post_box_view)
 	post_box_view.setup(simulation)
+	beach_boat_view = BeachBoatView.new()
+	beach_boat_view.name = "BeachBoats"
+	add_child(beach_boat_view)
+	beach_boat_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

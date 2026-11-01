@@ -1996,3 +1996,9 @@ Mesmo estado (jogo novo 11,7 s): 81,6 FPS (181: 82,0), 1% low 40,5, pior quadro 
 11,4 ms, montar tudo 9,3 s, carregar 6,0 s (181: 5,8), construir com a ilha cheia 17,0 ms (os 20,5 ms da 181 eram oscilação);
 +10 objetos e draw calls (a haste e o galo nas ilhas) e primitivas iguais no quadro com tudo visível (o benchmark não tem
 fazenda à vista). O carregar vem subindo devagar neste ciclo (5,7 s na 177, 6,0 s agora): fica de olho.
+
+## Fase 183 — barco na areia (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 82,1 FPS (182: 81,6), 1% low 40,2, pior quadro 35 ms, p50/p95/p99 11,5/15,6/23,0 ms, GPU
+11,3 ms, montar tudo 9,2 s, carregar 5,7 s (182: 6,0: era a oscilação entre rodadas), construir com a ilha cheia 17,0 ms; +10
+objetos e draw calls (os barcos e os remos nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra.

@@ -2652,6 +2652,13 @@ Regras que já custaram investigação:
   `_plate`, visto dos dois lados), virando a cabeça para o vento (`turn`). Captura em `tools/capture_phase182.tscn` (a câmera à
   mão no alto do telhado, com as árvores em volta derrubadas).
 
+### Barco na areia (Fase 183, nossa)
+
+- **Plano** em `docs/plano_fase183.md`. `BeachBoatView` (`GameScreen.beach_boat_view`): `sites` (a célula de praia livre junto da
+  cabana de pesca, encostada no mar pelo lado, com as vizinhas ao longo da costa livres), `boat_place` (o `HarborView.boat_mesh`
+  de borco ao longo da costa) e `oar_places_of` (os remos do `RowboatView` na areia). O recheio deixa as três células (`cells`,
+  no `ScatterView.island_context`). Captura em `tools/capture_phase183.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2845,6 +2852,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 180 — Borboletas nos canteiros (nossa) | **feita em 31/10/2026**, primeira do roteiro borboleta, correio e galo (Fases 180 a 184): borboletas brancas, amarelas, laranja e azuis esvoaçando e batendo as asas sobre os canteiros de papoulas das ilhas temperadas e no capim aberto das tropicais, de dia; plano em `docs/plano_fase180.md` |
 | 181 — Caixa de correio (nossa) | **feita em 31/10/2026**: a caixa de correio de ferro fundido, redonda e vermelha, com a boca e a plaquinha, encostada na calçada de parte das células das ruas calçadas, virada para a rua; plano em `docs/plano_fase181.md` |
 | 182 — Galo do cata-vento (nossa) | **feita em 31/10/2026**: a haste de ferro com a rosa dos ventos e o galo de bronze recortado no alto da cumeeira das fazendas das ilhas temperadas, virando a cabeça para o lado de onde vem o vento; plano em `docs/plano_fase182.md` |
+| 183 — Barco na areia (nossa) | **feita em 31/10/2026**: o bote de pesca virado de borco na praia, com uma ponta apoiada e os dois remos deitados na areia, ao lado de cada cabana de pesca; plano em `docs/plano_fase183.md` |
 
 Pendências já vistas para fases futuras:
 
