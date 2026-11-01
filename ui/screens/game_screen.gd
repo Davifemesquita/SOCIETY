@@ -216,6 +216,8 @@ var ladder_view: LadderView
 var plank_stack_view: PlankStackView
 ## Fase 216: o monte de carvão na baia de tábuas ao lado de cada usina a carvão.
 var coal_heap_view: CoalHeapView
+## Fase 218: o bando de andorinhas dando voltas em volta da torre de cada igreja, de dia.
+var swallow_view: SwallowView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -663,6 +665,10 @@ func _ready() -> void:
 	coal_heap_view.name = "CoalHeaps"
 	add_child(coal_heap_view)
 	coal_heap_view.setup(simulation)
+	swallow_view = SwallowView.new()
+	swallow_view.name = "Swallows"
+	add_child(swallow_view)
+	swallow_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

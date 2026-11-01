@@ -2897,6 +2897,13 @@ Regras que já custaram investigação:
   fileira de cima inteira o kit não usa), pintada pelo `shaders/building_kit.gdshader` numa cor de pano por casa
   (`curtain_pick`), com as pregas. Captura em `tools/capture_phase217.tscn`.
 
+### Andorinhas no campanário (Fase 218, nossa)
+
+- **Plano** em `docs/plano_fase218.md`. `SwallowView` (`GameScreen.swallow_view`): `towers` (o meio da sineira das igrejas, pelo
+  `BuildingKit.belfry_center` no lugar do modelo), `pose` (elipses inclinadas em oito em volta dela), `beat` (rajadas) e
+  `swallow_mesh` no `shaders/bird.gdshader`, num MultiMesh sem sombra, no tempo de jogo; some à noite. Captura em
+  `tools/capture_phase218.tscn` (a câmera à mão).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3125,6 +3132,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 215 — Tábuas secando na serraria (nossa) | **feita em 01/11/2026**, primeira do roteiro tábua, cortina e andorinha (Fases 215 a 219): as pilhas de tábuas em camadas com os tabiques, sobre dormentes e cobertas por tábuas velhas, no lado de cada serraria oposto à roda d'água; plano em `docs/plano_fase215.md` |
 | 216 — Monte de carvão na usina (nossa) | **feita em 01/11/2026**: a baia de tábuas com o monte de carvão em pedras escorrendo para fora, as pedras soltas no pé e a pá cravada, no lado de cada usina a carvão; plano em `docs/plano_fase216.md` |
 | 217 — Cortinas nas janelas (nossa) | **feita em 01/11/2026**: os dois panos presos dos lados e a sanefa em cada janela das casas, em renda, creme, rosa ou verde-sálvia pela casa, com as pregas; plano em `docs/plano_fase217.md` |
+| 218 — Andorinhas no campanário (nossa) | **feita em 01/11/2026**: um bando de andorinhas de costas azul-escuras e cauda em forquilha dando voltas rápidas em volta da torre de cada igreja, batendo as asas em rajadas, de dia; plano em `docs/plano_fase218.md` |
 
 Pendências já vistas para fases futuras:
 

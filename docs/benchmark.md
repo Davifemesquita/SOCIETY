@@ -2234,3 +2234,10 @@ A máquina seguiu no estado rápido: 78,0 FPS (216: 78,6), 1% low 37,8, p50/p95/
 montar tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; objetos e draw calls iguais (as cortinas vão na malha
 das casas) e +0,19 milhão de primitivas no quadro com tudo visível (seis triângulos por janela). O 0,1% low (28,5) e o pior
 quadro (42 ms) caíram porque uma importação do projeto rodou junto no fim da medida; a Fase 218 confere. Neutra.
+
+## Fase 218 — andorinhas no campanário (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,5 FPS (217: 78,0), 1% low 39,5, 0,1% low 35,4, pior quadro 29 ms (os lows da 217 voltaram:
+a queda lá era a importação junto), p50/p95/p99 12,1/17,6/23,7 ms, GPU 11,9 ms, montar tudo 9,4 s, carregar 6,2 s, construir
+com a ilha cheia 17,5 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem
+igreja, e o bando sem torre fica escondido). Neutra.
