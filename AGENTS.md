@@ -3014,6 +3014,13 @@ Regras que já custaram investigação:
   e `ember_mesh` (as brasas no `shaders/night_glow.gdshader`, como vidro), em dois MultiMesh. **Peça que acende no `night_glow` fora do
   pé da malha vai como vidro (alfa 0)**: a chama (alfa 1) encolhe até o y = 0. Captura em `tools/capture_phase234.tscn`.
 
+### Cervos na beira da mata (Fase 235, nossa)
+
+- **Plano** em `docs/plano_fase235.md`, primeira do roteiro `docs/plano_fases_235_239.md` (cervo, âncora e marco; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `DeerView` (`GameScreen.deer_view`): `herds` (capim livre com mata perto, longe
+  das vilas pela regra das focas), `deer`, `head_pitch` (a cabeça pastando e se erguendo) e as malhas do corpo e das cabeças (com e
+  sem galhada), em três MultiMesh. Captura em `tools/capture_phase235.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3259,6 +3266,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 232 — Tapete na janela (nossa) | **feita em 01/11/2026**: o tapete listrado com a franja estendido no peitoril de uma janela de cima de parte das casas dos operários e artesãos; plano em `docs/plano_fase232.md` |
 | 233 — Cabines de banho (nossa) | **feita em 01/11/2026**: as cabines de banho de rodas, listradas de vermelho e branco, com a porta para o mar, na areia perto dos entrepostos das ilhas temperadas; plano em `docs/plano_fase233.md` |
 | 234 — Fogareiro de castanhas (nossa) | **feita em 01/11/2026**, a última do roteiro sinal, cormorão e castanha: o carrinho do vendedor de castanhas com o fogareiro de ferro e as brasas acesas à noite no canto de parte das esquinas calçadas; plano em `docs/plano_fase234.md` |
+| 235 — Cervos na beira da mata (nossa) | **feita em 01/11/2026**, primeira do roteiro cervo, âncora e marco (Fases 235 a 239): grupos de corças com um veado de galhada pastando na beira da mata das ilhas temperadas, longe das vilas, erguendo a cabeça de vez em quando; plano em `docs/plano_fase235.md` |
 
 Pendências já vistas para fases futuras:
 

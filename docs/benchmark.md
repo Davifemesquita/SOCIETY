@@ -2350,3 +2350,10 @@ sexto pedido do dono (Fases 215 a 234). Ao longo deles o FPS médio ficou entre 
 229) e caiu para ~70 quando ela passou ao lento (230 em diante); os A/B das Fases 230 e 231 mostraram as fases neutras no mesmo
 estado. Montar, carregar e construir ficaram onde estavam (o carregar subiu 0,3 s na Fase 221 e voltou com as buscas de lado
 guardadas).
+
+## Fase 235 — cervos na beira da mata (01/11/2026)
+
+A máquina seguiu no estado lento: 70,2 FPS (234: 71,2), 1% low 36,5, p50/p95/p99 13,5/18,1/25,6 ms, GPU 13,0 ms (234: 12,9),
+montar tudo 9,4 s, carregar 6,3 s, construir com a ilha cheia 17,2 ms; +15 objetos e draw calls (as três camadas, com as passadas
+de sombra) e +360 mil primitivas no quadro com tudo visível (os rebanhos das colônias, com a sombra). Neutra dentro do vaivém do
+estado lento (233: 69,5 FPS e GPU 13,0).

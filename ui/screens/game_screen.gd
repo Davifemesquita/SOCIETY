@@ -248,6 +248,8 @@ var window_rug_view: WindowRugView
 var bathing_machine_view: BathingMachineView
 ## Fase 234: o carrinho do fogareiro de castanhas numa esquina calçada, com as brasas acesas à noite.
 var chestnut_roaster_view: ChestnutRoasterView
+## Fase 235: os cervos pastando na beira da mata das ilhas temperadas, longe das vilas.
+var deer_view: DeerView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -759,6 +761,10 @@ func _ready() -> void:
 	chestnut_roaster_view.name = "ChestnutRoasters"
 	add_child(chestnut_roaster_view)
 	chestnut_roaster_view.setup(simulation)
+	deer_view = DeerView.new()
+	deer_view.name = "Deer"
+	add_child(deer_view)
+	deer_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
