@@ -2327,3 +2327,10 @@ A máquina passou ao estado lento: 70,8 FPS (sem os cormorões, no mesmo estado:
 GPU 12,9 ms (sem: 12,9), montar tudo 9,4 s, carregar 6,2 s, construir com a ilha cheia 17,0 ms; +1 objeto e draw call e +3 mil
 primitivas no quadro com tudo visível (os cormorões dos cais das colônias). A primeira rodada, com a sombra dos cormorões ligada,
 deu 70,3 FPS e GPU 13,1 ms; sem a sombra, neutra.
+
+## Fase 232 — tapete na janela (01/11/2026)
+
+A máquina seguiu no estado lento: 69,9 FPS (231: 70,8), 1% low 37,7, p50/p95/p99 13,6/18,2/24,8 ms, GPU 12,9 ms (231: 12,9), montar
+tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; +1 objeto e draw call e +6 mil primitivas no quadro com tudo
+visível (os tapetes das casas de operários da cidade do benchmark). A primeira malha (a franja em nove fios, com sombra) punha +50
+mil primitivas e GPU 13,0 ms; com cinco fios e sem sombra, neutra.
