@@ -16,3 +16,11 @@ modelo, textura, arquivo ou medida do jogo; tudo gerado no código.
 | 219 — Balanço e gangorra na escola | o balanço de madeira e a gangorra numa célula livre ao lado da escola |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase215.md` a `docs/plano_fase219.md`),
+testes, captura e benchmark. Diferenças do roteiro: o carvão ganhou faces chapadas (liso, parecia um pano); as cortinas quase não
+aparecem nas casas de madeira dos camponeses (a vidraça escura da peça do kit fica na frente); a pá e o carrinho do carvão viraram
+só a pá (o carrinho de mão da Fase 172 já fica atrás das oficinas); a busca das duas células de lado das Fases 215, 216 e 219
+virou o `SideYard`.

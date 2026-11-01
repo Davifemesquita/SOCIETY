@@ -2241,3 +2241,10 @@ A máquina seguiu no estado rápido: 77,5 FPS (217: 78,0), 1% low 39,5, 0,1% low
 a queda lá era a importação junto), p50/p95/p99 12,1/17,6/23,7 ms, GPU 11,9 ms, montar tudo 9,4 s, carregar 6,2 s, construir
 com a ilha cheia 17,5 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem
 igreja, e o bando sem torre fica escondido). Neutra.
+
+## Fase 219 — balanço e gangorra na escola (01/11/2026)
+
+A máquina seguiu no estado rápido: 78,1 FPS (218: 77,5), 1% low 39,5, p50/p95/p99 12,0/17,4/23,9 ms, GPU 11,8 ms, montar tudo
+9,3 s, carregar 6,1 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem escola). A busca de lado comum (`SideYard`) não mudou montar nem carregar. Neutra;
+fecha o roteiro tábua, cortina e andorinha.

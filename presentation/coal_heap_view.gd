@@ -1,12 +1,14 @@
 class_name CoalHeapView
 extends Node3D
 ## Fase 216: o monte de carvão na usina. Em cada usina a carvão, nas duas células do meio de um lado — o de −X do modelo, depois o
-## de +X e por fim o de trás (a frente é a da estrada) —, livres como as das tábuas da Fase 215 (`sites`, pela mesma regra): a
+## de +X e por fim o de trás (a frente é a da estrada) —, livres como as das tábuas da Fase 215 (`sites`, pelo `SideYard`): a
 ## baia de tábuas encostada na parede, aberta na frente, com o monte de carvão de duas cristas escorrendo para fora dela, umas
 ## pedras soltas no chão e a pá cravada no monte (`heap_mesh`, no meio das duas células). O recheio e as bombas deixam as células
 ## limpas (`cells`). Um MultiMesh; nada no save; refeito na obra, na demolição, na estrada, no trilho e ao trocar de mundo.
 
-const POWER_STATION := &"power_station"
+const KINDS: Array[StringName] = [&"power_station"]
+## O lado de −X do modelo, depois o de +X e por fim o de trás (a frente é a da estrada).
+const ORDER: Array[Vector2i] = [SideYard.MINUS_X, SideYard.PLUS_X, SideYard.BACK]
 ## A baia: a meia largura ao longo da parede, o fundo e a altura das paredes de tábua.
 const HALF_WIDTH_M := 1.9
 const DEPTH_M := 1.7
@@ -74,65 +76,24 @@ func rebuild() -> void:
 			var site: Array = found[id]
 			var pair: Array[Vector2i] = site[0]
 			var side: Vector2i = site[1]
-			var x := Vector3(side.y, 0.0, -side.x)
-			var z := Vector3(side.x, 0.0, side.y)
-			var at := (grid.cell_world(pair[0]) + grid.cell_world(pair[1])) * 0.5
-			at.y = minf(BuildingKit.corner_range(grid, Rect2i(pair[0], Vector2i.ONE)).x,
-					BuildingKit.corner_range(grid, Rect2i(pair[1], Vector2i.ONE)).x)
-			places.append(Transform3D(Basis(x, Vector3.UP, z), at))
+			places.append(SideYard.place(grid, pair, side))
 	_heaps.multimesh.instance_count = places.size()
 	for i: int in places.size():
 		_heaps.multimesh.set_instance_transform(i, places[i])
 
 
-## Os montes da ilha: id da usina → [as duas células, o lado da área para onde elas ficam].
+## Os montes da ilha: id da usina → [as duas células, o lado da área para onde elas ficam] (`SideYard.pick`), fora das tábuas de
+## uma serraria encostada.
 static func sites(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
-	var result: Dictionary[int, Array] = {}
-	var grid := world.island(island_id)
-	if grid == null:
-		return result
-	var ids: Array[int] = []
-	for id: int in world.buildings:
-		var record := world.buildings[id]
-		if record.island_id == island_id and record.def_id == POWER_STATION:
-			ids.append(id)
-	if ids.is_empty():
-		return result
-	ids.sort()
 	var taken: Dictionary[Vector2i, bool] = {}
-	if not grid.flat:
-		taken.merge(ForecourtView.cells(world, data, island_id))
-		taken.merge(AvenueView.cells(world, island_id))
-	# nem nas tábuas de uma serraria encostada
 	for cell: Vector2i in PlankStackView.cells(world, data, island_id):
 		taken[cell] = true
-	for id: int in ids:
-		var record := world.buildings[id]
-		var area := Footprint.rect(record.origin, data.building(record.def_id).size, record.rotation)
-		var model := BuildingView.model_place(grid, record, area)
-		var plus_x := Vector2i(roundi(model.basis.x.x), roundi(model.basis.x.z))
-		var back := Vector2i(roundi(model.basis.z.x), roundi(model.basis.z.z))
-		for side: Vector2i in [-plus_x, plus_x, back]:
-			var pair := PlankStackView._pair(area, side)
-			if not PlankStackView._free(grid, pair[0], taken) or not PlankStackView._free(grid, pair[1], taken):
-				continue
-			for cell: Vector2i in pair:
-				taken[cell] = true
-			result[id] = [pair, side]
-			break
-	return result
+	return SideYard.pick(world, data, island_id, KINDS, ORDER, taken)
 
 
 ## As células dos montes da ilha (o recheio e as bombas as deixam limpas) → o id da usina.
 static func cells(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, int]:
-	var result: Dictionary[Vector2i, int] = {}
-	var found := sites(world, data, island_id)
-	for station_id: int in found:
-		var site: Array = found[station_id]
-		var pair: Array[Vector2i] = site[0]
-		for cell: Vector2i in pair:
-			result[cell] = station_id
-	return result
+	return SideYard.cells_of(sites(world, data, island_id))
 
 
 ## A altura do monte no ponto (x ao longo da parede, z para fora; a parede em z = −1): duas cristas encostadas na parede que

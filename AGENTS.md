@@ -2904,6 +2904,14 @@ Regras que já custaram investigação:
   `swallow_mesh` no `shaders/bird.gdshader`, num MultiMesh sem sombra, no tempo de jogo; some à noite. Captura em
   `tools/capture_phase218.tscn` (a câmera à mão).
 
+### Balanço e gangorra na escola (Fase 219, nossa)
+
+- **Plano** em `docs/plano_fase219.md`. `SideYard` (`presentation/side_yard.gd`): a busca das duas células do meio de um lado de um
+  prédio, na ordem pedida no referencial do modelo (`pick`, `pair`, `is_free`, `cells_of`, `place`), usada pelas tábuas, pelo
+  carvão e pelo pátio da escola. **Pátio novo de lado usa o `SideYard`** e põe na `taken` dele as células dos pátios de antes.
+  `PlaygroundView` (`GameScreen.playground_view`): `sites`/`cells` e `playground_mesh` (o balanço em cavalete e a gangorra), num
+  MultiMesh. Captura em `tools/capture_phase219.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3133,6 +3141,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 216 — Monte de carvão na usina (nossa) | **feita em 01/11/2026**: a baia de tábuas com o monte de carvão em pedras escorrendo para fora, as pedras soltas no pé e a pá cravada, no lado de cada usina a carvão; plano em `docs/plano_fase216.md` |
 | 217 — Cortinas nas janelas (nossa) | **feita em 01/11/2026**: os dois panos presos dos lados e a sanefa em cada janela das casas, em renda, creme, rosa ou verde-sálvia pela casa, com as pregas; plano em `docs/plano_fase217.md` |
 | 218 — Andorinhas no campanário (nossa) | **feita em 01/11/2026**: um bando de andorinhas de costas azul-escuras e cauda em forquilha dando voltas rápidas em volta da torre de cada igreja, batendo as asas em rajadas, de dia; plano em `docs/plano_fase218.md` |
+| 219 — Balanço e gangorra na escola (nossa) | **feita em 01/11/2026**, a última do roteiro tábua, cortina e andorinha: o balanço de madeira com dois assentos nas cordas e a gangorra pintada no lado de cada escola; a busca do lado livre virou o `SideYard`; plano em `docs/plano_fase219.md` |
 
 Pendências já vistas para fases futuras:
 

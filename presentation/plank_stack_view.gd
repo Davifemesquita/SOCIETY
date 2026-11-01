@@ -7,8 +7,9 @@ extends Node3D
 ## frente (`stack_mesh`). O recheio e as bombas deixam as células limpas (`cells`). Um MultiMesh; nada no save; refeito na obra,
 ## na demolição, na estrada, no trilho e ao trocar de mundo.
 
-const SAWMILL := &"sawmill"
-const MAX_RELIEF_M := 0.8
+const KINDS: Array[StringName] = [&"sawmill"]
+## O lado de −X do modelo (a roda d'água fica em +X) e, se ele não der, o de trás.
+const ORDER: Array[Vector2i] = [SideYard.MINUS_X, SideYard.BACK]
 ## A pilha grande: o comprimento das tábuas (ao longo da parede), as tábuas por camada, as camadas e as medidas da tábua.
 const LENGTH_M := 1.8
 const BOARDS := 5
@@ -87,81 +88,15 @@ func rebuild() -> void:
 		_stacks.multimesh.set_instance_transform(i, places[i])
 
 
-## As pilhas da ilha: id da serraria → [as duas células, o lado da área para onde elas ficam].
+## As pilhas da ilha: id da serraria → [as duas células, o lado da área para onde elas ficam] (`SideYard.pick`).
 static func sites(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Array]:
-	var result: Dictionary[int, Array] = {}
-	var grid := world.island(island_id)
-	if grid == null:
-		return result
-	var ids: Array[int] = []
-	for id: int in world.buildings:
-		var record := world.buildings[id]
-		if record.island_id == island_id and record.def_id == SAWMILL:
-			ids.append(id)
-	if ids.is_empty():
-		return result
-	ids.sort()
 	var taken: Dictionary[Vector2i, bool] = {}
-	if not grid.flat:
-		taken.merge(ForecourtView.cells(world, data, island_id))
-		taken.merge(AvenueView.cells(world, island_id))
-	for id: int in ids:
-		var record := world.buildings[id]
-		var area := Footprint.rect(record.origin, data.building(record.def_id).size, record.rotation)
-		var model := BuildingView.model_place(grid, record, area)
-		# o +X do modelo (a roda d'água) e o +Z (os fundos), na grade
-		var wheel := Vector2i(roundi(model.basis.x.x), roundi(model.basis.x.z))
-		var back := Vector2i(roundi(model.basis.z.x), roundi(model.basis.z.z))
-		for side: Vector2i in [-wheel, back]:
-			var pair := _pair(area, side)
-			var free := true
-			for cell: Vector2i in pair:
-				if not _free(grid, cell, taken):
-					free = false
-					break
-			if not free:
-				continue
-			for cell: Vector2i in pair:
-				taken[cell] = true
-			result[id] = [pair, side]
-			break
-	return result
-
-
-## As duas células do meio do lado side, encostadas na área.
-static func _pair(area: Rect2i, side: Vector2i) -> Array[Vector2i]:
-	var middle := area.position + area.size / 2
-	if side.x > 0:
-		return [Vector2i(area.end.x, middle.y - 1), Vector2i(area.end.x, middle.y)]
-	if side.x < 0:
-		return [Vector2i(area.position.x - 1, middle.y - 1), Vector2i(area.position.x - 1, middle.y)]
-	if side.y > 0:
-		return [Vector2i(middle.x - 1, area.end.y), Vector2i(middle.x, area.end.y)]
-	return [Vector2i(middle.x - 1, area.position.y - 1), Vector2i(middle.x, area.position.y - 1)]
-
-
-static func _free(grid: IslandGrid, cell: Vector2i, taken: Dictionary[Vector2i, bool]) -> bool:
-	if not grid.in_bounds(cell) or taken.has(cell):
-		return false
-	var index := grid.index(cell)
-	# a ilha plana (testes, saves antigos) não tem chão nem árvores na grade
-	if not grid.is_land(cell) or grid.occupancy[index] != 0 or grid.roads[index] != IslandGrid.Road.NONE \
-			or grid.rails[index] != 0 or (not grid.flat and grid.trees[index] > 0):
-		return false
-	var corners := BuildingKit.corner_range(grid, Rect2i(cell, Vector2i.ONE))
-	return corners.y - corners.x <= MAX_RELIEF_M
+	return SideYard.pick(world, data, island_id, KINDS, ORDER, taken)
 
 
 ## As células das pilhas da ilha (o recheio e as bombas as deixam limpas) → o id da serraria.
 static func cells(world: WorldState, data: GameData, island_id: int) -> Dictionary[Vector2i, int]:
-	var result: Dictionary[Vector2i, int] = {}
-	var found := sites(world, data, island_id)
-	for sawmill_id: int in found:
-		var site: Array = found[sawmill_id]
-		var pair: Array[Vector2i] = site[0]
-		for cell: Vector2i in pair:
-			result[cell] = sawmill_id
-	return result
+	return SideYard.cells_of(sites(world, data, island_id))
 
 
 ## As pilhas com o meio da célula na origem (o pé no chão), a parede da serraria em −z (a uma meia célula): a grande encostada
