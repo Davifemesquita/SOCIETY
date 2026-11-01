@@ -260,6 +260,8 @@ var town_flag_view: TownFlagView
 var wine_press_view: WinePressView
 ## Fase 241: o terreiro com o café secando ao sol ao lado de cada cafezal.
 var coffee_yard_view: CoffeeYardView
+## Fase 242: o varal com as folhas de tabaco secando ao lado de cada plantação de tabaco.
+var tobacco_rack_view: TobaccoRackView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -795,6 +797,10 @@ func _ready() -> void:
 	coffee_yard_view.name = "CoffeeYards"
 	add_child(coffee_yard_view)
 	coffee_yard_view.setup(simulation)
+	tobacco_rack_view = TobaccoRackView.new()
+	tobacco_rack_view.name = "TobaccoRacks"
+	add_child(tobacco_rack_view)
+	tobacco_rack_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -497,6 +497,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 241: e os terreiros de café
 	for cell: Vector2i in CoffeeYardView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 242: e os varais de tabaco
+	for cell: Vector2i in TobaccoRackView.cells(world, data, island_id):
+		doors[cell] = true
 	# Fase 211: e as mós ao lado dos moinhos
 	for cell: Vector2i in MillstoneView.cells(world, data, island_id):
 		doors[cell] = true

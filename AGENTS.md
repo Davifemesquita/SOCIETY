@@ -3061,6 +3061,12 @@ Regras que já custaram investigação:
   num MultiMesh. **Grão espalhado se faz com uma camada e sulcos**, não com bolinhos (pareciam escamas). Captura em
   `tools/capture_phase241.tscn`.
 
+### Tabaco secando (Fase 242, nossa)
+
+- **Plano** em `docs/plano_fase242.md`. `TobaccoRackView` (`GameScreen.tobacco_rack_view`): `sites`/`cells` (as duas células de lado
+  da plantação pelo `SideYard`; o recheio e as bombas as deixam) e `rack_mesh` (os cavaletes, as varas e as réstias de folhas em
+  três tons de cura), num MultiMesh sem descarte de face. Captura em `tools/capture_phase242.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3313,6 +3319,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 239 — Algas na praia (nossa) | **feita em 01/11/2026**, a última do roteiro cervo, âncora e marco: a faixa torta de sargaço escuro com as fitas soltas, deixada pela maré na areia baixa e plana junto do mar; plano em `docs/plano_fase239.md` |
 | 240 — Lagar no vinhedo (nossa) | **feita em 01/11/2026**, primeira do roteiro lagar, terreiro e estacas (Fases 240 a 244): a tina de pisar uvas com o mosto, a prensa de fuso e os cestos de uva no lado de cada vinhedo; plano em `docs/plano_fase240.md` |
 | 241 — Terreiro de café (nossa) | **feita em 01/11/2026**: o terreiro caiado com o café espalhado secando ao sol, vermelho de um lado e seco do outro, com os sulcos do rodo, o montinho e os sacos, no lado de cada cafezal; plano em `docs/plano_fase241.md` |
+| 242 — Tabaco secando (nossa) | **feita em 01/11/2026**: o varal de varas com as réstias de folhas de tabaco penduradas, verdes, douradas e curadas, e o cesto de folhas no lado de cada plantação de tabaco; plano em `docs/plano_fase242.md` |
 
 Pendências já vistas para fases futuras:
 
