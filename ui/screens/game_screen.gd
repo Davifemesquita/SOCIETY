@@ -236,6 +236,8 @@ var wool_bale_view: WoolBaleView
 var mud_wallow_view: MudWallowView
 ## Fase 228: os barris de petróleo e a mancha de óleo no lado de cada poço de petróleo.
 var oil_barrel_view: OilBarrelView
+## Fase 229: os morcegos esvoaçando em volta da torre de cada igreja, à noite.
+var bat_view: BatView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -723,6 +725,10 @@ func _ready() -> void:
 	oil_barrel_view.name = "OilBarrels"
 	add_child(oil_barrel_view)
 	oil_barrel_view.setup(simulation)
+	bat_view = BatView.new()
+	bat_view.name = "Bats"
+	add_child(bat_view)
+	bat_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

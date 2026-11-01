@@ -17,3 +17,11 @@ arquivo ou medida do jogo; tudo gerado no código.
 | 229 — Morcegos ao anoitecer | os morcegos esvoaçando em zigue-zague em volta da torre da igreja, do anoitecer à madrugada |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase225.md` a `docs/plano_fase229.md`),
+testes, captura e benchmark. Diferenças do roteiro: a lanterna de popa lê o casco uma vez junto do cordame (montada antes dele: a
+busca do casco quebrava na malha do cordame); os fardos de lã viraram sacos estufados com as cordas em volta (as caixas pareciam de
+papelão); o capim do pasto deixou de nascer dentro do lamaçal; os barris de petróleo são de madeira (o tambor de ferro é de
+depois).

@@ -2976,6 +2976,12 @@ Regras que já custaram investigação:
   poço de petróleo pelo `SideYard`) e `barrels_mesh` (os barris da Fase 221 enegrecidos, em pé e deitados, e a mancha de óleo),
   num MultiMesh. Captura em `tools/capture_phase228.tscn`.
 
+### Morcegos ao anoitecer (Fase 229, nossa)
+
+- **Plano** em `docs/plano_fase229.md`. `BatView` (`GameScreen.bat_view`): as torres das andorinhas (`SwallowView.towers`), `pose`
+  (voltas em zigue-zague em volta da sineira), `beat` (sem planeio) e `bat_mesh` (asas de membrana recortada) no
+  `shaders/bird.gdshader`, num MultiMesh sem sombra; só à noite (`show_for_night`). Captura em `tools/capture_phase229.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3215,6 +3221,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 226 — Fardos de lã (nossa) | **feita em 01/11/2026**: os fardos de juta amarrados com cordas, o cepo de tosquia com a tesoura e o velo solto no lado das fazendas de ovelhas; plano em `docs/plano_fase226.md` |
 | 227 — Lamaçal do chiqueiro (nossa) | **feita em 01/11/2026**: a poça de lama escura e molhada com a orla pisada e os torrões em cada pasto das fazendas de porcos, sem capim dentro; plano em `docs/plano_fase227.md` |
 | 228 — Barris de petróleo (nossa) | **feita em 01/11/2026**: os barris de madeira enegrecidos pelo óleo, em pé e deitados sobre os calços, e a mancha de óleo no chão no lado de cada poço de petróleo; plano em `docs/plano_fase228.md` |
+| 229 — Morcegos ao anoitecer (nossa) | **feita em 01/11/2026**, a última do roteiro lanterna, lã e morcego: os morcegos esvoaçando em zigue-zague em volta da torre de cada igreja, do anoitecer à madrugada; plano em `docs/plano_fase229.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -2307,3 +2307,9 @@ tudo visível (a cidade do benchmark não tem fazenda de porcos). Neutra.
 A máquina seguiu no estado rápido: 77,3 FPS (227: 77,1), 1% low 38,8, p50/p95/p99 12,3/17,4/24,2 ms, GPU 11,9 ms, montar tudo
 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,6 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark não tem poço de petróleo). Neutra.
+
+## Fase 229 — morcegos ao anoitecer (01/11/2026)
+
+A máquina seguiu no estado rápido: 77,3 FPS (228: 77,3), 1% low 39,2, p50/p95/p99 12,3/17,4/23,6 ms, GPU 12,0 ms, montar tudo
+9,5 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (a
+cidade do benchmark não tem igreja, e o bando sem torre fica escondido). Neutra; fecha o roteiro lanterna, lã e morcego.
