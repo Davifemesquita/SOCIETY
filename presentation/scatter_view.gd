@@ -24,9 +24,11 @@ extends Node3D
 ## manchas do ruído dele (tall_grass_patch), fora dos canteiros de papoulas e das tropicais.
 ## Fase 207: o pinheiro-anão (ROCK_PINE), baixo e torto, com as almofadas de agulhas achatadas pelo vento, no fim das listas OPEN
 ## e NEAR_FOREST, só nas encostas íngremes (desnível de ROCK_PINE_MIN_RELIEF_M entre os cantos) das temperadas.
+## Fase 239: as algas (SEAWEED), uma faixa chata e torta de sargaço com as fitas soltas no chão, no fim da lista NEAR_SEA, só nas
+## células baixas e planas da areia (SEAWEED_MAX_HEIGHT_M, SEAWEED_MAX_RELIEF_M), onde a maré as deixa.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -68,7 +70,7 @@ const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.F
 const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
 const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08], [Kind.SNAG, SNAG_COAST_CHANCE],
-		[Kind.DRIFTWOOD, DRIFTWOOD_CHANCE], [Kind.SCREE, SCREE_CHANCE]]
+		[Kind.DRIFTWOOD, DRIFTWOOD_CHANCE], [Kind.SCREE, SCREE_CHANCE], [Kind.SEAWEED, SEAWEED_CHANCE]]
 ## Fase 161: a madeira à deriva — a chance por célula da costa, só até DRIFTWOOD_MAX_HEIGHT_M (na praia e nas pedras baixas,
 ## não no alto da falésia), o comprimento do tronco e as cores da madeira lavada pelo sal.
 const DRIFTWOOD_CHANCE := 0.06
@@ -112,6 +114,17 @@ const ROCK_PINE_HEIGHT_M := 2.2
 const ROCK_PINE_BARK := Color(0.36, 0.26, 0.2)
 const ROCK_PINE_NEEDLES := Color(0.12, 0.24, 0.12)
 const ROCK_PINE_NEEDLES_LIGHT := Color(0.18, 0.31, 0.15)
+## Fase 239: as algas na praia — a chance por célula da costa (depois do cascalho), só nas células baixas e planas da areia
+## (até SEAWEED_MAX_HEIGHT_M, desnível até SEAWEED_MAX_RELIEF_M), e as cores do sargaço (o escuro molhado, o marrom e o verde).
+const SEAWEED_CHANCE := 0.3
+const SEAWEED_MAX_HEIGHT_M := 1.9
+const SEAWEED_MAX_RELIEF_M := 0.5
+## A faixa: o comprimento e quantos bolos em fila.
+const SEAWEED_LENGTH_M := 1.7
+const SEAWEED_LUMPS := 7
+const SEAWEED_DARK := Color(0.17, 0.18, 0.09)
+const SEAWEED_BROWN := Color(0.26, 0.21, 0.1)
+const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
 const TALL_GRASS_PATCH_CELLS := 7.0
 const TALL_GRASS_THRESHOLD := 0.66
 const TALL_GRASS_BLADES := 26
@@ -652,7 +665,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.TALL_GRASS and (tropical or not tall_grass_patch(island_id, cell) or poppy_patch(island_id, cell)):
 			# o capim alto só nas manchas dele das temperadas, e não por cima das papoulas
 			continue
-		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
+		elif kind == Kind.SEAWEED and (cell_relief(grid, cell) > SEAWEED_MAX_RELIEF_M or grid.height_at(grid.origin_m.x
+				+ (cell.x + 0.5) * grid.cell_size, grid.origin_m.y + (cell.y + 0.5) * grid.cell_size) > SEAWEED_MAX_HEIGHT_M):
+			# as algas só na areia baixa e plana, onde a maré chega
+			continue
+		var offset :=Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG or kind == Kind.ROCK_PINE:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
@@ -677,7 +694,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD:
@@ -696,6 +713,10 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.ROCK_PINE:
 			# de pé (a árvore cresce para cima, não com a encosta), o pé enterrado para não ficar no ar do lado de baixo
 			y -= 0.25
+		elif kind == Kind.SEAWEED:
+			# deitadas no chão da praia, um pouco afundadas na areia
+			basis = Basis(Quaternion(Vector3.UP, cell_normal(grid, cell))) * basis
+			y -= 0.02
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
 
@@ -952,6 +973,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return reeds_mesh()
 	if kind == Kind.ROCK_PINE:
 		return rock_pine_mesh()
+	if kind == Kind.SEAWEED:
+		return seaweed_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1120,5 +1143,29 @@ static func rock_pine_mesh() -> ArrayMesh:
 		# um tufo menor por cima, mais claro, para a almofada não sair lisa
 		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(size * Vector3(0.6, 0.7, 0.6)), at + Vector3(0.08, size.y * 0.6,
 				-0.05)), ROCK_PINE_NEEDLES_LIGHT)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 239: as algas com o pé em y = 0 — a faixa de sargaço que a maré deixa, comprida ao longo de x e torta: bolos chatos e
+## molhados em fila numa curva (o escuro, o marrom e o verde, cada um de um tamanho) e as fitas soltas deitadas ao longo dela,
+## cada uma em dois lances tortos rente ao chão.
+static func seaweed_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var colors: Array[Color] = [SEAWEED_DARK, SEAWEED_BROWN, SEAWEED_GREEN]
+	for k: int in SEAWEED_LUMPS:
+		var t := float(k) / (SEAWEED_LUMPS - 1) * 2.0 - 1.0
+		var at := Vector3(t * SEAWEED_LENGTH_M * 0.5, 0.015, sin(t * 2.2) * 0.18 + (0.07 if k % 2 == 0 else -0.05))
+		var size := Vector3(0.3, 0.035, 0.2) * (1.0 - 0.35 * absf(t) + 0.1 * (k % 2))
+		PerchedGullView._blob(tool, Transform3D(Basis(Vector3.UP, t * 0.8).scaled(size), at), colors[k % 3])
+	for k: int in 6:
+		var t := float(k) / 5.0 * 1.6 - 0.8
+		var root := Vector3(t * SEAWEED_LENGTH_M * 0.5, 0.03, sin(t * 2.2) * 0.18)
+		var side := 1.0 if k % 2 == 0 else -1.0
+		var knee := root + Vector3(0.28, -0.01, side * 0.16)
+		var tip := knee + Vector3(0.3, -0.01, -side * 0.06)
+		VertexShapes.strut(tool, root, knee, 0.03, 0.006, colors[(k + 1) % 3])
+		VertexShapes.strut(tool, knee, tip, 0.022, 0.005, colors[(k + 2) % 3])
 	tool.generate_normals()
 	return tool.commit()

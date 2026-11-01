@@ -2375,3 +2375,9 @@ visível (a cidade do benchmark quase não tem estrada reta e comprida fora da v
 A máquina seguiu no estado lento: 70,1 FPS (237: 70,9), 1% low 35,5, p50/p95/p99 13,6/18,1/25,7 ms, GPU 13,0 ms, montar tudo 9,6 s
 (237: 9,4; a vista só olha as prefeituras, e a cidade do benchmark não tem nenhuma: vaivém da máquina), carregar 6,3 s, construir
 com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível. Neutra.
+
+## Fase 239 — algas na praia (01/11/2026)
+
+A máquina seguiu no estado lento: 70,0 FPS (238: 70,1), 1% low 36,6, p50/p95/p99 13,6/18,1/25,7 ms, GPU 13,0 ms, montar tudo 9,3 s,
+carregar 6,3 s, construir com a ilha cheia 17,4 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (o quadro
+fica longe das praias: o recheio só aparece até 220 m). Neutra; fecha o roteiro cervo, âncora e marco.

@@ -3041,6 +3041,12 @@ Regras que já custaram investigação:
   `BuildingKit.dome_finial`, que o `_dome` também usa, no lugar do modelo), `pole_mesh` e `flag_mesh` (a bandeira da cidade, sem
   nenhuma de verdade) numa `WindFlag`, um nó por prefeitura. Captura em `tools/capture_phase238.tscn`.
 
+### Algas na praia (Fase 239, nossa)
+
+- **Plano** em `docs/plano_fase239.md`. `ScatterView.Kind.SEAWEED` (no fim do enum e da lista `NEAR_SEA`) só nas células baixas e
+  planas da costa (`SEAWEED_MAX_HEIGHT_M`, `SEAWEED_MAX_RELIEF_M`), deitada no plano da célula; `seaweed_mesh` (uma faixa torta de
+  bolos chatos encostados, não bolos soltos: soltos pareciam bichos ou contas). Captura em `tools/capture_phase239.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3290,6 +3296,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 236 — Âncora no cais (nossa) | **feita em 01/11/2026**: a âncora velha de ferro deitada com um braço erguido, o cepo de madeira e a amarra enrolada ao lado, no fundo do cais de pedra de cada entreposto; plano em `docs/plano_fase236.md` |
 | 237 — Marco de légua (nossa) | **feita em 01/11/2026**: o marco de pedra de topo redondo com a inscrição e o musgo no pé na beira das estradas de terra retas e compridas fora das vilas, um a cada 23 células; plano em `docs/plano_fase237.md` |
 | 238 — Bandeira na prefeitura (nossa) | **feita em 01/11/2026**: o mastro de ferro com a bandeira da cidade (vermelha com o losango dourado) no alto da cúpula de cada prefeitura, virando e tremulando com o vento; plano em `docs/plano_fase238.md` |
+| 239 — Algas na praia (nossa) | **feita em 01/11/2026**, a última do roteiro cervo, âncora e marco: a faixa torta de sargaço escuro com as fitas soltas, deixada pela maré na areia baixa e plana junto do mar; plano em `docs/plano_fase239.md` |
 
 Pendências já vistas para fases futuras:
 
