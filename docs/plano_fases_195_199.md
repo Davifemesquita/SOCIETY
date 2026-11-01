@@ -16,3 +16,11 @@ nenhum modelo, textura, arquivo ou medida do jogo; tudo gerado no código.
 | 199 — Rede na varanda | a rede de dormir listrada pendurada entre dois esteios do alpendre das casas das ilhas tropicais |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase195.md` a
+`docs/plano_fase199.md`), testes, captura e benchmark; as três pastas da suíte passaram no fim (world 400, presentation 357, ui
+167). Diferenças do roteiro: os patos ficam longe da costa o bastante para sair da espuma da linha d'água (perto dela boiavam no
+branco), e a busca deles foi refeita (de 226 para 12 ms); a casinha do cão fica na célula do lado do lote, porque o cão deita na
+beira da rua; os bancos do cais são o banco de praça da decoração.
