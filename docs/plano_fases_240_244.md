@@ -17,3 +17,12 @@ do jogo; tudo gerado no código.
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push. Os pátios de
 lado usam o `SideYard` (com o `SideYard.remember`).
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase240.md` a `docs/plano_fase244.md`),
+testes, captura e benchmark; as três pastas da suíte passaram no fim (world 553, presentation 368, ui 167). Diferenças do
+roteiro: o café do terreiro virou uma camada fina com os sulcos do rodo (em cordões lisos parecia tábua, e em montinhos soltos,
+escama); a pilha de vigas fica longe da boca do forno da Fase 137 (o −X primeiro); o feixe de estacas de pé passa da altura dos
+outros pátios de lado. A máquina seguiu no estado lento (~70 FPS) o ciclo todo; todas as fases ficaram neutras nele (o
+"construir" de 19,7 ms da Fase 243 foi conferido sem tela e era vaivém).
