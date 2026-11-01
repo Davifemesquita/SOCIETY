@@ -2843,6 +2843,14 @@ Regras que já custaram investigação:
   anda vai na malha dele**: camada própria reposicionada a cada quadro custa caro com centenas de instâncias. Captura em
   `tools/capture_phase209.tscn`.
 
+### Pombos na cumeeira (Fase 210, nossa)
+
+- **Plano** em `docs/plano_fase210.md`, primeira do roteiro `docs/plano_fases_210_214.md` (pombo, mó e buxo; o Anno não foi aberto:
+  o dono estava no PC). `RoofPigeonView` (`GameScreen.roof_pigeon_view`): `pigeons` (a fila na capa da cumeeira das casas de duas
+  águas do resto certo, longe da chaminé) e `pigeon_mesh` (bolas de 6 × 3 faces), num MultiMesh sem sombra. **Peça que se repete
+  centenas de vezes pede poucas faces**: as bolas do `PerchedGullView._blob` custaram ~1 FPS. Captura: `pombos_na_cumeeira.png`
+  no `tools/capture_phase95.tscn` (câmera à mão, `_aimed`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3063,6 +3071,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 207 — Pinheiro-anão na encosta (nossa) | **feita em 01/11/2026**: pinheiros baixos e tortos, com as almofadas de agulhas achatadas pelo vento, agarrados nas encostas íngremes das ilhas temperadas; plano em `docs/plano_fase207.md` |
 | 208 — Rama de tecido (nossa) | **feita em 01/11/2026**: duas ramas de madeira com os panos tingidos de garança e anil esticados secando, numa fila de três células atrás de cada tecelagem; plano em `docs/plano_fase208.md` |
 | 209 — Lanterna nas carroças (nossa) | **feita em 01/11/2026**, a última do roteiro estandarte, bebedouro e lanterna: a lanterna de ferro pendurada num braço na frente de cada carroça, acesa à noite, na própria malha da carroça; plano em `docs/plano_fase209.md` |
+| 210 — Pombos na cumeeira (nossa) | **feita em 01/11/2026**, primeira do roteiro pombo, mó e buxo (Fases 210 a 214): uma fila de pombos cinza-azulados pousados na cumeeira de parte das casas de duas águas, longe da chaminé; plano em `docs/plano_fase210.md` |
 
 Pendências já vistas para fases futuras:
 

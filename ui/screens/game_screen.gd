@@ -202,6 +202,8 @@ var banner_view: BannerView
 var horse_trough_view: HorseTroughView
 ## Fase 208: as ramas de madeira com os panos tingidos secando ao lado das tecelagens.
 var tenter_view: TenterView
+## Fase 210: a fila de pombos pousados na cumeeira de parte das casas.
+var roof_pigeon_view: RoofPigeonView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -621,6 +623,10 @@ func _ready() -> void:
 	tenter_view.name = "Tenters"
 	add_child(tenter_view)
 	tenter_view.setup(simulation)
+	roof_pigeon_view = RoofPigeonView.new()
+	roof_pigeon_view.name = "RoofPigeons"
+	add_child(roof_pigeon_view)
+	roof_pigeon_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

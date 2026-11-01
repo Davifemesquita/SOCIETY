@@ -2179,3 +2179,10 @@ A máquina seguiu no estado lento da Fase 208: 71,6 FPS (sem a lanterna, no mesm
 calls (as duas superfícies a mais da malha das carroças) e +66 mil primitivas no quadro com tudo visível (200 carroças). A
 primeira versão, com a lanterna em duas camadas próprias reposicionadas a cada quadro, deu 71,1. Neutra; fecha o roteiro
 estandarte, bebedouro e lanterna.
+
+## Fase 210 — pombos na cumeeira (01/11/2026)
+
+A máquina seguiu no estado lento: 71,5 FPS (sem os pombos, no mesmo estado: 71,5), 1% low 37,8, p50/p95/p99 13,3/17,9/24,7 ms,
+GPU 12,6 ms (sem: 12,5), montar tudo 9,3 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +1 objeto e draw call e +47 mil
+primitivas no quadro com tudo visível. A primeira malha do pombo (bolas de muitas faces) punha +110 mil primitivas e GPU 12,8 ms
+(~1 FPS); a de bolas de 6 × 3 faces é neutra. Abre o roteiro pombo, mó e buxo.

@@ -133,6 +133,11 @@ func _run() -> void:
 		var out := tenter.basis.z.normalized()
 		await _shot("ramas_de_tecido.png", tenter.origin, 9.0, atan2(out.x, out.z) + 0.5)
 		await _shot("ramas_de_longe.png", tenter.origin, 22.0, atan2(out.x, out.z) - 0.4)
+	# Fase 210: os pombos na cumeeira, de perto e da rua
+	if not _game.roof_pigeon_view.places.is_empty():
+		var pigeon := _game.roof_pigeon_view.places[0]
+		await _aimed("pombos_na_cumeeira.png", pigeon.origin, 5.0, 0.6)
+		await _aimed("pombos_da_rua.png", pigeon.origin, 14.0, -0.3)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina
@@ -177,3 +182,16 @@ func _set_hour(hour: float) -> void:
 	var clock := GameClock.clock
 	clock.extra_hours = 0.0
 	clock.extra_hours = fposmod(hour - clock.hour(), 24.0)
+
+
+## Fase 210: a câmera da partida fica presa ao chão; para o alto do telhado, põe a Camera3D à mão, um pouco acima do ponto.
+func _aimed(file_name: String, at: Vector3, distance: float, yaw: float) -> void:
+	_game.camera.set_process(false)
+	var eye := at + Vector3(sin(yaw), 0.55, cos(yaw)).normalized() * distance
+	_game.camera.camera.global_transform = Transform3D(Basis.looking_at(at - eye, Vector3.UP), eye)
+	for frame: int in 25:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(_out_dir.path_join(file_name))
+	print("capturado ", file_name)
+	_game.camera.set_process(true)
