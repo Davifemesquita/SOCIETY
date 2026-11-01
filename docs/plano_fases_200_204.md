@@ -16,3 +16,12 @@ cheios de miudezas e os carrinhos na rua (`c9_08`), o porto tropical com o guard
 | 204 — Guarda-sol de palha | os guarda-sóis de folha de palmeira com um banco na areia das praias das ilhas tropicais, perto do porto |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase200.md` a
+`docs/plano_fase204.md`), testes, captura e benchmark; as três pastas da suíte passaram no fim (world 420, presentation 357, ui
+167). Diferenças do roteiro: o gato vira a cabeça pelo shader e a vista dele (e a da rede da Fase 199) passou a ouvir só o
+`house_upgraded` (o `building_state_changed` a refazia a cada troca de estado das fábricas e derrubava o quadro); a busca da
+bomba d'água foi separada para o poço e o carrinho usarem a mesma, e ficou guardada até a próxima obra (o carregar tinha subido
+0,4 s); os guarda-sóis ficam além do cais de pedra, que é só desenho.
