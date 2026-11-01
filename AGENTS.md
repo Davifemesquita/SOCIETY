@@ -3130,6 +3130,12 @@ Regras que já custaram investigação:
   `Footprint.front_cells` do teatro mais perto do meio da fachada, ao longo da rua) e `carriage_mesh`, num MultiMesh. Captura em
   `tools/capture_phase252.tscn`.
 
+### Cestos de batata (Fase 253, nossa)
+
+- **Plano** em `docs/plano_fase253.md`. `PotatoBasketView` (`GameScreen.potato_basket_view`): `sites`/`cells` (as duas células de lado
+  da fazenda pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e `basket_mesh`
+  (`_basket`, `_potato`), num MultiMesh. Captura em `tools/capture_phase253.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3393,6 +3399,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 250 — Balança de carga no armazém (nossa) | **feita em 01/11/2026**, primeira do roteiro balança, cabra e canoa (Fases 250 a 254): a balança decimal de plataforma com os pesos, um saco em cima e os sacos amarrados esperando no lado de cada armazém; plano em `docs/plano_fase250.md` |
 | 251 — Cabras nas encostas (nossa) | **feita em 01/11/2026**: grupos de cabras malhadas de chifres para trás pastando nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra; plano em `docs/plano_fase251.md` |
 | 252 — Carruagem à porta do teatro (nossa) | **feita em 01/11/2026**: a carruagem fechada laqueada de vinho, sem os cavalos, parada na rua diante da entrada de cada teatro; plano em `docs/plano_fase252.md` |
+| 253 — Cestos de batata (nossa) | **feita em 01/11/2026**: os cestos de vime cheios de batata, um tombado com as batatas rolando, os sacos e o forcado no lado de cada fazenda de batata; plano em `docs/plano_fase253.md` |
 
 Pendências já vistas para fases futuras:
 

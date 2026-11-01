@@ -238,6 +238,9 @@ static func _taken_now(world: WorldState, data: GameData, island_id: int) -> Dic
 	# Fase 250: nem nas balanças dos armazéns
 	for cell: Vector2i in ScaleView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 253: nem nos cestos de batata
+	for cell: Vector2i in PotatoBasketView.cells(world, data, island_id):
+		taken[cell] = true
 	# Fase 211: nem nas mós dos moinhos
 	for cell: Vector2i in MillstoneView.cells(world, data, island_id):
 		taken[cell] = true

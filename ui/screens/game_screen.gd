@@ -280,6 +280,8 @@ var scale_view: ScaleView
 var goat_view: GoatView
 ## Fase 252: a carruagem fechada parada sem os cavalos na rua diante de cada teatro.
 var carriage_view: CarriageView
+## Fase 253: os cestos e sacos de batata e o forcado ao lado de cada fazenda de batata.
+var potato_basket_view: PotatoBasketView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -855,6 +857,10 @@ func _ready() -> void:
 	carriage_view.name = "Carriages"
 	add_child(carriage_view)
 	carriage_view.setup(simulation)
+	potato_basket_view = PotatoBasketView.new()
+	potato_basket_view.name = "PotatoBaskets"
+	add_child(potato_basket_view)
+	potato_basket_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
