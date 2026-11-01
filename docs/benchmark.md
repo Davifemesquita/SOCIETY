@@ -2387,3 +2387,9 @@ fica longe das praias: o recheio só aparece até 220 m). Neutra; fecha o roteir
 A máquina seguiu no estado lento: 70,5 FPS (239: 70,0), 1% low 35,9, p50/p95/p99 13,6/18,0/25,8 ms, GPU 13,0 ms, montar tudo 9,4 s,
 carregar 6,3 s, construir com a ilha cheia 17,4 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
 visível (a cidade do benchmark não tem vinhedo). Neutra.
+
+## Fase 241 — terreiro de café (01/11/2026)
+
+A máquina seguiu no estado lento: 70,1 FPS (240: 70,5), 1% low 36,2, p50/p95/p99 13,6/18,1/25,7 ms, GPU 13,0 ms, montar tudo 9,3 s,
+carregar 6,3 s, construir com a ilha cheia 17,9 ms (240: 17,4; o vaivém das últimas fases vai de 17,0 a 17,9); +5 objetos e draw
+calls (a camada) e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem cafezal). Neutra.

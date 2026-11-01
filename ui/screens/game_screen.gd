@@ -258,6 +258,8 @@ var milestone_view: MilestoneView
 var town_flag_view: TownFlagView
 ## Fase 240: o lagar de pisar uvas e a prensa de fuso ao lado de cada vinhedo.
 var wine_press_view: WinePressView
+## Fase 241: o terreiro com o café secando ao sol ao lado de cada cafezal.
+var coffee_yard_view: CoffeeYardView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -789,6 +791,10 @@ func _ready() -> void:
 	wine_press_view.name = "WinePresses"
 	add_child(wine_press_view)
 	wine_press_view.setup(simulation)
+	coffee_yard_view = CoffeeYardView.new()
+	coffee_yard_view.name = "CoffeeYards"
+	add_child(coffee_yard_view)
+	coffee_yard_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

@@ -3054,6 +3054,13 @@ Regras que já custaram investigação:
   células de lado do vinhedo pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e
   `press_mesh` (a tina com o mosto, a prensa de fuso e os cestos), num MultiMesh. Captura em `tools/capture_phase240.tscn`.
 
+### Terreiro de café (Fase 241, nossa)
+
+- **Plano** em `docs/plano_fase241.md`. `CoffeeYardView` (`GameScreen.coffee_yard_view`): `sites`/`cells` (as duas células de lado
+  do cafezal pelo `SideYard`; o recheio e as bombas as deixam) e `yard_mesh` (o terreiro com a camada de café e os sulcos do rodo),
+  num MultiMesh. **Grão espalhado se faz com uma camada e sulcos**, não com bolinhos (pareciam escamas). Captura em
+  `tools/capture_phase241.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3305,6 +3312,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 238 — Bandeira na prefeitura (nossa) | **feita em 01/11/2026**: o mastro de ferro com a bandeira da cidade (vermelha com o losango dourado) no alto da cúpula de cada prefeitura, virando e tremulando com o vento; plano em `docs/plano_fase238.md` |
 | 239 — Algas na praia (nossa) | **feita em 01/11/2026**, a última do roteiro cervo, âncora e marco: a faixa torta de sargaço escuro com as fitas soltas, deixada pela maré na areia baixa e plana junto do mar; plano em `docs/plano_fase239.md` |
 | 240 — Lagar no vinhedo (nossa) | **feita em 01/11/2026**, primeira do roteiro lagar, terreiro e estacas (Fases 240 a 244): a tina de pisar uvas com o mosto, a prensa de fuso e os cestos de uva no lado de cada vinhedo; plano em `docs/plano_fase240.md` |
+| 241 — Terreiro de café (nossa) | **feita em 01/11/2026**: o terreiro caiado com o café espalhado secando ao sol, vermelho de um lado e seco do outro, com os sulcos do rodo, o montinho e os sacos, no lado de cada cafezal; plano em `docs/plano_fase241.md` |
 
 Pendências já vistas para fases futuras:
 
