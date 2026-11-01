@@ -20,7 +20,8 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
 ## Estado
 
 **Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase230.md` a `docs/plano_fase234.md`),
-testes, captura e benchmark. Diferenças do roteiro: os cormorões ficam num feixe sim, outro não, na ordem dos feixes (pelo hash do
+testes, captura e benchmark; as três pastas da suíte passaram no fim (world 514, presentation 368, ui 167). Diferenças do
+roteiro: os cormorões ficam num feixe sim, outro não, na ordem dos feixes (pelo hash do
 lugar, o cais da semente 1840 ficava sem nenhum), e sem sombra; o tapete tem a franja em poucos fios e não faz sombra (a primeira
 malha punha +50 mil primitivas na cidade do benchmark); as brasas do fogareiro acendem como vidro, não como chama. A máquina passou
 ao estado lento no meio do ciclo (da Fase 230 em diante, ~70 FPS): as Fases 230 e 231 foram conferidas com um A/B no mesmo estado.
