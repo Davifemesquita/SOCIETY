@@ -20,4 +20,7 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
 
 ## Estado
 
-Em andamento.
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase190.md` a
+`docs/plano_fase194.md`), testes, captura e benchmark. Diferenças do roteiro: as colmeias ficaram nas fazendas de lúpulo,
+vinhedo e batata (do lado oposto ao das medas, que já ocupavam o outro lado das de trigo e gado); a carga da carroça de feno
+virou montes moles (em caixas saía quadrada); a escada do cais fica de cada lado, depois da cisterna.
