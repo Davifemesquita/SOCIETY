@@ -2432,3 +2432,9 @@ troncos da mata perto da cidade do benchmark). Neutra.
 A máquina seguiu no estado lento: 69,9 FPS (246: 70,9), 1% low 36,2, p50/p95/p99 13,6/18,1/25,7 ms, GPU 13,0 ms, montar tudo 9,4 s,
 carregar 6,3 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
 visível (a cidade do benchmark não tem estaleiro). Neutra.
+
+## Fase 248 — caixotes de vidro (01/11/2026)
+
+A máquina seguiu no estado lento: 70,3 FPS (247: 69,9), 1% low 37,7, p50/p95/p99 13,6/18,0/25,3 ms, GPU 13,0 ms, montar tudo 9,3 s,
+carregar 6,4 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo
+visível (a cidade do benchmark não tem vidraria). Neutra.

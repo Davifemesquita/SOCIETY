@@ -3099,6 +3099,12 @@ Regras que já custaram investigação:
   do estaleiro pelo `SideYard`, com a fileira do lado do mar tomada para a carreira; o recheio e as bombas as deixam) e
   `timber_mesh` (`_rib`, a caverna em U), num MultiMesh. Captura em `tools/capture_phase247.tscn`.
 
+### Caixotes de vidro (Fase 248, nossa)
+
+- **Plano** em `docs/plano_fase248.md`. `GlassCrateView` (`GameScreen.glass_crate_view`): `sites`/`cells` (as duas células de lado
+  da vidraria e da janelaria pelo `SideYard`, o −X primeiro, longe da boca do forno, fora do carrinho de mão; o recheio e as bombas
+  as deixam) e `crate_mesh` (`_crate`), num MultiMesh. Captura em `tools/capture_phase248.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3357,6 +3363,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 245 — Coelhos no prado (nossa) | **feita em 01/11/2026**, primeira do roteiro coelho, cogumelo e pedra (Fases 245 a 249): tocas de coelhos pardos de rabo branco pastando no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando; plano em `docs/plano_fase245.md` |
 | 246 — Tronco caído com cogumelos (nossa) | **feita em 01/11/2026**: troncos velhos caídos na beira da mata das ilhas temperadas, cobertos de musgo, com as orelhas-de-pau de lado e os cogumelos vermelhos no chão; plano em `docs/plano_fase246.md` |
 | 247 — Madeira curvada no estaleiro (nossa) | **feita em 01/11/2026**: a pilha de tábuas e as cavernas curvas em U esperando a vez de entrar no casco, no lado de cada estaleiro, longe da carreira; plano em `docs/plano_fase247.md` |
+| 248 — Caixotes de vidro (nossa) | **feita em 01/11/2026**: o cavalete com as chapas de vidro de pé e os caixotes de ripas com palha e vidraças no lado de cada vidraria e janelaria; plano em `docs/plano_fase248.md` |
 
 Pendências já vistas para fases futuras:
 

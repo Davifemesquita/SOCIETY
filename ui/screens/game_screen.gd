@@ -270,6 +270,8 @@ var hop_pole_view: HopPoleView
 var rabbit_view: RabbitView
 ## Fase 247: as tábuas e as cavernas curvas esperando ao lado de cada estaleiro.
 var ship_timber_view: ShipTimberView
+## Fase 248: o cavalete com as chapas de vidro e os caixotes com palha ao lado de cada vidraria e janelaria.
+var glass_crate_view: GlassCrateView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -825,6 +827,10 @@ func _ready() -> void:
 	ship_timber_view.name = "ShipTimbers"
 	add_child(ship_timber_view)
 	ship_timber_view.setup(simulation)
+	glass_crate_view = GlassCrateView.new()
+	glass_crate_view.name = "GlassCrates"
+	add_child(glass_crate_view)
+	glass_crate_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
