@@ -3073,6 +3073,12 @@ Regras que já custaram investigação:
   fábrica pelo `SideYard`, o −X primeiro, longe da boca do forno no +X, fora do carrinho de mão; o recheio e as bombas as deixam)
   e `pile_mesh` (`_beam`, a viga em I), num MultiMesh. Captura em `tools/capture_phase243.tscn`.
 
+### Estacas de lúpulo (Fase 244, nossa)
+
+- **Plano** em `docs/plano_fase244.md`. `HopPoleView` (`GameScreen.hop_pole_view`): `sites`/`cells` (as duas células de lado da
+  fazenda pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e `pole_mesh` (os cavaletes
+  com as estacas deitadas e o feixe de pé), num MultiMesh. Captura em `tools/capture_phase244.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3327,6 +3333,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 241 — Terreiro de café (nossa) | **feita em 01/11/2026**: o terreiro caiado com o café espalhado secando ao sol, vermelho de um lado e seco do outro, com os sulcos do rodo, o montinho e os sacos, no lado de cada cafezal; plano em `docs/plano_fase241.md` |
 | 242 — Tabaco secando (nossa) | **feita em 01/11/2026**: o varal de varas com as réstias de folhas de tabaco penduradas, verdes, douradas e curadas, e o cesto de folhas no lado de cada plantação de tabaco; plano em `docs/plano_fase242.md` |
 | 243 — Vigas de aço empilhadas (nossa) | **feita em 01/11/2026**: a pilha de vigas de ferro em I em camadas sobre os dormentes, com uma viga solta no chão, no lado de cada fábrica de vigas de aço; plano em `docs/plano_fase243.md` |
+| 244 — Estacas de lúpulo (nossa) | **feita em 01/11/2026**, a última do roteiro lagar, terreiro e estacas: as estacas compridas deitadas nos cavaletes e o feixe amarrado encostado na parede, no lado de cada fazenda de lúpulo; plano em `docs/plano_fase244.md` |
 
 Pendências já vistas para fases futuras:
 
