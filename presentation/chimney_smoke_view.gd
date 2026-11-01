@@ -87,7 +87,8 @@ static func _bump(hour: float, center: float, half: float) -> float:
 
 ## A boca da chaminé de uma casa no mundo (o mesmo assento e giro do modelo na BuildingView), ou null.
 static func chimney_world(simulation: Simulation, record: BuildingRecord) -> Variant:
-	if not record.is_house():
+	# Fase 176: a chaminé com o ninho da cegonha não fumega
+	if not record.is_house() or StorkView.has_nest(simulation, record):
 		return null
 	var grid := simulation.world.island(record.island_id)
 	var spec := BuildingKit.spec_for(simulation, record, grid.cell_size)

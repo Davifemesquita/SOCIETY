@@ -2601,6 +2601,13 @@ Regras que já custaram investigação:
   `SCARECROW_EVERY` cuja fazenda, pelo `module_owner`, planta uma das `CROPS`; no vão do meio entre as fileiras, pela conta da
   `CropView`) e `scarecrow_mesh`, num MultiMesh. Captura em `tools/capture_phase175.tscn`.
 
+### Cegonha na chaminé (Fase 176, nossa)
+
+- **Plano** em `docs/plano_fase176.md`. `StorkView` (`GameScreen.stork_view`): `has_nest` (camponeses e operários a cada
+  `STORK_EVERY`, nas temperadas), `nest_place` (o capitel da chaminé, no lugar do modelo), `nest_mesh` e `stork_mesh`, virando pelo
+  `PerchedGullView.heading_at`. **A chaminé com ninho não fumega** (`ChimneySmokeView.chimney_world` a pula). Captura em
+  `tools/capture_phase176.tscn` (a câmera à mão: a da partida fica presa ao chão).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2787,6 +2794,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 173 — Tina de lavar (nossa) | **feita em 31/10/2026**: a tina de aduelas com a água ensaboada e a tábua de esfregar ao lado de cada varal; plano em `docs/plano_fase173.md` |
 | 174 — Banco na porta (nossa) | **feita em 31/10/2026**, a última do roteiro laterita, lenha e carrinho: o banco de tábua encostado na parede da frente, no quintal cercado de parte das casas dos camponeses; plano em `docs/plano_fase174.md` |
 | 175 — Espantalho no campo (nossa) | **feita em 31/10/2026**, primeira do roteiro espantalho, cegonha e vaga-lume (Fases 175 a 179): um espantalho de pau com casaco, chapéu e palha saindo das mangas no vão do meio de um a cada três campos de trigo e de batata; plano em `docs/plano_fase175.md` |
+| 176 — Cegonha na chaminé (nossa) | **feita em 31/10/2026**: o ninho de gravetos com a cegonha de pé, virando de tempos em tempos, no alto da chaminé de uma a cada quatro casas dos camponeses e operários das ilhas temperadas; a chaminé com ninho não fumega; plano em `docs/plano_fase176.md` |
 
 Pendências já vistas para fases futuras:
 

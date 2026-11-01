@@ -19,12 +19,12 @@ func _view() -> ChimneySmokeView:
 	return view
 
 
-## Uma casa com chaminé (o sorteio do telhado decide; procura pelo id).
+## Uma casa com chaminé (o sorteio do telhado decide; procura pelo id) e sem o ninho da cegonha (Fase 176).
 func _house_with_chimney(residents: float, from_x := 4) -> int:
 	for x: int in range(from_x, from_x + 27, 3):
 		var id := SimFixture.house(_sim, x, 10, &"workers", residents)
 		var spec := BuildingKit.spec_for(_sim, _sim.world.building(id), 2.0)
-		if spec.chimney:
+		if spec.chimney and not StorkView.has_nest(_sim, _sim.world.building(id)):
 			return id
 		_sim.execute(DemolishCommand.new(0, Rect2i(_sim.world.building(id).origin, Vector2i(1, 1))))
 	return -1

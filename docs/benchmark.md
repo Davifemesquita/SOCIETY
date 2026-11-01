@@ -1944,3 +1944,9 @@ Mesmo estado (jogo novo 11,8 s): 83,3 FPS (174: 83,2), 1% low 40,8, pior quadro 
 11,1 ms, montar tudo 9,3 s, carregar 5,7 s, construir com a ilha cheia 17,3 ms; +5 objetos e draw calls (a camada dos
 espantalhos nas ilhas) e primitivas iguais no quadro com tudo visível (o benchmark não tem campo de trigo nem de batata com
 dono à vista). Neutra; abre o roteiro espantalho, cegonha e vaga-lume.
+
+## Fase 176 — cegonha na chaminé (31/10/2026)
+
+Mesmo estado (jogo novo 11,8 s): 83,1 FPS (175: 83,3), 1% low 39,9, pior quadro 32 ms, p50/p95/p99 11,4/15,5/23,3 ms, GPU
+11,2 ms, montar tudo 9,3 s, carregar 5,6 s, construir com a ilha cheia 17,0 ms; +10 objetos e draw calls (os ninhos e as
+cegonhas nas ilhas) e +263 mil primitivas no quadro com tudo visível. Neutra.
