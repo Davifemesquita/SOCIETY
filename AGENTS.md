@@ -2755,6 +2755,12 @@ Regras que já custaram investigação:
   lote, na fileira da frente, das casas com cão do `AnimalView.DOG_EVERY`; o recheio e as bombas a deixam) e `kennel_mesh`, num
   MultiMesh. Captura: `casinha_do_cao.png` no `tools/capture_phase95.tscn`.
 
+### Bancos no cais (Fase 198, nossa)
+
+- **Plano** em `docs/plano_fase198.md`. `QuayBenchView` (`GameScreen.quay_bench_view`): `benches` (nos lanços do cais de pedra do
+  resto `BENCH_REST`, para dentro da beira, a `CLEAR_M` dos lampiões, das cisternas, dos mastros e das escadas) com o banco de
+  praça da decoração (`DecorationView._bench`), num MultiMesh. Captura em `tools/capture_phase198.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2963,6 +2969,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 195 — Cemitério da igreja (nossa) | **feita em 01/11/2026**, primeira do roteiro cemitério, pato e rede (Fases 195 a 199): lápides de topo redondo, cruzes e obeliscos em fileiras atrás da igreja, além do largo, umas tombando, dentro de um muro baixo de pedra com o portão virado para ela; plano em `docs/plano_fase195.md` |
 | 196 — Patos na água (nossa) | **feita em 01/11/2026**: bandos de patos nadando em roda na água calma da costa, longe da espuma e dos portos, a pata com os patinhos em fila ou patos e patas juntos, mergulhando a cabeça de vez em quando, de dia; plano em `docs/plano_fase196.md` |
 | 197 — Casinha do cão (nossa) | **feita em 01/11/2026**: a casinha de tábuas com telhado de duas águas, a porta em arco e a tigela de água ao lado das casas que têm cão na porta, virada para a rua; plano em `docs/plano_fase197.md` |
+| 198 — Bancos no cais (nossa) | **feita em 01/11/2026**: bancos de praça de pés de ferro e tábuas no cais de pedra dos entrepostos, entre os cabeços, de costas para a cidade e virados para o mar, longe dos lampiões, das cisternas, dos mastros e das escadas; plano em `docs/plano_fase198.md` |
 
 Pendências já vistas para fases futuras:
 

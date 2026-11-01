@@ -2097,3 +2097,9 @@ Mesmo estado (jogo novo 11,8 s): 79,7 FPS (196: 80,1), 1% low 39,0, pior quadro 
 11,5 ms, montar tudo 9,3 s, carregar 6,0 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e
 primitivas iguais no quadro com tudo visível (as casas do benchmark encostam umas nas outras e não sobra a célula do lado).
 Neutra (GPU igual).
+
+## Fase 198 — bancos no cais (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 80,2 FPS (197: 79,7), 1% low 40,6, pior quadro 33 ms, p50/p95/p99 11,7/16,0/23,1 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e +6 mil
+primitivas no quadro com tudo visível. Neutra.
