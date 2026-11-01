@@ -204,6 +204,8 @@ var horse_trough_view: HorseTroughView
 var tenter_view: TenterView
 ## Fase 210: a fila de pombos pousados na cumeeira de parte das casas.
 var roof_pigeon_view: RoofPigeonView
+## Fase 211: as mós de pedra e os sacos de farinha encostados no lado de cada moinho.
+var millstone_view: MillstoneView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -627,6 +629,10 @@ func _ready() -> void:
 	roof_pigeon_view.name = "RoofPigeons"
 	add_child(roof_pigeon_view)
 	roof_pigeon_view.setup(simulation)
+	millstone_view = MillstoneView.new()
+	millstone_view.name = "Millstones"
+	add_child(millstone_view)
+	millstone_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

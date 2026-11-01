@@ -2851,6 +2851,12 @@ Regras que já custaram investigação:
   centenas de vezes pede poucas faces**: as bolas do `PerchedGullView._blob` custaram ~1 FPS. Captura: `pombos_na_cumeeira.png`
   no `tools/capture_phase95.tscn` (câmera à mão, `_aimed`).
 
+### Mós no moinho (Fase 211, nossa)
+
+- **Plano** em `docs/plano_fase211.md`. `MillstoneView` (`GameScreen.millstone_view`): `sites`/`cells` (a célula do meio de um lado
+  do moinho, nunca na frente das pás; o recheio e as bombas a deixam) e `millstone_mesh`, num MultiMesh. Captura:
+  `mos_no_moinho.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3072,6 +3078,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 208 — Rama de tecido (nossa) | **feita em 01/11/2026**: duas ramas de madeira com os panos tingidos de garança e anil esticados secando, numa fila de três células atrás de cada tecelagem; plano em `docs/plano_fase208.md` |
 | 209 — Lanterna nas carroças (nossa) | **feita em 01/11/2026**, a última do roteiro estandarte, bebedouro e lanterna: a lanterna de ferro pendurada num braço na frente de cada carroça, acesa à noite, na própria malha da carroça; plano em `docs/plano_fase209.md` |
 | 210 — Pombos na cumeeira (nossa) | **feita em 01/11/2026**, primeira do roteiro pombo, mó e buxo (Fases 210 a 214): uma fila de pombos cinza-azulados pousados na cumeeira de parte das casas de duas águas, longe da chaminé; plano em `docs/plano_fase210.md` |
+| 211 — Mós no moinho (nossa) | **feita em 01/11/2026**: duas mós de pedra de pé encostadas na parede do lado de cada moinho, com a pilha de sacos de farinha ao lado; plano em `docs/plano_fase211.md` |
 
 Pendências já vistas para fases futuras:
 

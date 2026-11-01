@@ -187,6 +187,9 @@ static func _taken_now(world: WorldState, data: GameData, island_id: int) -> Dic
 	# Fase 197: nem na casinha do cão
 	for cell: Vector2i in KennelView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 211: nem nas mós dos moinhos
+	for cell: Vector2i in MillstoneView.cells(world, data, island_id):
+		taken[cell] = true
 	# Fase 208: nem nas ramas de tecido
 	for cell: Vector2i in TenterView.cells(world, data, island_id):
 		taken[cell] = true

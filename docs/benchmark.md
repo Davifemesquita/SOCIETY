@@ -2186,3 +2186,9 @@ A máquina seguiu no estado lento: 71,5 FPS (sem os pombos, no mesmo estado: 71,
 GPU 12,6 ms (sem: 12,5), montar tudo 9,3 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +1 objeto e draw call e +47 mil
 primitivas no quadro com tudo visível. A primeira malha do pombo (bolas de muitas faces) punha +110 mil primitivas e GPU 12,8 ms
 (~1 FPS); a de bolas de 6 × 3 faces é neutra. Abre o roteiro pombo, mó e buxo.
+
+## Fase 211 — mós no moinho (01/11/2026)
+
+A máquina seguiu no estado lento: 71,0 FPS (210: 71,5), 1% low 37,0, p50/p95/p99 13,3/18,1/24,9 ms, GPU 12,7 ms, montar tudo
+9,3 s, carregar 6,3 s, construir com a ilha cheia 17,8 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem moinho). Neutra.

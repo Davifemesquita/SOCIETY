@@ -10,7 +10,7 @@ const STREET_STEP := 9
 const ORIGIN := Vector2i(20, 20)
 ## A rua dos prédios grandes: serviços (telhado de quatro águas, campanário) e fábricas (lanternim, fumaça).
 const BIG: Array[StringName] = [&"church", &"market", &"theater", &"university", &"brewery", &"furnace", &"warehouse",
-		&"weavery", &"distillery", &"bakery", &"museum"]
+		&"weavery", &"distillery", &"bakery", &"museum", &"mill"]
 
 var _out_dir: String
 var _game: GameScreen
@@ -138,6 +138,12 @@ func _run() -> void:
 		var pigeon := _game.roof_pigeon_view.places[0]
 		await _aimed("pombos_na_cumeeira.png", pigeon.origin, 5.0, 0.6)
 		await _aimed("pombos_da_rua.png", pigeon.origin, 14.0, -0.3)
+	# Fase 211: as mós e os sacos no lado do moinho, de perto
+	if not _game.millstone_view.places.is_empty():
+		var mill := _game.millstone_view.places[0]
+		var out := mill.basis.z.normalized()
+		await _shot("mos_no_moinho.png", mill.origin, 7.0, atan2(out.x, out.z) + 0.5)
+		await _shot("mos_de_longe.png", mill.origin, 18.0, atan2(out.x, out.z) - 0.4)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina
