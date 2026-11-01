@@ -208,6 +208,8 @@ var roof_pigeon_view: RoofPigeonView
 var millstone_view: MillstoneView
 ## Fase 212: os vasos de pedra com o buxo podado em bola na porta das casas dos investidores.
 var topiary_view: TopiaryView
+## Fase 213: a pilha de lenha e a pá de forno ao lado da boca do forno das padarias.
+var oven_wood_view: OvenWoodView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -639,6 +641,10 @@ func _ready() -> void:
 	topiary_view.name = "Topiary"
 	add_child(topiary_view)
 	topiary_view.setup(simulation)
+	oven_wood_view = OvenWoodView.new()
+	oven_wood_view.name = "OvenWood"
+	add_child(oven_wood_view)
+	oven_wood_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

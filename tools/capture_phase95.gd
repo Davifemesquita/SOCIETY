@@ -59,12 +59,14 @@ func _run() -> void:
 		x += size.x + 1
 	# Fase 171: uma rua de casas de camponeses e operários com uma célula livre entre elas (a lenha na parede do lado)
 	var spaced_y := big_y + 12
-	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(ORIGIN.x, spaced_y), Vector2i(ORIGIN.x + 40, spaced_y))))
+	_sim.execute(BuildRoadCommand.new(0, RoadPath.l_path(Vector2i(ORIGIN.x, spaced_y), Vector2i(ORIGIN.x + 52, spaced_y))))
 	for i: int in 8:
 		var result := _sim.execute(PlaceBuildingCommand.new(0, &"house", Vector2i(ORIGIN.x + 1 + i * 5, spaced_y - 3), 2))
 		if result.ok():
 			_sim.world.building(result.placed[0]).tier = &"peasants" if i % 2 == 0 else &"workers"
 			_sim.world.building(result.placed[0]).residents = 5.0
+	# Fase 213: uma padaria sozinha no fim da rua espaçada (a lenha precisa da célula do lado livre)
+	_sim.execute(PlaceBuildingCommand.new(0, &"bakery", Vector2i(ORIGIN.x + 44, spaced_y - 4), 2))
 	_game.building_view.rebuild()
 	_set_hour(10.0)
 	for row: int in TIERS.size():
@@ -148,6 +150,11 @@ func _run() -> void:
 	if not _game.topiary_view.places.is_empty():
 		var pot := _game.topiary_view.places[0]
 		await _shot("buxo_na_porta.png", pot.origin, 8.0, 0.35)
+	# Fase 213: a lenha e a pá ao lado da boca do forno da padaria sozinha (a última posta), de perto
+	if not _game.oven_wood_view.places.is_empty():
+		var wood := _game.oven_wood_view.places[_game.oven_wood_view.places.size() - 1]
+		var out := wood.basis.z.normalized()
+		await _aimed("lenha_da_padaria.png", wood.origin + Vector3(0.0, 0.8, 0.0), 7.0, atan2(out.x, out.z) + 0.35)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

@@ -2198,3 +2198,9 @@ tudo visível (a cidade do benchmark não tem moinho). Neutra.
 A máquina seguiu no estado lento: 71,3 FPS (211: 71,0), 1% low 38,4, p50/p95/p99 13,3/18,0/24,5 ms, GPU 12,6 ms, montar tudo
 9,3 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
 tudo visível (a cidade do benchmark é de operários). Neutra.
+
+## Fase 213 — lenha da padaria (01/11/2026)
+
+A máquina seguiu no estado lento: 70,9 FPS (212: 71,3), 1% low 38,1, p50/p95/p99 13,4/18,0/24,5 ms, GPU 12,7 ms, montar tudo
+9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark não tem padaria). Neutra.
