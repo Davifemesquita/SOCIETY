@@ -2830,6 +2830,12 @@ Regras que já custaram investigação:
   `PLANTS`) só nas células de desnível `ROCK_PINE_MIN_RELIEF_M` das temperadas, de pé; `rock_pine_mesh`. Captura em
   `tools/capture_phase207.tscn`.
 
+### Rama de tecido (Fase 208, nossa)
+
+- **Plano** em `docs/plano_fase208.md`. `TenterView` (`GameScreen.tenter_view`): `sites`/`cells` (três células em fila no meio de um
+  lado da tecelagem, o de trás primeiro, como o pátio de tijolos da Fase 159; o recheio e as bombas as deixam) e `tenter_mesh`,
+  num MultiMesh. Captura: `ramas_de_tecido.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3048,6 +3054,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 205 — Estandartes na fachada (nossa) | **feita em 01/11/2026**, primeira do roteiro estandarte, bebedouro e lanterna (Fases 205 a 209): estandartes de rabo de andorinha na cor do prédio, com o galão dourado, pendurados num braço de ferro de cada lado da porta da prefeitura, do teatro, da universidade, do museu e da escola, balançando com o vento; plano em `docs/plano_fase205.md` |
 | 206 — Bebedouro de cavalos (nossa) | **feita em 01/11/2026**: o cocho comprido de pedra com a água, a coluna da bica e a argola de amarrar, encostado na parede do lado de cada taverna, ao lado das mesas; plano em `docs/plano_fase206.md` |
 | 207 — Pinheiro-anão na encosta (nossa) | **feita em 01/11/2026**: pinheiros baixos e tortos, com as almofadas de agulhas achatadas pelo vento, agarrados nas encostas íngremes das ilhas temperadas; plano em `docs/plano_fase207.md` |
+| 208 — Rama de tecido (nossa) | **feita em 01/11/2026**: duas ramas de madeira com os panos tingidos de garança e anil esticados secando, numa fila de três células atrás de cada tecelagem; plano em `docs/plano_fase208.md` |
 
 Pendências já vistas para fases futuras:
 

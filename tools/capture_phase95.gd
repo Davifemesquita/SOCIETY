@@ -127,6 +127,12 @@ func _run() -> void:
 		var out := -banner.basis.z.normalized()
 		await _shot("estandartes.png", banner.origin - Vector3(0.0, 2.0, 0.0), 12.0, atan2(out.x, out.z) + 0.3)
 		await _shot("estandartes_da_rua.png", banner.origin, 26.0, atan2(out.x, out.z) - 0.4)
+	# Fase 208: as ramas de tecido atrás da tecelagem, de perto e de longe
+	if not _game.tenter_view.places.is_empty():
+		var tenter := _game.tenter_view.places[0]
+		var out := tenter.basis.z.normalized()
+		await _shot("ramas_de_tecido.png", tenter.origin, 9.0, atan2(out.x, out.z) + 0.5)
+		await _shot("ramas_de_longe.png", tenter.origin, 22.0, atan2(out.x, out.z) - 0.4)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

@@ -2164,3 +2164,10 @@ primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem ta
 Mesmo estado (jogo novo 11,8 s): 80,3 FPS (206: 80,1), 1% low 39,7, pior quadro 35 ms, p50/p95/p99 11,8/16,1/23,4 ms, GPU
 11,5 ms, montar tudo 9,3 s, carregar 6,1 s, construir com a ilha cheia 17,4 ms; +1 objeto e draw call e +7 mil primitivas no
 quadro com tudo visível (os pinheiros nos trechos à vista). Neutra.
+
+## Fase 208 — rama de tecido (01/11/2026)
+
+**A máquina entrou no estado lento** (o dono usando o PC): 71,5 FPS, 1% low 38,0, p50/p95/p99 13,2/17,6/24,7 ms, GPU 12,6 ms,
+CPU do render 1,6 ms, tick 0,14 ms (tudo mais lento junto). No mesmo estado, **sem a rama** (A/B): 71,8 FPS, GPU 12,5 ms.
+Montar tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e primitivas iguais
+no quadro com tudo visível (a cidade do benchmark não tem tecelagem). Neutra.
