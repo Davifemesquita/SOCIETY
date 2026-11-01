@@ -16,3 +16,11 @@ telhados e as oficinas (`c9_08`), as fazendas com o moinho (`c9_14`), as casas r
 | 214 — Escada de mão | a escada de madeira encostada na parede do lado de parte das casas, subindo até o beiral, com o balde no pé |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase210.md` a
+`docs/plano_fase214.md`), testes, captura e benchmark; as três pastas da suíte passaram no fim (world 448, presentation 359, ui
+167). Diferenças do roteiro: os pombos têm malha própria de poucas faces (a primeira custava ~1 FPS); a lenha da padaria só sai
+com a célula do lado livre (encostada no vizinho entraria na parede dele), e a captura ganhou uma padaria sozinha; o moinho
+entrou na rua dos prédios grandes da captura da Fase 95.
