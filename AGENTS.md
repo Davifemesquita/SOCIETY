@@ -2708,6 +2708,12 @@ Regras que já custaram investigação:
   `FARMS`, o oposto das medas) e `hive_mesh` (o banco com três colmeias de palha), e as abelhas no `shaders/bee.gdshader`. O
   recheio deixa a célula. As capturas das Fases 191 e 193 herdam o `tools/capture_phase190.gd` (`_shoot`, `_away_from_farm`).
 
+### Pombal (Fase 191, nossa)
+
+- **Plano** em `docs/plano_fase191.md`. `DovecoteView` (`GameScreen.dovecote_view`): `spot` (a célula na diagonal do canto da frente
+  de +X das fazendas de `FARMS` do resto certo, se livre), `dovecote_mesh` e os pombos pousados da `BirdView` nos `PERCHES`,
+  virando pelo `PerchedGullView.heading_at`. Captura em `tools/capture_phase191.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2909,6 +2915,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 188 — Arco-íris (nossa) | **feita em 01/11/2026**: o arco-íris no céu do lado oposto ao sol logo depois da chuva, sumindo em pouco mais de uma hora; plano em `docs/plano_fase188.md` |
 | 189 — Focas nas pedras (nossa) | **feita em 01/11/2026**, a última do roteiro hera, estaca e arco-íris: grupos de focas malhadas deitadas na costa baixa das ilhas temperadas, longe das vilas, viradas para o mar, erguendo a cabeça de tempos em tempos; plano em `docs/plano_fase189.md` |
 | 190 — Colmeias de palha (nossa) | **feita em 01/11/2026**, primeira do roteiro colmeia, pombal e varal (Fases 190 a 194): o banco com três colmeias de palha trançada ao lado das fazendas de lúpulo, vinhedo e batata, com as abelhas zunindo em volta de dia; plano em `docs/plano_fase190.md` |
+| 191 — Pombal (nossa) | **feita em 01/11/2026**: o pombal de tábua no alto de um poste no canto da frente de metade das fazendas de gado, trigo e batata, com os pombos pousados no telhadinho e nos poleiros; plano em `docs/plano_fase191.md` |
 
 Pendências já vistas para fases futuras:
 

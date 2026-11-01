@@ -2048,3 +2048,9 @@ o roteiro hera, estaca e arco-íris.
 Mesmo estado (jogo novo 11,8 s): 80,8 FPS (189: 81,2), 1% low 40,5, pior quadro 30 ms, p50/p95/p99 11,7/15,9/23,1 ms, GPU
 11,5 ms, montar tudo 9,3 s, carregar 5,8 s, construir com a ilha cheia 17,0 ms; +6 objetos e draw calls (o banco e as abelhas
 nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra; abre o roteiro colmeia, pombal e varal.
+
+## Fase 191 — pombal (01/11/2026)
+
+Mesmo estado (jogo novo 11,8 s): 81,0 FPS (190: 80,8), 1% low 39,9, pior quadro 30 ms, p50/p95/p99 11,6/16,0/23,2 ms, GPU
+11,5 ms, montar tudo 9,2 s, carregar 5,8 s, construir com a ilha cheia 17,4 ms; +10 objetos e draw calls (os pombais e os
+pombos nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra.

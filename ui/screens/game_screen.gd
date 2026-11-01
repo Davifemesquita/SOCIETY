@@ -168,6 +168,8 @@ var rainbow_view: RainbowView
 var seal_view: SealView
 ## Fase 190: as colmeias de palha com as abelhas ao lado de parte das fazendas.
 var beehive_view: BeehiveView
+## Fase 191: o pombal no poste no canto de parte das fazendas, com os pombos pousados.
+var dovecote_view: DovecoteView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -519,6 +521,10 @@ func _ready() -> void:
 	beehive_view.name = "Beehives"
 	add_child(beehive_view)
 	beehive_view.setup(simulation)
+	dovecote_view = DovecoteView.new()
+	dovecote_view.name = "Dovecotes"
+	add_child(dovecote_view)
+	dovecote_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
