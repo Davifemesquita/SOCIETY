@@ -2727,6 +2727,12 @@ Regras que já custaram investigação:
   Fase 166, numa fazenda a cada `WAGON_EVERY`), `wagon_place` (o `CartView.model_mesh` sem cavalo, tombado para a frente) e
   `load_mesh` (o feno em camadas moles, `PerchedGullView._blob`). O recheio deixa a célula. Captura em `tools/capture_phase193.tscn`.
 
+### Escada do cais (Fase 194, nossa)
+
+- **Plano** em `docs/plano_fase194.md`. `QuayStairsView` (`GameScreen.quay_stairs_view`): `flights` (o alto de cada lance, no lanço do
+  cais de pedra que passa `STAIR_CLEAR_M` da largura do entreposto, de cada lado), `step_places` (os degraus de pedra até dentro
+  da água, encostados no paredão, na pedra das paredes do cais) e a argola (`ring_mesh`). Captura em `tools/capture_phase194.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2931,6 +2937,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 191 — Pombal (nossa) | **feita em 01/11/2026**: o pombal de tábua no alto de um poste no canto da frente de metade das fazendas de gado, trigo e batata, com os pombos pousados no telhadinho e nos poleiros; plano em `docs/plano_fase191.md` |
 | 192 — Roupa sobre a rua (nossa) | **feita em 01/11/2026**: o varal com a roupa colorida atravessando no alto a rua de terra entre casas de operários frente a frente; plano em `docs/plano_fase192.md` |
 | 193 — Carroça de feno parada (nossa) | **feita em 01/11/2026**: a carroça carregada de feno, sem o cavalo, tombada para a frente com os varais no chão, ao lado das medas de metade das fazendas; plano em `docs/plano_fase193.md` |
+| 194 — Escada do cais (nossa) | **feita em 01/11/2026**, a última do roteiro colmeia, pombal e varal: o lance de degraus de pedra descendo do cais de pedra até dentro da água, encostado no paredão, com a argola de ferro, dos dois lados de cada entreposto; plano em `docs/plano_fase194.md` |
 
 Pendências já vistas para fases futuras:
 

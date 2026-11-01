@@ -2067,3 +2067,12 @@ Mesmo estado (jogo novo 11,8 s): 80,4 FPS (192: 81,1), 1% low 40,0, pior quadro 
 11,5 ms, montar tudo 9,3 s, carregar 5,9 s, construir com a ilha cheia 17,2 ms; +10 objetos e draw calls (as carroças e as
 cargas nas ilhas) e primitivas iguais no quadro com tudo visível. Neutra no quadro (GPU igual); o FPS médio segue descendo
 devagar com os objetos a mais deste pedido.
+
+## Fase 194 — escada do cais (01/11/2026)
+
+Mesmo estado (jogo novo 11,9 s): 80,4 FPS (193: 80,4), 1% low 40,8, pior quadro 28 ms, p50/p95/p99 11,8/16,0/23,1 ms, GPU
+11,5 ms, montar tudo 9,3 s, carregar 6,0 s, construir com a ilha cheia 17,0 ms; +10 objetos e draw calls (os degraus e as
+argolas nas ilhas) e +26 mil primitivas no quadro com tudo visível. Neutra; fecha o roteiro colmeia, pombal e varal e os
+quatro ciclos do quarto pedido do dono (Fases 175 a 194). Ao longo deles o FPS médio desceu de ~83 para ~80,5 e a GPU de 11,1
+para 11,5 ms, com +100 objetos e draw calls (5 por vista nova, uma camada por ilha) e +1,5 milhão de primitivas no quadro com
+tudo visível; montar, carregar e construir ficaram onde estavam.
