@@ -196,6 +196,8 @@ var fish_rack_view: FishRackView
 var market_cart_view: MarketCartView
 ## Fase 204: os guarda-sóis de palha com o banco de toras nas praias das ilhas tropicais.
 var palapa_view: PalapaView
+## Fase 205: os estandartes pendurados de cada lado da porta dos serviços, balançando com o vento.
+var banner_view: BannerView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -603,6 +605,10 @@ func _ready() -> void:
 	palapa_view.name = "Palapas"
 	add_child(palapa_view)
 	palapa_view.setup(simulation)
+	banner_view = BannerView.new()
+	banner_view.name = "Banners"
+	add_child(banner_view)
+	banner_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

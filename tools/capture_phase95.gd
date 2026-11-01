@@ -121,6 +121,12 @@ func _run() -> void:
 		var cat := _game.cat_view.places[0]
 		await _shot("gato_na_porta.png", cat.origin, 5.0, atan2(-cat.basis.z.x, -cat.basis.z.z) + 0.4)
 		await _shot("gato_da_rua.png", cat.origin, 14.0, atan2(-cat.basis.z.x, -cat.basis.z.z) - 0.3)
+	# Fase 205: os estandartes na fachada dos serviços, de perto e da rua
+	if not _game.banner_view.places.is_empty():
+		var banner := _game.banner_view.places[0]
+		var out := -banner.basis.z.normalized()
+		await _shot("estandartes.png", banner.origin - Vector3(0.0, 2.0, 0.0), 12.0, atan2(out.x, out.z) + 0.3)
+		await _shot("estandartes_da_rua.png", banner.origin, 26.0, atan2(out.x, out.z) - 0.4)
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

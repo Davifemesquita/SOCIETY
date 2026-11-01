@@ -2808,6 +2808,14 @@ Regras que já custaram investigação:
   esquecidas a cada obra, estrada, trilho, árvore, subida de classe e troca de mundo, só com a vista da bomba na árvore): lista
   nova cara do mesmo tipo entra nela. Captura em `tools/capture_phase204.tscn`.
 
+### Estandartes na fachada (Fase 205, nossa)
+
+- **Plano** em `docs/plano_fase205.md`, primeira do roteiro `docs/plano_fases_205_209.md` (estandarte, bebedouro e lanterna; o
+  Anno não foi aberto: o dono estava no PC). `BannerView` (`GameScreen.banner_view`): `places_of` (as divisas da célula da porta
+  dos serviços de `SERVICES`, no alto do segundo andar, pela conta da porta do banco da Fase 174) e `banner_mesh`, num MultiMesh
+  com o `shaders/banner.gdshader` (a cor do prédio e a fase no dado da instância; o balanço pelo vento global, menor que o braço,
+  para o pano nunca entrar na parede). Captura: `estandartes.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3023,6 +3031,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 202 — Secadouro de peixe (nossa) | **feita em 01/11/2026**: as varas cruzadas com os peixes abertos pendurados secando, do lado da terra de cada cabana de pesca das ilhas temperadas; plano em `docs/plano_fase202.md` |
 | 203 — Carrinho de feira (nossa) | **feita em 01/11/2026**: o carrinho de mão de duas rodas com o tabuleiro de frutas e verduras e o guarda-sol listrado, numa célula junto da rua ao lado de cada mercado; plano em `docs/plano_fase203.md` |
 | 204 — Guarda-sol de palha (nossa) | **feita em 01/11/2026**, a última do roteiro gato, poço e carrinho: guarda-sóis de folha de palmeira com o banco de toras na areia em volta do entreposto e das cabanas de pesca das ilhas tropicais, além do cais de pedra; e as buscas junto da rua guardadas até a próxima obra (o carregar voltou de 6,4 para 6,0 s); plano em `docs/plano_fase204.md` |
+| 205 — Estandartes na fachada (nossa) | **feita em 01/11/2026**, primeira do roteiro estandarte, bebedouro e lanterna (Fases 205 a 209): estandartes de rabo de andorinha na cor do prédio, com o galão dourado, pendurados num braço de ferro de cada lado da porta da prefeitura, do teatro, da universidade, do museu e da escola, balançando com o vento; plano em `docs/plano_fase205.md` |
 
 Pendências já vistas para fases futuras:
 

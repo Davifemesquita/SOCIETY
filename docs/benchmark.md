@@ -2145,3 +2145,10 @@ Mesmo estado (jogo novo 11,9 s): 80,8 FPS (203: 80,5), 1% low 40,2, pior quadro 
 primitivas no quadro com tudo visível. Antes da memória das buscas junto da rua o carregar estava em 6,4 s (as listas das
 células tomadas, das bombas e dos carrinhos eram refeitas várias vezes, cada uma pelos ~800 prédios da cidade); com ela voltou
 a 6,0. Neutra; fecha o roteiro gato, poço e carrinho.
+
+## Fase 205 — estandartes na fachada (01/11/2026)
+
+Mesmo estado (jogo novo 11,9 s): 80,0 FPS (204: 80,8), 1% low 40,6, pior quadro 29 ms, p50/p95/p99 11,8/16,1/23,0 ms, GPU
+11,5 ms, montar tudo 9,4 s, carregar 6,0 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a camada) e
+primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem esses serviços). Neutra; abre o roteiro
+estandarte, bebedouro e lanterna.
