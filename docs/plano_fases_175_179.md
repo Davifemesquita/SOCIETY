@@ -20,4 +20,7 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
 
 ## Estado
 
-Em andamento.
+**Concluído em 31/10/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase175.md` a
+`docs/plano_fase179.md`), testes, captura e benchmark. Diferenças do roteiro: a cegonha ficou numa casa a cada quatro (a
+cada cinco quase não aparecia) e a chaminé com ninho deixou de fumegar; os postigos valem para a classe inteira (uma forma a
+mais por casa dobraria as malhas); os vaga-lumes cresceram e ganharam halo depois da primeira captura.
