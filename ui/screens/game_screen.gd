@@ -246,6 +246,8 @@ var cormorant_view: CormorantView
 var window_rug_view: WindowRugView
 ## Fase 233: as cabines de banho de rodas na areia perto dos entrepostos das ilhas temperadas.
 var bathing_machine_view: BathingMachineView
+## Fase 234: o carrinho do fogareiro de castanhas numa esquina calçada, com as brasas acesas à noite.
+var chestnut_roaster_view: ChestnutRoasterView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -753,6 +755,10 @@ func _ready() -> void:
 	bathing_machine_view.name = "BathingMachines"
 	add_child(bathing_machine_view)
 	bathing_machine_view.setup(simulation)
+	chestnut_roaster_view = ChestnutRoasterView.new()
+	chestnut_roaster_view.name = "ChestnutRoasters"
+	add_child(chestnut_roaster_view)
+	chestnut_roaster_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

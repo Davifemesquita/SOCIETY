@@ -2340,3 +2340,13 @@ mil primitivas e GPU 13,0 ms; com cinco fios e sem sombra, neutra.
 A máquina seguiu no estado lento: 69,5 FPS (232: 69,9), 1% low 36,6, p50/p95/p99 13,7/18,3/25,1 ms, GPU 13,0 ms (232: 12,9), montar
 tudo 9,4 s, carregar 6,1 s, construir com a ilha cheia 17,5 ms; +5 objetos e draw calls (a camada) e +68 mil primitivas no quadro
 com tudo visível (as cabines das praias das colônias, a maior parte nas rodas de raios). Neutra dentro do vaivém do estado lento.
+
+## Fase 234 — fogareiro de castanhas (01/11/2026)
+
+A máquina seguiu no estado lento: 71,2 FPS (233: 69,5), 1% low 38,0, p50/p95/p99 13,5/18,0/24,9 ms, GPU 12,9 ms, montar tudo 9,4 s,
+carregar 6,2 s, construir com a ilha cheia 17,2 ms; +6 objetos e draw calls (as duas camadas) e primitivas iguais no quadro com
+tudo visível (a cidade do benchmark é de ruas de terra). Neutra; fecha o roteiro sinal, cormorão e castanha e os quatro ciclos do
+sexto pedido do dono (Fases 215 a 234). Ao longo deles o FPS médio ficou entre ~77 e ~79 com a máquina no estado rápido (215 a
+229) e caiu para ~70 quando ela passou ao lento (230 em diante); os A/B das Fases 230 e 231 mostraram as fases neutras no mesmo
+estado. Montar, carregar e construir ficaram onde estavam (o carregar subiu 0,3 s na Fase 221 e voltou com as buscas de lado
+guardadas).
