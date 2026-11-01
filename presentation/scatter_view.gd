@@ -400,6 +400,9 @@ static func island_context(world: WorldState, data: GameData, island_id: int) ->
 	# Fase 171: e a lenha na parede das casas
 	for cell: Vector2i in LogPileView.cells(world, data, island_id):
 		doors[cell] = true
+	# Fase 172: e os carrinhos de mão das oficinas
+	for cell: Vector2i in WheelbarrowView.cells(world, data, island_id):
+		doors[cell] = true
 	return [doors, kinds, world.is_tropical(island_id, data)]
 
 

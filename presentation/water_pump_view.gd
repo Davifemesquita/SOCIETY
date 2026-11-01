@@ -116,6 +116,9 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 	# Fase 171: nem na lenha na parede
 	for cell: Vector2i in LogPileView.cells(world, data, island_id):
 		taken[cell] = true
+	# Fase 172: nem nos carrinhos de mão
+	for cell: Vector2i in WheelbarrowView.cells(world, data, island_id):
+		taken[cell] = true
 	for cell: Vector2i in FarmSiloView.cells(world, data, island_id):
 		taken[cell] = true
 	for id: int in ids:

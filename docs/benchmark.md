@@ -1922,3 +1922,10 @@ quadro com tudo visível (é só um uniforme no material das ilhas tropicais). N
 Mesmo estado (jogo novo 11,7 s): 82,4 FPS (170: 82,0), 1% low 39,7, pior quadro 35 ms, p50/p95/p99 11,4/15,3/23,4 ms, GPU
 11,1 ms, montar tudo 9,4 s, carregar 5,7 s, construir com a ilha cheia 17,0 ms; +5 objetos e draw calls (a camada das pilhas)
 e primitivas iguais no quadro com tudo visível. Neutra.
+
+## Fase 172 — carrinho de mão (31/10/2026)
+
+Mesmo estado (jogo novo 11,7 s): 83,1 FPS (171: 82,4), 1% low 39,3, pior quadro 35 ms, p50/p95/p99 11,3/15,3/23,5 ms, GPU
+11,0 ms, montar tudo 9,3 s, carregar 5,8 s (171: 5,7), construir com a ilha cheia 17,1 ms; +5 objetos e draw calls e +31 mil
+primitivas no quadro com tudo visível (os carrinhos das oficinas do benchmark). O carregar a mais é a oscilação entre rodadas:
+medido à parte, montar os carrinhos de 400 oficinas leva 2 ms e refazer, 0,8 ms. Neutra.

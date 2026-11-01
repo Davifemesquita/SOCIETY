@@ -2577,6 +2577,12 @@ Regras que já custaram investigação:
   corpo das casas de camponeses e operários do resto certo, na célula do lado livre; o recheio e as bombas a deixam) e
   `pile_mesh`, num MultiMesh. Captura: `lenha_*.png` no `tools/capture_phase95.tscn` (rua nova de casas espaçadas).
 
+### Carrinho de mão (Fase 172, nossa)
+
+- **Plano** em `docs/plano_fase172.md`. `WheelbarrowView` (`GameScreen.wheelbarrow_view`): `cells` (a célula livre atrás de um
+  prédio de produção a cada `BARROW_EVERY`, no pátio da Fase 165; o recheio e as bombas a deixam) e `barrow_mesh`, num
+  MultiMesh. Captura em `tools/capture_phase172.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -2759,6 +2765,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 169 — Barril de chuva (nossa) | **feita em 31/10/2026**, a última do roteiro chão batido, feno e gaivota: o barril de aduelas com a calha descendo do beiral, na quina de trás de metade das casas dos camponeses e operários; plano em `docs/plano_fase169.md` |
 | 170 — Barranco de terra vermelha (nossa) | **feita em 31/10/2026**, primeira do roteiro laterita, lenha e carrinho (Fases 170 a 174): a margem dos rios das ilhas tropicais em laterita vermelha, no lugar da lama escura; plano em `docs/plano_fase170.md` |
 | 171 — Lenha na parede (nossa) | **feita em 31/10/2026**: a pilha de lenha rachada com a cobertura de tábuas encostada na parede do lado de parte das casas dos camponeses e operários; plano em `docs/plano_fase171.md` |
+| 172 — Carrinho de mão (nossa) | **feita em 31/10/2026**: o carrinho de mão de madeira parado no pátio de chão batido atrás de metade das oficinas; plano em `docs/plano_fase172.md` |
 
 Pendências já vistas para fases futuras:
 
