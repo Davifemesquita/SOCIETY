@@ -2935,6 +2935,12 @@ Regras que já custaram investigação:
   cabo enrolado e as boias), num MultiMesh. **Peça nova do cais procura lanço livre**: os restos fixos (bancos, cabeços) já se
   sobrepõem a lampiões, mastros e escadas. Captura em `tools/capture_phase222.tscn`.
 
+### Lençóis no hospital (Fase 223, nossa)
+
+- **Plano** em `docs/plano_fase223.md`. `LinenView` (`GameScreen.linen_view`): `sites`/`cells` (as duas células de lado do hospital
+  pelo `SideYard`) e `linen_mesh` (dois varais com os lençóis enfunados e o cesto), num MultiMesh sem descarte de face. Captura em
+  `tools/capture_phase223.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3168,6 +3174,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 220 — Bomba de incêndio no quartel (nossa) | **feita em 01/11/2026**, primeira do roteiro bomba, barril e lençol (Fases 220 a 224): a bomba de mão vermelha sobre rodas com os cilindros de latão e os braços dos bombeadores, o carretel da mangueira, a escada e os baldes de couro no lado de cada quartel; plano em `docs/plano_fase220.md` |
 | 221 — Barris na cervejaria (nossa) | **feita em 01/11/2026**: a pirâmide de barris deitados sobre os calços e dois barris de pé com o funil no lado da cervejaria, das destilarias e da adega; plano em `docs/plano_fase221.md` |
 | 222 — Covos no cais (nossa) | **feita em 01/11/2026**: pilhas de covos de vime em meia-lua com o cabo enrolado e as boias de cortiça nos lanços livres do cais de pedra dos entrepostos; plano em `docs/plano_fase222.md` |
+| 223 — Lençóis no hospital (nossa) | **feita em 01/11/2026**: dois varais compridos com os lençóis brancos enfunados e o cesto de vime no lado de cada hospital; plano em `docs/plano_fase223.md` |
 
 Pendências já vistas para fases futuras:
 

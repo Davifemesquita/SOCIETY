@@ -2268,3 +2268,10 @@ A máquina seguiu no estado rápido: 78,1 FPS (221: 77,2), 1% low 39,3, p50/p95/
 9,5 s, carregar 6,2 s, construir com a ilha cheia 17,1 ms; +5 objetos e draw calls (a camada) e +0,10 milhão de primitivas no
 quadro com tudo visível (as pilhas dos cais das colônias). A primeira malha (arcos de seis lanços, o cabo em catorze, as boias
 de dez lados) punha +0,16 milhão e deu 76,9 FPS; com menos faces, neutra.
+
+## Fase 223 — lençóis no hospital (01/11/2026)
+
+A máquina seguiu no estado rápido: 76,8 FPS (222: 78,1; a mesma cena, só +5 objetos sem nada a desenhar: o vaivém é da
+máquina), 1% low 39,1, p50/p95/p99 12,4/17,4/23,9 ms, GPU 12,0 ms, montar tudo 9,6 s, carregar 6,1 s, construir com a ilha
+cheia 17,8 ms; +5 objetos e draw calls (a camada) e primitivas iguais no quadro com tudo visível (a cidade do benchmark não tem
+hospital). Neutra.

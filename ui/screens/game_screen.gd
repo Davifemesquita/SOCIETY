@@ -226,6 +226,8 @@ var fire_pump_view: FirePumpView
 var barrel_rack_view: BarrelRackView
 ## Fase 222: as pilhas de covos, o cabo enrolado e as boias em parte dos lanços do cais de pedra.
 var lobster_pot_view: LobsterPotView
+## Fase 223: os varais com os lençóis brancos no lado de cada hospital.
+var linen_view: LinenView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -693,6 +695,10 @@ func _ready() -> void:
 	lobster_pot_view.name = "LobsterPots"
 	add_child(lobster_pot_view)
 	lobster_pot_view.setup(simulation)
+	linen_view = LinenView.new()
+	linen_view.name = "Linen"
+	add_child(linen_view)
+	linen_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
