@@ -121,10 +121,14 @@ func test_fields_get_furrows_that_dry_out_until_the_harvest() -> void:
 	assert_int(fresh + dry).is_equal(view.furrow_count())
 	assert_int(fresh).is_greater(0)
 	assert_int(dry).is_greater(0)
+	# no degrau cheio, as leiras do campo da fazenda secaram e ganharam a cobertura da batata (Fase 262); as do campo sem dono
+	# seguem secas
 	farm.progress = 1.0
 	view.refresh()
+	var covered := CropView.furrow_color_at(BuildingDef.Crop.TUBER, CropView.GROWTH_STEPS)
 	for index: int in view.furrow_count():
-		assert_bool(view.furrow_color(index).is_equal_approx(CropView.DRY_SOIL)).is_true()
+		var color := view.furrow_color(index)
+		assert_bool(color.is_equal_approx(covered) or color.is_equal_approx(CropView.DRY_SOIL)).is_true()
 
 
 func test_a_new_farm_brings_its_crop_without_rebuilding_by_hand() -> void:

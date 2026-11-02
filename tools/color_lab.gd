@@ -10,19 +10,25 @@ const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.
 		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
 ## As vistas de cada variante: [nome, hora, ponto (0 a vila, 1 os campos, 2 a praia, 3 o meio da ilha, 4 a falésia, 5 a praia
 ## tropical), distância, giro].
-const SHOTS: Array = [["falesia", 10.5, 4, 90.0, 0.3], ["tropical", 10.5, 5, 90.0, 0.3], ["vila", 10.5, 0, 110.0, 0.6]]
+const SHOTS: Array = [["campos", 10.5, 1, 55.0, PI + 0.6], ["campos_longe", 10.5, 1, 130.0, PI + 0.6]]
 const VARIANTS: Array = [
-	["0_rocha_atual", {}],
-	["1_cinza_meio", {"stone": {"stone_grey_mix": 0.6, "stone_light": 1.3}, "terrain": {"rock_grey_mix": 0.6, "rock_light": 1.3}}],
-	["2_cinza_claro", {"stone": {"stone_grey_mix": 0.8, "stone_light": 1.7}, "terrain": {"rock_grey_mix": 0.8, "rock_light": 1.7}}],
-	["3_cinza_quente", {"stone": {"stone_grey": Vector3(0.95, 0.95, 1.0), "stone_grey_mix": 0.75, "stone_light": 1.5},
-			"terrain": {"rock_grey": Vector3(0.95, 0.95, 1.0), "rock_grey_mix": 0.75, "rock_light": 1.5}}],
+	["0_campo_atual", {"cover": 0.0}],
+	["1_cobertura_50", {"cover": 0.5}],
+	["2_cobertura_70", {"cover": 0.7}],
+	["3_cobertura_85", {"cover": 0.85}],
 ]
 
 
 func _run() -> void:
 	var game := _open_game()
 	var points: Array[Vector3] = await _build_town(game)
+	# as fazendas da vila em fases diferentes do ciclo (o trigo quase maduro, a batata no meio)
+	for id: int in game.simulation.world.buildings:
+		var farm := game.simulation.world.building(id)
+		if farm.def_id == &"wheat_farm":
+			farm.progress = 0.85
+		elif farm.def_id == &"potato_farm":
+			farm.progress = 0.6
 	var main := game.simulation.world.island(Simulation.MAIN_ISLAND)
 	points.append(main.cell_world(_find_cliff(main)))
 	points.append(points[2])
@@ -53,6 +59,8 @@ func _run() -> void:
 		_apply(environment, sun, base, settings)
 		_apply_buildings(game, settings)
 		_apply_rock(game, settings)
+		CropView.cover_max = settings.get("cover", CropView.COVER_MAX)
+		game.crop_view.rebuild()
 		var horizon: Color = settings.get("sun_horizon", _horizon_base)
 		_set_horizon(game, horizon)
 		for shot: Array in SHOTS:

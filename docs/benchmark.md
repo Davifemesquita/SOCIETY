@@ -2518,3 +2518,8 @@ CPU e o `smoothstep` no lugar do `night_light` na folhagem.
 construir com a ilha cheia 17,2 ms; objetos e primitivas iguais. Neutra: as pedras soltas trocaram o `StandardMaterial3D` pelo
 shader da rocha (o mesmo número de materiais) e duas contas a mais na pedra e no terreno. O pior quadro dessa rodada (56 ms) não
 se repetiu nas outras medidas do ciclo.
+
+## Fase 262 — campos coloridos (01/11/2026)
+
+76,2 FPS (261: 76,2), 1% low 38,0, p50/p95/p99 12,4/16,4/24,6 ms, GPU 12,0 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
+ilha cheia 17,6 ms; objetos e primitivas iguais. Neutra: só a cor das leiras, que já se escrevia por instância a cada degrau.

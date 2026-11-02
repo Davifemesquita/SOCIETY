@@ -45,6 +45,22 @@ const FURROW_FILL := 0.7
 const BARE_SPACING_M := 0.75
 const FRESH_SOIL := Color(0.25, 0.17, 0.1)
 const DRY_SOIL := Color(0.58, 0.46, 0.32)
+## Fase 262: as leiras ganham a cor da plantação conforme ela cresce (a folhagem rasteira cobrindo a terra entre as plantas),
+## até COVER_MAX dela no degrau cheio (escolhido no tools/color_lab.tscn entre 0,5, 0,7 e 0,85; `cover_max` muda no
+## laboratório): de longe cada campo vira um retalho da cor da planta, não um quadrado de terra. O cereal vai do verde
+## (CEREAL_GREEN) ao dourado (CEREAL_GOLD); as outras, na cor de CROP_COVER.
+const COVER_MAX := 0.7
+static var cover_max := COVER_MAX
+const CEREAL_GREEN := Color(0.42, 0.6, 0.2)
+const CEREAL_GOLD := Color(0.86, 0.68, 0.28)
+const CROP_COVER := {
+	BuildingDef.Crop.TUBER: Color(0.3, 0.52, 0.18),
+	BuildingDef.Crop.HOPS: Color(0.34, 0.54, 0.2),
+	BuildingDef.Crop.VINE: Color(0.36, 0.5, 0.2),
+	BuildingDef.Crop.CANE: Color(0.46, 0.62, 0.24),
+	BuildingDef.Crop.BUSH: Color(0.26, 0.48, 0.18),
+	BuildingDef.Crop.BROADLEAF: Color(0.4, 0.56, 0.22),
+}
 
 ## Pasto: lanço de cerca (m), folga da cerca até a borda e touceiras de capim por célula.
 const PASTURE := &"pasture"
@@ -474,7 +490,7 @@ func _draw_field(field_id: int) -> void:
 		var place: Transform3D = places[index]
 		multimesh.set_instance_transform(first + index, Transform3D(place.basis.scaled_local(size), place.origin))
 		multimesh.set_instance_color(first + index, tint)
-	var soil := FRESH_SOIL.lerp(DRY_SOIL, float(step) / GROWTH_STEPS)
+	var soil := furrow_color_at(crop, step)
 	var first_furrow: int = field[5]
 	var furrow_total: int = field[6]
 	for index: int in furrow_total:
@@ -495,6 +511,16 @@ func _draw_harvest(field_id: int, step: int) -> void:
 		var layer := _sacks if sack else _crates
 		layer.multimesh.set_instance_transform(index, place if spot < shown
 				else Transform3D(Basis.from_scale(Vector3.ZERO), place.origin))
+
+
+## Fase 262: a cor das leiras do campo no degrau: a terra de FRESH_SOIL a DRY_SOIL e a cobertura da planta por cima.
+static func furrow_color_at(crop: int, step: int) -> Color:
+	var t := float(step) / GROWTH_STEPS
+	var soil := FRESH_SOIL.lerp(DRY_SOIL, t)
+	var cover: Color = CROP_COVER.get(crop, CEREAL_GREEN)
+	if crop == BuildingDef.Crop.GRAIN:
+		cover = CEREAL_GREEN.lerp(CEREAL_GOLD, smoothstep(0.45, 0.95, t))
+	return soil.lerp(cover, cover_max * smoothstep(0.0, 0.6, t))
 
 
 ## Quantos lugares da colheita aparecem no degrau do crescimento: nenhum antes de HARVEST_FROM, todos no degrau cheio.
