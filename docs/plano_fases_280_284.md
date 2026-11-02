@@ -34,4 +34,17 @@ GPU: o teste dele é o da lista de uniformes (Fase 35), na pasta `presentation`,
 
 ## Estado
 
-A fazer.
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase280.md` a `docs/plano_fase284.md`),
+testes, captura e benchmark (todas neutras; o ciclo fecha com a GPU onde começou, 12,1 ms).
+
+As três pastas da suíte rodaram no fim (world 669, presentation 383, ui 167). Na world, um caso falhou: o
+`test_phase281_thin_surf.gd` conferia a linha exata das bandas, que a Fase 283 acrescentou o canal. O teste passou a conferir o
+começo da linha e foi rodado de novo, com os das outras quatro fases, tudo verde.
+
+Diferenças do roteiro:
+
+- a cor do mar ficou entre a "petróleo" e a "fundo" do laboratório (as mais escuras perdiam a cor viva pedida nos ciclos da cor);
+- o cascalho da Fase 283 ficou só na margem baixa, junto da água (pela curvatura do vale, saía em manchas cinza no capim);
+- as sondas do rio só rodam perto da terra (em toda a água custavam 0,2 ms de GPU).
+
+O antes e depois do ciclo está em `F:\ferramentas\capturas\fase284\ciclo_antes_depois.png`.

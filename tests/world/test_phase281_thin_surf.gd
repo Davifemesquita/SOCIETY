@@ -27,6 +27,7 @@ func test_the_depth_foam_hugs_the_waterline_and_the_bands_are_thin() -> void:
 	assert_str(code).contains("uniform float shore_line_m = 3.0;")
 	# as bandas: mais finas que as de antes (0,8) e quebradas pela textura
 	assert_str(code).contains("smoothstep(band_sharpness, 1.0, sin(coast_phase(")
-	assert_str(code).contains("band *= smoothstep(0.3, 0.6, foam_tex.a);")
+	# Fase 283: a linha ganhou o canal no fim (sem bandas no rio)
+	assert_str(code).contains("band *= smoothstep(0.3, 0.6, foam_tex.a)")
 	var sharpness := code.substr(code.find("uniform float band_sharpness = ") + 31, 4).to_float()
 	assert_float(sharpness).is_greater(0.8)
