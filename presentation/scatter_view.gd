@@ -30,7 +30,7 @@ extends Node3D
 ## temperadas, deitado com o chão como a madeira à deriva.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -92,7 +92,7 @@ const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
 		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE],
-		[Kind.RUIN, RUIN_CHANCE]]
+		[Kind.RUIN, RUIN_CHANCE], [Kind.FAIRY_RING, FAIRY_RING_CHANCE]]
 ## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
 ## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
 ## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
@@ -139,6 +139,13 @@ const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
 ## NEAR_FOREST, só nas temperadas; a chance na beira da mata e as cores das folhas, das flores e do tronco.
 ## Fase 271: as dedaleiras (FOXGLOVE), uma touceira de folhas largas no chão com cinco hastes altas de sinos roxos e rosados, no
 ## fim da lista NEAR_FOREST, só nas temperadas; a chance na beira da mata e as cores.
+## Fase 272: o anel de cogumelos (FAIRY_RING), os cogumelos claros em roda no capim, com a grama mais verde por dentro, no fim
+## da lista OPEN, só nas temperadas e no chão de pouco desnível; a chance por célula aberta, o raio e as cores.
+const FAIRY_RING_CHANCE := 0.006
+const FAIRY_RING_M := 0.8
+const FAIRY_CAP := Color(0.9, 0.86, 0.76)
+const FAIRY_CAP_DARK := Color(0.72, 0.62, 0.48)
+const FAIRY_GRASS := Color(0.3, 0.5, 0.16)
 const FOXGLOVE_CHANCE := 0.06
 const FOXGLOVE_LEAF := Color(0.26, 0.42, 0.16)
 const FOXGLOVE_BELL := Color(0.62, 0.3, 0.6)
@@ -745,8 +752,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.FOXGLOVE and tropical:
 			# a dedaleira só nas matas das temperadas
 			continue
+		elif kind == Kind.FAIRY_RING and (tropical or cell_relief(grid, cell) > SCREE_MIN_RELIEF_M):
+			# o anel só no capim das temperadas, no chão pouco inclinado
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN]:
+		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN, Kind.FAIRY_RING]:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
 		elif kind == Kind.POPPIES or kind == Kind.TALL_GRASS:
@@ -771,7 +781,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
 					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN, \
-					Kind.HAWTHORN, Kind.FOXGLOVE:
+					Kind.HAWTHORN, Kind.FOXGLOVE, Kind.FAIRY_RING:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
@@ -794,6 +804,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.RUIN:
 			# de pé, com as pedras de baixo enterradas (o chão pode inclinar um pouco)
 			y -= 0.08
+		elif kind == Kind.FAIRY_RING:
+			# deitado no plano da célula: o capim de dentro rente ao chão
+			basis = Basis(Quaternion(Vector3.UP, cell_normal(grid, cell))) * basis
 		elif kind == Kind.SEAWEED:
 			# deitadas no chão da praia, um pouco afundadas na areia
 			basis = Basis(Quaternion(Vector3.UP, cell_normal(grid, cell))) * basis
@@ -1064,6 +1077,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return hawthorn_mesh()
 	if kind == Kind.FOXGLOVE:
 		return foxglove_mesh()
+	if kind == Kind.FAIRY_RING:
+		return fairy_ring_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1402,5 +1417,36 @@ static func foxglove_mesh() -> ArrayMesh:
 			var out := Vector3(cos(angle), 0.0, sin(angle)) * size * 0.9
 			VertexShapes.strut(tool, on + out * 0.3 + Vector3(0.0, size * 0.4, 0.0), on + out - Vector3(0.0, size * 0.9, 0.0),
 					size * 0.35, size, color)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 272: o anel de cogumelos com o meio na origem e o pé em y = 0: uma roda de FAIRY_RING_M de raio de cogumelos claros de
+## chapéu redondo, de tamanhos e tons diferentes, uns em pares, e o disco de capim mais verde por dentro, rente ao chão.
+static func fairy_ring_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sides := 14
+	for s: int in sides:
+		var a0 := TAU * s / sides
+		var a1 := TAU * (s + 1) / sides
+		VertexShapes.tri(tool, Vector3(0.0, 0.02, 0.0), Vector3(cos(a1), 0.0, sin(a1)) * FAIRY_RING_M * 0.95 + Vector3(0.0, 0.02,
+				0.0), Vector3(cos(a0), 0.0, sin(a0)) * FAIRY_RING_M * 0.95 + Vector3(0.0, 0.02, 0.0), FAIRY_GRASS)
+	var count := 16
+	for k: int in count:
+		var angle := TAU * k / count + 0.13 * (k % 3)
+		var reach := FAIRY_RING_M * (0.95 + 0.08 * ((k * 7) % 3 - 1))
+		var size := 0.05 + 0.025 * ((k * 5) % 3)
+		var foot := Vector3(cos(angle) * reach, 0.0, sin(angle) * reach)
+		var color := FAIRY_CAP if k % 3 else FAIRY_CAP_DARK
+		VertexShapes.cylinder(tool, foot, foot + Vector3(0.0, size * 1.4, 0.0), size * 0.3, STEM, 5)
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(size, size * 0.55, size)), foot + Vector3(0.0, size * 1.4,
+				0.0)), color)
+		if k % 4 == 1:
+			# um menor ao lado, em par
+			var twin := foot + Vector3(cos(angle + 1.6), 0.0, sin(angle + 1.6)) * size * 1.6
+			VertexShapes.cylinder(tool, twin, twin + Vector3(0.0, size * 0.9, 0.0), size * 0.22, STEM, 5)
+			PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(size, size * 0.55, size) * 0.65),
+					twin + Vector3(0.0, size * 0.9, 0.0)), color)
 	tool.generate_normals()
 	return tool.commit()
