@@ -3452,6 +3452,11 @@ Regras que já custaram investigação:
   mais fraco (`_town`, `TOWN_YARD_RAGGED_M`, `TOWN_YARD_STRENGTH`); o tapete de capim (`GrassCarpetView.grows_at`) não cresce colado
   em prédio, para o chão batido aparecer.
 
+### Sujeira nas paredes (Fase 302, nossa)
+
+- **Plano** em `docs/plano_fase302.md`. No `shaders/building_kit.gdshader`, nas células de parede de lado: o respingo de terra no pé
+  (`splash_*`, borda de cima irregular) e os escorridos de chuva verticais (`wall_streak_strength`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3764,6 +3769,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 299 — Fundo à vista no raso (nossa) | **feita em 02/11/2026**, a última do roteiro mar e costa II: nas ilhas temperadas, a água rasa fica mais clara e o fundo aparece, com manchas de alga, pedrinhas e a areia ondulada; plano em `docs/plano_fase299.md` |
 | 300 — Telhas gastas (nossa) | **feita em 02/11/2026**, primeira do roteiro telhado gasto e chão de vila (Fases 300 a 304): cada telhado de telha com o seu tom, umas telhas trocadas mais claras, manchas de musgo e a sujeira escorrida; plano em `docs/plano_fase300.md` |
 | 301 — Chão de vila (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, o chão em volta das casas vira terra pisada de borda recortada, e o capim alto deixa de crescer colado nos prédios; plano em `docs/plano_fase301.md` |
+| 302 — Sujeira nas paredes (nossa) | **feita em 02/11/2026**: o pé das paredes ganha o respingo de terra de borda irregular e as paredes, os escorridos de chuva; plano em `docs/plano_fase302.md` |
 
 Pendências já vistas para fases futuras:
 

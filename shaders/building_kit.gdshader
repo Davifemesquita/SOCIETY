@@ -123,6 +123,12 @@ uniform float roof_swap_share = 0.05;
 uniform vec4 roof_moss : source_color = vec4(0.3, 0.33, 0.17, 1.0);
 uniform float roof_moss_strength = 0.45;
 uniform float roof_streak_strength = 0.18;
+// Fase 302: a parede suja — o respingo de terra no pé (até splash_height_m, com a borda de cima irregular) na cor splash_color, e os
+// escorridos de chuva descendo pela parede (riscos verticais de altura sorteada, a partir de ~0,4 m do chão)
+uniform vec4 splash_color : source_color = vec4(0.36, 0.3, 0.22, 1.0);
+uniform float splash_height_m = 0.7;
+uniform float splash_strength = 0.5;
+uniform float wall_streak_strength = 0.16;
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -420,6 +426,16 @@ void fragment() {
 		SPECULAR = 0.9;
 	} else {
 		color *= 1.0 - (1.0 - smoothstep(0.0, grime_height, above)) * grime_strength;
+		if (wall && abs(world_normal.y) < 0.5) {
+			// Fase 302: o respingo de terra no pé da parede e os escorridos de chuva
+			float wall_along = dot(world_position.xz, normalize(vec2(-world_normal.z, world_normal.x)));
+			float splash_top = splash_height_m * (0.55 + 0.9 * moss_noise(vec2(wall_along * 1.3, 2.0)));
+			float splash = (1.0 - smoothstep(splash_top * 0.4, splash_top, above))
+					* (0.55 + 0.45 * moss_noise(vec2(wall_along * 7.0, above * 7.0)));
+			color = mix(color, splash_color.rgb * (0.75 + 0.5 * kit_luma), splash * splash_strength);
+			float wall_streak = smoothstep(0.6, 0.85, moss_noise(vec2(wall_along * 2.4, world_position.y * 0.11)));
+			color *= 1.0 - wall_streak * smoothstep(0.4, 1.6, above) * wall_streak_strength;
+		}
 		// musgo em manchas na faixa de baixo das paredes viradas para o lado (não no telhado)
 		float moss = (1.0 - smoothstep(0.0, moss_height, above)) * smoothstep(0.45, 0.75,
 				moss_noise(world_position.xz * 1.7 + world_position.y * 0.9)) * (1.0 - abs(world_normal.y));
