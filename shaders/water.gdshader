@@ -131,6 +131,13 @@ uniform vec3 swell_lengths_m = vec3(52.0, 33.0, 21.0);
 uniform vec3 swell_slopes = vec3(0.09, 0.07, 0.05);
 uniform float swell_speed = 0.6;
 uniform float swell_open_m = 40.0;
+// Society (Fase 296): a água picada de perto, quatro trens de ondinhas curtas (chop_lengths_m) cruzando em volta do vento, com a
+// fase torcida por um ruído (sem o desenho regular de seno), só na normal; some de chop_near_m a chop_far_m da câmera
+uniform float chop_strength = 0.16;
+uniform vec4 chop_lengths_m = vec4(2.7, 1.8, 1.15, 0.75);
+uniform float chop_speed = 1.0;
+uniform float chop_near_m = 35.0;
+uniform float chop_far_m = 90.0;
 // Society (Fase 293): até que diferença de profundidade (m, ao longo da vista) o anel de espuma em volta das pedras vai
 uniform float rock_foam_m = 0.45;
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
@@ -538,6 +545,24 @@ void fragment() {
 			slope *= swell_strength * swell_open * mix(0.6, 1.2, sea_whitecaps);
 			NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(slope.x, 0.0, slope.y, 0.0)).xyz);
 		}
+	}
+
+	// Society (Fase 296): a água picada de perto (as ondinhas que quebram o reflexo), por cima das ondas e do marulho
+	float chop_near = 1.0 - smoothstep(chop_near_m, chop_far_m, length(VERTEX));
+	if (chop_strength > 0.0 && chop_near > 0.0) {
+		vec2 chop_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+		float chop_t = TIME * float(!freeze_time) * chop_speed;
+		// a fase torcida pelo ruído: as cristas deixam de ser retas e paralelas
+		float twist = reef_noise(world_coordinates.xz / 6.0) * 9.0;
+		vec2 chop = vec2(0.0);
+		for (int i = 0; i < 4; i++) {
+			float turn = i == 0 ? 0.35 : (i == 1 ? -0.6 : (i == 2 ? 1.1 : -1.4));
+			vec2 dir = vec2(chop_wind.x * cos(turn) - chop_wind.y * sin(turn), chop_wind.x * sin(turn) + chop_wind.y * cos(turn));
+			float k = TAU / chop_lengths_m[i];
+			chop += dir * cos(dot(dir, world_coordinates.xz) * k - sqrt(9.8 * k) * chop_t + twist * (0.5 + float(i) * 0.3)) / float(i + 2);
+		}
+		chop *= chop_strength * chop_near * mix(0.7, 1.3, sea_whitecaps);
+		NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(chop.x, 0.0, chop.y, 0.0)).xyz);
 	}
 
 	// Calculate distance from the camera to the water

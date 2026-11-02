@@ -44,6 +44,7 @@ func _run() -> void:
 		get_tree().quit()
 		return
 	await _shot(game, "01_falesia.png", cliff, 90.0, 0.3)
+	await _shot(game, "01b_falesia_de_perto.png", cliff, 30.0, 0.3)
 	await _shot(game, "02_praia.png", beach, 70.0, 0.3)
 	await _shot(game, "02b_praia_de_perto.png", beach, 30.0, 0.5)
 	await _shot(game, "03_mar_de_cima.png", points[3], 420.0, 0.3)
