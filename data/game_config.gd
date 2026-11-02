@@ -540,8 +540,9 @@ static var _default: GameConfig
 ## Até onde a fumaça das chaminés aparece no nível alto, e a força da fuligem no chão.
 @export var smoke_visibility_range_m: float = 450.0
 @export var soot_decal_alpha: float = 0.55
-## Força dos efeitos do ambiente quando o nível os liga.
-@export var ssao_intensity: float = 1.6
+## Força dos efeitos do ambiente quando o nível os liga. Fase 264: o SSAO de 1,6 para 0,9 (com 1,6 o vão entre as copas e o pé
+## das matas ficavam quase pretos).
+@export var ssao_intensity: float = 0.9
 @export var glow_intensity: float = 0.5
 @export var glow_bloom: float = 0.03
 @export var glow_hdr_threshold: float = 1.1

@@ -3206,6 +3206,11 @@ Regras que já custaram investigação:
   (`GraphicsQuality.dusk_factor`, sem degrau desde o fim da tarde). **O Sky3D leva 3 s para passar a luz ambiente do dia para a
   da noite**: captura de noite espera antes de fotografar.
 
+### Sombra aberta (Fase 264, nossa)
+
+- **Plano** em `docs/plano_fase264.md`. `GameConfig.ssao_intensity` 0,9 (era 1,6): o vão entre as copas e o pé das matas deixam de
+  ficar quase pretos. A parte do céu na luz ambiente quase não muda a sombra (medido no laboratório).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3480,6 +3485,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 261 — Rocha cinza (nossa) | **feita em 01/11/2026**: as falésias, os rochedos, as pedras e as encostas saem do marrom-oliva para um cinza claro, com o contraste do verde; plano em `docs/plano_fase261.md` |
 | 262 — Campos coloridos (nossa) | **feita em 01/11/2026**: as leiras dos campos ganham a cor da plantação conforme ela cresce, o trigo do verde ao dourado e as outras no verde delas: de longe cada campo vira um retalho colorido; plano em `docs/plano_fase262.md` |
 | 263 — Noite azul (nossa) | **feita em 01/11/2026**: a noite deixa de ser quase preta fora das janelas: as ruas, os telhados e a mata se leem no azul da lua, com as luzes por cima; plano em `docs/plano_fase263.md` |
+| 264 — Sombra aberta (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva II: a oclusão de ambiente mais leve, e o vão entre as copas e o pé das matas deixam de ficar quase pretos; plano em `docs/plano_fase264.md` |
 
 Pendências já vistas para fases futuras:
 

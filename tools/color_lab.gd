@@ -10,12 +10,12 @@ const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.
 		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
 ## As vistas de cada variante: [nome, hora, ponto (0 a vila, 1 os campos, 2 a praia, 3 o meio da ilha, 4 a falésia, 5 a praia
 ## tropical), distância, giro].
-const SHOTS: Array = [["noite", 22.0, 0, 110.0, 0.6], ["noite_perto", 22.0, 0, 42.0, 0.6]]
+const SHOTS: Array = [["vila", 10.5, 0, 110.0, 0.6], ["perto", 10.5, 0, 42.0, 0.6]]
 const VARIANTS: Array = [
-	["0_noite_atual", {}],
-	["1_exposta_160", {"low_exposure": 1.6}],
-	["2_exposta_220", {"low_exposure": 2.2}],
-	["3_lua_forte_160", {"low_exposure": 1.6, "moon": 1.4}],
+	["0_sombra_atual", {"ssao": 1.6, "ambient_energy": 1.0}],
+	["1_ssao_09", {"ssao": 0.9}],
+	["2_ambiente_15", {"ambient_energy": 1.5}],
+	["3_ssao_09_ambiente_15", {"ssao": 0.9, "ambient_energy": 1.5, "sky_share": 0.8}],
 ]
 
 

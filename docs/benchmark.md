@@ -2528,3 +2528,9 @@ ilha cheia 17,6 ms; objetos e primitivas iguais. Neutra: só a cor das leiras, q
 
 76,1 FPS (262: 76,2), 1% low 38,4, p50/p95/p99 12,4/16,5/24,7 ms, GPU 12,0 ms, montar tudo 9,3 s, carregar 6,4 s, construir com a
 ilha cheia 17,5 ms; objetos e primitivas iguais. Neutra: só um termo a mais na conta da exposição por quadro.
+
+## Fase 264 — sombra aberta (01/11/2026)
+
+76,5 FPS (263: 76,1), 1% low 38,7, p50/p95/p99 12,4/16,5/24,3 ms, GPU 12,0 ms, montar tudo 9,5 s, carregar 6,5 s, construir com a
+ilha cheia 17,2 ms; objetos e primitivas iguais. Neutra: a força do SSAO não muda o custo dele. Fecha o roteiro cor viva II
+(Fases 260 a 264): do começo ao fim do ciclo o FPS ficou entre 76 e 78 e a GPU em 12,0 ms.

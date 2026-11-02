@@ -16,7 +16,7 @@ o fim da tarde, a manhã e a noite):
 - **rocha** marrom-oliva nos rochedos e nas falésias, sem o contraste do cinza com o verde;
 - **campos** cor de terra, as plantações miúdas e apagadas;
 - **noite** quase preta fora das janelas;
-- **sombras** de um verde-oliva fechado, sem o azul do céu que a sombra de um dia claro tem.
+- **sombras** fechadas no vão entre as copas e no pé das matas, quase pretas.
 
 ## As fases
 
@@ -26,7 +26,7 @@ o fim da tarde, a manhã e a noite):
 | 261 — Rocha cinza | a rocha das falésias, dos rochedos e das pedras em cinza claro, com o contraste do verde |
 | 262 — Campos coloridos | as plantações mais vivas (o verde das folhas, o dourado do trigo) sobre a terra mais rica |
 | 263 — Noite azul | a noite legível: a lua mais forte e azulada, sem apagar as janelas e os lampiões |
-| 264 — Sombra colorida | a sombra do dia com um pouco do azul do céu, no lugar do verde-oliva fechado |
+| 264 — Sombra aberta | o vão entre as copas e o pé das matas menos fechados (a oclusão de ambiente mais leve) |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura (as vistas do
 `tools/capture_phase260.tscn`, antes e depois), escolha no `tools/color_lab.tscn` quando há mais de um caminho, benchmark,
