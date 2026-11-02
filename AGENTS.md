@@ -3243,6 +3243,13 @@ Regras que já custaram investigação:
   mais alta de cada ilha temperada, acima de `MIN_HEIGHT_M`), `place_of` (virado para o meio da ilha) e `cross_mesh`, num
   MultiMesh. Captura em `tools/capture_phase269.tscn`.
 
+### Corvos no campo (Fase 270, nossa)
+
+- **Plano** em `docs/plano_fase270.md`, primeira do roteiro `docs/plano_fases_270_274.md` (corvo, dedaleira e nenúfar; o Anno não
+  foi aberto: a sessão não tinha o controle da tela). `CropView.field_ids` e `CrowView` (`GameScreen.crow_view`, com a `CropView`):
+  `crow_spots` (os lugares da colheita dos campos novos da vez), `peck` e `crow_mesh`, num MultiMesh sem sombra, escondido de noite.
+  Captura em `tools/capture_phase270.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3523,6 +3530,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 267 — Espinheiro florido (nossa) | **feita em 02/11/2026**: o arbusto de espinheiro de copa torta coberto de flor branca e rosada na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase267.md` |
 | 268 — Casco naufragado (nossa) | **feita em 02/11/2026**: o esqueleto de um navio velho (a quilha, a roda de proa e as cavernas curvas, umas quebradas, e o mastro partido) encalhado na areia da costa baixa das ilhas temperadas, longe das vilas; plano em `docs/plano_fase268.md` |
 | 269 — Cruzeiro no morro (nossa) | **feita em 02/11/2026**, a última do roteiro garça, ruína e cruzeiro: a cruz de pedra clara sobre o degrau e o pedestal, com o musgo no pé, no ponto mais alto e livre de cada ilha temperada, virada para o meio dela; plano em `docs/plano_fase269.md` |
+| 270 — Corvos no campo (nossa) | **feita em 02/11/2026**, primeira do roteiro corvo, dedaleira e nenúfar (Fases 270 a 274): corvos pretos bicando a terra nos vãos entre as fileiras dos campos recém-plantados, indo embora quando a plantação cresce; plano em `docs/plano_fase270.md` |
 
 Pendências já vistas para fases futuras:
 

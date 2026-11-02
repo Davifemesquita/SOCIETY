@@ -262,6 +262,13 @@ func harvest_places(field_id: int) -> Array[Transform3D]:
 
 
 ## Quanto o campo cresceu (0..1, em degraus); -1 se ele não tem plantas.
+## Fase 270: os campos que a vista desenha (os com dono).
+func field_ids() -> Array[int]:
+	var result: Array[int] = []
+	result.assign(_fields.keys())
+	return result
+
+
 func growth_of(field_id: int) -> float:
 	return float(_growth[field_id]) / GROWTH_STEPS if _growth.has(field_id) else -1.0
 
