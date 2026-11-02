@@ -88,5 +88,8 @@ func test_the_view_draws_what_the_rule_says() -> void:
 		for index: int in grid.trees.size():
 			if grid.trees[index] > 0:
 				expected += TreeView.drawn_seeds(island_id, index, grid.trees[index], false).size()
+				# Fase 278: e a árvore nova da orla
+				if not TreeView.young_entry(grid, island_id, grid.cell_at(index)).is_empty():
+					expected += 1
 	assert_int(shown).is_equal(expected)
 	assert_int(shown).is_greater(0)

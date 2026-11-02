@@ -3296,6 +3296,12 @@ Regras que já custaram investigação:
   escolhidas por `broadleaf_pick` (mais na beira da mata e na terra baixa). A cor da malha volta em 8 bits por canal: teste que
   procura uma cor exata compara com folga.
 
+### Orla da mata (Fase 278, nossa)
+
+- **Plano** em `docs/plano_fase278.md`. `TreeView.young_entry`: na célula de mata temperada com um lado de terra sem árvore, uma
+  árvore nova (abeto, um pouco de bétula, carvalho ou faia de arbusto) de 0,32 a 0,55 do tamanho, puxada para o lado aberto sem
+  sair da célula, nas mesmas camadas da mata.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3584,6 +3590,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 275 — Abeto em camadas (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata no jeito do Anno (Fases 275 a 279): o abeto-vermelho, um cone escuro de camadas de galhos até perto do chão, vira a conífera da mata (o pinheiro fica em parte, mais no alto), e a beira da mata deixa de ser uma cerca de troncos; plano em `docs/plano_fase275.md` |
 | 276 — Copas na medida (nossa) | **feita em 02/11/2026**: copas ~35% mais estreitas e uma árvore por célula em parte das células da mata temperada (mais no miolo, menos na beira): cada árvore se lê, com o chão e a sombra entre elas; 17.249 árvores desenhadas em vez de 28.830 e a GPU 0,5 ms mais leve; plano em `docs/plano_fase276.md` |
 | 277 — Bétula (nossa) | **feita em 02/11/2026**: a bétula de tronco branco com manchas pretas e copa leve de massas soltas entre as folhosas, mais na beira da mata e na terra baixa das ilhas temperadas; plano em `docs/plano_fase277.md` |
+| 278 — Orla da mata (nossa) | **feita em 02/11/2026**: abetos novos e arbustos de folhosa na beira de cada mata das ilhas temperadas, do lado do campo: a mata desce em degrau e cobre o pé dos troncos; plano em `docs/plano_fase278.md` |
 
 Pendências já vistas para fases futuras:
 

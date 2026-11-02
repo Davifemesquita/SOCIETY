@@ -2613,3 +2613,9 @@ delas, na mata temperada) e copas menores.
 78,1 FPS (276: 78,9), 1% low 38,7, p50/p95/p99 12,1/16,2/24,0 ms, GPU 11,7 ms (276: 11,5), jogo novo 12,3 s (17249 árvores
 desenhadas, iguais), montar tudo 9,2 s, carregar 6,4 s, construir com a ilha cheia 17,2 ms; +20 objetos e draw calls no quadro
 com tudo visível (os trechos com bétula ganham a camada dela) e primitivas iguais. Neutra.
+
+## Fase 278 — orla da mata (02/11/2026)
+
+77,2 FPS (277: 78,1), 1% low 38,4, p50/p95/p99 12,1/16,5/24,2 ms, GPU 11,8 ms (277: 11,7), jogo novo 12,3 s com 19236 árvores
+desenhadas (+1987 da orla), montar tudo 9,5 s, carregar 6,4 s, construir com a ilha cheia 17,4 ms; objetos e draw calls iguais
+(as árvores novas usam as camadas da mata) e +0,08 milhão de primitivas. Neutra.

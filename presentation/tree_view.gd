@@ -30,6 +30,15 @@ const BIRCH_SHARE_EDGE := 0.4
 const BIRCH_SHARE_LOW := 0.25
 const BIRCH_SHARE := 0.1
 const BIRCH_LOW_M := 4.0
+## Fase 278: a orla da mata. Na célula de mata temperada que dá para o campo (um lado de terra sem árvore), uma árvore nova em
+## YOUNG_CHANCE delas, puxada para o lado aberto (YOUNG_OUT da célula) e de YOUNG_SCALE.x a YOUNG_SCALE.y do tamanho: a mata desce
+## em degrau até o campo e cobre o pé dos troncos de trás. Abeto, bétula ou folhosa pelas partes YOUNG_SPRUCE e YOUNG_BIRCH.
+const YOUNG_CHANCE := 0.75
+const YOUNG_OUT := 0.3
+const YOUNG_SCALE := Vector2(0.32, 0.55)
+const YOUNG_SPRUCE := 0.5
+const YOUNG_BIRCH := 0.15
+const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 ## Fase 275: os abetos primeiro, depois os pinheiros (`conifer_pick` escolhe entre eles).
 const CONIFER: Array[Array] = [[TreeModel.Species.NORWAY_SPRUCE, 0], [TreeModel.Species.NORWAY_SPRUCE, 1],
 		[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Species.SCOTS_PINE, 1]]
@@ -292,6 +301,10 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 					if conifer:
 						model = BROADLEAF.size() + conifer_pick(seed_value, grid.cell_height(cell))
 					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * tree_scale(seed_value))])
+				if not tropical:
+					var young := young_entry(grid, island_id, cell)
+					if not young.is_empty():
+						entries.append(young)
 			elif grid.ground[index] == IslandGrid.Ground.LAND:
 				var chance := rock_chance(grid, cell)
 				var seed_value := hash([island_id, index, "pedra"])
@@ -380,6 +393,40 @@ static func draws_tree(seed_value: int, count: int) -> bool:
 ## Fase 276: o tamanho da árvore temperada pelo sorteio dela, de SCALE_MIN a SCALE_MIN + SCALE_SPREAD.
 static func tree_scale(seed_value: int) -> float:
 	return SCALE_MIN + (seed_value / 13 % 100) / 100.0 * SCALE_SPREAD
+
+
+## Fase 278: a árvore nova da orla na célula de mata temperada: [modelo, 12 floats da transformação], ou vazio se a célula não
+## dá para o campo ou o sorteio não pôs árvore. Fica puxada para o lado aberto (a soma dos lados de terra sem árvore).
+static func young_entry(grid: IslandGrid, island_id: int, cell: Vector2i) -> Array:
+	var open := Vector2.ZERO
+	for side: Vector2i in SIDES:
+		var other := cell + side
+		if not grid.in_bounds(other):
+			continue
+		var index := grid.index(other)
+		if grid.trees[index] == 0 and grid.ground[index] == IslandGrid.Ground.LAND:
+			open += Vector2(side)
+	if open == Vector2.ZERO:
+		return []
+	var seed_value := hash([island_id, grid.index(cell), "orla"])
+	if (seed_value % 100) >= YOUNG_CHANCE * 100.0:
+		return []
+	var roll := (seed_value / 7 % 100) / 100.0
+	var model := (seed_value / 3) % 4
+	if roll < YOUNG_SPRUCE:
+		model = BROADLEAF.size() + (seed_value / 3) % 2
+	elif roll < YOUNG_SPRUCE + YOUNG_BIRCH:
+		model = 4 + (seed_value / 3) % 2
+	var scale := YOUNG_SCALE.x + (seed_value / 11 % 100) / 100.0 * (YOUNG_SCALE.y - YOUNG_SCALE.x)
+	var floats := _transform(grid, cell, seed_value, scale)
+	# puxada para o lado aberto, sem sair da célula (a vizinha pode ser estrada ou lote), na altura do chão de lá
+	var shift := open.normalized() * YOUNG_OUT * grid.cell_size
+	var low := Vector2(grid.origin_m) + Vector2(cell) * grid.cell_size + Vector2.ONE * 0.15
+	var high := low + Vector2.ONE * (grid.cell_size - 0.3)
+	floats[3] = clampf(floats[3] + shift.x, low.x, high.x)
+	floats[11] = clampf(floats[11] + shift.y, low.y, high.y)
+	floats[7] = grid.height_at(floats[3], floats[11]) - 0.1
+	return [model, floats]
 
 
 ## Fase 277: a folhosa da árvore (índice em BROADLEAF) pelo sorteio dela, pelas árvores da célula (count) e pela altura do chão:
