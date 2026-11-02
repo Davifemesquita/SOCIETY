@@ -30,7 +30,8 @@ extends Node3D
 ## temperadas, deitado com o chão como a madeira à deriva.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING,
+		SUNFLOWER }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -43,7 +44,7 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG, Kind.RUIN, Kind.HAWTHORN]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE]
+		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE, Kind.SUNFLOWER]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -54,7 +55,7 @@ const HELICONIA_BRACT := Color(0.85, 0.12, 0.1)
 const HELICONIA_TIP := Color(0.95, 0.8, 0.2)
 ## Chances por célula, pelo que há em volta: [peça, chance].
 const NEAR_HOUSE: Array[Array] = [[Kind.BUSH, 0.25], [Kind.FLOWERS, 0.3], [Kind.BARREL, 0.1], [Kind.WOODPILE, 0.08],
-		[Kind.CRATE, 0.05], [Kind.YARD_TREE, YARD_TREE_CHANCE]]
+		[Kind.CRATE, 0.05], [Kind.YARD_TREE, YARD_TREE_CHANCE], [Kind.SUNFLOWER, SUNFLOWER_CHANCE]]
 ## Fase 105: a árvore de quintal — a chance por célula junto de casa, o tronco, a copa (raio que não chega à parede da
 ## casa: a célula tem 2 m e a parede fica a 15 cm da divisa) e as frutas vermelhas.
 const YARD_TREE_CHANCE := 0.14
@@ -141,6 +142,12 @@ const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
 ## fim da lista NEAR_FOREST, só nas temperadas; a chance na beira da mata e as cores.
 ## Fase 272: o anel de cogumelos (FAIRY_RING), os cogumelos claros em roda no capim, com a grama mais verde por dentro, no fim
 ## da lista OPEN, só nas temperadas e no chão de pouco desnível; a chance por célula aberta, o raio e as cores.
+## Fase 274: os girassóis (SUNFLOWER), uma touceira de quatro hastes altas com as flores amarelas de miolo escuro viradas para o
+## mesmo lado, no fim da lista NEAR_HOUSE (junto da parede da casa), só nas temperadas; a chance por célula e as cores.
+const SUNFLOWER_CHANCE := 0.2
+const SUNFLOWER_PETAL := Color(0.98, 0.78, 0.12)
+const SUNFLOWER_HEART := Color(0.32, 0.2, 0.1)
+const SUNFLOWER_LEAF := Color(0.3, 0.5, 0.16)
 const FAIRY_RING_CHANCE := 0.006
 const FAIRY_RING_M := 0.8
 const FAIRY_CAP := Color(0.9, 0.86, 0.76)
@@ -755,6 +762,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.FAIRY_RING and (tropical or cell_relief(grid, cell) > SCREE_MIN_RELIEF_M):
 			# o anel só no capim das temperadas, no chão pouco inclinado
 			continue
+		elif kind == Kind.SUNFLOWER and tropical:
+			# os girassóis só nos quintais das temperadas
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN, Kind.FAIRY_RING]:
 			# no meio da célula: a copa não encosta na parede da casa
@@ -781,7 +791,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
 					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN, \
-					Kind.HAWTHORN, Kind.FOXGLOVE, Kind.FAIRY_RING:
+					Kind.HAWTHORN, Kind.FOXGLOVE, Kind.FAIRY_RING, Kind.SUNFLOWER:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
@@ -1079,6 +1089,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return foxglove_mesh()
 	if kind == Kind.FAIRY_RING:
 		return fairy_ring_mesh()
+	if kind == Kind.SUNFLOWER:
+		return sunflower_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1448,5 +1460,45 @@ static func fairy_ring_mesh() -> ArrayMesh:
 			VertexShapes.cylinder(tool, twin, twin + Vector3(0.0, size * 0.9, 0.0), size * 0.22, STEM, 5)
 			PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(size, size * 0.55, size) * 0.65),
 					twin + Vector3(0.0, size * 0.9, 0.0)), color)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 274: os girassóis com o pé em y = 0 (cerca de 1,9 m): quatro hastes de alturas diferentes com as folhas largas em pares e,
+## no alto de cada uma, a flor virada para +z (todas para o mesmo lado, como os girassóis de um quintal): o disco escuro do miolo e
+## a roda de pétalas amarelas.
+static func sunflower_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var stems: Array[Array] = [[Vector3(0.0, 0.0, 0.0), 1.9], [Vector3(0.22, 0.0, -0.1), 1.6], [Vector3(-0.2, 0.0, -0.08), 1.45],
+			[Vector3(0.06, 0.0, -0.24), 1.75]]
+	for s: int in stems.size():
+		var foot: Vector3 = stems[s][0]
+		var height: float = stems[s][1]
+		var head := foot + Vector3(0.0, height, 0.06)
+		VertexShapes.strut(tool, foot, head - Vector3(0.0, 0.05, 0.04), 0.022, 0.016, SUNFLOWER_LEAF)
+		# as folhas largas em pares, descendo pela haste
+		for k: int in 3:
+			var on := foot.lerp(head, 0.3 + 0.2 * k)
+			var angle := k * 1.9 + s
+			for side: float in [-1.0, 1.0]:
+				var out := Vector3(cos(angle) * side, 0.0, sin(angle) * side)
+				var tip := on + out * 0.26 + Vector3(0.0, -0.06, 0.0)
+				var left := on + out * 0.1 + Vector3(-out.z, 0.0, out.x) * 0.09
+				var right := on + out * 0.1 - Vector3(-out.z, 0.0, out.x) * 0.09
+				VertexShapes.tri(tool, on, left, tip, SUNFLOWER_LEAF)
+				VertexShapes.tri(tool, on, tip, right, SUNFLOWER_LEAF.darkened(0.1))
+		# a flor virada para +z, um pouco inclinada para baixo: o disco do miolo e a roda de pétalas
+		var face := Basis(Vector3.RIGHT, 0.35)
+		var radius := 0.16 + 0.02 * (s % 2)
+		VertexShapes.cylinder(tool, head - face * Vector3(0.0, 0.0, 0.02), head + face * Vector3(0.0, 0.0, 0.04), radius * 0.85,
+				SUNFLOWER_HEART, 10)
+		for p: int in 14:
+			var angle := TAU * p / 14.0
+			var tip := head + face * (Vector3(cos(angle) * radius * 1.9, sin(angle) * radius * 1.9, 0.01))
+			var left := head + face * (Vector3(cos(angle - 0.26) * radius * 0.8, sin(angle - 0.26) * radius * 0.8, 0.025))
+			var right := head + face * (Vector3(cos(angle + 0.26) * radius * 0.8, sin(angle + 0.26) * radius * 0.8, 0.025))
+			VertexShapes.tri(tool, left, right, tip, SUNFLOWER_PETAL)
+			VertexShapes.tri(tool, right, left, tip, SUNFLOWER_PETAL)
 	tool.generate_normals()
 	return tool.commit()

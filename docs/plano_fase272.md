@@ -1,6 +1,6 @@
 # Plano da Fase 272 — Anel de cogumelos
 
-**Estado: feita em 02/11/2026**, terceira do roteiro `docs/plano_fases_270_274.md` (corvo, dedaleira e nenúfar).
+**Estado: feita em 02/11/2026**, terceira do roteiro `docs/plano_fases_270_274.md` (corvo, dedaleira e girassol).
 
 ## O que entrou
 

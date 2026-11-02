@@ -1,4 +1,4 @@
-# Roteiro das Fases 270 a 274 — Corvo, dedaleira e nenúfar
+# Roteiro das Fases 270 a 274 — Corvo, dedaleira e girassol
 
 **02/11/2026.** Quarto ciclo do oitavo pedido "pode continuar" do dono. O Anno **não foi aberto** (esta sessão não tem o controle
 da tela); as ideias saem das capturas guardadas (`F:\ferramentas\capturas\anno\`: os campos `c4_02`, as matas e os rios `c9_14`, a
@@ -12,7 +12,7 @@ cidade com os fios `c5_06`). Como sempre, **só a ideia**: nada do jogo; tudo ge
 | 271 — Dedaleiras | as hastes de flor roxa da dedaleira na beira da mata das ilhas temperadas |
 | 272 — Anel de cogumelos | os cogumelos claros em roda no capim aberto junto da mata das temperadas |
 | 273 — Andorinhas no fio | uma fila de andorinhas pousadas nos fios dos postes das usinas |
-| 274 — Nenúfares no rio | as touceiras de folhas redondas com flores brancas e rosadas boiando junto da margem dos rios |
+| 274 — Girassóis | os girassóis altos de flor amarela encostados nas casas das ilhas temperadas (os nenúfares sumiam na espuma dos rios) |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push. Peça nova do
 recheio vai no fim do enum e da lista dela.

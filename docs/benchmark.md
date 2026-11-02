@@ -2586,3 +2586,10 @@ fases; cada regra nova do recheio soma um sorteio por célula da lista dela).
 75,1 FPS (272: 75,6), 1% low 37,9, p50/p95/p99 12,6/16,9/24,7 ms, GPU 12,2 ms (272: 12,1), montar tudo 9,4 s, carregar 6,6 s,
 construir com a ilha cheia 17,2 ms; +1 objeto e draw call (a camada) e primitivas iguais (a cidade do benchmark não tem usina).
 Neutra: a camada não desenha nada nessa cidade; o FPS e a GPU estão no vaivém do estado da máquina (de 75 a 78 neste pedido).
+
+## Fase 274 — girassóis (02/11/2026)
+
+76,5 FPS (273: 75,1), 1% low 38,3, p50/p95/p99 12,3/16,6/24,6 ms, GPU 12,0 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
+ilha cheia 17,7 ms; objetos e primitivas iguais no quadro com tudo visível. Neutra. Fecha o roteiro corvo, dedaleira e girassol e
+os quatro ciclos do oitavo pedido do dono (Fases 255 a 274): do começo ao fim o FPS ficou entre 75 e 78 e a GPU entre 11,9 e
+12,2 ms.

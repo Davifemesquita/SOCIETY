@@ -3245,7 +3245,7 @@ Regras que já custaram investigação:
 
 ### Corvos no campo (Fase 270, nossa)
 
-- **Plano** em `docs/plano_fase270.md`, primeira do roteiro `docs/plano_fases_270_274.md` (corvo, dedaleira e nenúfar; o Anno não
+- **Plano** em `docs/plano_fase270.md`, primeira do roteiro `docs/plano_fases_270_274.md` (corvo, dedaleira e girassol; o Anno não
   foi aberto: a sessão não tinha o controle da tela). `CropView.field_ids` e `CrowView` (`GameScreen.crow_view`, com a `CropView`):
   `crow_spots` (os lugares da colheita dos campos novos da vez), `peck` e `crow_mesh`, num MultiMesh sem sombra, escondido de noite.
   Captura em `tools/capture_phase270.tscn`.
@@ -3265,6 +3265,13 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase273.md`. `PowerLineView.rebuilt` e `spans` (as curvas dos fios); `WireBirdView`
   (`GameScreen.wire_bird_view`): `perches` (a fila no meio da curva de um vão a cada `SPAN_EVERY`) e `swallow_mesh`, num MultiMesh sem
   sombra, escondido de noite. Captura em `tools/capture_phase273.tscn` (a câmera à mão na altura do fio).
+
+### Girassóis (Fase 274, nossa)
+
+- **Plano** em `docs/plano_fase274.md`. `ScatterView.Kind.SUNFLOWER` (no fim do enum e da lista `NEAR_HOUSE`, entre as `PLANTS`) só nas
+  temperadas; `sunflower_mesh` (quatro hastes com as flores amarelas). **A água dos rios fica coberta da espuma da beira** (são
+  estreitos): peça que precise de água calma no rio não aparece (os nenúfares do roteiro sumiam). Captura em
+  `tools/capture_phase274.tscn`.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -3546,10 +3553,11 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 267 — Espinheiro florido (nossa) | **feita em 02/11/2026**: o arbusto de espinheiro de copa torta coberto de flor branca e rosada na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase267.md` |
 | 268 — Casco naufragado (nossa) | **feita em 02/11/2026**: o esqueleto de um navio velho (a quilha, a roda de proa e as cavernas curvas, umas quebradas, e o mastro partido) encalhado na areia da costa baixa das ilhas temperadas, longe das vilas; plano em `docs/plano_fase268.md` |
 | 269 — Cruzeiro no morro (nossa) | **feita em 02/11/2026**, a última do roteiro garça, ruína e cruzeiro: a cruz de pedra clara sobre o degrau e o pedestal, com o musgo no pé, no ponto mais alto e livre de cada ilha temperada, virada para o meio dela; plano em `docs/plano_fase269.md` |
-| 270 — Corvos no campo (nossa) | **feita em 02/11/2026**, primeira do roteiro corvo, dedaleira e nenúfar (Fases 270 a 274): corvos pretos bicando a terra nos vãos entre as fileiras dos campos recém-plantados, indo embora quando a plantação cresce; plano em `docs/plano_fase270.md` |
+| 270 — Corvos no campo (nossa) | **feita em 02/11/2026**, primeira do roteiro corvo, dedaleira e girassol (Fases 270 a 274): corvos pretos bicando a terra nos vãos entre as fileiras dos campos recém-plantados, indo embora quando a plantação cresce; plano em `docs/plano_fase270.md` |
 | 271 — Dedaleiras (nossa) | **feita em 02/11/2026**: touceiras de dedaleira com as hastes altas de sinos roxos e rosados na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase271.md` |
 | 272 — Anel de cogumelos (nossa) | **feita em 02/11/2026**: uma roda de cogumelos claros de chapéu redondo no capim aberto das ilhas temperadas, de vez em quando; plano em `docs/plano_fase272.md` |
 | 273 — Andorinhas no fio (nossa) | **feita em 02/11/2026**: filas de andorinhas de costas azuis e garganta ferrugem pousadas no meio dos fios dos postes das usinas, olhando para um lado e para o outro, de dia; plano em `docs/plano_fase273.md` |
+| 274 — Girassóis (nossa) | **feita em 02/11/2026**, a última do roteiro corvo, dedaleira e girassol: touceiras de girassóis altos de flor amarela encostadas nas casas das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase274.md` |
 
 Pendências já vistas para fases futuras:
 
