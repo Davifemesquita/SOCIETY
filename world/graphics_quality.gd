@@ -89,12 +89,12 @@ static func apply_to_environment(environment: Environment, chosen: GraphicsPrese
 	environment.volumetric_fog_length = config.volumetric_fog_length_m
 
 
-## Fase 260: quanto a exposição sobe com o sol nesta altura (o seno da elevação, positivo de dia): 1 com o sol alto e à noite,
-## até 1 + dusk_exposure_boost com ele no horizonte.
+## Fase 260: quanto a exposição sobe com o sol nesta altura (o seno da elevação, positivo de dia): 1 com o sol alto, até
+## 1 + dusk_exposure_boost com ele no horizonte e, desde a Fase 263, 1 + night_exposure_boost de noite.
 static func dusk_factor(config: GameConfig, sun_height: float) -> float:
 	var low := 1.0 - smoothstep(0.02, config.dusk_sun_high, sun_height)
 	var up := smoothstep(-0.12, 0.02, sun_height)
-	return 1.0 + config.dusk_exposure_boost * low * up
+	return 1.0 + config.dusk_exposure_boost * low * up + config.night_exposure_boost * (1.0 - up)
 
 
 ## Fase 260: a exposição do quadro pela altura do sol (chamada a cada quadro pela partida): a do nível vezes dusk_factor.

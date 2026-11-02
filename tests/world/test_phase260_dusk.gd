@@ -3,12 +3,12 @@ extends GdUnitTestSuite
 ## escuro), a exposição subindo com o sol baixo e voltando à do dia e à da noite, e a luz própria das folhas pela altura do sol.
 
 
-func test_the_exposure_rises_only_with_the_sun_low() -> void:
+func test_the_exposure_rises_with_the_sun_low() -> void:
 	var config := GameConfig.get_default()
 	assert_array(Array(config.validate())).is_empty()
-	# sol alto e noite: a exposição de sempre
+	# sol alto: a exposição de sempre; de noite, a da Fase 263
 	assert_float(GraphicsQuality.dusk_factor(config, 0.8)).is_equal_approx(1.0, 0.0001)
-	assert_float(GraphicsQuality.dusk_factor(config, -0.3)).is_equal_approx(1.0, 0.0001)
+	assert_float(GraphicsQuality.dusk_factor(config, -0.3)).is_equal_approx(1.0 + config.night_exposure_boost, 0.0001)
 	# no horizonte, o máximo
 	assert_float(GraphicsQuality.dusk_factor(config, 0.02)).is_equal_approx(1.0 + config.dusk_exposure_boost, 0.0001)
 	# descendo do horizonte para o alto, sem degrau

@@ -2523,3 +2523,8 @@ se repetiu nas outras medidas do ciclo.
 
 76,2 FPS (261: 76,2), 1% low 38,0, p50/p95/p99 12,4/16,4/24,6 ms, GPU 12,0 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
 ilha cheia 17,6 ms; objetos e primitivas iguais. Neutra: só a cor das leiras, que já se escrevia por instância a cada degrau.
+
+## Fase 263 — noite azul (01/11/2026)
+
+76,1 FPS (262: 76,2), 1% low 38,4, p50/p95/p99 12,4/16,5/24,7 ms, GPU 12,0 ms, montar tudo 9,3 s, carregar 6,4 s, construir com a
+ilha cheia 17,5 ms; objetos e primitivas iguais. Neutra: só um termo a mais na conta da exposição por quadro.

@@ -24,6 +24,8 @@ func _run() -> void:
 	_set_hour(6.25)
 	await _shot(game, "07_manha.png", points[0], 110.0, 0.6)
 	_set_hour(22.0)
+	# o Sky3D passa a luz ambiente do dia para a da noite em 3 s (contribution_tween_time)
+	await get_tree().create_timer(3.5).timeout
 	await _shot(game, "08_noite.png", points[0], 110.0, 0.6)
 	get_tree().quit()
 

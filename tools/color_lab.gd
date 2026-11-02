@@ -10,12 +10,12 @@ const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.
 		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
 ## As vistas de cada variante: [nome, hora, ponto (0 a vila, 1 os campos, 2 a praia, 3 o meio da ilha, 4 a falésia, 5 a praia
 ## tropical), distância, giro].
-const SHOTS: Array = [["campos", 10.5, 1, 55.0, PI + 0.6], ["campos_longe", 10.5, 1, 130.0, PI + 0.6]]
+const SHOTS: Array = [["noite", 22.0, 0, 110.0, 0.6], ["noite_perto", 22.0, 0, 42.0, 0.6]]
 const VARIANTS: Array = [
-	["0_campo_atual", {"cover": 0.0}],
-	["1_cobertura_50", {"cover": 0.5}],
-	["2_cobertura_70", {"cover": 0.7}],
-	["3_cobertura_85", {"cover": 0.85}],
+	["0_noite_atual", {}],
+	["1_exposta_160", {"low_exposure": 1.6}],
+	["2_exposta_220", {"low_exposure": 2.2}],
+	["3_lua_forte_160", {"low_exposure": 1.6, "moon": 1.4}],
 ]
 
 
@@ -47,6 +47,7 @@ func _run() -> void:
 		"ambient": environment.ambient_light_color, "ambient_energy": environment.ambient_light_energy,
 		"sky_share": environment.ambient_light_sky_contribution, "sun_energy": sun.light_energy, "sun_color": sun.light_color,
 		"ssao": environment.ssao_intensity, "exposure": environment.tonemap_exposure, "sky_fog": _sky_fog(game),
+		"saturation": environment.adjustment_saturation,
 	}
 	_terrain_materials = game.terrain_view.materials()
 	for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix", "sand_grade", "sand_tint", "sand_tint_mix"]:
@@ -60,6 +61,8 @@ func _run() -> void:
 		_apply_buildings(game, settings)
 		_apply_rock(game, settings)
 		CropView.cover_max = settings.get("cover", CropView.COVER_MAX)
+		var moon: float = settings.get("moon", GameConfig.get_default().moon_light_energy)
+		game.sky.get_child(0).set(&"moon_energy", moon)
 		game.crop_view.rebuild()
 		var horizon: Color = settings.get("sun_horizon", _horizon_base)
 		_set_horizon(game, horizon)
@@ -78,45 +81,59 @@ func _run() -> void:
 	get_tree().quit()
 
 
+## Põe a variante: só mexe no que alguma variante da lista mexe (o resto fica como o jogo deixou, inclusive a luz e o
+## ambiente que o Sky3D refaz com a hora); o que uma variante não diz volta ao que era no começo.
 func _apply(environment: Environment, sun: DirectionalLight3D, base: Dictionary, settings: Dictionary) -> void:
-	environment.tonemap_exposure = settings.get("exposure", base["exposure"])
-	var base_sky_fog: float = base["sky_fog"]
-	var sky_fog: float = settings.get("sky_fog", 1.0)
-	_set_sky_fog(base_sky_fog * sky_fog)
-	var fog: float = settings.get("fog", 1.0)
-	var base_fog: float = base["fog"]
-	var base_volumetric: float = base["volumetric"]
-	environment.fog_density = base_fog * fog
-	environment.volumetric_fog_density = base_volumetric * fog
-	var tonemap: String = settings.get("tonemap", "agx")
-	match tonemap:
-		"aces":
-			environment.tonemap_mode = Environment.TONE_MAPPER_ACES
-		"filmic":
-			environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-		_:
-			environment.tonemap_mode = Environment.TONE_MAPPER_AGX
-	environment.tonemap_agx_contrast = settings.get("agx_contrast", base["agx_contrast"])
-	environment.tonemap_white = settings.get("white", base["white"])
-	var saturation: float = settings.get("saturation", 1.0)
-	var contrast: float = settings.get("contrast", 1.0)
-	var brightness: float = settings.get("brightness", 1.0)
-	environment.adjustment_enabled = saturation != 1.0 or contrast != 1.0 or brightness != 1.0
-	environment.adjustment_saturation = saturation
-	environment.adjustment_contrast = contrast
-	environment.adjustment_brightness = brightness
-	environment.ambient_light_color = settings.get("ambient", base["ambient"])
-	environment.ambient_light_energy = settings.get("ambient_energy", base["ambient_energy"])
-	environment.ambient_light_sky_contribution = settings.get("sky_share", base["sky_share"])
-	var base_sun: float = base["sun_energy"]
-	var sun_factor: float = settings.get("sun_energy", 1.0)
-	sun.light_energy = base_sun * sun_factor
-	sun.light_color = settings.get("sun_color", base["sun_color"])
-	environment.ssao_intensity = settings.get("ssao", base["ssao"])
+	var used := {}
+	for variant: Array in VARIANTS:
+		var keys: Dictionary = variant[1]
+		for key: String in keys:
+			used[key] = true
+	if used.has("exposure"):
+		environment.tonemap_exposure = settings.get("exposure", base["exposure"])
+	if used.has("sky_fog"):
+		var base_sky_fog: float = base["sky_fog"]
+		var sky_fog: float = settings.get("sky_fog", 1.0)
+		_set_sky_fog(base_sky_fog * sky_fog)
+	if used.has("fog"):
+		var fog: float = settings.get("fog", 1.0)
+		var base_fog: float = base["fog"]
+		var base_volumetric: float = base["volumetric"]
+		environment.fog_density = base_fog * fog
+		environment.volumetric_fog_density = base_volumetric * fog
+	if used.has("tonemap"):
+		var tonemap: String = settings.get("tonemap", "agx")
+		match tonemap:
+			"aces":
+				environment.tonemap_mode = Environment.TONE_MAPPER_ACES
+			"filmic":
+				environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+			_:
+				environment.tonemap_mode = Environment.TONE_MAPPER_AGX
+	if used.has("agx_contrast"):
+		environment.tonemap_agx_contrast = settings.get("agx_contrast", base["agx_contrast"])
+	if used.has("white"):
+		environment.tonemap_white = settings.get("white", base["white"])
+	if used.has("saturation"):
+		environment.adjustment_saturation = settings.get("saturation", base["saturation"])
+	for pair: Array in [["ambient", "ambient_light_color"], ["ambient_energy", "ambient_light_energy"],
+			["sky_share", "ambient_light_sky_contribution"], ["ssao", "ssao_intensity"]]:
+		var key: String = pair[0]
+		var property: StringName = pair[1]
+		if used.has(key):
+			environment.set(property, settings.get(key, base[key]))
+	if used.has("sun_energy"):
+		var base_sun: float = base["sun_energy"]
+		var sun_factor: float = settings.get("sun_energy", 1.0)
+		sun.light_energy = base_sun * sun_factor
+	if used.has("sun_color"):
+		sun.light_color = settings.get("sun_color", base["sun_color"])
 	for material: ShaderMaterial in _terrain_materials:
-		for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix", "sand_grade", "sand_tint", "sand_tint_mix"]:
-			var value: Variant = settings.get(key, _terrain_base[key])
-			material.set_shader_parameter(key, value)
+		for key: String in _terrain_base:
+			if used.has(key):
+				material.set_shader_parameter(key, settings.get(key, _terrain_base[key]))
+	if not used.has("leaf_fill"):
+		return
 	var fill: float = settings.get("leaf_fill", TreeModel.LEAF_FILL)
 	for mesh: ArrayMesh in TreeModel._cache.values():
 		for surface: int in mesh.get_surface_count():

@@ -3200,6 +3200,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase262.md`. As leiras levam a cor da plantação conforme ela cresce (`CropView.furrow_color_at`, até
   `COVER_MAX`; o cereal do verde ao dourado, as outras em `CROP_COVER`): de longe cada campo é um retalho da cor da planta.
 
+### Noite azul (Fase 263, nossa)
+
+- **Plano** em `docs/plano_fase263.md`. De noite a exposição fica em 1 + `GameConfig.night_exposure_boost` vezes a do dia
+  (`GraphicsQuality.dusk_factor`, sem degrau desde o fim da tarde). **O Sky3D leva 3 s para passar a luz ambiente do dia para a
+  da noite**: captura de noite espera antes de fotografar.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3473,6 +3479,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 260 — Hora dourada (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva II (Fases 260 a 264): o fim da tarde e a manhã saem do vermelho-tijolo escuro para um dourado claro, a exposição sobe com o sol baixo e a mata para de brilhar sobre o chão escuro; plano em `docs/plano_fase260.md` |
 | 261 — Rocha cinza (nossa) | **feita em 01/11/2026**: as falésias, os rochedos, as pedras e as encostas saem do marrom-oliva para um cinza claro, com o contraste do verde; plano em `docs/plano_fase261.md` |
 | 262 — Campos coloridos (nossa) | **feita em 01/11/2026**: as leiras dos campos ganham a cor da plantação conforme ela cresce, o trigo do verde ao dourado e as outras no verde delas: de longe cada campo vira um retalho colorido; plano em `docs/plano_fase262.md` |
+| 263 — Noite azul (nossa) | **feita em 01/11/2026**: a noite deixa de ser quase preta fora das janelas: as ruas, os telhados e a mata se leem no azul da lua, com as luzes por cima; plano em `docs/plano_fase263.md` |
 
 Pendências já vistas para fases futuras:
 
