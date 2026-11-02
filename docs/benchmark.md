@@ -2638,3 +2638,8 @@ iguais. Neutra (só as cores da água e uma mistura a mais no shader dela).
 
 76,6 FPS (280: 76,2), 1% low 38,2, p50/p95/p99 12,4/16,4/24,1 ms, GPU 12,0 ms, jogo novo 12,3 s, montar tudo 9,5 s, carregar
 6,5 s, construir com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais. Neutra.
+
+## Fase 282 — água de noite (02/11/2026)
+
+77,2 FPS (281: 76,6), 1% low 38,6, p50/p95/p99 12,3/16,3/24,0 ms, GPU 11,9 ms, jogo novo 12,4 s, montar tudo 9,5 s, carregar
+6,5 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais. Neutra.

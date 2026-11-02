@@ -3323,6 +3323,12 @@ Regras que já custaram investigação:
   `shore_line_m` (3 m) da linha d'água: vista de cima a diferença de profundidade é pequena na praia rasa inteira, e virava uma
   faixa branca de ~20 m. As bandas da Fase 35 viram linhas finas (`band_sharpness`) e quebradas pela textura da espuma.
 
+### Água de noite (Fase 282, nossa)
+
+- **Plano** em `docs/plano_fase282.md`. **A cor da água sai pela `EMISSION`, que não recebe luz**: no `shaders/water.gdshader`
+  as cores postas (raso, fundo, plataforma, recife) passam pelo `water_light`, de 1 a `night_water` pelo global `night_light`.
+  Cor nova posta na água passa por ele também.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3615,6 +3621,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 279 — Folhas recortadas (nossa) | **feita em 02/11/2026**, a última do roteiro da mata: de perto, as copas viram cachos de folhas com volume e o contorno recortado, num shader só das árvores; de longe, iguais; plano em `docs/plano_fase279.md` |
 | 280 — Mar fundo (nossa) | **feita em 02/11/2026**, primeira do roteiro do mar e do rio (Fases 280 a 284): o mar das ilhas temperadas sai do azul-elétrico para um azul-petróleo profundo, com a faixa turquesa da costa mais estreita; o das tropicais segue turquesa; plano em `docs/plano_fase280.md` |
 | 281 — Rebentação fina (nossa) | **feita em 02/11/2026**: a faixa branca larga da praia vira a linha fina de espuma colada na areia e nas pedras, com as ondas chegando em linhas quebradas; plano em `docs/plano_fase281.md` |
+| 282 — Água de noite (nossa) | **feita em 02/11/2026**: de noite o mar fica azul-escuro e a faixa da costa só pega a lua; acabou o halo ciano aceso em volta das ilhas; plano em `docs/plano_fase282.md` |
 
 Pendências já vistas para fases futuras:
 

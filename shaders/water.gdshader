@@ -113,6 +113,8 @@ uniform float wave_calm_m = 22.0;
 // tanto mais finas quanto mais perto de 1 for band_sharpness (era 0,8)
 uniform float shore_line_m = 3.0;
 uniform float band_sharpness = 0.93;
+// Society (Fase 282): quanto da cor da água sobra de noite, por canal (fator linear, não cor: puxa para o azul de lua)
+uniform vec3 night_water = vec3(0.16, 0.2, 0.3);
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
@@ -594,11 +596,15 @@ void fragment() {
 
 	// Society (Fase 280): 0 no mar das temperadas, 1 no das tropicais (sem ilha tropical, reef_min_x fica em 1e9)
 	float tropic = reef_min_x > 1e8 ? 0.0 : smoothstep(reef_min_x - tropic_blend_m * 0.5, reef_min_x + tropic_blend_m * 0.5, world_coordinates.x);
+	// Society (Fase 282): a cor da água sai pela EMISSION (a refração do Ocean), que não recebe a luz da cena: de noite o fundo
+	// e a plataforma ficavam acesos. As cores postas (fundo, raso, plataforma, recife) escurecem para o azul de lua night_water
+	// pelo night_light (o mesmo das janelas); a tela lida por baixo já vem com a luz certa.
+	vec3 water_light = mix(vec3(1.0), night_water, night_light);
 	// Blend the screen color with depth fade
 #ifdef DEPTH_FOG
 	vec4 deep_color = mix(cold_deep, color_deep, tropic);
-	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb, color_shallow.a);
-	vec3 deep_screen_color = mix(screen_color, deep_color.rgb, deep_color.a);
+	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb * water_light, color_shallow.a);
+	vec3 deep_screen_color = mix(screen_color, deep_color.rgb * water_light, deep_color.a);
 	if (FRONT_FACING) {
 		screen_color = mix(shallow_screen_color, deep_screen_color, depth_blend_power);
 	}
@@ -609,9 +615,9 @@ void fragment() {
 	if (has_coast && FRONT_FACING) {
 		vec4 shelf_color = mix(cold_shelf, color_shelf, tropic);
 		float shelf = 1.0 - smoothstep(0.0, mix(cold_shelf_m, shelf_m, tropic), shore_m);
-		screen_color = mix(screen_color, shelf_color.rgb, shelf_color.a * shelf);
+		screen_color = mix(screen_color, shelf_color.rgb * water_light, shelf_color.a * shelf);
 		// Fase 125: o recife escurece o fundo raso das ilhas tropicais
-		screen_color = mix(screen_color, reef_color.rgb, reef_color.a * reef_at(world_coordinates.xz, shore_m));
+		screen_color = mix(screen_color, reef_color.rgb * water_light, reef_color.a * reef_at(world_coordinates.xz, shore_m));
 	}
 #endif
 
