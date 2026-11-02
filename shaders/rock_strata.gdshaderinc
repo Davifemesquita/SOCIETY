@@ -45,3 +45,22 @@ float strata_factor(vec3 at, vec3 normal_w) {
 	float factor = 1.0 + lip * strata_light - under * strata_shade - gully * gully_strength;
 	return mix(1.0, factor, steep);
 }
+
+// Fase 291: o musgo e o capim nas saliências da rocha. Nas partes quase planas (pela normal: moss_flat) e no ressalto de cima de
+// cada camada (o mesmo dos estratos), em manchas de moss_patch_m, mais no lado da sombra (o norte fixo moss_shade_dir: com o sol
+// do dia o musgo andaria) e menos nas faces de pé. Devolve quanto pintar de musgo (0 a 1).
+uniform vec2 moss_flat = vec2(0.35, 0.7);
+uniform float moss_patch_m = 2.2;
+uniform float moss_amount_max = 0.85;
+uniform vec2 moss_shade_dir = vec2(0.0, -1.0);
+uniform vec3 moss_color : source_color = vec3(0.3, 0.42, 0.14);
+
+float moss_amount(vec3 at, vec3 normal_w) {
+	float flat_part = smoothstep(moss_flat.x, moss_flat.y, normal_w.y);
+	float warp = (strata_noise(at.xz * 0.07) - 0.5) * 2.0 * strata_warp_m;
+	float layer = fract((at.y + warp) / strata_m);
+	float ledge = smoothstep(0.86, 0.97, layer) * (1.0 - smoothstep(0.97, 1.0, layer)) * (1.0 - flat_part);
+	float shade = 0.6 + 0.4 * clamp(dot(normalize(normal_w.xz + vec2(1e-4, 0.0)), moss_shade_dir), 0.0, 1.0);
+	float patches = smoothstep(0.42, 0.7, strata_noise(at.xz / moss_patch_m + vec2(at.y * 0.4, 13.0)));
+	return clamp((flat_part + ledge * 0.8) * patches * shade, 0.0, 1.0) * moss_amount_max;
+}

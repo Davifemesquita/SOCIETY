@@ -68,6 +68,12 @@ void fragment() {
 	color = mix(color, grey, stone_grey_mix) * stone_light;
 	// Fase 290: os estratos e os sulcos, os mesmos da rocha do terreno (pela altura e pelo lugar no mundo)
 	color *= strata_factor(world_position, world_normal);
+	// Fase 291: o musgo nas saliências; na pedra do mar, só acima da pedra molhada (a maré o tira)
+	float moss = moss_amount(world_position, world_normal) * (0.7 + albedo.a * 0.6);
+	if (sea) {
+		moss *= smoothstep(wet_top_m, wet_top_m + 0.6, world_position.y);
+	}
+	color = mix(color, moss_color * (0.75 + 0.5 * albedo.a), clamp(moss, 0.0, 1.0));
 	float roughness = 0.92;
 	if (sea) {
 		// a borda de cima da faixa sobe e desce pelo ruído ao longo da costa

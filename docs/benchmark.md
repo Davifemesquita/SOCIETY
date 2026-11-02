@@ -2693,3 +2693,8 @@ tapete, que no trajeto do benchmark quase não aparece.
 Três rodadas: 73,4, 73,7 e 73,2 FPS, GPU 12,5 ms nas três (289: 12,3), jogo novo 12,3 s, montar tudo 9,5 s, carregar 6,5 s,
 construir com a ilha cheia 17,1 a 17,3 ms; objetos, draw calls e primitivas iguais. A/B na mesma hora: a Fase 289 (worktree no
 commit anterior) deu 74,5 FPS e GPU 12,4 ms. Os estratos custam ~0,1 ms; o resto foi a máquina mais lenta nessa hora.
+
+## Fase 291 — musgo nas saliências (02/11/2026)
+
+73,2 FPS (290: 73,2 a 73,7), 1% low 37,7, p50/p95/p99 12,9/17,3/24,6 ms, GPU 12,5 ms (290: 12,5), jogo novo 12,5 s, montar tudo
+9,5 s, carregar 6,5 s, construir com a ilha cheia 17,4 ms; objetos, draw calls e primitivas iguais. Neutra.

@@ -3383,6 +3383,12 @@ Regras que já custaram investigação:
   (`DisplayServer.get_name() != "headless"`): a lista vazia é também o shader que não compilou. Captura do ciclo em
   `tools/capture_phase290.tscn`.
 
+### Musgo nas saliências (Fase 291, nossa)
+
+- **Plano** em `docs/plano_fase291.md`. `moss_amount` no `shaders/rock_strata.gdshaderinc` (as partes planas e os ressaltos das
+  camadas, em manchas, mais no lado da sombra fixo `moss_shade_dir`, nunca pelo sol do dia) pinta `moss_color` na rocha do terreno
+  e nas pedras (na do mar, só acima da pedra molhada).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3684,6 +3690,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 288 — Papoulas soltas (nossa) | **feita em 02/11/2026**: os canteiros de papoulas deixam de parecer plantados em grade: touceiras soltas, de tamanhos diferentes, mais juntas no meio do canteiro e menores na borda; plano em `docs/plano_fase288.md` |
 | 289 — Beira do barranco (nossa) | **feita em 02/11/2026**, a última do roteiro do prado: na beira de cima dos barrancos o capim acaba em trechos de terra escura com pedras e raízes, em vez de virar rocha de uma vez; plano em `docs/plano_fase289.md` |
 | 290 — Estratos na rocha (nossa) | **feita em 02/11/2026**, primeira do roteiro da rocha e da costa (Fases 290 a 294): as falésias, os barrancos e as pedras ganham camadas de rocha onduladas com o ressalto claro e a sombra embaixo, e sulcos descendo; plano em `docs/plano_fase290.md` |
+| 291 — Musgo nas saliências (nossa) | **feita em 02/11/2026**: manchas de musgo e capim nas partes planas e nos ressaltos da rocha, mais no lado da sombra, e nada na pedra molhada da maré; plano em `docs/plano_fase291.md` |
 
 Pendências já vistas para fases futuras:
 
