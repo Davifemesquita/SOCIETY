@@ -31,3 +31,10 @@ o fim da tarde, a manhã e a noite):
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura (as vistas do
 `tools/capture_phase260.tscn`, antes e depois), escolha no `tools/color_lab.tscn` quando há mais de um caminho, benchmark,
 commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase260.md` a `docs/plano_fase264.md`),
+testes, captura e benchmark (todas neutras). As três pastas da suíte passaram no fim (world 614, presentation 373, ui 167).
+Diferença do roteiro: a Fase 264 virou a sombra aberta (a oclusão de ambiente mais leve), porque a parte do céu na luz ambiente
+quase não mudava a sombra. O antes e depois do ciclo está em `F:\ferramentas\capturas\fase264\ciclo_antes_depois.png`.
