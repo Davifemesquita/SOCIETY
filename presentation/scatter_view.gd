@@ -200,6 +200,12 @@ const POPPY_THRESHOLD := 0.76
 const POPPY_FLOWERS := 26
 const POPPY_RADIUS_M := 0.82
 const POPPY_HEIGHT_M := Vector2(0.32, 0.55)
+## Fase 288: o canteiro solto na célula (fração do desvio sorteado; era 0,3), o tamanho dele na borda do canteiro (1 no meio), e as
+## touceiras soltas a mais: até POPPY_EXTRAS por célula, pela força do canteiro, de POPPY_EXTRA_SCALE do tamanho.
+const POPPY_SPREAD := 0.75
+const POPPY_EDGE_SCALE := 0.5
+const POPPY_EXTRAS := 3
+const POPPY_EXTRA_SCALE := Vector2(0.3, 0.55)
 const POPPY_RED := Color(0.86, 0.1, 0.06)
 const POPPY_DARK := Color(0.62, 0.05, 0.04)
 const POPPY_STEM := Color(0.3, 0.45, 0.18)
@@ -769,8 +775,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN, Kind.FAIRY_RING]:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
-		elif kind == Kind.POPPIES or kind == Kind.TALL_GRASS:
-			# o canteiro e a touceira cobrem a célula: quase no meio, para não entrar na rua do lado
+		elif kind == Kind.POPPIES:
+			# Fase 288: o canteiro solto pela célula (antes quase no meio de todas: em fila, parecia plantado em grade)
+			offset *= POPPY_SPREAD
+		elif kind == Kind.TALL_GRASS:
+			# a touceira cobre a célula: quase no meio, para não entrar na rua do lado
 			offset *= 0.3
 		elif lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
@@ -821,6 +830,12 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			# deitadas no chão da praia, um pouco afundadas na areia
 			basis = Basis(Quaternion(Vector3.UP, cell_normal(grid, cell))) * basis
 			y -= 0.02
+		if kind == Kind.POPPIES:
+			# Fase 288: menor perto da borda do canteiro, e mais touceiras soltas no meio dele (sorteio próprio: o das outras peças
+			# da célula não muda)
+			var strength := poppy_strength(island_id, cell)
+			basis = basis.scaled(Vector3.ONE * lerpf(POPPY_EDGE_SCALE, 1.0, strength))
+			_poppy_extras(grid, config, island_id, cell, strength, result)
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
 
@@ -843,6 +858,39 @@ static func poppy_patch(island_id: int, cell: Vector2i) -> bool:
 	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
 	return lerpf(lerpf(_poppy_nodes[0], _poppy_nodes[1], f.x), lerpf(_poppy_nodes[2], _poppy_nodes[3], f.x), f.y) \
 			> POPPY_THRESHOLD
+
+
+## Fase 288: a força do canteiro de papoulas na célula, de 0 na borda (o ruído no limite) a 1 no meio (o ruído no máximo).
+static func poppy_strength(island_id: int, cell: Vector2i) -> float:
+	var at := Vector2(cell) / POPPY_PATCH_CELLS
+	var base := Vector2i(floori(at.x), floori(at.y))
+	var key := Vector3i(base.x, base.y, island_id)
+	if key != _poppy_key:
+		_poppy_key = key
+		_poppy_nodes = PackedFloat32Array([_poppy_node(island_id, base), _poppy_node(island_id, base + Vector2i(1, 0)),
+				_poppy_node(island_id, base + Vector2i(0, 1)), _poppy_node(island_id, base + Vector2i(1, 1))])
+	var f := at - Vector2(base)
+	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
+	var value := lerpf(lerpf(_poppy_nodes[0], _poppy_nodes[1], f.x), lerpf(_poppy_nodes[2], _poppy_nodes[3], f.x), f.y)
+	return clampf((value - POPPY_THRESHOLD) / (1.0 - POPPY_THRESHOLD) * 2.5, 0.0, 1.0)
+
+
+## Fase 288: as touceiras de papoula soltas a mais na célula do canteiro, tanto mais quanto mais forte ele é (até POPPY_EXTRAS),
+## pequenas, em lugares e giros sorteados por um sorteio próprio da célula (o das outras peças não muda).
+static func _poppy_extras(grid: IslandGrid, config: GameConfig, island_id: int, cell: Vector2i, strength: float,
+		result: Dictionary) -> void:
+	var count := floori(strength * (POPPY_EXTRAS + 0.99))
+	var list: Array = result[Kind.POPPIES]
+	for k: int in count:
+		var noise := FireflyView.cell_hash(island_id, cell.x, cell.y, 288 + k)
+		var offset := Vector2(float(noise % 1000) / 1000.0 - 0.5, float(noise / 1000 % 1000) / 1000.0 - 0.5) * 0.85
+		var x := grid.origin_m.x + (cell.x + 0.5 + offset.x) * grid.cell_size
+		var z := grid.origin_m.y + (cell.y + 0.5 + offset.y) * grid.cell_size
+		var y := grid.height_at(x, z) + TerrainDetail.offset_at(grid, config, x, z)
+		var scale := lerpf(POPPY_EXTRA_SCALE.x, POPPY_EXTRA_SCALE.y, float(noise / 1000000 % 100) / 100.0)
+		var turn := float(noise / 7 % 628) / 100.0
+		var shade := 0.82 + float(noise / 13 % 30) / 100.0
+		list.append([Transform3D(Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale), Vector3(x, y, z)), Color(shade, shade, shade)])
 
 
 ## Fase 167: se a célula fica numa mancha de capim alto — o mesmo ruído das papoulas, com outro passo e outra semente (as

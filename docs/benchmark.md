@@ -2675,3 +2675,8 @@ CPU, três por quadro com a câmera andando.
 74,1 FPS (286: 74,9), 1% low 38,0, p50/p95/p99 12,8/17,1/24,4 ms, GPU 12,3 ms (286: 12,3), jogo novo 12,6 s, montar tudo 9,5 s,
 carregar 6,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais. Neutra. Sobre o prado aberto
 (`tools/grass_cost.tscn`) o tapete com as flores custa +0,32 a 0,43 ms de GPU (286: +0,17 a 0,39).
+
+## Fase 288 — papoulas soltas (02/11/2026)
+
+74,6 FPS (287: 74,1), 1% low 38,5, p50/p95/p99 12,7/17,0/24,5 ms, GPU 12,3 ms, jogo novo 12,4 s, montar tudo 9,5 s, carregar
+6,5 s, construir com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais. Neutra.

@@ -3362,6 +3362,12 @@ Regras que já custaram investigação:
   `flower_far_m`) e a flor do tufo do tapete (as pétalas com o alfa 0 no vértice; o `shaders/grass_carpet.gdshader` a deixa só nos
   tufos sorteados pelas mesmas regras e números e reduz as outras a um ponto).
 
+### Papoulas soltas (Fase 288, nossa)
+
+- **Plano** em `docs/plano_fase288.md`. Na `ScatterView`, o canteiro anda mais do meio da célula (`POPPY_SPREAD`), fica menor na
+  borda (`poppy_strength`, `POPPY_EDGE_SCALE`) e o meio do canteiro ganha touceiras pequenas a mais (`_poppy_extras`, sorteio
+  próprio pelo hash da célula: o das outras peças não muda).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3660,6 +3666,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 285 — Manchas do prado (nossa) | **feita em 02/11/2026**, primeira do roteiro do prado (Fases 285 a 289): o capim deixa de ser de um verde só e ganha manchas de capim alto escuro e de capim baixo claro, de alguns metros; plano em `docs/plano_fase285.md` |
 | 286 — Tapete de capim (nossa) | **feita em 02/11/2026**: perto da câmera o prado vira um tapete de folhas de capim, mais altas e escuras nas manchas de capim alto, balançando com o vento e sumindo aos poucos com a distância; plano em `docs/plano_fase286.md` |
 | 287 — Flores miúdas (nossa) | **feita em 02/11/2026**: pontinhos de flor brancos e amarelos no capim, mais nos prados de flor e no capim baixo, no chão e nos tufos do tapete; plano em `docs/plano_fase287.md` |
+| 288 — Papoulas soltas (nossa) | **feita em 02/11/2026**: os canteiros de papoulas deixam de parecer plantados em grade: touceiras soltas, de tamanhos diferentes, mais juntas no meio do canteiro e menores na borda; plano em `docs/plano_fase288.md` |
 
 Pendências já vistas para fases futuras:
 
