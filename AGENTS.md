@@ -3188,6 +3188,13 @@ Regras que já custaram investigação:
   quadro seguinte); a luz das folhas pelo global `sun_direction` (`shaders/foliage.gdshader`). Capturas do ciclo em
   `tools/capture_phase260.tscn` (campos, falésia, ilha tropical, fim da tarde, manhã e noite).
 
+### Rocha cinza (Fase 261, nossa)
+
+- **Plano** em `docs/plano_fase261.md`. Toda pedra no `shaders/sea_rock.gdshader`: a do mar (rochedos, falésia, rio) com a faixa
+  da maré e as soltas (`RockView.material`, barrancos, jazidas) com `sea` desligado; o matiz vai `RockView.STONE_GREY_MIX` para o
+  cinza e clareia `STONE_LIGHT`; a rocha do terreno faz a mesma conta (`rock_grey`, `rock_grey_mix`, `rock_light`). **Os testes da
+  pasta `presentation` precisam da janela** (`testes_janela_oculta.ps1`): sem ela o MultiMesh devolve zeros e falham à toa.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3459,6 +3466,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 258 — Telhado e parede com cor (nossa) | **feita em 01/11/2026**: todo telhado em terracota viva ou tábua marrom quente (antes rosa-acinzentado), a tinta das paredes pesando mais que a textura cinza e o reboco quente nas classes de cima; plano em `docs/plano_fase258.md` |
 | 259 — Praia dourada (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva: a areia da praia deixa o cinza-taupe e fica dourada e clara; o mar já tinha ficado vivo na Fase 255; plano em `docs/plano_fase259.md` |
 | 260 — Hora dourada (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva II (Fases 260 a 264): o fim da tarde e a manhã saem do vermelho-tijolo escuro para um dourado claro, a exposição sobe com o sol baixo e a mata para de brilhar sobre o chão escuro; plano em `docs/plano_fase260.md` |
+| 261 — Rocha cinza (nossa) | **feita em 01/11/2026**: as falésias, os rochedos, as pedras e as encostas saem do marrom-oliva para um cinza claro, com o contraste do verde; plano em `docs/plano_fase261.md` |
 
 Pendências já vistas para fases futuras:
 

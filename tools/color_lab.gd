@@ -1,4 +1,4 @@
-extends "res://tools/capture_phase255.gd"
+extends "res://tools/capture_phase260.gd"
 ## Laboratório de cor (Fase 255): a vila do roteiro da cor viva fotografada com várias combinações de luz, névoa e tom,
 ## lado a lado, para escolher a que entra no jogo. Só para comparar; nada aqui muda o jogo.
 ##   godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/color_lab.tscn -- <pasta>
@@ -8,19 +8,29 @@ extends "res://tools/capture_phase255.gd"
 ## sun_color (Color), ssao, leaf_fill (a luz própria das folhas, Fase 256), grass_grade, grass_saturation e dry_strength (a grama do terreno).
 const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.7, 0.36, 0.26), &"artisans": Color(0.76, 0.56, 0.42),
 		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
-## As vistas de cada variante: [nome, hora].
-const SHOTS: Array = [["dia", 10.5], ["cinco", 17.0], ["tarde", 18.0], ["manha", 6.25]]
+## As vistas de cada variante: [nome, hora, ponto (0 a vila, 1 os campos, 2 a praia, 3 o meio da ilha, 4 a falésia, 5 a praia
+## tropical), distância, giro].
+const SHOTS: Array = [["falesia", 10.5, 4, 90.0, 0.3], ["tropical", 10.5, 5, 90.0, 0.3], ["vila", 10.5, 0, 110.0, 0.6]]
 const VARIANTS: Array = [
-	["0_dourado_175", {"sun_horizon": Color(1.0, 0.72, 0.45), "low_exposure": 1.75}],
-	["1_dourado_220", {"sun_horizon": Color(1.0, 0.72, 0.45), "low_exposure": 2.2}],
-	["2_ouro_claro_220", {"sun_horizon": Color(1.0, 0.8, 0.55), "low_exposure": 2.2}],
-	["3_ouro_claro_260", {"sun_horizon": Color(1.0, 0.8, 0.55), "low_exposure": 2.6}],
+	["0_rocha_atual", {}],
+	["1_cinza_meio", {"stone": {"stone_grey_mix": 0.6, "stone_light": 1.3}, "terrain": {"rock_grey_mix": 0.6, "rock_light": 1.3}}],
+	["2_cinza_claro", {"stone": {"stone_grey_mix": 0.8, "stone_light": 1.7}, "terrain": {"rock_grey_mix": 0.8, "rock_light": 1.7}}],
+	["3_cinza_quente", {"stone": {"stone_grey": Vector3(0.95, 0.95, 1.0), "stone_grey_mix": 0.75, "stone_light": 1.5},
+			"terrain": {"rock_grey": Vector3(0.95, 0.95, 1.0), "rock_grey_mix": 0.75, "rock_light": 1.5}}],
 ]
 
 
 func _run() -> void:
 	var game := _open_game()
 	var points: Array[Vector3] = await _build_town(game)
+	var main := game.simulation.world.island(Simulation.MAIN_ISLAND)
+	points.append(main.cell_world(_find_cliff(main)))
+	points.append(points[2])
+	for island_id: int in game.simulation.world.islands.size():
+		if game.simulation.world.is_tropical(island_id, game.simulation.data):
+			var tropical := game.simulation.world.island(island_id)
+			points[5] = tropical.cell_world(_find_beach(tropical))
+			break
 	game.weather.set_process(false)
 	game.graphics.sun_exposure = false
 	var environment := game.sky.environment()
@@ -42,6 +52,7 @@ func _run() -> void:
 		var settings: Dictionary = variant[1]
 		_apply(environment, sun, base, settings)
 		_apply_buildings(game, settings)
+		_apply_rock(game, settings)
 		var horizon: Color = settings.get("sun_horizon", _horizon_base)
 		_set_horizon(game, horizon)
 		for shot: Array in SHOTS:
@@ -52,7 +63,10 @@ func _run() -> void:
 				environment.tonemap_exposure = settings.get("low_exposure", base["exposure"])
 			else:
 				environment.tonemap_exposure = settings.get("exposure", base["exposure"])
-			await _shot(game, name + "_" + label + ".png", points[0], 110.0, 0.6)
+			var focus: int = shot[2]
+			var distance: float = shot[3]
+			var yaw: float = shot[4]
+			await _shot(game, name + "_" + label + ".png", points[focus], distance, yaw)
 	get_tree().quit()
 
 
@@ -167,3 +181,48 @@ func _dome_color() -> Color:
 func _set_horizon(_game: GameScreen, color: Color) -> void:
 	if _dome != null:
 		_dome.set(&"sun_horizon_light_color", color)
+
+
+var _stone_base: Dictionary = {}
+var _rock_terrain_base: Dictionary = {}
+
+
+## Os parâmetros da pedra ("stone": os materiais do shaders/sea_rock.gdshader na cena) e da rocha do terreno ("terrain").
+func _apply_rock(game: GameScreen, settings: Dictionary) -> void:
+	var stone: Dictionary = settings.get("stone", {})
+	var materials: Array[ShaderMaterial] = []
+	_rock_materials(game, materials)
+	for key: String in stone:
+		if not _stone_base.has(key) and not materials.is_empty():
+			_stone_base[key] = materials[0].get_shader_parameter(key)
+	for material: ShaderMaterial in materials:
+		for key: String in _stone_base:
+			material.set_shader_parameter(key, stone.get(key, _stone_base[key]))
+	var terrain: Dictionary = settings.get("terrain", {})
+	for key: String in terrain:
+		if not _rock_terrain_base.has(key):
+			_rock_terrain_base[key] = _terrain_materials[0].get_shader_parameter(key)
+	for material: ShaderMaterial in _terrain_materials:
+		for key: String in _rock_terrain_base:
+			material.set_shader_parameter(key, terrain.get(key, _rock_terrain_base[key]))
+
+
+func _rock_materials(node: Node, found: Array[ShaderMaterial]) -> void:
+	var candidates: Array[Material] = []
+	if node is GeometryInstance3D:
+		candidates.append((node as GeometryInstance3D).material_override)
+	var mesh: Mesh = null
+	if node is MeshInstance3D:
+		mesh = (node as MeshInstance3D).mesh
+	elif node is MultiMeshInstance3D and (node as MultiMeshInstance3D).multimesh != null:
+		mesh = (node as MultiMeshInstance3D).multimesh.mesh
+	if mesh != null:
+		for surface: int in mesh.get_surface_count():
+			candidates.append(mesh.surface_get_material(surface))
+	for material: Material in candidates:
+		var shader_material := material as ShaderMaterial
+		if shader_material != null and shader_material.shader != null \
+				and shader_material.shader.resource_path == "res://shaders/sea_rock.gdshader" and shader_material not in found:
+			found.append(shader_material)
+	for child: Node in node.get_children():
+		_rock_materials(child, found)

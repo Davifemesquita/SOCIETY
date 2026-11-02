@@ -19,6 +19,14 @@ uniform float wet_top_m = 2.0;
 // a linha da maré: a crosta clara de sal e cracas logo acima do limo
 uniform vec4 crust : source_color = vec4(0.58, 0.56, 0.5, 1.0);
 uniform float crust_m = 0.22;
+// Fase 261: a pedra puxa o matiz para este cinza (proporção linear), guardando o claro e o escuro da textura, e clareia
+// stone_light vezes: a textura amarronzada, multiplicada pelo tint, saía marrom-oliva (stone_grey_mix 0 deixa como estava).
+uniform vec3 stone_grey = vec3(0.86, 0.92, 1.0);
+uniform float stone_grey_mix = 0.0;
+uniform float stone_light = 1.0;
+// Fase 261: a faixa da maré (limo, crosta e pedra molhada) só na rocha do mar; as pedras dos barrancos e das jazidas, longe da
+// água, usam o mesmo shader sem ela
+uniform bool sea = true;
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -54,23 +62,27 @@ void fragment() {
 	vec4 normal = texture(normal_roughness, p.zy) * weights.x + texture(normal_roughness, p.xz) * weights.y
 			+ texture(normal_roughness, p.xy) * weights.z;
 	vec3 color = albedo.rgb * tint.rgb;
+	vec3 grey = stone_grey * (dot(color, vec3(0.299, 0.587, 0.114)) / dot(stone_grey, vec3(0.299, 0.587, 0.114)));
+	color = mix(color, grey, stone_grey_mix) * stone_light;
 	float roughness = 0.92;
-	// a borda de cima da faixa sobe e desce pelo ruído ao longo da costa
-	vec2 around = world_position.xz;
-	float edge = weed_top_m + edge_m * (value_noise(around * 0.9) - 0.5) * 2.0;
-	float weed = 1.0 - smoothstep(edge - 0.12, edge + 0.04, world_position.y);
-	// a alga em manchas mais claras e mais escuras, mais onde a pedra é funda (o alfa da textura é a altura)
-	float patches = value_noise(around * 4.0 + vec2(world_position.y * 3.0));
-	vec3 algae = mix(weed_dark.rgb, weed_light.rgb, patches) * (0.8 + 0.4 * albedo.a);
-	color = mix(color, algae, weed * 0.95);
-	float above = world_position.y - edge;
-	float line = smoothstep(-0.05, 0.06, above) * (1.0 - smoothstep(crust_m * 0.25, crust_m, above));
-	// em manchas, não uma faixa contínua
-	line *= smoothstep(0.3, 0.7, value_noise(around * 2.3 + vec2(7.1, 3.3)));
-	color = mix(color, crust.rgb * (0.85 + 0.3 * patches), line * 0.38);
-	float wet = 1.0 - smoothstep(edge, wet_top_m, world_position.y);
-	color *= 1.0 - 0.45 * wet * (1.0 - weed) * (1.0 - line);
-	roughness = mix(roughness, 0.3, max(wet * 0.7, weed * 0.6));
+	if (sea) {
+		// a borda de cima da faixa sobe e desce pelo ruído ao longo da costa
+		vec2 around = world_position.xz;
+		float edge = weed_top_m + edge_m * (value_noise(around * 0.9) - 0.5) * 2.0;
+		float weed = 1.0 - smoothstep(edge - 0.12, edge + 0.04, world_position.y);
+		// a alga em manchas mais claras e mais escuras, mais onde a pedra é funda (o alfa da textura é a altura)
+		float patches = value_noise(around * 4.0 + vec2(world_position.y * 3.0));
+		vec3 algae = mix(weed_dark.rgb, weed_light.rgb, patches) * (0.8 + 0.4 * albedo.a);
+		color = mix(color, algae, weed * 0.95);
+		float above = world_position.y - edge;
+		float line = smoothstep(-0.05, 0.06, above) * (1.0 - smoothstep(crust_m * 0.25, crust_m, above));
+		// em manchas, não uma faixa contínua
+		line *= smoothstep(0.3, 0.7, value_noise(around * 2.3 + vec2(7.1, 3.3)));
+		color = mix(color, crust.rgb * (0.85 + 0.3 * patches), line * 0.38);
+		float wet = 1.0 - smoothstep(edge, wet_top_m, world_position.y);
+		color *= 1.0 - 0.45 * wet * (1.0 - weed) * (1.0 - line);
+		roughness = mix(roughness, 0.3, max(wet * 0.7, weed * 0.6));
+	}
 	ALBEDO = wet_albedo(color, 1.0);
 	ROUGHNESS = wet_roughness(roughness, 1.0);
 	NORMAL_MAP = normal.rgb;

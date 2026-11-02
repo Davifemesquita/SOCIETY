@@ -40,6 +40,11 @@ const VISIBLE_UNTIL_M := 900.0
 ## A rocha do terreno (a mesma textura, no tom do rock_grade do terrain.gdshader) e o tamanho de cada repetição.
 const TINT := Color(0.78, 0.74, 0.7)
 const TEXTURE_M := 4.0
+## Fase 261: a pedra no cinza claro (`shaders/sea_rock.gdshader`): o matiz puxado para STONE_GREY em STONE_GREY_MIX e o claro
+## STONE_LIGHT vezes; a textura amarronzada só multiplicada saía marrom-oliva.
+const STONE_GREY := Vector3(0.95, 0.95, 1.0)
+const STONE_GREY_MIX := 0.75
+const STONE_LIGHT := 1.5
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
 enum Kind { STACK, CLIFF }
@@ -103,30 +108,28 @@ func rock_count(kind: int = -1) -> int:
 	return total
 
 
-## A rocha do terreno, triplanar no mundo (não estica e casa com a falésia em volta).
-static func material() -> StandardMaterial3D:
-	var result := StandardMaterial3D.new()
-	result.albedo_texture = load("res://assets/terrain/rock_albedo_height.png")
-	result.albedo_color = TINT
-	result.normal_enabled = true
-	result.normal_texture = load("res://assets/terrain/rock_normal_roughness.png")
-	result.uv1_triplanar = true
-	result.uv1_world_triplanar = true
-	result.uv1_scale = Vector3.ONE / TEXTURE_M
-	result.roughness = 0.92
+## A rocha do terreno, triplanar no mundo (não estica e casa com a falésia em volta). Desde a Fase 261 é o shader da rocha do
+## mar sem a faixa da maré (`sea` desligado), para levar o mesmo cinza.
+static func material() -> ShaderMaterial:
+	var result := sea_material()
+	result.set_shader_parameter("sea", false)
 	return result
 
 
 ## Fase 184: a rocha do mar — a mesma textura triplanar com a faixa de limo e alga junto da linha d'água
 ## (`shaders/sea_rock.gdshader`): os rochedos, as rochas da falésia e os matacões do rio. As pedras soltas dos barrancos e
-## as das jazidas, longe da água, seguem com o material de sempre.
+## as das jazidas, longe da água, usam o mesmo shader sem a faixa (`material`).
 static func sea_material() -> ShaderMaterial:
 	var result := ShaderMaterial.new()
 	result.shader = load("res://shaders/sea_rock.gdshader") as Shader
 	result.set_shader_parameter("albedo_height", load("res://assets/terrain/rock_albedo_height.png"))
 	result.set_shader_parameter("normal_roughness", load("res://assets/terrain/rock_normal_roughness.png"))
 	result.set_shader_parameter("tint", TINT)
+	result.set_shader_parameter("sea", true)
 	result.set_shader_parameter("texture_m", TEXTURE_M)
+	result.set_shader_parameter("stone_grey", STONE_GREY)
+	result.set_shader_parameter("stone_grey_mix", STONE_GREY_MIX)
+	result.set_shader_parameter("stone_light", STONE_LIGHT)
 	return result
 
 

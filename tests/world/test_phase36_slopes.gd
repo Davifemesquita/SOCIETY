@@ -121,10 +121,11 @@ func test_rocks_are_stone_on_tall_banks_and_rocky_coast() -> void:
 	var view: TreeView = auto_free(TreeView.new())
 	add_child(view)
 	view.setup(_world, GameData.get_default(), _config)
-	var material := view.rock_material() as StandardMaterial3D
+	# desde a Fase 261, a rocha triplanar do shaders/sea_rock.gdshader (sem a faixa da maré), com a textura de rocha
+	var material := view.rock_material() as ShaderMaterial
 	assert_object(material).override_failure_message("a pedra continua com o recolorido verde-cinza").is_not_null()
-	assert_bool(material.uv1_triplanar and material.uv1_world_triplanar).is_true()
-	assert_object(material.albedo_texture).is_not_null()
+	assert_str(material.shader.resource_path).is_equal("res://shaders/sea_rock.gdshader")
+	assert_object(material.get_shader_parameter("albedo_height")).is_not_null()
 	var grid := _world.island(0)
 	var bank := 0
 	var coast := 0

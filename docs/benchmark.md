@@ -2511,3 +2511,10 @@ ficaram onde estavam (Fase 254: 77,7 FPS, GPU 11,9 ms).
 Primeira do ciclo cor viva II: 76,0 FPS (259: 77,7), 1% low 38,1, p50/p95/p99 12,3/16,5/24,9 ms, GPU 12,0 ms (259: 11,9), montar
 tudo 9,4 s, carregar 6,4 s, construir com a ilha cheia 17,0 ms; objetos e primitivas iguais. Neutra: uma conta por quadro na
 CPU e o `smoothstep` no lugar do `night_light` na folhagem.
+
+## Fase 261 — rocha cinza (01/11/2026)
+
+76,2 FPS (260: 76,0), 1% low 37,7, p50/p95/p99 12,4/16,7/24,5 ms, GPU 12,0 ms (260: 12,0), montar tudo 9,4 s, carregar 6,4 s,
+construir com a ilha cheia 17,2 ms; objetos e primitivas iguais. Neutra: as pedras soltas trocaram o `StandardMaterial3D` pelo
+shader da rocha (o mesmo número de materiais) e duas contas a mais na pedra e no terreno. O pior quadro dessa rodada (56 ms) não
+se repetiu nas outras medidas do ciclo.

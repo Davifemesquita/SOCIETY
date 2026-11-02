@@ -121,6 +121,11 @@ uniform vec3 sand_grade = vec3(1.5, 1.35, 1.1);
 uniform vec3 sand_tint = vec3(1.0, 0.82, 0.58);
 uniform float sand_tint_mix = 0.55;
 uniform vec3 rock_grade = vec3(0.7, 0.66, 0.62);
+// Fase 261: a rocha das encostas puxa o matiz para este cinza, guardando o claro e o escuro da textura, e clareia rock_light
+// vezes, como a pedra da RockView (escolhido no tools/color_lab.tscn entre três cinzas).
+uniform vec3 rock_grey = vec3(0.95, 0.95, 1.0);
+uniform float rock_grey_mix = 0.75;
+uniform float rock_light = 1.5;
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -282,6 +287,8 @@ void fragment() {
 		rock_n = texture(rock_normal, p.zy) * blend.x + texture(rock_normal, p.xz) * blend.y + texture(rock_normal, p.xy) * blend.z;
 	}
 	rock_a.rgb *= rock_grade;
+	vec3 rock_gray = rock_grey * (dot(rock_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(rock_grey, vec3(0.299, 0.587, 0.114)));
+	rock_a.rgb = mix(rock_a.rgb, rock_gray, rock_grey_mix) * rock_light;
 
 	// bordas com ruído e height-blend
 	float ragged = texture(rock_albedo, uv * 0.23).a - 0.5;

@@ -1,15 +1,18 @@
 extends GdUnitTestSuite
 ## Limo na pedra (Fase 184): os rochedos, as rochas da falésia e os matacões do rio usam a rocha do mar (a faixa de limo junto
-## da linha d'água), com a mesma textura e o mesmo tom da rocha de sempre; as pedras soltas dos barrancos seguem com o material
-## de sempre; o shader compila com os uniformes da faixa (com tela).
+## da linha d'água), com a mesma textura e o mesmo tom da rocha de sempre; as pedras soltas dos barrancos usam o mesmo
+## shader sem a faixa (Fase 261); o shader compila com os uniformes da faixa (com tela).
 
 
 func test_the_sea_rock_keeps_the_rock_texture_and_tint() -> void:
 	var sea := RockView.sea_material()
 	var plain := RockView.material()
 	assert_str(sea.shader.resource_path).is_equal("res://shaders/sea_rock.gdshader")
-	assert_object(sea.get_shader_parameter("albedo_height")).is_equal(plain.albedo_texture)
-	assert_object(sea.get_shader_parameter("normal_roughness")).is_equal(plain.normal_texture)
+	assert_object(sea.get_shader_parameter("albedo_height")).is_equal(plain.get_shader_parameter("albedo_height"))
+	assert_object(sea.get_shader_parameter("normal_roughness")).is_equal(plain.get_shader_parameter("normal_roughness"))
+	# Fase 261: as pedras soltas usam o mesmo shader, sem a faixa da maré
+	assert_object(plain.shader).is_same(sea.shader)
+	assert_bool(plain.get_shader_parameter("sea")).is_false()
 	var tint: Color = sea.get_shader_parameter("tint")
 	assert_bool(tint.is_equal_approx(RockView.TINT)).is_true()
 	var meters: float = sea.get_shader_parameter("texture_m")

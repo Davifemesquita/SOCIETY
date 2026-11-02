@@ -55,10 +55,13 @@ func test_loose_rocks_use_the_generated_rock() -> void:
 		# a mesma malha da RockModel (mesmos vértices), numa cópia com o material
 		assert_int(mesh.surface_get_array_len(0)).is_equal(original.surface_get_array_len(0))
 		assert_object(original.surface_get_material(0)).override_failure_message("a malha guardada ganhou material").is_null()
-		var material := mesh.surface_get_material(0) as StandardMaterial3D
+		# desde a Fase 261, o shader da rocha do mar sem a faixa da maré (triplanar no mundo, como antes)
+		var material := mesh.surface_get_material(0) as ShaderMaterial
 		assert_object(material).is_not_null()
-		assert_bool(material.uv1_world_triplanar).is_true()
-		assert_bool(material.albedo_color.is_equal_approx(RockView.TINT)).is_true()
+		assert_str(material.shader.resource_path).is_equal("res://shaders/sea_rock.gdshader")
+		assert_bool(material.get_shader_parameter("sea")).is_false()
+		var tint: Color = material.get_shader_parameter("tint")
+		assert_bool(tint.is_equal_approx(RockView.TINT)).is_true()
 		shapes[model] = true
 		total += layer.multimesh.instance_count
 	print("pedras soltas: %d em %d formas" % [total, shapes.size()])
