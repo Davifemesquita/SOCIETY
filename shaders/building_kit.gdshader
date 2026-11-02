@@ -14,7 +14,10 @@ uniform sampler2DArray roof_albedo_rough : source_color, filter_linear_mipmap_an
 uniform sampler2DArray roof_normals : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float wall_meters = 3.0;
 uniform float roof_meters = 2.5;
-uniform float tint_strength = 0.55;
+// Fase 258: a tinta da instância pesa mais que a textura cinza (antes 0,55: o reboco saía cinza-frio)
+uniform float tint_strength = 0.68;
+// Fase 258: no telhado a tinta pesa ainda mais: telha vermelha misturada com o cinza da textura saía rosa-empoeirado
+uniform float roof_tint_strength = 0.85;
 uniform float grime_height = 1.4;
 uniform float grime_strength = 0.35;
 uniform float trim_desaturate = 0.3;
@@ -325,7 +328,7 @@ void fragment() {
 				: triplanar(roof_albedo_rough, world_position, weights, roof_meters, roof_layer);
 		vec3 shade = wall ? tint.rgb : roof_tint.rgb;
 		float luma = dot(surface.rgb, vec3(0.299, 0.587, 0.114));
-		color = mix(surface.rgb * 1.25, luma / 0.38 * shade, tint_strength);
+		color = mix(surface.rgb * 1.25, luma / 0.38 * shade, wall ? tint_strength : roof_tint_strength);
 		roughness = surface.a;
 		NORMAL_MAP = wall
 				? triplanar(wall_normals, world_position, weights, wall_meters, layer).rgb

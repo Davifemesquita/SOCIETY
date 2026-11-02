@@ -2494,3 +2494,8 @@ no fragmento da folhagem.
 
 76,3 FPS (256: 76,5), 1% low 37,4, p50/p95/p99 12,4/16,8/24,5 ms, GPU 12,0 ms (256: 12,0), montar tudo 9,4 s, carregar 6,5 s,
 construir com a ilha cheia 17,4 ms; objetos e primitivas iguais. Neutra: duas contas a mais no fragmento do terreno.
+
+## Fase 258 — telhado e parede com cor (01/11/2026)
+
+76,8 FPS (257: 76,3), 1% low 38,1, p50/p95/p99 12,3/16,7/24,6 ms, GPU 11,9 ms (257: 12,0), montar tudo 9,4 s, carregar 6,4 s,
+construir com a ilha cheia 17,0 ms; objetos e draw calls iguais. Neutra: só números de cor e um peso a mais no shader do kit.

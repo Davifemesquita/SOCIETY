@@ -53,11 +53,14 @@ const DUST_COLOR := Color(0.72, 0.64, 0.52, 0.45)
 const PALETTES := 4
 const WALL_SHIFTS: Array[Vector3] = [Vector3(0.0, 1.0, 1.0), Vector3(-0.03, 0.85, 0.93), Vector3(0.025, 1.12, 1.05),
 		Vector3(0.05, 0.9, 0.97)]
+## Fase 258: o telhado de todo prédio pelo material e pela paleta: telhas em terracota, laranja, vermelho-escuro ou marrom de
+## telha velha (um cinza-azulado sobre a textura de telha saía lilás) e tábuas em marrons quentes. Antes a paleta 0 e todo
+## prédio que não é casa tiravam o tom da parede escurecida e clareada, e o telhado saía rosa-acinzentado.
 const ROOF_TINTS := {
-	BuildingMaterials.Roof.TILES: [Color(0.0, 0.0, 0.0, 0.0), Color(0.6, 0.28, 0.2), Color(0.45, 0.33, 0.27),
-			Color(0.38, 0.4, 0.45)],
-	BuildingMaterials.Roof.PLANKS: [Color(0.0, 0.0, 0.0, 0.0), Color(0.45, 0.35, 0.25), Color(0.36, 0.31, 0.25),
-			Color(0.52, 0.44, 0.32)],
+	BuildingMaterials.Roof.TILES: [Color(0.64, 0.31, 0.2), Color(0.7, 0.38, 0.22), Color(0.56, 0.24, 0.14),
+			Color(0.46, 0.27, 0.2)],
+	BuildingMaterials.Roof.PLANKS: [Color(0.52, 0.38, 0.25), Color(0.46, 0.34, 0.23), Color(0.41, 0.32, 0.24),
+			Color(0.56, 0.44, 0.3)],
 }
 const NON_HOUSE_SHIFT := 0.35
 const INVERTED_EVERY := 5
@@ -345,9 +348,9 @@ static func palette_wall(color: Color, palette: int, house: bool) -> Color:
 	return result
 
 
-## O tom do telhado na paleta: a 0 fica o de antes; as outras trocam pelo do material (só nas casas; o resto fica).
-static func palette_roof(color: Color, roof_layer: int, palette: int, house: bool) -> Color:
-	if not house or palette == 0 or not ROOF_TINTS.has(roof_layer):
+## O tom do telhado na paleta, pelo material (Fase 258: em todo prédio e em toda paleta); o material sem tabela fica com color.
+static func palette_roof(color: Color, roof_layer: int, palette: int) -> Color:
+	if not ROOF_TINTS.has(roof_layer):
 		return color
 	var tints: Array = ROOF_TINTS[roof_layer]
 	var tint: Color = tints[palette]
@@ -568,7 +571,7 @@ func _add(building_id: int) -> void:
 		_spec_keys[building_id] = spec.key()
 		var palette := palette_of(record)
 		var color := palette_wall(_color(record), palette, record.is_house())
-		var roof_color := palette_roof(color.darkened(ROOF_DARKEN).lightened(0.35), roof_layer, palette, record.is_house())
+		var roof_color := palette_roof(color.darkened(ROOF_DARKEN).lightened(0.35), roof_layer, palette)
 		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, roof_color, root.position.y, soot)
 		body.set_instance_shader_parameter(&"trim_paint", 1.0 if inverted(record, wall_layer) else 0.0)
 		body.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, record))

@@ -6,14 +6,13 @@ extends "res://tools/capture_phase255.gd"
 ## Cada variante: nome → {propriedade: valor}. Chaves: fog (multiplica a névoa), tonemap ("agx", "aces", "filmic"),
 ## agx_contrast, white, saturation, contrast, brightness, ambient (Color), ambient_energy, sky_share, sun_energy (multiplica),
 ## sun_color (Color), ssao, leaf_fill (a luz própria das folhas, Fase 256), grass_grade, grass_saturation e dry_strength (a grama do terreno).
+const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.7, 0.36, 0.26), &"artisans": Color(0.76, 0.56, 0.42),
+		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
 const VARIANTS: Array = [
-	["0_grama_atual", {}],
-	["1_verde_meio", {"grass_tint": Vector3(0.42, 1.0, 0.22), "grass_tint_mix": 0.45, "grass_grade": Vector3(0.58, 1.08, 0.7),
-			"grass_saturation": 1.25, "dry_strength": 0.15}],
-	["2_verde_amarelo", {"grass_tint": Vector3(0.52, 1.0, 0.2), "grass_tint_mix": 0.6, "grass_grade": Vector3(0.58, 1.08, 0.7),
-			"grass_saturation": 1.25, "dry_strength": 0.15}],
-	["3_verde_frio", {"grass_tint": Vector3(0.36, 1.0, 0.28), "grass_tint_mix": 0.6, "grass_grade": Vector3(0.58, 1.08, 0.7),
-			"grass_saturation": 1.25, "dry_strength": 0.15}],
+	["0_predios_atual", {}],
+	["1_tinta_forte", {"kit": {"tint_strength": 0.7}}],
+	["2_casas_quentes", {"kit": {"tint_strength": 0.7}, "houses": WARM_HOUSES}],
+	["3_casas_quentes_80", {"kit": {"tint_strength": 0.8}, "houses": WARM_HOUSES}],
 ]
 
 
@@ -38,6 +37,7 @@ func _run() -> void:
 		var name: String = variant[0]
 		var settings: Dictionary = variant[1]
 		_apply(environment, sun, base, settings)
+		_apply_buildings(game, settings)
 		await _shot(game, name + "_vila.png", points[0], 110.0, 0.6)
 		await _shot(game, name + "_perto.png", points[0], 42.0, 0.6)
 		await _shot(game, name + "_ilha.png", points[3], 520.0, 0.3)
@@ -110,3 +110,32 @@ func _sky_fog(game: GameScreen) -> float:
 func _set_sky_fog(density: float) -> void:
 	if _dome != null:
 		_dome.set(&"fog_density", density)
+
+
+var _kit_base: Dictionary = {}
+var _house_base: Dictionary = {}
+
+
+## Os parâmetros do material dos prédios ("kit") e as cores das casas por classe ("houses"); com as cores, refaz os prédios.
+func _apply_buildings(game: GameScreen, settings: Dictionary) -> void:
+	var kit := BuildingMaterials.kit()
+	var params: Dictionary = settings.get("kit", {})
+	for key: String in params:
+		if not _kit_base.has(key):
+			_kit_base[key] = kit.get_shader_parameter(key)
+	for key: String in _kit_base:
+		kit.set_shader_parameter(key, params.get(key, _kit_base[key]))
+	var houses: Dictionary = settings.get("houses", {})
+	var changed := false
+	for tier_id: StringName in houses:
+		var tier := game.simulation.data.tier(tier_id)
+		if not _house_base.has(tier_id):
+			_house_base[tier_id] = tier.house_color
+		tier.house_color = houses[tier_id]
+		changed = true
+	for tier_id: StringName in _house_base:
+		if not houses.has(tier_id):
+			game.simulation.data.tier(tier_id).house_color = _house_base[tier_id]
+			changed = true
+	if changed:
+		game.building_view.rebuild()

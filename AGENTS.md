@@ -3166,6 +3166,14 @@ Regras que já custaram investigação:
   para o verde-amarelado `grass_tint` escalado à luminância do texel (o claro e o escuro da textura ficam, o matiz deixa de ser
   oliva); `grass_grade` (0,6; 1,12; 0,7), saturação 1,25 e a seca 0,15.
 
+### Telhado e parede com cor (Fase 258, nossa)
+
+- **Plano** em `docs/plano_fase258.md`. Todo telhado tira a cor de `BuildingView.ROOF_TINTS` pelo material e pela paleta
+  (`palette_roof`; telhas de terracota, tábuas marrons); no `shaders/building_kit.gdshader` a tinta pesa `tint_strength` 0,68 na
+  parede e `roof_tint_strength` 0,85 no telhado; o reboco dos artesãos, engenheiros e investidores é quente (`house_color`).
+  **Cor azul ou cinza sobre a textura de telha vermelha sai lilás**: o telhado de outro matiz pede outra textura (a ardósia da
+  Fase 134).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3434,6 +3442,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 255 — Ar limpo e tom vivo (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva (Fases 255 a 259), a pedido do dono: a névoa cinza-azulada de longe quase some, a cena ganha contraste, saturação e exposição e o sol fica quente; plano em `docs/plano_fase255.md` |
 | 256 — Copas verdes (nossa) | **feita em 01/11/2026**: as matas deixam de ser blocos quase pretos: folhas mais claras, o alto das copas amarelado de sol e uma luz própria das folhas de dia; plano em `docs/plano_fase256.md` |
 | 257 — Grama viva (nossa) | **feita em 01/11/2026**: a grama deixa o oliva-amarronzado e fica verde-amarelada e viva, de perto e de longe, guardando o claro e o escuro da textura; plano em `docs/plano_fase257.md` |
+| 258 — Telhado e parede com cor (nossa) | **feita em 01/11/2026**: todo telhado em terracota viva ou tábua marrom quente (antes rosa-acinzentado), a tinta das paredes pesando mais que a textura cinza e o reboco quente nas classes de cima; plano em `docs/plano_fase258.md` |
 
 Pendências já vistas para fases futuras:
 
