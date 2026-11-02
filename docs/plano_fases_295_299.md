@@ -36,4 +36,17 @@ shader confere a lista de uniformes cheia com tela (Fase 290).
 
 ## Estado
 
-**A fazer.**
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase295.md` a `docs/plano_fase299.md`),
+testes, captura e benchmark (todas neutras, GPU de 12,6 a 12,6 ms). As três pastas da suíte passaram no fim (world 707,
+presentation 389, ui 167).
+
+Diferenças do roteiro:
+
+- a linha branca solta no mar era a última banda de espuma da Fase 35 (achada pelo laboratório `CAPTURA_MAR=espuma`), não um banco
+  de areia nem a espuma das pedras;
+- os fiapos das pedras saíam como fitas lisas na primeira versão e ganharam um ruído miúdo que os renda;
+- o mar de longe: o roteiro pedia o reflexo do céu mais nítido, o que clareava o mar; ficou o contrário (menos reflexo e o fundo
+  mais escuro). O horizonte claro é o reflexo no ângulo raso e a névoa, e segue igual;
+- no fundo do raso, as manchas de alga e as pedras se leem de cima; as ondulações ficam finas demais para a câmera do jogo.
+
+O antes e depois de cada fase está em `F:\ferramentas\capturas\faseNNN\antes_depois.png` (295 a 299).
