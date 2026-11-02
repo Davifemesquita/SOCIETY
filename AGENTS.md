@@ -3310,6 +3310,13 @@ Regras que já custaram investigação:
   `discard`, até `leaf_far_m` (90 m). Mudança na folhagem vai no `.gdshaderinc`; o `discard` fica atrás do `LEAF_DETAIL` (tira a
   profundidade antecipada das plantações e do capim). GPU +0,3 a 0,4 ms.
 
+### Mar fundo (Fase 280, nossa)
+
+- **Plano** em `docs/plano_fase280.md`, primeira do roteiro `docs/plano_fases_280_284.md` (o mar e o rio). No
+  `shaders/water.gdshader`, `cold_deep`, `cold_shelf` e `cold_shelf_m`: o mar das temperadas em azul-petróleo, com a plataforma
+  mais estreita; o das tropicais segue o turquesa, pela borda `reef_min_x` (`tropic`, com a guarda do 1e9 sem ilha tropical).
+  Captura do ciclo em `tools/capture_phase280.tscn` (`CAPTURA_MAR=lab` compara cores de água lado a lado).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3600,6 +3607,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 277 — Bétula (nossa) | **feita em 02/11/2026**: a bétula de tronco branco com manchas pretas e copa leve de massas soltas entre as folhosas, mais na beira da mata e na terra baixa das ilhas temperadas; plano em `docs/plano_fase277.md` |
 | 278 — Orla da mata (nossa) | **feita em 02/11/2026**: abetos novos e arbustos de folhosa na beira de cada mata das ilhas temperadas, do lado do campo: a mata desce em degrau e cobre o pé dos troncos; plano em `docs/plano_fase278.md` |
 | 279 — Folhas recortadas (nossa) | **feita em 02/11/2026**, a última do roteiro da mata: de perto, as copas viram cachos de folhas com volume e o contorno recortado, num shader só das árvores; de longe, iguais; plano em `docs/plano_fase279.md` |
+| 280 — Mar fundo (nossa) | **feita em 02/11/2026**, primeira do roteiro do mar e do rio (Fases 280 a 284): o mar das ilhas temperadas sai do azul-elétrico para um azul-petróleo profundo, com a faixa turquesa da costa mais estreita; o das tropicais segue turquesa; plano em `docs/plano_fase280.md` |
 
 Pendências já vistas para fases futuras:
 

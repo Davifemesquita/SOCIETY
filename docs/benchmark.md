@@ -2627,3 +2627,9 @@ ms (278: 11,8), jogo novo 13,4 e 12,4 s, montar tudo 9,7 s, carregar 6,4 s, cons
 calls e primitivas iguais. O custo do recorte (o `discard` tira a profundidade antecipada das copas de perto) e dos cachos fica
 em +0,3 a 0,4 ms de GPU, abaixo do limite de 0,5 ms do roteiro: vale em todos os níveis. O ciclo da mata (Fases 275 a 279) fecha
 com a GPU onde estava antes dele (274: 12,0 ms), porque a Fase 276 tirou 0,5 ms.
+
+## Fase 280 — mar fundo (02/11/2026)
+
+Primeira do ciclo do mar e do rio: 76,2 FPS (279: 75,3), 1% low 38,9, p50/p95/p99 12,4/16,7/24,2 ms, GPU 12,0 ms (279: 12,1),
+jogo novo 12,4 s, montar tudo 9,4 s, carregar 6,4 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas
+iguais. Neutra (só as cores da água e uma mistura a mais no shader dela).
