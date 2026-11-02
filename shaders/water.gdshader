@@ -126,6 +126,8 @@ uniform vec3 swell_lengths_m = vec3(52.0, 33.0, 21.0);
 uniform vec3 swell_slopes = vec3(0.09, 0.07, 0.05);
 uniform float swell_speed = 0.6;
 uniform float swell_open_m = 40.0;
+// Society (Fase 293): até que diferença de profundidade (m, ao longo da vista) o anel de espuma em volta das pedras vai
+uniform float rock_foam_m = 0.45;
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
@@ -714,6 +716,13 @@ void fragment() {
 		shore_alpha *= 1.0 - smoothstep(shore_line_m * 0.4, shore_line_m, from_line);
 		// Fase 283: no rio, nada (a espuma da beira fica só no fio da linha d'água, abaixo)
 		shore_alpha *= 1.0 - channel;
+		// Fase 293: o anel fino de espuma em volta das pedras na água (os rochedos, as rochas da falésia, as pedras do rio), que o
+		// corte da Fase 281 tirava longe da linha d'água: só onde a pedra fica a menos de rock_foam_m da superfície (no raso
+		// da praia a diferença de profundidade cresce devagar e o anel não se forma), batendo com o marulho e menos no rio
+		float ring = (1.0 - smoothstep(rock_foam_m * 0.3, rock_foam_m, z_diff)) * mix(0.55, 1.0, foam_tex.a);
+		ring *= 0.75 + 0.25 * sin(TIME * float(!freeze_time) * 1.4 + world_coordinates.x * 0.37 + world_coordinates.z * 0.23);
+		ring *= smoothstep(shore_line_m * 0.4, shore_line_m, from_line) * (1.0 - channel * 0.5) * shore_fade_alpha;
+		shore_alpha = max(shore_alpha, ring);
 	}
 	
 	EMISSION *= (1.0-shore_alpha); // block emission

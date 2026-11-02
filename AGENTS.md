@@ -3396,6 +3396,11 @@ Regras que já custaram investigação:
   na beira. **Hash de coordenada do mundo em shader é inteiro** (`strata_hash`): o `fract(p * 123,34)` quantiza a milhares de
   metros.
 
+### Espuma nas pedras (Fase 293, nossa)
+
+- **Plano** em `docs/plano_fase293.md`. No bloco `SHORE_FOAM` do `shaders/water.gdshader`, o anel fino (`rock_foam_m`) em volta do
+  que entra na água longe da linha d'água (estacas, boias, degraus, cascos, pedras), por `max` com a espuma da Fase 281.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3699,6 +3704,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 290 — Estratos na rocha (nossa) | **feita em 02/11/2026**, primeira do roteiro da rocha e da costa (Fases 290 a 294): as falésias, os barrancos e as pedras ganham camadas de rocha onduladas com o ressalto claro e a sombra embaixo, e sulcos descendo; plano em `docs/plano_fase290.md` |
 | 291 — Musgo nas saliências (nossa) | **feita em 02/11/2026**: manchas de musgo e capim nas partes planas e nos ressaltos da rocha, mais no lado da sombra, e nada na pedra molhada da maré; plano em `docs/plano_fase291.md` |
 | 292 — Praia de seixos (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, trechos da praia junto das pedras viram seixos cinzentos e redondos, escuros e brilhantes na beira da água; plano em `docs/plano_fase292.md` |
+| 293 — Espuma nas pedras (nossa) | **feita em 02/11/2026**: volta a linha fina de espuma em volta do que entra na água longe da costa (pedras, estacas, boias, degraus do cais), sem reabrir a faixa branca da praia; plano em `docs/plano_fase293.md` |
 
 Pendências já vistas para fases futuras:
 
