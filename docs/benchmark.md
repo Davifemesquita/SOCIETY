@@ -2643,3 +2643,9 @@ iguais. Neutra (só as cores da água e uma mistura a mais no shader dela).
 
 77,2 FPS (281: 76,6), 1% low 38,6, p50/p95/p99 12,3/16,3/24,0 ms, GPU 11,9 ms, jogo novo 12,4 s, montar tudo 9,5 s, carregar
 6,5 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais. Neutra.
+
+## Fase 283 — rio escuro (02/11/2026)
+
+Três rodadas. Com as sondas do canal em toda a água: 75,4 e 75,6 FPS, GPU 12,2 e 12,1 ms (282: 11,9). Com elas só perto da terra:
+76,1 FPS, 1% low 38,2, p50/p95/p99 12,5/16,7/24,9 ms, GPU 12,0 ms, jogo novo 12,3 s, montar tudo 9,6 s, carregar 6,5 s, construir
+com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais. Neutra.

@@ -21,7 +21,8 @@ func _run() -> void:
 	var grid := world.island(Simulation.MAIN_ISLAND)
 	var cliff := grid.cell_world(_find_cliff(grid))
 	var beach := points[2]
-	var river := grid.cell_world(_find_river(grid))
+	var river := grid.cell_world(_find_river(grid, true))
+	var dry_bed := grid.cell_world(_find_river(grid, false))
 	var tropical := Vector3.ZERO
 	for island_id: int in world.islands.size():
 		if world.is_tropical(island_id, game.simulation.data):
@@ -44,6 +45,7 @@ func _run() -> void:
 	await _shot(game, "03_mar_de_cima.png", points[3], 420.0, 0.3)
 	await _shot(game, "04_tropical.png", tropical, 90.0, 0.3)
 	await _shot(game, "05_rio.png", river, 45.0, 0.3)
+	await _shot(game, "05b_leito_seco.png", dry_bed, 45.0, 0.3)
 	_set_hour(22.0)
 	# o Sky3D passa a luz ambiente do dia para a da noite em 3 s
 	await get_tree().create_timer(3.5).timeout
@@ -52,14 +54,16 @@ func _run() -> void:
 	get_tree().quit()
 
 
-## A célula de rio mais perto do meio da ilha, com terra dos dois lados (ao longo de x ou de z).
-func _find_river(grid: IslandGrid) -> Vector2i:
+## A célula de rio com água (wet: o leito abaixo de -0,5 m) ou do leito seco (acima de 0,3 m, a cabeceira) mais perto do meio da
+## ilha, com terra dos dois lados (ao longo de x ou de z).
+func _find_river(grid: IslandGrid, wet: bool) -> Vector2i:
 	var best := grid.size / 2
 	var best_score := INF
 	for y: int in range(3, grid.size.y - 3):
 		for x: int in range(3, grid.size.x - 3):
 			var cell := Vector2i(x, y)
-			if grid.ground_at(cell) != IslandGrid.Ground.RIVER:
+			# Fase 283: com água de verdade (o leito abaixo do mar; na cabeceira o rio é só o leito seco)
+			if grid.ground_at(cell) != IslandGrid.Ground.RIVER or (grid.cell_height(cell) > -0.5 if wet else grid.cell_height(cell) < 0.3):
 				continue
 			var banks := (grid.ground_at(cell + Vector2i(3, 0)) == IslandGrid.Ground.LAND and grid.ground_at(cell - Vector2i(3, 0)) == IslandGrid.Ground.LAND) \
 					or (grid.ground_at(cell + Vector2i(0, 3)) == IslandGrid.Ground.LAND and grid.ground_at(cell - Vector2i(0, 3)) == IslandGrid.Ground.LAND)

@@ -160,9 +160,12 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	for key: String in textures:
 		material.set_shader_parameter(StringName(key), textures[key])
 	material.set_shader_parameter(&"surface_weights", _surfaces[index])
-	# Fase 170: na ilha tropical, a margem do rio é de terra vermelha (laterita), não de lama escura
+	# Fase 170: na ilha tropical, a margem do rio é de terra vermelha (laterita), não de lama escura; Fase 283: na temperada, de
+	# cascalho cinza
 	if _world.is_tropical(index, _data):
 		material.set_shader_parameter(&"mud_tint", TROPICAL_MUD_TINT)
+	else:
+		material.set_shader_parameter(&"gravel", 1.0)
 	var size := (side - 1) * _config.cell_size_m
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
 	# a distância até a água sai uma vez só: o bake e o campo da costa (Fase 35) a dividem

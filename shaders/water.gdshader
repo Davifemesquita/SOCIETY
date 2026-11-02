@@ -115,6 +115,10 @@ uniform float shore_line_m = 3.0;
 uniform float band_sharpness = 0.93;
 // Society (Fase 282): quanto da cor da água sobra de noite, por canal (fator linear, não cor: puxa para o azul de lua)
 uniform vec3 night_water = vec3(0.16, 0.2, 0.3);
+// Society (Fase 283): o canal estreito (ver channel no fragment) e a cor da água dele, escura e calma
+uniform float channel_probe_m = 12.0;
+uniform float channel_open_m = 10.0;
+uniform vec4 river_color : source_color = vec4(0.07, 0.14, 0.13, 0.72);
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
@@ -611,6 +615,16 @@ void fragment() {
 #endif
 	// Society: plataforma de areia clara junto da costa, no lugar do fundo escuro misturado com a profundidade
 	float shore_m = has_coast ? -coast_at(world_coordinates.xz) : coast_far_m;
+	// Society (Fase 283): o canal estreito (o rio, a enseada fina): nenhum ponto a channel_probe_m em volta fica a mais de
+	// channel_open_m da terra. Nele a água é escura e calma: sem as bandas, quase sem espuma, na cor river_color.
+	float channel = 0.0;
+	// só perto da terra: no mar aberto as sondas não rodam (a maior parte da água na tela)
+	if (has_coast && shore_m < channel_open_m) {
+		vec2 at_xz = world_coordinates.xz;
+		float open_m = max(max(-coast_at(at_xz + vec2(channel_probe_m, 0.0)), -coast_at(at_xz - vec2(channel_probe_m, 0.0))),
+				max(-coast_at(at_xz + vec2(0.0, channel_probe_m)), -coast_at(at_xz - vec2(0.0, channel_probe_m))));
+		channel = 1.0 - smoothstep(channel_open_m * 0.6, channel_open_m, max(open_m, shore_m));
+	}
 #if defined(REFRACTION) || defined(DEPTH_FOG)
 	if (has_coast && FRONT_FACING) {
 		vec4 shelf_color = mix(cold_shelf, color_shelf, tropic);
@@ -618,6 +632,7 @@ void fragment() {
 		screen_color = mix(screen_color, shelf_color.rgb * water_light, shelf_color.a * shelf);
 		// Fase 125: o recife escurece o fundo raso das ilhas tropicais
 		screen_color = mix(screen_color, reef_color.rgb * water_light, reef_color.a * reef_at(world_coordinates.xz, shore_m));
+		screen_color = mix(screen_color, river_color.rgb * water_light, river_color.a * channel);
 	}
 #endif
 
@@ -666,6 +681,8 @@ void fragment() {
 	if (has_coast) {
 		float from_line = -coast_at(world_coordinates.xz);
 		shore_alpha *= 1.0 - smoothstep(shore_line_m * 0.4, shore_line_m, from_line);
+		// Fase 283: no rio, nada (a espuma da beira fica só no fio da linha d'água, abaixo)
+		shore_alpha *= 1.0 - channel;
 	}
 	
 	EMISSION *= (1.0-shore_alpha); // block emission
@@ -677,8 +694,8 @@ void fragment() {
 		float reach = 1.0 - smoothstep(1.0, shore_foam_width_m, shore_m);
 		// Fase 281: as bandas viram linhas finas (band_sharpness) e quebradas ao longo da costa pela textura da espuma
 		float band = smoothstep(band_sharpness, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
-		band *= smoothstep(0.3, 0.6, foam_tex.a);
-		float edge = 1.0 - smoothstep(0.0, shore_line_m * 0.5, shore_m);
+		band *= smoothstep(0.3, 0.6, foam_tex.a) * (1.0 - channel);
+		float edge = (1.0 - smoothstep(0.0, shore_line_m * 0.5, shore_m)) * (1.0 - channel * 0.8);
 		float coast_foam = clamp(band * 0.8 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
 		EMISSION *= 1.0 - coast_foam;
 		ALBEDO = mix(ALBEDO, shore_foam_color, coast_foam);
@@ -700,6 +717,8 @@ void fragment() {
 	// água suja é fosca: menos reflexo do céu
 	ROUGHNESS = mix(ROUGHNESS, 0.55, murk);
 	SPECULAR = mix(SPECULAR, 0.1, murk);
+	// Society (Fase 283): o rio reflete menos o céu (a água escura do canal aparece)
+	SPECULAR = mix(SPECULAR, 0.15, channel * 0.75);
 	// Society (Fase 129): a sombra das nuvens também passa pelo mar (a cor da água sai pela EMISSION com a refração)
 	float cloud_dim = 1.0 - cloud_shadow(world_coordinates.xz, sun_direction.y) * 0.8;
 	ALBEDO *= cloud_dim;

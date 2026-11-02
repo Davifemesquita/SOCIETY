@@ -54,6 +54,14 @@ uniform float rock_start = 0.86;
 uniform float rock_full = 0.7;
 // cor da lama sobre a textura de areia, e até que altura a areia da praia fica molhada
 uniform vec3 mud_tint = vec3(0.27, 0.19, 0.11);
+// Fase 283: o cascalho da margem dos rios (0 = a lama de antes; a TerrainView põe 1 nas temperadas): a cor média, o tamanho
+// da pedra (a textura de rocha gravel_scale vezes menor) e até que altura acima da água ele fica molhado
+uniform float gravel = 0.0;
+uniform vec3 gravel_color = vec3(0.5, 0.49, 0.46);
+uniform float gravel_scale = 3.1;
+uniform float gravel_wet_m = 0.8;
+// Fase 283: acima desta altura do mar a margem volta à lama de antes (a borda de cima dos barrancos, as manchas no planalto)
+uniform float gravel_top_m = 2.5;
 uniform float wet_sand_m = 0.9;
 // Fase 34: hex-tiling (pelo nível gráfico) e até onde da câmera ele vale
 uniform bool hex_tiling = true;
@@ -310,9 +318,25 @@ void fragment() {
 	ground_a = mix(ground_a, sand_a, sand);
 	ground_n = mix(ground_n, sand_n, sand);
 	vec4 mud_a = vec4(mud_base * mud_tint * 1.6, sand_a.a);
-	ground_a = mix(ground_a, mud_a, mud * (1.0 - rock));
 	// lama alisada: o relevo da areia some quase todo
-	ground_n = mix(ground_n, vec4(mix(sand_n.rgb, vec3(0.5, 0.5, 1.0), 0.75), 0.3), mud * (1.0 - rock));
+	vec4 mud_n = vec4(mix(sand_n.rgb, vec3(0.5, 0.5, 1.0), 0.75), 0.3);
+	// Fase 283: nas temperadas (gravel 1), o leito e a margem do rio são de cascalho cinza: a textura de rocha miúda, com o relevo
+	// dela, escura e brilhante junto da água; a laterita das tropicais (Fase 170) fica com gravel 0
+	if (gravel > 0.0) {
+		vec2 pebble_uv = world_position.xz / texture_meters * gravel_scale;
+		vec4 pebble_a = texture(rock_albedo, pebble_uv);
+		vec4 pebble_n = texture(rock_normal, pebble_uv);
+		float pebble_luma = dot(pebble_a.rgb, vec3(0.299, 0.587, 0.114));
+		float wet_bank = 1.0 - smoothstep(0.0, gravel_wet_m, world_position.y);
+		// só no leito e na margem baixa, junto da água: a lama de cima do barranco (a borda do patamar), o leito seco da
+		// cabeceira e as manchas no planalto seguem de terra (pela curvatura do vale, o cascalho saía em manchas no capim)
+		float low_bank = gravel * (1.0 - smoothstep(gravel_top_m * 0.6, gravel_top_m, world_position.y));
+		vec3 stone = gravel_color * (0.55 + pebble_luma * 0.9) * mix(1.0, 0.62, wet_bank);
+		mud_a = mix(mud_a, vec4(stone, pebble_a.a), low_bank);
+		mud_n = mix(mud_n, vec4(pebble_n.rgb, mix(0.8, 0.35, wet_bank)), low_bank);
+	}
+	ground_a = mix(ground_a, mud_a, mud * (1.0 - rock));
+	ground_n = mix(ground_n, mud_n, mud * (1.0 - rock));
 
 	float land = step(0.0, world_position.y);
 	// Fase 38: a estrada de terra pela distância até a linha do meio, com borda de ruído misturada pela altura do chão
