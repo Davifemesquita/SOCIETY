@@ -33,6 +33,6 @@ Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes
 ## Estado
 
 **Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase255.md` a `docs/plano_fase259.md`),
-testes, captura e benchmark (todas neutras). Diferença do roteiro: a Fase 259 virou a praia dourada, porque o mar ficou vivo já
+testes, captura e benchmark (todas neutras). As três pastas da suíte passaram no fim (world 608, presentation 368, ui 167). Diferença do roteiro: a Fase 259 virou a praia dourada, porque o mar ficou vivo já
 na Fase 255. As fotos dos cartões do menu foram refeitas com as cores novas. O antes e depois do ciclo está em
-`F:erramentaspturasase259	clo_antes_depois.png`.
+`F:\ferramentas\capturas\fase259\ciclo_antes_depois.png`.
