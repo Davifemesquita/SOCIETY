@@ -3401,6 +3401,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase293.md`. No bloco `SHORE_FOAM` do `shaders/water.gdshader`, o anel fino (`rock_foam_m`) em volta do
   que entra na água longe da linha d'água (estacas, boias, degraus, cascos, pedras), por `max` com a espuma da Fase 281.
 
+### Abetos na rocha (Fase 294, nossa)
+
+- **Plano** em `docs/plano_fase294.md`. `ScatterView.Kind.CLIFF_SPRUCE` (no fim do enum e das listas `OPEN`, `NEAR_FOREST` e
+  `NEAR_SEA`, com sombra): o abeto de perto da Fase 275 a 0,4 do tamanho, com o material dele, só nas células de desnível
+  `CLIFF_SPRUCE_MIN_RELIEF_M` das temperadas, de pé.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3705,6 +3711,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 291 — Musgo nas saliências (nossa) | **feita em 02/11/2026**: manchas de musgo e capim nas partes planas e nos ressaltos da rocha, mais no lado da sombra, e nada na pedra molhada da maré; plano em `docs/plano_fase291.md` |
 | 292 — Praia de seixos (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, trechos da praia junto das pedras viram seixos cinzentos e redondos, escuros e brilhantes na beira da água; plano em `docs/plano_fase292.md` |
 | 293 — Espuma nas pedras (nossa) | **feita em 02/11/2026**: volta a linha fina de espuma em volta do que entra na água longe da costa (pedras, estacas, boias, degraus do cais), sem reabrir a faixa branca da praia; plano em `docs/plano_fase293.md` |
+| 294 — Abetos na rocha (nossa) | **feita em 02/11/2026**, a última do roteiro da rocha e da costa: abetos pequenos em camadas presos nas encostas íngremes e nas falésias das ilhas temperadas; plano em `docs/plano_fase294.md` |
 
 Pendências já vistas para fases futuras:
 

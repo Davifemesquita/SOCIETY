@@ -2709,3 +2709,11 @@ Voronoi só na areia).
 
 73,4 FPS (292: 73,0), 1% low 38,1, p50/p95/p99 12,8/17,2/24,7 ms, GPU 12,5 ms (292: 12,6), jogo novo 12,3 s, montar tudo 9,5 s,
 carregar 6,5 s, construir com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais. Neutra.
+
+## Fase 294 — abetos na rocha (02/11/2026)
+
+72,9 FPS (293: 73,4), 1% low 38,3, p50/p95/p99 13,0/17,1/24,5 ms, GPU 12,6 ms (293: 12,5), jogo novo 12,4 s, montar tudo 9,4 s,
+carregar 6,4 s, construir com a ilha cheia 16,9 ms; +1 objeto e draw call (a camada) no quadro com tudo visível. Neutra. Fecha os
+quatro ciclos da ideação de 02/11/2026 (Fases 275 a 294): a GPU foi de 12,0 ms (274) a 12,6 ms, com 0,5 ms a menos na Fase 276 e
+os custos medidos do recorte das folhas (+0,3 a 0,4), dos estratos (~0,1) e o resto no vaivém da máquina, que ficou mais lenta
+ao longo do dia (A/B da Fase 290).
