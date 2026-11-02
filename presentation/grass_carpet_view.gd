@@ -213,12 +213,19 @@ func _build(key: Vector3i) -> void:
 	_stale.erase(key)
 
 
-## Se a célula leva tapete: terra sem árvore, prédio, estrada nem trilho, longe do mar e do rio (praia e margem), quase plana.
+## Se a célula leva tapete: terra sem árvore, prédio, estrada nem trilho, sem prédio colado (Fase 301), longe do mar e do rio
+## (praia e margem), quase plana.
 static func grows_at(grid: IslandGrid, cell: Vector2i) -> bool:
 	var index := grid.index(cell)
 	if grid.ground[index] != IslandGrid.Ground.LAND or grid.trees[index] > 0 or grid.occupancy[index] != 0 \
 			or grid.roads[index] != 0 or (not grid.rails.is_empty() and grid.rails[index] != 0):
 		return false
+	# Fase 301: nada colado num prédio (o chão de vila e o pátio de chão batido das Fases 165 e 301 ficam à vista)
+	for dy: int in range(-1, 2):
+		for dx: int in range(-1, 2):
+			var near := cell + Vector2i(dx, dy)
+			if grid.in_bounds(near) and grid.occupancy[grid.index(near)] != 0:
+				return false
 	if grid.area_relief(Rect2i(cell, Vector2i.ONE)) > MAX_RELIEF_M:
 		return false
 	for dy: int in range(-SHORE_CELLS, SHORE_CELLS + 1):

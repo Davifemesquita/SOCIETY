@@ -23,6 +23,12 @@ const TRAIL_CORNER_M := 0.9
 ## somindo em YARD_SOFT_M.
 const YARD_REACH_M := 1.6
 const YARD_SOFT_M := 1.0
+## Fase 301: o chão de vila das casas nas ilhas temperadas, no mesmo canal: o lote e mais TOWN_YARD_REACH_M em volta, com a
+## borda recortada por TOWN_YARD_RAGGED_M de ruído (como o pátio das fábricas), mais fraco que o terreiro tropical
+## (TOWN_YARD_STRENGTH).
+const TOWN_YARD_REACH_M := 2.2
+const TOWN_YARD_RAGGED_M := 1.2
+const TOWN_YARD_STRENGTH := 0.85
 ## Fase 165: o chão batido em volta dos prédios de produção (o pátio de trabalho), em todas as ilhas: o lote e mais
 ## WORKS_REACH_M em volta, com a borda somindo em WORKS_SOFT_M e recortada por WORKS_RAGGED_M de ruído.
 const WORKS_REACH_M := 2.0
@@ -63,6 +69,8 @@ var _roads := PackedByteArray()
 var _doors: Dictionary[int, Vector2] = {}
 var _trails: Dictionary[int, PackedVector2Array] = {}
 var _yards: Dictionary[int, Rect2] = {}
+## Fase 301: na ilha temperada o terreiro das casas é o chão de vila (recortado e mais fraco).
+var _town := false
 var _works: Dictionary[int, Rect2] = {}
 var _patches: Dictionary[int, PackedVector3Array] = {}
 
@@ -83,6 +91,7 @@ func _init(world: WorldState, data: GameData, island_id: int, per_cell: int, max
 	_doors = doors(world, data, island_id)
 	_trails = trails(world, data, island_id)
 	_yards = yards(world, data, island_id)
+	_town = not world.is_tropical(island_id, data)
 	_works = works(world, data, island_id)
 	_patches = patches(world, data, island_id)
 	_draw(Rect2i(Vector2i.ZERO, _grid.size), false)
@@ -287,19 +296,22 @@ static func _node(at: Vector2i, seed: int) -> float:
 	return float(h & 0xFFFF) / 65535.0
 
 
-## Fase 111: o terreiro de cada casa da ilha tropical (m da grade): o lote crescido de YARD_REACH_M; vazio nas outras.
+## Fase 111: o terreiro de cada casa da ilha tropical (m da grade): o lote crescido de YARD_REACH_M. Fase 301: na temperada, o
+## chão de vila, o lote crescido de TOWN_YARD_REACH_M.
 static func yards(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Rect2]:
 	var result: Dictionary[int, Rect2] = {}
-	if not world.is_tropical(island_id, data):
+	var grid := world.island(island_id)
+	if grid == null:
 		return result
-	var cell_size := world.island(island_id).cell_size
+	var cell_size := grid.cell_size
+	var reach := YARD_REACH_M if world.is_tropical(island_id, data) else TOWN_YARD_REACH_M
 	for id: int in world.buildings:
 		var record := world.buildings[id]
 		if record.island_id != island_id or not record.is_house():
 			continue
 		var def := data.building(record.def_id)
 		var area := Footprint.rect(record.origin, def.size, record.rotation)
-		result[id] = Rect2(Vector2(area.position) * cell_size, Vector2(area.size) * cell_size).grow(YARD_REACH_M)
+		result[id] = Rect2(Vector2(area.position) * cell_size, Vector2(area.size) * cell_size).grow(reach)
 	return result
 
 
@@ -371,7 +383,11 @@ func _draw(area: Rect2i, clear: bool) -> void:
 			_stamp_patch(Vector2(spot.x, spot.y) * scale, spot.z * scale, hash([id, k]), clip)
 	for id: int in _yards:
 		var lot := _yards[id]
-		_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip)
+		if _town:
+			_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip, TOWN_YARD_RAGGED_M * scale, id,
+					TOWN_YARD_STRENGTH)
+		else:
+			_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip)
 	for id: int in _works:
 		var lot := _works[id]
 		_stamp_yard(Rect2(lot.position * scale, lot.size * scale), WORKS_SOFT_M * scale, clip, WORKS_RAGGED_M * scale, id)
@@ -518,7 +534,7 @@ func _stamp_patch(center: Vector2, radius: float, seed_value: int, clip: Rect2i)
 ## Fase 111: o terreiro no canal b, ficando com o maior: cheio dentro do retângulo (pixels) menos a borda e somindo até a
 ## borda dele; só dentro de clip. Fase 165: com ragged (pixels), a borda entra até essa medida por um ruído ao longo dela,
 ## semeado por seed (o pátio das fábricas não é um retângulo).
-func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i, ragged: float = 0.0, seed: int = 0) -> void:
+func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i, ragged: float = 0.0, seed: int = 0, strength: float = 1.0) -> void:
 	var box := Rect2i(Vector2i(lot.position.floor()), Vector2i(lot.size.ceil()) + Vector2i.ONE).intersection(clip)
 	for y: int in range(box.position.y, box.end.y):
 		for x: int in range(box.position.x, box.end.x):
@@ -528,7 +544,7 @@ func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i, ragged: float = 0.0, see
 				inside -= _edge_noise(p, ragged, seed)
 			if inside <= 0.0:
 				continue
-			var value := int(smoothstep(0.0, soft, inside) * 0.9 * 255.0)
+			var value := int(smoothstep(0.0, soft, inside) * 0.9 * strength * 255.0)
 			var i := (y * _width + x) * 4 + 2
 			if value > _bytes[i]:
 				_bytes[i] = value

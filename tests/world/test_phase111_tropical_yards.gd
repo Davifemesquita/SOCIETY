@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 ## Terreiro tropical (Fase 111): nas ilhas tropicais o chão em volta de cada casa vira terra batida (canal b da máscara das
-## estradas), cheio no lote e somindo além dele; as ilhas temperadas não têm; construir uma casa redesenha o terreiro.
+## estradas), cheio no lote e somindo além dele; nas temperadas é o chão de vila da Fase 301 (TOWN_YARD_REACH_M); construir uma casa
+## redesenha o terreiro.
 
 var _config: GameConfig
 var _sim: Simulation
@@ -59,9 +60,13 @@ func test_tropical_houses_get_a_beaten_earth_yard() -> void:
 		assert_int(_wear_at(mask, far)).is_equal(0)
 
 
-func test_temperate_islands_have_no_yards() -> void:
-	_house(0)
-	assert_int(RoadMask.yards(_sim.world, _sim.data, 0).size()).is_equal(0)
+func test_temperate_islands_have_the_town_ground() -> void:
+	var record := _house(0)
+	var lots := RoadMask.yards(_sim.world, _sim.data, 0)
+	var area := Footprint.rect(record.origin, _sim.def_of(record).size, record.rotation)
+	var cell_size := _sim.world.island(0).cell_size
+	var lot := Rect2(Vector2(area.position) * cell_size, Vector2(area.size) * cell_size)
+	assert_bool(lots[record.id].is_equal_approx(lot.grow(RoadMask.TOWN_YARD_REACH_M))).is_true()
 
 
 func test_a_new_house_redraws_the_yard() -> void:
