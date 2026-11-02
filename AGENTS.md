@@ -3180,6 +3180,14 @@ Regras que já custaram investigação:
   `sand_tint` escalado à luminância, com `sand_grade` (1,5; 1,35; 1,1); a lama sai de `mud_base` (a areia com a graduação de antes),
   então a margem dos rios e a laterita não mudam.
 
+### Hora dourada (Fase 260, nossa)
+
+- **Plano** em `docs/plano_fase260.md`, primeira do roteiro `docs/plano_fases_260_264.md` (cor viva II). O sol do horizonte em ouro
+  claro (`GameConfig.sun_horizon_color`, no domo pelo `SkyAdapter`); a exposição pela altura do sol (`GraphicsQuality.dusk_factor`
+  e `follow_sun`, a cada quadro pela `GameScreen`; **quem mexe na exposição desliga o `sun_exposure`**, senão ela é refeita no
+  quadro seguinte); a luz das folhas pelo global `sun_direction` (`shaders/foliage.gdshader`). Capturas do ciclo em
+  `tools/capture_phase260.tscn` (campos, falésia, ilha tropical, fim da tarde, manhã e noite).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3450,6 +3458,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 257 — Grama viva (nossa) | **feita em 01/11/2026**: a grama deixa o oliva-amarronzado e fica verde-amarelada e viva, de perto e de longe, guardando o claro e o escuro da textura; plano em `docs/plano_fase257.md` |
 | 258 — Telhado e parede com cor (nossa) | **feita em 01/11/2026**: todo telhado em terracota viva ou tábua marrom quente (antes rosa-acinzentado), a tinta das paredes pesando mais que a textura cinza e o reboco quente nas classes de cima; plano em `docs/plano_fase258.md` |
 | 259 — Praia dourada (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva: a areia da praia deixa o cinza-taupe e fica dourada e clara; o mar já tinha ficado vivo na Fase 255; plano em `docs/plano_fase259.md` |
+| 260 — Hora dourada (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva II (Fases 260 a 264): o fim da tarde e a manhã saem do vermelho-tijolo escuro para um dourado claro, a exposição sobe com o sol baixo e a mata para de brilhar sobre o chão escuro; plano em `docs/plano_fase260.md` |
 
 Pendências já vistas para fases futuras:
 

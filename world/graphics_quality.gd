@@ -15,6 +15,8 @@ var _windows: WindowLightsView
 ## Quem recebe a fração de partículas e se mostra fuligem: nós com set_quality(preset).
 var _effects: Array[Node] = []
 var _attributes := CameraAttributesPractical.new()
+## Fase 260: a exposição segue a altura do sol (follow_sun); o laboratório de cor desliga para pôr a dele.
+var sun_exposure := true
 
 
 func setup(config: GameConfig, sky: SkyAdapter, camera: StrategyCamera, crowd: Crowd, windows: WindowLightsView) -> void:
@@ -85,6 +87,22 @@ static func apply_to_environment(environment: Environment, chosen: GraphicsPrese
 	environment.volumetric_fog_enabled = chosen.volumetric_fog
 	environment.volumetric_fog_density = config.volumetric_fog_density
 	environment.volumetric_fog_length = config.volumetric_fog_length_m
+
+
+## Fase 260: quanto a exposição sobe com o sol nesta altura (o seno da elevação, positivo de dia): 1 com o sol alto e à noite,
+## até 1 + dusk_exposure_boost com ele no horizonte.
+static func dusk_factor(config: GameConfig, sun_height: float) -> float:
+	var low := 1.0 - smoothstep(0.02, config.dusk_sun_high, sun_height)
+	var up := smoothstep(-0.12, 0.02, sun_height)
+	return 1.0 + config.dusk_exposure_boost * low * up
+
+
+## Fase 260: a exposição do quadro pela altura do sol (chamada a cada quadro pela partida): a do nível vezes dusk_factor.
+func follow_sun(sun_height: float) -> void:
+	if _sky == null or _config == null or not sun_exposure:
+		return
+	var base := _environment_defaults().tonemap_exposure if Settings.period_look else _config.vivid_exposure
+	_sky.environment().tonemap_exposure = base * dusk_factor(_config, sun_height)
 
 
 static var _defaults: Environment

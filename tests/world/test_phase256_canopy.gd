@@ -37,10 +37,11 @@ func test_the_top_of_the_crown_is_yellower_than_the_bottom() -> void:
 	assert_float(top_ratio).is_greater(bottom_ratio)
 
 
-func test_the_leaves_light_themselves_only_by_day() -> void:
+func test_the_leaves_light_themselves_only_with_the_sun_up() -> void:
 	var code := (load("res://shaders/foliage.gdshader") as Shader).code
-	for line: String in ["global uniform float night_light", "uniform float leaf_fill = 0.0",
-			"EMISSION = base * leaf_fill * leafy * (1.0 - night_light)"]:
+	# Fase 260: pela altura do sol, não mais pela noite
+	for line: String in ["global uniform vec3 sun_direction", "uniform float leaf_fill = 0.0",
+			"EMISSION = base * leaf_fill * leafy * smoothstep(0.0, 0.5, sun_direction.y)"]:
 		assert_str(code).override_failure_message(line).contains(line)
 	var material := TreeModel.mesh(TreeModel.Species.BEECH, 1).surface_get_material(0) as ShaderMaterial
 	var fill: float = material.get_shader_parameter(&"leaf_fill")

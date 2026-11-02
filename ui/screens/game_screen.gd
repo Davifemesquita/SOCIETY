@@ -1026,6 +1026,9 @@ func _process(delta: float) -> void:
 	var sun_light := sky.sun()
 	if sun_light != null and sun_light.is_inside_tree():
 		RenderingServer.global_shader_parameter_set(&"sun_direction", sun_light.global_basis.z.normalized())
+		# Fase 260: com o sol baixo a exposição sobe (o fim da tarde e a manhã ficavam escuros)
+		if graphics != null:
+			graphics.follow_sun(sun_light.global_basis.z.normalized().y)
 
 
 func _exit_tree() -> void:

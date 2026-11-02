@@ -45,6 +45,13 @@ static var _default: GameConfig
 ## quente, como o sol do meio da manhã, no lugar do branco puro.
 @export var sun_light_color: Color = Color(1.0, 0.95, 0.86)
 @export var sun_light_energy: float = 1.15
+## Fase 260: a cor do sol perto do horizonte: ouro claro (a do Sky3D, laranja-avermelhada, deixava o chão do fim da tarde e da
+## manhã cor de tijolo escuro).
+@export var sun_horizon_color: Color = Color(1.0, 0.8, 0.55)
+## Fase 260: com o sol baixo a exposição sobe até (1 + dusk_exposure_boost) vezes a do dia, como o olho se acostumando; volta
+## à do dia com o sol a dusk_sun_high de altura (seno da elevação) e à da noite com ele abaixo do horizonte.
+@export var dusk_exposure_boost: float = 0.95
+@export var dusk_sun_high: float = 0.45
 ## Neblina da atmosfera do Sky3D: densidade e distância onde começa (Fase 255: a metade da Fase 53, de longe a ilha fica limpa).
 @export var sky_fog_density: float = 0.0001
 @export var sky_fog_start_m: float = 60.0
@@ -605,6 +612,8 @@ func validate() -> PackedStringArray:
 		problems.append("ticks_per_second deve ser maior que zero")
 	if vivid_exposure <= 0.0 or vivid_agx_contrast <= 0.0 or vivid_saturation <= 0.0 or sun_light_energy <= 0.0:
 		problems.append("a cor viva (exposição, contraste, saturação) e a força do sol devem ser maiores que zero")
+	if dusk_exposure_boost < 0.0 or dusk_sun_high <= 0.05:
+		problems.append("dusk_exposure_boost não pode ser negativo e dusk_sun_high deve passar de 0,05")
 	if max_ticks_per_frame <= 0:
 		problems.append("max_ticks_per_frame deve ser maior que zero")
 	if game_speeds.is_empty():

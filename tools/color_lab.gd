@@ -8,11 +8,13 @@ extends "res://tools/capture_phase255.gd"
 ## sun_color (Color), ssao, leaf_fill (a luz própria das folhas, Fase 256), grass_grade, grass_saturation e dry_strength (a grama do terreno).
 const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.7, 0.36, 0.26), &"artisans": Color(0.76, 0.56, 0.42),
 		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
+## As vistas de cada variante: [nome, hora].
+const SHOTS: Array = [["dia", 10.5], ["cinco", 17.0], ["tarde", 18.0], ["manha", 6.25]]
 const VARIANTS: Array = [
-	["0_areia_atual", {}],
-	["1_areia_quente", {"sand_grade": Vector3(1.4, 1.22, 0.88)}],
-	["2_areia_dourada", {"sand_grade": Vector3(1.35, 1.22, 0.95), "sand_tint": Vector3(1.0, 0.78, 0.5), "sand_tint_mix": 0.4}],
-	["3_areia_clara", {"sand_grade": Vector3(1.5, 1.35, 1.1), "sand_tint": Vector3(1.0, 0.82, 0.58), "sand_tint_mix": 0.55}],
+	["0_dourado_175", {"sun_horizon": Color(1.0, 0.72, 0.45), "low_exposure": 1.75}],
+	["1_dourado_220", {"sun_horizon": Color(1.0, 0.72, 0.45), "low_exposure": 2.2}],
+	["2_ouro_claro_220", {"sun_horizon": Color(1.0, 0.8, 0.55), "low_exposure": 2.2}],
+	["3_ouro_claro_260", {"sun_horizon": Color(1.0, 0.8, 0.55), "low_exposure": 2.6}],
 ]
 
 
@@ -20,6 +22,7 @@ func _run() -> void:
 	var game := _open_game()
 	var points: Array[Vector3] = await _build_town(game)
 	game.weather.set_process(false)
+	game.graphics.sun_exposure = false
 	var environment := game.sky.environment()
 	var sun := game.sky.sun()
 	var base := {
@@ -32,15 +35,24 @@ func _run() -> void:
 	_terrain_materials = game.terrain_view.materials()
 	for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix", "sand_grade", "sand_tint", "sand_tint_mix"]:
 		_terrain_base[key] = _terrain_materials[0].get_shader_parameter(key)
+	_horizon_base = _dome_color()
 	print("base ", base, " névoa do clima ", game.weather.sample.mist, " nuvens ", game.weather.sample.coverage)
 	for variant: Array in VARIANTS:
 		var name: String = variant[0]
 		var settings: Dictionary = variant[1]
 		_apply(environment, sun, base, settings)
 		_apply_buildings(game, settings)
-		await _shot(game, name + "_vila.png", points[0], 110.0, 0.6)
-		await _shot(game, name + "_perto.png", points[0], 42.0, 0.6)
-		await _shot(game, name + "_enseada.png", points[2], 140.0, 0.3)
+		var horizon: Color = settings.get("sun_horizon", _horizon_base)
+		_set_horizon(game, horizon)
+		for shot: Array in SHOTS:
+			var label: String = shot[0]
+			var hour: float = shot[1]
+			_set_hour(hour)
+			if hour < 8.0 or hour > 16.0:
+				environment.tonemap_exposure = settings.get("low_exposure", base["exposure"])
+			else:
+				environment.tonemap_exposure = settings.get("exposure", base["exposure"])
+			await _shot(game, name + "_" + label + ".png", points[0], 110.0, 0.6)
 	get_tree().quit()
 
 
@@ -139,3 +151,19 @@ func _apply_buildings(game: GameScreen, settings: Dictionary) -> void:
 			changed = true
 	if changed:
 		game.building_view.rebuild()
+
+
+var _horizon_base := Color.WHITE
+
+
+## A cor do sol perto do horizonte no domo do Sky3D (o Sky3D a mistura com a do alto pela altura do sol).
+func _dome_color() -> Color:
+	if _dome == null:
+		return Color.WHITE
+	var color: Color = _dome.get(&"sun_horizon_light_color")
+	return color
+
+
+func _set_horizon(_game: GameScreen, color: Color) -> void:
+	if _dome != null:
+		_dome.set(&"sun_horizon_light_color", color)

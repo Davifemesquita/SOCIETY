@@ -12,7 +12,6 @@ render_mode cull_disabled;
 global uniform float visual_time;
 global uniform vec2 wind_direction;
 global uniform float wind_strength;
-global uniform float night_light;
 
 uniform vec4 albedo : source_color = vec4(0.3, 0.45, 0.2, 1.0);
 uniform bool use_vertex_color = false;
@@ -28,8 +27,10 @@ uniform float lean = 1.4;
 uniform float hurry = 0.8;
 // Fase 41: luz de trás nas folhas (o sol atravessando a copa); a madeira (cor sem predomínio do verde) não ganha
 uniform float backlight = 0.35;
-// Fase 256: luz própria das folhas de dia (o sol atravessando e voltando da copa), em fração da cor; some à noite. Sem ela o
-// lado da sombra de uma mata fechada ficava quase preto.
+// Fase 256: luz própria das folhas de dia (o sol atravessando e voltando da copa), em fração da cor. Sem ela o lado da sombra
+// de uma mata fechada ficava quase preto. Fase 260: acompanha a altura do sol (sun_direction, para o sol): cheia com ele alto,
+// nada com ele no horizonte e de noite (com o sol baixo, a mata acesa brilhava sobre o chão escuro do fim da tarde).
+global uniform vec3 sun_direction;
 uniform float leaf_fill = 0.0;
 
 void vertex() {
@@ -66,5 +67,5 @@ void fragment() {
 	ROUGHNESS = wet_roughness(roughness, 1.0);
 	float leafy = smoothstep(1.05, 1.35, base.g / max(base.r, 0.001));
 	BACKLIGHT = base * backlight * leafy;
-	EMISSION = base * leaf_fill * leafy * (1.0 - night_light);
+	EMISSION = base * leaf_fill * leafy * smoothstep(0.0, 0.5, sun_direction.y);
 }
