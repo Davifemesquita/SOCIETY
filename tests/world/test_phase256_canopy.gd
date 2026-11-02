@@ -19,26 +19,26 @@ func test_the_top_of_the_crown_is_yellower_than_the_bottom() -> void:
 	var arrays := mesh.surface_get_arrays(0)
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
-	var top := -INF
-	var bottom := INF
-	var top_ratio := 0.0
-	var bottom_ratio := 0.0
+	# [altura, vermelho / verde] das folhas; desde a Fase 276 (copa menor) o vértice mais baixo pode ser de um tufo, que tem o
+	# tom próprio: compara a média das 30 mais altas com a das 30 mais baixas
+	var leaves: Array[Vector2] = []
 	for i: int in vertices.size():
 		var color := colors[i]
 		if color.g < color.r * 1.05:
 			continue
-		var ratio := color.r / color.g
-		if vertices[i].y > top:
-			top = vertices[i].y
-			top_ratio = ratio
-		if vertices[i].y < bottom:
-			bottom = vertices[i].y
-			bottom_ratio = ratio
+		leaves.append(Vector2(vertices[i].y, color.r / color.g))
+	leaves.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.x < b.x)
+	var bottom_ratio := 0.0
+	var top_ratio := 0.0
+	for k: int in 30:
+		bottom_ratio += leaves[k].y / 30.0
+		top_ratio += leaves[leaves.size() - 1 - k].y / 30.0
 	assert_float(top_ratio).is_greater(bottom_ratio)
 
 
 func test_the_leaves_light_themselves_only_with_the_sun_up() -> void:
-	var code := (load("res://shaders/foliage.gdshader") as Shader).code
+	# Fase 279: o corpo da folhagem foi para o foliage.gdshaderinc
+	var code := FileAccess.get_file_as_string("res://shaders/foliage.gdshaderinc")
 	# Fase 260: pela altura do sol, não mais pela noite
 	for line: String in ["global uniform vec3 sun_direction", "uniform float leaf_fill = 0.0",
 			"EMISSION = base * leaf_fill * leafy * smoothstep(0.0, 0.5, sun_direction.y)"]:

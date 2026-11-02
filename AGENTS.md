@@ -3302,6 +3302,14 @@ Regras que já custaram investigação:
   árvore nova (abeto, um pouco de bétula, carvalho ou faia de arbusto) de 0,32 a 0,55 do tamanho, puxada para o lado aberto sem
   sair da célula, nas mesmas camadas da mata.
 
+### Folhas recortadas (Fase 279, nossa)
+
+- **Plano** em `docs/plano_fase279.md`. **O corpo da folhagem está em `shaders/foliage.gdshaderinc`**: o `foliage.gdshader` só o
+  inclui, e o `shaders/tree_foliage.gdshader` (`TreeModel.TREE_SHADER`, as árvores de perto menos o coqueiro) define
+  `LEAF_DETAIL`: cachos de folhas por células sorteadas no modelo, com a normal estufada, e a borda da copa recortada por
+  `discard`, até `leaf_far_m` (90 m). Mudança na folhagem vai no `.gdshaderinc`; o `discard` fica atrás do `LEAF_DETAIL` (tira a
+  profundidade antecipada das plantações e do capim). GPU +0,3 a 0,4 ms.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3591,6 +3599,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 276 — Copas na medida (nossa) | **feita em 02/11/2026**: copas ~35% mais estreitas e uma árvore por célula em parte das células da mata temperada (mais no miolo, menos na beira): cada árvore se lê, com o chão e a sombra entre elas; 17.249 árvores desenhadas em vez de 28.830 e a GPU 0,5 ms mais leve; plano em `docs/plano_fase276.md` |
 | 277 — Bétula (nossa) | **feita em 02/11/2026**: a bétula de tronco branco com manchas pretas e copa leve de massas soltas entre as folhosas, mais na beira da mata e na terra baixa das ilhas temperadas; plano em `docs/plano_fase277.md` |
 | 278 — Orla da mata (nossa) | **feita em 02/11/2026**: abetos novos e arbustos de folhosa na beira de cada mata das ilhas temperadas, do lado do campo: a mata desce em degrau e cobre o pé dos troncos; plano em `docs/plano_fase278.md` |
+| 279 — Folhas recortadas (nossa) | **feita em 02/11/2026**, a última do roteiro da mata: de perto, as copas viram cachos de folhas com volume e o contorno recortado, num shader só das árvores; de longe, iguais; plano em `docs/plano_fase279.md` |
 
 Pendências já vistas para fases futuras:
 

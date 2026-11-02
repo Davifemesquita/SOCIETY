@@ -39,7 +39,7 @@ func test_the_spruce_stands_on_the_ground_in_its_size_and_budget() -> void:
 		assert_int(_triangles(far)).is_less(_triangles(mesh) / 3)
 		assert_float(far.get_aabb().end.y).is_equal_approx(box.end.y, box.end.y * 0.1)
 		var material := mesh.surface_get_material(0) as ShaderMaterial
-		assert_str(material.shader.resource_path).is_equal("res://shaders/foliage.gdshader")
+		assert_str(material.shader.resource_path).is_equal(TreeModel.TREE_SHADER)
 
 
 func test_the_foliage_reaches_down_and_narrows_upward() -> void:

@@ -2619,3 +2619,11 @@ com tudo visível (os trechos com bétula ganham a camada dela) e primitivas igu
 77,2 FPS (277: 78,1), 1% low 38,4, p50/p95/p99 12,1/16,5/24,2 ms, GPU 11,8 ms (277: 11,7), jogo novo 12,3 s com 19236 árvores
 desenhadas (+1987 da orla), montar tudo 9,5 s, carregar 6,4 s, construir com a ilha cheia 17,4 ms; objetos e draw calls iguais
 (as árvores novas usam as camadas da mata) e +0,08 milhão de primitivas. Neutra.
+
+## Fase 279 — folhas recortadas (02/11/2026)
+
+Duas rodadas: 74,8 e 75,3 FPS (278: 77,2), 1% low 37,4 e 37,9, p50/p95/p99 12,6/17,0/24,9 e 12,6/16,9/24,7 ms, GPU 12,2 e 12,1
+ms (278: 11,8), jogo novo 13,4 e 12,4 s, montar tudo 9,7 s, carregar 6,4 s, construir com a ilha cheia 17,7 ms; objetos, draw
+calls e primitivas iguais. O custo do recorte (o `discard` tira a profundidade antecipada das copas de perto) e dos cachos fica
+em +0,3 a 0,4 ms de GPU, abaixo do limite de 0,5 ms do roteiro: vale em todos os níveis. O ciclo da mata (Fases 275 a 279) fecha
+com a GPU onde estava antes dele (274: 12,0 ms), porque a Fase 276 tirou 0,5 ms.

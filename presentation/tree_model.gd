@@ -84,6 +84,9 @@ const SWAY := 0.035
 ## subdividir) quebram a silhueta.
 const CROWN_ROUND := 0.65
 const PUFF_RADIUS := Vector2(0.55, 0.9)
+## Fase 279: o shader das árvores de perto (cachos de folhas e a borda da copa recortada) e o de sempre.
+const TREE_SHADER := "res://shaders/tree_foliage.gdshader"
+const FOLIAGE_SHADER := "res://shaders/foliage.gdshader"
 
 static var _cache: Dictionary[String, ArrayMesh] = {}
 static var _sphere_points: Array[PackedVector3Array] = []
@@ -115,7 +118,7 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 		Species.BIRCH:
 			_birch(tool, rng, detail)
 	var result := tool.commit()
-	result.surface_set_material(0, _material(result))
+	result.surface_set_material(0, _material(result, detail == DETAIL_NEAR and species != Species.COCONUT_PALM))
 	_cache[key] = result
 	return result
 
@@ -549,9 +552,12 @@ static func _sphere(level: int) -> PackedVector3Array:
 	return _sphere_points[level]
 
 
-static func _material(result: ArrayMesh) -> ShaderMaterial:
+## O material da árvore: a folhagem com a cor do vértice, balançando. Fase 279: as de perto (menos o coqueiro, de folhas finas
+## que o recorte desfiaria) usam o tree_foliage.gdshader, com os cachos de folhas e a borda da copa recortada; as de longe e o
+## coqueiro, o foliage.gdshader de sempre.
+static func _material(result: ArrayMesh, leaves := false) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
-	material.shader = load("res://shaders/foliage.gdshader") as Shader
+	material.shader = load(TREE_SHADER if leaves else FOLIAGE_SHADER) as Shader
 	material.set_shader_parameter(&"albedo", Color.WHITE)
 	material.set_shader_parameter(&"use_vertex_color", true)
 	material.set_shader_parameter(&"model_height", maxf(result.get_aabb().end.y, 0.1))

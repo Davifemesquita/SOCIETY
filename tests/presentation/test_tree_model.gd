@@ -41,7 +41,7 @@ func test_each_species_stands_on_the_ground_in_its_size_and_budget() -> void:
 			assert_int(_triangles(far)).override_failure_message(label).is_less(_triangles(mesh) / 3)
 			assert_float(far.get_aabb().end.y).override_failure_message(label).is_equal_approx(box.end.y, box.end.y * 0.1)
 			var material := mesh.surface_get_material(0) as ShaderMaterial
-			assert_str(material.shader.resource_path).is_equal("res://shaders/foliage.gdshader")
+			assert_str(material.shader.resource_path).is_equal(TreeModel.TREE_SHADER)
 			assert_bool(material.get_shader_parameter(&"use_vertex_color")).is_true()
 
 
