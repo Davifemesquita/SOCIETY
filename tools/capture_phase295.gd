@@ -12,6 +12,14 @@ const FOAM_VARIANTS: Array = [
 	["d_sem_beira", {&"shore_line_m": 0.01}],
 ]
 
+## [nome, {parâmetro: valor}] para o laboratório do mar ao longe (Fase 298).
+const FAR_VARIANTS: Array = [
+	["a_atual", {}],
+	["b_bem_escuro", {&"far_sea_dark": 0.25, &"far_sea_specular": 0.15}],
+	["c_sem_fresnel", {&"albedo_fresnel": Color(0.0, 0.0, 0.0, 1.0)}],
+	["d_fundo_e_fresnel", {&"far_sea_dark": 0.4, &"albedo_fresnel": Color(0.02, 0.06, 0.1, 1.0)}],
+]
+
 
 func _run() -> void:
 	var game := _open_game()
@@ -27,6 +35,21 @@ func _run() -> void:
 			for step: int in range(0, 50, 2):
 				row += "%.2f " % grid.corner_height(at.x + axis.x * step, at.y + axis.y * step)
 			print("perfil ", axis, ": ", row)
+		get_tree().quit()
+		return
+	if OS.get_environment("CAPTURA_MAR") == "longe":
+		var far_material: ShaderMaterial = game.water_view._material
+		game.camera.rig.pitch_offset_deg = -22.0
+		for variant: Array in FAR_VARIANTS:
+			var prefix: String = variant[0]
+			var params: Dictionary = variant[1]
+			var saved := {}
+			for key: StringName in params:
+				saved[key] = far_material.get_shader_parameter(key)
+				far_material.set_shader_parameter(key, params[key])
+			await _shot(game, prefix + "_mar_ao_longe.png", cliff, 160.0, 0.3)
+			for key: StringName in saved:
+				far_material.set_shader_parameter(key, saved[key])
 		get_tree().quit()
 		return
 	if OS.get_environment("CAPTURA_MAR") == "espuma":
@@ -48,4 +71,8 @@ func _run() -> void:
 	await _shot(game, "02_praia.png", beach, 70.0, 0.3)
 	await _shot(game, "02b_praia_de_perto.png", beach, 30.0, 0.5)
 	await _shot(game, "03_mar_de_cima.png", points[3], 420.0, 0.3)
+	# Fase 298: o mar ao longe, com a câmera mais deitada
+	game.camera.rig.pitch_offset_deg = -22.0
+	await _shot(game, "04_mar_ao_longe.png", cliff, 160.0, 0.3)
+	game.camera.rig.pitch_offset_deg = 0.0
 	get_tree().quit()

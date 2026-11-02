@@ -3426,6 +3426,13 @@ Regras que já custaram investigação:
   espuma (`streak_*`) compridos ao longo do vento e rendados, andando com ele, do lado de baixo do vento e só na água funda junto
   da costa (a pedra; a praia rasa fica de fora).
 
+### Mar escuro de longe (Fase 298, nossa)
+
+- **Plano** em `docs/plano_fase298.md`. No `shaders/water.gdshader`, de `far_sea_from_m` a `far_sea_to_m` da câmera, o fundo
+  escurece (`far_sea_dark`) e o reflexo do céu cai (`far_sea_specular`). O horizonte claro é o reflexo do céu no ângulo raso e a
+  névoa; a cor de Fresnel do material do Ocean fica (sem ela aparecem listras). Laboratório: `CAPTURA_MAR=longe` no
+  `tools/capture_phase295.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3734,6 +3741,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 295 — Espuma em trechos (nossa) | **feita em 02/11/2026**, primeira do roteiro mar e costa II (Fases 295 a 299): a linha branca contínua que corria solta no mar, paralela à praia, vira trechos curtos de espuma que mudam a cada onda; junto da areia a espuma segue inteira; plano em `docs/plano_fase295.md` |
 | 296 — Água picada de perto (nossa) | **feita em 02/11/2026**: de perto, a água ganha a ondulação miúda e cruzada que quebra o reflexo do céu, mais forte com o vento; de longe nada muda; plano em `docs/plano_fase296.md` |
 | 297 — Fiapos de espuma nas pedras (nossa) | **feita em 02/11/2026**: a espuma que bate nas pedras e nas falésias sai levada pelo vento em fiapos compridos e rendados, do lado de baixo do vento; plano em `docs/plano_fase297.md` |
+| 298 — Mar escuro de longe (nossa) | **feita em 02/11/2026**: o mar aberto escurece para o azul-marinho com a distância e reflete menos o céu, mais visível de cima; plano em `docs/plano_fase298.md` |
 
 Pendências já vistas para fases futuras:
 

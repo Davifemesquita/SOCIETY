@@ -156,6 +156,12 @@ uniform vec4 cold_deep : source_color = vec4(0.04, 0.18, 0.29, 1.0);
 uniform vec4 cold_shelf : source_color = vec4(0.19, 0.52, 0.53, 0.52);
 uniform float cold_shelf_m = 25.0;
 uniform float tropic_blend_m = 120.0;
+// Society (Fase 298): de far_sea_from_m a far_sea_to_m da câmera, a cor do fundo escurece até far_sea_dark e o reflexo do céu cai
+// até far_sea_specular dele (o céu claro no ângulo raso deixava o mar de longe leitoso): o mar de longe fica azul-marinho
+uniform float far_sea_from_m = 200.0;
+uniform float far_sea_to_m = 700.0;
+uniform float far_sea_dark = 0.45;
+uniform float far_sea_specular = 0.4;
 group_uniforms;
 
 // Society (Fase 110): a cintilação do sol no mar. Pontos de brilho onde o reflexo do sol cai, em células de glint_cell_m que
@@ -617,6 +623,8 @@ void fragment() {
 	METALLIC = metallic;
 	SPECULAR = specular;
 	ROUGHNESS = roughness;
+	// Fase 298: menos reflexo do céu de longe
+	SPECULAR *= mix(1.0, far_sea_specular, smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX)));
 	
 	vec4 albedo_tex;
 #ifdef WORLD_TRIPLANAR
@@ -679,6 +687,9 @@ void fragment() {
 	// Blend the screen color with depth fade
 #ifdef DEPTH_FOG
 	vec4 deep_color = mix(cold_deep, color_deep, tropic);
+	// Fase 298: o mar de longe mais escuro
+	float far_sea = smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX));
+	deep_color.rgb *= mix(1.0, far_sea_dark, far_sea);
 	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb * water_light, color_shallow.a);
 	vec3 deep_screen_color = mix(screen_color, deep_color.rgb * water_light, deep_color.a);
 	if (FRONT_FACING) {
