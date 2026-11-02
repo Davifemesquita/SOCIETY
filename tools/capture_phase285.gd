@@ -17,7 +17,9 @@ func _run() -> void:
 	await _shot(game, "03_prado_de_cima.png", meadow, 160.0, 0.6)
 	var poppies := _find_poppies(game, meadow)
 	await _shot(game, "04_papoulas.png", poppies, 30.0, 0.6)
-	await _shot(game, "05_barranco.png", grid.cell_world(_find_bank(grid, meadow)), 40.0, 0.6)
+	var bank := grid.cell_world(_find_bank(grid, meadow))
+	await _shot(game, "05_barranco.png", bank, 35.0, 0.6)
+	await _shot(game, "06_barranco_do_outro_lado.png", bank, 35.0, 0.6 + PI)
 	get_tree().quit()
 
 
@@ -65,7 +67,8 @@ func _find_poppies(game: GameScreen, near: Vector3) -> Vector3:
 	return best
 
 
-## A célula de terra na borda de cima de um barranco (a vizinha a duas células, para algum lado, 2 m ou mais abaixo) mais perto
+## A célula de terra na borda de cima de um barranco aberto (a vizinha a duas células, para algum lado, 3 m ou mais abaixo, as
+## duas sem árvore) mais perto
 ## do ponto.
 func _find_bank(grid: IslandGrid, near: Vector3) -> Vector2i:
 	var best := grid.size / 2
@@ -80,7 +83,10 @@ func _find_bank(grid: IslandGrid, near: Vector3) -> Vector2i:
 				continue
 			var top := grid.cell_height(cell)
 			for step: Vector2i in [Vector2i(2, 0), Vector2i(-2, 0), Vector2i(0, 2), Vector2i(0, -2)]:
-				if grid.is_land(cell + step) and top - grid.cell_height(cell + step) >= 2.0:
+				var below := cell + step
+				# um barranco aberto: o pé dele também sem árvore, e o capim em cima também
+				if grid.is_land(below) and grid.trees[grid.index(below)] == 0 and grid.trees[grid.index(cell - step / 2)] == 0 \
+						and top - grid.cell_height(below) >= 3.0:
 					best_score = score
 					best = cell
 					break

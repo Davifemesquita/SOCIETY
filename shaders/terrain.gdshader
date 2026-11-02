@@ -138,6 +138,13 @@ uniform float flower_meadow_m = 36.0;
 uniform float flower_far_m = 75.0;
 uniform vec3 flower_white : source_color = vec3(0.95, 0.94, 0.88);
 uniform vec3 flower_yellow : source_color = vec3(0.96, 0.82, 0.22);
+// Fase 289: a beira de cima do barranco (0 desliga): a faixa de inclinação dos dados onde ela aparece, o tom da terra, o tamanho
+// das pedras (a textura de rocha bank_stone_scale vezes menor) e a cor das raízes
+uniform float bank_edge = 1.0;
+uniform vec2 bank_slope = vec2(0.22, 0.32);
+uniform vec3 bank_soil_tint = vec3(0.5, 0.44, 0.38);
+uniform float bank_stone_scale = 2.6;
+uniform vec3 bank_root_color : source_color = vec3(0.16, 0.11, 0.07);
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
 // Fase 259: a areia mais clara (antes 1,3/1,2/1,0) e puxando o matiz para este dourado (proporção linear), guardando a
 // luminância, como a grama da Fase 257: a textura cinza, só graduada, saía cinza-taupe (escolhido no tools/color_lab.tscn).
@@ -385,6 +392,32 @@ void fragment() {
 	}
 	ground_a = mix(ground_a, mud_a, mud * (1.0 - rock));
 	ground_n = mix(ground_n, mud_n, mud * (1.0 - rock));
+	// Fase 289: a beira de cima do barranco. Onde o chão ainda é capim mas a encosta começa logo adiante (a inclinação dos dados,
+	// de 2 em 2 m, sobe antes da normal) e na crista (a curvatura abaixo do meio), uma faixa de terra com pedras e raízes à
+	// mostra, de borda recortada: o capim não acaba de uma vez na rocha. Não entra na areia nem na lama.
+	if (bank_edge > 0.0) {
+		float crest = 1.0 - smoothstep(0.42, 0.47, data.g);
+		float near_slope = smoothstep(bank_slope.x, bank_slope.y, data.r);
+		float band = near_slope * crest * (1.0 - rock) * (1.0 - sand) * (1.0 - mud) * bank_edge;
+		// a borda recortada e a faixa interrompida a trechos (o capim chega até a rocha em parte da beira)
+		float gaps = smoothstep(0.35, 0.6, value_noise(world_position.xz * 0.22 + vec2(5.0, 1.0)));
+		band = smoothstep(0.35, 0.7, band * gaps + (value_noise(world_position.xz * 1.7) - 0.5) * 0.4);
+		if (band > 0.001) {
+			vec3 soil = has_roads ? texture(road_albedo, vec3(world_position.xz / road_texture_m, 0.0)).rgb : forest_a.rgb;
+			soil *= bank_soil_tint;
+			vec2 stone_uv = world_position.xz / texture_meters * bank_stone_scale;
+			vec4 stone_a = texture(rock_albedo, stone_uv);
+			float stones = smoothstep(0.55, 0.72, stone_a.a);
+			vec3 stone = rock_grey * dot(stone_a.rgb, vec3(0.299, 0.587, 0.114)) * rock_light;
+			vec3 edge_rgb = mix(soil, stone, stones);
+			// as raízes: fios escuros e tortos, só em parte da faixa
+			float root = (1.0 - smoothstep(0.0, 0.03, abs(value_noise(world_position.xz * vec2(1.3, 2.1)) - 0.5)))
+					* step(0.55, value_noise(world_position.xz * 0.4 + vec2(9.0, 3.0)));
+			edge_rgb = mix(edge_rgb, bank_root_color, root * 0.85);
+			ground_a.rgb = mix(ground_a.rgb, edge_rgb, band);
+			ground_n = mix(ground_n, vec4(texture(rock_normal, stone_uv).rgb, 0.85), band * stones);
+		}
+	}
 
 	float land = step(0.0, world_position.y);
 	// Fase 38: a estrada de terra pela distância até a linha do meio, com borda de ruído misturada pela altura do chão

@@ -3368,6 +3368,12 @@ Regras que já custaram investigação:
   borda (`poppy_strength`, `POPPY_EDGE_SCALE`) e o meio do canteiro ganha touceiras pequenas a mais (`_poppy_extras`, sorteio
   próprio pelo hash da célula: o das outras peças não muda).
 
+### Beira do barranco (Fase 289, nossa)
+
+- **Plano** em `docs/plano_fase289.md`. No `shaders/terrain.gdshader` (`bank_*`), uma faixa de terra escura, pedras e raízes na
+  crista dos barrancos (a curvatura dos dados abaixo do meio e a inclinação deles subindo antes da rocha), recortada e
+  interrompida a trechos, fora da rocha, da areia e da lama.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3667,6 +3673,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 286 — Tapete de capim (nossa) | **feita em 02/11/2026**: perto da câmera o prado vira um tapete de folhas de capim, mais altas e escuras nas manchas de capim alto, balançando com o vento e sumindo aos poucos com a distância; plano em `docs/plano_fase286.md` |
 | 287 — Flores miúdas (nossa) | **feita em 02/11/2026**: pontinhos de flor brancos e amarelos no capim, mais nos prados de flor e no capim baixo, no chão e nos tufos do tapete; plano em `docs/plano_fase287.md` |
 | 288 — Papoulas soltas (nossa) | **feita em 02/11/2026**: os canteiros de papoulas deixam de parecer plantados em grade: touceiras soltas, de tamanhos diferentes, mais juntas no meio do canteiro e menores na borda; plano em `docs/plano_fase288.md` |
+| 289 — Beira do barranco (nossa) | **feita em 02/11/2026**, a última do roteiro do prado: na beira de cima dos barrancos o capim acaba em trechos de terra escura com pedras e raízes, em vez de virar rocha de uma vez; plano em `docs/plano_fase289.md` |
 
 Pendências já vistas para fases futuras:
 

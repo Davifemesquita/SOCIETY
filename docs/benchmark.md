@@ -2680,3 +2680,10 @@ carregar 6,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primit
 
 74,6 FPS (287: 74,1), 1% low 38,5, p50/p95/p99 12,7/17,0/24,5 ms, GPU 12,3 ms, jogo novo 12,4 s, montar tudo 9,5 s, carregar
 6,5 s, construir com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais. Neutra.
+
+## Fase 289 — beira do barranco (02/11/2026)
+
+73,8 FPS (288: 74,6), 1% low 37,3, p50/p95/p99 12,8/17,0/25,1 ms, GPU 12,3 ms (288: 12,3), jogo novo 12,4 s, montar tudo 9,4 s,
+carregar 6,5 s, construir com a ilha cheia 17,6 ms; objetos, draw calls e primitivas iguais. Neutra na GPU; o FPS segue a descida
+lenta do ciclo do prado (de 75,9 na Fase 284 a 73,8), com a GPU de 12,1 a 12,3 ms: as manchas, as flores e a beira no terreno e o
+tapete, que no trajeto do benchmark quase não aparece.
