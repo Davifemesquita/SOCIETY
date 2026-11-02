@@ -286,6 +286,7 @@ var potato_basket_view: PotatoBasketView
 var canoe_view: CanoeView
 var heron_view: HeronView
 var wreck_view: WreckView
+var summit_cross_view: SummitCrossView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -877,6 +878,10 @@ func _ready() -> void:
 	wreck_view.name = "Wrecks"
 	add_child(wreck_view)
 	wreck_view.setup(simulation)
+	summit_cross_view = SummitCrossView.new()
+	summit_cross_view.name = "SummitCrosses"
+	add_child(summit_cross_view)
+	summit_cross_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)

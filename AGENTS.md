@@ -3237,6 +3237,12 @@ Regras que já custaram investigação:
   (ao longo da costa, adernado e afundado) e `wreck_mesh` (a quilha e as cavernas), num MultiMesh. Captura em
   `tools/capture_phase268.tscn` (a câmera do lado do mar).
 
+### Cruzeiro no morro (Fase 269, nossa)
+
+- **Plano** em `docs/plano_fase269.md`. `SummitCrossView` (`GameScreen.summit_cross_view`): `summit` (a célula livre e quase plana
+  mais alta de cada ilha temperada, acima de `MIN_HEIGHT_M`), `place_of` (virado para o meio da ilha) e `cross_mesh`, num
+  MultiMesh. Captura em `tools/capture_phase269.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3516,6 +3522,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 266 — Ruínas de muro (nossa) | **feita em 02/11/2026**: pedaços de muro de pedra seca quebrados em degraus, com as pedras caídas e o musgo, de vez em quando no campo aberto das ilhas temperadas; plano em `docs/plano_fase266.md` |
 | 267 — Espinheiro florido (nossa) | **feita em 02/11/2026**: o arbusto de espinheiro de copa torta coberto de flor branca e rosada na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase267.md` |
 | 268 — Casco naufragado (nossa) | **feita em 02/11/2026**: o esqueleto de um navio velho (a quilha, a roda de proa e as cavernas curvas, umas quebradas, e o mastro partido) encalhado na areia da costa baixa das ilhas temperadas, longe das vilas; plano em `docs/plano_fase268.md` |
+| 269 — Cruzeiro no morro (nossa) | **feita em 02/11/2026**, a última do roteiro garça, ruína e cruzeiro: a cruz de pedra clara sobre o degrau e o pedestal, com o musgo no pé, no ponto mais alto e livre de cada ilha temperada, virada para o meio dela; plano em `docs/plano_fase269.md` |
 
 Pendências já vistas para fases futuras:
 

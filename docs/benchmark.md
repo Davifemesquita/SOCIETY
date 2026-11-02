@@ -2557,3 +2557,9 @@ perto). Neutra.
 76,7 FPS (267: 76,9), 1% low 37,9, p50/p95/p99 12,3/16,5/24,5 ms, GPU 11,9 ms, montar tudo 9,3 s, carregar 6,4 s, construir com a
 ilha cheia 17,5 ms; +5 objetos e draw calls (a camada, com as passadas de sombra) e +21 mil primitivas no quadro com tudo visível.
 Neutra.
+
+## Fase 269 — cruzeiro no morro (02/11/2026)
+
+76,2 FPS (268: 76,7), 1% low 37,9, p50/p95/p99 12,4/16,7/24,6 ms, GPU 12,1 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
+ilha cheia 16,9 ms; +5 objetos e draw calls (a camada, com as passadas de sombra) e +7 mil primitivas no quadro com tudo visível.
+Neutra. Fecha o roteiro garça, ruína e cruzeiro (Fases 265 a 269).
