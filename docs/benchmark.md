@@ -2655,3 +2655,9 @@ com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais. Neutra.
 75,9 FPS (283: 76,1), 1% low 38,6, p50/p95/p99 12,5/16,6/24,6 ms, GPU 12,1 ms (283: 12,0), jogo novo 12,4 s, montar tudo 9,5 s,
 carregar 6,4 s, construir com a ilha cheia 18,3 ms (no vaivém de 17 a 18 ms); objetos, draw calls e primitivas iguais. Neutra.
 Fecha o ciclo do mar e do rio (Fases 280 a 284) com a GPU onde ele começou (279: 12,1 ms).
+
+## Fase 285 — manchas do prado (02/11/2026)
+
+Primeira do ciclo do prado: 74,8 FPS (284: 75,9), 1% low 38,2, p50/p95/p99 12,6/16,9/24,7 ms, GPU 12,2 ms (284: 12,1), jogo novo
+12,4 s, montar tudo 9,5 s, carregar 6,5 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais. Neutra
+(dois ruídos e uma leitura de textura a mais por pixel de terreno, ~0,1 ms).

@@ -3342,6 +3342,12 @@ Regras que já custaram investigação:
   (`swell_lengths_m`, `swell_slopes`) dobram a normal com o vento, longe da costa (`swell_open_m`), antes do Fresnel e do brilho:
   o mar aberto ondula de longe sem mexer nos vértices.
 
+### Manchas do prado (Fase 285, nossa)
+
+- **Plano** em `docs/plano_fase285.md`, primeira do roteiro `docs/plano_fases_285_289.md` (o prado). No `shaders/terrain.gdshader`,
+  logo depois da cor da grama, manchas de capim alto escuro (com mais relevo) e baixo claro pelo ruído de `meadow_patch_m`; só na
+  grama. Captura do ciclo em `tools/capture_phase285.tscn` (o prado aberto fora da vila, as papoulas e a borda de um barranco).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3637,6 +3643,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 282 — Água de noite (nossa) | **feita em 02/11/2026**: de noite o mar fica azul-escuro e a faixa da costa só pega a lua; acabou o halo ciano aceso em volta das ilhas; plano em `docs/plano_fase282.md` |
 | 283 — Rio escuro (nossa) | **feita em 02/11/2026**: os rios deixam de ser espuma branca de margem a margem e viram água calma e escura; a margem baixa dos rios das ilhas temperadas vira cascalho cinza; plano em `docs/plano_fase283.md` |
 | 284 — Marulho (nossa) | **feita em 02/11/2026**, a última do roteiro do mar e do rio: o mar aberto ganha a ondulação larga que se lê de longe, com o reflexo do céu ondulando, andando com o vento; plano em `docs/plano_fase284.md` |
+| 285 — Manchas do prado (nossa) | **feita em 02/11/2026**, primeira do roteiro do prado (Fases 285 a 289): o capim deixa de ser de um verde só e ganha manchas de capim alto escuro e de capim baixo claro, de alguns metros; plano em `docs/plano_fase285.md` |
 
 Pendências já vistas para fases futuras:
 

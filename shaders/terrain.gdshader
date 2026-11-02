@@ -122,6 +122,13 @@ uniform float dry_strength = 0.15;
 // amarronzada, só graduada, saía cor de oliva de longe (escolhido no tools/color_lab.tscn entre três verdes).
 uniform vec3 grass_tint = vec3(0.52, 1.0, 0.2);
 uniform float grass_tint_mix = 0.6;
+// Fase 285: as manchas do prado (0 desliga): o tamanho da mancha, a cor do capim alto e a do baixo (fatores) e quanto menor é a
+// textura de relevo do capim alto
+uniform float meadow_patches = 1.0;
+uniform float meadow_patch_m = 9.0;
+uniform vec3 meadow_tall_tint = vec3(0.64, 0.79, 0.58);
+uniform vec3 meadow_short_tint = vec3(1.22, 1.15, 0.8);
+uniform float meadow_tall_detail = 2.3;
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
 // Fase 259: a areia mais clara (antes 1,3/1,2/1,0) e puxando o matiz para este dourado (proporção linear), guardando a
 // luminância, como a grama da Fase 257: a textura cinza, só graduada, saía cinza-taupe (escolhido no tools/color_lab.tscn).
@@ -274,6 +281,19 @@ void fragment() {
 	grass_a.rgb = max(mix(vec3(grass_luma), grass_a.rgb, grass_saturation), vec3(0.0));
 	vec3 tinted = grass_tint * (dot(grass_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(grass_tint, vec3(0.299, 0.587, 0.114)));
 	grass_a.rgb = mix(grass_a.rgb, tinted, grass_tint_mix);
+	// Fase 285: as manchas do prado. Pelo ruído de meadow_patch_m (com uma oitava menor, que recorta a borda), o capim alto
+	// (mais escuro e verde, com mais relevo: a textura da grama de novo, menor, por cima) e o capim baixo (mais claro e seco).
+	// Só na grama: a mata, a estrada, a areia, a rocha e a lama entram por cima dela depois.
+	if (meadow_patches > 0.0) {
+		float patch = value_noise(world_position.xz / meadow_patch_m) * 0.7
+				+ value_noise(world_position.xz / (meadow_patch_m * 0.37)) * 0.3;
+		float tall = smoothstep(0.52, 0.62, patch) * meadow_patches;
+		float short_grass = (1.0 - smoothstep(0.38, 0.48, patch)) * meadow_patches;
+		grass_a.rgb *= mix(vec3(1.0), meadow_tall_tint, tall);
+		grass_a.rgb *= mix(vec3(1.0), meadow_short_tint, short_grass);
+		vec4 tall_n = texture(grass_normal, uv * meadow_tall_detail);
+		grass_n.rgb = mix(grass_n.rgb, tall_n.rgb, tall * 0.6);
+	}
 	forest_a.rgb *= forest_grade;
 	// a lama (Fase 19) sai da areia com a graduação de antes da Fase 259: a areia dourada não muda a margem dos rios
 	vec3 mud_base = sand_a.rgb * vec3(1.3, 1.2, 1.0);
