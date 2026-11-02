@@ -113,6 +113,11 @@ uniform float wave_calm_m = 22.0;
 // tanto mais finas quanto mais perto de 1 for band_sharpness (era 0,8)
 uniform float shore_line_m = 3.0;
 uniform float band_sharpness = 0.93;
+// Society (Fase 295): longe da areia as bandas se quebram em trechos de band_piece_m, sorteados de novo a cada onda; a falta
+// cresce até band_gap de band_whole_m (inteiras junto da areia) até o fim do alcance delas
+uniform float band_piece_m = 6.0;
+uniform float band_gap = 0.55;
+uniform float band_whole_m = 2.5;
 // Society (Fase 282): quanto da cor da água sobra de noite, por canal (fator linear, não cor: puxa para o azul de lua)
 uniform vec3 night_water = vec3(0.16, 0.2, 0.3);
 // Society (Fase 283): o canal estreito (ver channel no fragment) e a cor da água dele, escura e calma
@@ -735,6 +740,12 @@ void fragment() {
 		// Fase 281: as bandas viram linhas finas (band_sharpness) e quebradas ao longo da costa pela textura da espuma
 		float band = smoothstep(band_sharpness, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
 		band *= smoothstep(0.3, 0.6, foam_tex.a) * (1.0 - channel);
+		// Fase 295: a onda (o número da crista, que só muda no vale, quando a banda não aparece) sorteia os trechos dela
+		float wave_at = coast_phase(-shore_m, TIME * float(!freeze_time)) / TAU - 0.75;
+		float crest = floor(wave_at);
+		float pieces = reef_noise(world_coordinates.xz / band_piece_m + vec2(crest * 7.31, crest * 3.17));
+		float gap = band_gap * smoothstep(band_whole_m, shore_foam_width_m, shore_m);
+		band *= smoothstep(gap, gap + 0.18, pieces);
 		float edge = (1.0 - smoothstep(0.0, shore_line_m * 0.5, shore_m)) * (1.0 - channel * 0.8);
 		float coast_foam = clamp(band * 0.8 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
 		EMISSION *= 1.0 - coast_foam;

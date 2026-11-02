@@ -3407,6 +3407,14 @@ Regras que já custaram investigação:
   `NEAR_SEA`, com sombra): o abeto de perto da Fase 275 a 0,4 do tamanho, com o material dele, só nas células de desnível
   `CLIFF_SPRUCE_MIN_RELIEF_M` das temperadas, de pé.
 
+### Espuma em trechos (Fase 295, nossa)
+
+- **Plano** em `docs/plano_fase295.md`, primeira do roteiro `docs/plano_fases_295_299.md` (mar e costa II; o Anno não foi aberto:
+  o dono estava no PC). No `shaders/water.gdshader`, as bandas da Fase 35 se quebram em trechos (`band_piece_m`, `band_gap`) longe
+  da areia (`band_whole_m`), sorteados de novo a cada onda pelo número da crista (só muda no vale). A linha branca solta no mar era
+  a última banda, não a espuma das pedras. Laboratório: `CAPTURA_MAR=espuma` (um parâmetro da água por vez) e `CAPTURA_MAR=perfil`
+  (as alturas da praia) no `tools/capture_phase295.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3712,6 +3720,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 292 — Praia de seixos (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, trechos da praia junto das pedras viram seixos cinzentos e redondos, escuros e brilhantes na beira da água; plano em `docs/plano_fase292.md` |
 | 293 — Espuma nas pedras (nossa) | **feita em 02/11/2026**: volta a linha fina de espuma em volta do que entra na água longe da costa (pedras, estacas, boias, degraus do cais), sem reabrir a faixa branca da praia; plano em `docs/plano_fase293.md` |
 | 294 — Abetos na rocha (nossa) | **feita em 02/11/2026**, a última do roteiro da rocha e da costa: abetos pequenos em camadas presos nas encostas íngremes e nas falésias das ilhas temperadas; plano em `docs/plano_fase294.md` |
+| 295 — Espuma em trechos (nossa) | **feita em 02/11/2026**, primeira do roteiro mar e costa II (Fases 295 a 299): a linha branca contínua que corria solta no mar, paralela à praia, vira trechos curtos de espuma que mudam a cada onda; junto da areia a espuma segue inteira; plano em `docs/plano_fase295.md` |
 
 Pendências já vistas para fases futuras:
 
