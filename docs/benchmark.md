@@ -2698,3 +2698,9 @@ commit anterior) deu 74,5 FPS e GPU 12,4 ms. Os estratos custam ~0,1 ms; o resto
 
 73,2 FPS (290: 73,2 a 73,7), 1% low 37,7, p50/p95/p99 12,9/17,3/24,6 ms, GPU 12,5 ms (290: 12,5), jogo novo 12,5 s, montar tudo
 9,5 s, carregar 6,5 s, construir com a ilha cheia 17,4 ms; objetos, draw calls e primitivas iguais. Neutra.
+
+## Fase 292 — praia de seixos (02/11/2026)
+
+73,0 FPS (291: 73,2), 1% low 36,9, p50/p95/p99 13,0/17,0/24,8 ms, GPU 12,6 ms (291: 12,5), jogo novo 12,3 s, montar tudo 9,4 s,
+carregar 6,5 s, construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais. Neutra (a busca da rocha e o
+Voronoi só na areia).

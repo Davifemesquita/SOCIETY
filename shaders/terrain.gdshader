@@ -62,6 +62,14 @@ uniform float gravel_scale = 3.1;
 uniform float gravel_wet_m = 0.8;
 // Fase 283: acima desta altura do mar a margem volta à lama de antes (a borda de cima dos barrancos, as manchas no planalto)
 uniform float gravel_top_m = 2.5;
+// Fase 292: a praia de seixos (0 = só areia; a TerrainView põe 1 nas temperadas): até onde ela procura a rocha, o tamanho do trecho
+// de seixos, o tamanho do seixo, a cor média e até que altura acima da água ela fica molhada
+uniform float pebble_beach = 0.0;
+uniform float pebble_reach_m = 5.0;
+uniform float pebble_stretch_m = 70.0;
+uniform float pebble_size_m = 0.22;
+uniform vec3 pebble_color = vec3(0.52, 0.51, 0.49);
+uniform float pebble_wet_m = 0.9;
 uniform float wet_sand_m = 0.9;
 // Fase 34: hex-tiling (pelo nível gráfico) e até onde da câmera ele vale
 uniform bool hex_tiling = true;
@@ -337,6 +345,52 @@ void fragment() {
 	sand_a.rgb *= sand_grade;
 	vec3 golden = sand_tint * (dot(sand_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(sand_tint, vec3(0.299, 0.587, 0.114)));
 	sand_a.rgb = mix(sand_a.rgb, golden, sand_tint_mix);
+	// Fase 292: a praia de seixos. Nas temperadas (pebble_beach), a areia que tem rocha a pebble_reach_m (a inclinação dos dados
+	// em quatro lados) e cai num trecho de seixos (o ruído de pebble_stretch_m: nem toda costa de pedra) vira seixos cinzentos e
+	// redondos (células de Voronoi de pebble_size_m, cada uma num tom, com a junta escura), escuros e brilhantes junto da água.
+	if (pebble_beach > 0.0) {
+		vec2 probe = vec2(pebble_reach_m) / region_bounds.zw;
+		float near_rock = max(max(texture(terrain_data, cell + vec2(probe.x, 0.0)).r, texture(terrain_data, cell - vec2(probe.x, 0.0)).r),
+				max(texture(terrain_data, cell + vec2(0.0, probe.y)).r, texture(terrain_data, cell - vec2(0.0, probe.y)).r));
+		float pebbly = smoothstep(0.22, 0.38, near_rock) * smoothstep(0.3, 0.55, value_noise(world_position.xz / pebble_stretch_m))
+				* pebble_beach;
+		// a borda com a areia recortada, não um degradê
+		pebbly = smoothstep(0.35, 0.6, pebbly + (value_noise(world_position.xz * 0.8) - 0.5) * 0.35);
+		if (pebbly > 0.001) {
+			// cada seixo é uma célula de Voronoi de pebble_size_m (o hash inteiro dos estratos: as coordenadas são grandes)
+			vec2 q = world_position.xz / pebble_size_m;
+			vec2 base_cell = floor(q);
+			float best = 8.0;
+			float second = 8.0;
+			vec2 best_id = vec2(0.0);
+			vec2 best_off = vec2(0.0);
+			for (int y = -1; y <= 1; y++) {
+				for (int x = -1; x <= 1; x++) {
+					vec2 id = base_cell + vec2(float(x), float(y));
+					vec2 at = id + 0.15 + 0.7 * vec2(strata_hash(id), strata_hash(id + vec2(17.0, 31.0)));
+					vec2 off = q - at;
+					float d = dot(off, off);
+					if (d < best) {
+						second = best;
+						best = d;
+						best_id = id;
+						best_off = off;
+					} else if (d < second) {
+						second = d;
+					}
+				}
+			}
+			// a junta escura entre os seixos e o tom de cada um
+			float joint = smoothstep(0.0, 0.14, sqrt(second) - sqrt(best));
+			float tone = 0.62 + 0.55 * strata_hash(best_id + vec2(5.0, 9.0));
+			float wet_pebble = 1.0 - smoothstep(0.1, pebble_wet_m, world_position.y);
+			vec3 pebble = pebble_color * tone * mix(0.3, 1.0, joint) * mix(1.0, 0.55, wet_pebble);
+			// a pedra estufada: a normal sai do meio dela
+			vec2 bulge = clamp(best_off * 1.3, vec2(-0.45), vec2(0.45)) * joint;
+			sand_a = mix(sand_a, vec4(pebble, joint), pebbly);
+			sand_n = mix(sand_n, vec4(0.5 + bulge.x, 0.5 + bulge.y, 1.0, mix(0.7, 0.2, wet_pebble)), pebbly);
+		}
+	}
 
 	// rocha: triplanar só na encosta (na plana o peso dela é zero e nada é lido)
 	vec4 rock_a = vec4(0.0);
