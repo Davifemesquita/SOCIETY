@@ -2534,3 +2534,9 @@ ilha cheia 17,5 ms; objetos e primitivas iguais. Neutra: só um termo a mais na 
 76,5 FPS (263: 76,1), 1% low 38,7, p50/p95/p99 12,4/16,5/24,3 ms, GPU 12,0 ms, montar tudo 9,5 s, carregar 6,5 s, construir com a
 ilha cheia 17,2 ms; objetos e primitivas iguais. Neutra: a força do SSAO não muda o custo dele. Fecha o roteiro cor viva II
 (Fases 260 a 264): do começo ao fim do ciclo o FPS ficou entre 76 e 78 e a GPU em 12,0 ms.
+
+## Fase 265 — garças no rio (02/11/2026)
+
+Primeira do ciclo garça, ruína e cruzeiro: 76,4 FPS (264: 76,5), 1% low 37,9, p50/p95/p99 12,3/16,7/24,8 ms, GPU 12,0 ms, montar
+tudo 9,3 s, carregar 6,4 s, construir com a ilha cheia 17,8 ms; +1 objeto e draw call (a camada) e +350 primitivas no quadro com
+tudo visível. Neutra.

@@ -81,6 +81,12 @@ func rebuild() -> void:
 
 ## As margens da ilha com canoa: [a célula de terra, o lado dela que dá para o rio]. Vazio na ilha plana.
 static func banks(world: WorldState, _data: GameData, island_id: int) -> Array[Array]:
+	return river_banks(world, island_id, CANOE_STEP, 254, CANOE_CHANCE)
+
+
+## As margens livres e baixas da ilha numa rede de step células, cada ponto com a chance pelo hash de salt (as canoas e, desde a
+## Fase 265, as garças): [a célula de terra, o lado dela que dá para o rio]. Vazio na ilha plana.
+static func river_banks(world: WorldState, island_id: int, step: int, salt: int, chance: float) -> Array[Array]:
 	var result: Array[Array] = []
 	var grid := world.island(island_id)
 	if grid == null or grid.flat:
@@ -94,14 +100,14 @@ static func banks(world: WorldState, _data: GameData, island_id: int) -> Array[A
 	# as margens saem das células de rio (poucas, achadas pelo find nativo): cada terra encostada nelas vai para o ponto da rede em
 	# cuja vizinhança de meio passo ela cai, e fica a mais perto dele (no empate, a de menor dy e depois menor dx: a ordem de uma
 	# varredura em linhas). Varrer a vizinhança de todo ponto custava ~160 ms a cada obra na semente 1840.
-	var reach := floori(CANOE_STEP / 2.0)
+	var reach := floori(step / 2.0)
 	var width := grid.size.x
 	var seen: Dictionary[int, bool] = {}
 	var best: Dictionary[Vector2i, Array] = {}
 	var at := grid.ground.find(IslandGrid.Ground.RIVER)
 	while at >= 0:
-		for step: int in [1, -1, width, -width]:
-			var index := at + step
+		for side: int in [1, -1, width, -width]:
+			var index := at + side
 			if index < 0 or index >= grid.ground.size() or seen.has(index):
 				continue
 			seen[index] = true
@@ -109,8 +115,8 @@ static func banks(world: WorldState, _data: GameData, island_id: int) -> Array[A
 			var river := _river_side(grid, cell)
 			if river == Vector2i.ZERO:
 				continue
-			var point := Vector2i(1 + floori((cell.x - 1 + reach) / float(CANOE_STEP)) * CANOE_STEP,
-					1 + floori((cell.y - 1 + reach) / float(CANOE_STEP)) * CANOE_STEP)
+			var point := Vector2i(1 + floori((cell.x - 1 + reach) / float(step)) * step,
+					1 + floori((cell.y - 1 + reach) / float(step)) * step)
 			if point.x >= grid.size.x - 1 or point.y >= grid.size.y - 1:
 				continue
 			var offset := cell - point
@@ -125,8 +131,8 @@ static func banks(world: WorldState, _data: GameData, island_id: int) -> Array[A
 	points.assign(best.keys())
 	points.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.y < b.y or (a.y == b.y and a.x < b.x))
 	for point: Vector2i in points:
-		var pick := FireflyView.cell_hash(island_id, point.x, point.y, 254)
-		if float(pick % 1000) / 1000.0 >= CANOE_CHANCE:
+		var pick := FireflyView.cell_hash(island_id, point.x, point.y, salt)
+		if float(pick % 1000) / 1000.0 >= chance:
 			continue
 		var cell: Vector2i = best[point][0]
 		if SealView._near(built, cell):

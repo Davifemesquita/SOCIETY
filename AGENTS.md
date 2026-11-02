@@ -3211,6 +3211,13 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase264.md`. `GameConfig.ssao_intensity` 0,9 (era 1,6): o vão entre as copas e o pé das matas deixam de
   ficar quase pretos. A parte do céu na luz ambiente quase não muda a sombra (medido no laboratório).
 
+### Garças no rio (Fase 265, nossa)
+
+- **Plano** em `docs/plano_fase265.md`, primeira do roteiro `docs/plano_fases_265_269.md` (garça, ruína e cruzeiro; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). A busca das margens das canoas virou `CanoeView.river_banks` (rede, sal e chance
+  como parâmetros). `HeronView` (`GameScreen.heron_view`): `spot` (junto da água, do lado do rio) e `heron_mesh`, virando pelo
+  `PerchedGullView.heading_at` em volta da frente para o rio, num MultiMesh sem sombra. Captura em `tools/capture_phase265.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3486,6 +3493,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 262 — Campos coloridos (nossa) | **feita em 01/11/2026**: as leiras dos campos ganham a cor da plantação conforme ela cresce, o trigo do verde ao dourado e as outras no verde delas: de longe cada campo vira um retalho colorido; plano em `docs/plano_fase262.md` |
 | 263 — Noite azul (nossa) | **feita em 01/11/2026**: a noite deixa de ser quase preta fora das janelas: as ruas, os telhados e a mata se leem no azul da lua, com as luzes por cima; plano em `docs/plano_fase263.md` |
 | 264 — Sombra aberta (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva II: a oclusão de ambiente mais leve, e o vão entre as copas e o pé das matas deixam de ficar quase pretos; plano em `docs/plano_fase264.md` |
+| 265 — Garças no rio (nossa) | **feita em 02/11/2026**, primeira do roteiro garça, ruína e cruzeiro (Fases 265 a 269): a garça-real cinza de pé junto da água na margem baixa dos rios, longe das vilas, virando de um lado para o outro; plano em `docs/plano_fase265.md` |
 
 Pendências já vistas para fases futuras:
 
