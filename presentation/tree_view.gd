@@ -16,11 +16,20 @@ extends Node3D
 ## Desde a Fase 140 as células de mata cortadas em volta dos lenhadores (`StumpView.cut_cells`) ficam sem árvore no
 ## desenho (a simulação ainda as conta); refeitas quando um prédio entra ou sai.
 ## Desde a Fase 275 a conífera da mata é quase sempre o abeto-vermelho (galhos até perto do chão); o pinheiro-silvestre fica
-## em PINE_SHARE delas, mais nos patamares altos.
+## em PINE_SHARE delas, mais nos patamares altos. Desde a Fase 276 a mata temperada tem uma árvore por célula, só em parte das
+## células (`drawn_seeds`); desde a Fase 277, bétulas entre as folhosas, mais na beira e na terra baixa.
 
 const CHUNK_CELLS := 64
 ## Folhosas e coníferas: [espécie, variante] do TreeModel.
-const BROADLEAF: Array[Array] = [[TreeModel.Species.OAK, 0], [TreeModel.Species.OAK, 1], [TreeModel.Species.BEECH, 0], [TreeModel.Species.BEECH, 1]]
+## Fase 277: as bétulas no fim (`broadleaf_pick` escolhe).
+const BROADLEAF: Array[Array] = [[TreeModel.Species.OAK, 0], [TreeModel.Species.OAK, 1], [TreeModel.Species.BEECH, 0],
+		[TreeModel.Species.BEECH, 1], [TreeModel.Species.BIRCH, 0], [TreeModel.Species.BIRCH, 1]]
+## Fase 277: entre as folhosas, a parte de bétulas: BIRCH_SHARE_EDGE na beira da mata (a célula de uma árvore só),
+## BIRCH_SHARE_LOW na terra baixa (abaixo de BIRCH_LOW_M) e BIRCH_SHARE no resto.
+const BIRCH_SHARE_EDGE := 0.4
+const BIRCH_SHARE_LOW := 0.25
+const BIRCH_SHARE := 0.1
+const BIRCH_LOW_M := 4.0
 ## Fase 275: os abetos primeiro, depois os pinheiros (`conifer_pick` escolhe entre eles).
 const CONIFER: Array[Array] = [[TreeModel.Species.NORWAY_SPRUCE, 0], [TreeModel.Species.NORWAY_SPRUCE, 1],
 		[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Species.SCOTS_PINE, 1]]
@@ -279,7 +288,7 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 						entries.append([pick, _transform(grid, cell, seed_value, _scales[pick] * (0.75 + (seed_value / 13 % 50) / 100.0))])
 						continue
 					var conifer := (seed_value % 100) < (70 if high else 20)
-					var model := (seed_value / 7) % BROADLEAF.size()
+					var model := broadleaf_pick(seed_value, count, grid.cell_height(cell))
 					if conifer:
 						model = BROADLEAF.size() + conifer_pick(seed_value, grid.cell_height(cell))
 					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * tree_scale(seed_value))])
@@ -371,6 +380,19 @@ static func draws_tree(seed_value: int, count: int) -> bool:
 ## Fase 276: o tamanho da árvore temperada pelo sorteio dela, de SCALE_MIN a SCALE_MIN + SCALE_SPREAD.
 static func tree_scale(seed_value: int) -> float:
 	return SCALE_MIN + (seed_value / 13 % 100) / 100.0 * SCALE_SPREAD
+
+
+## Fase 277: a folhosa da árvore (índice em BROADLEAF) pelo sorteio dela, pelas árvores da célula (count) e pela altura do chão:
+## bétula mais na beira e na terra baixa; carvalho e faia pelo mesmo sorteio de antes.
+static func broadleaf_pick(seed_value: int, count: int, height_m: float) -> int:
+	var share := BIRCH_SHARE
+	if count <= 1:
+		share = BIRCH_SHARE_EDGE
+	elif height_m < BIRCH_LOW_M:
+		share = BIRCH_SHARE_LOW
+	if (seed_value / 31 % 100) < share * 100.0:
+		return 4 + (seed_value / 7) % 2
+	return (seed_value / 7) % 4
 
 
 ## Fase 275: a conífera da árvore (índice em CONIFER) pelo sorteio dela e pela altura do chão: abeto na maior parte, pinheiro

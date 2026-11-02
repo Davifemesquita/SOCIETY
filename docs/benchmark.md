@@ -2607,3 +2607,9 @@ quadro com tudo visível (os trechos com abeto e pinheiro ganham uma camada) e p
 desenhadas (eram 28830), montar tudo 9,1 s, carregar 6,5 s, construir com a ilha cheia 17,5 ms; objetos e draw calls iguais e
 ~0,4 milhão de primitivas a menos no quadro com tudo visível. Melhor: menos árvores desenhadas (uma por célula, e só em parte
 delas, na mata temperada) e copas menores.
+
+## Fase 277 — bétula (02/11/2026)
+
+78,1 FPS (276: 78,9), 1% low 38,7, p50/p95/p99 12,1/16,2/24,0 ms, GPU 11,7 ms (276: 11,5), jogo novo 12,3 s (17249 árvores
+desenhadas, iguais), montar tudo 9,2 s, carregar 6,4 s, construir com a ilha cheia 17,2 ms; +20 objetos e draw calls no quadro
+com tudo visível (os trechos com bétula ganham a camada dela) e primitivas iguais. Neutra.

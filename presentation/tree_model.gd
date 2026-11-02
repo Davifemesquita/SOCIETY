@@ -18,7 +18,10 @@ extends RefCounted
 ## um cone de camadas de galhos caídos até perto do chão, verde-escuro azulado — a beira da mata deixa de mostrar a paliçada
 ## de troncos dos pinheiros.
 
-enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM, TROPICAL_BROADLEAF, NORWAY_SPRUCE }
+## Fase 277: a bétula, a folhosa clara da beira da mata: tronco fino e branco com as manchas pretas e o pé escuro, galhos finos
+## subindo e a copa leve, de massas pequenas e soltas.
+
+enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM, TROPICAL_BROADLEAF, NORWAY_SPRUCE, BIRCH }
 
 const DETAIL_NEAR := 0
 const DETAIL_FAR := 1
@@ -51,6 +54,14 @@ const SPRUCE_TIERS := 8
 const SPRUCE_SPOKES := 12
 const SPRUCE_RADIUS_M := 2.0
 const SPRUCE_SKIRT_M := 0.45
+## Bétula (Fase 277): folha verde-clara, casca branca, o pé e as manchas quase pretos; altura do tronco (antes do sorteio),
+## massas da copa e manchas no tronco.
+const BIRCH_LEAF := Color(0.47, 0.65, 0.25)
+const BIRCH_BARK := Color(0.9, 0.88, 0.82)
+const BIRCH_MARK := Color(0.16, 0.15, 0.14)
+const BIRCH_HEIGHT_M := Vector2(7.6, 8.8)
+const BIRCH_MASSES := 7
+const BIRCH_MARKS := 9
 ## Coqueiro: altura do tronco (antes do sorteio), gomos do tronco, folhas da coroa e o comprimento delas, em metros.
 const PALM_HEIGHT_M := 8.0
 const PALM_SEGMENTS := 7
@@ -101,6 +112,8 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 			_tropical(tool, rng, detail)
 		Species.NORWAY_SPRUCE:
 			_spruce(tool, rng, detail)
+		Species.BIRCH:
+			_birch(tool, rng, detail)
 	var result := tool.commit()
 	result.surface_set_material(0, _material(result))
 	_cache[key] = result
@@ -172,6 +185,60 @@ static func _pine(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) ->
 		var radius := rng.randf_range(1.1, 1.5)
 		_crown(tool, rng, spot, Vector3(radius, radius * 0.5, radius), PINE_NEEDLE, detail, hull)
 	_puffs(tool, rng, spots, hull, PINE_NEEDLE, detail, 0.45)
+
+
+## Bétula: tronco fino e alto, um pouco torto, escuro no pé e branco daí para cima, com manchas pretas (só de perto); três
+## galhos finos subindo do meio do tronco e a copa em massas pequenas e soltas em volta da metade de cima, numa oval mais alta
+## que larga, e uma no alto.
+static func _birch(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> void:
+	var height := rng.randf_range(BIRCH_HEIGHT_M.x, BIRCH_HEIGHT_M.y)
+	var bend := Vector3(rng.randf_range(-0.35, 0.35), 0.0, rng.randf_range(-0.35, 0.35))
+	var foot := Vector3(0.0, 0.7, 0.0) + bend * 0.05
+	var middle := Vector3(0.0, height * 0.5, 0.0) + bend * 0.5
+	var top := Vector3(0.0, height * 0.86, 0.0) + bend
+	_limb(tool, Vector3.ZERO, foot, 0.17, 0.15, detail, BIRCH_MARK.lightened(0.15), BIRCH_BARK.darkened(0.25))
+	_limb(tool, foot, middle, 0.15, 0.11, detail, BIRCH_BARK.darkened(0.25), BIRCH_BARK)
+	_limb(tool, middle, top, 0.11, 0.05, detail, BIRCH_BARK, BIRCH_BARK)
+	var hull := Vector3(0.0, height * 0.66, 0.0) + bend * 0.7
+	var spots: Array[Vector3] = []
+	var turn := rng.randf() * TAU
+	for i: int in BIRCH_MASSES:
+		var f := float(i) / (BIRCH_MASSES - 1)
+		var angle := turn + i * 2.4
+		var out := lerpf(1.0, 0.45, f) * rng.randf_range(0.8, 1.15)
+		var spot := Vector3(0.0, lerpf(height * 0.42, height * 0.86, f), 0.0) + bend * lerpf(0.4, 1.0, f) \
+				+ Vector3(cos(angle) * out, 0.0, sin(angle) * out)
+		spots.append(spot)
+		if detail == DETAIL_NEAR and i % 2 == 0:
+			_limb(tool, middle.lerp(top, f * 0.6), spot, 0.05, 0.025, detail, BIRCH_BARK, BIRCH_BARK.darkened(0.2))
+		var radius := lerpf(1.0, 0.75, f) * rng.randf_range(0.9, 1.1)
+		_crown(tool, rng, spot, Vector3(radius, radius * 1.05, radius), BIRCH_LEAF, detail, hull)
+	_crown(tool, rng, top + Vector3(0.0, 0.5, 0.0), Vector3(0.6, 0.8, 0.6), BIRCH_LEAF, detail, hull)
+	if detail == DETAIL_NEAR:
+		_birch_marks(tool, rng, foot, top, 0.15, 0.06)
+
+
+## As manchas pretas da casca da bétula: BIRCH_MARKS losangos achatados colados no tronco (de from a to, raio de r_from a
+## r_to), em alturas e lados sorteados, um pouco para fora da casca.
+static func _birch_marks(tool: SurfaceTool, rng: RandomNumberGenerator, from: Vector3, to: Vector3, r_from: float,
+		r_to: float) -> void:
+	for m: int in BIRCH_MARKS:
+		var t := rng.randf_range(0.05, 0.85)
+		var center := from.lerp(to, t)
+		var radius := lerpf(r_from, r_to, t) + 0.006
+		var angle := rng.randf() * TAU
+		var out := Vector3(cos(angle), 0.0, sin(angle))
+		var side := Vector3(-out.z, 0.0, out.x)
+		var half := radius * rng.randf_range(0.5, 0.9)
+		var tall := rng.randf_range(0.03, 0.06)
+		var at := center + out * radius
+		# losango no sentido horário visto de fora (a face da frente)
+		var points: Array[Vector3] = [at + side * half, at + Vector3.UP * tall, at - side * half,
+				at + Vector3.DOWN * tall, at + side * half, at - side * half]
+		for point: Vector3 in points:
+			tool.set_normal(out)
+			tool.set_color(BIRCH_MARK)
+			tool.add_vertex(point)
 
 
 ## Abeto-vermelho: tronco curto (só o pé aparece) e, em volta dele, camadas de galhos do quase chão até a ponta, cada uma um

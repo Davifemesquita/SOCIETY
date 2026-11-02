@@ -3289,6 +3289,13 @@ Regras que já custaram investigação:
   dentro); tamanho de 0,65 a 1,25 (`tree_scale`). **As árvores desenhadas numa célula saem de `TreeView.drawn_seeds`**, que os
   tocos da clareira (`StumpView.stump_places`) também usam; a simulação conta todas.
 
+### Bétula (Fase 277, nossa)
+
+- **Plano** em `docs/plano_fase277.md`. `TreeModel.Species.BIRCH` (no fim do enum): `_birch` (tronco branco com o pé escuro,
+  massas pequenas e soltas) e `_birch_marks` (as manchas pretas, só de perto); `TreeView.BROADLEAF` com as bétulas no fim,
+  escolhidas por `broadleaf_pick` (mais na beira da mata e na terra baixa). A cor da malha volta em 8 bits por canal: teste que
+  procura uma cor exata compara com folga.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3576,6 +3583,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 274 — Girassóis (nossa) | **feita em 02/11/2026**, a última do roteiro corvo, dedaleira e girassol: touceiras de girassóis altos de flor amarela encostadas nas casas das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase274.md` |
 | 275 — Abeto em camadas (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata no jeito do Anno (Fases 275 a 279): o abeto-vermelho, um cone escuro de camadas de galhos até perto do chão, vira a conífera da mata (o pinheiro fica em parte, mais no alto), e a beira da mata deixa de ser uma cerca de troncos; plano em `docs/plano_fase275.md` |
 | 276 — Copas na medida (nossa) | **feita em 02/11/2026**: copas ~35% mais estreitas e uma árvore por célula em parte das células da mata temperada (mais no miolo, menos na beira): cada árvore se lê, com o chão e a sombra entre elas; 17.249 árvores desenhadas em vez de 28.830 e a GPU 0,5 ms mais leve; plano em `docs/plano_fase276.md` |
+| 277 — Bétula (nossa) | **feita em 02/11/2026**: a bétula de tronco branco com manchas pretas e copa leve de massas soltas entre as folhosas, mais na beira da mata e na terra baixa das ilhas temperadas; plano em `docs/plano_fase277.md` |
 
 Pendências já vistas para fases futuras:
 
