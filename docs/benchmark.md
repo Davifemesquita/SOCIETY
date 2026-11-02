@@ -2551,3 +2551,9 @@ ilha cheia 17,7 ms; +1 objeto e draw call e +780 primitivas no quadro com tudo v
 76,9 FPS (266: 77,4), 1% low 39,8, p50/p95/p99 12,3/16,5/23,8 ms, GPU 12,0 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
 ilha cheia 17,4 ms; +1 objeto e draw call e +31 mil primitivas no quadro com tudo visível (os espinheiros da beira das matas por
 perto). Neutra.
+
+## Fase 268 — casco naufragado (02/11/2026)
+
+76,7 FPS (267: 76,9), 1% low 37,9, p50/p95/p99 12,3/16,5/24,5 ms, GPU 11,9 ms, montar tudo 9,3 s, carregar 6,4 s, construir com a
+ilha cheia 17,5 ms; +5 objetos e draw calls (a camada, com as passadas de sombra) e +21 mil primitivas no quadro com tudo visível.
+Neutra.

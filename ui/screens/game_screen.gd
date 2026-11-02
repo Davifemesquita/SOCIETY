@@ -285,6 +285,7 @@ var potato_basket_view: PotatoBasketView
 ## Fase 254: as canoas escavadas puxadas para a margem baixa dos rios, longe das vilas.
 var canoe_view: CanoeView
 var heron_view: HeronView
+var wreck_view: WreckView
 ## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
 var windpump_view: WindpumpView
 ## Fase 150: as colunas de anúncios nas esquinas calçadas.
@@ -872,6 +873,10 @@ func _ready() -> void:
 	heron_view.name = "Herons"
 	add_child(heron_view)
 	heron_view.setup(simulation)
+	wreck_view = WreckView.new()
+	wreck_view.name = "Wrecks"
+	add_child(wreck_view)
+	wreck_view.setup(simulation)
 	windpump_view = WindpumpView.new()
 	windpump_view.name = "Windpumps"
 	add_child(windpump_view)
