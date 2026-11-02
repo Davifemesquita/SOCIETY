@@ -16,3 +16,10 @@ cidade com os fios `c5_06`). Como sempre, **só a ideia**: nada do jogo; tudo ge
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push. Peça nova do
 recheio vai no fim do enum e da lista dela.
+
+## Estado
+
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase270.md` a `docs/plano_fase274.md`),
+testes, captura e benchmark (todas neutras). As três pastas da suíte passaram no fim (world 640, presentation 380, ui 167).
+Diferenças do roteiro: a Fase 274 virou os girassóis (os nenúfares sumiam na espuma dos rios estreitos); as dedaleiras e os
+girassóis cresceram depois da primeira captura (pequenos, sumiam).
