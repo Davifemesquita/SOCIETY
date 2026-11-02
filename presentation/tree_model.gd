@@ -20,30 +20,36 @@ const DETAIL_NEAR := 0
 const DETAIL_FAR := 1
 ## Variantes de cada espécie (sorteio diferente da copa e dos galhos).
 const VARIANTS := 2
-## Fase 53: folhas mais claras e saturadas (a mata do Anno é verde viva, não um bloco escuro)
-const OAK_LEAF := Color(0.32, 0.5, 0.17)
-const BEECH_LEAF := Color(0.44, 0.6, 0.2)
-const PINE_NEEDLE := Color(0.2, 0.38, 0.18)
+## Fase 53: folhas mais claras e saturadas (a mata do Anno é verde viva, não um bloco escuro); Fase 256: mais claras ainda
+## (de 0,32/0,5/0,17 no carvalho, 0,44/0,6/0,2 na faia e 0,2/0,38/0,18 no pinheiro): com a sombra da copa, viravam quase preto.
+const OAK_LEAF := Color(0.37, 0.57, 0.19)
+const BEECH_LEAF := Color(0.48, 0.66, 0.22)
+const PINE_NEEDLE := Color(0.24, 0.45, 0.21)
 const OAK_BARK := Color(0.3, 0.25, 0.19)
 const BEECH_BARK := Color(0.46, 0.45, 0.41)
 const PINE_BARK := Color(0.33, 0.22, 0.15)
 const PINE_UPPER_BARK := Color(0.62, 0.36, 0.2)
-const PALM_LEAF := Color(0.3, 0.52, 0.15)
+const PALM_LEAF := Color(0.34, 0.58, 0.17)
 ## As folhas de baixo (as mais velhas) puxam para esta cor.
 const PALM_OLD_LEAF := Color(0.5, 0.52, 0.2)
 const PALM_BARK := Color(0.5, 0.42, 0.32)
 const PALM_RING := Color(0.42, 0.35, 0.27)
 const COCONUT := Color(0.36, 0.34, 0.12)
-const TROPICAL_LEAF := Color(0.2, 0.44, 0.13)
+const TROPICAL_LEAF := Color(0.24, 0.51, 0.15)
 const TROPICAL_BARK := Color(0.52, 0.48, 0.4)
 ## Coqueiro: altura do tronco (antes do sorteio), gomos do tronco, folhas da coroa e o comprimento delas, em metros.
 const PALM_HEIGHT_M := 8.0
 const PALM_SEGMENTS := 7
 const PALM_FRONDS := 10
 const PALM_FROND_M := Vector2(3.4, 4.2)
-## A folhagem embaixo de cada massa fica nesta fração da cor; em cima, um pouco mais clara.
-const CROWN_SHADE := 0.74
-const CROWN_LIGHT := 1.12
+## A folhagem embaixo de cada massa fica nesta fração da cor; em cima, mais clara e (Fase 256) puxando para o amarelo do
+## sol (CROWN_SUN no alto, nada no meio para baixo). Antes: 0,74 e 1,12, sem o amarelo.
+const CROWN_SHADE := 0.8
+const CROWN_LIGHT := 1.22
+const CROWN_SUN := Color(1.06, 1.02, 0.82)
+## Fase 256: quanto as folhas acendem por conta própria de dia (o sol atravessando e voltando da copa), em fração da cor:
+## sem isso, o lado da sombra de uma mata fechada ficava quase preto.
+const LEAF_FILL := 0.22
 ## Quanto cada vértice da massa sai ou entra (fração do raio), para ela não ser uma bola.
 const CROWN_LUMP := 0.16
 ## Balanço (como o das árvores do Kenney, m por m de altura).
@@ -315,6 +321,7 @@ static func _crown(tool: SurfaceTool, rng: RandomNumberGenerator, center: Vector
 		var point := placed[faces[face]]
 		var unit := points[faces[face]]
 		var shade := lerpf(CROWN_SHADE, CROWN_LIGHT, unit.y * 0.5 + 0.5) * tint
+		var sun := Color.WHITE.lerp(CROWN_SUN, clampf(unit.y, 0.0, 1.0))
 		var normal := (unit / radii).normalized()
 		if hull != Vector3.INF:
 			# a normal da copa inteira: luz macia de volume
@@ -322,7 +329,7 @@ static func _crown(tool: SurfaceTool, rng: RandomNumberGenerator, center: Vector
 			if away.length_squared() > 1e-4:
 				normal = normal.lerp(away.normalized(), CROWN_ROUND).normalized()
 		tool.set_normal(normal)
-		tool.set_color(Color(leaf.r * shade, leaf.g * shade, leaf.b * shade))
+		tool.set_color(Color(minf(leaf.r * shade * sun.r, 1.0), minf(leaf.g * shade * sun.g, 1.0), leaf.b * shade * sun.b))
 		tool.add_vertex(center + point)
 
 
@@ -385,4 +392,5 @@ static func _material(result: ArrayMesh) -> ShaderMaterial:
 	material.set_shader_parameter(&"use_vertex_color", true)
 	material.set_shader_parameter(&"model_height", maxf(result.get_aabb().end.y, 0.1))
 	material.set_shader_parameter(&"sway", SWAY)
+	material.set_shader_parameter(&"leaf_fill", LEAF_FILL)
 	return material

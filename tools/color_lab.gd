@@ -5,16 +5,12 @@ extends "res://tools/capture_phase255.gd"
 
 ## Cada variante: nome → {propriedade: valor}. Chaves: fog (multiplica a névoa), tonemap ("agx", "aces", "filmic"),
 ## agx_contrast, white, saturation, contrast, brightness, ambient (Color), ambient_energy, sky_share, sun_energy (multiplica),
-## sun_color (Color), ssao.
+## sun_color (Color), ssao, leaf_fill (a luz própria das folhas, Fase 256).
 const VARIANTS: Array = [
-	["0_atual", {}],
-	["1_agx_exp", {"fog": 0.15, "sky_fog": 0.5, "agx_contrast": 1.45, "saturation": 1.35, "exposure": 1.15}],
-	["2_aces_exp", {"fog": 0.15, "sky_fog": 0.5, "tonemap": "aces", "white": 6.0, "saturation": 1.15, "exposure": 1.1}],
-	["3_aces_sol", {"fog": 0.15, "sky_fog": 0.5, "tonemap": "aces", "white": 6.0, "saturation": 1.15, "exposure": 1.1,
-			"sun_energy": 1.2, "sun_color": Color(1.0, 0.95, 0.85)}],
-	["4_filmic", {"fog": 0.15, "sky_fog": 0.5, "tonemap": "filmic", "white": 6.0, "saturation": 1.25, "exposure": 1.15}],
-	["5_agx_sol", {"fog": 0.15, "sky_fog": 0.5, "agx_contrast": 1.45, "saturation": 1.35, "exposure": 1.15, "sun_energy": 1.2,
-			"sun_color": Color(1.0, 0.95, 0.85)}],
+	["0_folha0", {"leaf_fill": 0.0}],
+	["1_folha22", {"leaf_fill": 0.22}],
+	["2_folha35", {"leaf_fill": 0.35}],
+	["3_folha22_ssao1", {"leaf_fill": 0.22, "ssao": 1.0}],
 ]
 
 
@@ -77,6 +73,12 @@ func _apply(environment: Environment, sun: DirectionalLight3D, base: Dictionary,
 	sun.light_energy = base_sun * sun_factor
 	sun.light_color = settings.get("sun_color", base["sun_color"])
 	environment.ssao_intensity = settings.get("ssao", base["ssao"])
+	var fill: float = settings.get("leaf_fill", TreeModel.LEAF_FILL)
+	for mesh: ArrayMesh in TreeModel._cache.values():
+		for surface: int in mesh.get_surface_count():
+			var material := mesh.surface_get_material(surface) as ShaderMaterial
+			if material != null:
+				material.set_shader_parameter(&"leaf_fill", fill)
 
 
 var _dome: Node

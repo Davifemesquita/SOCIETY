@@ -2483,3 +2483,9 @@ mesmas canoas. Fecha o roteiro balança, cabra e canoa e os quatro ciclos do sé
 Primeira do ciclo da cor viva: 77,0 FPS (254: 77,7), 1% low 37,8, p50/p95/p99 12,3/16,7/24,8 ms, GPU 11,9 ms (254: 11,9), montar
 tudo 9,6 s, carregar 6,4 s, construir com a ilha cheia 18,2 ms; objetos, draw calls e primitivas iguais. Neutra: a névoa
 volumétrica segue ligada no alto (só a densidade caiu), e a gradação é a mesma passada de ajuste do Environment.
+
+## Fase 256 — copas verdes (01/11/2026)
+
+76,5 FPS (255: 77,0), 1% low 38,2, p50/p95/p99 12,3/16,6/24,1 ms, GPU 12,0 ms (255: 11,9), montar tudo 9,4 s, carregar 6,4 s,
+construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais. Neutra: a luz própria das folhas é uma conta a mais
+no fragmento da folhagem.

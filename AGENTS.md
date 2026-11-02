@@ -3154,6 +3154,12 @@ Regras que já custaram investigação:
   (`sun_light_color`, `sun_light_energy`, pelo `SkyAdapter`). **Ajuste de cor se escolhe no `tools/color_lab.tscn`** (a mesma
   vila com várias combinações, lado a lado) e se confere no `tools/capture_phase255.tscn` (as vistas do ciclo, antes e depois).
 
+### Copas verdes (Fase 256, nossa)
+
+- **Plano** em `docs/plano_fase256.md`. Folhas mais claras no `TreeModel`, o alto de cada massa puxando para o amarelo
+  (`CROWN_SUN`) e a luz própria das folhas de dia (`leaf_fill` no `shaders/foliage.gdshader`, `TreeModel.LEAF_FILL`, apagada
+  pelo `night_light`); as plantações e o capim, no mesmo shader, ficam com 0.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3420,6 +3426,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 253 — Cestos de batata (nossa) | **feita em 01/11/2026**: os cestos de vime cheios de batata, um tombado com as batatas rolando, os sacos e o forcado no lado de cada fazenda de batata; plano em `docs/plano_fase253.md` |
 | 254 — Canoas na margem do rio (nossa) | **feita em 01/11/2026**, a última do roteiro balança, cabra e canoa: a canoa escavada com o remo e o banco dentro, puxada para a margem baixa dos rios, de comprido ao longo dela, longe das vilas; plano em `docs/plano_fase254.md` |
 | 255 — Ar limpo e tom vivo (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva (Fases 255 a 259), a pedido do dono: a névoa cinza-azulada de longe quase some, a cena ganha contraste, saturação e exposição e o sol fica quente; plano em `docs/plano_fase255.md` |
+| 256 — Copas verdes (nossa) | **feita em 01/11/2026**: as matas deixam de ser blocos quase pretos: folhas mais claras, o alto das copas amarelado de sol e uma luz própria das folhas de dia; plano em `docs/plano_fase256.md` |
 
 Pendências já vistas para fases futuras:
 
