@@ -2633,3 +2633,8 @@ com a GPU onde estava antes dele (274: 12,0 ms), porque a Fase 276 tirou 0,5 ms.
 Primeira do ciclo do mar e do rio: 76,2 FPS (279: 75,3), 1% low 38,9, p50/p95/p99 12,4/16,7/24,2 ms, GPU 12,0 ms (279: 12,1),
 jogo novo 12,4 s, montar tudo 9,4 s, carregar 6,4 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas
 iguais. Neutra (só as cores da água e uma mistura a mais no shader dela).
+
+## Fase 281 — rebentação fina (02/11/2026)
+
+76,6 FPS (280: 76,2), 1% low 38,2, p50/p95/p99 12,4/16,4/24,1 ms, GPU 12,0 ms, jogo novo 12,3 s, montar tudo 9,5 s, carregar
+6,5 s, construir com a ilha cheia 17,1 ms; objetos, draw calls e primitivas iguais. Neutra.

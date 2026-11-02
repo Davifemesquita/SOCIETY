@@ -109,6 +109,10 @@ uniform vec4 color_shelf : source_color = vec4(0.45, 0.66, 0.58, 0.5);
 uniform float shore_foam_width_m = 9.0;
 uniform vec3 shore_foam_color : source_color = vec3(0.93, 0.95, 0.93);
 uniform float wave_calm_m = 22.0;
+// Society (Fase 281): a espuma colada na linha d'água vai até shore_line_m dela; as bandas que chegam na praia são linhas
+// tanto mais finas quanto mais perto de 1 for band_sharpness (era 0,8)
+uniform float shore_line_m = 3.0;
+uniform float band_sharpness = 0.93;
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
@@ -651,6 +655,12 @@ void fragment() {
 	shore_alpha = clamp(shore_alpha, 0.0, 1.0);
 	shore_alpha = foam_tex.a * shore_alpha; // disable this line when you have an all-white foam texture
 	shore_alpha = shore_fade_alpha * shore_alpha;
+	// Society (Fase 281): só colada na linha d'água (até shore_line_m dela). Vista de cima e de lado, a diferença de
+	// profundidade fica pequena na praia rasa inteira, e a espuma virava uma faixa branca de ~20 m.
+	if (has_coast) {
+		float from_line = -coast_at(world_coordinates.xz);
+		shore_alpha *= 1.0 - smoothstep(shore_line_m * 0.4, shore_line_m, from_line);
+	}
 	
 	EMISSION *= (1.0-shore_alpha); // block emission
 	ALBEDO = mix(ALBEDO, foam_tex.rgb, shore_alpha);
@@ -659,9 +669,11 @@ void fragment() {
 	// Society: bandas de espuma que andam para a praia e a espuma fina na linha d'água
 	if (has_coast) {
 		float reach = 1.0 - smoothstep(1.0, shore_foam_width_m, shore_m);
-		float band = smoothstep(0.8, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
-		float edge = 1.0 - smoothstep(0.0, 1.5, shore_m);
-		float coast_foam = clamp(band * 0.75 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
+		// Fase 281: as bandas viram linhas finas (band_sharpness) e quebradas ao longo da costa pela textura da espuma
+		float band = smoothstep(band_sharpness, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
+		band *= smoothstep(0.3, 0.6, foam_tex.a);
+		float edge = 1.0 - smoothstep(0.0, shore_line_m * 0.5, shore_m);
+		float coast_foam = clamp(band * 0.8 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
 		EMISSION *= 1.0 - coast_foam;
 		ALBEDO = mix(ALBEDO, shore_foam_color, coast_foam);
 	}
