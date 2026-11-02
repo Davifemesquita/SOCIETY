@@ -3457,6 +3457,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase302.md`. No `shaders/building_kit.gdshader`, nas células de parede de lado: o respingo de terra no pé
   (`splash_*`, borda de cima irregular) e os escorridos de chuva verticais (`wall_streak_strength`).
 
+### Telhado de tábuas (Fase 303, nossa)
+
+- **Plano** em `docs/plano_fase303.md`. `BuildingView.shingled` (uma em cada `SHINGLE_EVERY` casas de `SHINGLE_TIER`, nas temperadas)
+  põe o parâmetro de instância `shingle`, e o `shaders/building_kit.gdshader` troca as telhas por `shingle_shade` (tábuas cinzentas
+  de largura sorteada) nas águas e pela madeira escura na capa e no beiral.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3770,6 +3776,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 300 — Telhas gastas (nossa) | **feita em 02/11/2026**, primeira do roteiro telhado gasto e chão de vila (Fases 300 a 304): cada telhado de telha com o seu tom, umas telhas trocadas mais claras, manchas de musgo e a sujeira escorrida; plano em `docs/plano_fase300.md` |
 | 301 — Chão de vila (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, o chão em volta das casas vira terra pisada de borda recortada, e o capim alto deixa de crescer colado nos prédios; plano em `docs/plano_fase301.md` |
 | 302 — Sujeira nas paredes (nossa) | **feita em 02/11/2026**: o pé das paredes ganha o respingo de terra de borda irregular e as paredes, os escorridos de chuva; plano em `docs/plano_fase302.md` |
+| 303 — Telhado de tábuas (nossa) | **feita em 02/11/2026**: metade das casas dos operários das ilhas temperadas troca a telha por tábuas cinzentas de madeira velha; plano em `docs/plano_fase303.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -76,6 +76,9 @@ const IVY_TIERS: Array[StringName] = [&"artisans", &"engineers", &"investors"]
 const IVY_FULL := 1.0
 const IVY_HOUSE := 0.55
 const IVY_HOUSE_EVERY := 4
+## Fase 303: a classe das casas de telhado de tábuas e quantas delas (uma em cada SHINGLE_EVERY).
+const SHINGLE_TIER := &"workers"
+const SHINGLE_EVERY := 2
 const IRON_ROOFS: Array[StringName] = [&"brickworks", &"furnace", &"glassworks", &"power_station", &"steel_beam_works",
 		&"oil_power_station", &"sewing_machine_factory", &"cannery", &"lamp_factory"]
 ## Fase 79: quanto o bicho inclina para a frente bebendo (rad).
@@ -401,6 +404,13 @@ static func thatched(simulation: Simulation, record: BuildingRecord) -> bool:
 	return tier != null and tier.house_trim == TierDef.HouseTrim.YARD
 
 
+## Fase 303: o telhado de tábuas cinzentas — uma em cada SHINGLE_EVERY casas dos operários (pelo hash), nas ilhas temperadas.
+static func shingled(simulation: Simulation, record: BuildingRecord) -> bool:
+	if not record.is_house() or record.tier != SHINGLE_TIER or simulation.world.is_tropical(record.island_id, simulation.data):
+		return false
+	return posmod(house_hash(record.id) / 11, SHINGLE_EVERY) == 0
+
+
 ## Sombra de contato (Fase 39): para cada fachada do referencial canônico (frente, +X, fundo, −X), a parte da divisa de
 ## fora dela ocupada por prédio de verdade (campo, píer e decoração não contam).
 static func side_shade(simulation: Simulation, record: BuildingRecord) -> Vector4:
@@ -581,6 +591,8 @@ func _add(building_id: int) -> void:
 		body.set_instance_shader_parameter(&"slate", 1.0 if record.def_id in SLATE_ROOFS else 0.0)
 		# Fase 138: a chapa ondulada das fábricas pesadas
 		body.set_instance_shader_parameter(&"corrugated", 1.0 if record.def_id in IRON_ROOFS else 0.0)
+		# Fase 303: as tábuas cinzentas de parte das casas dos operários
+		body.set_instance_shader_parameter(&"shingle", 1.0 if shingled(_simulation, record) else 0.0)
 		# Fase 185: a hera nas paredes de pedra e de alvenaria velhas
 		body.set_instance_shader_parameter(&"ivy", ivy_of(_simulation, record))
 		_lots[building_id] = [record.island_id, area]

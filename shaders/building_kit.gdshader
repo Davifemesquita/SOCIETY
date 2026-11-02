@@ -43,6 +43,8 @@ instance uniform float thatch = 0.0;
 instance uniform float slate = 0.0;
 // Fase 138: o telhado de chapa de ferro ondulada (as fábricas pesadas), no lugar das telhas
 instance uniform float corrugated = 0.0;
+// Fase 303: o telhado de tábuas cinzentas (parte das casas dos operários)
+instance uniform float shingle = 0.0;
 // Fase 185: a hera nas paredes (0 sem; até 1, quanto ela sobe), posta pela BuildingView
 instance uniform float ivy = 0.0;
 
@@ -129,6 +131,11 @@ uniform vec4 splash_color : source_color = vec4(0.36, 0.3, 0.22, 1.0);
 uniform float splash_height_m = 0.7;
 uniform float splash_strength = 0.5;
 uniform float wall_streak_strength = 0.16;
+// Fase 303: as tábuas do telhado — fileiras de shingle_row_m ao longo da água, tábuas de largura sorteada em volta de
+// shingle_width_m, num cinza de madeira velha (shingle_color) com um tom por tábua
+uniform vec4 shingle_color : source_color = vec4(0.47, 0.44, 0.4, 1.0);
+uniform float shingle_row_m = 0.32;
+uniform float shingle_width_m = 0.22;
 
 varying vec3 world_position;
 varying vec3 world_normal;
@@ -210,6 +217,30 @@ vec3 roof_wear(vec3 p, vec3 n, float pick) {
 	// sujeira escorrendo água abaixo: riscos finos de través, compridos ao longo da água
 	float streak = smoothstep(0.55, 0.85, moss_noise(vec2(tile.y * 0.9, tile.x * 0.04) + pick * 13.0));
 	return vec3(swap, moss, streak);
+}
+
+
+// Fase 303: a cor das tábuas do telhado no ponto p (normal n): a sombra da borda de baixo de cada fileira, a fresta entre as
+// tábuas, um tom por tábua e o veio ao longo da água; near apaga o desenho de longe (sobra o tom médio)
+vec3 shingle_shade(vec3 p, vec3 n, float near) {
+	vec2 down = normalize(n.xz);
+	vec2 across = vec2(-down.y, down.x);
+	float s = dot(p.xz, down) / max(n.y, 0.2) / shingle_row_m;
+	float row = floor(s);
+	float f = fract(s);
+	// largura sorteada por fileira: as frestas não se alinham
+	float width = shingle_width_m * (0.75 + 0.5 * fract(sin(row * 12.9898) * 43758.5453));
+	float c = dot(p.xz, across) / width + fract(row * 0.618);
+	float board = floor(c);
+	float cf = fract(c);
+	float tone = fract(sin(dot(vec2(row, board), vec2(12.9898, 78.233))) * 43758.5453);
+	vec3 wood = shingle_color.rgb * (0.78 + 0.4 * tone);
+	float grain = moss_noise(vec2(c * 3.0, s * 9.0));
+	wood *= 0.92 + 0.12 * grain;
+	float gap = smoothstep(0.06, 0.0, cf) + smoothstep(0.94, 1.0, cf);
+	float under = smoothstep(0.82, 1.0, f);
+	vec3 drawn = wood * (1.0 - clamp(gap, 0.0, 1.0) * 0.45) * (1.0 - under * 0.4);
+	return mix(shingle_color.rgb * 0.95, drawn, near);
 }
 
 // Fase 130: ruído de valor com hash sem seno (com coordenadas de mundo grandes o fract(sin(...)) sai em escada na GPU).
@@ -386,6 +417,12 @@ void fragment() {
 				// Fase 134: a ardósia, lisa e um pouco brilhante
 				color = slate_shade(world_position, world_normal, near);
 				roughness = 0.55;
+			} else if (shingle > 0.5) {
+				// Fase 303: as tábuas cinzentas, foscas
+				color = shingle_shade(world_position, world_normal, near);
+				// sem o relevo das telhas do mapa de normais
+				NORMAL_MAP = vec3(0.5, 0.5, 1.0);
+				roughness = 0.9;
 			} else if (corrugated > 0.5) {
 				// Fase 138: a chapa ondulada, mais lisa onde não enferrujou
 				vec4 sheet = iron_sheet_shade(world_position, world_normal, near);
@@ -409,6 +446,10 @@ void fragment() {
 		} else if (roof && slate > 0.5) {
 			// a capa, o beiral redondo e o telhado plano da ardósia: a cor dela, lisa
 			color = slate_color.rgb * 0.9;
+		} else if (roof && shingle > 0.5) {
+			// Fase 303: a capa e o beiral das tábuas: madeira cinzenta mais escura
+			color = shingle_color.rgb * 0.75;
+			roughness = 0.9;
 		} else if (roof && corrugated > 0.5) {
 			// a capa, o beiral e o telhado plano da chapa: o ferro escurecido
 			color = mix(sheet_color.rgb, rust_color.rgb, 0.3) * 0.85;
