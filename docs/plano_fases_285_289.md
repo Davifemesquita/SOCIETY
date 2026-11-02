@@ -35,4 +35,19 @@ O tapete de capim (Fase 286) é a primeira vista que segue a câmera em vez de s
 
 ## Estado
 
-A fazer.
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase285.md` a `docs/plano_fase289.md`),
+testes, captura e benchmark. As três pastas da suíte passaram no fim (world 681, presentation 389, ui 167).
+
+- O FPS do trajeto do benchmark desceu devagar ao longo do ciclo (75,9 na Fase 284, 73,8 na 289), com a GPU de 12,1 a 12,3 ms.
+- Com a câmera em cima do prado, o tapete de capim com as flores custa +0,32 a 0,43 ms de GPU (`tools/grass_cost.tscn`).
+
+Diferenças do roteiro:
+
+- o raio do tapete ficou em 90 m, com os tufos encolhendo de 55 a 95 m (na primeira medida, de 30 a 55 m, ele não aparecia na
+  distância normal da câmera);
+- as flores ficaram sem a regra de "menos perto das casas" (o terreno não sabe das casas; o tapete e as manchas já ficam fora
+  dos lotes);
+- a beira do barranco ficou só no shader, sem as raízes do recheio.
+
+O antes e depois do ciclo está em `F:\ferramentas\capturas\fase289\ciclo_antes_depois.png`. A vista do barranco de "antes" é a
+do começo da Fase 289: a busca do barranco da captura mudou nela.
