@@ -140,6 +140,15 @@ uniform float chop_near_m = 35.0;
 uniform float chop_far_m = 90.0;
 // Society (Fase 293): até que diferença de profundidade (m, ao longo da vista) o anel de espuma em volta das pedras vai
 uniform float rock_foam_m = 0.45;
+// Society (Fase 297): os fiapos de espuma que saem levados das pedras, compridos ao longo do vento (streak_length_m) e finos de
+// través (streak_width_m), andando com ele, até streak_reach_m da costa, do lado de baixo do vento e só onde a água já é funda
+// junto da costa (a pedra: na plataforma rasa da praia a diferença de profundidade fica abaixo de streak_deep_m)
+uniform float streak_strength = 0.6;
+uniform float streak_length_m = 16.0;
+uniform float streak_width_m = 1.1;
+uniform float streak_drift_m_s = 0.7;
+uniform float streak_reach_m = 26.0;
+uniform float streak_deep_m = 2.5;
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
@@ -753,6 +762,21 @@ void fragment() {
 		ring *= 0.75 + 0.25 * sin(TIME * float(!freeze_time) * 1.4 + world_coordinates.x * 0.37 + world_coordinates.z * 0.23);
 		ring *= smoothstep(shore_line_m * 0.4, shore_line_m, from_line) * (1.0 - channel * 0.5) * shore_fade_alpha;
 		shore_alpha = max(shore_alpha, ring);
+		// Fase 297: os fiapos levados das pedras pelo vento
+		vec2 streak_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+		vec2 streak_at = vec2(dot(world_coordinates.xz, streak_wind) - TIME * float(!freeze_time) * streak_drift_m_s,
+				dot(world_coordinates.xz, vec2(-streak_wind.y, streak_wind.x)));
+		float streak = reef_noise(streak_at / vec2(streak_length_m, streak_width_m)) * 0.65
+				+ reef_noise(streak_at / vec2(streak_length_m * 0.45, streak_width_m * 0.6) + 31.0) * 0.35;
+		// rendados ao longo do fio por um ruído miúdo (não uma fita lisa)
+		float lace = smoothstep(0.3, 0.7, reef_noise(streak_at / vec2(3.0, 0.45) + 7.0));
+		streak = smoothstep(0.62, 0.76, streak) * lace * mix(0.5, 1.0, foam_tex.a);
+		// perto da costa, do lado de baixo do vento (a terra fica para trás, contra o vento) e na água funda junto da pedra
+		streak *= smoothstep(shore_line_m * 0.6, shore_line_m * 1.5, from_line) * (1.0 - smoothstep(streak_reach_m * 0.5, streak_reach_m, from_line));
+		streak *= smoothstep(-streak_reach_m * 0.6, 0.0, coast_at(world_coordinates.xz - streak_wind * streak_reach_m * 0.5));
+		streak *= smoothstep(streak_deep_m, streak_deep_m * 2.0, z_diff);
+		streak *= streak_strength * (1.0 - channel) * shore_fade_alpha;
+		shore_alpha = max(shore_alpha, streak);
 	}
 	
 	EMISSION *= (1.0-shore_alpha); // block emission
