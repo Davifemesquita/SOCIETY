@@ -5,12 +5,15 @@ extends "res://tools/capture_phase255.gd"
 
 ## Cada variante: nome → {propriedade: valor}. Chaves: fog (multiplica a névoa), tonemap ("agx", "aces", "filmic"),
 ## agx_contrast, white, saturation, contrast, brightness, ambient (Color), ambient_energy, sky_share, sun_energy (multiplica),
-## sun_color (Color), ssao, leaf_fill (a luz própria das folhas, Fase 256).
+## sun_color (Color), ssao, leaf_fill (a luz própria das folhas, Fase 256), grass_grade, grass_saturation e dry_strength (a grama do terreno).
 const VARIANTS: Array = [
-	["0_folha0", {"leaf_fill": 0.0}],
-	["1_folha22", {"leaf_fill": 0.22}],
-	["2_folha35", {"leaf_fill": 0.35}],
-	["3_folha22_ssao1", {"leaf_fill": 0.22, "ssao": 1.0}],
+	["0_grama_atual", {}],
+	["1_verde_meio", {"grass_tint": Vector3(0.42, 1.0, 0.22), "grass_tint_mix": 0.45, "grass_grade": Vector3(0.58, 1.08, 0.7),
+			"grass_saturation": 1.25, "dry_strength": 0.15}],
+	["2_verde_amarelo", {"grass_tint": Vector3(0.52, 1.0, 0.2), "grass_tint_mix": 0.6, "grass_grade": Vector3(0.58, 1.08, 0.7),
+			"grass_saturation": 1.25, "dry_strength": 0.15}],
+	["3_verde_frio", {"grass_tint": Vector3(0.36, 1.0, 0.28), "grass_tint_mix": 0.6, "grass_grade": Vector3(0.58, 1.08, 0.7),
+			"grass_saturation": 1.25, "dry_strength": 0.15}],
 ]
 
 
@@ -27,6 +30,9 @@ func _run() -> void:
 		"sky_share": environment.ambient_light_sky_contribution, "sun_energy": sun.light_energy, "sun_color": sun.light_color,
 		"ssao": environment.ssao_intensity, "exposure": environment.tonemap_exposure, "sky_fog": _sky_fog(game),
 	}
+	_terrain_materials = game.terrain_view.materials()
+	for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix"]:
+		_terrain_base[key] = _terrain_materials[0].get_shader_parameter(key)
 	print("base ", base, " névoa do clima ", game.weather.sample.mist, " nuvens ", game.weather.sample.coverage)
 	for variant: Array in VARIANTS:
 		var name: String = variant[0]
@@ -73,6 +79,10 @@ func _apply(environment: Environment, sun: DirectionalLight3D, base: Dictionary,
 	sun.light_energy = base_sun * sun_factor
 	sun.light_color = settings.get("sun_color", base["sun_color"])
 	environment.ssao_intensity = settings.get("ssao", base["ssao"])
+	for material: ShaderMaterial in _terrain_materials:
+		for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix"]:
+			var value: Variant = settings.get(key, _terrain_base[key])
+			material.set_shader_parameter(key, value)
 	var fill: float = settings.get("leaf_fill", TreeModel.LEAF_FILL)
 	for mesh: ArrayMesh in TreeModel._cache.values():
 		for surface: int in mesh.get_surface_count():
@@ -82,6 +92,8 @@ func _apply(environment: Environment, sun: DirectionalLight3D, base: Dictionary,
 
 
 var _dome: Node
+var _terrain_materials: Array[ShaderMaterial] = []
+var _terrain_base: Dictionary = {}
 
 
 ## A névoa do domo do Sky3D (a do ar, desenhada por cima de tudo).

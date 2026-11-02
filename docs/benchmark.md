@@ -2489,3 +2489,8 @@ volumétrica segue ligada no alto (só a densidade caiu), e a gradação é a me
 76,5 FPS (255: 77,0), 1% low 38,2, p50/p95/p99 12,3/16,6/24,1 ms, GPU 12,0 ms (255: 11,9), montar tudo 9,4 s, carregar 6,4 s,
 construir com a ilha cheia 17,0 ms; objetos, draw calls e primitivas iguais. Neutra: a luz própria das folhas é uma conta a mais
 no fragmento da folhagem.
+
+## Fase 257 — grama viva (01/11/2026)
+
+76,3 FPS (256: 76,5), 1% low 37,4, p50/p95/p99 12,4/16,8/24,5 ms, GPU 12,0 ms (256: 12,0), montar tudo 9,4 s, carregar 6,5 s,
+construir com a ilha cheia 17,4 ms; objetos e primitivas iguais. Neutra: duas contas a mais no fragmento do terreno.

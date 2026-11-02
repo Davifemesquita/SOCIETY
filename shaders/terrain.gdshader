@@ -105,10 +105,15 @@ uniform float road_rut_darken = 0.68;
 uniform float road_rut_far_m = 160.0;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
-// Fase 53 (cor no jeito do Anno): grama verde e saturada, a seca mais fraca, areia de praia clara e rocha escura
-uniform vec3 grass_grade = vec3(0.76, 1.12, 0.58);
-uniform float grass_saturation = 1.45;
-uniform float dry_strength = 0.3;
+// Fase 53 (cor no jeito do Anno): grama verde e saturada, a seca mais fraca, areia de praia clara e rocha escura. Fase 257:
+// a grama menos vermelha e menos amarela (antes 0,76/1,12/0,58, saturação 1,45 e seca 0,3), com a cor viva da Fase 255 por cima.
+uniform vec3 grass_grade = vec3(0.6, 1.12, 0.7);
+uniform float grass_saturation = 1.25;
+uniform float dry_strength = 0.15;
+// Fase 257: a grama puxa o matiz para este verde (proporção linear de r, g, b), guardando a luminância da textura: a textura
+// amarronzada, só graduada, saía cor de oliva de longe (escolhido no tools/color_lab.tscn entre três verdes).
+uniform vec3 grass_tint = vec3(0.52, 1.0, 0.2);
+uniform float grass_tint_mix = 0.6;
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
 uniform vec3 sand_grade = vec3(1.3, 1.2, 1.0);
 uniform vec3 rock_grade = vec3(0.7, 0.66, 0.62);
@@ -250,6 +255,8 @@ void fragment() {
 	grass_a.rgb *= grass_grade;
 	float grass_luma = dot(grass_a.rgb, vec3(0.299, 0.587, 0.114));
 	grass_a.rgb = max(mix(vec3(grass_luma), grass_a.rgb, grass_saturation), vec3(0.0));
+	vec3 tinted = grass_tint * (dot(grass_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(grass_tint, vec3(0.299, 0.587, 0.114)));
+	grass_a.rgb = mix(grass_a.rgb, tinted, grass_tint_mix);
 	forest_a.rgb *= forest_grade;
 	sand_a.rgb *= sand_grade;
 

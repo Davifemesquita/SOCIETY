@@ -3160,6 +3160,12 @@ Regras que já custaram investigação:
   (`CROWN_SUN`) e a luz própria das folhas de dia (`leaf_fill` no `shaders/foliage.gdshader`, `TreeModel.LEAF_FILL`, apagada
   pelo `night_light`); as plantações e o capim, no mesmo shader, ficam com 0.
 
+### Grama viva (Fase 257, nossa)
+
+- **Plano** em `docs/plano_fase257.md`. No `shaders/terrain.gdshader`, depois da graduação, a grama vai `grass_tint_mix` (0,6)
+  para o verde-amarelado `grass_tint` escalado à luminância do texel (o claro e o escuro da textura ficam, o matiz deixa de ser
+  oliva); `grass_grade` (0,6; 1,12; 0,7), saturação 1,25 e a seca 0,15.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3427,6 +3433,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 254 — Canoas na margem do rio (nossa) | **feita em 01/11/2026**, a última do roteiro balança, cabra e canoa: a canoa escavada com o remo e o banco dentro, puxada para a margem baixa dos rios, de comprido ao longo dela, longe das vilas; plano em `docs/plano_fase254.md` |
 | 255 — Ar limpo e tom vivo (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva (Fases 255 a 259), a pedido do dono: a névoa cinza-azulada de longe quase some, a cena ganha contraste, saturação e exposição e o sol fica quente; plano em `docs/plano_fase255.md` |
 | 256 — Copas verdes (nossa) | **feita em 01/11/2026**: as matas deixam de ser blocos quase pretos: folhas mais claras, o alto das copas amarelado de sol e uma luz própria das folhas de dia; plano em `docs/plano_fase256.md` |
+| 257 — Grama viva (nossa) | **feita em 01/11/2026**: a grama deixa o oliva-amarronzado e fica verde-amarelada e viva, de perto e de longe, guardando o claro e o escuro da textura; plano em `docs/plano_fase257.md` |
 
 Pendências já vistas para fases futuras:
 
