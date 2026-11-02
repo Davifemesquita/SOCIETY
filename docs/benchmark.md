@@ -2580,3 +2580,9 @@ ilha cheia 17,4 ms; objetos e primitivas iguais no quadro com tudo visível (nen
 75,6 FPS (271: 76,3), 1% low 37,3, p50/p95/p99 12,4/16,7/24,7 ms, GPU 12,1 ms, montar tudo 9,4 s, carregar 6,6 s (271: 6,5),
 construir com a ilha cheia 17,4 ms; objetos e primitivas iguais. Neutra (o carregar fica no vaivém de 6,4 a 6,6 s das últimas
 fases; cada regra nova do recheio soma um sorteio por célula da lista dela).
+
+## Fase 273 — andorinhas no fio (02/11/2026)
+
+75,1 FPS (272: 75,6), 1% low 37,9, p50/p95/p99 12,6/16,9/24,7 ms, GPU 12,2 ms (272: 12,1), montar tudo 9,4 s, carregar 6,6 s,
+construir com a ilha cheia 17,2 ms; +1 objeto e draw call (a camada) e primitivas iguais (a cidade do benchmark não tem usina).
+Neutra: a camada não desenha nada nessa cidade; o FPS e a GPU estão no vaivém do estado da máquina (de 75 a 78 neste pedido).

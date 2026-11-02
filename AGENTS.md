@@ -3260,6 +3260,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase272.md`. `ScatterView.Kind.FAIRY_RING` (no fim do enum e da lista `OPEN`) só nas temperadas e no chão
   pouco inclinado, deitado no plano da célula; `fairy_ring_mesh` (a roda de cogumelos claros). Captura em `tools/capture_phase272.tscn`.
 
+### Andorinhas no fio (Fase 273, nossa)
+
+- **Plano** em `docs/plano_fase273.md`. `PowerLineView.rebuilt` e `spans` (as curvas dos fios); `WireBirdView`
+  (`GameScreen.wire_bird_view`): `perches` (a fila no meio da curva de um vão a cada `SPAN_EVERY`) e `swallow_mesh`, num MultiMesh sem
+  sombra, escondido de noite. Captura em `tools/capture_phase273.tscn` (a câmera à mão na altura do fio).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3543,6 +3549,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 270 — Corvos no campo (nossa) | **feita em 02/11/2026**, primeira do roteiro corvo, dedaleira e nenúfar (Fases 270 a 274): corvos pretos bicando a terra nos vãos entre as fileiras dos campos recém-plantados, indo embora quando a plantação cresce; plano em `docs/plano_fase270.md` |
 | 271 — Dedaleiras (nossa) | **feita em 02/11/2026**: touceiras de dedaleira com as hastes altas de sinos roxos e rosados na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase271.md` |
 | 272 — Anel de cogumelos (nossa) | **feita em 02/11/2026**: uma roda de cogumelos claros de chapéu redondo no capim aberto das ilhas temperadas, de vez em quando; plano em `docs/plano_fase272.md` |
+| 273 — Andorinhas no fio (nossa) | **feita em 02/11/2026**: filas de andorinhas de costas azuis e garganta ferrugem pousadas no meio dos fios dos postes das usinas, olhando para um lado e para o outro, de dia; plano em `docs/plano_fase273.md` |
 
 Pendências já vistas para fases futuras:
 

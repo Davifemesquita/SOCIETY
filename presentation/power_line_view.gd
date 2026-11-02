@@ -33,6 +33,9 @@ var _poles := MultiMeshInstance3D.new()
 var _wires := MeshInstance3D.new()
 var _wire_material := StandardMaterial3D.new()
 var _spans: Array[PackedVector3Array] = []
+
+## Fase 273: avisa a cada desenho novo dos fios (as andorinhas pousam neles).
+signal rebuilt
 var _dirty := true
 
 
@@ -106,6 +109,12 @@ func rebuild() -> void:
 		for k: int in 2:
 			_spans.append(HarborView.rope_span(tips_a[k], tips_b[k], WIRE_SAG))
 	_wires.mesh = HarborView.rope_mesh(_spans, _wire_material, WIRE_RADIUS_M) if not _spans.is_empty() else null
+	rebuilt.emit()
+
+
+## Fase 273: as curvas dos fios desenhados (os pontos de cada um, do HarborView.rope_span).
+func spans() -> Array[PackedVector3Array]:
+	return _spans
 
 
 ## Os postes (o pé de cada um, no mundo): nas células de estrada até o raio de cada usina, uma a cada POLE_EVERY pelo

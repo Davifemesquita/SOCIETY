@@ -95,6 +95,7 @@ var pasture_trough_view: PastureTroughView
 var light_pool_view: LightPoolView
 ## Fase 120: os postes e os fios pelas ruas em volta das usinas.
 var power_line_view: PowerLineView
+var wire_bird_view: WireBirdView
 ## Fase 121: o gavião planando sobre cada cidade.
 var hawk_view: HawkView
 ## Fase 122: matacões no leito dos rios e seixos na margem.
@@ -500,6 +501,10 @@ func _ready() -> void:
 	power_line_view.name = "PowerLines"
 	add_child(power_line_view)
 	power_line_view.setup(simulation)
+	wire_bird_view = WireBirdView.new()
+	wire_bird_view.name = "WireBirds"
+	add_child(wire_bird_view)
+	wire_bird_view.setup(power_line_view, simulation.config)
 	hawk_view = HawkView.new()
 	hawk_view.name = "Hawks"
 	add_child(hawk_view)
