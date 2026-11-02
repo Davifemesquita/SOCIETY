@@ -2687,3 +2687,9 @@ carregar 6,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primit
 carregar 6,5 s, construir com a ilha cheia 17,6 ms; objetos, draw calls e primitivas iguais. Neutra na GPU; o FPS segue a descida
 lenta do ciclo do prado (de 75,9 na Fase 284 a 73,8), com a GPU de 12,1 a 12,3 ms: as manchas, as flores e a beira no terreno e o
 tapete, que no trajeto do benchmark quase não aparece.
+
+## Fase 290 — estratos na rocha (02/11/2026)
+
+Três rodadas: 73,4, 73,7 e 73,2 FPS, GPU 12,5 ms nas três (289: 12,3), jogo novo 12,3 s, montar tudo 9,5 s, carregar 6,5 s,
+construir com a ilha cheia 17,1 a 17,3 ms; objetos, draw calls e primitivas iguais. A/B na mesma hora: a Fase 289 (worktree no
+commit anterior) deu 74,5 FPS e GPU 12,4 ms. Os estratos custam ~0,1 ms; o resto foi a máquina mais lenta nessa hora.

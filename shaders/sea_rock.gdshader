@@ -53,6 +53,8 @@ float value_noise(vec2 p) {
 			f.y);
 }
 
+#include "res://shaders/rock_strata.gdshaderinc"
+
 void fragment() {
 	vec3 weights = pow(abs(world_normal), vec3(4.0));
 	weights /= weights.x + weights.y + weights.z;
@@ -64,6 +66,8 @@ void fragment() {
 	vec3 color = albedo.rgb * tint.rgb;
 	vec3 grey = stone_grey * (dot(color, vec3(0.299, 0.587, 0.114)) / dot(stone_grey, vec3(0.299, 0.587, 0.114)));
 	color = mix(color, grey, stone_grey_mix) * stone_light;
+	// Fase 290: os estratos e os sulcos, os mesmos da rocha do terreno (pela altura e pelo lugar no mundo)
+	color *= strata_factor(world_position, world_normal);
 	float roughness = 0.92;
 	if (sea) {
 		// a borda de cima da faixa sobe e desce pelo ruído ao longo da costa

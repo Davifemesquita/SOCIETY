@@ -232,6 +232,8 @@ vec3 unrotate_normal(vec3 sampled, mat2 r) {
 	return vec3(xy * 0.5 + 0.5, sampled.z);
 }
 
+#include "res://shaders/rock_strata.gdshaderinc"
+
 void fragment() {
 	vec2 uv = world_position.xz / texture_meters;
 	vec2 cell = (world_position.xz - region_bounds.xy) / region_bounds.zw;
@@ -352,6 +354,10 @@ void fragment() {
 	rock_a.rgb *= rock_grade;
 	vec3 rock_gray = rock_grey * (dot(rock_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(rock_grey, vec3(0.299, 0.587, 0.114)));
 	rock_a.rgb = mix(rock_a.rgb, rock_gray, rock_grey_mix) * rock_light;
+	// Fase 290: os estratos e os sulcos da encosta
+	if (rock > 0.001) {
+		rock_a.rgb *= strata_factor(world_position, world_normal);
+	}
 
 	// bordas com ruído e height-blend
 	float ragged = texture(rock_albedo, uv * 0.23).a - 0.5;

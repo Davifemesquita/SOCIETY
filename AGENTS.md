@@ -3374,6 +3374,15 @@ Regras que já custaram investigação:
   crista dos barrancos (a curvatura dos dados abaixo do meio e a inclinação deles subindo antes da rocha), recortada e
   interrompida a trechos, fora da rocha, da areia e da lama.
 
+### Estratos na rocha (Fase 290, nossa)
+
+- **Plano** em `docs/plano_fase290.md`, primeira do roteiro `docs/plano_fases_290_294.md` (a rocha e a costa).
+  `shaders/rock_strata.gdshaderinc` (`strata_factor`: camadas onduladas com a borda clara e a sombra, sulcos descendo) no
+  `terrain.gdshader` (só onde há rocha) e no `sea_rock.gdshader`. **Função de `.gdshaderinc` não usa nome de varying nos
+  parâmetros** (`world_position` não compilava). **Teste de uniformes de shader exige a lista cheia com tela**
+  (`DisplayServer.get_name() != "headless"`): a lista vazia é também o shader que não compilou. Captura do ciclo em
+  `tools/capture_phase290.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3674,6 +3683,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 287 — Flores miúdas (nossa) | **feita em 02/11/2026**: pontinhos de flor brancos e amarelos no capim, mais nos prados de flor e no capim baixo, no chão e nos tufos do tapete; plano em `docs/plano_fase287.md` |
 | 288 — Papoulas soltas (nossa) | **feita em 02/11/2026**: os canteiros de papoulas deixam de parecer plantados em grade: touceiras soltas, de tamanhos diferentes, mais juntas no meio do canteiro e menores na borda; plano em `docs/plano_fase288.md` |
 | 289 — Beira do barranco (nossa) | **feita em 02/11/2026**, a última do roteiro do prado: na beira de cima dos barrancos o capim acaba em trechos de terra escura com pedras e raízes, em vez de virar rocha de uma vez; plano em `docs/plano_fase289.md` |
+| 290 — Estratos na rocha (nossa) | **feita em 02/11/2026**, primeira do roteiro da rocha e da costa (Fases 290 a 294): as falésias, os barrancos e as pedras ganham camadas de rocha onduladas com o ressalto claro e a sombra embaixo, e sulcos descendo; plano em `docs/plano_fase290.md` |
 
 Pendências já vistas para fases futuras:
 
