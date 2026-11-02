@@ -50,4 +50,17 @@ caído (Fase 246) e o recheio da beira da mata. Os testes delas entram em cada f
 
 ## Estado
 
-A fazer.
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase275.md` a `docs/plano_fase279.md`),
+testes, captura e benchmark. As três pastas da suíte passaram no fim (world 657, presentation 383, ui 167).
+
+- A Fase 276 melhorou o quadro: 17.249 árvores desenhadas em vez de 28.830, GPU −0,5 ms.
+- A Fase 279 custa +0,3 a 0,4 ms de GPU, e o ciclo fecha com a GPU onde estava (12,1 ms).
+
+Diferenças do roteiro:
+
+- o pinheiro ficou nos patamares altos, não junto da costa (conferir a costa em cada célula de mata custaria uma busca a mais);
+- a orla ficou com menos bétulas (pequenas, pareciam pirulitos);
+- as folhas recortadas viraram cachos procedurais no shader (não um atlas de folhas), com a normal estufada, só nas árvores de
+  perto.
+
+O antes e depois do ciclo está em `F:\ferramentas\capturas\fase279\ciclo_antes_depois.png`.
