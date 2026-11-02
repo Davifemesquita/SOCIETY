@@ -119,6 +119,13 @@ uniform vec3 night_water = vec3(0.16, 0.2, 0.3);
 uniform float channel_probe_m = 12.0;
 uniform float channel_open_m = 10.0;
 uniform vec4 river_color : source_color = vec4(0.07, 0.14, 0.13, 0.72);
+// Society (Fase 284): o marulho (ver o começo do fragment): força, comprimento e inclinação de cada trem, a velocidade (fração da
+// das ondas de água funda) e a distância da costa onde ele chega cheio
+uniform float swell_strength = 1.0;
+uniform vec3 swell_lengths_m = vec3(52.0, 33.0, 21.0);
+uniform vec3 swell_slopes = vec3(0.09, 0.07, 0.05);
+uniform float swell_speed = 0.6;
+uniform float swell_open_m = 40.0;
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
@@ -501,6 +508,30 @@ float depth_from_water_to_object(vec2 screen_uv, mat4 inv_projection_matrix, vec
 
 void fragment() {
 	ALPHA = 1.0;
+	// Society (Fase 284): o marulho, a ondulação larga do mar aberto que se lê de longe. Três trens de ondas longas
+	// (swell_lengths_m) andando com o vento, só na normal (os vértices não mudam), somados à normal das ondas. Somem perto da costa
+	// (swell_open_m) e no rio, e o trem mais curto some de longe (sem cintilar). Antes do resto: o Fresnel, o reflexo do céu e o
+	// brilho do sol seguem a normal nova.
+	if (swell_strength > 0.0) {
+		float swell_open = has_coast ? smoothstep(swell_open_m * 0.4, swell_open_m, -coast_at(world_coordinates.xz)) : 1.0;
+		if (swell_open > 0.0) {
+			vec2 swell_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+			float swell_t = TIME * float(!freeze_time) * swell_speed;
+			vec2 slope = vec2(0.0);
+			for (int i = 0; i < 3; i++) {
+				float turn = i == 0 ? 0.0 : (i == 1 ? 0.55 : -0.8);
+				vec2 dir = vec2(swell_wind.x * cos(turn) - swell_wind.y * sin(turn), swell_wind.x * sin(turn) + swell_wind.y * cos(turn));
+				float k = TAU / swell_lengths_m[i];
+				float steep = swell_slopes[i];
+				if (i == 2) {
+					steep *= 1.0 - smoothstep(500.0, 900.0, length(VERTEX));
+				}
+				slope += dir * steep * cos(dot(dir, world_coordinates.xz) * k - sqrt(9.8 * k) * swell_t + float(i) * 1.7);
+			}
+			slope *= swell_strength * swell_open * mix(0.6, 1.2, sea_whitecaps);
+			NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(slope.x, 0.0, slope.y, 0.0)).xyz);
+		}
+	}
 
 	// Calculate distance from the camera to the water
 #if defined(DISTANCE_FADE) || defined(FOAM_FADE) || defined (SHORE_FADE) || defined(DEPTH_FOG_FADE)

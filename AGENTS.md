@@ -3336,6 +3336,12 @@ Regras que já custaram investigação:
   No `shaders/terrain.gdshader`, `gravel` (a `TerrainView` liga nas temperadas): a lama junto da água vira cascalho cinza até
   `gravel_top_m`. A captura do ciclo procura o rio com água (`05_rio.png`) e o leito seco (`05b_leito_seco.png`).
 
+### Marulho (Fase 284, nossa)
+
+- **Plano** em `docs/plano_fase284.md`. No começo do fragment do `shaders/water.gdshader`, três trens de ondas longas
+  (`swell_lengths_m`, `swell_slopes`) dobram a normal com o vento, longe da costa (`swell_open_m`), antes do Fresnel e do brilho:
+  o mar aberto ondula de longe sem mexer nos vértices.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3630,6 +3636,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 281 — Rebentação fina (nossa) | **feita em 02/11/2026**: a faixa branca larga da praia vira a linha fina de espuma colada na areia e nas pedras, com as ondas chegando em linhas quebradas; plano em `docs/plano_fase281.md` |
 | 282 — Água de noite (nossa) | **feita em 02/11/2026**: de noite o mar fica azul-escuro e a faixa da costa só pega a lua; acabou o halo ciano aceso em volta das ilhas; plano em `docs/plano_fase282.md` |
 | 283 — Rio escuro (nossa) | **feita em 02/11/2026**: os rios deixam de ser espuma branca de margem a margem e viram água calma e escura; a margem baixa dos rios das ilhas temperadas vira cascalho cinza; plano em `docs/plano_fase283.md` |
+| 284 — Marulho (nossa) | **feita em 02/11/2026**, a última do roteiro do mar e do rio: o mar aberto ganha a ondulação larga que se lê de longe, com o reflexo do céu ondulando, andando com o vento; plano em `docs/plano_fase284.md` |
 
 Pendências já vistas para fases futuras:
 
