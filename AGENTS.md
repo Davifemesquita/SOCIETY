@@ -3218,6 +3218,12 @@ Regras que já custaram investigação:
   como parâmetros). `HeronView` (`GameScreen.heron_view`): `spot` (junto da água, do lado do rio) e `heron_mesh`, virando pelo
   `PerchedGullView.heading_at` em volta da frente para o rio, num MultiMesh sem sombra. Captura em `tools/capture_phase265.tscn`.
 
+### Ruínas de muro (Fase 266, nossa)
+
+- **Plano** em `docs/plano_fase266.md`. `ScatterView.Kind.RUIN` (no fim do enum e da lista `OPEN`, com sombra) só nas temperadas e no
+  chão de pouco desnível, de pé; `ruin_mesh` (o muro de pedra seca quebrado em degraus, as pedras caídas e o musgo). Captura em
+  `tools/capture_phase266.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3494,6 +3500,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 263 — Noite azul (nossa) | **feita em 01/11/2026**: a noite deixa de ser quase preta fora das janelas: as ruas, os telhados e a mata se leem no azul da lua, com as luzes por cima; plano em `docs/plano_fase263.md` |
 | 264 — Sombra aberta (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva II: a oclusão de ambiente mais leve, e o vão entre as copas e o pé das matas deixam de ficar quase pretos; plano em `docs/plano_fase264.md` |
 | 265 — Garças no rio (nossa) | **feita em 02/11/2026**, primeira do roteiro garça, ruína e cruzeiro (Fases 265 a 269): a garça-real cinza de pé junto da água na margem baixa dos rios, longe das vilas, virando de um lado para o outro; plano em `docs/plano_fase265.md` |
+| 266 — Ruínas de muro (nossa) | **feita em 02/11/2026**: pedaços de muro de pedra seca quebrados em degraus, com as pedras caídas e o musgo, de vez em quando no campo aberto das ilhas temperadas; plano em `docs/plano_fase266.md` |
 
 Pendências já vistas para fases futuras:
 

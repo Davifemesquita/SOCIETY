@@ -30,7 +30,7 @@ extends Node3D
 ## temperadas, deitado com o chão como a madeira à deriva.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -40,7 +40,7 @@ const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
-		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG]
+		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG, Kind.RUIN]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
 		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE]
@@ -90,7 +90,8 @@ const SNAG_HEIGHT_M := 4.2
 const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
-		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE]]
+		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE],
+		[Kind.RUIN, RUIN_CHANCE]]
 ## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
 ## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
 ## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
@@ -130,6 +131,14 @@ const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
 ## Fase 246: o tronco caído — a chance por célula da beira da mata (depois do pinheiro-anão), só nas temperadas e com o chão
 ## pouco inclinado (a mesma conta da madeira à deriva), o comprimento e as cores (a casca escura, a madeira do corte, o musgo e os
 ## cogumelos: a orelha-de-pau castanha e os chapéus vermelhos de pintas).
+## Fase 266: a ruína de muro (RUIN), um pedaço de muro de pedra seca em L com as fiadas quebradas, as pedras caídas e o musgo, no
+## fim da lista OPEN, só nas temperadas e no chão de pouco desnível; a chance por célula aberta, o comprimento do muro e as cores
+## das pedras e do musgo.
+const RUIN_CHANCE := 0.004
+const RUIN_M := 2.2
+const RUIN_STONE := Color(0.6, 0.58, 0.53)
+const RUIN_STONE_DARK := Color(0.46, 0.45, 0.42)
+const RUIN_MOSS := Color(0.3, 0.42, 0.16)
 const MOSSY_LOG_CHANCE := 0.07
 const MOSSY_LOG_M := 2.0
 const LOG_BARK := Color(0.3, 0.24, 0.18)
@@ -712,8 +721,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.MOSSY_LOG and (tropical or cell_relief(grid, cell) > SCREE_MIN_RELIEF_M):
 			# o tronco caído só nas matas das temperadas, no chão pouco inclinado
 			continue
+		elif kind == Kind.RUIN and (tropical or cell_relief(grid, cell) > SCREE_MIN_RELIEF_M):
+			# a ruína só nos campos abertos das temperadas, no chão pouco inclinado
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if kind == Kind.YARD_TREE or kind == Kind.STREET_PALM or kind == Kind.SNAG or kind == Kind.ROCK_PINE:
+		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN]:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
 		elif kind == Kind.POPPIES or kind == Kind.TALL_GRASS:
@@ -737,7 +749,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
@@ -757,6 +769,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.ROCK_PINE:
 			# de pé (a árvore cresce para cima, não com a encosta), o pé enterrado para não ficar no ar do lado de baixo
 			y -= 0.25
+		elif kind == Kind.RUIN:
+			# de pé, com as pedras de baixo enterradas (o chão pode inclinar um pouco)
+			y -= 0.08
 		elif kind == Kind.SEAWEED:
 			# deitadas no chão da praia, um pouco afundadas na areia
 			basis = Basis(Quaternion(Vector3.UP, cell_normal(grid, cell))) * basis
@@ -1021,6 +1036,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return seaweed_mesh()
 	if kind == Kind.MOSSY_LOG:
 		return mossy_log_mesh()
+	if kind == Kind.RUIN:
+		return ruin_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1247,5 +1264,49 @@ static func mossy_log_mesh() -> ArrayMesh:
 		VertexShapes.cylinder(tool, foot, foot + Vector3(0.0, height, 0.0), 0.018, STEM, 5)
 		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.06, 0.03, 0.06)), foot + Vector3(0.0, height, 0.0)),
 				TOADSTOOL)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 266: a ruína de muro com o meio na origem e o pé em y = 0: um muro de pedra seca ao longo de x (RUIN_M) e o canto que volta
+## em z numa ponta, em fiadas de pedras desencontradas, quebrado em degraus (alto numa ponta, baixando até o toco), as pedras caídas
+## no chão do lado e as almofadas de musgo no alto.
+static func ruin_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var course := 0.17
+	var half := RUIN_M * 0.5
+	# o muro comprido: em cada trecho, quantas fiadas sobraram (a ponta de −x alta, a de +x um toco)
+	var standing: Array[int] = [6, 6, 5, 4, 4, 3, 2, 1]
+	var span := RUIN_M / standing.size()
+	for k: int in standing.size():
+		for row: int in standing[k]:
+			var shift := 0.5 * span * (row % 2)
+			var x := -half + span * (k + 0.5) + shift * 0.4
+			if x > half:
+				continue
+			var pick := (k * 7 + row * 3) % 5
+			var color := RUIN_STONE if pick > 1 else RUIN_STONE_DARK
+			VertexShapes.box(tool, Vector3(x, course * (row + 0.5), 0.02 * (pick - 2)), Vector3(span * 0.47, course * 0.46,
+					0.2 + 0.02 * pick), color.lightened(0.04 * pick))
+	# o canto que volta em z na ponta alta
+	for row: int in 5:
+		for k: int in 3:
+			if row >= 5 - k:
+				continue
+			var pick := (k * 5 + row) % 4
+			VertexShapes.box(tool, Vector3(-half + 0.2, course * (row + 0.5), 0.45 + 0.4 * k), Vector3(0.2, course * 0.46,
+					0.19), RUIN_STONE if pick > 0 else RUIN_STONE_DARK)
+	# as pedras caídas do lado de +z, no chão, e a do toco que rolou
+	for k: int in 6:
+		var at := Vector3(-0.6 + 0.32 * k, 0.07, -0.42 - 0.12 * (k % 3))
+		var tilt := Basis(Vector3.UP, 0.5 * k).rotated(Vector3.RIGHT, 0.2 * (k % 2))
+		VertexShapes.oriented_box(tool, Transform3D(tilt, at), Vector3(0.14 + 0.02 * (k % 3), 0.08, 0.11), RUIN_STONE_DARK
+				if k % 2 == 0 else RUIN_STONE)
+	# o musgo em almofadas no alto das fiadas que sobraram
+	for k: int in 4:
+		var top := course * standing[k * 2]
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.22, 0.05, 0.2)),
+				Vector3(-half + span * (k * 2 + 1), top, 0.0)), RUIN_MOSS.darkened(0.06 * (k % 2)))
 	tool.generate_normals()
 	return tool.commit()

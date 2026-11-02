@@ -2540,3 +2540,8 @@ ilha cheia 17,2 ms; objetos e primitivas iguais. Neutra: a força do SSAO não m
 Primeira do ciclo garça, ruína e cruzeiro: 76,4 FPS (264: 76,5), 1% low 37,9, p50/p95/p99 12,3/16,7/24,8 ms, GPU 12,0 ms, montar
 tudo 9,3 s, carregar 6,4 s, construir com a ilha cheia 17,8 ms; +1 objeto e draw call (a camada) e +350 primitivas no quadro com
 tudo visível. Neutra.
+
+## Fase 266 — ruínas de muro (02/11/2026)
+
+77,4 FPS (265: 76,4), 1% low 38,6, p50/p95/p99 12,2/16,3/24,2 ms, GPU 11,9 ms, montar tudo 9,4 s, carregar 6,4 s, construir com a
+ilha cheia 17,7 ms; +1 objeto e draw call e +780 primitivas no quadro com tudo visível (as ruínas por perto). Neutra.
