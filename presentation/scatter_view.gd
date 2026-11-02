@@ -30,7 +30,7 @@ extends Node3D
 ## temperadas, deitado com o chão como a madeira à deriva.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -43,7 +43,7 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG, Kind.RUIN, Kind.HAWTHORN]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN]
+		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -66,7 +66,7 @@ const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
 		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE], [Kind.MOSSY_LOG, MOSSY_LOG_CHANCE],
-		[Kind.HAWTHORN, HAWTHORN_CHANCE]]
+		[Kind.HAWTHORN, HAWTHORN_CHANCE], [Kind.FOXGLOVE, FOXGLOVE_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
@@ -137,6 +137,13 @@ const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
 ## das pedras e do musgo.
 ## Fase 267: o espinheiro florido (HAWTHORN), o arbusto alto de copa redonda e torta coberto de flor branca, no fim da lista
 ## NEAR_FOREST, só nas temperadas; a chance na beira da mata e as cores das folhas, das flores e do tronco.
+## Fase 271: as dedaleiras (FOXGLOVE), uma touceira de folhas largas no chão com cinco hastes altas de sinos roxos e rosados, no
+## fim da lista NEAR_FOREST, só nas temperadas; a chance na beira da mata e as cores.
+const FOXGLOVE_CHANCE := 0.06
+const FOXGLOVE_LEAF := Color(0.26, 0.42, 0.16)
+const FOXGLOVE_BELL := Color(0.62, 0.3, 0.6)
+const FOXGLOVE_PINK := Color(0.82, 0.48, 0.72)
+const FOXGLOVE_STEM := Color(0.3, 0.42, 0.18)
 const HAWTHORN_CHANCE := 0.05
 const HAWTHORN_LEAF := Color(0.3, 0.46, 0.16)
 const HAWTHORN_BLOSSOM := Color(0.96, 0.94, 0.9)
@@ -735,6 +742,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.HAWTHORN and tropical:
 			# o espinheiro só nas matas das temperadas
 			continue
+		elif kind == Kind.FOXGLOVE and tropical:
+			# a dedaleira só nas matas das temperadas
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN]:
 			# no meio da célula: a copa não encosta na parede da casa
@@ -760,7 +770,8 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN, Kind.HAWTHORN:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN, \
+					Kind.HAWTHORN, Kind.FOXGLOVE:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
@@ -1051,6 +1062,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return ruin_mesh()
 	if kind == Kind.HAWTHORN:
 		return hawthorn_mesh()
+	if kind == Kind.FOXGLOVE:
+		return foxglove_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1353,5 +1366,41 @@ static func hawthorn_mesh() -> ArrayMesh:
 			PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.16, 0.08, 0.16)), spot), color)
 		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.28, 0.1, 0.26)), at + Vector3(0.0, size.y * 0.85, 0.0)),
 				HAWTHORN_BLOSSOM)
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 271: a dedaleira com o pé em y = 0 (cerca de 1,6 m): a roseta de folhas largas deitadas, cinco hastes de alturas diferentes,
+## um pouco tortas, e em cada uma os sinos pendentes do meio para cima, maiores embaixo e menores na ponta, roxos com uns rosados.
+static func foxglove_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for k: int in 6:
+		var angle := TAU * k / 6.0 + 0.2
+		var tip := Vector3(cos(angle) * 0.32, 0.05, sin(angle) * 0.32)
+		var left := Vector3(cos(angle - 0.4) * 0.12, 0.08, sin(angle - 0.4) * 0.12)
+		var right := Vector3(cos(angle + 0.4) * 0.12, 0.08, sin(angle + 0.4) * 0.12)
+		VertexShapes.tri(tool, Vector3(0.0, 0.1, 0.0), right, tip, FOXGLOVE_LEAF)
+		VertexShapes.tri(tool, Vector3(0.0, 0.1, 0.0), tip, left, FOXGLOVE_LEAF.darkened(0.1))
+	var stems: Array[Array] = [[Vector3(0.0, 0.0, 0.0), 1.6, Vector3(0.05, 0.0, 0.02)], [Vector3(0.16, 0.0, 0.08), 1.3,
+			Vector3(0.1, 0.0, 0.05)], [Vector3(-0.14, 0.0, -0.06), 1.15, Vector3(-0.08, 0.0, -0.04)], [Vector3(-0.06, 0.0, 0.16),
+			1.4, Vector3(-0.03, 0.0, 0.08)], [Vector3(0.1, 0.0, -0.14), 1.0, Vector3(0.06, 0.0, -0.07)]]
+	for s: int in stems.size():
+		var foot: Vector3 = stems[s][0]
+		var height: float = stems[s][1]
+		var lean: Vector3 = stems[s][2]
+		var top := foot + Vector3(0.0, height, 0.0) + lean
+		VertexShapes.strut(tool, foot + Vector3(0.0, 0.08, 0.0), top, 0.016, 0.01, FOXGLOVE_STEM)
+		var bells := 8
+		for b: int in bells:
+			var t := 0.45 + 0.5 * b / float(bells - 1)
+			var on := (foot + Vector3(0.0, 0.08, 0.0)).lerp(top, t)
+			var angle := b * 2.2 + s
+			var size := lerpf(0.08, 0.04, float(b) / (bells - 1))
+			var color := FOXGLOVE_PINK if (b + s) % 4 == 0 else FOXGLOVE_BELL
+			# o sino pendente: um cone de boca para baixo, saindo de lado
+			var out := Vector3(cos(angle), 0.0, sin(angle)) * size * 0.9
+			VertexShapes.strut(tool, on + out * 0.3 + Vector3(0.0, size * 0.4, 0.0), on + out - Vector3(0.0, size * 0.9, 0.0),
+					size * 0.35, size, color)
 	tool.generate_normals()
 	return tool.commit()

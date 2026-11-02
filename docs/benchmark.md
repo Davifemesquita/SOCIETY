@@ -2569,3 +2569,8 @@ Neutra. Fecha o roteiro garça, ruína e cruzeiro (Fases 265 a 269).
 Primeira do ciclo corvo, dedaleira e nenúfar: 76,1 FPS (269: 76,2), 1% low 38,2, p50/p95/p99 12,4/16,4/24,8 ms, GPU 12,0 ms, montar
 tudo 9,4 s, carregar 6,6 s, construir com a ilha cheia 17,1 ms; +1 objeto e draw call (a camada) e primitivas iguais no quadro com
 tudo visível (os campos da cidade do benchmark já cresceram). Neutra.
+
+## Fase 271 — dedaleiras (02/11/2026)
+
+76,3 FPS (270: 76,1), 1% low 38,6, p50/p95/p99 12,3/16,3/24,7 ms, GPU 11,9 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
+ilha cheia 17,4 ms; objetos e primitivas iguais no quadro com tudo visível (nenhuma por perto). Neutra.

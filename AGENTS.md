@@ -3250,6 +3250,11 @@ Regras que já custaram investigação:
   `crow_spots` (os lugares da colheita dos campos novos da vez), `peck` e `crow_mesh`, num MultiMesh sem sombra, escondido de noite.
   Captura em `tools/capture_phase270.tscn`.
 
+### Dedaleiras (Fase 271, nossa)
+
+- **Plano** em `docs/plano_fase271.md`. `ScatterView.Kind.FOXGLOVE` (no fim do enum e da lista `NEAR_FOREST`, entre as `PLANTS`) só
+  nas temperadas; `foxglove_mesh` (cinco hastes com os sinos roxos). Captura em `tools/capture_phase271.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3531,6 +3536,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 268 — Casco naufragado (nossa) | **feita em 02/11/2026**: o esqueleto de um navio velho (a quilha, a roda de proa e as cavernas curvas, umas quebradas, e o mastro partido) encalhado na areia da costa baixa das ilhas temperadas, longe das vilas; plano em `docs/plano_fase268.md` |
 | 269 — Cruzeiro no morro (nossa) | **feita em 02/11/2026**, a última do roteiro garça, ruína e cruzeiro: a cruz de pedra clara sobre o degrau e o pedestal, com o musgo no pé, no ponto mais alto e livre de cada ilha temperada, virada para o meio dela; plano em `docs/plano_fase269.md` |
 | 270 — Corvos no campo (nossa) | **feita em 02/11/2026**, primeira do roteiro corvo, dedaleira e nenúfar (Fases 270 a 274): corvos pretos bicando a terra nos vãos entre as fileiras dos campos recém-plantados, indo embora quando a plantação cresce; plano em `docs/plano_fase270.md` |
+| 271 — Dedaleiras (nossa) | **feita em 02/11/2026**: touceiras de dedaleira com as hastes altas de sinos roxos e rosados na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase271.md` |
 
 Pendências já vistas para fases futuras:
 
