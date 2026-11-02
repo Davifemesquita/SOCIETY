@@ -2593,3 +2593,10 @@ Neutra: a camada não desenha nada nessa cidade; o FPS e a GPU estão no vaivém
 ilha cheia 17,7 ms; objetos e primitivas iguais no quadro com tudo visível. Neutra. Fecha o roteiro corvo, dedaleira e girassol e
 os quatro ciclos do oitavo pedido do dono (Fases 255 a 274): do começo ao fim o FPS ficou entre 75 e 78 e a GPU entre 11,9 e
 12,2 ms.
+
+## Fase 275 — abeto em camadas (02/11/2026)
+
+Primeira do ciclo da mata: 76,9 FPS (274: 76,5), 1% low 37,3, p50/p95/p99 12,3/16,6/24,3 ms, GPU 12,0 ms, jogo novo 12,3 s (28830
+árvores desenhadas, iguais), montar tudo 9,5 s, carregar 6,5 s, construir com a ilha cheia 17,6 ms; +17 objetos e draw calls no
+quadro com tudo visível (os trechos com abeto e pinheiro ganham uma camada) e primitivas iguais. O pior quadro do dia (55 ms, 274:
+31) foi um só, sem repetir no p99. Neutra.

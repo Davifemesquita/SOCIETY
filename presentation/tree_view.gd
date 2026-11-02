@@ -15,11 +15,20 @@ extends Node3D
 ## partidas, quatro formas, no lugar das lajes lisas do Kenney.
 ## Desde a Fase 140 as células de mata cortadas em volta dos lenhadores (`StumpView.cut_cells`) ficam sem árvore no
 ## desenho (a simulação ainda as conta); refeitas quando um prédio entra ou sai.
+## Desde a Fase 275 a conífera da mata é quase sempre o abeto-vermelho (galhos até perto do chão); o pinheiro-silvestre fica
+## em PINE_SHARE delas, mais nos patamares altos.
 
 const CHUNK_CELLS := 64
 ## Folhosas e coníferas: [espécie, variante] do TreeModel.
 const BROADLEAF: Array[Array] = [[TreeModel.Species.OAK, 0], [TreeModel.Species.OAK, 1], [TreeModel.Species.BEECH, 0], [TreeModel.Species.BEECH, 1]]
-const CONIFER: Array[Array] = [[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Species.SCOTS_PINE, 1]]
+## Fase 275: os abetos primeiro, depois os pinheiros (`conifer_pick` escolhe entre eles).
+const CONIFER: Array[Array] = [[TreeModel.Species.NORWAY_SPRUCE, 0], [TreeModel.Species.NORWAY_SPRUCE, 1],
+		[TreeModel.Species.SCOTS_PINE, 0], [TreeModel.Species.SCOTS_PINE, 1]]
+## Fase 275: entre as coníferas, a parte de pinheiros; acima de PINE_HEIGHT_M (os patamares mais altos), a de cima. O resto é
+## abeto.
+const PINE_SHARE := 0.2
+const PINE_SHARE_HIGH := 0.6
+const PINE_HEIGHT_M := 12.0
 ## Formas de pedra: as variantes do RockModel.
 const ROCKS := RockModel.VARIANTS
 const PALMS: Array[Array] = [[TreeModel.Species.COCONUT_PALM, 0], [TreeModel.Species.COCONUT_PALM, 1], [TreeModel.Species.COCONUT_PALM, 2]]
@@ -261,8 +270,9 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 						entries.append([pick, _transform(grid, cell, seed_value, _scales[pick] * (0.75 + (seed_value / 13 % 50) / 100.0))])
 						continue
 					var conifer := (seed_value % 100) < (70 if high else 20)
-					var family := CONIFER if conifer else BROADLEAF
-					var model := (0 if not conifer else BROADLEAF.size()) + (seed_value / 7) % family.size()
+					var model := (seed_value / 7) % BROADLEAF.size()
+					if conifer:
+						model = BROADLEAF.size() + conifer_pick(seed_value, grid.cell_height(cell))
 					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * (0.75 + (seed_value / 13 % 50) / 100.0))])
 			elif grid.ground[index] == IslandGrid.Ground.LAND:
 				var chance := rock_chance(grid, cell)
@@ -330,6 +340,14 @@ static func _transform(grid: IslandGrid, cell: Vector2i, seed_value: int, scale:
 	var basis := Basis(Vector3.UP, (seed_value % 360) * PI / 180.0).scaled(Vector3.ONE * scale)
 	return PackedFloat32Array([basis.x.x, basis.y.x, basis.z.x, x, basis.x.y, basis.y.y, basis.z.y,
 			grid.height_at(x, z) - 0.1, basis.x.z, basis.y.z, basis.z.z, z])
+
+
+## Fase 275: a conífera da árvore (índice em CONIFER) pelo sorteio dela e pela altura do chão: abeto na maior parte, pinheiro
+## em PINE_SHARE (PINE_SHARE_HIGH acima de PINE_HEIGHT_M); a variante pelo mesmo sorteio de antes.
+static func conifer_pick(seed_value: int, height_m: float) -> int:
+	var share := PINE_SHARE_HIGH if height_m >= PINE_HEIGHT_M else PINE_SHARE
+	var pine := (seed_value / 11 % 100) < share * 100.0
+	return (2 if pine else 0) + (seed_value / 7) % 2
 
 
 ## Chance de pedra na célula de terra sem árvore: barranco alto, ou litoral rochoso (terra encostada no mar com

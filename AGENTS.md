@@ -3273,6 +3273,15 @@ Regras que já custaram investigação:
   estreitos): peça que precise de água calma no rio não aparece (os nenúfares do roteiro sumiam). Captura em
   `tools/capture_phase274.tscn`.
 
+### Abeto em camadas (Fase 275, nossa)
+
+- **Plano** em `docs/plano_fase275.md`, primeira do roteiro `docs/plano_fases_275_279.md` (a mata no jeito do Anno; o Anno foi
+  aberto em 02/11/2026, capturas `c10_*` fora do repositório). `TreeModel.Species.NORWAY_SPRUCE` (no fim do enum): `_spruce`
+  (camadas de galhos em cone até perto do chão, `_skirt`, `_needle`); `TreeView.CONIFER` com abetos e pinheiros, escolhidos por
+  `conifer_pick` (pinheiro mais acima de `PINE_HEIGHT_M`). **Face gerada para o material de duas faces vai no sentido horário
+  visto de fora** (como o `_limb`): com a face trocada o Godot vira a normal e ela acende do lado da sombra. Captura do ciclo em
+  `tools/capture_phase275.tscn` (a vila, os campos e a mata alta e baixa fora da vila).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3558,6 +3567,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 272 — Anel de cogumelos (nossa) | **feita em 02/11/2026**: uma roda de cogumelos claros de chapéu redondo no capim aberto das ilhas temperadas, de vez em quando; plano em `docs/plano_fase272.md` |
 | 273 — Andorinhas no fio (nossa) | **feita em 02/11/2026**: filas de andorinhas de costas azuis e garganta ferrugem pousadas no meio dos fios dos postes das usinas, olhando para um lado e para o outro, de dia; plano em `docs/plano_fase273.md` |
 | 274 — Girassóis (nossa) | **feita em 02/11/2026**, a última do roteiro corvo, dedaleira e girassol: touceiras de girassóis altos de flor amarela encostadas nas casas das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase274.md` |
+| 275 — Abeto em camadas (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata no jeito do Anno (Fases 275 a 279): o abeto-vermelho, um cone escuro de camadas de galhos até perto do chão, vira a conífera da mata (o pinheiro fica em parte, mais no alto), e a beira da mata deixa de ser uma cerca de troncos; plano em `docs/plano_fase275.md` |
 
 Pendências já vistas para fases futuras:
 

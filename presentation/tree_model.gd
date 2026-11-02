@@ -14,7 +14,11 @@ extends RefCounted
 ## Fase 59: a folhosa da mata tropical, misturada aos coqueiros: tronco reto e liso com sapopemas (as raízes em aleta do
 ## pé) e a copa em guarda-chuva, larga e chata, de verde mais escuro.
 
-enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM, TROPICAL_BROADLEAF }
+## Fase 275: o abeto-vermelho, a conífera da mata temperada (o pinheiro fica nas partes mais altas): tronco curto e escondido e
+## um cone de camadas de galhos caídos até perto do chão, verde-escuro azulado — a beira da mata deixa de mostrar a paliçada
+## de troncos dos pinheiros.
+
+enum Species { OAK, BEECH, SCOTS_PINE, COCONUT_PALM, TROPICAL_BROADLEAF, NORWAY_SPRUCE }
 
 const DETAIL_NEAR := 0
 const DETAIL_FAR := 1
@@ -37,6 +41,16 @@ const PALM_RING := Color(0.42, 0.35, 0.27)
 const COCONUT := Color(0.36, 0.34, 0.12)
 const TROPICAL_LEAF := Color(0.24, 0.51, 0.15)
 const TROPICAL_BARK := Color(0.52, 0.48, 0.4)
+## Abeto (Fase 275): agulhas verde-escuras puxando para o azul, casca marrom-acinzentada.
+const SPRUCE_NEEDLE := Color(0.16, 0.36, 0.21)
+const SPRUCE_BARK := Color(0.32, 0.25, 0.19)
+## Abeto: altura (antes do sorteio), camadas de galhos de perto, galhos por camada, raio da camada de baixo e altura da beira
+## dela (as saias descem até quase o chão), em metros.
+const SPRUCE_HEIGHT_M := Vector2(8.6, 10.0)
+const SPRUCE_TIERS := 8
+const SPRUCE_SPOKES := 12
+const SPRUCE_RADIUS_M := 2.0
+const SPRUCE_SKIRT_M := 0.45
 ## Coqueiro: altura do tronco (antes do sorteio), gomos do tronco, folhas da coroa e o comprimento delas, em metros.
 const PALM_HEIGHT_M := 8.0
 const PALM_SEGMENTS := 7
@@ -85,6 +99,8 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 			_palm(tool, rng, detail)
 		Species.TROPICAL_BROADLEAF:
 			_tropical(tool, rng, detail)
+		Species.NORWAY_SPRUCE:
+			_spruce(tool, rng, detail)
 	var result := tool.commit()
 	result.surface_set_material(0, _material(result))
 	_cache[key] = result
@@ -153,6 +169,84 @@ static func _pine(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) ->
 		var radius := rng.randf_range(1.3, 1.8)
 		_crown(tool, rng, spot, Vector3(radius, radius * 0.5, radius), PINE_NEEDLE, detail, hull)
 	_puffs(tool, rng, spots, hull, PINE_NEEDLE, detail, 0.45)
+
+
+## Abeto-vermelho: tronco curto (só o pé aparece) e, em volta dele, camadas de galhos do quase chão até a ponta, cada uma um
+## cone que desce em arco do meio até a beira recortada em pontas (os galhos caídos), mais larga embaixo e cada vez menor
+## para cima, uma por cima da outra; no alto, a flecha. De longe, três camadas de seis galhos.
+static func _spruce(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> void:
+	var height := rng.randf_range(SPRUCE_HEIGHT_M.x, SPRUCE_HEIGHT_M.y)
+	var lean := Vector3(rng.randf_range(-0.12, 0.12), 0.0, rng.randf_range(-0.12, 0.12))
+	_limb(tool, Vector3.ZERO, Vector3(0.0, height * 0.5, 0.0) + lean * 0.5, 0.24, 0.12, detail, SPRUCE_BARK, SPRUCE_BARK)
+	var tiers := SPRUCE_TIERS if detail == DETAIL_NEAR else 3
+	var spokes := SPRUCE_SPOKES if detail == DETAIL_NEAR else 6
+	var step := (height * 0.88 - SPRUCE_SKIRT_M) / tiers
+	var hull := Vector3(0.0, height * 0.4, 0.0)
+	var tip := Vector3(0.0, height, 0.0) + lean
+	for t: int in tiers:
+		var f := float(t) / tiers
+		var rim_y := SPRUCE_SKIRT_M + step * t
+		# cada camada sobe 1,8 passo acima da própria beira: cobre o pé da de cima
+		var apex_y := minf(rim_y + step * 1.8, height * 0.97)
+		var axis := lean * (rim_y / height)
+		var radius := lerpf(SPRUCE_RADIUS_M, 0.45, pow(f, 0.9)) * rng.randf_range(0.9, 1.1)
+		var shade := lerpf(0.88, 1.08, f)
+		_skirt(tool, rng, axis + Vector3(0.0, apex_y, 0.0), axis + Vector3(0.0, rim_y, 0.0), radius, spokes, hull, shade)
+	# a flecha: um cone fino da última camada até a ponta
+	_skirt(tool, rng, tip, Vector3(0.0, height * 0.84, 0.0) + lean * 0.84, 0.32, 5 if detail == DETAIL_NEAR else 4, hull, 1.12)
+
+
+## Uma camada do abeto: o cone do ponto apex até a beira em volta de rim (raio radius), dobrado num anel do meio que fica acima
+## da reta (o galho sai e cai em arco) e com a beira em pontas (galho comprido e vão alternando, a ponta do galho mais baixa).
+## Cor: mais clara e amarelada junto do alto, mais escura na beira; a normal do cone puxa para a da árvore inteira.
+static func _skirt(tool: SurfaceTool, rng: RandomNumberGenerator, apex: Vector3, rim: Vector3, radius: float, spokes: int,
+		hull: Vector3, shade: float) -> void:
+	var lumps := RandomNumberGenerator.new()
+	lumps.seed = rng.randi()
+	var turn := lumps.randf() * TAU
+	var drop := apex.y - rim.y
+	var middle: Array[Vector3] = []
+	var edge: Array[Vector3] = []
+	for s: int in spokes:
+		var angle := turn + TAU * s / spokes
+		var out := Vector3(cos(angle), 0.0, sin(angle))
+		var long := s % 2 == 0
+		var reach := radius * (1.0 if long else 0.74) * lumps.randf_range(0.9, 1.1)
+		middle.append(rim + out * reach * 0.5 + Vector3.UP * drop * 0.62)
+		edge.append(rim + out * reach + Vector3.DOWN * (0.22 if long else 0.0) * radius)
+	var top := _needle(apex, apex, hull, shade * CROWN_LIGHT, 1.0)
+	for s: int in spokes:
+		var next := (s + 1) % spokes
+		var a_mid := _needle(middle[s], apex, hull, shade * lerpf(CROWN_LIGHT, CROWN_SHADE, 0.45), 0.5)
+		var b_mid := _needle(middle[next], apex, hull, shade * lerpf(CROWN_LIGHT, CROWN_SHADE, 0.45), 0.5)
+		var a_edge := _needle(edge[s], apex, hull, shade * CROWN_SHADE, 0.0)
+		var b_edge := _needle(edge[next], apex, hull, shade * CROWN_SHADE, 0.0)
+		# no sentido horário visto de fora (a face da frente no Godot, como no `_limb`): com a face trocada, o material de
+		# duas faces vira a normal e a camada acende do lado da sombra
+		for corner: Array in [top, a_mid, b_mid, a_mid, b_edge, b_mid, a_mid, a_edge, b_edge]:
+			var point: Vector3 = corner[0]
+			var normal: Vector3 = corner[1]
+			var color: Color = corner[2]
+			tool.set_normal(normal)
+			tool.set_color(color)
+			tool.add_vertex(point)
+
+
+## Um vértice da camada do abeto: [ponto, normal, cor]. A normal é a do cone (para fora e para cima, pela descida do apex até
+## o ponto) puxada para a da árvore inteira; a cor, a agulha na fração shade, com o amarelo do sol pela fração sun.
+static func _needle(point: Vector3, apex: Vector3, hull: Vector3, shade: float, sun: float) -> Array:
+	var out := Vector3(point.x - apex.x, 0.0, point.z - apex.z)
+	var normal := Vector3.UP
+	if out.length_squared() > 1e-6:
+		normal = Vector3(out.x, 0.0, out.z).normalized() * maxf(apex.y - point.y, 0.05) + Vector3.UP * out.length()
+		normal = normal.normalized()
+	var away := point - hull
+	if away.length_squared() > 1e-4:
+		normal = normal.lerp(away.normalized(), CROWN_ROUND * 0.6).normalized()
+	var tint := Color.WHITE.lerp(CROWN_SUN, sun * 0.6)
+	var color := Color(minf(SPRUCE_NEEDLE.r * shade * tint.r, 1.0), minf(SPRUCE_NEEDLE.g * shade * tint.g, 1.0),
+			SPRUCE_NEEDLE.b * shade * tint.b)
+	return [point, normal, color]
 
 
 ## Coqueiro: tronco curvo para um lado, em gomos com um anel escuro em cada junta e o pé alargado; no alto, a coroa de
