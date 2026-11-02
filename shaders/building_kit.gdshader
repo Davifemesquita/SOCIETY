@@ -115,12 +115,21 @@ uniform vec4 curtain_cream : source_color = vec4(0.83, 0.74, 0.56, 1.0);
 uniform vec4 curtain_rose : source_color = vec4(0.66, 0.36, 0.33, 1.0);
 uniform vec4 curtain_sage : source_color = vec4(0.47, 0.55, 0.43, 1.0);
 uniform float curtain_pleat_m = 0.05;
+// Fase 300: o telhado de telhas gasto: o tom de cada casa entre roof_tone_dark e roof_tone_light (multiplicando a cor), a parte
+// das telhas trocadas (roof_swap_share), o musgo (roof_moss) e a sujeira escorrida
+uniform vec3 roof_tone_dark = vec3(0.8, 0.76, 0.74);
+uniform vec3 roof_tone_light = vec3(1.06, 1.02, 0.96);
+uniform float roof_swap_share = 0.05;
+uniform vec4 roof_moss : source_color = vec4(0.3, 0.33, 0.17, 1.0);
+uniform float roof_moss_strength = 0.45;
+uniform float roof_streak_strength = 0.18;
 
 varying vec3 world_position;
 varying vec3 world_normal;
 varying float contact;
 varying flat float shutter_pick;
 varying flat float curtain_pick;
+varying flat float roof_pick;
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -129,6 +138,8 @@ void vertex() {
 	h ^= h >> 15u;
 	shutter_pick = float(h % 4u);
 	curtain_pick = float((h >> 7u) % 4u);
+	// Fase 300: o tom e o gasto do telhado, pelo mesmo lugar (outros bits)
+	roof_pick = float((h >> 13u) % 1024u) / 1023.0;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	// a fachada pela normal no referencial do prédio
 	contact = 0.0;
@@ -170,6 +181,29 @@ float roof_tile_shade(vec3 p, vec3 n) {
 	float covered = 1.0 - smoothstep(0.0, 0.35, f);
 	float tone = fract(sin(dot(vec2(row, floor(c)), vec2(12.9898, 78.233))) * 43758.5453);
 	return clamp(under * 0.9 + seam * 0.45 + covered * 0.25 + (tone - 0.5) * 0.35, 0.0, 1.0);
+}
+
+
+// Fase 300: as coordenadas da telha no ponto p (normal n): x ao longo da água em fileiras (a mesma conta da roof_tile_shade),
+// y de través em telhas, já desencontradas
+vec2 roof_tile_at(vec3 p, vec3 n) {
+	vec2 down = normalize(n.xz);
+	vec2 across = vec2(-down.y, down.x);
+	float s = dot(p.xz, down) / max(n.y, 0.2) / tile_row_m;
+	return vec2(s, dot(p.xz, across) / tile_width_m + 0.5 * mod(floor(s), 2.0));
+}
+
+// Fase 300: o telhado gasto, de 0 a 1 por efeito: x a telha trocada (mais clara e mais viva), y o musgo, z a sujeira escorrida
+vec3 roof_wear(vec3 p, vec3 n, float pick) {
+	vec2 tile = roof_tile_at(p, n);
+	vec2 id = floor(tile);
+	float swap = step(1.0 - roof_swap_share, fract(sin(dot(id, vec2(41.31, 17.77))) * 43758.5453));
+	// musgo em manchas, mais no lado da sombra fixo (o norte, -z) e mais nas casas de pick alto
+	float shade_side = clamp(0.5 - n.z * 1.5, 0.0, 1.0);
+	float moss = smoothstep(0.66, 0.88, moss_noise(p.xz * 0.7 + pick * 37.0) * 0.6 + moss_noise(p.xz * 2.3) * 0.4 + shade_side * 0.2 + pick * 0.12);
+	// sujeira escorrendo água abaixo: riscos finos de través, compridos ao longo da água
+	float streak = smoothstep(0.55, 0.85, moss_noise(vec2(tile.y * 0.9, tile.x * 0.04) + pick * 13.0));
+	return vec3(swap, moss, streak);
 }
 
 // Fase 130: ruído de valor com hash sem seno (com coordenadas de mundo grandes o fract(sin(...)) sai em escada na GPU).
@@ -355,6 +389,12 @@ void fragment() {
 				NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 			} else {
 				color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;
+				// Fase 300: o telhado gasto — um tom por casa, telhas trocadas, musgo e sujeira escorrida
+				color *= mix(roof_tone_dark, roof_tone_light, roof_pick);
+				vec3 wear = roof_wear(world_position, world_normal, roof_pick);
+				color = mix(color, color * vec3(1.25, 1.12, 0.95), wear.x * near);
+				color = mix(color, roof_moss.rgb * (0.7 + 0.5 * dot(color, vec3(0.33))), wear.y * roof_moss_strength);
+				color *= 1.0 - wear.z * roof_streak_strength;
 			}
 		} else if (roof && thatch > 0.5) {
 			// a capa da cumeeira e o beiral do sapê: palha mais escura e lisa
