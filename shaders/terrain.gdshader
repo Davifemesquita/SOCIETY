@@ -115,7 +115,11 @@ uniform float dry_strength = 0.15;
 uniform vec3 grass_tint = vec3(0.52, 1.0, 0.2);
 uniform float grass_tint_mix = 0.6;
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
-uniform vec3 sand_grade = vec3(1.3, 1.2, 1.0);
+// Fase 259: a areia mais clara (antes 1,3/1,2/1,0) e puxando o matiz para este dourado (proporção linear), guardando a
+// luminância, como a grama da Fase 257: a textura cinza, só graduada, saía cinza-taupe (escolhido no tools/color_lab.tscn).
+uniform vec3 sand_grade = vec3(1.5, 1.35, 1.1);
+uniform vec3 sand_tint = vec3(1.0, 0.82, 0.58);
+uniform float sand_tint_mix = 0.55;
 uniform vec3 rock_grade = vec3(0.7, 0.66, 0.62);
 
 varying vec3 world_position;
@@ -258,7 +262,11 @@ void fragment() {
 	vec3 tinted = grass_tint * (dot(grass_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(grass_tint, vec3(0.299, 0.587, 0.114)));
 	grass_a.rgb = mix(grass_a.rgb, tinted, grass_tint_mix);
 	forest_a.rgb *= forest_grade;
+	// a lama (Fase 19) sai da areia com a graduação de antes da Fase 259: a areia dourada não muda a margem dos rios
+	vec3 mud_base = sand_a.rgb * vec3(1.3, 1.2, 1.0);
 	sand_a.rgb *= sand_grade;
+	vec3 golden = sand_tint * (dot(sand_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(sand_tint, vec3(0.299, 0.587, 0.114)));
+	sand_a.rgb = mix(sand_a.rgb, golden, sand_tint_mix);
 
 	// rocha: triplanar só na encosta (na plana o peso dela é zero e nada é lido)
 	vec4 rock_a = vec4(0.0);
@@ -294,7 +302,7 @@ void fragment() {
 	ground_n = mix(ground_n, rock_n, rock * (1.0 - sand));
 	ground_a = mix(ground_a, sand_a, sand);
 	ground_n = mix(ground_n, sand_n, sand);
-	vec4 mud_a = vec4(sand_a.rgb * mud_tint * 1.6, sand_a.a);
+	vec4 mud_a = vec4(mud_base * mud_tint * 1.6, sand_a.a);
 	ground_a = mix(ground_a, mud_a, mud * (1.0 - rock));
 	// lama alisada: o relevo da areia some quase todo
 	ground_n = mix(ground_n, vec4(mix(sand_n.rgb, vec3(0.5, 0.5, 1.0), 0.75), 0.3), mud * (1.0 - rock));

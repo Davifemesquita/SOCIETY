@@ -9,10 +9,10 @@ extends "res://tools/capture_phase255.gd"
 const WARM_HOUSES := {&"peasants": Color(0.78, 0.64, 0.42), &"workers": Color(0.7, 0.36, 0.26), &"artisans": Color(0.76, 0.56, 0.42),
 		&"engineers": Color(0.84, 0.74, 0.56), &"investors": Color(0.93, 0.87, 0.73)}
 const VARIANTS: Array = [
-	["0_predios_atual", {}],
-	["1_tinta_forte", {"kit": {"tint_strength": 0.7}}],
-	["2_casas_quentes", {"kit": {"tint_strength": 0.7}, "houses": WARM_HOUSES}],
-	["3_casas_quentes_80", {"kit": {"tint_strength": 0.8}, "houses": WARM_HOUSES}],
+	["0_areia_atual", {}],
+	["1_areia_quente", {"sand_grade": Vector3(1.4, 1.22, 0.88)}],
+	["2_areia_dourada", {"sand_grade": Vector3(1.35, 1.22, 0.95), "sand_tint": Vector3(1.0, 0.78, 0.5), "sand_tint_mix": 0.4}],
+	["3_areia_clara", {"sand_grade": Vector3(1.5, 1.35, 1.1), "sand_tint": Vector3(1.0, 0.82, 0.58), "sand_tint_mix": 0.55}],
 ]
 
 
@@ -30,7 +30,7 @@ func _run() -> void:
 		"ssao": environment.ssao_intensity, "exposure": environment.tonemap_exposure, "sky_fog": _sky_fog(game),
 	}
 	_terrain_materials = game.terrain_view.materials()
-	for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix"]:
+	for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix", "sand_grade", "sand_tint", "sand_tint_mix"]:
 		_terrain_base[key] = _terrain_materials[0].get_shader_parameter(key)
 	print("base ", base, " névoa do clima ", game.weather.sample.mist, " nuvens ", game.weather.sample.coverage)
 	for variant: Array in VARIANTS:
@@ -40,7 +40,7 @@ func _run() -> void:
 		_apply_buildings(game, settings)
 		await _shot(game, name + "_vila.png", points[0], 110.0, 0.6)
 		await _shot(game, name + "_perto.png", points[0], 42.0, 0.6)
-		await _shot(game, name + "_ilha.png", points[3], 520.0, 0.3)
+		await _shot(game, name + "_enseada.png", points[2], 140.0, 0.3)
 	get_tree().quit()
 
 
@@ -80,7 +80,7 @@ func _apply(environment: Environment, sun: DirectionalLight3D, base: Dictionary,
 	sun.light_color = settings.get("sun_color", base["sun_color"])
 	environment.ssao_intensity = settings.get("ssao", base["ssao"])
 	for material: ShaderMaterial in _terrain_materials:
-		for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix"]:
+		for key: String in ["grass_grade", "grass_saturation", "dry_strength", "grass_tint", "grass_tint_mix", "sand_grade", "sand_tint", "sand_tint_mix"]:
 			var value: Variant = settings.get(key, _terrain_base[key])
 			material.set_shader_parameter(key, value)
 	var fill: float = settings.get("leaf_fill", TreeModel.LEAF_FILL)

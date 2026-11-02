@@ -2499,3 +2499,9 @@ construir com a ilha cheia 17,4 ms; objetos e primitivas iguais. Neutra: duas co
 
 76,8 FPS (257: 76,3), 1% low 38,1, p50/p95/p99 12,3/16,7/24,6 ms, GPU 11,9 ms (257: 12,0), montar tudo 9,4 s, carregar 6,4 s,
 construir com a ilha cheia 17,0 ms; objetos e draw calls iguais. Neutra: só números de cor e um peso a mais no shader do kit.
+
+## Fase 259 — praia dourada (01/11/2026)
+
+77,7 FPS (258: 76,8), 1% low 39,4, p50/p95/p99 12,2/16,5/24,1 ms, GPU 11,9 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
+ilha cheia 17,1 ms; objetos e primitivas iguais. Neutra. Fecha o roteiro da cor viva: do começo ao fim do ciclo, o FPS e a GPU
+ficaram onde estavam (Fase 254: 77,7 FPS, GPU 11,9 ms).

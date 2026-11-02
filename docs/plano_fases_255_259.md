@@ -25,7 +25,14 @@ vila com várias combinações) mostram o que deixa o jogo apagado:
 | 256 — Copas verdes | folhas mais claras e verdes, o alto da copa iluminado e a sombra dela menos fechada |
 | 257 — Grama viva | a grama puxa do oliva para o verde, com manchas mais claras e mais escuras |
 | 258 — Telhado e parede com cor | telhas, caiação e madeiras mais vivas e com mais variação entre as casas |
-| 259 — Mar vivo | o azul do mar aberto mais fundo e o turquesa da costa mais limpo |
+| 259 — Praia dourada | a areia da praia sai do cinza-taupe para o dourado (o mar já estava vivo depois da Fase 255) |
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura (as mesmas vistas do
 `tools/capture_phase255.tscn`, antes e depois) e benchmark, commit e push.
+
+## Estado
+
+**Concluído em 01/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase255.md` a `docs/plano_fase259.md`),
+testes, captura e benchmark (todas neutras). Diferença do roteiro: a Fase 259 virou a praia dourada, porque o mar ficou vivo já
+na Fase 255. As fotos dos cartões do menu foram refeitas com as cores novas. O antes e depois do ciclo está em
+`F:erramentaspturasase259	clo_antes_depois.png`.

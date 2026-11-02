@@ -3174,6 +3174,12 @@ Regras que já custaram investigação:
   **Cor azul ou cinza sobre a textura de telha vermelha sai lilás**: o telhado de outro matiz pede outra textura (a ardósia da
   Fase 134).
 
+### Praia dourada (Fase 259, nossa)
+
+- **Plano** em `docs/plano_fase259.md`. No `shaders/terrain.gdshader`, a areia vai `sand_tint_mix` (0,55) para o dourado
+  `sand_tint` escalado à luminância, com `sand_grade` (1,5; 1,35; 1,1); a lama sai de `mud_base` (a areia com a graduação de antes),
+  então a margem dos rios e a laterita não mudam.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3443,6 +3449,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 256 — Copas verdes (nossa) | **feita em 01/11/2026**: as matas deixam de ser blocos quase pretos: folhas mais claras, o alto das copas amarelado de sol e uma luz própria das folhas de dia; plano em `docs/plano_fase256.md` |
 | 257 — Grama viva (nossa) | **feita em 01/11/2026**: a grama deixa o oliva-amarronzado e fica verde-amarelada e viva, de perto e de longe, guardando o claro e o escuro da textura; plano em `docs/plano_fase257.md` |
 | 258 — Telhado e parede com cor (nossa) | **feita em 01/11/2026**: todo telhado em terracota viva ou tábua marrom quente (antes rosa-acinzentado), a tinta das paredes pesando mais que a textura cinza e o reboco quente nas classes de cima; plano em `docs/plano_fase258.md` |
+| 259 — Praia dourada (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva: a areia da praia deixa o cinza-taupe e fica dourada e clara; o mar já tinha ficado vivo na Fase 255; plano em `docs/plano_fase259.md` |
 
 Pendências já vistas para fases futuras:
 
