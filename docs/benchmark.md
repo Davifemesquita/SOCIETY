@@ -2669,3 +2669,9 @@ carregar 6,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primit
 câmera alta o tapete fica escondido). O trajeto passa quase só pela vila: o custo com a câmera em cima do prado aberto saiu do
 `tools/grass_cost.tscn` (~32 mil tufos): +0,39 ms de GPU a 30 m, +0,34 a 60 m e +0,17 a 110 m. Montar um bloco leva ~0,7 ms na
 CPU, três por quadro com a câmera andando.
+
+## Fase 287 — flores miúdas (02/11/2026)
+
+74,1 FPS (286: 74,9), 1% low 38,0, p50/p95/p99 12,8/17,1/24,4 ms, GPU 12,3 ms (286: 12,3), jogo novo 12,6 s, montar tudo 9,5 s,
+carregar 6,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais. Neutra. Sobre o prado aberto
+(`tools/grass_cost.tscn`) o tapete com as flores custa +0,32 a 0,43 ms de GPU (286: +0,17 a 0,39).

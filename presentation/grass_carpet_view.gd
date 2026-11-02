@@ -26,6 +26,10 @@ const BLADE_HALF_M := 0.04
 const BLADE_HEIGHT_M := Vector2(0.4, 0.75)
 const BASE_COLOR := Color(0.2, 0.34, 0.09)
 const TIP_COLOR := Color(0.5, 0.68, 0.22)
+## Fase 287: a flor do tufo (pétalas, altura e raio).
+const FLOWER_PETALS := 5
+const FLOWER_HEIGHT_M := 0.42
+const FLOWER_RADIUS_M := 0.075
 
 var _simulation: Simulation
 var _material: ShaderMaterial
@@ -244,7 +248,7 @@ static func tufts(grid: IslandGrid, island_id: int, cell: Vector2i) -> Array[Tra
 	return result
 
 
-## O tufo, com o pé na origem: BLADES folhas finas em leque (um triângulo cada, da base estreita à ponta), em alturas e inclinações
+## O tufo, com o pé na origem (Fase 287: e a flor que o shader mostra só em parte deles): BLADES folhas finas em leque (um triângulo cada, da base estreita à ponta), em alturas e inclinações
 ## diferentes, escuras no pé e claras na ponta; a normal para cima (o tufo pega a luz do chão).
 static func tuft_mesh() -> ArrayMesh:
 	var tool := SurfaceTool.new()
@@ -262,5 +266,17 @@ static func tuft_mesh() -> ArrayMesh:
 			var color: Color = corner[1]
 			tool.set_normal(Vector3.UP)
 			tool.set_color(color)
+			tool.add_vertex(point)
+	# Fase 287: a flor miúda numa haste curta do meio, de FLOWER_PETALS pétalas deitadas, com o alfa do vértice em 0 (o shader
+	# escolhe em quais tufos ela fica e a cor; nos outros ela some)
+	var center := Vector3(0.02, FLOWER_HEIGHT_M, -0.01)
+	for p: int in FLOWER_PETALS:
+		var a0 := TAU * p / FLOWER_PETALS
+		var a1 := a0 + TAU / FLOWER_PETALS * 0.7
+		var points: Array[Vector3] = [center, center + Vector3(cos(a1), 0.0, sin(a1)) * FLOWER_RADIUS_M,
+				center + Vector3(cos(a0), 0.0, sin(a0)) * FLOWER_RADIUS_M]
+		for point: Vector3 in points:
+			tool.set_normal(Vector3.UP)
+			tool.set_color(Color(1.0, 1.0, 1.0, 0.0))
 			tool.add_vertex(point)
 	return tool.commit()

@@ -24,7 +24,15 @@ uniform float tall_height = 1.7;
 uniform float short_height = 0.55;
 uniform float backlight = 0.3;
 
+// Fase 287: as flores do tapete (as mesmas regras das do terrain.gdshader: a parte, o prado de flor e as cores)
+uniform float flower_share = 0.3;
+uniform float flower_meadow_m = 36.0;
+uniform vec3 flower_white : source_color = vec3(0.95, 0.94, 0.88);
+uniform vec3 flower_yellow : source_color = vec3(0.96, 0.82, 0.22);
+
 varying vec3 patch_tint;
+varying vec3 flower_color;
+varying float flower;
 
 // o mesmo ruído de valor do terrain.gdshader (as manchas batem com o chão)
 float hash21(vec2 p) {
@@ -47,6 +55,17 @@ void vertex() {
 	float tall = smoothstep(0.52, 0.62, patch);
 	float short_grass = 1.0 - smoothstep(0.38, 0.48, patch);
 	patch_tint = mix(vec3(1.0), tall_tint, tall) * mix(vec3(1.0), short_tint, short_grass);
+	// Fase 287: os vértices da flor (alfa 0) somem nos tufos sem flor (o triângulo vira um ponto); nos outros, branca ou amarela
+	flower = 1.0 - step(0.5, COLOR.a);
+	flower_color = vec3(0.0);
+	if (flower > 0.5) {
+		float bloom = smoothstep(0.25, 0.6, value_noise(origin.xz / flower_meadow_m));
+		float share = flower_share * bloom * (1.0 + short_grass * 0.6 - tall * 0.7);
+		if (hash21(origin.xz * 0.731) >= share) {
+			VERTEX = vec3(0.0);
+		}
+		flower_color = hash21(origin.xz * 1.37) < 0.55 ? flower_white : flower_yellow;
+	}
 	float keep = 1.0 - smoothstep(fade_from_m, fade_to_m, distance(CAMERA_POSITION_WORLD, origin));
 	float lift = clamp(VERTEX.y / 0.75, 0.0, 1.0);
 	VERTEX.y *= mix(1.0, tall_height, tall) * mix(1.0, short_height, short_grass) * keep;
@@ -66,6 +85,7 @@ void vertex() {
 void fragment() {
 	vec3 c = COLOR.rgb;
 	vec3 base = mix(pow((c + vec3(0.055)) / vec3(1.055), vec3(2.4)), c / vec3(12.92), lessThan(c, vec3(0.04045))) * patch_tint;
+	base = mix(base, flower_color, flower);
 	ALBEDO = wet_albedo(base, 1.0);
 	ROUGHNESS = wet_roughness(0.92, 1.0);
 	BACKLIGHT = base * backlight;

@@ -3356,6 +3356,12 @@ Regras que já custaram investigação:
   `shaders/grass_carpet.gdshader` repete o ruído das manchas do prado do `terrain.gdshader` (mudou um, mude o outro), balança com o
   vento e encolhe com a distância. Custo na GPU sobre o prado medido no `tools/grass_cost.tscn`.
 
+### Flores miúdas (Fase 287, nossa)
+
+- **Plano** em `docs/plano_fase287.md`. Pontos brancos e amarelos no capim do `shaders/terrain.gdshader` (`flower_*`, até
+  `flower_far_m`) e a flor do tufo do tapete (as pétalas com o alfa 0 no vértice; o `shaders/grass_carpet.gdshader` a deixa só nos
+  tufos sorteados pelas mesmas regras e números e reduz as outras a um ponto).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3653,6 +3659,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 284 — Marulho (nossa) | **feita em 02/11/2026**, a última do roteiro do mar e do rio: o mar aberto ganha a ondulação larga que se lê de longe, com o reflexo do céu ondulando, andando com o vento; plano em `docs/plano_fase284.md` |
 | 285 — Manchas do prado (nossa) | **feita em 02/11/2026**, primeira do roteiro do prado (Fases 285 a 289): o capim deixa de ser de um verde só e ganha manchas de capim alto escuro e de capim baixo claro, de alguns metros; plano em `docs/plano_fase285.md` |
 | 286 — Tapete de capim (nossa) | **feita em 02/11/2026**: perto da câmera o prado vira um tapete de folhas de capim, mais altas e escuras nas manchas de capim alto, balançando com o vento e sumindo aos poucos com a distância; plano em `docs/plano_fase286.md` |
+| 287 — Flores miúdas (nossa) | **feita em 02/11/2026**: pontinhos de flor brancos e amarelos no capim, mais nos prados de flor e no capim baixo, no chão e nos tufos do tapete; plano em `docs/plano_fase287.md` |
 
 Pendências já vistas para fases futuras:
 

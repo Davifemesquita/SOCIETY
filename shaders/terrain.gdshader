@@ -129,6 +129,15 @@ uniform float meadow_patch_m = 9.0;
 uniform vec3 meadow_tall_tint = vec3(0.64, 0.79, 0.58);
 uniform vec3 meadow_short_tint = vec3(1.22, 1.15, 0.8);
 uniform float meadow_tall_detail = 2.3;
+// Fase 287: as flores miúdas no capim (0 desliga): a parte das células com flor, o tamanho da célula, do ponto e do prado de
+// flor, até onde da câmera e as duas cores
+uniform float flower_share = 0.3;
+uniform float flower_cell_m = 0.7;
+uniform float flower_dot_m = 0.1;
+uniform float flower_meadow_m = 36.0;
+uniform float flower_far_m = 75.0;
+uniform vec3 flower_white : source_color = vec3(0.95, 0.94, 0.88);
+uniform vec3 flower_yellow : source_color = vec3(0.96, 0.82, 0.22);
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
 // Fase 259: a areia mais clara (antes 1,3/1,2/1,0) e puxando o matiz para este dourado (proporção linear), guardando a
 // luminância, como a grama da Fase 257: a textura cinza, só graduada, saía cinza-taupe (escolhido no tools/color_lab.tscn).
@@ -284,15 +293,34 @@ void fragment() {
 	// Fase 285: as manchas do prado. Pelo ruído de meadow_patch_m (com uma oitava menor, que recorta a borda), o capim alto
 	// (mais escuro e verde, com mais relevo: a textura da grama de novo, menor, por cima) e o capim baixo (mais claro e seco).
 	// Só na grama: a mata, a estrada, a areia, a rocha e a lama entram por cima dela depois.
+	float tall = 0.0;
+	float short_grass = 0.0;
 	if (meadow_patches > 0.0) {
 		float patch = value_noise(world_position.xz / meadow_patch_m) * 0.7
 				+ value_noise(world_position.xz / (meadow_patch_m * 0.37)) * 0.3;
-		float tall = smoothstep(0.52, 0.62, patch) * meadow_patches;
-		float short_grass = (1.0 - smoothstep(0.38, 0.48, patch)) * meadow_patches;
+		tall = smoothstep(0.52, 0.62, patch) * meadow_patches;
+		short_grass = (1.0 - smoothstep(0.38, 0.48, patch)) * meadow_patches;
 		grass_a.rgb *= mix(vec3(1.0), meadow_tall_tint, tall);
 		grass_a.rgb *= mix(vec3(1.0), meadow_short_tint, short_grass);
 		vec4 tall_n = texture(grass_normal, uv * meadow_tall_detail);
 		grass_n.rgb = mix(grass_n.rgb, tall_n.rgb, tall * 0.6);
+	}
+	// Fase 287: as flores miúdas, pontos brancos e amarelos de flower_dot_m, no máximo um por célula de flower_cell_m, mais nos
+	// prados de flor (o ruído de flower_meadow_m) e no capim baixo, menos no alto; somem até flower_far_m da câmera (mais longe
+	// seriam menores que um pixel e cintilariam). Só na grama, como as manchas.
+	if (flower_share > 0.0 && camera_distance < flower_far_m) {
+		vec2 flower_cell = world_position.xz / flower_cell_m;
+		vec2 flower_id = floor(flower_cell);
+		float bloom = smoothstep(0.25, 0.6, value_noise(world_position.xz / flower_meadow_m));
+		float share = flower_share * bloom * (1.0 + short_grass * 0.6 - tall * 0.7);
+		if (hash21(flower_id + vec2(41.0, 7.0)) < share) {
+			vec2 at = flower_id + 0.2 + 0.6 * hash22(flower_id);
+			float dot_m = length(flower_cell - at) * flower_cell_m;
+			float petal = 1.0 - smoothstep(flower_dot_m * 0.55, flower_dot_m, dot_m);
+			vec3 flower = hash21(flower_id + vec2(3.0, 91.0)) < 0.55 ? flower_white : flower_yellow;
+			float near_f = 1.0 - smoothstep(flower_far_m * 0.55, flower_far_m, camera_distance);
+			grass_a.rgb = mix(grass_a.rgb, flower, petal * near_f);
+		}
 	}
 	forest_a.rgb *= forest_grade;
 	// a lama (Fase 19) sai da areia com a graduação de antes da Fase 259: a areia dourada não muda a margem dos rios

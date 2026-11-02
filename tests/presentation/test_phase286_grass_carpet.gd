@@ -41,7 +41,8 @@ func test_the_tuft_is_thin_blades_dark_at_the_foot() -> void:
 	var arrays := mesh.surface_get_arrays(0)
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
-	assert_int(vertices.size()).is_equal(GrassCarpetView.BLADES * 3)
+	# as folhas e (Fase 287) as pétalas da flor
+	assert_int(vertices.size()).is_equal((GrassCarpetView.BLADES + GrassCarpetView.FLOWER_PETALS) * 3)
 	var box := mesh.get_aabb()
 	assert_float(box.end.y).is_between(GrassCarpetView.BLADE_HEIGHT_M.y * 0.9, GrassCarpetView.BLADE_HEIGHT_M.y + 0.01)
 	assert_float(box.position.y).is_greater_equal(-0.001)
