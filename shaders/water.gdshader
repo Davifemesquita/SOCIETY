@@ -156,6 +156,10 @@ uniform vec4 cold_deep : source_color = vec4(0.04, 0.18, 0.29, 1.0);
 uniform vec4 cold_shelf : source_color = vec4(0.19, 0.52, 0.53, 0.52);
 uniform float cold_shelf_m = 25.0;
 uniform float tropic_blend_m = 120.0;
+// Society (Fase 299): nas temperadas, a água rasa fica mais clara para o fundo aparecer: até clear_depth_m de água (ao longo da
+// vista) a plataforma e a cor do raso perdem até clear_strength da cobertura
+uniform float clear_depth_m = 3.5;
+uniform float clear_strength = 0.6;
 // Society (Fase 298): de far_sea_from_m a far_sea_to_m da câmera, a cor do fundo escurece até far_sea_dark e o reflexo do céu cai
 // até far_sea_specular dele (o céu claro no ângulo raso deixava o mar de longe leitoso): o mar de longe fica azul-marinho
 uniform float far_sea_from_m = 200.0;
@@ -684,13 +688,16 @@ void fragment() {
 	// e a plataforma ficavam acesos. As cores postas (fundo, raso, plataforma, recife) escurecem para o azul de lua night_water
 	// pelo night_light (o mesmo das janelas); a tela lida por baixo já vem com a luz certa.
 	vec3 water_light = mix(vec3(1.0), night_water, night_light);
+	// Fase 299: nas temperadas, a água rasa mais clara (o fundo aparece)
+	float clear = 0.0;
 	// Blend the screen color with depth fade
 #ifdef DEPTH_FOG
 	vec4 deep_color = mix(cold_deep, color_deep, tropic);
 	// Fase 298: o mar de longe mais escuro
 	float far_sea = smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX));
 	deep_color.rgb *= mix(1.0, far_sea_dark, far_sea);
-	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb * water_light, color_shallow.a);
+	clear = clear_strength * (1.0 - tropic) * (1.0 - smoothstep(clear_depth_m * 0.4, clear_depth_m, z_diff_refracted));
+	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb * water_light, color_shallow.a * (1.0 - clear));
 	vec3 deep_screen_color = mix(screen_color, deep_color.rgb * water_light, deep_color.a);
 	if (FRONT_FACING) {
 		screen_color = mix(shallow_screen_color, deep_screen_color, depth_blend_power);
@@ -712,7 +719,7 @@ void fragment() {
 	if (has_coast && FRONT_FACING) {
 		vec4 shelf_color = mix(cold_shelf, color_shelf, tropic);
 		float shelf = 1.0 - smoothstep(0.0, mix(cold_shelf_m, shelf_m, tropic), shore_m);
-		screen_color = mix(screen_color, shelf_color.rgb * water_light, shelf_color.a * shelf);
+		screen_color = mix(screen_color, shelf_color.rgb * water_light, shelf_color.a * shelf * (1.0 - clear));
 		// Fase 125: o recife escurece o fundo raso das ilhas tropicais
 		screen_color = mix(screen_color, reef_color.rgb * water_light, reef_color.a * reef_at(world_coordinates.xz, shore_m));
 		screen_color = mix(screen_color, river_color.rgb * water_light, river_color.a * channel);

@@ -97,6 +97,14 @@ uniform vec3 seabed_shallow = vec3(1.08, 1.04, 0.92);
 uniform vec3 seabed_deep = vec3(0.5, 0.6, 0.58);
 uniform float seabed_deep_m = 30.0;
 uniform float caustics_strength = 0.22;
+// Fase 299: o fundo do raso das temperadas (a TerrainView liga seabed_detail): ondulações da areia paralelas à costa
+// (seabed_ripple_m), manchas de alga (seabed_weed_color) e pedrinhas escuras, até seabed_detail_m da linha d'água
+uniform float seabed_detail = 0.0;
+uniform float seabed_detail_m = 26.0;
+uniform float seabed_ripple_m = 1.3;
+uniform float seabed_patch_m = 6.0;
+uniform vec3 seabed_weed_color = vec3(0.16, 0.2, 0.1);
+uniform vec3 seabed_stone_color = vec3(0.3, 0.3, 0.28);
 // Fase 54: a praia pela distância até a linha d'água (contorno liso, não os quadrados da grade), nunca acima de
 // beach_top_m (a falésia) nem na encosta de rocha
 uniform float beach_m = 6.0;
@@ -531,6 +539,24 @@ void fragment() {
 		vec3 seabed = sand_a.rgb * mix(seabed_shallow, seabed_deep, smoothstep(2.0, seabed_deep_m, shore));
 		ground_a.rgb = mix(ground_a.rgb, seabed, under);
 		ground_n = mix(ground_n, sand_n, under);
+		// Fase 299: o fundo do raso das temperadas, que a água mais clara deixa ver
+		if (seabed_detail > 0.0 && under > 0.0) {
+			float zone = (1.0 - smoothstep(seabed_detail_m * 0.6, seabed_detail_m, shore)) * seabed_detail * under;
+			// ondulações paralelas à costa, tortas por um ruído, com a crista clara e o vale escuro
+			float warp = value_noise(world_position.xz * 0.12) * 4.0 + value_noise(world_position.xz * 0.5) * 0.8;
+			float ripple = sin(shore * 6.2831853 / seabed_ripple_m + warp * 3.0);
+			ground_a.rgb *= 1.0 + ripple * 0.12 * zone;
+			ground_n.rgb = mix(ground_n.rgb, vec3(0.5 + ripple * 0.12, 0.5, 1.0), 0.5 * zone);
+			// manchas de alga longe da beira
+			float weed = smoothstep(0.6, 0.72, value_noise(world_position.xz / seabed_patch_m) * 0.7 + value_noise(world_position.xz / (seabed_patch_m * 0.3)) * 0.3);
+			weed *= smoothstep(3.0, 8.0, shore);
+			ground_a.rgb = mix(ground_a.rgb, seabed_weed_color, weed * 0.85 * zone);
+			// pedrinhas escuras: uma célula de 0,5 m em cada dez
+			vec2 stone_cell = floor(world_position.xz / 0.5);
+			float stone_pick = strata_hash(stone_cell);
+			float stone = step(0.9, stone_pick) * (1.0 - smoothstep(0.12, 0.2, length(fract(world_position.xz / 0.5) - 0.5)));
+			ground_a.rgb = mix(ground_a.rgb, seabed_stone_color * mix(0.7, 1.2, fract(stone_pick * 7.0)), stone * zone);
+		}
 		// cáusticas: duas camadas de ruído andando em sentidos opostos, só no raso
 		vec2 flow = vec2(TIME * 0.35, TIME * 0.22);
 		float caustic = pow(1.0 - abs(value_noise(world_position.xz * 0.9 + flow) - value_noise(world_position.xz * 1.3 - flow)), 6.0);

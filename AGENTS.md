@@ -3433,6 +3433,12 @@ Regras que já custaram investigação:
   névoa; a cor de Fresnel do material do Ocean fica (sem ela aparecem listras). Laboratório: `CAPTURA_MAR=longe` no
   `tools/capture_phase295.tscn`.
 
+### Fundo à vista no raso (Fase 299, nossa)
+
+- **Plano** em `docs/plano_fase299.md`. No fundo do mar do `shaders/terrain.gdshader`, nas temperadas (`seabed_detail`, ligado pela
+  `TerrainView`): ondulações paralelas à costa, manchas de alga e pedrinhas até `seabed_detail_m`; no `shaders/water.gdshader`, a
+  água rasa das temperadas perde até `clear_strength` da cobertura até `clear_depth_m` de água.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3742,6 +3748,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 296 — Água picada de perto (nossa) | **feita em 02/11/2026**: de perto, a água ganha a ondulação miúda e cruzada que quebra o reflexo do céu, mais forte com o vento; de longe nada muda; plano em `docs/plano_fase296.md` |
 | 297 — Fiapos de espuma nas pedras (nossa) | **feita em 02/11/2026**: a espuma que bate nas pedras e nas falésias sai levada pelo vento em fiapos compridos e rendados, do lado de baixo do vento; plano em `docs/plano_fase297.md` |
 | 298 — Mar escuro de longe (nossa) | **feita em 02/11/2026**: o mar aberto escurece para o azul-marinho com a distância e reflete menos o céu, mais visível de cima; plano em `docs/plano_fase298.md` |
+| 299 — Fundo à vista no raso (nossa) | **feita em 02/11/2026**, a última do roteiro mar e costa II: nas ilhas temperadas, a água rasa fica mais clara e o fundo aparece, com manchas de alga, pedrinhas e a areia ondulada; plano em `docs/plano_fase299.md` |
 
 Pendências já vistas para fases futuras:
 

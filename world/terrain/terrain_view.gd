@@ -167,6 +167,8 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	else:
 		material.set_shader_parameter(&"gravel", 1.0)
 		material.set_shader_parameter(&"pebble_beach", 1.0)
+		# Fase 299: o fundo do raso
+		material.set_shader_parameter(&"seabed_detail", 1.0)
 	var size := (side - 1) * _config.cell_size_m
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
 	# a distância até a água sai uma vez só: o bake e o campo da costa (Fase 35) a dividem
