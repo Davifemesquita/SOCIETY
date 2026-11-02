@@ -2661,3 +2661,11 @@ Fecha o ciclo do mar e do rio (Fases 280 a 284) com a GPU onde ele começou (279
 Primeira do ciclo do prado: 74,8 FPS (284: 75,9), 1% low 38,2, p50/p95/p99 12,6/16,9/24,7 ms, GPU 12,2 ms (284: 12,1), jogo novo
 12,4 s, montar tudo 9,5 s, carregar 6,5 s, construir com a ilha cheia 17,2 ms; objetos, draw calls e primitivas iguais. Neutra
 (dois ruídos e uma leitura de textura a mais por pixel de terreno, ~0,1 ms).
+
+## Fase 286 — tapete de capim (02/11/2026)
+
+74,9 FPS (285: 74,8), 1% low 38,1, p50/p95/p99 12,7/16,8/24,2 ms, GPU 12,3 ms (285: 12,2), jogo novo 12,3 s, montar tudo 9,5 s,
+carregar 6,5 s, construir com a ilha cheia 17,3 ms; objetos, draw calls e primitivas iguais no quadro com tudo visível (com a
+câmera alta o tapete fica escondido). O trajeto passa quase só pela vila: o custo com a câmera em cima do prado aberto saiu do
+`tools/grass_cost.tscn` (~32 mil tufos): +0,39 ms de GPU a 30 m, +0,34 a 60 m e +0,17 a 110 m. Montar um bloco leva ~0,7 ms na
+CPU, três por quadro com a câmera andando.

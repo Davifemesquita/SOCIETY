@@ -102,6 +102,8 @@ var hawk_view: HawkView
 var river_stone_view: RiverStoneView
 ## Fase 123: o borrifo do mar batendo nos rochedos e nas falésias perto da câmera.
 var surf_spray_view: SurfSprayView
+## Fase 286: o tapete de capim perto da câmera.
+var grass_carpet_view: GrassCarpetView
 ## Fase 128: o afloramento e as pedras do minério nas jazidas ainda sem mina.
 var deposit_view: DepositView
 ## Fase 131: as tampas de bueiro nas ruas de paralelepípedo.
@@ -520,6 +522,11 @@ func _ready() -> void:
 		return rock_view.spray_sites() if rock_view != null else PackedVector3Array(),
 		func(x: float, z: float) -> float: return simulation.world.surface_height(x, z))
 	graphics.add_effect(surf_spray_view)
+	grass_carpet_view = GrassCarpetView.new()
+	grass_carpet_view.name = "GrassCarpet"
+	add_child(grass_carpet_view)
+	grass_carpet_view.setup(simulation)
+	graphics.add_effect(grass_carpet_view)
 	deposit_view = DepositView.new()
 	deposit_view.name = "Deposits"
 	add_child(deposit_view)
