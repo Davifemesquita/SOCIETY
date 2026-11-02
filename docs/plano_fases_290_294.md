@@ -35,4 +35,20 @@ recheio vai no fim do enum e da lista dela.
 
 ## Estado
 
-A fazer.
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase290.md` a `docs/plano_fase294.md`),
+testes, captura e benchmark (todas neutras). As três pastas da suíte passaram no fim (world 695, presentation 389, ui 167).
+
+Diferenças do roteiro:
+
+- os estratos e o musgo ficaram num `.gdshaderinc` só (`shaders/rock_strata.gdshaderinc`), dividido pelo terreno e pelas pedras;
+- o musgo vai mais para um lado fixo da sombra (o norte), não pelo sol do dia, que o faria andar;
+- os seixos são células de Voronoi no shader (a textura de rocha menor saía lisa), sem as pedrinhas do recheio;
+- a espuma nas pedras é o anel fino da profundidade longe da linha d'água (a Fase 281 tinha tirado), sem conta nova de distância;
+- os abetos da rocha usam a malha de perto do abeto (a de longe parecia cipreste).
+
+Também se achou e corrigiu um furo nos testes: com tela, a lista de uniformes vazia passava como se fosse o renderer falso, e um
+shader que não compilava (Fase 290) passou no primeiro teste; agora os testes de shader das Fases 290 a 294 exigem a lista cheia
+com tela.
+
+O antes e depois deste ciclo está em `F:\ferramentas\capturas\fase294\ciclo_antes_depois.png`, e o dos quatro ciclos (a vila de
+cima, a mata, a praia e o prado), em `F:\ferramentas\capturas\fase294\quatro_ciclos_antes_depois.png`.
