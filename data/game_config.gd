@@ -41,8 +41,12 @@ static var _default: GameConfig
 @export var sky_ambient_share_day: float = 0.6
 @export var sky_ambient_share_night: float = 0.25
 @export var moon_light_energy: float = 0.7
-## Neblina da atmosfera do Sky3D: densidade e distância onde começa.
-@export var sky_fog_density: float = 0.0002
+## Fase 255: a cor do sol no alto do dia (o Sky3D a mistura com a do horizonte pela altura dele) e a força dele: um branco
+## quente, como o sol do meio da manhã, no lugar do branco puro.
+@export var sun_light_color: Color = Color(1.0, 0.95, 0.86)
+@export var sun_light_energy: float = 1.15
+## Neblina da atmosfera do Sky3D: densidade e distância onde começa (Fase 255: a metade da Fase 53, de longe a ilha fica limpa).
+@export var sky_fog_density: float = 0.0001
 @export var sky_fog_start_m: float = 60.0
 
 @export_group("Economia")
@@ -531,11 +535,18 @@ static var _default: GameConfig
 @export var glow_intensity: float = 0.5
 @export var glow_bloom: float = 0.03
 @export var glow_hdr_threshold: float = 1.1
-@export var volumetric_fog_density: float = 0.0018
+## Fase 255: a névoa volumétrica (alto e ultra) caiu de 0,0018 para 0,0004: com ela a vista de longe ficava atrás de um
+## véu cinza-azulado. A neblina e a chuva do clima somam a delas por cima.
+@export var volumetric_fog_density: float = 0.0004
 @export var volumetric_fog_length_m: float = 220.0
 ## Fase 37: com a "Cor de época" ligada, o branco e o contraste do AgX (6 a 8 é a faixa das cenas realistas).
 @export var period_agx_white: float = 7.0
 @export var period_agx_contrast: float = 1.1
+## Fase 255: a cor viva, o padrão com a "Cor de época" desligada: a exposição, o contraste do AgX e a saturação depois dele
+## (o AgX sozinho achatava e dessaturava a cena).
+@export var vivid_exposure: float = 1.12
+@export var vivid_agx_contrast: float = 1.4
+@export var vivid_saturation: float = 1.25
 ## Efeito miniatura (tilt-shift): só com a câmera até esta distância; o desfoque longe começa em
 ## distância × far_factor e o de perto termina em distância × near_factor.
 @export var tilt_shift_max_distance_m: float = 90.0
@@ -592,6 +603,8 @@ func validate() -> PackedStringArray:
 	problems.append_array(TerrainV3Params.get_v3().validate())
 	if ticks_per_second <= 0:
 		problems.append("ticks_per_second deve ser maior que zero")
+	if vivid_exposure <= 0.0 or vivid_agx_contrast <= 0.0 or vivid_saturation <= 0.0 or sun_light_energy <= 0.0:
+		problems.append("a cor viva (exposição, contraste, saturação) e a força do sol devem ser maiores que zero")
 	if max_ticks_per_frame <= 0:
 		problems.append("max_ticks_per_frame deve ser maior que zero")
 	if game_speeds.is_empty():

@@ -2477,3 +2477,9 @@ carregar 6,3 s, construir com a ilha cheia 17,2 ms; +5 objetos e draw calls (a c
 visível. Neutra. A primeira rodada deu carregar 6,6 s: a busca das margens varria a vizinhança de cada ponto da rede e custava
 ~160 ms a cada refazer (na carga e no quadro seguinte a cada obra); partindo das células de rio pelo `find` nativo, ~36 ms, com as
 mesmas canoas. Fecha o roteiro balança, cabra e canoa e os quatro ciclos do sétimo pedido do dono (Fases 235 a 254).
+
+## Fase 255 — ar limpo e tom vivo (01/11/2026)
+
+Primeira do ciclo da cor viva: 77,0 FPS (254: 77,7), 1% low 37,8, p50/p95/p99 12,3/16,7/24,8 ms, GPU 11,9 ms (254: 11,9), montar
+tudo 9,6 s, carregar 6,4 s, construir com a ilha cheia 18,2 ms; objetos, draw calls e primitivas iguais. Neutra: a névoa
+volumétrica segue ligada no alto (só a densidade caiu), e a gradação é a mesma passada de ajuste do Environment.

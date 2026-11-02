@@ -51,12 +51,11 @@ func test_environment_gets_the_grade_only_when_the_option_is_on() -> void:
 	assert_object(environment.adjustment_color_correction).is_same(PeriodGrade.texture())
 	assert_float(environment.tonemap_agx_white).is_equal_approx(config.period_agx_white, 0.0001)
 	assert_float(environment.tonemap_agx_contrast).is_equal_approx(config.period_agx_contrast, 0.0001)
-	# desligada, tudo volta ao que era antes da fase
+	# desligada, sai o LUT e vale a cor viva da Fase 255 (o branco do AgX volta ao do motor)
 	GraphicsQuality.apply_to_environment(environment, preset, config, false)
-	assert_bool(environment.adjustment_enabled).is_false()
 	assert_object(environment.adjustment_color_correction).is_null()
 	assert_float(environment.tonemap_agx_white).is_equal(untouched.tonemap_agx_white)
-	assert_float(environment.tonemap_agx_contrast).is_equal(untouched.tonemap_agx_contrast)
+	assert_float(environment.tonemap_agx_contrast).is_equal_approx(config.vivid_agx_contrast, 0.0001)
 
 
 func test_ssr_and_soft_sun_only_on_ultra() -> void:

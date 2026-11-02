@@ -3145,6 +3145,15 @@ Regras que já custaram investigação:
   a cada obra; os bichos das Fases 235, 245 e 251 ainda varrem, de 27 a 44 ms). Captura em
   `tools/capture_phase254.tscn`.
 
+### Ar limpo e tom vivo (Fase 255, nossa)
+
+- **Plano** em `docs/plano_fase255.md`, primeira do roteiro `docs/plano_fases_255_259.md` (cor viva, a pedido do dono: "muito
+  morto, gostaria de algo mais vivo, parecido com o anno"; o Anno não foi aberto, as ideias vêm das capturas guardadas). A cor
+  viva (`GameConfig.vivid_exposure`, `vivid_agx_contrast`, `vivid_saturation`, no `GraphicsQuality.apply_to_environment`) é o
+  padrão com a "Cor de época" desligada; névoa volumétrica 0,0004 e a do domo 0,0001; o sol do Sky3D quente e mais forte
+  (`sun_light_color`, `sun_light_energy`, pelo `SkyAdapter`). **Ajuste de cor se escolhe no `tools/color_lab.tscn`** (a mesma
+  vila com várias combinações, lado a lado) e se confere no `tools/capture_phase255.tscn` (as vistas do ciclo, antes e depois).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3410,6 +3419,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 252 — Carruagem à porta do teatro (nossa) | **feita em 01/11/2026**: a carruagem fechada laqueada de vinho, sem os cavalos, parada na rua diante da entrada de cada teatro; plano em `docs/plano_fase252.md` |
 | 253 — Cestos de batata (nossa) | **feita em 01/11/2026**: os cestos de vime cheios de batata, um tombado com as batatas rolando, os sacos e o forcado no lado de cada fazenda de batata; plano em `docs/plano_fase253.md` |
 | 254 — Canoas na margem do rio (nossa) | **feita em 01/11/2026**, a última do roteiro balança, cabra e canoa: a canoa escavada com o remo e o banco dentro, puxada para a margem baixa dos rios, de comprido ao longo dela, longe das vilas; plano em `docs/plano_fase254.md` |
+| 255 — Ar limpo e tom vivo (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva (Fases 255 a 259), a pedido do dono: a névoa cinza-azulada de longe quase some, a cena ganha contraste, saturação e exposição e o sol fica quente; plano em `docs/plano_fase255.md` |
 
 Pendências já vistas para fases futuras:
 

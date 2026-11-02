@@ -105,6 +105,9 @@ func _create_sky3d() -> void:
 		var sky_dome: Node = dome
 		sky_dome.set(&"fog_density", _config.sky_fog_density)
 		sky_dome.set(&"fog_start", _config.sky_fog_start_m)
+		# Fase 255: o sol quente do dia (perto do horizonte o Sky3D o puxa para o laranja dele)
+		sky_dome.set(&"sun_light_color", _config.sun_light_color)
+	_sky3d.set(&"sun_energy", _config.sun_light_energy)
 	var sun_light := sun()
 	if sun_light != null:
 		sun_light.shadow_enabled = true

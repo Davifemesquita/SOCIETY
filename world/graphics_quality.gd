@@ -63,16 +63,18 @@ func apply(chosen: GraphicsPresetDef) -> void:
 
 
 ## Os efeitos do ambiente de um nível (estático para os testes). period: a "Cor de época" (Fase 37), o LUT e o AgX
-## ajustado; desligada, o Environment volta ao de antes.
+## ajustado; desligada, a cor viva da Fase 255 (exposição, contraste do AgX e saturação do GameConfig).
 static func apply_to_environment(environment: Environment, chosen: GraphicsPresetDef, config: GameConfig,
 		period: bool = false) -> void:
 	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
 	environment.ssr_enabled = chosen.ssr
-	environment.adjustment_enabled = period
+	environment.adjustment_enabled = true
 	environment.adjustment_color_correction = PeriodGrade.texture() if period else null
+	environment.adjustment_saturation = 1.0 if period else config.vivid_saturation
 	var defaults := _environment_defaults()
+	environment.tonemap_exposure = defaults.tonemap_exposure if period else config.vivid_exposure
 	environment.tonemap_agx_white = config.period_agx_white if period else defaults.tonemap_agx_white
-	environment.tonemap_agx_contrast = config.period_agx_contrast if period else defaults.tonemap_agx_contrast
+	environment.tonemap_agx_contrast = config.period_agx_contrast if period else config.vivid_agx_contrast
 	environment.ssao_enabled = chosen.ssao
 	environment.ssao_intensity = config.ssao_intensity
 	environment.ssil_enabled = chosen.ssil
