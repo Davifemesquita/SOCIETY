@@ -17,3 +17,10 @@ nenhum modelo, textura, arquivo ou medida do jogo; tudo gerado no código.
 
 Cada fase segue a regra de sempre: plano curto em `docs/plano_faseNN.md`, testes, captura e benchmark, commit e push. Peça nova do
 recheio vai no fim do enum e da lista dela.
+
+## Estado
+
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase265.md` a `docs/plano_fase269.md`),
+testes, captura e benchmark (todas neutras). As três pastas da suíte passaram no fim (world 631, presentation 373, ui 167).
+Diferenças do roteiro: a rede das garças ficou mais fina (com 17 células saía uma garça só no arquipélago); o espinheiro ganhou
+mais flor (com pouca parecia uma árvore com neve); a captura dos cascos e dos espinheiros olha de fora da mata.
