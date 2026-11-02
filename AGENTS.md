@@ -3224,6 +3224,12 @@ Regras que já custaram investigação:
   chão de pouco desnível, de pé; `ruin_mesh` (o muro de pedra seca quebrado em degraus, as pedras caídas e o musgo). Captura em
   `tools/capture_phase266.tscn`.
 
+### Espinheiro florido (Fase 267, nossa)
+
+- **Plano** em `docs/plano_fase267.md`. `ScatterView.Kind.HAWTHORN` (no fim do enum e da lista `NEAR_FOREST`, entre as `PLANTS` e
+  as `SHADOWED`) só nas temperadas, de pé; `hawthorn_mesh` (a copa em massas com as pencas de flor branca por toda ela). Captura em
+  `tools/capture_phase267.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3501,6 +3507,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 264 — Sombra aberta (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva II: a oclusão de ambiente mais leve, e o vão entre as copas e o pé das matas deixam de ficar quase pretos; plano em `docs/plano_fase264.md` |
 | 265 — Garças no rio (nossa) | **feita em 02/11/2026**, primeira do roteiro garça, ruína e cruzeiro (Fases 265 a 269): a garça-real cinza de pé junto da água na margem baixa dos rios, longe das vilas, virando de um lado para o outro; plano em `docs/plano_fase265.md` |
 | 266 — Ruínas de muro (nossa) | **feita em 02/11/2026**: pedaços de muro de pedra seca quebrados em degraus, com as pedras caídas e o musgo, de vez em quando no campo aberto das ilhas temperadas; plano em `docs/plano_fase266.md` |
+| 267 — Espinheiro florido (nossa) | **feita em 02/11/2026**: o arbusto de espinheiro de copa torta coberto de flor branca e rosada na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase267.md` |
 
 Pendências já vistas para fases futuras:
 

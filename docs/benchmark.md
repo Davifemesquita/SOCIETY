@@ -2545,3 +2545,9 @@ tudo visível. Neutra.
 
 77,4 FPS (265: 76,4), 1% low 38,6, p50/p95/p99 12,2/16,3/24,2 ms, GPU 11,9 ms, montar tudo 9,4 s, carregar 6,4 s, construir com a
 ilha cheia 17,7 ms; +1 objeto e draw call e +780 primitivas no quadro com tudo visível (as ruínas por perto). Neutra.
+
+## Fase 267 — espinheiro florido (02/11/2026)
+
+76,9 FPS (266: 77,4), 1% low 39,8, p50/p95/p99 12,3/16,5/23,8 ms, GPU 12,0 ms, montar tudo 9,4 s, carregar 6,5 s, construir com a
+ilha cheia 17,4 ms; +1 objeto e draw call e +31 mil primitivas no quadro com tudo visível (os espinheiros da beira das matas por
+perto). Neutra.

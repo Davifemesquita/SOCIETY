@@ -30,7 +30,7 @@ extends Node3D
 ## temperadas, deitado com o chão como a madeira à deriva.
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
-		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN }
+		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -40,10 +40,10 @@ const VISIBLE_UNTIL_M := 220.0
 const VISIBLE_MARGIN_M := 20.0
 ## As peças que fazem sombra (as miúdas não: são milhares).
 const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE, Kind.BANANA, Kind.YARD_TREE, Kind.STREET_PALM,
-		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG, Kind.RUIN]
+		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG, Kind.RUIN, Kind.HAWTHORN]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE]
+		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -65,7 +65,8 @@ const YARD_BARK := Color(0.32, 0.24, 0.17)
 const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
-		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE], [Kind.MOSSY_LOG, MOSSY_LOG_CHANCE]]
+		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE], [Kind.MOSSY_LOG, MOSSY_LOG_CHANCE],
+		[Kind.HAWTHORN, HAWTHORN_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
@@ -134,6 +135,13 @@ const SEAWEED_GREEN := Color(0.2, 0.24, 0.1)
 ## Fase 266: a ruína de muro (RUIN), um pedaço de muro de pedra seca em L com as fiadas quebradas, as pedras caídas e o musgo, no
 ## fim da lista OPEN, só nas temperadas e no chão de pouco desnível; a chance por célula aberta, o comprimento do muro e as cores
 ## das pedras e do musgo.
+## Fase 267: o espinheiro florido (HAWTHORN), o arbusto alto de copa redonda e torta coberto de flor branca, no fim da lista
+## NEAR_FOREST, só nas temperadas; a chance na beira da mata e as cores das folhas, das flores e do tronco.
+const HAWTHORN_CHANCE := 0.05
+const HAWTHORN_LEAF := Color(0.3, 0.46, 0.16)
+const HAWTHORN_BLOSSOM := Color(0.96, 0.94, 0.9)
+const HAWTHORN_PINK := Color(0.96, 0.84, 0.86)
+const HAWTHORN_BARK := Color(0.34, 0.27, 0.2)
 const RUIN_CHANCE := 0.004
 const RUIN_M := 2.2
 const RUIN_STONE := Color(0.6, 0.58, 0.53)
@@ -724,8 +732,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.RUIN and (tropical or cell_relief(grid, cell) > SCREE_MIN_RELIEF_M):
 			# a ruína só nos campos abertos das temperadas, no chão pouco inclinado
 			continue
+		elif kind == Kind.HAWTHORN and tropical:
+			# o espinheiro só nas matas das temperadas
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
-		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN]:
+		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN]:
 			# no meio da célula: a copa não encosta na parede da casa
 			offset *= 0.15
 		elif kind == Kind.POPPIES or kind == Kind.TALL_GRASS:
@@ -749,7 +760,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			Kind.FLOWERS:
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
-					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN:
+					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN, Kind.HAWTHORN:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
@@ -1038,6 +1049,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return mossy_log_mesh()
 	if kind == Kind.RUIN:
 		return ruin_mesh()
+	if kind == Kind.HAWTHORN:
+		return hawthorn_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1308,5 +1321,37 @@ static func ruin_mesh() -> ArrayMesh:
 		var top := course * standing[k * 2]
 		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.22, 0.05, 0.2)),
 				Vector3(-half + span * (k * 2 + 1), top, 0.0)), RUIN_MOSS.darkened(0.06 * (k % 2)))
+	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 267: o espinheiro florido com o pé em y = 0 (cerca de 2,4 m): o tronco curto e torto que se abre em dois galhos, a copa em
+## massas de folhas verde-escuras, mais larga que alta e caída de um lado, e as flores brancas (umas rosadas) em pencas por cima de
+## cada massa, mais no alto (de longe o arbusto é uma nuvem branca na beira da mata).
+static func hawthorn_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var fork := Vector3(0.12, 0.8, 0.04)
+	VertexShapes.cylinder(tool, Vector3(0.0, -0.1, 0.0), fork, 0.09, HAWTHORN_BARK, 6)
+	VertexShapes.cylinder(tool, fork, Vector3(-0.35, 1.45, 0.12), 0.06, HAWTHORN_BARK, 5)
+	VertexShapes.cylinder(tool, fork, Vector3(0.48, 1.35, -0.1), 0.06, HAWTHORN_BARK, 5)
+	var masses: Array[Array] = [[Vector3(-0.35, 1.65, 0.12), Vector3(0.7, 0.5, 0.62)], [Vector3(0.5, 1.55, -0.1), Vector3(0.66, 0.46,
+			0.58)], [Vector3(0.05, 1.95, 0.0), Vector3(0.62, 0.42, 0.56)], [Vector3(0.75, 1.15, 0.2), Vector3(0.42, 0.34, 0.4)]]
+	for k: int in masses.size():
+		var at: Vector3 = masses[k][0]
+		var size: Vector3 = masses[k][1]
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(size), at), HAWTHORN_LEAF.darkened(0.06 * (k % 2)))
+		# as pencas de flor por toda a massa: duas rodas (a de cima mais cheia, a de baixo mais esparsa, saindo de lado)
+		for f: int in 14:
+			var upper := f < 9
+			var count := 9.0 if upper else 5.0
+			var angle := TAU * (f if upper else f - 9) / count + 0.4 * k + (0.0 if upper else 0.3)
+			var reach := 0.7 if upper else 0.92
+			var lift := 0.55 if upper else 0.05
+			var spot := at + Vector3(cos(angle) * size.x * reach, size.y * lift, sin(angle) * size.z * reach)
+			var color := HAWTHORN_PINK if (f + k) % 5 == 0 else HAWTHORN_BLOSSOM
+			PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.16, 0.08, 0.16)), spot), color)
+		PerchedGullView._blob(tool, Transform3D(Basis.from_scale(Vector3(0.28, 0.1, 0.26)), at + Vector3(0.0, size.y * 0.85, 0.0)),
+				HAWTHORN_BLOSSOM)
 	tool.generate_normals()
 	return tool.commit()
