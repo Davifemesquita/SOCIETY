@@ -83,5 +83,5 @@ func test_the_clearing_cuts_the_yard_without_a_stump() -> void:
 	var expected := 0
 	for cell: Vector2i in cut:
 		if cell != yard:
-			expected += mini(grid.trees[grid.index(cell)], TreeView.DRAWN_PER_CELL)
+			expected += TreeView.drawn_seeds(0, grid.index(cell), grid.trees[grid.index(cell)], false).size()
 	assert_int(stumps.stump_count()).is_equal(expected)

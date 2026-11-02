@@ -3282,6 +3282,13 @@ Regras que já custaram investigação:
   visto de fora** (como o `_limb`): com a face trocada o Godot vira a normal e ela acende do lado da sombra. Captura do ciclo em
   `tools/capture_phase275.tscn` (a vila, os campos e a mata alta e baixa fora da vila).
 
+### Copas na medida (Fase 276, nossa)
+
+- **Plano** em `docs/plano_fase276.md`. Copas do carvalho, da faia e do pinheiro ~35% mais estreitas, da mesma altura; na mata
+  temperada uma árvore por célula (`TreeView.TEMPERATE_PER_CELL`) e só em parte delas (`draws_tree`: 50% na beira, 65% e 80% para
+  dentro); tamanho de 0,65 a 1,25 (`tree_scale`). **As árvores desenhadas numa célula saem de `TreeView.drawn_seeds`**, que os
+  tocos da clareira (`StumpView.stump_places`) também usam; a simulação conta todas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3568,6 +3575,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 273 — Andorinhas no fio (nossa) | **feita em 02/11/2026**: filas de andorinhas de costas azuis e garganta ferrugem pousadas no meio dos fios dos postes das usinas, olhando para um lado e para o outro, de dia; plano em `docs/plano_fase273.md` |
 | 274 — Girassóis (nossa) | **feita em 02/11/2026**, a última do roteiro corvo, dedaleira e girassol: touceiras de girassóis altos de flor amarela encostadas nas casas das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase274.md` |
 | 275 — Abeto em camadas (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata no jeito do Anno (Fases 275 a 279): o abeto-vermelho, um cone escuro de camadas de galhos até perto do chão, vira a conífera da mata (o pinheiro fica em parte, mais no alto), e a beira da mata deixa de ser uma cerca de troncos; plano em `docs/plano_fase275.md` |
+| 276 — Copas na medida (nossa) | **feita em 02/11/2026**: copas ~35% mais estreitas e uma árvore por célula em parte das células da mata temperada (mais no miolo, menos na beira): cada árvore se lê, com o chão e a sombra entre elas; 17.249 árvores desenhadas em vez de 28.830 e a GPU 0,5 ms mais leve; plano em `docs/plano_fase276.md` |
 
 Pendências já vistas para fases futuras:
 

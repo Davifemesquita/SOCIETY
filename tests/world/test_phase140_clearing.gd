@@ -77,7 +77,7 @@ func test_the_trees_go_and_the_stumps_come() -> void:
 	for cell: Vector2i in cut:
 		assert_bool(trees.is_cut(0, cell)).is_true()
 		if cell != yard:
-			expected += mini(grid.trees[grid.index(cell)], TreeView.DRAWN_PER_CELL)
+			expected += TreeView.drawn_seeds(0, grid.index(cell), grid.trees[grid.index(cell)], false).size()
 	# as árvores das células cortadas saíram do desenho (e as do lote, derrubadas pela obra)
 	assert_int(before - trees.instance_count()).is_greater_equal(expected)
 	assert_int(stumps.stump_count()).is_equal(expected)

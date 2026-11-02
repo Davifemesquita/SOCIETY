@@ -111,42 +111,44 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 ## a do alto; copa mais larga que alta.
 static func _oak(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> void:
 	var lean := Vector3(rng.randf_range(-0.25, 0.25), 0.0, rng.randf_range(-0.25, 0.25))
-	var crotch := Vector3(0.0, 3.0, 0.0) + lean
-	_limb(tool, Vector3.ZERO, crotch, 0.34, 0.24, detail, OAK_BARK, OAK_BARK)
+	var crotch := Vector3(0.0, 2.8, 0.0) + lean
+	_limb(tool, Vector3.ZERO, crotch, 0.3, 0.21, detail, OAK_BARK, OAK_BARK)
 	var turn := rng.randf() * TAU
-	var hull := crotch + Vector3(0.0, 2.4, 0.0)
+	var hull := crotch + Vector3(0.0, 2.2, 0.0)
 	var tips: Array[Vector3] = []
 	for i: int in 4:
 		var angle := turn + i * TAU / 4.0 + rng.randf_range(-0.35, 0.35)
-		var reach := rng.randf_range(1.5, 2.1)
-		var tip := crotch + Vector3(cos(angle) * reach, rng.randf_range(1.3, 2.1), sin(angle) * reach)
+		# Fase 276: os galhos e as massas encolheram (a copa tinha ~8 m de largura e a mata virava um tapete sem vão)
+		var reach := rng.randf_range(1.0, 1.4)
+		var tip := crotch + Vector3(cos(angle) * reach, rng.randf_range(1.3, 2.0), sin(angle) * reach)
 		tips.append(tip)
 		if detail == DETAIL_NEAR:
-			_limb(tool, crotch - Vector3(0.0, 0.3, 0.0), tip, 0.16, 0.07, detail, OAK_BARK, OAK_BARK)
-		var radius := rng.randf_range(1.4, 1.8)
-		_crown(tool, rng, tip + Vector3(0.0, 0.4, 0.0), Vector3(radius, radius * 0.8, radius), OAK_LEAF, detail, hull)
-	_crown(tool, rng, crotch + Vector3(0.0, 3.0, 0.0), Vector3(2.0, 1.7, 2.0), OAK_LEAF, detail, hull)
+			_limb(tool, crotch - Vector3(0.0, 0.3, 0.0), tip, 0.14, 0.06, detail, OAK_BARK, OAK_BARK)
+		var radius := rng.randf_range(1.0, 1.3)
+		_crown(tool, rng, tip + Vector3(0.0, 0.4, 0.0), Vector3(radius, radius * 0.85, radius), OAK_LEAF, detail, hull)
+	_crown(tool, rng, crotch + Vector3(0.0, 2.8, 0.0), Vector3(1.45, 1.35, 1.45), OAK_LEAF, detail, hull)
 	# tufos entre as massas, para fora (só de perto)
-	_puffs(tool, rng, tips, hull, OAK_LEAF, detail, 0.8)
+	_puffs(tool, rng, tips, hull, OAK_LEAF, detail, 0.6)
 
 
 ## Faia: tronco liso e cinzento até o meio e a copa oval, mais alta que larga.
 static func _beech(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> void:
 	var lean := Vector3(rng.randf_range(-0.15, 0.15), 0.0, rng.randf_range(-0.15, 0.15))
 	var top := Vector3(0.0, 4.6, 0.0) + lean
-	_limb(tool, Vector3.ZERO, top, 0.26, 0.15, detail, BEECH_BARK, BEECH_BARK)
+	_limb(tool, Vector3.ZERO, top, 0.24, 0.14, detail, BEECH_BARK, BEECH_BARK)
 	var hull := top + Vector3(0.0, 1.6, 0.0)
-	_crown(tool, rng, top + Vector3(0.0, 0.8, 0.0), Vector3(2.2, 2.0, 2.2), BEECH_LEAF, detail, hull)
-	_crown(tool, rng, top + Vector3(0.0, 2.7, 0.0), Vector3(1.8, 1.7, 1.8), BEECH_LEAF, detail, hull)
+	# Fase 276: a copa mais estreita, da mesma altura
+	_crown(tool, rng, top + Vector3(0.0, 0.8, 0.0), Vector3(1.55, 1.7, 1.55), BEECH_LEAF, detail, hull)
+	_crown(tool, rng, top + Vector3(0.0, 2.7, 0.0), Vector3(1.3, 1.6, 1.3), BEECH_LEAF, detail, hull)
 	var turn := rng.randf() * TAU
 	var sides: Array[Vector3] = []
 	for i: int in 2:
 		var angle := turn + i * PI + rng.randf_range(-0.4, 0.4)
-		var side := top + Vector3(cos(angle) * 1.4, rng.randf_range(0.0, 1.2), sin(angle) * 1.4)
+		var side := top + Vector3(cos(angle) * 0.95, rng.randf_range(0.0, 1.2), sin(angle) * 0.95)
 		sides.append(side)
-		_crown(tool, rng, side, Vector3(1.5, 1.4, 1.5), BEECH_LEAF, detail, hull)
+		_crown(tool, rng, side, Vector3(1.05, 1.15, 1.05), BEECH_LEAF, detail, hull)
 	sides.append(top + Vector3(0.0, 3.6, 0.0))
-	_puffs(tool, rng, sides, hull, BEECH_LEAF, detail, 0.6)
+	_puffs(tool, rng, sides, hull, BEECH_LEAF, detail, 0.45)
 
 
 ## Pinheiro-silvestre: tronco alto e fino, marrom embaixo e avermelhado no alto, com a copa em massas
@@ -163,10 +165,11 @@ static func _pine(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) ->
 	var spots: Array[Vector3] = []
 	for i: int in masses:
 		var angle := turn + i * TAU / masses + rng.randf_range(-0.5, 0.5)
-		var out := rng.randf_range(0.6, 1.3) if i > 0 else 0.0
+		# Fase 276: massas menores e mais juntas do tronco
+		var out := rng.randf_range(0.5, 1.0) if i > 0 else 0.0
 		var spot := top + Vector3(cos(angle) * out, rng.randf_range(-1.6, 0.4) if i > 0 else 0.5, sin(angle) * out)
 		spots.append(spot)
-		var radius := rng.randf_range(1.3, 1.8)
+		var radius := rng.randf_range(1.1, 1.5)
 		_crown(tool, rng, spot, Vector3(radius, radius * 0.5, radius), PINE_NEEDLE, detail, hull)
 	_puffs(tool, rng, spots, hull, PINE_NEEDLE, detail, 0.45)
 

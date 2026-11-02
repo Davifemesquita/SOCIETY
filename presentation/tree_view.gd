@@ -61,8 +61,18 @@ const NEAR_UNTIL_M := 200.0
 ## vice-versa — a câmera parada na divisa não fica piscando entre as duas.
 const LOD_MARGIN_M := 24.0
 ## Desenhadas no máximo tantas árvores por célula (a regra do lenhador conta todas): a copa de
-## uma árvore de 8 m já cobre a célula de 2 m.
+## uma árvore de 8 m já cobre a célula de 2 m. Desde a Fase 276, só nas ilhas tropicais (e nos tocos da clareira).
 const DRAWN_PER_CELL := 2
+## Fase 276: na mata temperada, no máximo uma árvore por célula, e só em parte das células de mata: DRAWN_SHARE_EDGE nas de uma
+## árvore só (a beira), DRAWN_SHARE nas de duas e DRAWN_SHARE_DEEP no miolo (três ou mais). Com duas por célula e a copa de
+## ~8 m, a mata era um tapete de bolhas sem vão; agora cada árvore se lê, com o chão e a sombra entre elas, e o miolo fecha mais
+## que a beira. Tamanho de cada uma de SCALE_MIN a SCALE_MIN + SCALE_SPREAD (eram 0,75 a 1,25).
+const TEMPERATE_PER_CELL := 1
+const DRAWN_SHARE_EDGE := 0.5
+const DRAWN_SHARE := 0.65
+const DRAWN_SHARE_DEEP := 0.8
+const SCALE_MIN := 0.65
+const SCALE_SPREAD := 0.6
 
 var _world: WorldState
 var _models: Array[Mesh] = []
@@ -258,8 +268,7 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 				continue
 			if count > 0:
 				var high := grid.cell_height(cell) >= CONIFER_HEIGHT_M
-				for n: int in mini(count, DRAWN_PER_CELL):
-					var seed_value := hash([island_id, index, n])
+				for seed_value: int in drawn_seeds(island_id, index, count, tropical):
 					if tropical:
 						# coqueiro na terra baixa da costa, folhosa tropical mais para o alto
 						var share := PALM_SHARE_LOW if grid.cell_height(cell) < PALM_HEIGHT_M else PALM_SHARE_HIGH
@@ -273,7 +282,7 @@ func _build_chunk(island_id: int, chunk: Vector2i) -> void:
 					var model := (seed_value / 7) % BROADLEAF.size()
 					if conifer:
 						model = BROADLEAF.size() + conifer_pick(seed_value, grid.cell_height(cell))
-					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * (0.75 + (seed_value / 13 % 50) / 100.0))])
+					entries.append([model, _transform(grid, cell, seed_value, _scales[model] * tree_scale(seed_value))])
 			elif grid.ground[index] == IslandGrid.Ground.LAND:
 				var chance := rock_chance(grid, cell)
 				var seed_value := hash([island_id, index, "pedra"])
@@ -340,6 +349,28 @@ static func _transform(grid: IslandGrid, cell: Vector2i, seed_value: int, scale:
 	var basis := Basis(Vector3.UP, (seed_value % 360) * PI / 180.0).scaled(Vector3.ONE * scale)
 	return PackedFloat32Array([basis.x.x, basis.y.x, basis.z.x, x, basis.x.y, basis.y.y, basis.z.y,
 			grid.height_at(x, z) - 0.1, basis.x.z, basis.y.z, basis.z.z, z])
+
+
+## Fase 276: os sorteios das árvores que o desenho põe na célula de índice index com count árvores: na ilha tropical até
+## DRAWN_PER_CELL; na temperada uma, e só em parte das células (`draws_tree`). Os tocos da clareira (StumpView) saem dos mesmos.
+static func drawn_seeds(island_id: int, index: int, count: int, tropical: bool) -> Array[int]:
+	var seeds: Array[int] = []
+	for n: int in mini(count, DRAWN_PER_CELL if tropical else TEMPERATE_PER_CELL):
+		var seed_value := hash([island_id, index, n])
+		if tropical or draws_tree(seed_value, count):
+			seeds.append(seed_value)
+	return seeds
+
+
+## Fase 276: se a árvore temperada de sorteio seed_value, numa célula de count árvores, é desenhada (vãos na mata).
+static func draws_tree(seed_value: int, count: int) -> bool:
+	var share := DRAWN_SHARE_EDGE if count <= 1 else (DRAWN_SHARE if count == 2 else DRAWN_SHARE_DEEP)
+	return (seed_value / 29 % 100) < share * 100.0
+
+
+## Fase 276: o tamanho da árvore temperada pelo sorteio dela, de SCALE_MIN a SCALE_MIN + SCALE_SPREAD.
+static func tree_scale(seed_value: int) -> float:
+	return SCALE_MIN + (seed_value / 13 % 100) / 100.0 * SCALE_SPREAD
 
 
 ## Fase 275: a conífera da árvore (índice em CONIFER) pelo sorteio dela e pela altura do chão: abeto na maior parte, pinheiro

@@ -140,6 +140,7 @@ func _build_island(island_id: int) -> void:
 	if ids.is_empty():
 		return
 	var cut := cut_cells_of(world, _simulation.data, _simulation.config, island_id, ids)
+	var tropical := world.is_tropical(island_id, _simulation.data)
 	# Fase 148: o terreiro do lenhador fica sem toco nem tora
 	var yards: Dictionary[Vector2i, bool] = {}
 	for id: int in ids:
@@ -160,7 +161,7 @@ func _build_island(island_id: int) -> void:
 			stumps[chunk] = []
 			logs[chunk] = []
 		var list: Array = stumps[chunk]
-		list.append_array(stump_places(grid, island_id, cell))
+		list.append_array(stump_places(grid, island_id, cell, tropical))
 		var fallen: Variant = log_place(grid, island_id, cell)
 		if fallen is Transform3D:
 			var log_list: Array = logs[chunk]
@@ -245,12 +246,12 @@ static func cut_cells_of(world: WorldState, data: GameData, config: GameConfig, 
 	return result
 
 
-## Os tocos da célula cortada: um no ponto de cada árvore que a TreeView desenharia ali, girado e na escala do hash.
-static func stump_places(grid: IslandGrid, island_id: int, cell: Vector2i) -> Array[Transform3D]:
+## Os tocos da célula cortada: um no ponto de cada árvore que a TreeView desenharia ali (`TreeView.drawn_seeds`, desde a Fase
+## 276: na mata temperada nem toda célula tem árvore), girado e na escala do hash.
+static func stump_places(grid: IslandGrid, island_id: int, cell: Vector2i, tropical := false) -> Array[Transform3D]:
 	var result: Array[Transform3D] = []
 	var index := grid.index(cell)
-	for n: int in mini(grid.trees[index], TreeView.DRAWN_PER_CELL):
-		var seed_value := hash([island_id, index, n])
+	for seed_value: int in TreeView.drawn_seeds(island_id, index, grid.trees[index], tropical):
 		var floats := TreeView._transform(grid, cell, seed_value, 1.0)
 		var at := Vector3(floats[3], floats[7] + 0.05, floats[11])
 		var scale := 0.8 + float(seed_value / 13 % 50) / 100.0

@@ -2600,3 +2600,10 @@ Primeira do ciclo da mata: 76,9 FPS (274: 76,5), 1% low 37,3, p50/p95/p99 12,3/1
 árvores desenhadas, iguais), montar tudo 9,5 s, carregar 6,5 s, construir com a ilha cheia 17,6 ms; +17 objetos e draw calls no
 quadro com tudo visível (os trechos com abeto e pinheiro ganham uma camada) e primitivas iguais. O pior quadro do dia (55 ms, 274:
 31) foi um só, sem repetir no p99. Neutra.
+
+## Fase 276 — copas na medida (02/11/2026)
+
+78,9 FPS (275: 76,9), 1% low 39,4, p50/p95/p99 11,9/16,1/24,1 ms, GPU 11,5 ms (275: 12,0), jogo novo 12,3 s com 17249 árvores
+desenhadas (eram 28830), montar tudo 9,1 s, carregar 6,5 s, construir com a ilha cheia 17,5 ms; objetos e draw calls iguais e
+~0,4 milhão de primitivas a menos no quadro com tudo visível. Melhor: menos árvores desenhadas (uma por célula, e só em parte
+delas, na mata temperada) e copas menores.
