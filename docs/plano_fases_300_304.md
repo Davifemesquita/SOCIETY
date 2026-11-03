@@ -40,4 +40,4 @@ Diferenças do roteiro:
 - o muro dos quintais não se abre nas hortas e nos varais: eles ficam na fileira de trás, dentro do quintal fechado; e só sai com
   a fileira de trás livre (na vila de teste, a primeira fileira, de fundos para o campo).
 
-O antes e depois de cada fase está em `F:erramentaspturasaseNNN` (300 a 304).
+O antes e depois de cada fase está em `F:\ferramentas\capturas\faseNNN\` (300 a 304).
