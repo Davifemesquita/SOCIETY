@@ -36,6 +36,12 @@ const CLIFF_RADIUS_M := Vector2(1.4, 2.4)
 const CLIFF_WIDTH := 0.5
 const CLIFF_BELOW_TOP_M := 0.25
 const CLIFF_TILT := 0.25
+## Fase 311: os blocos caídos no pé de cada rocha de falésia, no primeiro canto de mar abaixo dela: quantos, o raio, quanto o topo
+## passa da água e a folga sorteada em volta do canto (m).
+const TALUS_BLOCKS := Vector2i(2, 4)
+const TALUS_RADIUS_M := Vector2(0.5, 1.2)
+const TALUS_TOP_M := Vector2(0.25, 1.1)
+const TALUS_SPREAD_M := 2.2
 const VISIBLE_UNTIL_M := 900.0
 ## A rocha do terreno (a mesma textura, no tom do rock_grade do terrain.gdshader) e o tamanho de cada repetição.
 const TINT := Color(0.78, 0.74, 0.7)
@@ -47,7 +53,7 @@ const STONE_GREY_MIX := 0.75
 const STONE_LIGHT := 1.5
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
-enum Kind { STACK, CLIFF }
+enum Kind { STACK, CLIFF, TALUS }
 
 var _counts: Dictionary[int, int] = {}
 var _material: ShaderMaterial
@@ -275,10 +281,12 @@ static func _cliffs(heights: PackedFloat32Array, side: int, origin: Vector2, spa
 			if block % 4 != (x % 2) + (y % 2) * 2 or float(block / 4 % 1000) >= CLIFF_KEEP * 1000.0:
 				continue
 			var sea := false
+			var foot_at := Vector2i(x, y)
 			for reach: int in range(1, CLIFF_SEA_REACH + 1):
 				var at := Vector2i(x, y) + down * reach
 				if at.x < 0 or at.y < 0 or at.x >= side or at.y >= side or heights[at.y * side + at.x] < 0.0:
 					sea = true
+					foot_at = at
 					break
 			if not sea:
 				continue
@@ -293,6 +301,19 @@ static func _cliffs(heights: PackedFloat32Array, side: int, origin: Vector2, spa
 			var radius := maxf(rng.randf_range(CLIFF_RADIUS_M.x, CLIFF_RADIUS_M.y), (top - base) * CLIFF_WIDTH)
 			_add(result, rng, Kind.CLIFF, Vector3(spot.x, base, spot.y), Vector3(radius, top - base, radius * 0.8),
 					CLIFF_TILT, dir)
+			# Fase 311: os blocos caídos no pé, meio dentro da água (o sorteio da rocha de cima já foi feito: ela não muda)
+			var foot := origin + Vector2(foot_at) * spacing
+			var inside := foot_at.x >= 0 and foot_at.y >= 0 and foot_at.x < side and foot_at.y < side
+			var floor_m := heights[foot_at.y * side + foot_at.x] if inside else low
+			for _block: int in rng.randi_range(TALUS_BLOCKS.x, TALUS_BLOCKS.y):
+				var at_m := foot + Vector2(rng.randf_range(-1.0, 1.0), rng.randf_range(-1.0, 1.0)) * TALUS_SPREAD_M
+				var size := rng.randf_range(TALUS_RADIUS_M.x, TALUS_RADIUS_M.y)
+				var sunk := clampf(floor_m, -1.2, 0.0) - 0.3
+				var rise := rng.randf_range(TALUS_TOP_M.x, TALUS_TOP_M.y) - sunk
+				if grid != null and not _rock_allowed(grid, at_m, max_relief):
+					continue
+				_add(result, rng, Kind.TALUS, Vector3(at_m.x, sunk, at_m.y), Vector3(size, rise, size * rng.randf_range(0.7, 1.0)),
+						0.35, Vector2.from_angle(rng.randf() * TAU))
 
 
 ## Rocha só onde não cabe obra: mar, fora da grade da ilha ou célula íngreme demais para estrada (e sem nada em cima).

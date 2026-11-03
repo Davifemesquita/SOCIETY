@@ -3515,6 +3515,12 @@ Regras que já custaram investigação:
   `tools/capture_phase310.tscn`.
 
 
+### Blocos caídos (Fase 311, nossa)
+
+- **Plano** em `docs/plano_fase311.md`. `RockView.Kind.TALUS`: no `_cliffs`, depois de cada rocha de falésia e do mesmo sorteio (as de
+  antes não mudam), de 2 a 4 blocos da `RockModel` em volta do primeiro canto de mar abaixo dela, meio dentro da água.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3836,6 +3842,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 308 — Abetos de longe (nossa) | **feita em 02/11/2026**: os pinheiros e os abetos escurecem e ficam azulados com a distância, como a mata de coníferas vista de longe; plano em `docs/plano_fase308.md` |
 | 309 — Névoa nos vales (nossa) | **feita em 02/11/2026**, a última do roteiro da mata funda: de madrugada até o fim da manhã, lençóis de névoa baixa e mole presos nos vales perto da mata das ilhas temperadas, mais nos dias de neblina; plano em `docs/plano_fase309.md` |
 | 310 — Blocos na face (nossa) | **feita em 02/11/2026**, primeira do roteiro da falésia de verdade (Fases 310 a 314): a rocha das falésias e das pedras se parte em blocos grandes, cada um com o seu tom e o seu plano, com as juntas escuras entre eles; plano em `docs/plano_fase310.md` |
+| 311 — Blocos caídos (nossa) | **feita em 02/11/2026**: um amontoado de blocos de rocha caídos no pé das falésias, meio dentro da água, com a espuma em volta; plano em `docs/plano_fase311.md` |
 
 Pendências já vistas para fases futuras:
 
