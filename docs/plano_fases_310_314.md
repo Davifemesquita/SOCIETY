@@ -27,4 +27,17 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 ## Estado
 
-**A fazer.**
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase310.md` a `docs/plano_fase314.md`),
+testes, captura e benchmark (todas neutras, GPU de 12,8 a 12,9 ms). As três pastas da suíte passaram no fim (world 729,
+presentation 407, ui 167).
+
+Diferenças do roteiro:
+
+- os blocos da face saem de um Voronoi 3D no mundo, não no plano da face (projetado pela normal, que muda a cada faceta da pedra,
+  o desenho saía em riscos), e só na cor: a normal quantizada ficou de fora;
+- o capim da borda é uma franja própria de folhas compridas, não os tufos do tapete (curtos demais para pender);
+- o mato das fendas fica na parte de cima da face e maior: no meio da célula ele sumia dentro das rochas encaixadas da falésia;
+- a sombra na água sai de uma marcha na direção do sol pela altura da terra (guardada no mapa da costa); as falésias da captura
+  são baixas, então a sombra é curta e aparece mais nas enseadas atrás dos promontórios.
+
+O antes e depois de cada fase está em `F:\ferramentas\capturas\faseNNN\` (310 a 314).
