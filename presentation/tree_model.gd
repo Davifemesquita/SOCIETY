@@ -75,6 +75,10 @@ const CROWN_SUN := Color(1.06, 1.02, 0.82)
 ## Fase 256: quanto as folhas acendem por conta própria de dia (o sol atravessando e voltando da copa), em fração da cor:
 ## sem isso, o lado da sombra de uma mata fechada ficava quase preto.
 const LEAF_FILL := 0.22
+## Fase 305: a força do tom sorteado por árvore no shader da folhagem (`tree_tint`): cheia nas folhosas, leve nas coníferas
+## (o abeto e o pinheiro já são escuros; o tom forte os deixava pretos ou amarelos demais).
+const BROADLEAF_TINT := 1.0
+const CONIFER_TINT := 0.35
 ## Quanto cada vértice da massa sai ou entra (fração do raio), para ela não ser uma bola.
 const CROWN_LUMP := 0.16
 ## Balanço (como o das árvores do Kenney, m por m de altura).
@@ -118,7 +122,7 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 		Species.BIRCH:
 			_birch(tool, rng, detail)
 	var result := tool.commit()
-	result.surface_set_material(0, _material(result, detail == DETAIL_NEAR and species != Species.COCONUT_PALM))
+	result.surface_set_material(0, _material(result, detail == DETAIL_NEAR and species != Species.COCONUT_PALM, tint_of(species)))
 	_cache[key] = result
 	return result
 
@@ -552,10 +556,18 @@ static func _sphere(level: int) -> PackedVector3Array:
 	return _sphere_points[level]
 
 
+## Fase 305: a força do tom sorteado por árvore de cada espécie.
+static func tint_of(species: Species) -> float:
+	match species:
+		Species.SCOTS_PINE, Species.NORWAY_SPRUCE, Species.COCONUT_PALM:
+			return CONIFER_TINT
+	return BROADLEAF_TINT
+
+
 ## O material da árvore: a folhagem com a cor do vértice, balançando. Fase 279: as de perto (menos o coqueiro, de folhas finas
 ## que o recorte desfiaria) usam o tree_foliage.gdshader, com os cachos de folhas e a borda da copa recortada; as de longe e o
 ## coqueiro, o foliage.gdshader de sempre.
-static func _material(result: ArrayMesh, leaves := false) -> ShaderMaterial:
+static func _material(result: ArrayMesh, leaves := false, tint := 0.0) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = load(TREE_SHADER if leaves else FOLIAGE_SHADER) as Shader
 	material.set_shader_parameter(&"albedo", Color.WHITE)
@@ -563,4 +575,5 @@ static func _material(result: ArrayMesh, leaves := false) -> ShaderMaterial:
 	material.set_shader_parameter(&"model_height", maxf(result.get_aabb().end.y, 0.1))
 	material.set_shader_parameter(&"sway", SWAY)
 	material.set_shader_parameter(&"leaf_fill", LEAF_FILL)
+	material.set_shader_parameter(&"tree_tint", tint)
 	return material

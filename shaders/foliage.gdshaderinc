@@ -36,6 +36,15 @@ uniform float backlight = 0.35;
 global uniform vec3 sun_direction;
 uniform float leaf_fill = 0.0;
 
+// Fase 305: o tom de cada árvore, sorteado pelo lugar dela (hash inteiro da origem da instância): mais escura, oliva, mais
+// amarelada ou a de sempre, com um pouco de claro e escuro. Só na folhagem (a madeira fica), na força tree_tint (o TreeModel
+// põe 1 nas folhosas e TreeModel.CONIFER_TINT nas coníferas; as plantações e o capim ficam com 0).
+uniform float tree_tint = 0.0;
+uniform vec3 tint_dark = vec3(0.66, 0.74, 0.66);
+uniform vec3 tint_olive = vec3(0.96, 0.88, 0.58);
+uniform vec3 tint_yellow = vec3(1.12, 1.08, 0.72);
+varying flat float tree_pick;
+
 #ifdef LEAF_DETAIL
 // tamanho do cacho de folhas (m no modelo), o claro e o escuro dele, quanto a normal estufa para fora do meio do cacho (cada
 // um ganha o lado da luz e o da sombra), quanto da borda se recorta e até onde vale
@@ -76,6 +85,10 @@ vec4 leaf_cells(vec3 p) {
 #endif
 
 void vertex() {
+	// Fase 305: o sorteio do tom, pela célula de 25 cm da origem (a mesma em todos os vértices da árvore)
+	uvec3 spot = uvec3(ivec3(floor(MODEL_MATRIX[3].xyz * 4.0)));
+	uint mixed = ((spot.x * 73856093u) ^ (spot.y * 19349663u) ^ (spot.z * 83492791u)) * 1597334677u;
+	tree_pick = float(mixed >> 8u) / 16777216.0;
 #ifdef LEAF_DETAIL
 	// o padrão das folhas preso no modelo (antes do balanço), diferente em cada árvore
 	leaf_pos = VERTEX / leaf_size + fract(MODEL_MATRIX[3].xyz * 0.137) * 17.0;
@@ -110,6 +123,12 @@ void fragment() {
 		base *= mix(pow((c + vec3(0.055)) / vec3(1.055), vec3(2.4)), c / vec3(12.92), lessThan(c, vec3(0.04045)));
 	}
 	float leafy = smoothstep(1.05, 1.35, base.g / max(base.r, 0.001));
+	if (tree_tint > 0.0) {
+		float quarter = floor(tree_pick * 4.0);
+		vec3 tone = quarter < 1.0 ? tint_dark : (quarter < 2.0 ? tint_olive : (quarter < 3.0 ? tint_yellow : vec3(1.0)));
+		tone *= 0.9 + 0.2 * fract(tree_pick * 4.0);
+		base *= mix(vec3(1.0), tone, tree_tint * leafy);
+	}
 #ifdef LEAF_DETAIL
 	float near = (1.0 - smoothstep(leaf_far_m * 0.6, leaf_far_m, length(VERTEX))) * leafy;
 	if (near > 0.0) {

@@ -3471,6 +3471,14 @@ Regras que já custaram investigação:
   `tools/capture_phase300.tscn`.
 
 
+### Tom por árvore (Fase 305, nossa)
+
+- **Plano** em `docs/plano_fase305.md`, primeira do roteiro `docs/plano_fases_305_309.md` (mata funda; o Anno não foi aberto: o
+  dono estava no PC). No `shaders/foliage.gdshaderinc`, `tree_tint` (o tom de cada árvore pelo hash inteiro da origem da instância:
+  escura, oliva, amarelada ou a de sempre, só na folhagem), posto pelo `TreeModel.tint_of` (cheio nas folhosas, `CONIFER_TINT` nas
+  coníferas e no coqueiro, nada nas plantações). Captura do ciclo em `tools/capture_phase305.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3786,6 +3794,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 302 — Sujeira nas paredes (nossa) | **feita em 02/11/2026**: o pé das paredes ganha o respingo de terra de borda irregular e as paredes, os escorridos de chuva; plano em `docs/plano_fase302.md` |
 | 303 — Telhado de tábuas (nossa) | **feita em 02/11/2026**: metade das casas dos operários das ilhas temperadas troca a telha por tábuas cinzentas de madeira velha; plano em `docs/plano_fase303.md` |
 | 304 — Muro dos quintais (nossa) | **feita em 02/11/2026**, a última do roteiro telhado gasto e chão de vila: mureta de pedra seca ou cerca de tábuas fechando o quintal de trás das casas dos camponeses, operários e artesãos das ilhas temperadas, quando o fundo é livre; plano em `docs/plano_fase304.md` |
+| 305 — Tom por árvore (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata funda (Fases 305 a 309): cada árvore da mata com o seu tom, umas mais escuras, umas oliva, umas amareladas, em vez do mesmo verde-limão; leve nas coníferas; plano em `docs/plano_fase305.md` |
 
 Pendências já vistas para fases futuras:
 
