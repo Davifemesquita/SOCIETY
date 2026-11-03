@@ -28,4 +28,17 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 ## Estado
 
-**A fazer.**
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase305.md` a `docs/plano_fase309.md`),
+testes, captura e benchmark (todas neutras, GPU de 12,7 a 12,9 ms). As três pastas da suíte passaram no fim (world 721,
+presentation 401, ui 167).
+
+Diferenças do roteiro:
+
+- o chão da mata já era a textura de folhas, parda; o efeito ficou no escurecido e no musgo, e se vê pouco de cima, porque as
+  copas cobrem quase todo o chão (conferido com o miolo pintado de vermelho);
+- o sub-bosque ficou em toda célula de mata, não só debaixo das árvores desenhadas (o sorteio delas é caro no laço do recheio);
+- os abetos de longe: a primeira faixa (70 a 320 m) quase não aparecia; ficou de 40 a 240 m;
+- a névoa dos vales sai da comparação da altura com a volta (não da curvatura dos dados do terreno) e, na primeira versão, branca
+  e dura, parecia neve; ficou acinzentada, rala e de borda mole.
+
+O antes e depois de cada fase está em `F:\ferramentas\capturas\faseNNN\` (305 a 309).
