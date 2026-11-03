@@ -426,6 +426,8 @@ void fragment() {
 	// Fase 290: os estratos e os sulcos da encosta
 	if (rock > 0.001) {
 		rock_a.rgb *= strata_factor(world_position, world_normal);
+		// Fase 310: os blocos grandes da face
+		rock_a.rgb *= block_factor(world_position, world_normal);
 		// Fase 291: o musgo nas saliências (a textura da grama dá o miúdo dele)
 		rock_a.rgb = mix(rock_a.rgb, moss_color * (0.7 + grass_a.a * 0.6), moss_amount(world_position, world_normal));
 	}

@@ -3506,6 +3506,15 @@ Regras que já custaram investigação:
   o vento, o pé esmaecido pela profundidade da tela). Captura: `06_` e `07_` no `tools/capture_phase305.tscn`.
 
 
+### Blocos na face (Fase 310, nossa)
+
+- **Plano** em `docs/plano_fase310.md`, primeira do roteiro `docs/plano_fases_310_314.md` (falésia de verdade; o Anno não foi aberto:
+  o dono estava no PC). `block_factor` no `shaders/rock_strata.gdshaderinc` (blocos de um Voronoi 3D no mundo, com tom, faceta pela
+  luz fixa `block_light_dir` e juntas escuras, só nas faces de pé), chamado pela rocha do terreno e pelas pedras. **Desenho na face
+  da rocha não se projeta pela normal**: ela muda a cada faceta da pedra e o desenho sai em riscos. Captura do ciclo em
+  `tools/capture_phase310.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3826,6 +3835,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 307 — Sub-bosque (nossa) | **feita em 02/11/2026**: samambaias e arbustos baixos debaixo das árvores da mata das ilhas temperadas; plano em `docs/plano_fase307.md` |
 | 308 — Abetos de longe (nossa) | **feita em 02/11/2026**: os pinheiros e os abetos escurecem e ficam azulados com a distância, como a mata de coníferas vista de longe; plano em `docs/plano_fase308.md` |
 | 309 — Névoa nos vales (nossa) | **feita em 02/11/2026**, a última do roteiro da mata funda: de madrugada até o fim da manhã, lençóis de névoa baixa e mole presos nos vales perto da mata das ilhas temperadas, mais nos dias de neblina; plano em `docs/plano_fase309.md` |
+| 310 — Blocos na face (nossa) | **feita em 02/11/2026**, primeira do roteiro da falésia de verdade (Fases 310 a 314): a rocha das falésias e das pedras se parte em blocos grandes, cada um com o seu tom e o seu plano, com as juntas escuras entre eles; plano em `docs/plano_fase310.md` |
 
 Pendências já vistas para fases futuras:
 

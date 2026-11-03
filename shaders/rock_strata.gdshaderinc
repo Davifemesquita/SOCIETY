@@ -64,3 +64,54 @@ float moss_amount(vec3 at, vec3 normal_w) {
 	float patches = smoothstep(0.42, 0.7, strata_noise(at.xz / moss_patch_m + vec2(at.y * 0.4, 13.0)));
 	return clamp((flat_part + ledge * 0.8) * patches * shade, 0.0, 1.0) * moss_amount_max;
 }
+
+// Fase 310: os blocos da face. Nas faces de pé, a rocha se parte em blocos grandes (um Voronoi 3D no mundo, de block_m e mais
+// baixos que largos: não depende da normal, que muda a cada faceta da pedra e riscava o desenho), cada um com o seu tom e o seu
+// plano (a normal do bloco, torta pelo sorteio dele, pega mais ou menos da luz fixa block_light_dir, como uma faceta), e as juntas
+// escuras entre eles. Fator de cor (1 = nada).
+uniform float block_m = 2.6;
+uniform float block_joint_m = 0.14;
+uniform float block_joint_dark = 0.5;
+uniform float block_tone = 0.14;
+uniform float block_light = 0.35;
+uniform vec3 block_light_dir = vec3(0.45, 0.75, 0.48);
+
+float block_hash(vec3 cell, vec2 salt) {
+	return strata_hash(cell.xz + vec2(cell.y * 57.0, cell.y * 113.0) + salt);
+}
+
+float block_factor(vec3 at, vec3 normal_w) {
+	float steep = 1.0 - smoothstep(0.45, 0.8, normal_w.y);
+	if (steep <= 0.0) {
+		return 1.0;
+	}
+	vec3 q = vec3(at.x, at.y * 1.45, at.z) / block_m;
+	vec3 base = floor(q - 0.5);
+	float first = 8.0;
+	float second = 8.0;
+	vec3 id = base;
+	for (int z = 0; z <= 1; z++) {
+		for (int y = 0; y <= 1; y++) {
+			for (int x = 0; x <= 1; x++) {
+				vec3 cell = base + vec3(float(x), float(y), float(z));
+				vec3 point = cell + 0.15 + 0.7 * vec3(block_hash(cell, vec2(3.0, 7.0)), block_hash(cell, vec2(29.0, 11.0)),
+						block_hash(cell, vec2(47.0, 83.0)));
+				float d = length(q - point);
+				if (d < first) {
+					second = first;
+					first = d;
+					id = cell;
+				} else if (d < second) {
+					second = d;
+				}
+			}
+		}
+	}
+	float joint = 1.0 - smoothstep(0.0, block_joint_m / block_m, second - first);
+	float tone = 1.0 + (block_hash(id, vec2(41.0, 5.0)) - 0.5) * 2.0 * block_tone;
+	vec3 tilt = vec3(block_hash(id, vec2(13.0, 57.0)), block_hash(id, vec2(71.0, 23.0)), block_hash(id, vec2(5.0, 91.0))) * 2.0 - 1.0;
+	vec3 light_dir = normalize(block_light_dir);
+	float light = (dot(normalize(normal_w + tilt * 0.55), light_dir) - dot(normal_w, light_dir)) * block_light;
+	float factor = tone * (1.0 + light) * (1.0 - joint * block_joint_dark);
+	return mix(1.0, factor, steep);
+}
