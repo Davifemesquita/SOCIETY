@@ -3463,6 +3463,14 @@ Regras que já custaram investigação:
   põe o parâmetro de instância `shingle`, e o `shaders/building_kit.gdshader` troca as telhas por `shingle_shade` (tábuas cinzentas
   de largura sorteada) nas águas e pela madeira escura na capa e no beiral.
 
+### Muro dos quintais (Fase 304, nossa)
+
+- **Plano** em `docs/plano_fase304.md`. `YardWallView` (`GameScreen.yard_wall_view`): `yard_lines` (com a fileira de trás livre, o
+  fundo e os dois lados do quintal das casas de `TIERS` nas temperadas), `segments` (cada divisa uma vez: os lados ficam na divisa
+  exata do lote) e a mureta de pedra seca ou a cerca de tábuas pelo hash, numa malha só. Captura: `05_` e `06_` no
+  `tools/capture_phase300.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3777,6 +3785,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 301 — Chão de vila (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, o chão em volta das casas vira terra pisada de borda recortada, e o capim alto deixa de crescer colado nos prédios; plano em `docs/plano_fase301.md` |
 | 302 — Sujeira nas paredes (nossa) | **feita em 02/11/2026**: o pé das paredes ganha o respingo de terra de borda irregular e as paredes, os escorridos de chuva; plano em `docs/plano_fase302.md` |
 | 303 — Telhado de tábuas (nossa) | **feita em 02/11/2026**: metade das casas dos operários das ilhas temperadas troca a telha por tábuas cinzentas de madeira velha; plano em `docs/plano_fase303.md` |
+| 304 — Muro dos quintais (nossa) | **feita em 02/11/2026**, a última do roteiro telhado gasto e chão de vila: mureta de pedra seca ou cerca de tábuas fechando o quintal de trás das casas dos camponeses, operários e artesãos das ilhas temperadas, quando o fundo é livre; plano em `docs/plano_fase304.md` |
 
 Pendências já vistas para fases futuras:
 

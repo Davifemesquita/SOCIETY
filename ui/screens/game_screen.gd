@@ -138,6 +138,7 @@ var lumber_yard_view: LumberYardView
 var brick_yard_view: BrickYardView
 ## Fase 163: a horta atrás de parte das casas dos camponeses e operários.
 var kitchen_garden_view: KitchenGardenView
+var yard_wall_view: YardWallView
 ## Fase 166: as medas de feno ao lado das fazendas de gado e de trigo.
 var haystack_view: HaystackView
 ## Fase 169: o barril de chuva atrás de parte das casas dos camponeses e operários.
@@ -595,6 +596,11 @@ func _ready() -> void:
 	kitchen_garden_view.name = "KitchenGardens"
 	add_child(kitchen_garden_view)
 	kitchen_garden_view.setup(simulation)
+	# Fase 304: o muro dos quintais
+	yard_wall_view = YardWallView.new()
+	yard_wall_view.name = "YardWalls"
+	add_child(yard_wall_view)
+	yard_wall_view.setup(simulation)
 	haystack_view = HaystackView.new()
 	haystack_view.name = "Haystacks"
 	add_child(haystack_view)
