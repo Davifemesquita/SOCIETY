@@ -28,4 +28,16 @@ uma peça nova, conferir que nenhuma peça do kit cai nela.
 
 ## Estado
 
-**A fazer.**
+**Concluído em 02/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase300.md` a `docs/plano_fase304.md`),
+testes, captura e benchmark (todas neutras, GPU de 12,5 a 12,7 ms). As três pastas da suíte passaram no fim (world 712,
+presentation 396, ui 167).
+
+Diferenças do roteiro:
+
+- o chão de vila não aparecia na primeira versão: o tapete de capim da Fase 286 cobria a terra batida; o capim alto deixou de
+  crescer colado nos prédios e o alcance do chão cresceu;
+- o musgo das telhas cobria os telhados de tábua dos celeiros e foi reduzido;
+- o muro dos quintais não se abre nas hortas e nos varais: eles ficam na fileira de trás, dentro do quintal fechado; e só sai com
+  a fileira de trás livre (na vila de teste, a primeira fileira, de fundos para o campo).
+
+O antes e depois de cada fase está em `F:erramentaspturasaseNNN` (300 a 304).
