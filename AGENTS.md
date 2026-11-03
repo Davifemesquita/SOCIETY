@@ -3485,6 +3485,13 @@ Regras que já custaram investigação:
   (`deep`) escurece `floor_dark` e ganha manchas de musgo (`floor_moss_*`); `forest_floor` 0 desliga.
 
 
+### Sub-bosque (Fase 307, nossa)
+
+- **Plano** em `docs/plano_fase307.md`. `ScatterView.Kind.FOREST_FERN` e `Kind.UNDERBRUSH` (no fim do enum, entre as `PLANTS`, fora
+  das listas de regras): as células de mata das temperadas, que o laço pulava, ganham `_understory` (sorteio aritmético próprio,
+  `UNDERSTORY_FERN_CHANCE` e `UNDERSTORY_BRUSH_CHANCE`); o recheio das outras células não muda.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3802,6 +3809,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 304 — Muro dos quintais (nossa) | **feita em 02/11/2026**, a última do roteiro telhado gasto e chão de vila: mureta de pedra seca ou cerca de tábuas fechando o quintal de trás das casas dos camponeses, operários e artesãos das ilhas temperadas, quando o fundo é livre; plano em `docs/plano_fase304.md` |
 | 305 — Tom por árvore (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata funda (Fases 305 a 309): cada árvore da mata com o seu tom, umas mais escuras, umas oliva, umas amareladas, em vez do mesmo verde-limão; leve nas coníferas; plano em `docs/plano_fase305.md` |
 | 306 — Chão da mata (nossa) | **feita em 02/11/2026**: o chão debaixo das árvores fica escuro, de folhas e agulhas, com manchas de musgo, e a beira da mata em transição; plano em `docs/plano_fase306.md` |
+| 307 — Sub-bosque (nossa) | **feita em 02/11/2026**: samambaias e arbustos baixos debaixo das árvores da mata das ilhas temperadas; plano em `docs/plano_fase307.md` |
 
 Pendências já vistas para fases futuras:
 

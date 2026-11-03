@@ -30,10 +30,12 @@ extends Node3D
 ## temperadas, deitado com o chão como a madeira à deriva.
 ## Fase 294: o abeto da rocha (CLIFF_SPRUCE), o abeto da Fase 275 pequeno, no fim das listas OPEN, NEAR_FOREST e NEAR_SEA, só nas
 ## encostas mais íngremes e nas falésias das temperadas, de pé.
+## Fase 307: o sub-bosque (FOREST_FERN e UNDERBRUSH, no fim do enum e fora das listas de regras): nas células de mata das
+## temperadas, que o laço pulava, samambaias e arbustos baixos debaixo das árvores, por um sorteio próprio da célula (`_understory`).
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
 		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING,
-		SUNFLOWER, CLIFF_SPRUCE }
+		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -46,11 +48,17 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 		Kind.SNAG, Kind.DRIFTWOOD, Kind.ROCK_PINE, Kind.MOSSY_LOG, Kind.RUIN, Kind.HAWTHORN, Kind.CLIFF_SPRUCE]
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
-		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE, Kind.SUNFLOWER]
+		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE, Kind.SUNFLOWER,
+		Kind.FOREST_FERN, Kind.UNDERBRUSH]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
 const FERN_LEAF := Color(0.18, 0.4, 0.12)
+## Fase 307: o sub-bosque das temperadas — a chance por célula de mata de uma samambaia e de um arbusto baixo, e as cores.
+const UNDERSTORY_FERN_CHANCE := 0.4
+const UNDERSTORY_BRUSH_CHANCE := 0.18
+const FOREST_FERN_LEAF := Color(0.26, 0.44, 0.15)
+const UNDERBRUSH_LEAF := Color(0.2, 0.33, 0.13)
 const HELICONIA_LEAF := Color(0.26, 0.5, 0.16)
 ## As brácteas da helicônia: vermelhas com a ponta amarela.
 const HELICONIA_BRACT := Color(0.85, 0.12, 0.1)
@@ -634,8 +642,13 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 	for y: int in range(area.position.y, area.end.y):
 		for x: int in range(area.position.x, area.end.x):
 			var index := y * width + x
-			if ground[index] != IslandGrid.Ground.LAND or trees[index] > 0 or roads[index] != IslandGrid.Road.NONE \
-					or occupancy[index] != 0 or rails[index] != 0:
+			if ground[index] != IslandGrid.Ground.LAND or roads[index] != IslandGrid.Road.NONE or occupancy[index] != 0 \
+					or rails[index] != 0:
+				continue
+			if trees[index] > 0:
+				# Fase 307: a mata das temperadas ganha o sub-bosque; o resto do recheio fica fora dela
+				if not tropical:
+					_understory(grid, config, island_id, Vector2i(x, y), result)
 				continue
 			var cell := Vector2i(x, y)
 			if doors.has(cell):
@@ -691,6 +704,29 @@ static func places(world: WorldState, data: GameData, config: GameConfig, island
 			if river != Vector2i.ZERO:
 				_reeds(grid, config, island_id, cell, river, result)
 	return result
+
+
+## Fase 307: o sub-bosque da célula de mata: uma samambaia (UNDERSTORY_FERN_CHANCE) e um arbusto baixo (UNDERSTORY_BRUSH_CHANCE),
+## soltos pela célula, por um sorteio aritmético próprio (são dezenas de milhares de células de mata).
+static func _understory(grid: IslandGrid, config: GameConfig, island_id: int, cell: Vector2i, result: Dictionary) -> void:
+	var noise := FireflyView.cell_hash(island_id, cell.x, cell.y, 307)
+	var pieces: Array[int] = []
+	if float(noise % 1000) / 1000.0 < UNDERSTORY_FERN_CHANCE:
+		pieces.append(Kind.FOREST_FERN)
+	if float(noise / 1000 % 1000) / 1000.0 < UNDERSTORY_BRUSH_CHANCE:
+		pieces.append(Kind.UNDERBRUSH)
+	for k: int in pieces.size():
+		var kind := pieces[k]
+		var spot := FireflyView.cell_hash(island_id, cell.x, cell.y, 3070 + k)
+		var offset := Vector2(float(spot % 1000) / 1000.0 - 0.5, float(spot / 1000 % 1000) / 1000.0 - 0.5) * 0.8
+		var x := grid.origin_m.x + (cell.x + 0.5 + offset.x) * grid.cell_size
+		var z := grid.origin_m.y + (cell.y + 0.5 + offset.y) * grid.cell_size
+		var y := grid.height_at(x, z) + TerrainDetail.offset_at(grid, config, x, z)
+		var turn := float(spot / 1000000 % 1000) / 1000.0 * TAU
+		var scale := 0.75 + float(spot / 7 % 100) / 100.0 * 0.5
+		var shade := 0.82 + float(spot / 11 % 100) / 100.0 * 0.3
+		var list: Array = result[kind]
+		list.append([Transform3D(Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale), Vector3(x, y, z)), Color(shade, shade, shade)])
 
 
 ## Fase 179: as touceiras de junco da célula encostada no rio (do lado "river"): só na margem baixa, na beira da água,
@@ -1202,6 +1238,16 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 			for i: int in 6:
 				_leaf(tool, Vector3(0.0, 1.4 + (i % 2) * 0.12, 0.0), TAU * i / 6.0 + (i % 2) * 0.3, 1.4, 0.32,
 						1.0 if i % 2 == 0 else 0.6, 0.9, 6, false, BANANA_LEAF.lerp(BANANA_STEM, 0.15 * (i % 3)))
+		Kind.FOREST_FERN:
+			# Fase 307: a samambaia da mata temperada, sete frondes recortadas mais compridas e caídas (~0,7 m)
+			for i: int in 7:
+				_leaf(tool, Vector3(0.0, 0.04, 0.0), TAU * i / 7.0 + (i % 2) * 0.25, 0.9, 0.13, 0.75, 0.2, 4, true,
+						FOREST_FERN_LEAF.lightened(0.07 * (i % 3)))
+		Kind.UNDERBRUSH:
+			# Fase 307: o arbusto baixo da mata, duas massas achatadas (~0,6 m)
+			for i: int in 2:
+				CropView._part(tool, CropView._sphere(0.4 - i * 0.08), Transform3D(Basis.from_scale(Vector3(1.0, 0.7, 1.0)),
+						Vector3(-0.15 + i * 0.3, 0.26 + i * 0.05, (i % 2) * 0.12)), UNDERBRUSH_LEAF.lightened(0.1 * i))
 		Kind.FERN:
 			# roseta de oito frondes recortadas e arqueadas, rente ao chão (~0,6 m)
 			for i: int in 8:
