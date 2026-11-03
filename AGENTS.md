@@ -3498,6 +3498,14 @@ Regras que já custaram investigação:
   e azulada, de `far_cool_from_m` a `far_cool_to_m` da câmera), posto pelo `TreeModel.far_cool_of` só no pinheiro e no abeto.
 
 
+### Névoa nos vales (Fase 309, nossa)
+
+- **Plano** em `docs/plano_fase309.md`. `ValleyMistView` (`GameScreen.valley_mist_view`): `sites` (a terra das temperadas mais baixa
+  que a volta, com mata perto, numa rede de `STEP` células), `sheets` (duas camadas planas por lugar) e `amount_at` (de madrugada
+  até o fim da manhã, mais no dia de neblina do `WeatherCycle`), no `shaders/valley_mist.gdshader` (borda mole, ruído andando com
+  o vento, o pé esmaecido pela profundidade da tela). Captura: `06_` e `07_` no `tools/capture_phase305.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3817,6 +3825,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 306 — Chão da mata (nossa) | **feita em 02/11/2026**: o chão debaixo das árvores fica escuro, de folhas e agulhas, com manchas de musgo, e a beira da mata em transição; plano em `docs/plano_fase306.md` |
 | 307 — Sub-bosque (nossa) | **feita em 02/11/2026**: samambaias e arbustos baixos debaixo das árvores da mata das ilhas temperadas; plano em `docs/plano_fase307.md` |
 | 308 — Abetos de longe (nossa) | **feita em 02/11/2026**: os pinheiros e os abetos escurecem e ficam azulados com a distância, como a mata de coníferas vista de longe; plano em `docs/plano_fase308.md` |
+| 309 — Névoa nos vales (nossa) | **feita em 02/11/2026**, a última do roteiro da mata funda: de madrugada até o fim da manhã, lençóis de névoa baixa e mole presos nos vales perto da mata das ilhas temperadas, mais nos dias de neblina; plano em `docs/plano_fase309.md` |
 
 Pendências já vistas para fases futuras:
 

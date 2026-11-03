@@ -169,6 +169,7 @@ var mooring_pile_view: MooringPileView
 var signpost_view: SignpostView
 ## Fase 188: o arco-íris quando a chuva passa e o sol volta.
 var rainbow_view: RainbowView
+var valley_mist_view: ValleyMistView
 ## Fase 189: as focas deitadas na costa baixa das ilhas temperadas, longe das vilas.
 var seal_view: SealView
 ## Fase 190: as colmeias de palha com as abelhas ao lado de parte das fazendas.
@@ -917,6 +918,10 @@ func _ready() -> void:
 	rainbow_view.name = "Rainbow"
 	add_child(rainbow_view)
 	rainbow_view.setup(simulation, sky)
+	valley_mist_view = ValleyMistView.new()
+	valley_mist_view.name = "ValleyMist"
+	add_child(valley_mist_view)
+	valley_mist_view.setup(simulation)
 	ad_column_view = AdColumnView.new()
 	ad_column_view.name = "AdColumns"
 	add_child(ad_column_view)
