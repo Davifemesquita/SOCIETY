@@ -35,7 +35,7 @@ extends Node3D
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
 		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING,
-		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH }
+		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH, CLIFF_SHRUB }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -49,7 +49,7 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
 		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE, Kind.SUNFLOWER,
-		Kind.FOREST_FERN, Kind.UNDERBRUSH]
+		Kind.FOREST_FERN, Kind.UNDERBRUSH, Kind.CLIFF_SHRUB]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -77,7 +77,8 @@ const YARD_FRUIT := Color(0.75, 0.14, 0.1)
 const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind.BUSH, 0.12], [Kind.TUFT, 0.2]]
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
 		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE], [Kind.MOSSY_LOG, MOSSY_LOG_CHANCE],
-		[Kind.HAWTHORN, HAWTHORN_CHANCE], [Kind.FOXGLOVE, FOXGLOVE_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE]]
+		[Kind.HAWTHORN, HAWTHORN_CHANCE], [Kind.FOXGLOVE, FOXGLOVE_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE],
+		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
@@ -85,7 +86,7 @@ const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
 const NEAR_SEA: Array[Array] = [[Kind.TUFT, 0.35], [Kind.PEBBLE, 0.08], [Kind.SNAG, SNAG_COAST_CHANCE],
 		[Kind.DRIFTWOOD, DRIFTWOOD_CHANCE], [Kind.SCREE, SCREE_CHANCE], [Kind.SEAWEED, SEAWEED_CHANCE],
-		[Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE]]
+		[Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE], [Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE]]
 ## Fase 161: a madeira à deriva — a chance por célula da costa, só até DRIFTWOOD_MAX_HEIGHT_M (na praia e nas pedras baixas,
 ## não no alto da falésia), o comprimento do tronco e as cores da madeira lavada pelo sal.
 const DRIFTWOOD_CHANCE := 0.06
@@ -104,7 +105,8 @@ const SNAG_WOOD := Color(0.4, 0.37, 0.33)
 const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
 		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE],
-		[Kind.RUIN, RUIN_CHANCE], [Kind.FAIRY_RING, FAIRY_RING_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE]]
+		[Kind.RUIN, RUIN_CHANCE], [Kind.FAIRY_RING, FAIRY_RING_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE],
+		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE]]
 ## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
 ## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
 ## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
@@ -135,6 +137,14 @@ const ROCK_PINE_NEEDLES_LIGHT := Color(0.18, 0.31, 0.15)
 const CLIFF_SPRUCE_CHANCE := 0.12
 const CLIFF_SPRUCE_MIN_RELIEF_M := 2.0
 const CLIFF_SPRUCE_SCALE := 0.4
+## Fase 313: o mato das fendas (CLIFF_SHRUB), no fim do enum e das listas OPEN, NEAR_FOREST e NEAR_SEA: uma moita baixa com capim
+## agarrada nas células de face de falésia (desnível de CLIFF_SHRUB_MIN_RELIEF_M entre os cantos), meio deitada para fora da face.
+const CLIFF_SHRUB_CHANCE := 0.4
+const CLIFF_SHRUB_MIN_RELIEF_M := 2.0
+## O tamanho da moita (vezes o sorteio de 0,75 a 1,25): menor, ela sumia na face vista de cima.
+const CLIFF_SHRUB_SCALE := 1.8
+const CLIFF_SHRUB_LEAF := Color(0.24, 0.38, 0.14)
+const CLIFF_SHRUB_GRASS := Color(0.46, 0.56, 0.26)
 ## Fase 239: as algas na praia — a chance por célula da costa (depois do cascalho), só nas células baixas e planas da areia
 ## (até SEAWEED_MAX_HEIGHT_M, desnível até SEAWEED_MAX_RELIEF_M), e as cores do sargaço (o escuro molhado, o marrom e o verde).
 const SEAWEED_CHANCE := 0.3
@@ -818,6 +828,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.SUNFLOWER and tropical:
 			# os girassóis só nos quintais das temperadas
 			continue
+		elif kind == Kind.CLIFF_SHRUB and cell_relief(grid, cell) < CLIFF_SHRUB_MIN_RELIEF_M:
+			# o mato das fendas só na face das falésias
+			continue
 		var offset := Vector2(rng.randf_range(-0.35, 0.35), rng.randf_range(-0.35, 0.35))
 		if kind in [Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, Kind.ROCK_PINE, Kind.RUIN, Kind.HAWTHORN, Kind.FAIRY_RING,
 				Kind.CLIFF_SPRUCE]:
@@ -829,6 +842,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.TALL_GRASS:
 			# a touceira cobre a célula: quase no meio, para não entrar na rua do lado
 			offset *= 0.3
+		elif kind == Kind.CLIFF_SHRUB:
+			# na parte de cima da face, junto da borda: mais abaixo ficam as rochas encaixadas da falésia (RockView), que a cobririam
+			var normal := cell_normal(grid, cell)
+			var uphill := -Vector2(normal.x, normal.z).normalized() if Vector2(normal.x, normal.z).length() > 0.01 else Vector2.ZERO
+			offset = uphill * 0.2 + Vector2(-uphill.y, uphill.x) * offset.x
 		elif lean != Vector2i.ZERO:
 			# junto da parede do prédio vizinho, espalhado ao longo dela
 			offset = Vector2(lean) * 0.32 + Vector2(-lean.y, lean.x) * rng.randf_range(-0.35, 0.35)
@@ -843,6 +861,8 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			scale = STREET_PALM_SCALE * rng.randf_range(0.85, 1.15)
 		elif kind == Kind.CLIFF_SPRUCE:
 			scale = CLIFF_SPRUCE_SCALE * rng.randf_range(0.8, 1.25)
+		elif kind == Kind.CLIFF_SHRUB:
+			scale *= CLIFF_SHRUB_SCALE
 		var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * scale)
 		var color := Color.WHITE
 		match kind:
@@ -850,7 +870,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 				color = FLOWER_COLORS[rng.randi() % FLOWER_COLORS.size()]
 			Kind.BUSH, Kind.TUFT, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE, Kind.STREET_PALM, Kind.SNAG, \
 					Kind.POPPIES, Kind.SCREE, Kind.TALL_GRASS, Kind.ROCK_PINE, Kind.SEAWEED, Kind.MOSSY_LOG, Kind.RUIN, \
-					Kind.HAWTHORN, Kind.FOXGLOVE, Kind.FAIRY_RING, Kind.SUNFLOWER:
+					Kind.HAWTHORN, Kind.FOXGLOVE, Kind.FAIRY_RING, Kind.SUNFLOWER, Kind.CLIFF_SHRUB:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
@@ -867,6 +887,10 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			var normal := cell_normal(grid, cell)
 			basis = Basis(Quaternion(Vector3.UP, normal)) * basis
 			y -= 0.04
+		elif kind == Kind.CLIFF_SHRUB:
+			# meio deitada para fora da face (cresce da fenda para a luz), o pé enterrado na rocha
+			basis = Basis(Quaternion(Vector3.UP, (Vector3.UP + cell_normal(grid, cell)).normalized())) * basis
+			y -= 0.12
 		elif kind == Kind.ROCK_PINE or kind == Kind.CLIFF_SPRUCE:
 			# de pé (a árvore cresce para cima, não com a encosta), o pé enterrado para não ficar no ar do lado de baixo
 			y -= 0.25
@@ -1192,6 +1216,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return fairy_ring_mesh()
 	if kind == Kind.SUNFLOWER:
 		return sunflower_mesh()
+	if kind == Kind.CLIFF_SHRUB:
+		return cliff_shrub_mesh()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
@@ -1612,4 +1638,21 @@ static func sunflower_mesh() -> ArrayMesh:
 			VertexShapes.tri(tool, left, right, tip, SUNFLOWER_PETAL)
 			VertexShapes.tri(tool, right, left, tip, SUNFLOWER_PETAL)
 	tool.generate_normals()
+	return tool.commit()
+
+
+## Fase 313: o mato das fendas — três massas pequenas achatadas e um leque de capim saindo delas (~0,5 m), cor no vértice.
+static func cliff_shrub_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i: int in 3:
+		var angle := TAU * i / 3.0 + 0.5
+		CropView._part(tool, CropView._sphere(0.22 - i * 0.03), Transform3D(Basis.from_scale(Vector3(1.0, 0.75, 1.0)),
+				Vector3(cos(angle) * 0.14, 0.14 + i * 0.04, sin(angle) * 0.14)), CLIFF_SHRUB_LEAF.lightened(0.06 * i))
+	for i: int in 7:
+		var angle := TAU * i / 7.0
+		var lean := Basis(Vector3(cos(angle), 0.0, sin(angle)).cross(Vector3.UP), 0.55)
+		CropView._part(tool, CropView._box(Vector3(0.04, 0.42, 0.012)), Transform3D(lean * Basis(Vector3.UP, angle),
+				lean * Vector3(0.0, 0.21, 0.0)), CLIFF_SHRUB_GRASS.darkened(0.08 * (i % 3)))
+	tool.index()
 	return tool.commit()

@@ -3528,6 +3528,13 @@ Regras que já custaram investigação:
   ilha refeito pela `IslandDirty`. `IslandGrid.cell_heights` dá as alturas das células para os laços pela grade inteira.
 
 
+### Fendas com mato (Fase 313, nossa)
+
+- **Plano** em `docs/plano_fase313.md`. `ScatterView.Kind.CLIFF_SHRUB` (no fim do enum e das listas `OPEN`, `NEAR_FOREST` e
+  `NEAR_SEA`, entre as `PLANTS`) só nas células de desnível `CLIFF_SHRUB_MIN_RELIEF_M`, meio deitada para fora da face e na parte de
+  cima da célula (mais abaixo ficam as rochas encaixadas da falésia); `cliff_shrub_mesh`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3851,6 +3858,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 310 — Blocos na face (nossa) | **feita em 02/11/2026**, primeira do roteiro da falésia de verdade (Fases 310 a 314): a rocha das falésias e das pedras se parte em blocos grandes, cada um com o seu tom e o seu plano, com as juntas escuras entre eles; plano em `docs/plano_fase310.md` |
 | 311 — Blocos caídos (nossa) | **feita em 02/11/2026**: um amontoado de blocos de rocha caídos no pé das falésias, meio dentro da água, com a espuma em volta; plano em `docs/plano_fase311.md` |
 | 312 — Capim na borda (nossa) | **feita em 02/11/2026**: uma franja de capim comprido passa da borda de cima das falésias e pende sobre a rocha; plano em `docs/plano_fase312.md` |
+| 313 — Fendas com mato (nossa) | **feita em 02/11/2026**: moitas com capim agarradas nas encostas de rocha e nas faces das falésias, deitadas para fora; plano em `docs/plano_fase313.md` |
 
 Pendências já vistas para fases futuras:
 
