@@ -154,6 +154,16 @@ func cell_height(cell: Vector2i) -> float:
 	return _corner_average(cell)
 
 
+## Fase 312: as alturas médias de todas as células (índice da grade), a mesma lista que o cell_height lê; para os laços pela grade
+## inteira na apresentação (sem chamar função por célula). Não altere o array devolvido.
+func cell_heights() -> PackedFloat32Array:
+	if corner_heights.is_empty():
+		return PackedFloat32Array()
+	if _cell_heights.is_empty():
+		_cache_heights()
+	return _cell_heights
+
+
 func _corner_average(cell: Vector2i) -> float:
 	return (corner_height(cell.x, cell.y) + corner_height(cell.x + 1, cell.y)
 			+ corner_height(cell.x, cell.y + 1) + corner_height(cell.x + 1, cell.y + 1)) * 0.25
