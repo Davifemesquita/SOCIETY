@@ -103,6 +103,14 @@ uniform sampler2D coast_field : filter_linear, repeat_disable;
 // canto (x, z) e tamanho do mapa no mundo, em metros (CoastField.bounds)
 uniform vec4 coast_bounds = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float coast_far_m = 64.0;
+// Fase 314: a sombra das falésias na água. A altura da terra (WaterView, do CoastField) e, na água a até cliff_shade_reach_m da
+// costa, uma marcha de cliff_shade_steps passos na direção do sol: a terra mais alta que o raio de sol naquele ponto encobre a
+// água, que escurece cliff_shade (a cor dela sai pela EMISSION e não recebe a sombra de verdade).
+uniform bool has_cliff_shade = false;
+uniform sampler2D land_height : filter_linear, repeat_disable;
+uniform float cliff_shade = 0.45;
+uniform float cliff_shade_reach_m = 36.0;
+uniform int cliff_shade_steps = 8;
 // até onde da costa a água fica com a cor de plataforma, a espuma anda e as ondas se acalmam
 uniform float shelf_m = 28.0;
 uniform vec4 color_shelf : source_color = vec4(0.45, 0.66, 0.58, 0.5);
@@ -380,6 +388,28 @@ float coast_at(vec2 xz) {
 		return -coast_far_m;
 	}
 	return textureLod(coast_field, uv, 0.0).r;
+}
+
+// Society (Fase 314): quanto a água no ponto fica na sombra de uma falésia (0 a 1), pela marcha até a terra na direção do sol.
+float cliff_shadow(vec2 xz, vec3 sun) {
+	if (!has_cliff_shade || sun.y < 0.03 || coast_at(xz) < -cliff_shade_reach_m) {
+		return 0.0;
+	}
+	vec2 flat_sun = sun.xz;
+	float run = max(length(flat_sun), 1e-3);
+	vec2 toward = flat_sun / run;
+	float rise = sun.y / run;
+	float shade = 0.0;
+	for (int k = 1; k <= cliff_shade_steps; k++) {
+		float d = cliff_shade_reach_m * float(k) / float(cliff_shade_steps);
+		vec2 uv = (xz + toward * d - coast_bounds.xy) / coast_bounds.zw;
+		if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+			break;
+		}
+		float land = textureLod(land_height, uv, 0.0).r;
+		shade = max(shade, smoothstep(0.0, 1.5, land - d * rise));
+	}
+	return shade;
 }
 
 // Rotate a vector from vec3(0,1,0) to the normal, rotation about the z and y axes.
@@ -841,6 +871,10 @@ void fragment() {
 	float cloud_dim = 1.0 - cloud_shadow(world_coordinates.xz, sun_direction.y) * 0.8;
 	ALBEDO *= cloud_dim;
 	EMISSION *= cloud_dim;
+	// Society (Fase 314): a sombra das falésias na água, de dia
+	float cliff_dark = 1.0 - cliff_shade * cliff_shadow(world_coordinates.xz, sun_direction) * (1.0 - night_light);
+	ALBEDO *= cliff_dark;
+	EMISSION *= cliff_dark;
 
 	// Society (Fase 110): a cintilação do sol (no espaço da câmera: o reflexo da vista contra a direção do sol)
 	vec3 sun_view = normalize((VIEW_MATRIX * vec4(sun_direction, 0.0)).xyz);
@@ -854,5 +888,6 @@ void fragment() {
 	float far = 1.0 - smoothstep(glint_fade_m * 0.6, glint_fade_m, length(VERTEX));
 	float day = (1.0 - night_light) * smoothstep(0.0, 0.08, sun_direction.y);
 	float glint = pow(facing, glint_sharpness) * sparkle * open_sea * far * day * (1.0 - murk);
-	EMISSION += vec3(1.0, 0.95, 0.85) * glint * glint_strength;
+	// sem cintilação na sombra da falésia
+	EMISSION += vec3(1.0, 0.95, 0.85) * glint * glint_strength * cliff_dark;
 }

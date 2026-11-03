@@ -191,7 +191,7 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 		material.set_shader_parameter(&"road_mask_max_m", _config.road_mask_max_m)
 		material.set_shader_parameter(&"road_albedo", ROAD_ALBEDO)
 		material.set_shader_parameter(&"road_normal", ROAD_NORMAL)
-	_coast_regions.append({"origin": origin, "side": side, "coast": coast})
+	_coast_regions.append({"origin": origin, "side": side, "coast": coast, "heights": heights})
 	_materials.append(material)
 	_regions[index] = {"heights": heights, "side": side, "origin": origin}
 	_detail_cells[index] = _cells_with_detail(index)

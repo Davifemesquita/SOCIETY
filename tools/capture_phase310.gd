@@ -15,4 +15,8 @@ func _run() -> void:
 	await _shot(game, "03_falesia_de_lado.png", cliff, 45.0, 0.3 + PI * 0.5)
 	var rocky := grid.cell_world(_find_rocky_shore(grid))
 	await _shot(game, "04_costa_de_pedra.png", rocky, 40.0, 0.3)
+	# Fase 314: a falésia com o sol baixo (a sombra dela na água), dos dois lados
+	_set_hour(17.0)
+	await _shot(game, "05_falesia_a_tarde.png", cliff, 60.0, 0.3)
+	await _shot(game, "06_falesia_a_tarde_do_outro_lado.png", cliff, 60.0, 0.3 + PI)
 	get_tree().quit()

@@ -3535,6 +3535,13 @@ Regras que já custaram investigação:
   cima da célula (mais abaixo ficam as rochas encaixadas da falésia); `cliff_shrub_mesh`.
 
 
+### Sombra da falésia na água (Fase 314, nossa)
+
+- **Plano** em `docs/plano_fase314.md`. O `CoastField` guarda a altura da terra (`heights`, `height_texture`), que a `WaterView` põe no
+  `land_height`; no `shaders/water.gdshader`, `cliff_shadow` marcha na direção do sol a até `cliff_shade_reach_m` da costa e escurece
+  a cor da água (e a cintilação) onde a terra encobre o sol. Captura: `05_` e `06_` no `tools/capture_phase310.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3859,6 +3866,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 311 — Blocos caídos (nossa) | **feita em 02/11/2026**: um amontoado de blocos de rocha caídos no pé das falésias, meio dentro da água, com a espuma em volta; plano em `docs/plano_fase311.md` |
 | 312 — Capim na borda (nossa) | **feita em 02/11/2026**: uma franja de capim comprido passa da borda de cima das falésias e pende sobre a rocha; plano em `docs/plano_fase312.md` |
 | 313 — Fendas com mato (nossa) | **feita em 02/11/2026**: moitas com capim agarradas nas encostas de rocha e nas faces das falésias, deitadas para fora; plano em `docs/plano_fase313.md` |
+| 314 — Sombra da falésia na água (nossa) | **feita em 02/11/2026**, a última do roteiro da falésia de verdade: a água junto das falésias e dos promontórios escurece do lado da sombra, pela direção e a altura do sol; plano em `docs/plano_fase314.md` |
 
 Pendências já vistas para fases futuras:
 

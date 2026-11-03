@@ -53,6 +53,11 @@ func setup(simulation: Simulation, coast: CoastField = null) -> void:
 		_material.set_shader_parameter(&"coast_bounds", coast.bounds())
 		_material.set_shader_parameter(&"coast_far_m", coast.max_m)
 		_material.set_shader_parameter(&"has_coast", true)
+		# Fase 314: a altura da terra, para a sombra das falésias na água
+		var land := coast.height_texture()
+		if land != null:
+			_material.set_shader_parameter(&"land_height", land)
+			_material.set_shader_parameter(&"has_cliff_shade", true)
 		# Fase 125: o recife no raso das ilhas tropicais (a leste da borda oeste das regiões delas)
 		var reef := reef_min_x(simulation.config, simulation.world, simulation.data)
 		_material.set_shader_parameter(&"has_reef", reef < INF)
