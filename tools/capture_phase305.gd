@@ -15,5 +15,5 @@ func _run() -> void:
 	await _shot(game, "03_mata_alta.png", high, 160.0, 0.6)
 	var low := grid.cell_world(_forest(grid, points[0], false))
 	await _shot(game, "04_mata_baixa_de_perto.png", low, 70.0, 0.6)
-	await _shot(game, "05_chao_da_mata.png", low, 30.0, 2.0)
+	await _shot(game, "05_chao_da_mata.png", low, 48.0, 2.0)
 	get_tree().quit()

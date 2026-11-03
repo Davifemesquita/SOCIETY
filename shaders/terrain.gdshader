@@ -162,6 +162,13 @@ uniform vec3 bank_soil_tint = vec3(0.5, 0.44, 0.38);
 uniform float bank_stone_scale = 2.6;
 uniform vec3 bank_root_color : source_color = vec3(0.16, 0.11, 0.07);
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
+// Fase 306: o chão da mata funda (0 desliga): no miolo da mata (o peso dela bem acima da borda), a terra de folhas e agulhas
+// escurece floor_dark e ganha manchas de musgo (floor_moss_share do chão, em manchas de floor_moss_m); a beira fica em transição.
+uniform float forest_floor = 1.0;
+uniform float floor_dark = 0.6;
+uniform vec3 floor_moss_color : source_color = vec3(0.3, 0.42, 0.14);
+uniform float floor_moss_m = 4.5;
+uniform float floor_moss_share = 0.5;
 // Fase 259: a areia mais clara (antes 1,3/1,2/1,0) e puxando o matiz para este dourado (proporção linear), guardando a
 // luminância, como a grama da Fase 257: a textura cinza, só graduada, saía cinza-taupe (escolhido no tools/color_lab.tscn).
 uniform vec3 sand_grade = vec3(1.5, 1.35, 1.1);
@@ -436,6 +443,14 @@ void fragment() {
 	float forest = height_blend(smoothstep(0.2, 0.8, kinds.g + edge), grass_a.a, forest_a.a);
 	vec4 ground_a = mix(grass_a, forest_a, forest);
 	vec4 ground_n = mix(grass_n, forest_n, forest);
+	if (forest_floor > 0.0) {
+		float deep = smoothstep(0.6, 1.0, kinds.g + edge * 0.6) * forest * forest_floor;
+		float moss_patch = value_noise(world_position.xz / floor_moss_m) * 0.7 + value_noise(world_position.xz / (floor_moss_m * 0.3)) * 0.3;
+		float moss = smoothstep(1.0 - floor_moss_share, 1.12 - floor_moss_share, moss_patch);
+		vec3 litter = ground_a.rgb * floor_dark;
+		vec3 mossy = floor_moss_color * (0.75 + 0.5 * ground_a.a);
+		ground_a.rgb = mix(ground_a.rgb, mix(litter, mossy, moss), deep);
+	}
 	float sand = height_blend(smoothstep(0.2, 0.8, sand_raw + edge), ground_a.a, sand_a.a) * (1.0 - mud);
 	forest *= (1.0 - sand) * (1.0 - mud);
 	ground_a = mix(ground_a, rock_a, rock * (1.0 - sand));
