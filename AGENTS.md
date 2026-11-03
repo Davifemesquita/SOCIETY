@@ -3492,6 +3492,12 @@ Regras que já custaram investigação:
   `UNDERSTORY_FERN_CHANCE` e `UNDERSTORY_BRUSH_CHANCE`); o recheio das outras células não muda.
 
 
+### Abetos de longe (Fase 308, nossa)
+
+- **Plano** em `docs/plano_fase308.md`. No `shaders/foliage.gdshaderinc`, `far_cool` (a folhagem vai para `far_cool_tint`, mais escura
+  e azulada, de `far_cool_from_m` a `far_cool_to_m` da câmera), posto pelo `TreeModel.far_cool_of` só no pinheiro e no abeto.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3810,6 +3816,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 305 — Tom por árvore (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata funda (Fases 305 a 309): cada árvore da mata com o seu tom, umas mais escuras, umas oliva, umas amareladas, em vez do mesmo verde-limão; leve nas coníferas; plano em `docs/plano_fase305.md` |
 | 306 — Chão da mata (nossa) | **feita em 02/11/2026**: o chão debaixo das árvores fica escuro, de folhas e agulhas, com manchas de musgo, e a beira da mata em transição; plano em `docs/plano_fase306.md` |
 | 307 — Sub-bosque (nossa) | **feita em 02/11/2026**: samambaias e arbustos baixos debaixo das árvores da mata das ilhas temperadas; plano em `docs/plano_fase307.md` |
+| 308 — Abetos de longe (nossa) | **feita em 02/11/2026**: os pinheiros e os abetos escurecem e ficam azulados com a distância, como a mata de coníferas vista de longe; plano em `docs/plano_fase308.md` |
 
 Pendências já vistas para fases futuras:
 

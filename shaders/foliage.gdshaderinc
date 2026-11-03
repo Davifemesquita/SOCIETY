@@ -44,6 +44,12 @@ uniform vec3 tint_dark = vec3(0.66, 0.74, 0.66);
 uniform vec3 tint_olive = vec3(0.96, 0.88, 0.58);
 uniform vec3 tint_yellow = vec3(1.12, 1.08, 0.72);
 varying flat float tree_pick;
+// Fase 308: as coníferas escurecem e esfriam com a distância da câmera (far_cool, que o TreeModel põe no pinheiro e no abeto):
+// de far_cool_from_m a far_cool_to_m, a folhagem vai para far_cool_tint (mais escura e azulada), como a mata de abetos de longe.
+uniform float far_cool = 0.0;
+uniform float far_cool_from_m = 40.0;
+uniform float far_cool_to_m = 240.0;
+uniform vec3 far_cool_tint = vec3(0.6, 0.72, 0.88);
 
 #ifdef LEAF_DETAIL
 // tamanho do cacho de folhas (m no modelo), o claro e o escuro dele, quanto a normal estufa para fora do meio do cacho (cada
@@ -128,6 +134,10 @@ void fragment() {
 		vec3 tone = quarter < 1.0 ? tint_dark : (quarter < 2.0 ? tint_olive : (quarter < 3.0 ? tint_yellow : vec3(1.0)));
 		tone *= 0.9 + 0.2 * fract(tree_pick * 4.0);
 		base *= mix(vec3(1.0), tone, tree_tint * leafy);
+	}
+	if (far_cool > 0.0) {
+		float away = smoothstep(far_cool_from_m, far_cool_to_m, length(VERTEX));
+		base *= mix(vec3(1.0), far_cool_tint, far_cool * away * leafy);
 	}
 #ifdef LEAF_DETAIL
 	float near = (1.0 - smoothstep(leaf_far_m * 0.6, leaf_far_m, length(VERTEX))) * leafy;

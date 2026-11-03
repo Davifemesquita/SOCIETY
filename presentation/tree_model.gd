@@ -79,6 +79,8 @@ const LEAF_FILL := 0.22
 ## (o abeto e o pinheiro já são escuros; o tom forte os deixava pretos ou amarelos demais).
 const BROADLEAF_TINT := 1.0
 const CONIFER_TINT := 0.35
+## Fase 308: a força do escurecido e azulado de longe (`far_cool` no shader) nas coníferas da mata (o pinheiro e o abeto).
+const CONIFER_FAR_COOL := 1.0
 ## Quanto cada vértice da massa sai ou entra (fração do raio), para ela não ser uma bola.
 const CROWN_LUMP := 0.16
 ## Balanço (como o das árvores do Kenney, m por m de altura).
@@ -122,7 +124,8 @@ static func mesh(species: Species, variant: int, detail: int = DETAIL_NEAR) -> A
 		Species.BIRCH:
 			_birch(tool, rng, detail)
 	var result := tool.commit()
-	result.surface_set_material(0, _material(result, detail == DETAIL_NEAR and species != Species.COCONUT_PALM, tint_of(species)))
+	result.surface_set_material(0, _material(result, detail == DETAIL_NEAR and species != Species.COCONUT_PALM, tint_of(species),
+			far_cool_of(species)))
 	_cache[key] = result
 	return result
 
@@ -564,10 +567,15 @@ static func tint_of(species: Species) -> float:
 	return BROADLEAF_TINT
 
 
+## Fase 308: a força do escurecido de longe de cada espécie (só as coníferas da mata).
+static func far_cool_of(species: Species) -> float:
+	return CONIFER_FAR_COOL if species == Species.SCOTS_PINE or species == Species.NORWAY_SPRUCE else 0.0
+
+
 ## O material da árvore: a folhagem com a cor do vértice, balançando. Fase 279: as de perto (menos o coqueiro, de folhas finas
 ## que o recorte desfiaria) usam o tree_foliage.gdshader, com os cachos de folhas e a borda da copa recortada; as de longe e o
 ## coqueiro, o foliage.gdshader de sempre.
-static func _material(result: ArrayMesh, leaves := false, tint := 0.0) -> ShaderMaterial:
+static func _material(result: ArrayMesh, leaves := false, tint := 0.0, cool := 0.0) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = load(TREE_SHADER if leaves else FOLIAGE_SHADER) as Shader
 	material.set_shader_parameter(&"albedo", Color.WHITE)
@@ -576,4 +584,5 @@ static func _material(result: ArrayMesh, leaves := false, tint := 0.0) -> Shader
 	material.set_shader_parameter(&"sway", SWAY)
 	material.set_shader_parameter(&"leaf_fill", LEAF_FILL)
 	material.set_shader_parameter(&"tree_tint", tint)
+	material.set_shader_parameter(&"far_cool", cool)
 	return material
