@@ -3551,6 +3551,13 @@ Regras que já custaram investigação:
   laterita. Captura: `05_rio` e `05b_leito_seco` no `tools/capture_phase280.tscn`.
 
 
+### Capim pendendo na garganta (Fase 316, nossa)
+
+- **Plano** em `docs/plano_fase316.md`. `CliffFringeView._water_below` (antes `_sea_below`): a franja da Fase 312 vale com o mar ou o
+  rio a até `SEA_REACH` células para o lado da queda, e sai também na borda de cima das gargantas. Captura: `05_rio` no
+  `tools/capture_phase280.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3877,6 +3884,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 313 — Fendas com mato (nossa) | **feita em 02/11/2026**: moitas com capim agarradas nas encostas de rocha e nas faces das falésias, deitadas para fora; plano em `docs/plano_fase313.md` |
 | 314 — Sombra da falésia na água (nossa) | **feita em 02/11/2026**, a última do roteiro da falésia de verdade: a água junto das falésias e dos promontórios escurece do lado da sombra, pela direção e a altura do sol; plano em `docs/plano_fase314.md` |
 | 315 — Capim no alto da garganta (nossa) | **feita em 04/11/2026**, primeira do roteiro da garganta do rio (Fases 315 a 319): nas ilhas temperadas, a faixa de lama marrom no alto das gargantas dos rios e as manchas de lama no planalto viram capim; a margem baixa segue de cascalho; plano em `docs/plano_fase315.md` |
+| 316 — Capim pendendo na garganta (nossa) | **feita em 04/11/2026**: a franja de capim comprido das falésias também na borda de cima das gargantas dos rios, pendendo sobre a rocha; plano em `docs/plano_fase316.md` |
 
 Pendências já vistas para fases futuras:
 

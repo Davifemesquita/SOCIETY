@@ -1,7 +1,7 @@
 class_name CliffFringeView
 extends Node3D
 ## Fase 312: o capim na borda das falésias. Na célula de terra do alto de uma falésia (uma vizinha pelo lado DROP_M mais baixa, com
-## o mar a até SEA_REACH células naquela direção), sem prédio nem estrada, uma franja de folhas compridas que saem da borda e
+## o mar a até SEA_REACH células naquela direção; desde a Fase 316, também o rio: a borda de cima das gargantas), sem prédio nem estrada, uma franja de folhas compridas que saem da borda e
 ## pendem sobre a rocha (`fringe_mesh`), PER_EDGE pedaços por lado de célula, no material das plantas (balançam com o vento). Um
 ## MultiMesh por ilha, refeito só na ilha que mudou (IslandDirty). Só visual; nada no save.
 
@@ -106,16 +106,17 @@ static func places_of(world: WorldState, config: GameConfig, island_id: int) -> 
 				# a vizinha de água conta como o nível do mar
 				if top - (heights[j] if ground[j] == IslandGrid.Ground.LAND else 0.0) < DROP_M:
 					continue
-				if not _sea_below(grid, cell, side):
+				if not _water_below(grid, cell, side):
 					continue
 				_edge(grid, config, island_id, cell, side, result)
 	return result
 
 
-static func _sea_below(grid: IslandGrid, cell: Vector2i, side: Vector2i) -> bool:
+## O mar ou (Fase 316) o rio a até SEA_REACH células para o lado da queda (fora da grade conta como mar).
+static func _water_below(grid: IslandGrid, cell: Vector2i, side: Vector2i) -> bool:
 	for reach: int in range(1, SEA_REACH + 1):
 		var at := cell + side * reach
-		if not grid.in_bounds(at) or grid.ground[grid.index(at)] == IslandGrid.Ground.SEA:
+		if not grid.in_bounds(at) or grid.ground[grid.index(at)] != IslandGrid.Ground.LAND:
 			return true
 	return false
 
