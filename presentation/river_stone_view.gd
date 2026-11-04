@@ -6,8 +6,11 @@ extends Node3D
 ## baixas (até BANK_MAX_M), uma a cada PEBBLE_CHANCE, um punhado de seixos no chão (`places`). A espuma em volta sai
 ## sozinha da água, pela profundidade. A célula de rio com ponte não leva pedra. Só apresentação; nada no save; refeito
 ## quando estrada ou prédio muda e ao trocar de mundo.
+## Fase 317: nas células de rio junto de uma parede de garganta (uma vizinha de terra FALL_DROP_M acima da água), uma a cada
+## FALL_CHANCE pelo hash dela (outro sorteio: os matacões e os seixos não mudam), de FALL_BLOCKS blocos caídos da parede, encostados
+## nela e meio dentro da água.
 
-enum Kind { BOULDER, PEBBLE }
+enum Kind { BOULDER, PEBBLE, FALLEN }
 
 const BOULDER_CHANCE := 0.22
 const PEBBLE_CHANCE := 0.3
@@ -20,6 +23,17 @@ const PEBBLE_RADIUS_M := Vector2(0.12, 0.28)
 const PEBBLE_SINK := 0.35
 ## A margem mais alta que ainda leva seixos (o rio que corre numa garganta não tem praia de pedra no alto do barranco).
 const BANK_MAX_M := 1.6
+## Fase 317: os blocos caídos no pé da garganta: a altura da parede (m acima da água), a chance por célula, quantos, o raio, quanto
+## o topo passa da água e até onde o pé fica afundado (m).
+const FALL_DROP_M := 2.4
+const FALL_CHANCE := 0.45
+const FALL_BLOCKS := Vector2i(1, 3)
+const FALL_RADIUS_M := Vector2(0.45, 1.05)
+const FALL_TOP_M := Vector2(0.2, 0.9)
+const FALL_SINK_M := 0.3
+## O leito mais alto onde ainda se põe o bloco (m) e em quantos passos a busca anda da célula até a parede (até a borda dela).
+const FALL_WATER_M := -0.15
+const FALL_STEPS := 6
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
 var _simulation: Simulation
@@ -134,7 +148,59 @@ static func places(world: WorldState, island_id: int) -> Array:
 			var ground := grid.height_at(spot.x, spot.y)
 			_add(result, rng, Kind.PEBBLE, Vector3(spot.x, ground - radius * PEBBLE_SINK, spot.y),
 					Vector3(radius, radius * 0.9, radius * 1.1))
+	_fallen(grid, island_id, start, result)
 	return result
+
+
+## Fase 317: os blocos caídos no pé das paredes da garganta, encostados na parede mais alta da célula de rio.
+static func _fallen(grid: IslandGrid, island_id: int, start: int, result: Array) -> void:
+	var heights := grid.cell_heights()
+	for index: int in range(start, grid.ground.size()):
+		if grid.ground[index] != IslandGrid.Ground.RIVER or grid.roads[index] != IslandGrid.Road.NONE:
+			continue
+		var cell := grid.cell_at(index)
+		var wall := Vector2i.ZERO
+		var tallest := FALL_DROP_M
+		for side: Vector2i in SIDES:
+			var next := cell + side
+			if not grid.in_bounds(next):
+				continue
+			var j := grid.index(next)
+			if grid.ground[j] == IslandGrid.Ground.LAND and heights[j] >= tallest:
+				tallest = heights[j]
+				wall = side
+		if wall == Vector2i.ZERO:
+			continue
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash([island_id, cell, &"river_fallen"])
+		if rng.randf() >= FALL_CHANCE:
+			continue
+		var origin := grid.origin_m + Vector2(cell) * grid.cell_size
+		# os pontos da célula com o leito debaixo d'água (num rio estreito o meio da célula pode ficar acima dela: os cantos sobem
+		# com as paredes)
+		var wet: Array[Vector2] = []
+		for v: int in FALL_STEPS:
+			for u: int in FALL_STEPS:
+				var probe := origin + (Vector2(u, v) + Vector2(0.5, 0.5)) / FALL_STEPS * grid.cell_size
+				if grid.height_at(probe.x, probe.y) <= FALL_WATER_M:
+					wet.append(probe)
+		if wet.is_empty():
+			continue
+		for _block: int in rng.randi_range(FALL_BLOCKS.x, FALL_BLOCKS.y):
+			# encostado na parede: de um ponto molhado sorteado para o lado dela, até onde o leito ainda fica debaixo d'água (o lado
+			# da parede da célula de rio já é a encosta: mais adiante o bloco ficaria dentro da rocha), sem sair da célula
+			var spot: Vector2 = wet[rng.randi() % wet.size()]
+			var limit := Rect2(origin, Vector2.ONE * grid.cell_size)
+			for _k: int in range(1, FALL_STEPS + 1):
+				var probe := spot + Vector2(wall) * grid.cell_size / FALL_STEPS
+				if not limit.has_point(probe) or grid.height_at(probe.x, probe.y) > FALL_WATER_M:
+					break
+				spot = probe
+			var bed := minf(grid.height_at(spot.x, spot.y), 0.0)
+			var sunk := maxf(bed, -MAX_BED_DEPTH_M) - FALL_SINK_M
+			var radius := lerpf(FALL_RADIUS_M.x, FALL_RADIUS_M.y, rng.randf())
+			var top := lerpf(FALL_TOP_M.x, FALL_TOP_M.y, rng.randf())
+			_add(result, rng, Kind.FALLEN, Vector3(spot.x, sunk, spot.y), Vector3(radius, top - sunk, radius * rng.randf_range(0.7, 1.0)))
 
 
 ## Um ponto sorteado na célula (m do mundo, x e z), longe margin da borda (fração da célula).

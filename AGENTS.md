@@ -3558,6 +3558,15 @@ Regras que já custaram investigação:
   `tools/capture_phase280.tscn`.
 
 
+### Blocos no pé da garganta (Fase 317, nossa)
+
+- **Plano** em `docs/plano_fase317.md`. `RiverStoneView.Kind.FALLEN` (no fim do enum, sorteio próprio, por último na lista): na célula
+  de rio junto de uma parede de `FALL_DROP_M`, blocos da `RockModel` meio dentro da água, saindo de um ponto molhado da célula e
+  andando para a parede até onde o leito ainda fica debaixo d'água. **O meio da célula de rio estreito fica acima da água** (os cantos
+  sobem com as paredes): procure a água numa grade de pontos. Captura do ciclo: `tools/capture_phase317.tscn` (garganta de ilha
+  temperada com mais blocos).
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3885,6 +3894,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 314 — Sombra da falésia na água (nossa) | **feita em 02/11/2026**, a última do roteiro da falésia de verdade: a água junto das falésias e dos promontórios escurece do lado da sombra, pela direção e a altura do sol; plano em `docs/plano_fase314.md` |
 | 315 — Capim no alto da garganta (nossa) | **feita em 04/11/2026**, primeira do roteiro da garganta do rio (Fases 315 a 319): nas ilhas temperadas, a faixa de lama marrom no alto das gargantas dos rios e as manchas de lama no planalto viram capim; a margem baixa segue de cascalho; plano em `docs/plano_fase315.md` |
 | 316 — Capim pendendo na garganta (nossa) | **feita em 04/11/2026**: a franja de capim comprido das falésias também na borda de cima das gargantas dos rios, pendendo sobre a rocha; plano em `docs/plano_fase316.md` |
+| 317 — Blocos no pé da garganta (nossa) | **feita em 04/11/2026**: blocos de rocha caídos no leito dos rios, encostados nas paredes altas da garganta e meio dentro da água; plano em `docs/plano_fase317.md` |
 
 Pendências já vistas para fases futuras:
 
