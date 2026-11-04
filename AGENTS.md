@@ -3542,6 +3542,15 @@ Regras que já custaram investigação:
   a cor da água (e a cintilação) onde a terra encobre o sol. Captura: `05_` e `06_` no `tools/capture_phase310.tscn`.
 
 
+### Capim no alto da garganta (Fase 315, nossa)
+
+- **Plano** em `docs/plano_fase315.md`, primeira do roteiro `docs/plano_fases_315_319.md` (garganta do rio). No
+  `shaders/terrain.gdshader`, com `high_bank_grass` (a `TerrainView` põe 1 nas temperadas, junto do `gravel`), a lama acima de
+  `gravel_top_m` some no capim em `high_bank_fade_m`, com a borda recortada pelo mesmo ruído da lama; o corte vem logo depois do
+  `mud`, antes da areia, da mata e da camada da lama. Na crista fica a beira do barranco da Fase 289. As tropicais seguem com a
+  laterita. Captura: `05_rio` e `05b_leito_seco` no `tools/capture_phase280.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3867,6 +3876,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 312 — Capim na borda (nossa) | **feita em 02/11/2026**: uma franja de capim comprido passa da borda de cima das falésias e pende sobre a rocha; plano em `docs/plano_fase312.md` |
 | 313 — Fendas com mato (nossa) | **feita em 02/11/2026**: moitas com capim agarradas nas encostas de rocha e nas faces das falésias, deitadas para fora; plano em `docs/plano_fase313.md` |
 | 314 — Sombra da falésia na água (nossa) | **feita em 02/11/2026**, a última do roteiro da falésia de verdade: a água junto das falésias e dos promontórios escurece do lado da sombra, pela direção e a altura do sol; plano em `docs/plano_fase314.md` |
+| 315 — Capim no alto da garganta (nossa) | **feita em 04/11/2026**, primeira do roteiro da garganta do rio (Fases 315 a 319): nas ilhas temperadas, a faixa de lama marrom no alto das gargantas dos rios e as manchas de lama no planalto viram capim; a margem baixa segue de cascalho; plano em `docs/plano_fase315.md` |
 
 Pendências já vistas para fases futuras:
 

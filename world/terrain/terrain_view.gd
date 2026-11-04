@@ -166,6 +166,8 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 		material.set_shader_parameter(&"mud_tint", TROPICAL_MUD_TINT)
 	else:
 		material.set_shader_parameter(&"gravel", 1.0)
+		# Fase 315: o alto da garganta de capim, não de lama
+		material.set_shader_parameter(&"high_bank_grass", 1.0)
 		material.set_shader_parameter(&"pebble_beach", 1.0)
 		# Fase 299: o fundo do raso
 		material.set_shader_parameter(&"seabed_detail", 1.0)

@@ -62,6 +62,10 @@ uniform float gravel_scale = 3.1;
 uniform float gravel_wet_m = 0.8;
 // Fase 283: acima desta altura do mar a margem volta à lama de antes (a borda de cima dos barrancos, as manchas no planalto)
 uniform float gravel_top_m = 2.5;
+// Fase 315: o capim no alto da garganta (0 = a lama de antes; a TerrainView põe 1 nas temperadas): acima de gravel_top_m a lama
+// some no capim em high_bank_fade_m, com a borda recortada. A beira do barranco da Fase 289 aparece no lugar dela, na crista.
+uniform float high_bank_grass = 0.0;
+uniform float high_bank_fade_m = 1.2;
 // Fase 292: a praia de seixos (0 = só areia; a TerrainView põe 1 nas temperadas): até onde ela procura a rocha, o tamanho do trecho
 // de seixos, o tamanho do seixo, a cor média e até que altura acima da água ela fica molhada
 uniform float pebble_beach = 0.0;
@@ -435,6 +439,11 @@ void fragment() {
 	// bordas com ruído e height-blend
 	float ragged = texture(rock_albedo, uv * 0.23).a - 0.5;
 	float mud = smoothstep(0.3, 0.7, kinds.b + ragged * 1.2 + edge * 0.5);
+	// Fase 315: nas temperadas, a lama do alto (a borda de cima da garganta, as manchas no planalto) vira capim
+	if (high_bank_grass > 0.0) {
+		float above = smoothstep(gravel_top_m, gravel_top_m + high_bank_fade_m, world_position.y + ragged * high_bank_fade_m);
+		mud *= 1.0 - high_bank_grass * above;
+	}
 	float sand_raw = max(kinds.r, step(world_position.y, 0.4));
 	if (has_coast) {
 		float to_sea = texture(coast_distance, cell).r;
