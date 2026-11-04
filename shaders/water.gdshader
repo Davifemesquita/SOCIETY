@@ -148,6 +148,11 @@ uniform float chop_near_m = 35.0;
 uniform float chop_far_m = 90.0;
 // Society (Fase 293): até que diferença de profundidade (m, ao longo da vista) o anel de espuma em volta das pedras vai
 uniform float rock_foam_m = 0.45;
+// Society (Fase 318): a espuma em volta das pedras do rio (0 = sem): quantas vezes rock_foam_m ela vai e a faixa da margem (m da
+// linha d'água) que fica de fora
+uniform float river_foam = 1.0;
+uniform float river_foam_reach = 1.6;
+uniform float river_foam_line_m = 0.6;
 // Society (Fase 297): os fiapos de espuma que saem levados das pedras, compridos ao longo do vento (streak_length_m) e finos de
 // través (streak_width_m), andando com ele, até streak_reach_m da costa, do lado de baixo do vento e só onde a água já é funda
 // junto da costa (a pedra: na plataforma rasa da praia a diferença de profundidade fica abaixo de streak_deep_m)
@@ -810,6 +815,15 @@ void fragment() {
 		ring *= 0.75 + 0.25 * sin(TIME * float(!freeze_time) * 1.4 + world_coordinates.x * 0.37 + world_coordinates.z * 0.23);
 		ring *= smoothstep(shore_line_m * 0.4, shore_line_m, from_line) * (1.0 - channel * 0.5) * shore_fade_alpha;
 		shore_alpha = max(shore_alpha, ring);
+		// Fase 318: no rio (o canal da Fase 283), a água mexida em volta das pedras e dos blocos caídos: o mesmo anel, mais largo
+		// (river_foam_reach), sem o corte da linha d'água (no rio estreito tudo fica perto dela; só o fio da margem, river_foam_line_m,
+		// fica de fora) e borbulhando mais depressa
+		if (river_foam > 0.0 && channel > 0.0) {
+			float churn = (1.0 - smoothstep(rock_foam_m * 0.3, rock_foam_m * river_foam_reach, z_diff)) * mix(0.45, 1.0, foam_tex.a);
+			churn *= 0.7 + 0.3 * sin(TIME * float(!freeze_time) * 3.1 + world_coordinates.x * 1.3 + world_coordinates.z * 0.9);
+			churn *= smoothstep(river_foam_line_m * 0.5, river_foam_line_m, from_line) * channel * river_foam * shore_fade_alpha;
+			shore_alpha = max(shore_alpha, churn);
+		}
 		// Fase 297: os fiapos levados das pedras pelo vento
 		vec2 streak_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
 		vec2 streak_at = vec2(dot(world_coordinates.xz, streak_wind) - TIME * float(!freeze_time) * streak_drift_m_s,
