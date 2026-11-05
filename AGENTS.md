@@ -3606,6 +3606,20 @@ Regras que já custaram investigação:
   dos blocos; o musgo segue pela do vértice.
 
 
+### Parede que avança (Fase 323, tentada)
+
+- **Registro** em `docs/plano_fase323.md`: na garganta, a beira de cima da parede é a borda das células do planalto e o pé é o leito,
+  os dois presos pela simulação; empurrar na horizontal os pontos do meio da subgrade não aparece. Nada entrou no código.
+
+
+### Fundo na sombra (Fase 324, nossa)
+
+- **Plano** em `docs/plano_fase324.md`. No `shaders/water.gdshader`, `sky_closed` (o ângulo mais alto da terra em oito rumos, pela
+  `land_height` da Fase 314) e, só no canal, depois da sombra da falésia: a água escurece (`gorge_shade`), perde o reflexo
+  (`gorge_specular`), fica fosca (`gorge_roughness`) e sem cintilação onde as paredes tapam o céu. **Só cortar o SPECULAR não basta**:
+  com a rugosidade baixa o reflexo do céu ainda clareava a água. Captura: `tools/capture_phase317.tscn` com `CAPTURA_AGUA`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3940,6 +3954,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 321 — Crista sem risco (nossa) | **feita em 05/11/2026**: nas temperadas, a beira do barranco no alto das gargantas de capim rente e pedra, no lugar da linha de terra alaranjada; plano em `docs/plano_fase321.md` |
 | 322 — Parede sem esticado (nossa) | **feita em 05/11/2026**: a rocha das paredes estreitas (a garganta) projetada pela normal da face, sem os riscos esticados, com os estratos e os blocos; plano em `docs/plano_fase322.md` |
 | 323 — Parede que avança (nossa) | **tentada e deixada de fora em 05/11/2026**: a beira e o pé da parede da garganta são presos pela simulação, e empurrar o meio da face não aparece; quebrar as quinas pede mudar o traçado do rio no gerador; registro em `docs/plano_fase323.md` |
+| 324 — Fundo na sombra (nossa) | **feita em 05/11/2026**, a última do roteiro da garganta de perto: a água no fundo das gargantas escura, fosca e sem o reflexo do céu, pelo tanto de céu que as paredes tapam; plano em `docs/plano_fase324.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -14,8 +14,10 @@ func test_the_blocks_live_in_the_strata_include_and_both_shaders_use_them() -> v
 			"vec3 q = vec3(at.x, at.y * 1.45, at.z) / block_m;"]:
 		assert_str(code).override_failure_message(line).contains(line)
 	var terrain := FileAccess.get_file_as_string(TERRAIN)
-	assert_int(terrain.find("rock_a.rgb *= block_factor(world_position, world_normal);")).is_greater(
-			terrain.find("rock_a.rgb *= strata_factor(world_position, world_normal);"))
+	# (desde a Fase 322, no terreno, pela normal da face misturada à do vértice: blend_normal)
+	assert_int(terrain.find("rock_a.rgb *= block_factor(world_position, blend_normal);")).is_greater(
+			terrain.find("rock_a.rgb *= strata_factor(world_position, blend_normal);"))
+	assert_int(terrain.find("rock_a.rgb *= strata_factor(world_position, blend_normal);")).is_greater(0)
 	assert_str(FileAccess.get_file_as_string(SEA_ROCK)).contains("color *= block_factor(world_position, world_normal);")
 
 

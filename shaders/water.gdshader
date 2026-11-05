@@ -111,6 +111,14 @@ uniform sampler2D land_height : filter_linear, repeat_disable;
 uniform float cliff_shade = 0.45;
 uniform float cliff_shade_reach_m = 36.0;
 uniform int cliff_shade_steps = 8;
+// Fase 324: o fundo da garganta. No canal, a água escurece até gorge_shade e perde o reflexo do céu (gorge_specular) pelo tanto de
+// céu que as paredes em volta tapam (sky_closed: de gorge_closed.x a gorge_closed.y), olhando até gorge_reach_m em gorge_steps passos.
+uniform float gorge_shade = 0.7;
+uniform float gorge_specular = 0.85;
+uniform float gorge_roughness = 0.6;
+uniform vec2 gorge_closed = vec2(0.25, 0.7);
+uniform float gorge_reach_m = 9.0;
+uniform int gorge_steps = 3;
 // até onde da costa a água fica com a cor de plataforma, a espuma anda e as ondas se acalmam
 uniform float shelf_m = 28.0;
 uniform vec4 color_shelf : source_color = vec4(0.45, 0.66, 0.58, 0.5);
@@ -422,6 +430,33 @@ float cliff_shadow(vec2 xz, vec3 sun) {
 		shade = max(shade, smoothstep(0.0, 1.5, land - d * rise));
 	}
 	return shade;
+}
+
+// Society (Fase 324): quanto do céu as paredes em volta tapam (0 aberto a 1 fechado): em GORGE_DIRECTIONS rumos, o ângulo mais alto
+// da terra a até gorge_reach_m (gorge_steps passos), pelo seno dele, na média dos rumos. Só para o canal (a garganta do rio).
+const int GORGE_DIRECTIONS = 8;
+float sky_closed(vec2 xz) {
+	if (!has_cliff_shade) {
+		return 0.0;
+	}
+	float closed = 0.0;
+	for (int r = 0; r < GORGE_DIRECTIONS; r++) {
+		float angle = TAU * float(r) / float(GORGE_DIRECTIONS);
+		vec2 toward = vec2(cos(angle), sin(angle));
+		float best = 0.0;
+		for (int k = 1; k <= gorge_steps; k++) {
+			float d = gorge_reach_m * float(k) / float(gorge_steps);
+			vec2 uv = (xz + toward * d - coast_bounds.xy) / coast_bounds.zw;
+			if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+				break;
+			}
+			float land = textureLod(land_height, uv, 0.0).r;
+			// o seno do ângulo da terra vista da água (que fica no zero)
+			best = max(best, max(land, 0.0) / length(vec2(d, max(land, 0.0))));
+		}
+		closed += best;
+	}
+	return closed / float(GORGE_DIRECTIONS);
 }
 
 // Rotate a vector from vec3(0,1,0) to the normal, rotation about the z and y axes.
@@ -914,6 +949,17 @@ void fragment() {
 	float cliff_dark = 1.0 - cliff_shade * cliff_shadow(world_coordinates.xz, sun_direction) * (1.0 - night_light);
 	ALBEDO *= cliff_dark;
 	EMISSION *= cliff_dark;
+	// Society (Fase 324): no fundo da garganta as paredes tapam o céu: a água escurece e quase não reflete (também de noite: o
+	// reflexo da lua some igual). Só no canal; a conta dos 24 pontos só roda nele.
+	if (gorge_shade > 0.0 && channel > 0.0) {
+		float deep = smoothstep(gorge_closed.x, gorge_closed.y, sky_closed(world_coordinates.xz)) * channel;
+		ALBEDO *= 1.0 - gorge_shade * deep;
+		EMISSION *= 1.0 - gorge_shade * deep;
+		SPECULAR *= 1.0 - gorge_specular * deep;
+		// fosca: o reflexo do céu que sobra sai borrado, sem o brilho claro
+		ROUGHNESS = mix(ROUGHNESS, gorge_roughness, deep);
+		cliff_dark *= 1.0 - deep;
+	}
 
 	// Society (Fase 110): a cintilação do sol (no espaço da câmera: o reflexo da vista contra a direção do sol)
 	vec3 sun_view = normalize((VIEW_MATRIX * vec4(sun_direction, 0.0)).xyz);

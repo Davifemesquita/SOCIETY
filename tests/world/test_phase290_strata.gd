@@ -21,10 +21,11 @@ func test_both_shaders_use_the_strata() -> void:
 		assert_str(code).contains("#include \"%s\"" % INCLUDE)
 	# no terreno, depois da cor cinza da rocha (Fase 261); nas pedras, também
 	# só onde há rocha (o fator custava ~0,2 ms rodando em toda encosta)
-	assert_str(terrain).contains("if (rock > 0.001) {
-		rock_a.rgb *= strata_factor(world_position, world_normal);")
-	assert_int(terrain.find("rock_a.rgb *= strata_factor(world_position, world_normal);")).is_greater(
-			terrain.find("rock_a.rgb = mix(rock_a.rgb, rock_gray, rock_grey_mix) * rock_light;"))
+	# (desde a Fase 322, no terreno, pela normal da face misturada à do vértice: blend_normal)
+	var gray_at := terrain.find("rock_a.rgb = mix(rock_a.rgb, rock_gray, rock_grey_mix) * rock_light;")
+	var only_rock := terrain.find("if (rock > 0.001) {", gray_at)
+	assert_int(only_rock).is_greater(gray_at)
+	assert_int(terrain.find("rock_a.rgb *= strata_factor(world_position, blend_normal);")).is_greater(only_rock)
 	assert_int(rock.find("color *= strata_factor(world_position, world_normal);")).is_greater(
 			rock.find("color = mix(color, grey, stone_grey_mix) * stone_light;"))
 

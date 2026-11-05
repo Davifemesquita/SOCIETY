@@ -41,4 +41,9 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 - **323 tentada e deixada de fora em 05/11/2026** (`docs/plano_fase323.md`): a beira de cima da parede é a borda das células do
   planalto e o pé é o leito, os dois presos pela simulação; empurrar os pontos do meio da face não aparece. Quebrar as quinas pede
   mudar o traçado do rio no gerador (proposta para o dono do produto).
-- 324: confirmada pelo dono do produto ("pode seguir todas"), em andamento.
+- **324 feita em 05/11/2026** (`docs/plano_fase324.md`): a abertura do céu pela altura da terra em oito rumos; só cortar o reflexo não
+  bastava, a água precisou ficar fosca; capturas em `F:\ferramentas\capturas\fase324\`.
+
+**Roteiro concluído em 05/11/2026**: quatro fases feitas e uma (323) deixada de fora com o motivo. O benchmark ficou neutro em todas,
+mas a máquina esteve mais lenta o dia todo (~31 FPS, contra ~72 na 319, e o código da 319 medido nas mesmas condições deu 30,9): os
+números de hoje só valem comparados entre si.
