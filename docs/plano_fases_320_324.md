@@ -36,4 +36,6 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase320\depois\`.
 - **321 feita em 05/11/2026** (`docs/plano_fase321.md`): a linha era a beira do barranco da Fase 289, não a lama; depois em
   `F:\ferramentas\capturas\fase321\depois\`.
-- 322 a 324: confirmadas pelo dono do produto ("pode seguir todas"), em andamento.
+- **322 feita em 05/11/2026** (`docs/plano_fase322.md`): o esticado era a normal do vértice (a média do alto com o leito), não a
+  falta de triplanar; capturas em `F:\ferramentas\capturas\fase322\`.
+- 323 e 324: confirmadas pelo dono do produto ("pode seguir todas"), em andamento.

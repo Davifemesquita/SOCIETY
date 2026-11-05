@@ -92,6 +92,10 @@ uniform bool use_edge_noise = true;
 uniform bool use_macro = true;
 uniform bool use_far = true;
 uniform bool use_triplanar = true;
+// Fase 322: quanto da projeção triplanar da rocha sai da normal da face, não da do vértice (0 = a de antes)
+uniform float wall_face_blend = 0.7;
+// e o expoente da mistura das três projeções (4 antes): mais baixo, a troca de projeção entre faces vizinhas fica mais suave
+uniform float triplanar_sharpness = 4.0;
 // Fase 35: distância até a costa com sinal (m; positiva na terra), por região, na mesma escala de surface_weights
 uniform bool has_coast = false;
 uniform sampler2D coast_distance : filter_linear, repeat_disable;
@@ -416,6 +420,11 @@ void fragment() {
 		}
 	}
 
+	// Fase 322: a normal da face (pelas derivadas da posição; fora do if, que não é uniforme). Na parede de uma célula (a garganta),
+	// a normal do vértice é a média do alto plano com o leito e aponta quase para cima: o triplanar lia de cima e esticava a
+	// rocha em riscos descendo a parede. A projeção sai da face, misturada à do vértice em wall_face_blend.
+	vec3 face_normal = normalize(cross(dFdx(world_position), dFdy(world_position)));
+	vec3 blend_normal = normalize(mix(world_normal, face_normal * sign(dot(face_normal, world_normal) + 1e-4), wall_face_blend));
 	// rocha: triplanar só na encosta (na plana o peso dela é zero e nada é lido)
 	vec4 rock_a = vec4(0.0);
 	vec4 rock_n = vec4(0.5, 0.5, 1.0, 1.0);
@@ -423,7 +432,7 @@ void fragment() {
 		rock_a = texture(rock_albedo, uv * 0.7);
 		rock_n = texture(rock_normal, uv * 0.7);
 	} else if (rock > 0.001) {
-		vec3 blend = pow(abs(world_normal), vec3(4.0));
+		vec3 blend = pow(abs(blend_normal), vec3(triplanar_sharpness));
 		blend /= (blend.x + blend.y + blend.z);
 		vec3 p = world_position / texture_meters * 0.7;
 		rock_a = texture(rock_albedo, p.zy) * blend.x + texture(rock_albedo, p.xz) * blend.y + texture(rock_albedo, p.xy) * blend.z;
@@ -434,9 +443,10 @@ void fragment() {
 	rock_a.rgb = mix(rock_a.rgb, rock_gray, rock_grey_mix) * rock_light;
 	// Fase 290: os estratos e os sulcos da encosta
 	if (rock > 0.001) {
-		rock_a.rgb *= strata_factor(world_position, world_normal);
+		// (Fase 322: pela normal da face, que na parede da garganta é a da parede)
+		rock_a.rgb *= strata_factor(world_position, blend_normal);
 		// Fase 310: os blocos grandes da face
-		rock_a.rgb *= block_factor(world_position, world_normal);
+		rock_a.rgb *= block_factor(world_position, blend_normal);
 		// Fase 291: o musgo nas saliências (a textura da grama dá o miúdo dele)
 		rock_a.rgb = mix(rock_a.rgb, moss_color * (0.7 + grass_a.a * 0.6), moss_amount(world_position, world_normal));
 	}

@@ -3598,6 +3598,14 @@ Regras que já custaram investigação:
   **`CAPTURA_TERRENO` e `CAPTURA_AGUA`** (`nome=valor,...`) no `tools/capture_phase317.tscn` trocam uniformes para o antes e depois.
 
 
+### Parede sem esticado (Fase 322, nossa)
+
+- **Plano** em `docs/plano_fase322.md`. **Na parede de uma célula a normal do vértice aponta quase para cima** (média do alto com o
+  leito), e o triplanar da rocha lia de cima e esticava. No `shaders/terrain.gdshader`, `face_normal` (derivadas da posição, fora do
+  `if` da rocha) misturada à do vértice em `wall_face_blend` dá a `blend_normal` do triplanar (`triplanar_sharpness`), dos estratos e
+  dos blocos; o musgo segue pela do vértice.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3930,6 +3938,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 319 — Correnteza (nossa) | **feita em 04/11/2026**, a última do roteiro da garganta do rio: riscos claros e finos andando ao longo dos rios, as duas margens no mesmo sentido; plano em `docs/plano_fase319.md` |
 | 320 — Franja em tufos (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_320_324.md` (garganta de perto): a franja de capim das falésias e das gargantas em tufos soltos em leque, no lugar do pente de folhas paralelas; plano em `docs/plano_fase320.md` |
 | 321 — Crista sem risco (nossa) | **feita em 05/11/2026**: nas temperadas, a beira do barranco no alto das gargantas de capim rente e pedra, no lugar da linha de terra alaranjada; plano em `docs/plano_fase321.md` |
+| 322 — Parede sem esticado (nossa) | **feita em 05/11/2026**: a rocha das paredes estreitas (a garganta) projetada pela normal da face, sem os riscos esticados, com os estratos e os blocos; plano em `docs/plano_fase322.md` |
 
 Pendências já vistas para fases futuras:
 
