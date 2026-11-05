@@ -3582,6 +3582,14 @@ Regras que já custaram investigação:
   `tools/capture_phase122.tscn`.
 
 
+### Franja em tufos (Fase 320, nossa)
+
+- **Plano** em `docs/plano_fase320.md`, primeira do roteiro `docs/plano_fases_320_324.md` (garganta de perto). A malha da
+  `CliffFringeView` sai de `tuft_blades` (semente fixa): `TUFTS` tufos de `BLADES_PER_TUFT` folhas em leque, cada uma de rumo,
+  comprimento, largura, torção e tom sorteados; cada pedaço sai girado até `YAW_JITTER_RAD` e recuado até `INSET_JITTER_M` por um
+  sorteio à parte (o lugar e o tamanho da Fase 312 não mudam). Captura: `tools/capture_phase317.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3912,6 +3920,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 317 — Blocos no pé da garganta (nossa) | **feita em 04/11/2026**: blocos de rocha caídos no leito dos rios, encostados nas paredes altas da garganta e meio dentro da água; plano em `docs/plano_fase317.md` |
 | 318 — Espuma nas pedras do rio (nossa) | **feita em 04/11/2026**: a água do rio faz espuma branca em volta dos matacões e dos blocos caídos, sem virar faixa branca na margem rasa; plano em `docs/plano_fase318.md` |
 | 319 — Correnteza (nossa) | **feita em 04/11/2026**, a última do roteiro da garganta do rio: riscos claros e finos andando ao longo dos rios, as duas margens no mesmo sentido; plano em `docs/plano_fase319.md` |
+| 320 — Franja em tufos (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_320_324.md` (garganta de perto): a franja de capim das falésias e das gargantas em tufos soltos em leque, no lugar do pente de folhas paralelas; plano em `docs/plano_fase320.md` |
 
 Pendências já vistas para fases futuras:
 
