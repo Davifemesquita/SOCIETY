@@ -168,6 +168,8 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 		material.set_shader_parameter(&"gravel", 1.0)
 		# Fase 315: o alto da garganta de capim, não de lama
 		material.set_shader_parameter(&"high_bank_grass", 1.0)
+		# Fase 321: a beira do barranco de capim e pedra, não de terra alaranjada
+		material.set_shader_parameter(&"bank_edge_grass", 1.0)
 		material.set_shader_parameter(&"pebble_beach", 1.0)
 		# Fase 299: o fundo do raso
 		material.set_shader_parameter(&"seabed_detail", 1.0)

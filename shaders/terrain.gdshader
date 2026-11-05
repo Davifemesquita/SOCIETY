@@ -165,6 +165,11 @@ uniform vec2 bank_slope = vec2(0.22, 0.32);
 uniform vec3 bank_soil_tint = vec3(0.5, 0.44, 0.38);
 uniform float bank_stone_scale = 2.6;
 uniform vec3 bank_root_color : source_color = vec3(0.16, 0.11, 0.07);
+// Fase 321: a beira de capim e pedra (0 = a terra de antes; a TerrainView põe 1 nas temperadas): o tom do capim rente (sobre o da
+// grama) e a faixa da textura de rocha onde a pedra aparece
+uniform float bank_edge_grass = 0.0;
+uniform vec3 bank_turf_shade = vec3(0.72, 0.7, 0.58);
+uniform vec2 bank_turf_stones = vec2(0.45, 0.62);
 uniform vec3 forest_grade = vec3(0.8, 0.95, 0.7);
 // Fase 306: o chão da mata funda (0 desliga): no miolo da mata (o peso dela bem acima da borda), a terra de folhas e agulhas
 // escurece floor_dark e ganha manchas de musgo (floor_moss_share do chão, em manchas de floor_moss_m); a beira fica em transição.
@@ -504,6 +509,13 @@ void fragment() {
 			vec2 stone_uv = world_position.xz / texture_meters * bank_stone_scale;
 			vec4 stone_a = texture(rock_albedo, stone_uv);
 			float stones = smoothstep(0.55, 0.72, stone_a.a);
+			// Fase 321: nas temperadas, acima da margem de cascalho, a terra alaranjada da beira vira capim rente e mais escuro, com
+			// mais pedra à mostra (a faixa continua: o capim não acaba de uma vez na rocha)
+			if (bank_edge_grass > 0.0) {
+				float high = smoothstep(gravel_top_m, gravel_top_m + high_bank_fade_m, world_position.y) * bank_edge_grass;
+				soil = mix(soil, ground_a.rgb * bank_turf_shade, high);
+				stones = mix(stones, smoothstep(bank_turf_stones.x, bank_turf_stones.y, stone_a.a), high);
+			}
 			vec3 stone = rock_grey * dot(stone_a.rgb, vec3(0.299, 0.587, 0.114)) * rock_light;
 			vec3 edge_rgb = mix(soil, stone, stones);
 			// as raízes: fios escuros e tortos, só em parte da faixa

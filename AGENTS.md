@@ -3590,6 +3590,14 @@ Regras que já custaram investigação:
   sorteio à parte (o lugar e o tamanho da Fase 312 não mudam). Captura: `tools/capture_phase317.tscn`.
 
 
+### Crista sem risco (Fase 321, nossa)
+
+- **Plano** em `docs/plano_fase321.md`. A linha alaranjada no alto das gargantas era a beira do barranco da Fase 289 (a terra dela
+  sai da textura da estrada). No `shaders/terrain.gdshader`, com `bank_edge_grass` (a `TerrainView` põe 1 nas temperadas), acima de
+  `gravel_top_m` a terra da beira vira capim rente (`bank_turf_shade` sobre a grama) e a pedra aparece mais (`bank_turf_stones`).
+  **`CAPTURA_TERRENO` e `CAPTURA_AGUA`** (`nome=valor,...`) no `tools/capture_phase317.tscn` trocam uniformes para o antes e depois.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3921,6 +3929,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 318 — Espuma nas pedras do rio (nossa) | **feita em 04/11/2026**: a água do rio faz espuma branca em volta dos matacões e dos blocos caídos, sem virar faixa branca na margem rasa; plano em `docs/plano_fase318.md` |
 | 319 — Correnteza (nossa) | **feita em 04/11/2026**, a última do roteiro da garganta do rio: riscos claros e finos andando ao longo dos rios, as duas margens no mesmo sentido; plano em `docs/plano_fase319.md` |
 | 320 — Franja em tufos (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_320_324.md` (garganta de perto): a franja de capim das falésias e das gargantas em tufos soltos em leque, no lugar do pente de folhas paralelas; plano em `docs/plano_fase320.md` |
+| 321 — Crista sem risco (nossa) | **feita em 05/11/2026**: nas temperadas, a beira do barranco no alto das gargantas de capim rente e pedra, no lugar da linha de terra alaranjada; plano em `docs/plano_fase321.md` |
 
 Pendências já vistas para fases futuras:
 

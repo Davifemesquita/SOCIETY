@@ -52,9 +52,22 @@ func _run() -> void:
 				felled.append(Vector2i(x, y))
 	if grid.clear_trees(felled):
 		EventBus.trees_changed.emit(island_id, clearing)
+	# Fase 321: CAPTURA_TERRENO e CAPTURA_AGUA ("nome=valor,nome=valor") trocam uniformes dos shaders, para o antes e depois
+	_override(game.terrain_view.materials(), OS.get_environment("CAPTURA_TERRENO"))
+	_override([game.water_view.material()], OS.get_environment("CAPTURA_AGUA"))
 	for frame: int in 3:
 		await get_tree().process_frame
 	await _shot(game, "01_garganta.png", best, 30.0, 0.7)
 	await _shot(game, "02_garganta_de_perto.png", best, 14.0, 0.7)
 	await _shot(game, "03_garganta_do_outro_lado.png", best, 14.0, 0.7 + PI)
 	get_tree().quit()
+
+
+func _override(materials: Array, pairs: String) -> void:
+	for pair: String in pairs.split(",", false):
+		var parts := pair.split("=")
+		if parts.size() != 2:
+			continue
+		for material: ShaderMaterial in materials:
+			material.set_shader_parameter(StringName(parts[0].strip_edges()), parts[1].to_float())
+		print("uniforme ", parts[0], " = ", parts[1])

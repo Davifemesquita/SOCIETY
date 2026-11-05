@@ -34,4 +34,6 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 - **320 feita em 05/11/2026** (`docs/plano_fase320.md`): antes em `F:\ferramentas\capturas\fase317\garganta3\`, depois em
   `F:\ferramentas\capturas\fase320\depois\`.
-- 321 a 324: esperam a confirmação do dono do produto.
+- **321 feita em 05/11/2026** (`docs/plano_fase321.md`): a linha era a beira do barranco da Fase 289, não a lama; depois em
+  `F:\ferramentas\capturas\fase321\depois\`.
+- 322 a 324: confirmadas pelo dono do produto ("pode seguir todas"), em andamento.
