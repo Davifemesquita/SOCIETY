@@ -28,4 +28,16 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 ## Estado
 
-Fase 315 feita em 04/11/2026 (`docs/plano_fase315.md`); as Fases 316 a 319 esperam a confirmação do dono.
+**Concluído em 04/11/2026**: as cinco fases feitas, cada uma com o plano dela (`docs/plano_fase315.md` a `docs/plano_fase319.md`),
+testes, captura e benchmark (todas neutras, GPU de 12,8 a 13,0 ms).
+
+Diferenças do roteiro:
+
+- os blocos da garganta não partem do meio da célula de rio: num rio estreito o meio fica acima da água e o lado da parede já é a
+  encosta (enterrados na rocha); eles saem de um ponto molhado da célula e andam para a parede até a linha d'água;
+- a espuma do rio não é a da Fase 293 religada: é um anel próprio do canal, mais largo e sem o corte da linha d'água;
+- a correnteza não tem rumo de verdade (o rio é um braço de mar parado): o rumo é o da margem, num sentido só;
+- a franja de capim da Fase 312, que a 316 levou para as gargantas, parece um pente em zigue-zague de muito perto (abaixo de ~15 m):
+  fica para uma fase futura.
+
+O antes e depois de cada fase está em `F:\ferramentas\capturas\faseNNN\` (315 a 319).

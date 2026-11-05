@@ -3574,6 +3574,14 @@ Regras que já custaram investigação:
   `river_foam_line_m` da margem, somado por `max`. Captura: `rio_de_perto` no `tools/capture_phase122.tscn`.
 
 
+### Correnteza (Fase 319, nossa)
+
+- **Plano** em `docs/plano_fase319.md`. No `shaders/water.gdshader`, depois da espuma da costa e só no canal: riscos claros de um
+  ruído esticado ao longo do rumo do rio, andando a `river_flow_speed`. **O rio não tem rumo**: ele sai do mapa da costa (de través
+  do gradiente), virado sempre para o mesmo lado, para as duas margens andarem juntas. Captura: `rio_de_perto` no
+  `tools/capture_phase122.tscn`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3903,6 +3911,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 316 — Capim pendendo na garganta (nossa) | **feita em 04/11/2026**: a franja de capim comprido das falésias também na borda de cima das gargantas dos rios, pendendo sobre a rocha; plano em `docs/plano_fase316.md` |
 | 317 — Blocos no pé da garganta (nossa) | **feita em 04/11/2026**: blocos de rocha caídos no leito dos rios, encostados nas paredes altas da garganta e meio dentro da água; plano em `docs/plano_fase317.md` |
 | 318 — Espuma nas pedras do rio (nossa) | **feita em 04/11/2026**: a água do rio faz espuma branca em volta dos matacões e dos blocos caídos, sem virar faixa branca na margem rasa; plano em `docs/plano_fase318.md` |
+| 319 — Correnteza (nossa) | **feita em 04/11/2026**, a última do roteiro da garganta do rio: riscos claros e finos andando ao longo dos rios, as duas margens no mesmo sentido; plano em `docs/plano_fase319.md` |
 
 Pendências já vistas para fases futuras:
 

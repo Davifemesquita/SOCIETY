@@ -153,6 +153,13 @@ uniform float rock_foam_m = 0.45;
 uniform float river_foam = 1.0;
 uniform float river_foam_reach = 1.6;
 uniform float river_foam_line_m = 0.6;
+// Society (Fase 319): a correnteza no canal (0 = sem): a força dos riscos, o comprimento e a largura deles (m), a velocidade (m/s)
+// e a distância (m) das sondas do rumo no mapa da costa
+uniform float river_flow = 0.4;
+uniform float river_flow_length_m = 7.0;
+uniform float river_flow_width_m = 0.35;
+uniform float river_flow_speed = 0.6;
+uniform float river_flow_probe_m = 1.5;
 // Society (Fase 297): os fiapos de espuma que saem levados das pedras, compridos ao longo do vento (streak_length_m) e finos de
 // través (streak_width_m), andando com ele, até streak_reach_m da costa, do lado de baixo do vento e só onde a água já é funda
 // junto da costa (a pedra: na plataforma rasa da praia a diferença de profundidade fica abaixo de streak_deep_m)
@@ -861,6 +868,24 @@ void fragment() {
 		float coast_foam = clamp(band * 0.8 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
 		EMISSION *= 1.0 - coast_foam;
 		ALBEDO = mix(ALBEDO, shore_foam_color, coast_foam);
+		// Fase 319: a correnteza no canal, riscos claros e finos andando ao longo do rio. O rumo é o da margem: de través da
+		// distância até a terra (o gradiente do mapa da costa), virado sempre para o mesmo lado (FLOW_SIDE) para as duas margens
+		// andarem juntas; o desenho é um ruído esticado ao longo dele, quebrado pela textura da espuma
+		if (river_flow > 0.0 && channel > 0.0) {
+			vec2 at_xz = world_coordinates.xz;
+			vec2 grad = vec2(coast_at(at_xz + vec2(river_flow_probe_m, 0.0)) - coast_at(at_xz - vec2(river_flow_probe_m, 0.0)),
+					coast_at(at_xz + vec2(0.0, river_flow_probe_m)) - coast_at(at_xz - vec2(0.0, river_flow_probe_m)));
+			if (dot(grad, grad) > 1e-6) {
+				vec2 along = normalize(vec2(-grad.y, grad.x));
+				along *= dot(along, vec2(0.83, 0.56)) < 0.0 ? -1.0 : 1.0;
+				vec2 flow_at = vec2(dot(at_xz, along) - TIME * float(!freeze_time) * river_flow_speed, dot(at_xz, vec2(-along.y, along.x)));
+				float lines = reef_noise(flow_at / vec2(river_flow_length_m, river_flow_width_m)) * 0.7
+						+ reef_noise(flow_at / vec2(river_flow_length_m * 0.4, river_flow_width_m * 0.7) + 17.0) * 0.3;
+				float flow = smoothstep(0.62, 0.78, lines) * mix(0.5, 1.0, foam_tex.a) * river_flow * channel * shore_fade_alpha;
+				EMISSION *= 1.0 - flow;
+				ALBEDO = mix(ALBEDO, shore_foam_color, flow);
+			}
+		}
 	}
 
 	// Society (Fase 155): os carneirinhos no mar aberto, rendados pela textura da espuma
