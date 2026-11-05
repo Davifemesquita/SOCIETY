@@ -38,4 +38,7 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase321\depois\`.
 - **322 feita em 05/11/2026** (`docs/plano_fase322.md`): o esticado era a normal do vértice (a média do alto com o leito), não a
   falta de triplanar; capturas em `F:\ferramentas\capturas\fase322\`.
-- 323 e 324: confirmadas pelo dono do produto ("pode seguir todas"), em andamento.
+- **323 tentada e deixada de fora em 05/11/2026** (`docs/plano_fase323.md`): a beira de cima da parede é a borda das células do
+  planalto e o pé é o leito, os dois presos pela simulação; empurrar os pontos do meio da face não aparece. Quebrar as quinas pede
+  mudar o traçado do rio no gerador (proposta para o dono do produto).
+- 324: confirmada pelo dono do produto ("pode seguir todas"), em andamento.
