@@ -221,6 +221,8 @@ float value_noise(vec2 p) {
 			mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
+#include "res://shaders/meadow_patch.gdshaderinc"
+
 // peso da camada b sobre a: a mais alta das duas (altura do alfa + peso) ganha, numa faixa de blend_depth
 float height_blend(float weight, float height_a, float height_b) {
 	float a = height_a + 1.0 - weight;
@@ -341,8 +343,8 @@ void fragment() {
 	float tall = 0.0;
 	float short_grass = 0.0;
 	if (meadow_patches > 0.0) {
-		float patch = value_noise(world_position.xz / meadow_patch_m) * 0.7
-				+ value_noise(world_position.xz / (meadow_patch_m * 0.37)) * 0.3;
+		// Fase 325: girado e torcido (meadow_patch.gdshaderinc), sem o xadrez da grade do ruído
+		float patch = meadow_patch(world_position.xz, meadow_patch_m);
 		tall = smoothstep(0.52, 0.62, patch) * meadow_patches;
 		short_grass = (1.0 - smoothstep(0.38, 0.48, patch)) * meadow_patches;
 		grass_a.rgb *= mix(vec3(1.0), meadow_tall_tint, tall);

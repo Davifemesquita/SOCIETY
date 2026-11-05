@@ -3620,6 +3620,17 @@ Regras que já custaram investigação:
   com a rugosidade baixa o reflexo do céu ainda clareava a água. Captura: `tools/capture_phase317.tscn` com `CAPTURA_AGUA`.
 
 
+### Prado sem xadrez (Fase 325, nossa)
+
+- **Plano** em `docs/plano_fase325.md`, primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata). As manchas do prado da
+  Fase 285 saem de `meadow_patch` (`shaders/meadow_patch.gdshaderinc`), a mesma no terreno e no tapete de capim da Fase 286: ruído
+  de gradiente girado sobre as coordenadas torcidas, mais a oitava fina de valor. **O ruído de valor fica quadrado** (cada nó vira um
+  quadrado de cantos redondos e as curvas de nível dentro da célula são quase retas): com um corte estreito por cima, ele desenha
+  xadrez de perto e facetas de longe; só girar e torcer não bastou. Mancha com corte estreito, use o `meadow_gradient`. A captura do
+  ciclo do mar (`tools/capture_phase280.tscn`) ganhou `CAPTURA_TERRENO` (uniformes do terreno, `true`/`false` nos bool) e
+  `CAPTURA_SO=prado` (a falésia e o mar de cima) ou `dia`.
+
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3955,6 +3966,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 322 — Parede sem esticado (nossa) | **feita em 05/11/2026**: a rocha das paredes estreitas (a garganta) projetada pela normal da face, sem os riscos esticados, com os estratos e os blocos; plano em `docs/plano_fase322.md` |
 | 323 — Parede que avança (nossa) | **tentada e deixada de fora em 05/11/2026**: a beira e o pé da parede da garganta são presos pela simulação, e empurrar o meio da face não aparece; quebrar as quinas pede mudar o traçado do rio no gerador; registro em `docs/plano_fase323.md` |
 | 324 — Fundo na sombra (nossa) | **feita em 05/11/2026**, a última do roteiro da garganta de perto: a água no fundo das gargantas escura, fosca e sem o reflexo do céu, pelo tanto de céu que as paredes tapam; plano em `docs/plano_fase324.md` |
+| 325 — Prado sem xadrez (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata): as manchas do prado sem os quadrados claros e escuros, por um ruído de gradiente girado e torcido, igual no chão e no capim; plano em `docs/plano_fase325.md` |
 
 Pendências já vistas para fases futuras:
 

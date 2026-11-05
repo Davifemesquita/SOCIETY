@@ -40,12 +40,23 @@ func _run() -> void:
 			await _shot(game, prefix + "_mar_de_cima.png", points[3], 420.0, 0.3)
 		get_tree().quit()
 		return
+	# Fase 325: CAPTURA_TERRENO ("nome=valor,...") troca uniformes do terreno (true/false nos bool); CAPTURA_SO=dia tira só as vistas de
+	# dia, e CAPTURA_SO=prado só a falésia e o mar de cima (o prado)
+	_override(game.terrain_view.materials(), OS.get_environment("CAPTURA_TERRENO"))
+	var only := OS.get_environment("CAPTURA_SO")
 	await _shot(game, "01_falesia.png", cliff, 90.0, 0.3)
-	await _shot(game, "02_praia.png", beach, 70.0, 0.3)
+	if only != "prado":
+		await _shot(game, "02_praia.png", beach, 70.0, 0.3)
 	await _shot(game, "03_mar_de_cima.png", points[3], 420.0, 0.3)
+	if only == "prado":
+		get_tree().quit()
+		return
 	await _shot(game, "04_tropical.png", tropical, 90.0, 0.3)
 	await _shot(game, "05_rio.png", river, 45.0, 0.3)
 	await _shot(game, "05b_leito_seco.png", dry_bed, 45.0, 0.3)
+	if only == "dia":
+		get_tree().quit()
+		return
 	_set_hour(22.0)
 	# o Sky3D passa a luz ambiente do dia para a da noite em 3 s
 	await get_tree().create_timer(3.5).timeout
@@ -72,3 +83,15 @@ func _find_river(grid: IslandGrid, wet: bool) -> Vector2i:
 				best_score = score
 				best = cell
 	return best
+
+
+func _override(materials: Array, pairs: String) -> void:
+	for pair: String in pairs.split(",", false):
+		var parts := pair.split("=")
+		if parts.size() != 2:
+			continue
+		var raw := parts[1].strip_edges()
+		var value: Variant = raw == "true" if raw in ["true", "false"] else raw.to_float()
+		for material: ShaderMaterial in materials:
+			material.set_shader_parameter(StringName(parts[0].strip_edges()), value)
+		print("uniforme ", parts[0], " = ", raw)

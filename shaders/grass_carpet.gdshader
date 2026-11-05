@@ -49,9 +49,12 @@ float value_noise(vec2 p) {
 			mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
+#include "res://shaders/meadow_patch.gdshaderinc"
+
 void vertex() {
 	vec3 origin = MODEL_MATRIX[3].xyz;
-	float patch = value_noise(origin.xz / meadow_patch_m) * 0.7 + value_noise(origin.xz / (meadow_patch_m * 0.37)) * 0.3;
+	// Fase 325: a mesma conta do terreno (meadow_patch.gdshaderinc)
+	float patch = meadow_patch(origin.xz, meadow_patch_m);
 	float tall = smoothstep(0.52, 0.62, patch);
 	float short_grass = 1.0 - smoothstep(0.38, 0.48, patch);
 	patch_tint = mix(vec3(1.0), tall_tint, tall) * mix(vec3(1.0), short_tint, short_grass);
