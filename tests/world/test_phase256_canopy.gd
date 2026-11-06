@@ -4,9 +4,10 @@ extends GdUnitTestSuite
 
 
 func test_leaves_are_lighter_than_in_phase_53() -> void:
-	# na Fase 53: carvalho 0,5, faia 0,6 e pinheiro 0,38 de verde
-	assert_float(TreeModel.OAK_LEAF.g).is_greater(0.5)
-	assert_float(TreeModel.BEECH_LEAF.g).is_greater(0.6)
+	# na Fase 53: carvalho 0,5, faia 0,6 e pinheiro 0,38 de verde. Fase 326: as folhosas voltaram para um verde mais fundo
+	# (a mata virava verde-limão), perto das da Fase 53: carvalho e faia acima de 0,38 e 0,44
+	assert_float(TreeModel.OAK_LEAF.g).is_greater(0.38)
+	assert_float(TreeModel.BEECH_LEAF.g).is_greater(0.44)
 	assert_float(TreeModel.PINE_NEEDLE.g).is_greater(0.38)
 	assert_float(TreeModel.CROWN_SHADE).is_greater(0.74)
 	# o sol do alto da copa é amarelo: mais vermelho que azul, sem apagar o verde

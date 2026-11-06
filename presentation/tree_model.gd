@@ -29,8 +29,11 @@ const DETAIL_FAR := 1
 const VARIANTS := 2
 ## Fase 53: folhas mais claras e saturadas (a mata do Anno é verde viva, não um bloco escuro); Fase 256: mais claras ainda
 ## (de 0,32/0,5/0,17 no carvalho, 0,44/0,6/0,2 na faia e 0,2/0,38/0,18 no pinheiro): com a sombra da copa, viravam quase preto.
-const OAK_LEAF := Color(0.37, 0.57, 0.19)
-const BEECH_LEAF := Color(0.48, 0.66, 0.22)
+## Fase 326: as folhosas voltam para um verde mais fundo e menos saturado (eram 0,37/0,57/0,19 no carvalho e 0,48/0,66/0,22 na
+## faia): com a luz do alto da copa e a luz própria das folhas, a mata virava verde-limão, mais clara que o prado; a do Anno é
+## verde fundo puxando para o oliva, com ~0,7 do brilho do prado.
+const OAK_LEAF := Color(0.27, 0.4, 0.17)
+const BEECH_LEAF := Color(0.32, 0.46, 0.19)
 const PINE_NEEDLE := Color(0.24, 0.45, 0.21)
 const OAK_BARK := Color(0.3, 0.25, 0.19)
 const BEECH_BARK := Color(0.46, 0.45, 0.41)
@@ -42,7 +45,8 @@ const PALM_OLD_LEAF := Color(0.5, 0.52, 0.2)
 const PALM_BARK := Color(0.5, 0.42, 0.32)
 const PALM_RING := Color(0.42, 0.35, 0.27)
 const COCONUT := Color(0.36, 0.34, 0.12)
-const TROPICAL_LEAF := Color(0.24, 0.51, 0.15)
+## Fase 326: era 0,24/0,51/0,15.
+const TROPICAL_LEAF := Color(0.21, 0.37, 0.14)
 const TROPICAL_BARK := Color(0.52, 0.48, 0.4)
 ## Abeto (Fase 275): agulhas verde-escuras puxando para o azul, casca marrom-acinzentada.
 const SPRUCE_NEEDLE := Color(0.16, 0.36, 0.21)
@@ -55,8 +59,8 @@ const SPRUCE_SPOKES := 12
 const SPRUCE_RADIUS_M := 2.0
 const SPRUCE_SKIRT_M := 0.45
 ## Bétula (Fase 277): folha verde-clara, casca branca, o pé e as manchas quase pretos; altura do tronco (antes do sorteio),
-## massas da copa e manchas no tronco.
-const BIRCH_LEAF := Color(0.47, 0.65, 0.25)
+## massas da copa e manchas no tronco. Fase 326: a folha era 0,47/0,65/0,25; segue a mais clara das folhosas.
+const BIRCH_LEAF := Color(0.36, 0.5, 0.22)
 const BIRCH_BARK := Color(0.9, 0.88, 0.82)
 const BIRCH_MARK := Color(0.16, 0.15, 0.14)
 const BIRCH_HEIGHT_M := Vector2(7.6, 8.8)
@@ -68,10 +72,11 @@ const PALM_SEGMENTS := 7
 const PALM_FRONDS := 10
 const PALM_FROND_M := Vector2(3.4, 4.2)
 ## A folhagem embaixo de cada massa fica nesta fração da cor; em cima, mais clara e (Fase 256) puxando para o amarelo do
-## sol (CROWN_SUN no alto, nada no meio para baixo). Antes: 0,74 e 1,12, sem o amarelo.
+## sol (CROWN_SUN no alto, nada no meio para baixo). Antes: 0,74 e 1,12, sem o amarelo. Fase 326: o azul menos cortado (era
+## 0,82), que puxava o alto da copa para o limão; o vermelho e o verde ficam (o alto segue mais amarelo que a base).
 const CROWN_SHADE := 0.8
 const CROWN_LIGHT := 1.22
-const CROWN_SUN := Color(1.06, 1.02, 0.82)
+const CROWN_SUN := Color(1.06, 1.02, 0.9)
 ## Fase 256: quanto as folhas acendem por conta própria de dia (o sol atravessando e voltando da copa), em fração da cor:
 ## sem isso, o lado da sombra de uma mata fechada ficava quase preto.
 const LEAF_FILL := 0.22
@@ -90,6 +95,8 @@ const SWAY := 0.035
 ## subdividir) quebram a silhueta.
 const CROWN_ROUND := 0.65
 const PUFF_RADIUS := Vector2(0.55, 0.9)
+## Fase 326: quanto o tufo sai mais claro que a copa, no mesmo tom.
+const PUFF_LIGHT := 1.08
 ## Fase 279: o shader das árvores de perto (cachos de folhas e a borda da copa recortada) e o de sempre.
 const TREE_SHADER := "res://shaders/tree_foliage.gdshader"
 const FOLIAGE_SHADER := "res://shaders/foliage.gdshader"
@@ -520,7 +527,9 @@ static func _puffs(tool: SurfaceTool, rng: RandomNumberGenerator, anchors: Array
 		away.y *= 0.5
 		var spot := between + away.normalized() * out * rng.randf_range(0.8, 1.2)
 		var radius := rng.randf_range(PUFF_RADIUS.x, PUFF_RADIUS.y)
-		_crown(tool, rng, spot, Vector3(radius, radius * 0.85, radius), leaf.lightened(0.06), detail, hull, 0)
+		# Fase 326: um pouco mais claro no mesmo tom (o lightened puxava para o branco e, na folha funda, para o cinza-oliva)
+		_crown(tool, rng, spot, Vector3(radius, radius * 0.85, radius), Color(leaf.r * PUFF_LIGHT, leaf.g * PUFF_LIGHT,
+				leaf.b * PUFF_LIGHT), detail, hull, 0)
 
 
 ## Pontos da esfera unitária (icosaedro subdividido level vezes) e as faces em índices.

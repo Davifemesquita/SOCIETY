@@ -33,3 +33,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 - **325 feita em 05/11/2026** (`docs/plano_fase325.md`): o xadrez eram as manchas do prado da Fase 285 (ruído de valor com corte estreito),
   não a repetição da textura; capturas em `F:\ferramentas\capturas\fase325\`.
+- **326 feita em 05/11/2026** (`docs/plano_fase326.md`): a mata em verde fundo, com ~0,73 do brilho do prado (era 1,1; no Anno ~0,7);
+  capturas em `F:\ferramentas\capturas\fase326\`.

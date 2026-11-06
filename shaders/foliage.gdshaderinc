@@ -38,11 +38,13 @@ uniform float leaf_fill = 0.0;
 
 // Fase 305: o tom de cada árvore, sorteado pelo lugar dela (hash inteiro da origem da instância): mais escura, oliva, mais
 // amarelada ou a de sempre, com um pouco de claro e escuro. Só na folhagem (a madeira fica), na força tree_tint (o TreeModel
-// põe 1 nas folhosas e TreeModel.CONIFER_TINT nas coníferas; as plantações e o capim ficam com 0).
+// põe 1 nas folhosas e TreeModel.CONIFER_TINT nas coníferas; as plantações e o capim ficam com 0). Fase 326: os tons menos
+// amarelos e mais frios (eram 0,66/0,74/0,66, 0,96/0,88/0,58 e 1,12/1,08/0,72): o oliva e o amarelado cortavam o azul e deixavam
+// a árvore mais saturada, puxando a mata para o limão; agora o escuro puxa para o azul e o amarelado é só um pouco mais claro.
 uniform float tree_tint = 0.0;
-uniform vec3 tint_dark = vec3(0.66, 0.74, 0.66);
-uniform vec3 tint_olive = vec3(0.96, 0.88, 0.58);
-uniform vec3 tint_yellow = vec3(1.12, 1.08, 0.72);
+uniform vec3 tint_dark = vec3(0.64, 0.72, 0.7);
+uniform vec3 tint_olive = vec3(0.92, 0.88, 0.72);
+uniform vec3 tint_yellow = vec3(1.06, 1.04, 0.86);
 varying flat float tree_pick;
 // Fase 308: as coníferas escurecem e esfriam com a distância da câmera (far_cool, que o TreeModel põe no pinheiro e no abeto):
 // de far_cool_from_m a far_cool_to_m, a folhagem vai para far_cool_tint (mais escura e azulada), como a mata de abetos de longe.

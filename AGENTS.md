@@ -3630,6 +3630,14 @@ Regras que já custaram investigação:
   ciclo do mar (`tools/capture_phase280.tscn`) ganhou `CAPTURA_TERRENO` (uniformes do terreno, `true`/`false` nos bool) e
   `CAPTURA_SO=prado` (a falésia e o mar de cima) ou `dia`.
 
+### Mata no tom (Fase 326, nossa)
+
+- **Plano** em `docs/plano_fase326.md`, segunda do roteiro `docs/plano_fases_325_329.md`. As folhosas do `TreeModel` (carvalho,
+  faia, bétula e tropical) voltam para um verde mais fundo e menos saturado, o azul do sol do alto da copa (`CROWN_SUN`) menos
+  cortado, os tufos clareados no mesmo tom (`PUFF_LIGHT`; o `lightened` puxava para o branco) e os tons por árvore da Fase 305
+  (`tint_*` no `shaders/foliage.gdshaderinc`) sem cortar o azul. **A régua é relativa**: no Anno a mata tem ~0,7 do brilho do
+  prado; a nossa tinha 1,1 (mais clara que o capim) e ficou em ~0,73. O pinheiro e o abeto não mudaram.
+
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -3967,6 +3975,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 323 — Parede que avança (nossa) | **tentada e deixada de fora em 05/11/2026**: a beira e o pé da parede da garganta são presos pela simulação, e empurrar o meio da face não aparece; quebrar as quinas pede mudar o traçado do rio no gerador; registro em `docs/plano_fase323.md` |
 | 324 — Fundo na sombra (nossa) | **feita em 05/11/2026**, a última do roteiro da garganta de perto: a água no fundo das gargantas escura, fosca e sem o reflexo do céu, pelo tanto de céu que as paredes tapam; plano em `docs/plano_fase324.md` |
 | 325 — Prado sem xadrez (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata): as manchas do prado sem os quadrados claros e escuros, por um ruído de gradiente girado e torcido, igual no chão e no capim; plano em `docs/plano_fase325.md` |
+| 326 — Mata no tom (nossa) | **feita em 05/11/2026**, a segunda do roteiro `docs/plano_fases_325_329.md` (prado e mata): as folhosas num verde mais fundo e menos saturado, o alto da copa e os tons por árvore sem cortar o azul; plano em `docs/plano_fase326.md` |
 
 Pendências já vistas para fases futuras:
 
