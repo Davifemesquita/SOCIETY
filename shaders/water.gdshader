@@ -134,6 +134,11 @@ uniform float band_sharpness = 0.93;
 uniform float band_piece_m = 6.0;
 uniform float band_gap = 0.55;
 uniform float band_whole_m = 2.5;
+// Society (Fase 358): a onda que quebra — uma crista em breaker_every é uma série: a banda mais grossa (breaker_sharpness) e com menos
+// falhas (breaker_gap_share da falta das outras), correndo junto ao longo da costa (o número da crista é o mesmo na banda inteira)
+uniform float breaker_every = 4.0;
+uniform float breaker_sharpness = 0.72;
+uniform float breaker_gap_share = 0.45;
 // Society (Fase 282): quanto da cor da água sobra de noite, por canal (fator linear, não cor: puxa para o azul de lua)
 uniform vec3 night_water = vec3(0.16, 0.2, 0.3);
 // Society (Fase 283): o canal estreito (ver channel no fragment) e a cor da água dele, escura e calma
@@ -938,6 +943,14 @@ void fragment() {
 		float pieces = reef_noise(world_coordinates.xz / band_piece_m + vec2(crest * 7.31, crest * 3.17));
 		float gap = band_gap * smoothstep(band_whole_m, shore_foam_width_m, shore_m);
 		band *= smoothstep(gap, gap + 0.18, pieces);
+		// Fase 358: a série — a crista em breaker_every, mais grossa e com menos falhas, no mesmo alcance (mais longe, ou inteira, ela virava
+		// a fita branca solta no mar que a Fase 295 tirou)
+		if (breaker_every > 0.0 && mod(crest, breaker_every) < 0.5) {
+			float breaker = smoothstep(breaker_sharpness, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
+			breaker *= smoothstep(0.3, 0.6, foam_tex.a) * (1.0 - channel);
+			breaker *= smoothstep(gap * breaker_gap_share, gap * breaker_gap_share + 0.18, pieces);
+			band = max(band, breaker);
+		}
 		float edge = (1.0 - smoothstep(0.0, shore_line_m * 0.5, shore_m)) * (1.0 - channel * 0.8);
 		float coast_foam = clamp(band * 0.8 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
 		EMISSION *= 1.0 - coast_foam;

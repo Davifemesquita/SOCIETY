@@ -3823,6 +3823,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase357.md`. No `ShipView._build_wake`, a espuma sai da popa para trás e para os lados (`WAKE_SPREAD_DEG`,
   `WAKE_SPEED_M_S`, `flatness` 1), vive `WAKE_LIFETIME_S` e são `WAKE_PARTICLES` (64).
 
+### Onda quebrando (Fase 358, nossa)
+
+- **Plano** em `docs/plano_fase358.md`. No `shaders/water.gdshader`, uma crista em `breaker_every` é série: mais grossa e com menos falhas,
+  no mesmo alcance. **Espuma inteira ou mais longe da praia vira a fita branca solta no mar** (o defeito da Fase 295).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4191,6 +4196,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 355 — Marinho (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_355_359.md` (mar aberto): o mar aberto das temperadas mais escuro, azul-petróleo, visto de cima; plano em `docs/plano_fase355.md` |
 | 356 — Onda de perto (nossa) | **feita em 07/11/2026**: a onda média de perto, com cristas compridas e irregulares e a crista mais clara, e a cintilação do sol mais fraca; plano em `docs/plano_fase356.md` |
 | 357 — Esteira em V (nossa) | **feita em 07/11/2026**: o rastro dos navios abre em V, mais comprido e mais cheio; plano em `docs/plano_fase357.md` |
+| 358 — Onda quebrando (nossa) | **feita em 07/11/2026**: uma onda em quatro chega à praia mais grossa e mais inteira, correndo junto pela costa; plano em `docs/plano_fase358.md` |
 
 Pendências já vistas para fases futuras:
 
