@@ -150,6 +150,11 @@ uniform float road_gravel_m = 0.09;
 uniform float road_gravel_share = 0.3;
 uniform vec3 road_gravel_color = vec3(0.58, 0.56, 0.52);
 uniform float road_gravel_far_m = 70.0;
+// Fase 347: o leque de cascalho no pé das encostas de rocha (scree_foot 0 desliga)
+uniform float scree_foot = 1.0;
+uniform float scree_reach_m = 3.5;
+uniform float scree_scale = 2.6;
+uniform vec3 scree_color : source_color = vec3(0.5, 0.49, 0.46);
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
 // Fase 53 (cor no jeito do Anno): grama verde e saturada, a seca mais fraca, areia de praia clara e rocha escura. Fase 257:
@@ -558,6 +563,23 @@ void fragment() {
 	}
 
 	float land = step(0.0, world_position.y);
+	// Fase 347: o leque de cascalho no pé das encostas de rocha: onde há encosta íngreme (a inclinação dos dados) a scree_reach_m em
+	// algum dos quatro lados, o próprio chão é quase plano e côncavo (o pé, não a crista), recortado em leque por um ruído; fora da
+	// areia, da lama, da rocha e da água
+	if (scree_foot > 0.0) {
+		vec2 scree_probe = vec2(scree_reach_m) / region_bounds.zw;
+		float steep_near = max(max(texture(terrain_data, cell + vec2(scree_probe.x, 0.0)).r, texture(terrain_data, cell - vec2(scree_probe.x, 0.0)).r),
+				max(texture(terrain_data, cell + vec2(0.0, scree_probe.y)).r, texture(terrain_data, cell - vec2(0.0, scree_probe.y)).r));
+		float foot = smoothstep(0.28, 0.45, steep_near) * (1.0 - smoothstep(0.12, 0.26, data.r)) * smoothstep(0.48, 0.56, data.g);
+		foot *= smoothstep(0.46, 0.64, value_noise(world_position.xz * 0.28) * 0.6 + value_noise(world_position.xz * 1.3) * 0.4);
+		foot *= (1.0 - sand) * (1.0 - mud) * (1.0 - rock) * land * scree_foot;
+		if (foot > 0.001) {
+			vec4 scree_a = texture(rock_albedo, uv * scree_scale);
+			float scree_luma = dot(scree_a.rgb, vec3(0.299, 0.587, 0.114));
+			ground_a.rgb = mix(ground_a.rgb, scree_color * (0.55 + scree_luma * 0.9), foot);
+			ground_n = mix(ground_n, vec4(texture(rock_normal, uv * scree_scale).rgb, 0.8), foot);
+		}
+	}
 	// Fase 38: a estrada de terra pela distância até a linha do meio, com borda de ruído misturada pela altura do chão
 	if (has_roads) {
 		vec2 road_uv = (world_position.xz - road_bounds.xy) / road_bounds.zw;

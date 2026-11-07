@@ -33,3 +33,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase345\`.
 - **346 feita em 07/11/2026** (`docs/plano_fase346.md`): bancadas largas na rocha, só de longe; capturas em
   `F:\ferramentas\capturas\fase346\`.
+- **347 feita em 07/11/2026** (`docs/plano_fase347.md`): o cascalho no pé das encostas, no terreno; capturas em
+  `F:\ferramentas\capturas\fase347\`.

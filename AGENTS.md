@@ -3764,6 +3764,11 @@ Regras que já custaram investigação:
   mais marcadas, só de longe, depois dos estratos, na rocha do terreno e nas pedras. **Função de include que precisa da câmera recebe a
   distância de quem chama.**
 
+### Leque de cascalho (Fase 347, nossa)
+
+- **Plano** em `docs/plano_fase347.md`. No `shaders/terrain.gdshader` (`scree_*`), o cascalho no pé das encostas: encosta íngreme a
+  `scree_reach_m` (a inclinação dos dados), o chão plano e côncavo, recortado por ruído.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4121,6 +4126,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 344 — Sebe alta (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_340_344.md` (campos em faixa): a sebe entre as fazendas mais alta e irregular, com moitas altas de vez em quando; plano em `docs/plano_fase344.md` |
 | 345 — Granito no alto (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande): grupos de rocha cinza nos topos e cristas dos morros, fora de onde se constrói; plano em `docs/plano_fase345.md` |
 | 346 — Estratos de longe (nossa) | **feita em 07/11/2026**: bancadas largas e mais marcadas na rocha vista de longe, onde os estratos de perto já sumiam; plano em `docs/plano_fase346.md` |
+| 347 — Leque de cascalho (nossa) | **feita em 07/11/2026**: manchas de cascalho cinza no pé das encostas de rocha e dos barrancos; plano em `docs/plano_fase347.md` |
 
 Pendências já vistas para fases futuras:
 
