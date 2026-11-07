@@ -27,4 +27,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 ## Estado
 
-- A fazer.
+- **340 feita em 07/11/2026** (`docs/plano_fase340.md`): a terra dos sulcos mais escura e a leira mais estreita; capturas em
+  `F:\ferramentas\capturas\fase340\`.

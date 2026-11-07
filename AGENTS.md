@@ -3726,6 +3726,11 @@ Regras que já custaram investigação:
   na beira livre, inclinado com o chão (nada acima de `MAX_RISE_M`). Captura: `marco_0_longe.png` do `tools/capture_phase237.tscn`.
   **A vila das capturas do ciclo não tem estrada de campo**: peça de estrada de campo se confere nessa captura.
 
+### Leiras marcadas (Fase 340, nossa)
+
+- **Plano** em `docs/plano_fase340.md`, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa). Na `CropView`, a terra do
+  campo (`FIELD_SOILS`, a dos sulcos) mais escura e a leira mais estreita (`FURROW_FILL` 0,62): as fileiras se leem de cima.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4076,6 +4081,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 337 — Rua larga na vila (nossa) | **feita em 07/11/2026**: a estrada de terra mais larga onde passa entre as casas e as fábricas e mais estreita no campo, pelo chão de vila da máscara das estradas; plano em `docs/plano_fase337.md` |
 | 338 — Capim na beira (nossa) | **feita em 07/11/2026**: touceiras de capim alto e escuro junto das estradas de terra fora da vila, nas ilhas temperadas; plano em `docs/plano_fase338.md` |
 | 339 — Mourões na estrada (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): lanços de cerca de mourões e travessas em trechos das estradas de terra fora das vilas; plano em `docs/plano_fase339.md` |
+| 340 — Leiras marcadas (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa): o sulco escuro entre as leiras dos campos, que se leem listrados de cima; plano em `docs/plano_fase340.md` |
 
 Pendências já vistas para fases futuras:
 

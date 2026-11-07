@@ -41,7 +41,8 @@ const HARVEST_MIXED: Array[int] = [BuildingDef.Crop.TUBER]
 ## Leiras (Fase 19): altura, quanto da fileira cada uma ocupa, espaço no campo sem dono e a cor da terra
 ## lavrada (úmida) e seca.
 const FURROW_HEIGHT_M := 0.13
-const FURROW_FILL := 0.7
+## (Fase 340: 0,62, era 0,7: o sulco escuro entre as leiras aparece mais)
+const FURROW_FILL := 0.62
 const BARE_SPACING_M := 0.75
 const FRESH_SOIL := Color(0.25, 0.17, 0.1)
 const DRY_SOIL := Color(0.58, 0.46, 0.32)
@@ -82,8 +83,9 @@ const WIGGLE_STEP_M := 1.4
 const BORDER_SAMPLE_M := 0.5
 const SOIL_M := 0.05
 const HEADLAND_M := 0.95
-const FIELD_SOILS: Array[Color] = [Color(0.45, 0.34, 0.22), Color(0.38, 0.28, 0.18), Color(0.5, 0.39, 0.26),
-		Color(0.42, 0.33, 0.24)]
+## (Fase 340: mais escuras, ~0,7 das de antes: a terra do sulco entre as leiras é esta, e as fileiras precisam se ler de cima)
+const FIELD_SOILS: Array[Color] = [Color(0.31, 0.23, 0.15), Color(0.27, 0.2, 0.13), Color(0.35, 0.27, 0.18),
+		Color(0.3, 0.23, 0.17)]
 const FIELD_SHADES: Array[Color] = [Color(1.0, 1.0, 1.0), Color(0.9, 0.95, 0.85), Color(1.08, 1.04, 0.92),
 		Color(0.95, 1.05, 0.95)]
 const BORDER_PIECE_M := 1.0
