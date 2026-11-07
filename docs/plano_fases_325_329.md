@@ -35,3 +35,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   não a repetição da textura; capturas em `F:\ferramentas\capturas\fase325\`.
 - **326 feita em 05/11/2026** (`docs/plano_fase326.md`): a mata em verde fundo, com ~0,73 do brilho do prado (era 1,1; no Anno ~0,7);
   capturas em `F:\ferramentas\capturas\fase326\`.
+- **327 feita em 06/11/2026** (`docs/plano_fase327.md`): a luz das copas das folhosas pela copa inteira e a sombra por dentro, no lugar
+  do claro e escuro de cada massa; o contorno em bolas ficou (é a forma); capturas em `F:\ferramentas\capturas\fase327\`.

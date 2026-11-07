@@ -3638,6 +3638,14 @@ Regras que já custaram investigação:
   (`tint_*` no `shaders/foliage.gdshaderinc`) sem cortar o azul. **A régua é relativa**: no Anno a mata tem ~0,7 do brilho do
   prado; a nossa tinha 1,1 (mais clara que o capim) e ficou em ~0,73. O pinheiro e o abeto não mudaram.
 
+### Copa sem bolhas (Fase 327, nossa)
+
+- **Plano** em `docs/plano_fase327.md`, terceira do roteiro `docs/plano_fases_325_329.md`. No `TreeModel._crown`, nas folhosas
+  (`whole`, passado pelo carvalho, faia, bétula e tropical e pelos `_puffs` deles), o claro e o escuro e o sol do alto saem
+  `CROWN_WHOLE` da altura do vértice em relação ao `hull` (a copa inteira), não só da massa, e o lado da massa virado para o meio da
+  copa desce até `CROWN_INNER`; a normal puxa `CROWN_ROUND` (0,85) para a da copa. O pinheiro e o abeto ficam como antes
+  (`CONIFER_ROUND` 0,65, sem `whole`). **A régua** é a correlação entre a altura e o brilho das folhas (o teste a mede) e o brilho
+  médio, que não pode cair mais de 5% (a Fase 326 acertou a mata em ~0,73 do prado). O contorno em bolas é a forma das massas e ficou.
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -3976,6 +3984,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 324 — Fundo na sombra (nossa) | **feita em 05/11/2026**, a última do roteiro da garganta de perto: a água no fundo das gargantas escura, fosca e sem o reflexo do céu, pelo tanto de céu que as paredes tapam; plano em `docs/plano_fase324.md` |
 | 325 — Prado sem xadrez (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata): as manchas do prado sem os quadrados claros e escuros, por um ruído de gradiente girado e torcido, igual no chão e no capim; plano em `docs/plano_fase325.md` |
 | 326 — Mata no tom (nossa) | **feita em 05/11/2026**, a segunda do roteiro `docs/plano_fases_325_329.md` (prado e mata): as folhosas num verde mais fundo e menos saturado, o alto da copa e os tons por árvore sem cortar o azul; plano em `docs/plano_fase326.md` |
+| 327 — Copa sem bolhas (nossa) | **feita em 06/11/2026**, a terceira do roteiro `docs/plano_fases_325_329.md` (prado e mata): a luz das copas das folhosas pela copa inteira, clara no alto e escura na base, com a sombra por dentro entre as massas, no lugar de cada massa clara em cima e escura embaixo; plano em `docs/plano_fase327.md` |
 
 Pendências já vistas para fases futuras:
 

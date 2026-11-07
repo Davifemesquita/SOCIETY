@@ -93,7 +93,14 @@ const SWAY := 0.035
 ## Copa fofa (Fase 41): a normal de cada vértice da folhagem puxa para a da copa inteira (a esfera em volta do meio
 ## dela), e a copa vira um volume de luz macia, não um monte de bolas facetadas; tufos pequenos (o icosaedro sem
 ## subdividir) quebram a silhueta.
-const CROWN_ROUND := 0.65
+## Fase 327: era 0,65 em todas; nas folhosas a normal de cada massa ainda desenhava a bola. As coníferas ficam no de antes.
+const CROWN_ROUND := 0.85
+const CONIFER_ROUND := 0.65
+## Fase 327, copa sem bolhas (só as folhosas): o claro e o escuro e o sol do alto saem nesta fração da altura do vértice em
+## relação ao meio da copa (o hull), e o resto da altura dele na massa (antes, toda a luz era da massa: cada uma clara em cima
+## e escura embaixo, uma bola); e o lado de cada massa virado para o meio da copa (o que as outras tapam) desce até CROWN_INNER.
+const CROWN_WHOLE := 0.8
+const CROWN_INNER := 0.86
 const PUFF_RADIUS := Vector2(0.55, 0.9)
 ## Fase 326: quanto o tufo sai mais claro que a copa, no mesmo tom.
 const PUFF_LIGHT := 1.08
@@ -155,10 +162,10 @@ static func _oak(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -> 
 		if detail == DETAIL_NEAR:
 			_limb(tool, crotch - Vector3(0.0, 0.3, 0.0), tip, 0.14, 0.06, detail, OAK_BARK, OAK_BARK)
 		var radius := rng.randf_range(1.0, 1.3)
-		_crown(tool, rng, tip + Vector3(0.0, 0.4, 0.0), Vector3(radius, radius * 0.85, radius), OAK_LEAF, detail, hull)
-	_crown(tool, rng, crotch + Vector3(0.0, 2.8, 0.0), Vector3(1.45, 1.35, 1.45), OAK_LEAF, detail, hull)
+		_crown(tool, rng, tip + Vector3(0.0, 0.4, 0.0), Vector3(radius, radius * 0.85, radius), OAK_LEAF, detail, hull, -1, true)
+	_crown(tool, rng, crotch + Vector3(0.0, 2.8, 0.0), Vector3(1.45, 1.35, 1.45), OAK_LEAF, detail, hull, -1, true)
 	# tufos entre as massas, para fora (só de perto)
-	_puffs(tool, rng, tips, hull, OAK_LEAF, detail, 0.6)
+	_puffs(tool, rng, tips, hull, OAK_LEAF, detail, 0.6, true)
 
 
 ## Faia: tronco liso e cinzento até o meio e a copa oval, mais alta que larga.
@@ -168,17 +175,17 @@ static func _beech(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -
 	_limb(tool, Vector3.ZERO, top, 0.24, 0.14, detail, BEECH_BARK, BEECH_BARK)
 	var hull := top + Vector3(0.0, 1.6, 0.0)
 	# Fase 276: a copa mais estreita, da mesma altura
-	_crown(tool, rng, top + Vector3(0.0, 0.8, 0.0), Vector3(1.55, 1.7, 1.55), BEECH_LEAF, detail, hull)
-	_crown(tool, rng, top + Vector3(0.0, 2.7, 0.0), Vector3(1.3, 1.6, 1.3), BEECH_LEAF, detail, hull)
+	_crown(tool, rng, top + Vector3(0.0, 0.8, 0.0), Vector3(1.55, 1.7, 1.55), BEECH_LEAF, detail, hull, -1, true)
+	_crown(tool, rng, top + Vector3(0.0, 2.7, 0.0), Vector3(1.3, 1.6, 1.3), BEECH_LEAF, detail, hull, -1, true)
 	var turn := rng.randf() * TAU
 	var sides: Array[Vector3] = []
 	for i: int in 2:
 		var angle := turn + i * PI + rng.randf_range(-0.4, 0.4)
 		var side := top + Vector3(cos(angle) * 0.95, rng.randf_range(0.0, 1.2), sin(angle) * 0.95)
 		sides.append(side)
-		_crown(tool, rng, side, Vector3(1.05, 1.15, 1.05), BEECH_LEAF, detail, hull)
+		_crown(tool, rng, side, Vector3(1.05, 1.15, 1.05), BEECH_LEAF, detail, hull, -1, true)
 	sides.append(top + Vector3(0.0, 3.6, 0.0))
-	_puffs(tool, rng, sides, hull, BEECH_LEAF, detail, 0.45)
+	_puffs(tool, rng, sides, hull, BEECH_LEAF, detail, 0.45, true)
 
 
 ## Pinheiro-silvestre: tronco alto e fino, marrom embaixo e avermelhado no alto, com a copa em massas
@@ -229,8 +236,8 @@ static func _birch(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int) -
 		if detail == DETAIL_NEAR and i % 2 == 0:
 			_limb(tool, middle.lerp(top, f * 0.6), spot, 0.05, 0.025, detail, BIRCH_BARK, BIRCH_BARK.darkened(0.2))
 		var radius := lerpf(1.0, 0.75, f) * rng.randf_range(0.9, 1.1)
-		_crown(tool, rng, spot, Vector3(radius, radius * 1.05, radius), BIRCH_LEAF, detail, hull)
-	_crown(tool, rng, top + Vector3(0.0, 0.5, 0.0), Vector3(0.6, 0.8, 0.6), BIRCH_LEAF, detail, hull)
+		_crown(tool, rng, spot, Vector3(radius, radius * 1.05, radius), BIRCH_LEAF, detail, hull, -1, true)
+	_crown(tool, rng, top + Vector3(0.0, 0.5, 0.0), Vector3(0.6, 0.8, 0.6), BIRCH_LEAF, detail, hull, -1, true)
 	if detail == DETAIL_NEAR:
 		_birch_marks(tool, rng, foot, top, 0.15, 0.06)
 
@@ -329,7 +336,7 @@ static func _needle(point: Vector3, apex: Vector3, hull: Vector3, shade: float, 
 		normal = normal.normalized()
 	var away := point - hull
 	if away.length_squared() > 1e-4:
-		normal = normal.lerp(away.normalized(), CROWN_ROUND * 0.6).normalized()
+		normal = normal.lerp(away.normalized(), CONIFER_ROUND * 0.6).normalized()
 	var tint := Color.WHITE.lerp(CROWN_SUN, sun * 0.6)
 	var color := Color(minf(SPRUCE_NEEDLE.r * shade * tint.r, 1.0), minf(SPRUCE_NEEDLE.g * shade * tint.g, 1.0),
 			SPRUCE_NEEDLE.b * shade * tint.b)
@@ -393,9 +400,9 @@ static func _tropical(tool: SurfaceTool, rng: RandomNumberGenerator, detail: int
 		if detail == DETAIL_NEAR:
 			_limb(tool, fork - Vector3(0.0, 0.2, 0.0), tip, 0.13, 0.06, detail, TROPICAL_BARK, TROPICAL_BARK)
 		var radius := rng.randf_range(1.6, 2.0)
-		_crown(tool, rng, tip + Vector3(0.0, 0.5, 0.0), Vector3(radius, radius * 0.5, radius), TROPICAL_LEAF, detail, hull)
-	_crown(tool, rng, fork + Vector3(0.0, 2.0, 0.0), Vector3(2.0, 0.9, 2.0), TROPICAL_LEAF, detail, hull)
-	_puffs(tool, rng, tips, hull, TROPICAL_LEAF, detail, 0.9)
+		_crown(tool, rng, tip + Vector3(0.0, 0.5, 0.0), Vector3(radius, radius * 0.5, radius), TROPICAL_LEAF, detail, hull, -1, true)
+	_crown(tool, rng, fork + Vector3(0.0, 2.0, 0.0), Vector3(2.0, 0.9, 2.0), TROPICAL_LEAF, detail, hull, -1, true)
+	_puffs(tool, rng, tips, hull, TROPICAL_LEAF, detail, 0.9, true)
 
 
 ## Uma sapopema: aleta fina e triangular saindo do pé do tronco para o lado de angle, reach metros para fora e rise de
@@ -485,7 +492,7 @@ static func _limb(tool: SurfaceTool, from: Vector3, to: Vector3, r_from: float, 
 ## Massa de folhagem: a esfera do nível de detalhe esticada até radii, com cada vértice amassado pelo
 ## sorteio, mais escura embaixo e a normal de bola (luz macia).
 static func _crown(tool: SurfaceTool, rng: RandomNumberGenerator, center: Vector3, radii: Vector3, leaf: Color, detail: int,
-		hull := Vector3.INF, level := -1) -> void:
+		hull := Vector3.INF, level := -1, whole := false) -> void:
 	if level < 0:
 		level = 1 if detail == DETAIL_NEAR else 0
 	var points := _sphere(level)
@@ -498,17 +505,27 @@ static func _crown(tool: SurfaceTool, rng: RandomNumberGenerator, center: Vector
 	placed.resize(points.size())
 	for i: int in points.size():
 		placed[i] = points[i] * radii * (1.0 + lumps.randf_range(-CROWN_LUMP, CROWN_LUMP))
+	# Fase 327: para onde a massa sai do meio da copa (a que fica no meio não tem lado de dentro)
+	var outward := Vector3.ZERO
+	if whole and hull != Vector3.INF and (center - hull).length_squared() > 0.04:
+		outward = (center - hull).normalized()
 	for face: int in faces.size():
 		var point := placed[faces[face]]
 		var unit := points[faces[face]]
-		var shade := lerpf(CROWN_SHADE, CROWN_LIGHT, unit.y * 0.5 + 0.5) * tint
-		var sun := Color.WHITE.lerp(CROWN_SUN, clampf(unit.y, 0.0, 1.0))
+		var up := unit.y
+		var inner := 1.0
 		var normal := (unit / radii).normalized()
 		if hull != Vector3.INF:
 			# a normal da copa inteira: luz macia de volume
 			var away := center + point - hull
 			if away.length_squared() > 1e-4:
-				normal = normal.lerp(away.normalized(), CROWN_ROUND).normalized()
+				normal = normal.lerp(away.normalized(), CROWN_ROUND if whole else CONIFER_ROUND).normalized()
+				if whole:
+					up = lerpf(unit.y, away.normalized().y, CROWN_WHOLE)
+			if outward != Vector3.ZERO:
+				inner = lerpf(1.0, CROWN_INNER, clampf(-unit.dot(outward), 0.0, 1.0))
+		var shade := lerpf(CROWN_SHADE, CROWN_LIGHT, up * 0.5 + 0.5) * tint * inner
+		var sun := Color.WHITE.lerp(CROWN_SUN, clampf(up, 0.0, 1.0))
 		tool.set_normal(normal)
 		tool.set_color(Color(minf(leaf.r * shade * sun.r, 1.0), minf(leaf.g * shade * sun.g, 1.0), leaf.b * shade * sun.b))
 		tool.add_vertex(center + point)
@@ -517,7 +534,7 @@ static func _crown(tool: SurfaceTool, rng: RandomNumberGenerator, center: Vector
 ## Tufos pequenos (o icosaedro sem subdividir) entre os pontos dados, empurrados para fora do meio da copa: quebram a
 ## silhueta de bolas. Só no nível de perto.
 static func _puffs(tool: SurfaceTool, rng: RandomNumberGenerator, anchors: Array[Vector3], hull: Vector3, leaf: Color,
-		detail: int, out: float) -> void:
+		detail: int, out: float, whole := false) -> void:
 	if detail != DETAIL_NEAR:
 		return
 	var count := anchors.size()
@@ -529,7 +546,7 @@ static func _puffs(tool: SurfaceTool, rng: RandomNumberGenerator, anchors: Array
 		var radius := rng.randf_range(PUFF_RADIUS.x, PUFF_RADIUS.y)
 		# Fase 326: um pouco mais claro no mesmo tom (o lightened puxava para o branco e, na folha funda, para o cinza-oliva)
 		_crown(tool, rng, spot, Vector3(radius, radius * 0.85, radius), Color(leaf.r * PUFF_LIGHT, leaf.g * PUFF_LIGHT,
-				leaf.b * PUFF_LIGHT), detail, hull, 0)
+				leaf.b * PUFF_LIGHT), detail, hull, 0, whole)
 
 
 ## Pontos da esfera unitária (icosaedro subdividido level vezes) e as faces em índices.
