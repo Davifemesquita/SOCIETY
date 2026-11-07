@@ -3797,6 +3797,10 @@ Regras que já custaram investigação:
   instância, `eave_band_m`, `eave_shade`). **O beiral mais largo (`OVERHANGS_M`) quebra a geometria** (o telhado do corpo por cima da
   ala, o enxaimel, a igreja): ficou como estava.
 
+### Miolo da quadra (Fase 353, nossa)
+
+- **Plano** em `docs/plano_fase353.md`. `RoadMask.TOWN_YARD_REACH_M` 3,4 m: o chão de vila cobre o miolo entre casas próximas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4160,6 +4164,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 350 — Telhado de madeira (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a maioria das casas dos operários e um terço das dos artesãos com telhado de tábuas, cinza ou marrom; plano em `docs/plano_fase350.md` |
 | 351 — Reboco sujo (nossa) | **feita em 07/11/2026**: o reboco das casas dos engenheiros e investidores num tom por casa (creme, ocre, cinza, rosa-velho), menos branco; plano em `docs/plano_fase351.md` |
 | 352 — Beiral saliente (nossa) | **feita em 07/11/2026**: a faixa de sombra do beiral no alto das fachadas, no shader (o beiral mais largo quebrava a geometria das alas e da igreja); plano em `docs/plano_fase352.md` |
+| 353 — Miolo da quadra (nossa) | **feita em 07/11/2026**: o chão de terra pisada das casas mais largo, cobrindo o miolo entre casas próximas; plano em `docs/plano_fase353.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -43,10 +43,10 @@ func test_temperate_houses_get_a_ragged_town_ground() -> void:
 	var middle := _wear_at(mask, lot.get_center())
 	assert_int(middle).is_greater(120)
 	assert_int(middle).is_less(int(0.9 * 255.0) - 20)
-	# a borda recortada: ao longo do lado de fora do lote, a uma mesma distância, a força varia
+	# a borda recortada: ao longo do lado de fora do lote, a uma mesma distância, a força varia (Fase 353: perto do alcance, que cresceu)
 	var values := {}
 	for k: int in 12:
-		var point := Vector2(lot.position.x + lot.size.x * (k + 0.5) / 12.0, lot.end.y + RoadMask.TOWN_YARD_REACH_M * 0.3)
+		var point := Vector2(lot.position.x + lot.size.x * (k + 0.5) / 12.0, lot.end.y + RoadMask.TOWN_YARD_REACH_M * 0.8)
 		values[_wear_at(mask, point)] = true
 	assert_int(values.size()).is_greater(2)
 	# bem longe da casa, nada

@@ -26,7 +26,8 @@ const YARD_SOFT_M := 1.0
 ## Fase 301: o chão de vila das casas nas ilhas temperadas, no mesmo canal: o lote e mais TOWN_YARD_REACH_M em volta, com a
 ## borda recortada por TOWN_YARD_RAGGED_M de ruído (como o pátio das fábricas), mais fraco que o terreiro tropical
 ## (TOWN_YARD_STRENGTH).
-const TOWN_YARD_REACH_M := 2.2
+## (Fase 353: 3,4 m, era 2,2: o miolo entre as casas próximas fica todo de terra pisada, como no Anno)
+const TOWN_YARD_REACH_M := 3.4
 const TOWN_YARD_RAGGED_M := 1.2
 const TOWN_YARD_STRENGTH := 0.85
 ## Fase 165: o chão batido em volta dos prédios de produção (o pátio de trabalho), em todas as ilhas: o lote e mais

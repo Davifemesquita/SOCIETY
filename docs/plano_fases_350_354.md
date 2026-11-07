@@ -33,3 +33,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase351\`.
 - **352 feita em 07/11/2026** (`docs/plano_fase352.md`): a sombra do beiral no shader (o beiral mais largo quebrava a geometria);
   capturas em `F:\ferramentas\capturas\fase352\`.
+- **353 feita em 07/11/2026** (`docs/plano_fase353.md`): o chão de vila de 3,4 m em volta das casas; capturas em
+  `F:\ferramentas\capturas\fase353\`.
