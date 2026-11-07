@@ -3758,6 +3758,12 @@ Regras que já custaram investigação:
   (`GameScreen.summit_rock_view`): grupos de rochas da `RockModel` nos topos e cristas (`_crest`) do alto de cada ilha, só em célula
   livre, refeitos a cada obra (~14 ms o arquipélago). **Pelo alto só, sem a crista, a rocha cobria o planalto da vila.**
 
+### Estratos de longe (Fase 346, nossa)
+
+- **Plano** em `docs/plano_fase346.md`. `strata_broad(at, normal, distância)` no `shaders/rock_strata.gdshaderinc`: bancadas de 4,2 m,
+  mais marcadas, só de longe, depois dos estratos, na rocha do terreno e nas pedras. **Função de include que precisa da câmera recebe a
+  distância de quem chama.**
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4114,6 +4120,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 343 — Restolho e fardos (nossa) | **feita em 07/11/2026**: depois da colheita do cereal, o campo de restolho claro com os sacos sendo levados, até a plantação voltar; plano em `docs/plano_fase343.md` |
 | 344 — Sebe alta (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_340_344.md` (campos em faixa): a sebe entre as fazendas mais alta e irregular, com moitas altas de vez em quando; plano em `docs/plano_fase344.md` |
 | 345 — Granito no alto (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande): grupos de rocha cinza nos topos e cristas dos morros, fora de onde se constrói; plano em `docs/plano_fase345.md` |
+| 346 — Estratos de longe (nossa) | **feita em 07/11/2026**: bancadas largas e mais marcadas na rocha vista de longe, onde os estratos de perto já sumiam; plano em `docs/plano_fase346.md` |
 
 Pendências já vistas para fases futuras:
 

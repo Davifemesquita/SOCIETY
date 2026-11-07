@@ -463,6 +463,8 @@ void fragment() {
 	if (rock > 0.001) {
 		// (Fase 322: pela normal da face, que na parede da garganta é a da parede)
 		rock_a.rgb *= strata_factor(world_position, blend_normal);
+		// Fase 346: as bancadas largas, só de longe
+		rock_a.rgb *= strata_broad(world_position, blend_normal, camera_distance);
 		// Fase 310: os blocos grandes da face
 		rock_a.rgb *= block_factor(world_position, blend_normal);
 		// Fase 291: o musgo nas saliências (a textura da grama dá o miúdo dele)

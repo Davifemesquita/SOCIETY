@@ -46,6 +46,28 @@ float strata_factor(vec3 at, vec3 normal_w) {
 	return mix(1.0, factor, steep);
 }
 
+// Fase 346: as bancadas de longe. Os estratos de strata_m somem a mais de ~150 m (menores que um pixel); por cima deles, camadas
+// largas de strata_broad_m, com a borda clara e a sombra mais fortes, entram de strata_broad_from_m a strata_broad_to_m da câmera
+// (a distância vem de quem chama: função de include não lê a câmera).
+uniform float strata_broad_m = 4.2;
+uniform float strata_broad_light = 0.3;
+uniform float strata_broad_shade = 0.42;
+uniform float strata_broad_from_m = 70.0;
+uniform float strata_broad_to_m = 220.0;
+
+float strata_broad(vec3 at, vec3 normal_w, float distance_m) {
+	float steep = 1.0 - smoothstep(0.55, 0.9, normal_w.y);
+	float far = smoothstep(strata_broad_from_m, strata_broad_to_m, distance_m);
+	if (steep * far <= 0.0) {
+		return 1.0;
+	}
+	float warp = (strata_noise(at.xz * 0.025) - 0.5) * 2.0 * strata_broad_m * 0.6;
+	float layer = fract((at.y + warp) / strata_broad_m);
+	float lip = smoothstep(0.8, 0.96, layer) * (1.0 - smoothstep(0.96, 1.0, layer));
+	float under = 1.0 - smoothstep(0.0, 0.3, layer);
+	return mix(1.0, 1.0 + lip * strata_broad_light - under * strata_broad_shade, steep * far);
+}
+
 // Fase 291: o musgo e o capim nas saliências da rocha. Nas partes quase planas (pela normal: moss_flat) e no ressalto de cima de
 // cada camada (o mesmo dos estratos), em manchas de moss_patch_m, mais no lado da sombra (o norte fixo moss_shade_dir: com o sol
 // do dia o musgo andaria) e menos nas faces de pé. Devolve quanto pintar de musgo (0 a 1).

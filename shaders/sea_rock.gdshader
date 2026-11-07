@@ -68,6 +68,8 @@ void fragment() {
 	color = mix(color, grey, stone_grey_mix) * stone_light;
 	// Fase 290: os estratos e os sulcos, os mesmos da rocha do terreno (pela altura e pelo lugar no mundo)
 	color *= strata_factor(world_position, world_normal);
+	// Fase 346: as bancadas largas, só de longe
+	color *= strata_broad(world_position, world_normal, distance(CAMERA_POSITION_WORLD, world_position));
 	// Fase 310: os blocos grandes da face
 	color *= block_factor(world_position, world_normal);
 	// Fase 291: o musgo nas saliências; na pedra do mar, só acima da pedra molhada (a maré o tira)
