@@ -3812,6 +3812,12 @@ Regras que já custaram investigação:
   `shaders/water.gdshader` em (0,03; 0,12; 0,18). **No laboratório da água, o que pesa de cima é a cor do fundo** (o escurecido de longe e
   o reflexo quase não mudam a tela).
 
+### Onda de perto (Fase 356, nossa)
+
+- **Plano** em `docs/plano_fase356.md`. No `shaders/water.gdshader`, um trem de onda de 12 m de fase bem torcida, na normal, de perto
+  (`wave_*`), com a crista mais clara; `glint_strength` 1,0. **Três trens de seno cruzados fazem um favo de bolinhas no mar**: um só,
+  torcido.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4178,6 +4184,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 353 — Miolo da quadra (nossa) | **feita em 07/11/2026**: o chão de terra pisada das casas mais largo, cobrindo o miolo entre casas próximas; plano em `docs/plano_fase353.md` |
 | 354 — Fumaça cheia (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a fumaça das chaminés das casas mais cheia, em mais casas e vista de mais longe; plano em `docs/plano_fase354.md` |
 | 355 — Marinho (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_355_359.md` (mar aberto): o mar aberto das temperadas mais escuro, azul-petróleo, visto de cima; plano em `docs/plano_fase355.md` |
+| 356 — Onda de perto (nossa) | **feita em 07/11/2026**: a onda média de perto, com cristas compridas e irregulares e a crista mais clara, e a cintilação do sol mais fraca; plano em `docs/plano_fase356.md` |
 
 Pendências já vistas para fases futuras:
 

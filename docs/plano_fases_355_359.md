@@ -31,3 +31,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 - **355 feita em 07/11/2026** (`docs/plano_fase355.md`): o fundo do mar das temperadas mais escuro; laboratório em
   `F:\ferramentas\capturas\fase355\`.
+- **356 feita em 07/11/2026** (`docs/plano_fase356.md`): a onda de perto (um trem torcido) e a cintilação mais fraca; capturas em
+  `F:\ferramentas\capturas\fase356\`.

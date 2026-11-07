@@ -50,6 +50,7 @@ func _run() -> void:
 			_set_uniforms(material, variant)
 			await _shot(game, "w%d_vila_de_longe.png" % index, points[0], 420.0, 0.6)
 			await _horizon(game, "w%d_horizonte.png" % index, points[0])
+			await _shot(game, "w%d_praia.png" % index, points[2], 70.0, 0.3)
 			index += 1
 		get_tree().quit()
 		return

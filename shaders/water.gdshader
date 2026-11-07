@@ -154,6 +154,17 @@ uniform vec4 chop_lengths_m = vec4(2.7, 1.8, 1.15, 0.75);
 uniform float chop_speed = 1.0;
 uniform float chop_near_m = 35.0;
 uniform float chop_far_m = 90.0;
+// Society (Fase 356): a onda de perto, três trens de wave_lengths_m entre o marulho e o picado, tortos pelo ruído, na normal, e a crista
+// mais clara (wave_crest_light); somem de wave_near_m a wave_far_m da câmera
+uniform float wave_strength = 1.0;
+uniform vec3 wave_lengths_m = vec3(12.0, 8.0, 5.5);
+// (um trem só: com os três cruzados o mar saía num favo de bolinhas; os outros ficam em zero)
+uniform vec3 wave_slopes = vec3(0.11, 0.0, 0.0);
+uniform float wave_speed = 0.8;
+uniform float wave_near_m = 120.0;
+uniform float wave_far_m = 250.0;
+uniform float wave_crest_light = 0.1;
+uniform float wave_twist_amount = 15.0;
 // Society (Fase 293): até que diferença de profundidade (m, ao longo da vista) o anel de espuma em volta das pedras vai
 uniform float rock_foam_m = 0.45;
 // Society (Fase 318): a espuma em volta das pedras do rio (0 = sem): quantas vezes rock_foam_m ela vai e a faixa da margem (m da
@@ -203,7 +214,8 @@ group_uniforms;
 global uniform vec3 sun_direction;
 global uniform float night_light;
 group_uniforms Glints;
-uniform float glint_strength = 3.0;
+// (Fase 356: 1,0, era 3,0: com o sol na frente da câmera, desde a Fase 330, a cintilação perto da praia virava pontos brancos grandes)
+uniform float glint_strength = 1.0;
 uniform float glint_sharpness = 40.0;
 uniform float glint_cell_m = 0.45;
 uniform float glint_rate = 3.0;
@@ -645,6 +657,28 @@ void fragment() {
 		}
 	}
 
+	// Society (Fase 356): a onda de perto, entre o marulho e o picado
+	float mid_crest = 0.0;
+	float wave_near = 1.0 - smoothstep(wave_near_m, wave_far_m, length(VERTEX));
+	if (wave_strength > 0.0 && wave_near > 0.0) {
+		vec2 wave_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+		float wave_t = TIME * float(!freeze_time) * wave_speed;
+		float wave_twist = reef_noise(world_coordinates.xz / 26.0) * wave_twist_amount;
+		vec2 wave_slope = vec2(0.0);
+		float wave_height = 0.0;
+		for (int i = 0; i < 3; i++) {
+			float turn = i == 0 ? 0.2 : (i == 1 ? -0.45 : 0.75);
+			vec2 dir = vec2(wave_wind.x * cos(turn) - wave_wind.y * sin(turn), wave_wind.x * sin(turn) + wave_wind.y * cos(turn));
+			float k = TAU / wave_lengths_m[i];
+			float phase = dot(dir, world_coordinates.xz) * k - sqrt(9.8 * k) * wave_t + wave_twist * (0.6 + float(i) * 0.35);
+			wave_slope += dir * wave_slopes[i] * cos(phase);
+			wave_height += sin(phase) * wave_slopes[i] / max(wave_slopes.x, 0.001);
+		}
+		float wave_amount = wave_strength * wave_near * mix(0.7, 1.3, sea_whitecaps);
+		NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(wave_slope.x * wave_amount, 0.0, wave_slope.y * wave_amount, 0.0)).xyz);
+		mid_crest = smoothstep(0.55, 1.0, wave_height) * wave_amount;
+	}
+
 	// Society (Fase 296): a água picada de perto (as ondinhas que quebram o reflexo), por cima das ondas e do marulho
 	float chop_near = 1.0 - smoothstep(chop_near_m, chop_far_m, length(VERTEX));
 	if (chop_strength > 0.0 && chop_near > 0.0) {
@@ -982,4 +1016,6 @@ void fragment() {
 	float glint = pow(facing, glint_sharpness) * sparkle * open_sea * far * day * (1.0 - murk);
 	// sem cintilação na sombra da falésia
 	EMISSION += vec3(1.0, 0.95, 0.85) * glint * glint_strength * cliff_dark;
+	// Fase 356: a crista da onda de perto, mais clara
+	EMISSION *= 1.0 + mid_crest * wave_crest_light;
 }
