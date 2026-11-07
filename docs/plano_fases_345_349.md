@@ -37,3 +37,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase347\`.
 - **348 feita em 07/11/2026** (`docs/plano_fase348.md`): fendas verticais pelos planos do mundo; capturas em
   `F:\ferramentas\capturas\fase348\`.
+- **349 feita em 07/11/2026** (`docs/plano_fase349.md`): os matacões do recheio junto das encostas; o roteiro custa ~0,3–0,5 ms de GPU,
+  das rochas novas; capturas em `F:\ferramentas\capturas\fase349\`. **Roteiro concluído.**

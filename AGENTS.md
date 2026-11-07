@@ -3774,6 +3774,13 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase348.md`. `crack_factor` no `shaders/rock_strata.gdshaderinc`: fendas como planos verticais do mundo (cortes
   em x e z), não pela normal, na rocha do terreno e nas pedras.
 
+### Matacões no capim (Fase 349, nossa)
+
+- **Plano** em `docs/plano_fase349.md`, a última do roteiro `docs/plano_fases_345_349.md`. `ScatterView.Kind.BOULDER` (no fim do enum e
+  das listas `OPEN` e `NEAR_FOREST`), a `RockModel` com o material da `RockView`, junto de desnível (`_near_relief`), nas temperadas.
+  **Teste de peça do recheio confere a ordem relativa, não "a última"** (peças novas entram depois). **A rocha triplanar é cara por
+  pixel**: o roteiro das Fases 345 a 349 custou ~0,3–0,5 ms de GPU, das rochas novas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4133,6 +4140,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 346 — Estratos de longe (nossa) | **feita em 07/11/2026**: bancadas largas e mais marcadas na rocha vista de longe, onde os estratos de perto já sumiam; plano em `docs/plano_fase346.md` |
 | 347 — Leque de cascalho (nossa) | **feita em 07/11/2026**: manchas de cascalho cinza no pé das encostas de rocha e dos barrancos; plano em `docs/plano_fase347.md` |
 | 348 — Fendas escuras (nossa) | **feita em 07/11/2026**: fendas verticais escuras nas faces da rocha e das pedras; plano em `docs/plano_fase348.md` |
+| 349 — Matacões no capim (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_345_349.md` (pedra grande): pedras grandes soltas no capim junto das encostas e dos barrancos das ilhas temperadas; o roteiro custa ~0,3–0,5 ms de GPU; plano em `docs/plano_fase349.md` |
 
 Pendências já vistas para fases futuras:
 

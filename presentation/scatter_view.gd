@@ -35,7 +35,7 @@ extends Node3D
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
 		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING,
-		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH, CLIFF_SHRUB, VERGE_GRASS }
+		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH, CLIFF_SHRUB, VERGE_GRASS, BOULDER }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -78,13 +78,20 @@ const NEAR_WORKS: Array[Array] = [[Kind.CRATE, 0.18], [Kind.BARREL, 0.14], [Kind
 const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FLOWERS, 0.12], [Kind.SNAG, SNAG_FOREST_CHANCE],
 		[Kind.SCREE, SCREE_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE], [Kind.MOSSY_LOG, MOSSY_LOG_CHANCE],
 		[Kind.HAWTHORN, HAWTHORN_CHANCE], [Kind.FOXGLOVE, FOXGLOVE_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE],
-		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE]]
+		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE], [Kind.BOULDER, BOULDER_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
 		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE], [Kind.VERGE_GRASS, VERGE_GRASS_CHANCE]]
 ## Fase 338: o capim da beira (VERGE_GRASS), a touceira de capim alto da Fase 167 sem a mancha dela, no fim da lista NEAR_ROAD (a
 ## beira das estradas fora da vila: perto de casa e de fábrica valem outras listas), só nas temperadas, mais escura
 ## (VERGE_GRASS_SHADE).
 const VERGE_GRASS_CHANCE := 0.55
+## Fase 349: os matacões (BOULDER), no fim do enum e das listas OPEN e NEAR_FOREST: a forma da RockModel com o material da RockView,
+## de BOULDER_SCALE metros de raio, meio enterrada, só nas temperadas e na célula junto de um desnível de BOULDER_NEAR_RELIEF_M ou mais
+## (ela ou uma vizinha: o pé e a beira da encosta e do barranco).
+const BOULDER_CHANCE := 0.1
+const BOULDER_NEAR_RELIEF_M := 1.6
+const BOULDER_SCALE := Vector2(0.55, 1.3)
+const BOULDER_SINK := 0.35
 const VERGE_GRASS_SHADE := Vector2(0.62, 0.82)
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
 const STREET_PALM_CHANCE := 0.16
@@ -111,7 +118,7 @@ const SNAG_DARK := Color(0.26, 0.23, 0.2)
 const OPEN: Array[Array] = [[Kind.TUFT, 0.25], [Kind.FLOWERS, 0.05], [Kind.BUSH, 0.04], [Kind.POPPIES, POPPY_CHANCE],
 		[Kind.SCREE, SCREE_CHANCE], [Kind.TALL_GRASS, TALL_GRASS_CHANCE], [Kind.ROCK_PINE, ROCK_PINE_CHANCE],
 		[Kind.RUIN, RUIN_CHANCE], [Kind.FAIRY_RING, FAIRY_RING_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE],
-		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE]]
+		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE], [Kind.BOULDER, BOULDER_CHANCE]]
 ## Fase 167: o capim alto — a chance por célula dentro de uma mancha (o ruído das manchas, como o das papoulas, com nós a cada
 ## TALL_GRASS_PATCH_CELLS e a mancha onde passa de TALL_GRASS_THRESHOLD), as folhas da touceira num disco de
 ## TALL_GRASS_RADIUS_M, a altura delas e as cores (verde embaixo, palha nas pontas e nas espigas).
@@ -290,6 +297,9 @@ func setup(world: WorldState, data: GameData = GameData.get_default(), config: G
 		if kind == Kind.STREET_PALM or kind == Kind.CLIFF_SPRUCE:
 			# o coqueiro e o abeto trazem o material da folhagem das árvores (o vento das copas)
 			_materials[kind] = _meshes[kind].surface_get_material(0)
+		elif kind == Kind.BOULDER:
+			# Fase 349: a rocha das pedras (a textura triplanar no mundo, com os estratos e as fendas)
+			_materials[kind] = RockView.material()
 	EventBus.building_placed.connect(_on_building_changed)
 	EventBus.building_removed.connect(_on_building_changed)
 	EventBus.roads_changed.connect(_on_roads_changed)
@@ -833,6 +843,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.SUNFLOWER and tropical:
 			# os girassóis só nos quintais das temperadas
 			continue
+		elif kind == Kind.BOULDER and (tropical or not _near_relief(grid, cell)):
+			# o matacão só junto da encosta e do barranco das temperadas
+			continue
 		elif kind == Kind.VERGE_GRASS and tropical:
 			# o capim da beira só nas estradas das temperadas
 			continue
@@ -921,6 +934,11 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 			var strength := poppy_strength(island_id, cell)
 			basis = basis.scaled(Vector3.ONE * lerpf(POPPY_EDGE_SCALE, 1.0, strength))
 			_poppy_extras(grid, config, island_id, cell, strength, result)
+		if kind == Kind.BOULDER:
+			# Fase 349: do tamanho dele e meio enterrado
+			var size := rng.randf_range(BOULDER_SCALE.x, BOULDER_SCALE.y)
+			basis = Basis(Vector3.UP, rng.randf() * TAU) * Basis.from_scale(Vector3(size, size * rng.randf_range(0.6, 0.9), size))
+			y -= size * BOULDER_SINK
 		var list: Array = result[kind]
 		list.append([Transform3D(basis, Vector3(x, y, z)), color])
 
@@ -1118,6 +1136,15 @@ static func cell_relief(grid: IslandGrid, cell: Vector2i) -> float:
 	return maxf(maxf(a, b), maxf(c, d)) - minf(minf(a, b), minf(c, d))
 
 
+## Fase 349: a célula ou uma vizinha pelos lados tem desnível de BOULDER_NEAR_RELIEF_M ou mais.
+static func _near_relief(grid: IslandGrid, cell: Vector2i) -> bool:
+	for step: Vector2i in [Vector2i.ZERO, Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+		var at := cell + step
+		if grid.in_bounds(at) and cell_relief(grid, at) >= BOULDER_NEAR_RELIEF_M:
+			return true
+	return false
+
+
 ## Fase 162: a normal do plano que melhor passa pelos quatro cantos da célula.
 static func cell_normal(grid: IslandGrid, cell: Vector2i) -> Vector3:
 	if grid.corner_heights.is_empty():
@@ -1209,6 +1236,8 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return scree_mesh()
 	if kind == Kind.TALL_GRASS or kind == Kind.VERGE_GRASS:
 		return tall_grass_mesh()
+	if kind == Kind.BOULDER:
+		return RockModel.mesh(2)
 	if kind == Kind.REEDS:
 		return reeds_mesh()
 	if kind == Kind.ROCK_PINE:

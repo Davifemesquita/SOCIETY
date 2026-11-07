@@ -568,13 +568,18 @@ void fragment() {
 	// Fase 347: o leque de cascalho no pé das encostas de rocha: onde há encosta íngreme (a inclinação dos dados) a scree_reach_m em
 	// algum dos quatro lados, o próprio chão é quase plano e côncavo (o pé, não a crista), recortado em leque por um ruído; fora da
 	// areia, da lama, da rocha e da água
-	if (scree_foot > 0.0) {
+	// (primeiro o teste barato, o próprio chão; as quatro amostras e os ruídos só onde ele passa: em todo pixel de terra custavam
+	// ~0,5 ms de GPU)
+	float scree_base = (1.0 - smoothstep(0.12, 0.26, data.r)) * smoothstep(0.48, 0.56, data.g) * (1.0 - sand) * (1.0 - mud)
+			* (1.0 - rock) * land * scree_foot;
+	if (scree_base > 0.001) {
 		vec2 scree_probe = vec2(scree_reach_m) / region_bounds.zw;
 		float steep_near = max(max(texture(terrain_data, cell + vec2(scree_probe.x, 0.0)).r, texture(terrain_data, cell - vec2(scree_probe.x, 0.0)).r),
 				max(texture(terrain_data, cell + vec2(0.0, scree_probe.y)).r, texture(terrain_data, cell - vec2(0.0, scree_probe.y)).r));
-		float foot = smoothstep(0.28, 0.45, steep_near) * (1.0 - smoothstep(0.12, 0.26, data.r)) * smoothstep(0.48, 0.56, data.g);
-		foot *= smoothstep(0.46, 0.64, value_noise(world_position.xz * 0.28) * 0.6 + value_noise(world_position.xz * 1.3) * 0.4);
-		foot *= (1.0 - sand) * (1.0 - mud) * (1.0 - rock) * land * scree_foot;
+		float foot = smoothstep(0.28, 0.45, steep_near) * scree_base;
+		if (foot > 0.001) {
+			foot *= smoothstep(0.46, 0.64, value_noise(world_position.xz * 0.28) * 0.6 + value_noise(world_position.xz * 1.3) * 0.4);
+		}
 		if (foot > 0.001) {
 			vec4 scree_a = texture(rock_albedo, uv * scree_scale);
 			float scree_luma = dot(scree_a.rgb, vec3(0.299, 0.587, 0.114));

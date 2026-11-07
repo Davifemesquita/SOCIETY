@@ -7,14 +7,15 @@ const TERRAIN := "res://shaders/terrain.gdshader"
 
 func test_the_scree_sits_at_the_foot() -> void:
 	var code := FileAccess.get_file_as_string(TERRAIN)
-	var at := code.find("if (scree_foot > 0.0) {")
+	var at := code.find("float scree_base = ")
 	assert_int(at).is_greater(code.find("float land = step(0.0, world_position.y);"))
 	var block := code.substr(at, code.find("\n\t}\n", at) - at)
 	# íngreme por perto, o próprio chão plano e côncavo
 	assert_str(block).contains("steep_near")
 	assert_str(block).contains("(1.0 - smoothstep(0.12, 0.26, data.r))")
 	assert_str(block).contains("smoothstep(0.48, 0.56, data.g)")
-	assert_str(block).contains("(1.0 - sand) * (1.0 - mud) * (1.0 - rock) * land")
+	assert_str(block).contains("(1.0 - sand) * (1.0 - mud)")
+	assert_str(block).contains("* (1.0 - rock) * land * scree_foot")
 
 
 func test_the_shader_compiles_with_the_scree() -> void:

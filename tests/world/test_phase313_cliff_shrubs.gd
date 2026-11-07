@@ -13,9 +13,13 @@ func before_test() -> void:
 	_sim = Simulation.new(_config, GameData.get_default(), ArchipelagoGenerator.new_world(1840, _config, GameData.get_default()))
 
 
+## A última regra das peças até a Fase 313 (as de depois entram no fim, sem mudar o sorteio das de antes).
 func _last_rule(rules: Array[Array]) -> int:
-	var last: Array = rules[rules.size() - 1]
-	var kind: int = last[0]
+	var kind := -1
+	for rule: Array in rules:
+		var other: int = rule[0]
+		if other <= ScatterView.Kind.CLIFF_SHRUB:
+			kind = other
 	return kind
 
 

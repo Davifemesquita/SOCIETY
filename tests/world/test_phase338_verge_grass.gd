@@ -16,7 +16,8 @@ func before_test() -> void:
 func test_the_verge_grass_comes_last() -> void:
 	var last: Array = ScatterView.NEAR_ROAD[ScatterView.NEAR_ROAD.size() - 1]
 	assert_int(last[0]).is_equal(ScatterView.Kind.VERGE_GRASS)
-	assert_int(ScatterView.Kind.VERGE_GRASS).is_equal(ScatterView.Kind.size() - 1)
+	# depois de todas as peças de antes (as de depois entram no fim do enum)
+	assert_int(ScatterView.Kind.VERGE_GRASS).is_greater(ScatterView.Kind.CLIFF_SHRUB)
 	assert_bool(ScatterView.PLANTS.has(ScatterView.Kind.VERGE_GRASS)).is_true()
 	assert_float(ScatterView.VERGE_GRASS_SHADE.y).is_less(0.9)
 
