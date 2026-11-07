@@ -3747,6 +3747,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase343.md`. Na `CropView`, nos `STUBBLE_STEPS` primeiros degraus do cereal, a leira de restolho
   (`STUBBLE`) que some na terra, e os sacos da colheita ficam e vão sendo levados (`left_after_harvest`, no `_draw_harvest`).
 
+### Sebe alta (Fase 344, nossa)
+
+- **Plano** em `docs/plano_fase344.md`, a última do roteiro `docs/plano_fases_340_344.md`. `CropView.hedge_mesh` com quatro massas de
+  tamanhos diferentes (até ~1,3 m), cada lanço de uma altura e um em `HEDGE_TREE_EVERY` como moita alta (`HEDGE_TREE_SCALE`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4101,6 +4106,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 341 — Cabeceira de capim (nossa) | **feita em 07/11/2026**: a faixa de capim entre os campos mais larga e marcada, com as plantas dentro da terra lavrada; plano em `docs/plano_fase341.md` |
 | 342 — Cor de cultura (nossa) | **feita em 07/11/2026**: cada plantação num verde próprio que se distingue de longe (a batata funda, o lúpulo vivo, a uva oliva, a cana lima, o café escuro, o tabaco palha); plano em `docs/plano_fase342.md` |
 | 343 — Restolho e fardos (nossa) | **feita em 07/11/2026**: depois da colheita do cereal, o campo de restolho claro com os sacos sendo levados, até a plantação voltar; plano em `docs/plano_fase343.md` |
+| 344 — Sebe alta (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_340_344.md` (campos em faixa): a sebe entre as fazendas mais alta e irregular, com moitas altas de vez em quando; plano em `docs/plano_fase344.md` |
 
 Pendências já vistas para fases futuras:
 

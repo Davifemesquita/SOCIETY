@@ -99,6 +99,9 @@ const FIELD_SHADES: Array[Color] = [Color(1.0, 1.0, 1.0), Color(0.9, 0.95, 0.85)
 const BORDER_PIECE_M := 1.0
 const WALL_RELIEF_M := 0.3
 const HEDGE_COLOR := Color(0.24, 0.36, 0.16)
+## Fase 344: uma peça da sebe em HEDGE_TREE_EVERY vira uma moita alta, HEDGE_TREE_SCALE (largura, altura) vezes a peça.
+const HEDGE_TREE_EVERY := 8
+const HEDGE_TREE_SCALE := Vector2(1.35, 2.3)
 const WALL_COLOR := Color(0.55, 0.53, 0.48)
 
 ## Por planta: espaço entre plantas na fileira e entre fileiras (m).
@@ -867,9 +870,16 @@ func _border_pieces(grid: IslandGrid, cell: Vector2i, step: Vector2i, stone: boo
 		point.y = grid.height_at(point.x, point.z)
 		var noise := absi(hash(Vector2i(roundi(point.x * 10.0), roundi(point.z * 10.0))))
 		var scale := 0.85 + float(noise % 300) / 1000.0
+		var width := 1.0
+		if not stone:
+			# Fase 344: a sebe varia mais de altura, e uma peça em HEDGE_TREE_EVERY vira uma moita alta (quase uma árvore pequena)
+			scale = 0.8 + float(noise % 650) / 1000.0
+			if noise / 7 % HEDGE_TREE_EVERY == 0:
+				scale = HEDGE_TREE_SCALE.y
+				width = HEDGE_TREE_SCALE.x
 		var basis := Basis(Vector3.UP, atan2(-along.z, along.x) + (float(noise / 300 % 100) / 100.0 - 0.5) * 0.3)
 		var shade := 0.82 + float(noise / 30000 % 300) / 1000.0
-		var item := [Transform3D(basis.scaled(Vector3(1.0, scale, 1.0)), point), Color(shade, shade, shade)]
+		var item := [Transform3D(basis.scaled(Vector3(width, scale, width)), point), Color(shade, shade, shade)]
 		(walls if stone else hedges).append(item)
 
 
@@ -984,10 +994,13 @@ static func fence_mesh() -> ArrayMesh:
 static func hedge_mesh() -> ArrayMesh:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for i: int in 3:
+	# Fase 344: quatro massas de tamanhos e alturas diferentes (era uma fileira de três bolas iguais, baixa e regular)
+	var lumps: Array[Vector4] = [Vector4(-0.36, 0.5, 0.0, 0.44), Vector4(-0.08, 0.64, 0.06, 0.5), Vector4(0.2, 0.52, -0.05, 0.42),
+			Vector4(0.42, 0.7, 0.04, 0.4)]
+	for i: int in lumps.size():
+		var lump := lumps[i]
 		var color := HEDGE_COLOR if i % 2 == 0 else HEDGE_COLOR.lightened(0.12)
-		_part(tool, _sphere(0.42), Transform3D(Basis.from_scale(Vector3(0.95, 1.0 + 0.12 * (i % 2), 0.8)),
-				Vector3(-0.33 + 0.33 * i, 0.42, 0.0)), color)
+		_part(tool, _sphere(lump.w), Transform3D(Basis.from_scale(Vector3(0.9, 1.15, 0.85)), Vector3(lump.x, lump.y, lump.z)), color)
 	tool.index()
 	return tool.commit()
 

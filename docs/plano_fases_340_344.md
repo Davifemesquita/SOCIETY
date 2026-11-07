@@ -33,3 +33,4 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase341\`.
 - **342 feita em 07/11/2026** (`docs/plano_fase342.md`): as coberturas das culturas espalhadas pelo brilho e pelo matiz.
 - **343 feita em 07/11/2026** (`docs/plano_fase343.md`): o restolho do cereal e os sacos levados aos poucos depois da colheita.
+- **344 feita em 07/11/2026** (`docs/plano_fase344.md`): a sebe alta e irregular, com moitas altas. **Roteiro concluído.**
