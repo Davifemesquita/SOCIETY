@@ -55,6 +55,14 @@ static var _default: GameConfig
 ## Fase 263: com o sol abaixo do horizonte (noite), a exposição fica em (1 + night_exposure_boost) vezes a do dia: a noite
 ## legível, azulada, com as janelas e os lampiões acesos por cima (antes ficava quase preta fora deles).
 @export var night_exposure_boost: float = 0.45
+## Fase 330: de dia a luz ambiente (o céu e o enchimento) cai para ambient_day_energy vezes a de noite e do fim da tarde: a
+## sombra do sol aparece no chão e no pé da mata. Cheia com o sol a ambient_day_sun_high de altura (seno da elevação); com ele
+## baixo, volta à ambient_fill_energy.
+@export var ambient_day_energy: float = 0.75
+@export var ambient_day_sun_high: float = 0.35
+## Fase 330: o giro (graus) do sol e da lua em volta do eixo vertical, para o sol do dia ficar na frente e de lado da câmera
+## padrão (que olha para −z) e as sombras se verem.
+@export var sun_azimuth_offset_deg: float = 180.0
 ## Neblina da atmosfera do Sky3D: densidade e distância onde começa (Fase 255: a metade da Fase 53, de longe a ilha fica limpa).
 @export var sky_fog_density: float = 0.0001
 @export var sky_fog_start_m: float = 60.0
@@ -616,6 +624,8 @@ func validate() -> PackedStringArray:
 		problems.append("ticks_per_second deve ser maior que zero")
 	if vivid_exposure <= 0.0 or vivid_agx_contrast <= 0.0 or vivid_saturation <= 0.0 or sun_light_energy <= 0.0:
 		problems.append("a cor viva (exposição, contraste, saturação) e a força do sol devem ser maiores que zero")
+	if ambient_day_energy <= 0.0 or ambient_day_sun_high <= 0.05:
+		problems.append("ambient_day_energy deve ser maior que zero e ambient_day_sun_high passar de 0,05")
 	if dusk_exposure_boost < 0.0 or night_exposure_boost < 0.0 or dusk_sun_high <= 0.05:
 		problems.append("dusk_exposure_boost e night_exposure_boost não podem ser negativos e dusk_sun_high deve passar de 0,05")
 	if max_ticks_per_frame <= 0:

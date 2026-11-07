@@ -103,6 +103,15 @@ func follow_sun(sun_height: float) -> void:
 		return
 	var base := _environment_defaults().tonemap_exposure if Settings.period_look else _config.vivid_exposure
 	_sky.environment().tonemap_exposure = base * dusk_factor(_config, sun_height)
+	# Fase 330: a luz ambiente mais fraca de dia (a sombra do sol aparece)
+	_sky.environment().ambient_light_energy = ambient_factor(_config, sun_height)
+
+
+## Fase 330: a força da luz ambiente pela altura do sol: ambient_fill_energy com o sol baixo e de noite, descendo para
+## ambient_day_energy dela com o sol alto.
+static func ambient_factor(config: GameConfig, sun_height: float) -> float:
+	var day := smoothstep(0.05, config.ambient_day_sun_high, sun_height)
+	return config.ambient_fill_energy * lerpf(1.0, config.ambient_day_energy, day)
 
 
 static var _defaults: Environment

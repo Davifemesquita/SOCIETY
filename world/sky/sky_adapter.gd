@@ -69,8 +69,40 @@ func set_hour(hour: float) -> void:
 	_hour = h
 	if _sky3d != null:
 		_sky3d.set(&"current_time", minf(h, 23.9998))
+		_turn_sky()
 	else:
 		_update_simple_sky(h)
+
+
+## Fase 330: o sol e a lua girados sun_azimuth_offset_deg em volta do eixo vertical depois de cada conta do Sky3D: com a
+## câmera padrão olhando para −z, o sol do meio do dia fica na frente e de lado, e as sombras vêm para o jogador (sem o giro
+## ele ficava às costas da câmera e a sombra caía atrás de cada casa e árvore, escondida).
+func _turn_sky() -> void:
+	var offset := deg_to_rad(_config.sun_azimuth_offset_deg)
+	if offset == 0.0:
+		return
+	var dome: Variant = _sky3d.get(&"sky")
+	if not dome is Node:
+		return
+	var sky_dome: Node = dome
+	var sun_azimuth: Variant = sky_dome.get(&"sun_azimuth")
+	var moon_azimuth: Variant = sky_dome.get(&"moon_azimuth")
+	if sun_azimuth is float:
+		var turned: float = sun_azimuth
+		sky_dome.set(&"sun_azimuth", wrapf(turned + offset, -PI, PI))
+	if moon_azimuth is float:
+		var turned_moon: float = moon_azimuth
+		sky_dome.set(&"moon_azimuth", wrapf(turned_moon + offset, -PI, PI))
+
+
+## Refaz o céu na hora de agora (depois de mudar o giro nas capturas).
+func refresh() -> void:
+	var hour := _hour
+	_hour = -1.0
+	if _sky3d != null:
+		# a mesma hora não refaz a conta do Sky3D (e o giro somaria de novo no azimute já girado)
+		_sky3d.set(&"current_time", fposmod(hour + 0.01, 24.0))
+	set_hour(hour)
 
 
 func _create_sky3d() -> void:
@@ -153,7 +185,7 @@ func _update_simple_sky(hour: float) -> void:
 	var day_span := _config.sunset_hour - _config.sunrise_hour
 	var progress := clampf((hour - _config.sunrise_hour) / day_span, 0.0, 1.0)
 	var elevation := lerpf(8.0, 60.0, sin(progress * PI)) if night < 1.0 else 50.0
-	_sun.rotation_degrees = Vector3(-elevation, lerpf(-100.0, 100.0, progress), 0.0)
+	_sun.rotation_degrees = Vector3(-elevation, lerpf(-100.0, 100.0, progress) + _config.sun_azimuth_offset_deg, 0.0)
 	_sun.light_energy = lerpf(SUN_ENERGY, MOON_ENERGY, night)
 	_sun.light_color = Color(1.0, 0.95, 0.86).lerp(Color(0.6, 0.7, 1.0), night)
 	_simple_sky.sky_top_color = DAY_TOP.lerp(NIGHT_TOP, night)

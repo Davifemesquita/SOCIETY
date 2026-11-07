@@ -194,6 +194,7 @@ uniform float far_sea_from_m = 200.0;
 uniform float far_sea_to_m = 700.0;
 uniform float far_sea_dark = 0.45;
 uniform float far_sea_specular = 0.4;
+uniform float far_sea_roughness = 0.5;
 group_uniforms;
 
 // Society (Fase 110): a cintilação do sol no mar. Pontos de brilho onde o reflexo do sol cai, em células de glint_cell_m que
@@ -207,7 +208,7 @@ uniform float glint_cell_m = 0.45;
 uniform float glint_rate = 3.0;
 uniform float glint_share = 0.14;
 uniform float glint_open_m = 18.0;
-uniform float glint_fade_m = 900.0;
+uniform float glint_fade_m = 260.0;
 group_uniforms;
 
 // Society (Fase 125): o recife de coral das ilhas tropicais. Manchas escuras e irregulares no raso (de reef_from_m a
@@ -706,6 +707,9 @@ void fragment() {
 	ROUGHNESS = roughness;
 	// Fase 298: menos reflexo do céu de longe
 	SPECULAR *= mix(1.0, far_sea_specular, smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX)));
+	// Fase 330: com o sol na frente da câmera, o reflexo dele nas ondas lisas de longe virava manchas brancas: o mar de longe
+	// fica mais áspero (o reflexo se espalha num brilho largo e fraco)
+	ROUGHNESS = mix(ROUGHNESS, far_sea_roughness, smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX)));
 	
 	vec4 albedo_tex;
 #ifdef WORLD_TRIPLANAR
@@ -965,8 +969,10 @@ void fragment() {
 	vec3 sun_view = normalize((VIEW_MATRIX * vec4(sun_direction, 0.0)).xyz);
 	float facing = max(dot(reflect(-VIEW, NORMAL), sun_view), 0.0);
 	vec2 cell = floor(world_coordinates.xz / glint_cell_m);
-	float tick = floor(TIME * glint_rate * float(!freeze_time) + fract(sin(dot(cell, vec2(3.1, 7.7))) * 91.3) * 4.0);
-	float sparkle = step(1.0 - glint_share, fract(sin(dot(vec3(cell, tick), vec3(12.9898, 78.233, 45.164))) * 43758.5453));
+	// (Fase 330: o hash sem seno do recife; com o fract(sin(...)) as coordenadas do arquipélago juntavam os pontos em bolhas, e com
+	// o sol na frente da câmera elas apareciam de longe)
+	float tick = floor(TIME * glint_rate * float(!freeze_time) + reef_hash(cell + 17.0) * 4.0);
+	float sparkle = step(1.0 - glint_share, reef_hash(cell + vec2(tick * 7.0, tick * 3.0)));
 	// um ponto redondo no meio da célula, não o quadrado dela
 	sparkle *= 1.0 - smoothstep(0.12, 0.38, length(fract(world_coordinates.xz / glint_cell_m) - 0.5));
 	float open_sea = smoothstep(glint_open_m * 0.4, glint_open_m, shore_m);

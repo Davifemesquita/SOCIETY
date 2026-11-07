@@ -3664,6 +3664,16 @@ Regras que já custaram investigação:
   peça nova na beira da praia senta pelo `TerrainDetail.shown_at`, e a `TerrainView` zera a célula quando um prédio chega. O bake
   dos dados do terreno sai das alturas desenhadas. Captura em `tools/capture_phase280.tscn`.
 
+### Sombra funda (Fase 330, nossa)
+
+- **Plano** em `docs/plano_fase330.md`, primeira do roteiro `docs/plano_fases_330_334.md` (luz e sombra; seis roteiros, Fases 330 a
+  359, idealizados em 07/11/2026). **O sol ficava às costas da câmera padrão** (que olha para −z) e as sombras se escondiam atrás de
+  cada casa e árvore: o `SkyAdapter._turn_sky` gira o sol e a lua `sun_azimuth_offset_deg` (180°) depois de cada conta do Sky3D, e o
+  céu simples gira junto. A luz ambiente de dia cai para `ambient_day_energy` (0,75) pela altura do sol (`GraphicsQuality.ambient_factor`,
+  no `follow_sun`). O mar de longe fica áspero (`far_sea_roughness`): com o sol na frente, o reflexo dele virava manchas brancas.
+  **Captura que troca o giro chama `SkyAdapter.refresh`** (o Sky3D não recalcula na mesma hora e o giro somaria). Captura em
+  `tools/capture_phase330.tscn` (`CAPTURA_AMBIENTE`, `CAPTURA_AGUA`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4004,6 +4014,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 327 — Copa sem bolhas (nossa) | **feita em 06/11/2026**, a terceira do roteiro `docs/plano_fases_325_329.md` (prado e mata): a luz das copas das folhosas pela copa inteira, clara no alto e escura na base, com a sombra por dentro entre as massas, no lugar de cada massa clara em cima e escura embaixo; plano em `docs/plano_fase327.md` |
 | 328 — Capim rente (nossa) | **feita em 06/11/2026**, a quarta do roteiro `docs/plano_fases_325_329.md` (prado e mata): o tapete de capim de perto com metade da altura, mais cerrado e no tom do chão, no lugar dos fios verde-limão espetados; plano em `docs/plano_fase328.md` |
 | 329 — Praia em curva (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata): a beira da praia desce em rampa até a água, sem o degrau de 1,2 m nem a escadinha das células, só no desenho e com a linha d'água no mesmo lugar; plano em `docs/plano_fase329.md` |
+| 330 — Sombra funda (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_330_334.md` (luz e sombra): o sol do dia passa para a frente da câmera padrão (estava às costas, e as sombras se escondiam atrás de cada casa e árvore), a luz ambiente fica mais fraca de dia e o mar de longe fica áspero; plano em `docs/plano_fase330.md` |
 
 Pendências já vistas para fases futuras:
 
