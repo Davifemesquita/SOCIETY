@@ -27,4 +27,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 ## Estado
 
-- A fazer.
+- **335 feita em 07/11/2026** (`docs/plano_fase335.md`): a terra das estradas cinza-bege e mais clara; capturas em
+  `F:\ferramentas\capturas\fase335\`.

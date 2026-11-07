@@ -3698,6 +3698,12 @@ Regras que já custaram investigação:
   valor fazia as manchas escuras em facetas. O matiz e a saturação do prado já eram os do Anno depois da Fase 330; o brilho fica
   (cor viva). **Captura com `CAPTURA_TERRENO` no `tools/capture_phase330.tscn`** (vec3 como `a:b:c`).
 
+### Estrada clara (Fase 335, nossa)
+
+- **Plano** em `docs/plano_fase335.md`, primeira do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno). No
+  `shaders/terrain.gdshader`, a terra das estradas vai `road_tint_mix` para o cinza-bege `road_tint` na luminância da textura e
+  clareia `road_light`, antes dos sulcos e das poças: a faixa clara se lê de longe.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4043,6 +4049,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 332 — Casca sem laranja (nossa) | **feita em 07/11/2026**, no lugar do "pé das árvores" (com a sombra do sol à vista, a árvore já assenta): o alto do tronco do pinheiro castanho-avermelhado, sem o laranja vivo; plano em `docs/plano_fase332.md` |
 | 333 — Ar de longe (nossa) | **feita em 07/11/2026**: a neblina do céu só no longe e mais densa, e as ilhas do fundo e o horizonte clareiam e azulam (rosados no fim da tarde), sem mexer no perto; plano em `docs/plano_fase333.md` |
 | 334 — Prado fundo (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_330_334.md` (luz e sombra): as manchas de capim alto mais escuras, que se leem de longe, sem as facetas de borda reta; plano em `docs/plano_fase334.md` |
+| 335 — Estrada clara (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): a terra batida das estradas cinza-bege e mais clara, uma faixa que se lê de longe, no lugar do laranja-tijolo; plano em `docs/plano_fase335.md` |
 
 Pendências já vistas para fases futuras:
 

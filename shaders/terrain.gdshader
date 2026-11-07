@@ -135,6 +135,11 @@ uniform float road_rut_offset_m = 0.42;
 uniform float road_rut_width_m = 0.14;
 uniform float road_rut_darken = 0.68;
 uniform float road_rut_far_m = 160.0;
+// Fase 335: a terra batida das estradas puxada road_tint_mix para o cinza-bege road_tint (na luminância da textura: o claro e o
+// escuro dela ficam) e clareada road_light: a terra laranja da textura sumia no capim, e no Anno a estrada é uma faixa clara
+uniform vec3 road_tint = vec3(0.6, 0.56, 0.47);
+uniform float road_tint_mix = 0.75;
+uniform float road_light = 1.4;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
 // Fase 53 (cor no jeito do Anno): grama verde e saturada, a seca mais fraca, areia de praia clara e rocha escura. Fase 257:
@@ -552,6 +557,8 @@ void fragment() {
 			if (d < width + road_trampled_m || roads.b > 0.0) {
 				vec3 road_uvw = vec3(world_position.xz / road_texture_m, 0.0);
 				vec4 dirt_a = texture(road_albedo, road_uvw);
+				vec3 dirt_grey = road_tint * (dot(dirt_a.rgb, vec3(0.299, 0.587, 0.114)) / dot(road_tint, vec3(0.299, 0.587, 0.114)));
+				dirt_a.rgb = mix(dirt_a.rgb, dirt_grey, road_tint_mix) * road_light;
 				vec3 dirt_n = texture(road_normal, road_uvw).rgb;
 				float on_road = 1.0 - smoothstep(width - 0.15, width + 0.05, d);
 				float cover = max(on_road, smoothstep(0.2, 0.8, roads.b));

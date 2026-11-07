@@ -34,6 +34,8 @@ func _run() -> void:
 		for variant: String in ground_lab.split("|"):
 			for material: ShaderMaterial in game.terrain_view.materials():
 				_set_uniforms(material, variant)
+			await _shot(game, "t%d_vila_de_perto.png" % ground_index, points[0], 45.0, 0.6)
+			await _shot(game, "t%d_vila_de_cima.png" % ground_index, points[0], 110.0, 0.6)
 			await _shot(game, "t%d_mata_alta.png" % ground_index, high, 160.0, 0.6)
 			await _horizon(game, "t%d_horizonte.png" % ground_index, points[0])
 			ground_index += 1
