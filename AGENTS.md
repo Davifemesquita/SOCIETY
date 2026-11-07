@@ -3709,6 +3709,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase336.md`. No bloco da estrada de terra do `shaders/terrain.gdshader`, pedrinhas de Voronoi de
   `road_gravel_m` pelo `strata_hash`, mais no meio, poucas nos sulcos, nenhuma na poça, só até `road_gravel_far_m`.
 
+### Rua larga na vila (Fase 337, nossa)
+
+- **Plano** em `docs/plano_fase337.md`. A meia largura da estrada de terra (`road_half_width_m`, 0,72 no campo) cresce
+  `road_town_widen_m` onde o canal b da máscara (o chão de vila) passa de 0,25: a rua quase enche a célula entre as casas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4056,6 +4061,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 334 — Prado fundo (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_330_334.md` (luz e sombra): as manchas de capim alto mais escuras, que se leem de longe, sem as facetas de borda reta; plano em `docs/plano_fase334.md` |
 | 335 — Estrada clara (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): a terra batida das estradas cinza-bege e mais clara, uma faixa que se lê de longe, no lugar do laranja-tijolo; plano em `docs/plano_fase335.md` |
 | 336 — Cascalho na estrada (nossa) | **feita em 07/11/2026**: pedrinhas cinza-claras na terra das estradas, mais no meio e menos nos sulcos, só de perto; plano em `docs/plano_fase336.md` |
+| 337 — Rua larga na vila (nossa) | **feita em 07/11/2026**: a estrada de terra mais larga onde passa entre as casas e as fábricas e mais estreita no campo, pelo chão de vila da máscara das estradas; plano em `docs/plano_fase337.md` |
 
 Pendências já vistas para fases futuras:
 

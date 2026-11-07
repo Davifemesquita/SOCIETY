@@ -128,7 +128,10 @@ uniform sampler2DArray road_normal : hint_normal, filter_linear_mipmap_anisotrop
 uniform float road_texture_m = 4.0;
 // meia largura da terra (o ruído de 1 e 4 m mexe na borda), a faixa de capim pisado além dela e os sulcos (distância do
 // meio, largura, quanto escurecem e até onde da câmera aparecem)
-uniform float road_half_width_m = 0.8;
+// (Fase 337: 0,72 no campo, era 0,8; mais road_town_widen_m onde a estrada passa pelo chão de vila (o canal b da máscara: as
+// portas, os quintais das casas, o pátio das fábricas), até encher a célula entre as casas)
+uniform float road_half_width_m = 0.72;
+uniform float road_town_widen_m = 0.33;
 uniform float road_edge_noise_m = 0.3;
 uniform float road_trampled_m = 0.5;
 uniform float road_rut_offset_m = 0.42;
@@ -559,8 +562,8 @@ void fragment() {
 		if (road_uv.x >= 0.0 && road_uv.y >= 0.0 && road_uv.x <= 1.0 && road_uv.y <= 1.0) {
 			vec4 roads = texture(road_mask, road_uv);
 			float d = roads.r * road_mask_max_m;
-			float width = road_half_width_m + ((value_noise(world_position.xz * 1.1) - 0.5)
-					+ (value_noise(world_position.xz * 4.0) - 0.5) * 0.4) * road_edge_noise_m;
+			float width = road_half_width_m + road_town_widen_m * smoothstep(0.25, 0.7, roads.b)
+					+ ((value_noise(world_position.xz * 1.1) - 0.5) + (value_noise(world_position.xz * 4.0) - 0.5) * 0.4) * road_edge_noise_m;
 			if (d < width + road_trampled_m || roads.b > 0.0) {
 				vec3 road_uvw = vec3(world_position.xz / road_texture_m, 0.0);
 				vec4 dirt_a = texture(road_albedo, road_uvw);

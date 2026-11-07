@@ -31,3 +31,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase335\`.
 - **336 feita em 07/11/2026** (`docs/plano_fase336.md`): o cascalho de Voronoi na estrada de terra, só de perto; capturas em
   `F:\ferramentas\capturas\fase336\`.
+- **337 feita em 07/11/2026** (`docs/plano_fase337.md`): a rua mais larga no chão de vila (o canal b da máscara), mais estreita no
+  campo; capturas em `F:\ferramentas\capturas\fase337\`.
