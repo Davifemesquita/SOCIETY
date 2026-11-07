@@ -29,3 +29,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 - **335 feita em 07/11/2026** (`docs/plano_fase335.md`): a terra das estradas cinza-bege e mais clara; capturas em
   `F:\ferramentas\capturas\fase335\`.
+- **336 feita em 07/11/2026** (`docs/plano_fase336.md`): o cascalho de Voronoi na estrada de terra, só de perto; capturas em
+  `F:\ferramentas\capturas\fase336\`.

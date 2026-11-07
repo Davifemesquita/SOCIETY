@@ -140,6 +140,13 @@ uniform float road_rut_far_m = 160.0;
 uniform vec3 road_tint = vec3(0.6, 0.56, 0.47);
 uniform float road_tint_mix = 0.75;
 uniform float road_light = 1.4;
+// Fase 336: o cascalho na estrada de terra. Células de Voronoi de road_gravel_m; road_gravel_share delas viram pedrinha (cinza clara,
+// num tom cada uma, com a sombra em volta e a normal estufada), mais no meio da estrada, poucas nos sulcos e nenhuma na poça; até
+// road_gravel_far_m da câmera (mais longe seriam menores que um pixel)
+uniform float road_gravel_m = 0.09;
+uniform float road_gravel_share = 0.3;
+uniform vec3 road_gravel_color = vec3(0.66, 0.64, 0.6);
+uniform float road_gravel_far_m = 70.0;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
 // Fase 53 (cor no jeito do Anno): grama verde e saturada, a seca mais fraca, areia de praia clara e rocha escura. Fase 257:
@@ -571,8 +578,41 @@ void fragment() {
 						* (1.0 - smoothstep(road_rut_far_m * 0.5, road_rut_far_m, camera_distance));
 				float puddle = smoothstep(0.25, 0.6, roads.a + (value_noise(world_position.xz * 3.0) - 0.5) * 0.35) * road;
 				vec3 dirt = dirt_a.rgb * mix(1.0, road_rut_darken, ruts) * mix(1.0, 0.55, puddle);
-				ground_a.rgb = mix(ground_a.rgb, dirt, road);
 				vec3 road_normal_map = mix(dirt_n, vec3(0.5, 0.5, 1.0), max(ruts * 0.5, puddle));
+				// Fase 336: o cascalho
+				float gravel_near = 1.0 - smoothstep(road_gravel_far_m * 0.6, road_gravel_far_m, camera_distance);
+				if (gravel_near > 0.0 && on_road > 0.0) {
+					vec2 q = world_position.xz / road_gravel_m;
+					vec2 base_cell = floor(q);
+					float best = 8.0;
+					vec2 best_id = vec2(0.0);
+					vec2 best_off = vec2(0.0);
+					for (int y = -1; y <= 1; y++) {
+						for (int x = -1; x <= 1; x++) {
+							vec2 id = base_cell + vec2(float(x), float(y));
+							vec2 off = q - (id + 0.15 + 0.7 * vec2(strata_hash(id + vec2(3.0, 11.0)), strata_hash(id + vec2(29.0, 5.0))));
+							float dd = dot(off, off);
+							if (dd < best) {
+								best = dd;
+								best_id = id;
+								best_off = off;
+							}
+						}
+					}
+					// mais pedra no meio, pouca no sulco, nenhuma na poça
+					float share = road_gravel_share * mix(1.0, 0.65, smoothstep(0.0, road_half_width_m, d)) * (1.0 - ruts * 0.75)
+							* (1.0 - puddle);
+					float stone = step(strata_hash(best_id + vec2(41.0, 17.0)), share) * on_road * gravel_near;
+					float r = sqrt(best);
+					float body = 1.0 - smoothstep(0.32, 0.42, r);
+					float ring = smoothstep(0.3, 0.42, r) * (1.0 - smoothstep(0.42, 0.6, r));
+					float tone = 0.7 + 0.5 * strata_hash(best_id + vec2(7.0, 23.0));
+					dirt = mix(dirt, dirt * 0.72, ring * stone);
+					dirt = mix(dirt, road_gravel_color * tone, body * stone);
+					vec2 bulge = clamp(best_off * 1.1, vec2(-0.4), vec2(0.4)) * body * stone;
+					road_normal_map = mix(road_normal_map, vec3(0.5 + bulge.x, 0.5 + bulge.y, 1.0), body * stone);
+				}
+				ground_a.rgb = mix(ground_a.rgb, dirt, road);
 				ground_n.rgb = mix(ground_n.rgb, road_normal_map, road);
 				ground_n.a = mix(ground_n.a, mix(mix(dirt_a.a, 0.6, ruts * 0.5), 0.08, puddle), road);
 			}
