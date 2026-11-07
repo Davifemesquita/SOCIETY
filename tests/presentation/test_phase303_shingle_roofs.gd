@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Telhado de tábuas (Fase 303): uma em cada SHINGLE_EVERY casas dos operários das ilhas temperadas ganha o parâmetro de instância
+## Telhado de tábuas (Fase 303; Fase 350: a parte por classe de SHINGLE_SIXTHS): casas dos operários e artesãos das temperadas ganham o parâmetro de instância
 ## shingle, e o shader troca as telhas por tábuas cinzentas nas águas, na capa e no beiral; as outras classes, os outros prédios e
 ## as tropicais ficam com o telhado de antes.
 
@@ -30,28 +30,33 @@ func _tropical() -> int:
 
 
 func test_part_of_the_temperate_worker_houses_get_shingles() -> void:
+	# (Fase 350: dois terços dos operários e um terço dos artesãos)
 	var shingled := 0
+	var artisans := 0
 	for id: int in range(1, 201):
 		if BuildingView.shingled(_sim, _record(id, &"workers", 0)):
 			shingled += 1
-		# as outras classes e as tropicais nunca
+		if BuildingView.shingled(_sim, _record(id, &"artisans", 0)):
+			artisans += 1
+		# os camponeses (sapê), as classes de cima e as tropicais nunca
 		assert_bool(BuildingView.shingled(_sim, _record(id, &"peasants", 0))).is_false()
-		assert_bool(BuildingView.shingled(_sim, _record(id, &"artisans", 0))).is_false()
+		assert_bool(BuildingView.shingled(_sim, _record(id, &"engineers", 0))).is_false()
 		assert_bool(BuildingView.shingled(_sim, _record(id, &"workers", _tropical()))).is_false()
-	# perto de uma em cada SHINGLE_EVERY
-	assert_int(shingled).is_between(200 / BuildingView.SHINGLE_EVERY - 30, 200 / BuildingView.SHINGLE_EVERY + 30)
+	assert_int(shingled).is_between(200 * 4 / 6 - 30, 200 * 4 / 6 + 30)
+	assert_int(artisans).is_between(200 * 2 / 6 - 30, 200 * 2 / 6 + 30)
 	assert_bool(BuildingView.shingled(_sim, _record(1, &"", 0, &"market"))).is_false()
 
 
 func test_the_shader_draws_boards_on_the_slopes_and_caps() -> void:
 	var code := FileAccess.get_file_as_string(KIT)
 	assert_str(code).contains("instance uniform float shingle = 0.0;")
-	var slopes := code.find("color = shingle_shade(world_position, world_normal, near);")
+	var slopes := code.find("color = shingle_shade(world_position, world_normal, near,")
 	assert_int(slopes).is_greater(code.find("} else if (slate > 0.5) {"))
 	assert_int(slopes).is_less(code.find("} else if (corrugated > 0.5) {"))
 	assert_str(code).contains("} else if (roof && shingle > 0.5) {")
 	var view := FileAccess.get_file_as_string("res://presentation/building_view.gd")
-	assert_str(view).contains("body.set_instance_shader_parameter(&\"shingle\", 1.0 if shingled(_simulation, record) else 0.0)")
+	# (Fase 350: o tom cinza ou marrom pelo valor)
+	assert_str(view).contains("body.set_instance_shader_parameter(&\"shingle\", shingle_tone(_simulation, record))")
 
 
 func test_the_shader_compiles_with_the_shingle_uniforms() -> void:

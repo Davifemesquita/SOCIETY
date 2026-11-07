@@ -3781,6 +3781,11 @@ Regras que já custaram investigação:
   **Teste de peça do recheio confere a ordem relativa, não "a última"** (peças novas entram depois). **A rocha triplanar é cara por
   pixel**: o roteiro das Fases 345 a 349 custou ~0,3–0,5 ms de GPU, das rochas novas.
 
+### Telhado de madeira (Fase 350, nossa)
+
+- **Plano** em `docs/plano_fase350.md`, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta). `BuildingView.SHINGLE_SIXTHS`
+  (operários 4/6, artesãos 2/6) e `shingle_tone` (o parâmetro `shingle` em 1 cinza, 2 marrom `shingle_brown`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4141,6 +4146,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 347 — Leque de cascalho (nossa) | **feita em 07/11/2026**: manchas de cascalho cinza no pé das encostas de rocha e dos barrancos; plano em `docs/plano_fase347.md` |
 | 348 — Fendas escuras (nossa) | **feita em 07/11/2026**: fendas verticais escuras nas faces da rocha e das pedras; plano em `docs/plano_fase348.md` |
 | 349 — Matacões no capim (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_345_349.md` (pedra grande): pedras grandes soltas no capim junto das encostas e dos barrancos das ilhas temperadas; o roteiro custa ~0,3–0,5 ms de GPU; plano em `docs/plano_fase349.md` |
+| 350 — Telhado de madeira (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a maioria das casas dos operários e um terço das dos artesãos com telhado de tábuas, cinza ou marrom; plano em `docs/plano_fase350.md` |
 
 Pendências já vistas para fases futuras:
 

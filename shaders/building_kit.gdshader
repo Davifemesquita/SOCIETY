@@ -134,6 +134,8 @@ uniform float wall_streak_strength = 0.16;
 // Fase 303: as tábuas do telhado — fileiras de shingle_row_m ao longo da água, tábuas de largura sorteada em volta de
 // shingle_width_m, num cinza de madeira velha (shingle_color) com um tom por tábua
 uniform vec4 shingle_color : source_color = vec4(0.47, 0.44, 0.4, 1.0);
+// Fase 350: o tom marrom das tábuas (o parâmetro shingle em 2 escolhe ele; em 1, o cinza)
+uniform vec4 shingle_brown : source_color = vec4(0.46, 0.36, 0.27, 1.0);
 uniform float shingle_row_m = 0.32;
 uniform float shingle_width_m = 0.22;
 
@@ -222,7 +224,7 @@ vec3 roof_wear(vec3 p, vec3 n, float pick) {
 
 // Fase 303: a cor das tábuas do telhado no ponto p (normal n): a sombra da borda de baixo de cada fileira, a fresta entre as
 // tábuas, um tom por tábua e o veio ao longo da água; near apaga o desenho de longe (sobra o tom médio)
-vec3 shingle_shade(vec3 p, vec3 n, float near) {
+vec3 shingle_shade(vec3 p, vec3 n, float near, vec3 base) {
 	vec2 down = normalize(n.xz);
 	vec2 across = vec2(-down.y, down.x);
 	float s = dot(p.xz, down) / max(n.y, 0.2) / shingle_row_m;
@@ -234,13 +236,13 @@ vec3 shingle_shade(vec3 p, vec3 n, float near) {
 	float board = floor(c);
 	float cf = fract(c);
 	float tone = fract(sin(dot(vec2(row, board), vec2(12.9898, 78.233))) * 43758.5453);
-	vec3 wood = shingle_color.rgb * (0.78 + 0.4 * tone);
+	vec3 wood = base * (0.78 + 0.4 * tone);
 	float grain = moss_noise(vec2(c * 3.0, s * 9.0));
 	wood *= 0.92 + 0.12 * grain;
 	float gap = smoothstep(0.06, 0.0, cf) + smoothstep(0.94, 1.0, cf);
 	float under = smoothstep(0.82, 1.0, f);
 	vec3 drawn = wood * (1.0 - clamp(gap, 0.0, 1.0) * 0.45) * (1.0 - under * 0.4);
-	return mix(shingle_color.rgb * 0.95, drawn, near);
+	return mix(base * 0.95, drawn, near);
 }
 
 // Fase 130: ruído de valor com hash sem seno (com coordenadas de mundo grandes o fract(sin(...)) sai em escada na GPU).
@@ -419,7 +421,7 @@ void fragment() {
 				roughness = 0.55;
 			} else if (shingle > 0.5) {
 				// Fase 303: as tábuas cinzentas, foscas
-				color = shingle_shade(world_position, world_normal, near);
+				color = shingle_shade(world_position, world_normal, near, shingle > 1.5 ? shingle_brown.rgb : shingle_color.rgb);
 				// sem o relevo das telhas do mapa de normais
 				NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 				roughness = 0.9;
@@ -448,7 +450,7 @@ void fragment() {
 			color = slate_color.rgb * 0.9;
 		} else if (roof && shingle > 0.5) {
 			// Fase 303: a capa e o beiral das tábuas: madeira cinzenta mais escura
-			color = shingle_color.rgb * 0.75;
+			color = (shingle > 1.5 ? shingle_brown.rgb : shingle_color.rgb) * 0.75;
 			roughness = 0.9;
 		} else if (roof && corrugated > 0.5) {
 			// a capa, o beiral e o telhado plano da chapa: o ferro escurecido
