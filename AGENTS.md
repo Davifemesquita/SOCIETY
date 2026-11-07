@@ -3731,6 +3731,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase340.md`, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa). Na `CropView`, a terra do
   campo (`FIELD_SOILS`, a dos sulcos) mais escura e a leira mais estreita (`FURROW_FILL` 0,62): as fileiras se leem de cima.
 
+### Cabeceira de capim (Fase 341, nossa)
+
+- **Plano** em `docs/plano_fase341.md`. Na `CropView`, o recuo da terra lavrada (`FIELD_INSET_M` 0,38) e, junto, a margem das plantas
+  (`MARGIN_M` 0,8) e a cabeceira (`HEADLAND_M` 1,1): a faixa de capim entre os campos fica de 0,76 a 1,48 m. **A margem e a cabeceira
+  passam sempre do recuo máximo do contorno** (senão as plantas caem no capim).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4082,6 +4088,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 338 — Capim na beira (nossa) | **feita em 07/11/2026**: touceiras de capim alto e escuro junto das estradas de terra fora da vila, nas ilhas temperadas; plano em `docs/plano_fase338.md` |
 | 339 — Mourões na estrada (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): lanços de cerca de mourões e travessas em trechos das estradas de terra fora das vilas; plano em `docs/plano_fase339.md` |
 | 340 — Leiras marcadas (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa): o sulco escuro entre as leiras dos campos, que se leem listrados de cima; plano em `docs/plano_fase340.md` |
+| 341 — Cabeceira de capim (nossa) | **feita em 07/11/2026**: a faixa de capim entre os campos mais larga e marcada, com as plantas dentro da terra lavrada; plano em `docs/plano_fase341.md` |
 
 Pendências já vistas para fases futuras:
 

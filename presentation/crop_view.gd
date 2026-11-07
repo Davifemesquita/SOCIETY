@@ -22,7 +22,8 @@ const REFRESH_SECONDS := 0.5
 const GROWTH_STEPS := 20
 const MIN_GROWTH := 0.25
 ## Folga das plantas até a borda do campo (passa do recuo máximo do contorno) e quanto cada uma sai do lugar da grade.
-const MARGIN_M := 0.65
+## (Fase 341: 0,8, era 0,65: o recuo do contorno cresceu)
+const MARGIN_M := 0.8
 const JITTER_M := 0.08
 ## Cereal verde no começo do ciclo (a cor da instância multiplica a do vértice).
 const GREEN_TINT := Color(0.55, 1.0, 0.45)
@@ -77,12 +78,13 @@ const PLANT_SWAY_SPEED := 2.1
 ## Fase 40: contorno (recuo mínimo e ondulação, em m, e o passo do ruído ao longo da divisa), altura da terra sobre o
 ## terreno, cabeceira nas pontas das fileiras, tons da terra e da planta por campo, peças de sebe e de muro por metro de
 ## divisa e o desnível do lote que troca a sebe pelo muro.
-const FIELD_INSET_M := 0.22
+## (Fase 341: 0,38, era 0,22: a faixa de capim entre os campos mais larga, de 0,76 a 1,48 m)
+const FIELD_INSET_M := 0.38
 const FIELD_WIGGLE_M := 0.36
 const WIGGLE_STEP_M := 1.4
 const BORDER_SAMPLE_M := 0.5
 const SOIL_M := 0.05
-const HEADLAND_M := 0.95
+const HEADLAND_M := 1.1
 ## (Fase 340: mais escuras, ~0,7 das de antes: a terra do sulco entre as leiras é esta, e as fileiras precisam se ler de cima)
 const FIELD_SOILS: Array[Color] = [Color(0.31, 0.23, 0.15), Color(0.27, 0.2, 0.13), Color(0.35, 0.27, 0.18),
 		Color(0.3, 0.23, 0.17)]
