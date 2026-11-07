@@ -72,6 +72,8 @@ void fragment() {
 	color *= strata_broad(world_position, world_normal, distance(CAMERA_POSITION_WORLD, world_position));
 	// Fase 310: os blocos grandes da face
 	color *= block_factor(world_position, world_normal);
+	// Fase 348: as fendas
+	color *= crack_factor(world_position, world_normal);
 	// Fase 291: o musgo nas saliências; na pedra do mar, só acima da pedra molhada (a maré o tira)
 	float moss = moss_amount(world_position, world_normal) * (0.7 + albedo.a * 0.6);
 	if (sea) {

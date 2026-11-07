@@ -137,3 +137,28 @@ float block_factor(vec3 at, vec3 normal_w) {
 	float factor = tone * (1.0 + light) * (1.0 - joint * block_joint_dark);
 	return mix(1.0, factor, steep);
 }
+
+// Fase 348: as fendas escuras da face. Planos verticais no mundo (cortes em x e em z a cada crack_spacing_m, tortos por um ruído e
+// interrompidos ao longo da altura): em qualquer face aparecem como linhas verticais, sem depender da normal (que muda a cada faceta
+// das pedras e riscava o desenho). Só nas faces de pé; finas de crack_width_m, escuras até crack_dark.
+uniform float crack_spacing_m = 3.1;
+uniform float crack_width_m = 0.07;
+uniform float crack_dark = 0.5;
+
+float crack_line(float coord, float wobble, float spacing) {
+	float d = abs(fract((coord + wobble) / spacing) - 0.5) * spacing;
+	return 1.0 - smoothstep(crack_width_m * 0.5, crack_width_m, d);
+}
+
+float crack_factor(vec3 at, vec3 normal_w) {
+	float steep = 1.0 - smoothstep(0.5, 0.85, normal_w.y);
+	if (steep <= 0.0) {
+		return 1.0;
+	}
+	float wobble_x = (strata_noise(vec2(at.z, at.y) * 0.45) - 0.5) * 1.2;
+	float wobble_z = (strata_noise(vec2(at.x, at.y) * 0.45 + vec2(17.0, 5.0)) - 0.5) * 1.2;
+	float lines = max(crack_line(at.x, wobble_x, crack_spacing_m), crack_line(at.z, wobble_z, crack_spacing_m * 1.3));
+	// interrompidas ao longo da altura: nem toda fenda corre a face inteira
+	float run = smoothstep(0.45, 0.6, strata_noise(vec2(at.x + at.z, at.y * 0.35) * 0.6));
+	return mix(1.0, crack_dark, lines * run * steep);
+}

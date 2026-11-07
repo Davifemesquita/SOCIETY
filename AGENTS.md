@@ -3769,6 +3769,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase347.md`. No `shaders/terrain.gdshader` (`scree_*`), o cascalho no pé das encostas: encosta íngreme a
   `scree_reach_m` (a inclinação dos dados), o chão plano e côncavo, recortado por ruído.
 
+### Fendas escuras (Fase 348, nossa)
+
+- **Plano** em `docs/plano_fase348.md`. `crack_factor` no `shaders/rock_strata.gdshaderinc`: fendas como planos verticais do mundo (cortes
+  em x e z), não pela normal, na rocha do terreno e nas pedras.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4127,6 +4132,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 345 — Granito no alto (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande): grupos de rocha cinza nos topos e cristas dos morros, fora de onde se constrói; plano em `docs/plano_fase345.md` |
 | 346 — Estratos de longe (nossa) | **feita em 07/11/2026**: bancadas largas e mais marcadas na rocha vista de longe, onde os estratos de perto já sumiam; plano em `docs/plano_fase346.md` |
 | 347 — Leque de cascalho (nossa) | **feita em 07/11/2026**: manchas de cascalho cinza no pé das encostas de rocha e dos barrancos; plano em `docs/plano_fase347.md` |
+| 348 — Fendas escuras (nossa) | **feita em 07/11/2026**: fendas verticais escuras nas faces da rocha e das pedras; plano em `docs/plano_fase348.md` |
 
 Pendências já vistas para fases futuras:
 

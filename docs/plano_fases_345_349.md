@@ -35,3 +35,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase346\`.
 - **347 feita em 07/11/2026** (`docs/plano_fase347.md`): o cascalho no pé das encostas, no terreno; capturas em
   `F:\ferramentas\capturas\fase347\`.
+- **348 feita em 07/11/2026** (`docs/plano_fase348.md`): fendas verticais pelos planos do mundo; capturas em
+  `F:\ferramentas\capturas\fase348\`.
