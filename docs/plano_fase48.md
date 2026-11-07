@@ -57,6 +57,24 @@ para o `main`. Nada apareceu na tela do dono (testes sem janela; benchmark e cap
 - **Filtro de nós liberados**: na 4.8 um lambda com parâmetro tipado recusa o objeto já liberado ("Cannot convert
   argument 1 from Object to Object"), justo o que os filtros de `BuildingView` tiram; o parâmetro virou `Variant`.
 
+## 4.8-beta2 (07/11/2026)
+
+A estável ainda não saiu (a beta2 é de 29/10/2026). O ramo recebeu o `main` até a Fase 359 (merge `f91ced1`: só o `project.godot`
+e as `.import` de peças do Kenney que o `main` já tinha tirado) e foi conferido com a beta2 em `F:\ferramentas\godot48b2`:
+
+- `check_scripts`: 1.042 scripts, nenhum erro.
+- Suíte sem janela (core, data, sim, tools e world): **1.293 casos, nenhuma falha**, os testes dourados do terreno inclusive.
+- Benchmark (área de trabalho escondida, alternando com a 4.7.2 na mesma janela de tempo, duas rodadas cada):
+
+| | FPS médio | GPU média | tick médio | carregar |
+|---|---|---|---|---|
+| 4.8-beta2 | 63,4 / 65,0 | 14,6 / 14,6 ms | 1,25 / 1,24 ms | 6.401 / 6.406 ms |
+| 4.7.2 | 64,6 / 64,8 | 14,5 / 14,4 ms | 1,33 / 1,33 ms | 6.968 / 6.977 ms |
+
+  O quadro empata (com a sombra de contato e o AO de vários quiques ligados), o tick fica ~6% e o carregar ~8% mais rápidos. A
+  primeira rodada da beta teve um engasgo de ~600 ms (o tick do quadro, não o desenho; 1% low 21,6) que a segunda não repetiu: a
+  conferir na estável.
+
 ## Fica de fora
 
 - O merge no `main` (só com a estável e a aprovação do dono); HDDAGI, XeGTAO, ray tracing, D3D12.
