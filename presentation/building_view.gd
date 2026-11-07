@@ -610,6 +610,8 @@ func _add(building_id: int) -> void:
 		body.set_instance_shader_parameter(&"shingle", shingle_tone(_simulation, record))
 		# Fase 185: a hera nas paredes de pedra e de alvenaria velhas
 		body.set_instance_shader_parameter(&"ivy", ivy_of(_simulation, record))
+		# Fase 352: a altura do beiral, para a faixa de sombra debaixo dele
+		body.set_instance_shader_parameter(&"eave_m", spec.height_m)
 		_lots[building_id] = [record.island_id, area]
 		_add_plinth(body, record, spec, area)
 		if def.is_exhibit_hall():

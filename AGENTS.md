@@ -3791,6 +3791,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase351.md`. `BuildingView.PLASTER_TIERS`, `PLASTER_TONES` e `PLASTER_MIX`: o reboco dos engenheiros e
   investidores num tom sorteado por casa (creme, ocre, cinza, rosa-velho), menos branco.
 
+### Beiral saliente (Fase 352, nossa)
+
+- **Plano** em `docs/plano_fase352.md`. A sombra do beiral no alto das paredes, no `shaders/building_kit.gdshader` (`eave_m` por
+  instância, `eave_band_m`, `eave_shade`). **O beiral mais largo (`OVERHANGS_M`) quebra a geometria** (o telhado do corpo por cima da
+  ala, o enxaimel, a igreja): ficou como estava.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4153,6 +4159,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 349 — Matacões no capim (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_345_349.md` (pedra grande): pedras grandes soltas no capim junto das encostas e dos barrancos das ilhas temperadas; o roteiro custa ~0,3–0,5 ms de GPU; plano em `docs/plano_fase349.md` |
 | 350 — Telhado de madeira (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a maioria das casas dos operários e um terço das dos artesãos com telhado de tábuas, cinza ou marrom; plano em `docs/plano_fase350.md` |
 | 351 — Reboco sujo (nossa) | **feita em 07/11/2026**: o reboco das casas dos engenheiros e investidores num tom por casa (creme, ocre, cinza, rosa-velho), menos branco; plano em `docs/plano_fase351.md` |
+| 352 — Beiral saliente (nossa) | **feita em 07/11/2026**: a faixa de sombra do beiral no alto das fachadas, no shader (o beiral mais largo quebrava a geometria das alas e da igreja); plano em `docs/plano_fase352.md` |
 
 Pendências já vistas para fases futuras:
 

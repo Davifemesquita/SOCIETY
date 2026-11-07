@@ -47,6 +47,8 @@ instance uniform float corrugated = 0.0;
 instance uniform float shingle = 0.0;
 // Fase 185: a hera nas paredes (0 sem; até 1, quanto ela sobe), posta pela BuildingView
 instance uniform float ivy = 0.0;
+// Fase 352: a altura do alto da parede acima do piso do modelo (o beiral); 0 sem a faixa de sombra
+instance uniform float eave_m = 0.0;
 
 // Fase 39: vidro (célula (0, 1), que o kit não usa): escuro, liso, com o céu refletido no ângulo raso
 uniform vec4 glass_color : source_color = vec4(0.17, 0.21, 0.25, 1.0);
@@ -131,6 +133,10 @@ uniform vec4 splash_color : source_color = vec4(0.36, 0.3, 0.22, 1.0);
 uniform float splash_height_m = 0.7;
 uniform float splash_strength = 0.5;
 uniform float wall_streak_strength = 0.16;
+// Fase 352: a sombra do beiral no alto da fachada: as paredes escurecem até eave_shade numa faixa de eave_band_m logo abaixo do beiral
+// (no Anno o telhado sai bem da parede e faz essa faixa; o nosso beiral, de 0,3 a 0,5 m, quase não a fazia)
+uniform float eave_band_m = 1.0;
+uniform float eave_shade = 0.5;
 // Fase 303: as tábuas do telhado — fileiras de shingle_row_m ao longo da água, tábuas de largura sorteada em volta de
 // shingle_width_m, num cinza de madeira velha (shingle_color) com um tom por tábua
 uniform vec4 shingle_color : source_color = vec4(0.47, 0.44, 0.4, 1.0);
@@ -145,9 +151,11 @@ varying float contact;
 varying flat float shutter_pick;
 varying flat float curtain_pick;
 varying flat float roof_pick;
+varying flat float model_floor;
 
 void vertex() {
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	model_floor = MODEL_MATRIX[3].y;
 	// Fase 177: a cor dos postigos pelo lugar do prédio (hash inteiro: sem o sin, que perde precisão longe da origem)
 	uint h = uint(int(floor(MODEL_MATRIX[3].x * 0.5))) * 2654435761u ^ uint(int(floor(MODEL_MATRIX[3].z * 0.5))) * 2246822519u;
 	h ^= h >> 15u;
@@ -478,6 +486,11 @@ void fragment() {
 			color = mix(color, splash_color.rgb * (0.75 + 0.5 * kit_luma), splash * splash_strength);
 			float wall_streak = smoothstep(0.6, 0.85, moss_noise(vec2(wall_along * 2.4, world_position.y * 0.11)));
 			color *= 1.0 - wall_streak * smoothstep(0.4, 1.6, above) * wall_streak_strength;
+			if (eave_m > 0.0) {
+				// Fase 352: a sombra do beiral
+				float under_eave = smoothstep(eave_m - eave_band_m, eave_m - 0.05, world_position.y - model_floor);
+				color *= 1.0 - under_eave * eave_shade;
+			}
 		}
 		// musgo em manchas na faixa de baixo das paredes viradas para o lado (não no telhado)
 		float moss = (1.0 - smoothstep(0.0, moss_height, above)) * smoothstep(0.45, 0.75,

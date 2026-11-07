@@ -31,3 +31,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase350\`.
 - **351 feita em 07/11/2026** (`docs/plano_fase351.md`): o reboco claro num tom por casa; capturas em
   `F:\ferramentas\capturas\fase351\`.
+- **352 feita em 07/11/2026** (`docs/plano_fase352.md`): a sombra do beiral no shader (o beiral mais largo quebrava a geometria);
+  capturas em `F:\ferramentas\capturas\fase352\`.
