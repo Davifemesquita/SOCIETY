@@ -4341,3 +4341,12 @@ custo do roteiro, ~0,3 a 0,5 ms de GPU, é das rochas novas.
 **Fase 359 (raso verde, e o roteiro das Fases 355 a 359).** No estado rápido da máquina: 69,0 FPS, 1% low 37,1, p50/p95/p99
 14,0/18,3/25,4 ms, GPU 13,6 ms; carregar 6.891 ms (na Fase 354: 69,2 FPS, GPU 13,5 ms). A onda de perto, a série das ondas e a esteira
 não deram diferença medível.
+
+**Fase 360 (paredes do MegaKit, ensaio desligado).** Estado lento da máquina (~65 FPS), A/B na mesma janela de tempo, duas rodadas
+cada: Kenney 65,1/64,9 FPS e GPU 14,4/14,5 ms (19,9 M primitivas); MegaKit inteiro 61,0/61,0 FPS e GPU 15,5 ms (24,7 M); MegaKit com
+as peças simplificadas a 55% 64,9/65,1 FPS e GPU 14,4 ms (18,8 M). Na mesma sessão, a **4.8-beta2** (ramo `godot-4.8`) deu 63,4/65,0
+FPS, GPU 14,6 ms, tick 1,25 ms e carregar 6,4 s, contra 64,6/64,8 FPS, 14,5 ms, 1,33 ms e 7,0 s na 4.7.2 (`docs/plano_fase48.md`).
+
+**Simulação (o tick, pedido de 07/11/2026).** Com os 10.000 moradores, 200 prédios de produção e 10 navios do benchmark, o tick
+médio é 1,3 ms (95%: 1,5; pior 2,7) para um orçamento de 4,0 ms, e a obra com a ilha cheia ~18 ms para 50: há folga de cerca de 3
+vezes. Passar a simulação para C# ou C++ (GDExtension) não se paga agora; volta à mesa se uma cidade de verdade passar de ~3 ms.

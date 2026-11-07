@@ -12,6 +12,13 @@ uniform sampler2DArray wall_albedo_rough : source_color, filter_linear_mipmap_an
 uniform sampler2DArray wall_normals : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2DArray roof_albedo_rough : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2DArray roof_normals : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+// Fase 360: as paredes do MegaKit (Quaternius, CC0): a camada na UV2.x (+1) e as texturas dele pela UV (tools/pack_megakit.gd:
+// reboco, madeira, tijolo, tijolo irregular, pedra e vidro)
+uniform sampler2DArray megakit_albedo_rough : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2DArray megakit_normals : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+// o tom do prédio no reboco (como a tinta das paredes do Kenney) e a madeira puxada para a do kit
+uniform float megakit_plaster_luma = 0.62;
+uniform float megakit_wood_mix = 0.45;
 uniform float wall_meters = 3.0;
 uniform float roof_meters = 2.5;
 // Fase 258: a tinta da instância pesa mais que a textura cinza (antes 0,55: o reboco saía cinza-frio)
@@ -335,7 +342,14 @@ vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, 
 
 void fragment() {
 	// célula da paleta: 8 colunas × 4 linhas
-	ivec2 cell = ivec2(floor(UV * vec2(8.0, 4.0)));
+	int mega = int(round(UV2.x)) - 1;
+	if (mega == 0) {
+		// o reboco do pacote segue o material da parede do prédio: tijolo, pedra (o tijolo irregular) ou reboco
+		int wall_kind = int(round(layer));
+		mega = wall_kind == 0 ? 2 : (wall_kind == 3 ? 3 : 0);
+	}
+	ivec2 cell = mega >= 0 ? ivec2(-1, -1) : ivec2(floor(UV * vec2(8.0, 4.0)));
+	bool mega_wall = mega == 0 || mega == 2 || mega == 3;
 	bool wall = (cell == ivec2(1, 2)) || (cell == ivec2(5, 3));
 	bool roof = cell.y == 3 && cell.x <= 1;
 	vec3 weights = pow(abs(world_normal), vec3(4.0));
@@ -344,9 +358,20 @@ void fragment() {
 	// madeiramento e caixilhos (célula (4, 3)): a paleta do kit é viva demais; vira madeira escura
 	// puxada para o tom do prédio. As outras cores do kit (vidro, porta) só perdem um pouco da cor.
 	float kit_luma = dot(color, vec3(0.299, 0.587, 0.114));
-	bool glass = cell == ivec2(0, 1);
+	bool glass = cell == ivec2(0, 1) || mega == 5;
+	vec4 mega_surface = mega >= 0 ? texture(megakit_albedo_rough, vec3(UV, float(mega))) : vec4(0.0);
 	if (glass) {
 		color = glass_color.rgb;
+	} else if (mega >= 0) {
+		float mega_luma = dot(mega_surface.rgb, vec3(0.299, 0.587, 0.114));
+		color = mega_surface.rgb;
+		if (mega == 0) {
+			color = mix(color, mega_luma / megakit_plaster_luma * tint.rgb, tint_strength);
+		} else if (mega == 2 || mega == 3) {
+			color = mix(color, mega_luma / 0.45 * tint.rgb, tint_strength * 0.45);
+		} else if (mega == 1) {
+			color = mix(color, mega_luma / 0.4 * mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), megakit_wood_mix);
+		}
 	} else if (cell == ivec2(2, 1)) {
 		// Fase 97: cobre velho (célula (2, 1), que o kit não usa): o verde-azulado da pátina, com escorrimentos mais
 		// claros e mais escuros descendo pela cúpula e pelo torreão
@@ -403,6 +428,10 @@ void fragment() {
 		color = mix(color, vec3(kit_luma), trim_desaturate) * trim_darken;
 	}
 	float roughness = cell == ivec2(2, 1) ? 0.5 : 0.85;
+	if (mega >= 0 && !glass) {
+		roughness = mega_surface.a;
+		NORMAL_MAP = texture(megakit_normals, vec3(UV, float(mega))).rgb;
+	}
 	if (wall || roof) {
 		vec4 surface = wall
 				? triplanar(wall_albedo_rough, world_position, weights, wall_meters, layer)
@@ -467,6 +496,8 @@ void fragment() {
 			NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 		}
 	}
+	// a parede do MegaKit também leva a sujeira, a hera e a sombra do beiral das paredes
+	wall = wall || mega_wall;
 	float above = world_position.y - base_height;
 	if (glass) {
 		// de dia o vão não é buraco preto: no ângulo raso o vidro mostra o céu

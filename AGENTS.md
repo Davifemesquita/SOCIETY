@@ -3833,6 +3833,16 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase359.md`, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto). `cold_shelf` no
   `shaders/water.gdshader` em (0,22; 0,44; 0,38): o raso das temperadas verde-escuro sobre o fundo, sem o turquesa.
 
+### Paredes do MegaKit (Fase 360, ensaio)
+
+- **Plano** em `docs/plano_fase360.md`, a pedido do dono (arte de verdade, o caminho da Fase 50). `tools/pack_megakit.gd` converte
+  as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0; o pacote fica fora do repositório, em
+  `F:\ferramentas\arte\megakit`) para o referencial das peças do Kenney, em `assets/models/megakit/*.res`, com a camada do
+  material na **UV2.x** e as texturas em pilha; `BuildingKit.megakit_walls()` troca as peças (**desligado**: `SOCIETY_MEGAKIT=1`
+  ou `use_megakit`) e o `shaders/building_kit.gdshader` lê a textura do pacote nesses vértices. Simplificado a 55% dos triângulos,
+  custa o mesmo que o Kenney. **Fica desligado** porque vergas, peitoris, arcos, guarnições, postigos, cortinas e janelas acesas
+  foram medidos no vão do Kenney e cruzam a janela do pacote.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4203,6 +4213,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 357 — Esteira em V (nossa) | **feita em 07/11/2026**: o rastro dos navios abre em V, mais comprido e mais cheio; plano em `docs/plano_fase357.md` |
 | 358 — Onda quebrando (nossa) | **feita em 07/11/2026**: uma onda em quatro chega à praia mais grossa e mais inteira, correndo junto pela costa; plano em `docs/plano_fase358.md` |
 | 359 — Raso verde (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto): o raso das ilhas temperadas verde-escuro sobre o fundo, sem o turquesa; plano em `docs/plano_fase359.md` |
+| 360 — Paredes do MegaKit (nossa, ensaio) | **ensaio feito em 07/11/2026, desligado por padrão**: as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0) no lugar das do Kenney, com o material dele no shader do kit; simplificadas, custam o mesmo; ficam desligadas até os enfeites das janelas seguirem o vão novo; plano em `docs/plano_fase360.md` |
 
 Pendências já vistas para fases futuras:
 

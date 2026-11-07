@@ -39,6 +39,9 @@ static func kit() -> ShaderMaterial:
 		_kit.set_shader_parameter(&"wall_normals", load("res://assets/materials/walls_normal.png"))
 		_kit.set_shader_parameter(&"roof_albedo_rough", load("res://assets/materials/roofs_albedo_rough.png"))
 		_kit.set_shader_parameter(&"roof_normals", load("res://assets/materials/roofs_normal.png"))
+	# Fase 360: as texturas do MegaKit (as camadas de tools/pack_megakit.gd)
+	_kit.set_shader_parameter(&"megakit_albedo_rough", load("res://assets/models/megakit/megakit_albedo_rough.png"))
+	_kit.set_shader_parameter(&"megakit_normals", load("res://assets/models/megakit/megakit_normal.png"))
 	return _kit
 
 

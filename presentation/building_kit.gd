@@ -584,6 +584,25 @@ static var _meshes: Dictionary[String, ArrayMesh] = {}
 static var _available: int = -1
 
 
+## Fase 360: as paredes, as janelas e as portas do Medieval Village MegaKit (Quaternius, CC0) no lugar das do Kenney, com o
+## material de cada vértice na UV2 (o shader do kit lê as texturas dele). Ligado pela variável SOCIETY_MEGAKIT=1 enquanto
+## se compara; `use_megakit` troca à mão (testes e capturas) e esquece as malhas feitas.
+const MEGAKIT_DIR := "res://assets/models/megakit/"
+static var _megakit: int = -1
+
+
+static func megakit_walls() -> bool:
+	if _megakit < 0:
+		_megakit = 1 if OS.get_environment("SOCIETY_MEGAKIT") == "1" else 0
+	return _megakit == 1
+
+
+static func use_megakit(on: bool) -> void:
+	_megakit = 1 if on else 0
+	_parts.clear()
+	_meshes.clear()
+
+
 static func available() -> bool:
 	if _available < 0:
 		_available = 1 if ResourceLoader.exists(DIR + "wall.glb") else 0
@@ -983,7 +1002,11 @@ static func _parts_of(piece: String) -> Array:
 		return _parts[piece]
 	var parts: Array = []
 	var path := DIR + piece + ".glb"
-	if ResourceLoader.exists(path):
+	var megakit_path := MEGAKIT_DIR + piece + ".res"
+	if megakit_walls() and ResourceLoader.exists(megakit_path):
+		# Fase 360: a parede do MegaKit, já no referencial da peça do Kenney (tools/pack_megakit.gd)
+		parts.append([load(megakit_path) as Mesh, Transform3D.IDENTITY])
+	elif ResourceLoader.exists(path):
 		var root := (load(path) as PackedScene).instantiate() as Node3D
 		for node: Node in root.find_children("*", "MeshInstance3D", true, false):
 			var part := node as MeshInstance3D
@@ -1064,7 +1087,9 @@ static func _build(spec: Spec) -> ArrayMesh:
 		_dome(extra, spec)
 	if hall.turret:
 		_turret(extra, hall, offset)
-	_glazing(extra, hall, offset)
+	# a janela do MegaKit (Fase 360) já tem o vidro e o caixilho
+	if not megakit_walls():
+		_glazing(extra, hall, offset)
 	if hall.curtains:
 		_curtains(extra, hall, offset)
 	_silhouette(tool, extra, spec)
