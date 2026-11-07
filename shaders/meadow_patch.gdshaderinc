@@ -33,6 +33,8 @@ float meadow_patch(vec2 xz, float patch_m) {
 	vec2 warp = vec2(value_noise(wide), value_noise(wide + vec2(31.7, 11.3))) - 0.5;
 	vec2 a = meadow_turn(MEADOW_TURN_RAD) * ((xz + warp * patch_m * MEADOW_WARP) / patch_m);
 	float broad = 0.5 + meadow_gradient(a) * MEADOW_GRADIENT_GAIN;
-	float fine = value_noise(meadow_turn(MEADOW_TURN_RAD) * a / 0.37 + vec2(5.3, 9.1));
+	// Fase 334: a oitava fina também de gradiente (de valor, as curvas de nível dentro de cada célula eram quase retas e, com o
+	// capim alto mais escuro, as manchas saíam em facetas de bordas retas)
+	float fine = 0.5 + meadow_gradient(meadow_turn(MEADOW_TURN_RAD) * a / 0.37 + vec2(5.3, 9.1)) * MEADOW_GRADIENT_GAIN;
 	return broad * 0.7 + fine * 0.3;
 }

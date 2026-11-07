@@ -18,7 +18,7 @@ uniform float fade_from_m = 55.0;
 uniform float fade_to_m = 95.0;
 // as manchas do prado (iguais às do terrain.gdshader) e o que elas fazem no tufo
 uniform float meadow_patch_m = 9.0;
-uniform vec3 tall_tint = vec3(0.64, 0.79, 0.58);
+uniform vec3 tall_tint = vec3(0.52, 0.68, 0.46);
 uniform vec3 short_tint = vec3(1.22, 1.15, 0.8);
 // Fase 328: o capim alto era 1,7 vezes a folha (passava de 1 m)
 uniform float tall_height = 1.45;

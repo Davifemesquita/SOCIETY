@@ -3691,6 +3691,13 @@ Regras que já custaram investigação:
   (250 m), cheia em `sky_fog_end_m` (3000 m, repassado pelo `SkyAdapter`) e mais densa (`sky_fog_density` 0,0012): perto nada muda,
   o longe clareia e azula. A captura do ciclo ganhou o horizonte de dia, no fim da tarde e à noite (`CAPTURA_AR`, `CAPTURA_AR_ANTIGO`).
 
+### Prado fundo (Fase 334, nossa)
+
+- **Plano** em `docs/plano_fase334.md`, a última do roteiro `docs/plano_fases_330_334.md`. O capim alto mais escuro (`meadow_tall_tint`
+  no terreno, `tall_tint` no tapete, iguais) e a oitava fina das manchas (`meadow_patch.gdshaderinc`) de ruído de gradiente: a de
+  valor fazia as manchas escuras em facetas. O matiz e a saturação do prado já eram os do Anno depois da Fase 330; o brilho fica
+  (cor viva). **Captura com `CAPTURA_TERRENO` no `tools/capture_phase330.tscn`** (vec3 como `a:b:c`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4035,6 +4042,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 331 — Abeto sem ciano (nossa) | **feita em 07/11/2026**: os pinheiros e os abetos em verde-escuro oliva, de perto e de longe, no lugar do verde-azulado quase ciano; plano em `docs/plano_fase331.md` |
 | 332 — Casca sem laranja (nossa) | **feita em 07/11/2026**, no lugar do "pé das árvores" (com a sombra do sol à vista, a árvore já assenta): o alto do tronco do pinheiro castanho-avermelhado, sem o laranja vivo; plano em `docs/plano_fase332.md` |
 | 333 — Ar de longe (nossa) | **feita em 07/11/2026**: a neblina do céu só no longe e mais densa, e as ilhas do fundo e o horizonte clareiam e azulam (rosados no fim da tarde), sem mexer no perto; plano em `docs/plano_fase333.md` |
+| 334 — Prado fundo (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_330_334.md` (luz e sombra): as manchas de capim alto mais escuras, que se leem de longe, sem as facetas de borda reta; plano em `docs/plano_fase334.md` |
 
 Pendências já vistas para fases futuras:
 

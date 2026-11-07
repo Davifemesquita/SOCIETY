@@ -123,5 +123,6 @@ func _patch(xz: Vector2) -> float:
 	var warp := Vector2(_value_noise(wide), _value_noise(wide + Vector2(31.7, 11.3))) - Vector2(0.5, 0.5)
 	var a := _turn((xz + warp * PATCH_M * WARP) / PATCH_M)
 	var broad := 0.5 + _gradient(a) * GAIN
-	var fine := _value_noise(_turn(a) / 0.37 + Vector2(5.3, 9.1))
+	# (Fase 334: a oitava fina também de gradiente)
+	var fine := 0.5 + _gradient(_turn(a) / 0.37 + Vector2(5.3, 9.1)) * GAIN
 	return broad * 0.7 + fine * 0.3

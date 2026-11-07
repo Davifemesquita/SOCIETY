@@ -27,6 +27,18 @@ func _run() -> void:
 			await _horizon(game, prefix + "_horizonte.png", points[0])
 		get_tree().quit()
 		return
+	# CAPTURA_TERRENO ("nome=valor;nome=a:b:c|...") tira a mata alta e o horizonte com cada troca de uniformes do terreno (Fase 334)
+	var ground_lab := OS.get_environment("CAPTURA_TERRENO")
+	if ground_lab != "":
+		var ground_index := 0
+		for variant: String in ground_lab.split("|"):
+			for material: ShaderMaterial in game.terrain_view.materials():
+				_set_uniforms(material, variant)
+			await _shot(game, "t%d_mata_alta.png" % ground_index, high, 160.0, 0.6)
+			await _horizon(game, "t%d_horizonte.png" % ground_index, points[0])
+			ground_index += 1
+		get_tree().quit()
+		return
 	# CAPTURA_AGUA ("nome=valor;nome=valor|...") tira a vila de longe com cada troca de uniformes da água, uma por variante
 	var water_lab := OS.get_environment("CAPTURA_AGUA")
 	if water_lab != "":
@@ -97,5 +109,9 @@ func _set_uniforms(material: ShaderMaterial, pairs: String) -> void:
 	for pair: String in pairs.split(";", false):
 		var parts := pair.split("=")
 		if parts.size() == 2:
-			material.set_shader_parameter(StringName(parts[0].strip_edges()), parts[1].to_float())
+			var numbers := parts[1].split(":")
+			var value: Variant = parts[1].to_float()
+			if numbers.size() == 3:
+				value = Vector3(numbers[0].to_float(), numbers[1].to_float(), numbers[2].to_float())
+			material.set_shader_parameter(StringName(parts[0].strip_edges()), value)
 			print("uniforme ", parts[0], " = ", parts[1])

@@ -37,3 +37,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   árvores), a casca de cima do pinheiro sem o laranja; capturas em `F:\ferramentas\capturas\fase332\`.
 - **333 feita em 07/11/2026** (`docs/plano_fase333.md`): a neblina do céu de 250 a 3000 m, densidade 0,0012; capturas em
   `F:\ferramentas\capturas\fase333\`.
+- **334 feita em 07/11/2026** (`docs/plano_fase334.md`): o limão era a saturação, que a 330 já tirou; o capim alto mais escuro e a
+  oitava fina das manchas de gradiente (sem facetas); capturas em `F:\ferramentas\capturas\fase334\`. **Roteiro concluído.**

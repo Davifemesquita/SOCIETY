@@ -150,7 +150,8 @@ uniform float grass_tint_mix = 0.6;
 // textura de relevo do capim alto
 uniform float meadow_patches = 1.0;
 uniform float meadow_patch_m = 9.0;
-uniform vec3 meadow_tall_tint = vec3(0.64, 0.79, 0.58);
+// (Fase 334: mais escuro, as manchas de capim alto se leem de longe; era (0,64; 0,79; 0,58))
+uniform vec3 meadow_tall_tint = vec3(0.52, 0.68, 0.46);
 uniform vec3 meadow_short_tint = vec3(1.22, 1.15, 0.8);
 uniform float meadow_tall_detail = 2.3;
 // Fase 287: as flores miúdas no capim (0 desliga): a parte das células com flor, o tamanho da célula, do ponto e do prado de
