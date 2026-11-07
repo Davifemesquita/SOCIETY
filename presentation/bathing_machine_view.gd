@@ -136,6 +136,10 @@ static func cells(world: WorldState, data: GameData, island_id: int) -> Dictiona
 static func place_of(grid: IslandGrid, cell: Vector2i) -> Transform3D:
 	var at := grid.cell_world(cell)
 	at.y = BuildingKit.corner_range(grid, Rect2i(cell, Vector2i.ONE)).x
+	# Fase 329: na rampa da praia o chão desenhado fica abaixo da simulação
+	var half := grid.cell_size * 0.5
+	for corner: Vector2 in [Vector2(-half, -half), Vector2(half, -half), Vector2(-half, half), Vector2(half, half)]:
+		at.y = minf(at.y, TerrainDetail.shown_at(grid, at.x + corner.x, at.z + corner.y))
 	var best := Vector2.ZERO
 	var best_distance := INF
 	for dy: int in range(-SEA_LOOK_CELLS, SEA_LOOK_CELLS + 1):

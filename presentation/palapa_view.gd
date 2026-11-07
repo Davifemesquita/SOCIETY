@@ -79,7 +79,7 @@ func rebuild() -> void:
 		var grid := world.island(island_id)
 		for cell: Vector2i in cells(world, _simulation.data, island_id):
 			var at := grid.cell_world(cell)
-			at.y = grid.height_at(at.x, at.z)
+			at.y = TerrainDetail.shown_at(grid, at.x, at.z)
 			var turn := float(FireflyView.cell_hash(island_id, cell.x, cell.y, 204) % 628) / 100.0
 			places.append(Transform3D(Basis(Vector3.UP, turn), at))
 	_palapas.multimesh.instance_count = places.size()

@@ -42,8 +42,9 @@ func test_terrain_mesh_sits_on_the_simulation_heights() -> void:
 					assert_float(vertex.y).is_equal_approx(simulated + TerrainDetail.offset_at(grid, _config, vertex.x, vertex.z), 0.001)
 					checked += 1
 				else:
-					# no mar o fundo desenhado só desce
-					assert_float(vertex.y).is_between(_config.deep_sea_floor_m - 0.001, simulated + 0.001)
+					# no mar o fundo desenhado só desce, a não ser a rampa da beira da praia (Fase 329), que nunca passa da água
+					var ramp := maxf(TerrainDetail.offset_at(grid, _config, vertex.x, vertex.z), 0.0)
+					assert_float(vertex.y).is_between(_config.deep_sea_floor_m - 0.001, minf(simulated + ramp, 0.0) + 0.001)
 	assert_int(checked).is_greater(1000)
 
 

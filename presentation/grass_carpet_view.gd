@@ -257,7 +257,7 @@ static func tufts(grid: IslandGrid, island_id: int, cell: Vector2i) -> Array[Tra
 		var z := grid.origin_m.y + (cell.y + float(noise / 1000 % 1000) / 1000.0) * grid.cell_size
 		var turn := float(noise / 1000000 % 628) / 100.0
 		var scale := 0.75 + float(noise / 7 % 50) / 100.0
-		result.append(Transform3D(Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale), Vector3(x, grid.height_at(x, z) - 0.02, z)))
+		result.append(Transform3D(Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale), Vector3(x, TerrainDetail.shown_at(grid, x, z) - 0.02, z)))
 	return result
 
 

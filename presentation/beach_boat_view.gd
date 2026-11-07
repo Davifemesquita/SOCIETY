@@ -185,7 +185,7 @@ static func boat_place(grid: IslandGrid, cell: Vector2i, sea: Vector2i) -> Trans
 	if _boat_top < 0.0:
 		_boat_top = HarborView.boat_mesh().get_aabb().end.y
 	var top := _boat_top
-	var ground := grid.height_at(middle.x, middle.z)
+	var ground := TerrainDetail.shown_at(grid, middle.x, middle.z)
 	return Transform3D(basis, Vector3(middle.x, ground + top - SINK_M + sin(TILT) * HarborView.BOAT_LENGTH_M * 0.25,
 			middle.z))
 
@@ -198,7 +198,7 @@ static func oar_places_of(grid: IslandGrid, cell: Vector2i, sea: Vector2i) -> Ar
 	var land := -Vector3(sea.x, 0.0, sea.y)
 	for k: int in 2:
 		var at := middle + land * (0.75 + k * 0.22) + along * (k * 0.4 - 1.2)
-		at.y = grid.height_at(at.x, at.z) + 0.03
+		at.y = TerrainDetail.shown_at(grid, at.x, at.z) + 0.03
 		var yaw := atan2(-along.z, along.x) + (0.08 if k == 0 else -0.12)
 		result.append(Transform3D(Basis(Vector3.UP, yaw), at))
 	return result

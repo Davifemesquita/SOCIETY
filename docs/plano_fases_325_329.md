@@ -39,3 +39,6 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   do claro e escuro de cada massa; o contorno em bolas ficou (é a forma); capturas em `F:\ferramentas\capturas\fase327\`.
 - **328 feita em 06/11/2026** (`docs/plano_fase328.md`): o tapete de capim com metade da altura, mais cerrado e no tom do chão; as
   touceiras do recheio ficaram; capturas em `F:\ferramentas\capturas\fase328\`.
+- **329 feita em 07/11/2026** (`docs/plano_fase329.md`): o degrau era o relevo (o patamar da praia a 1,2 m caindo 2,4 m num canto);
+  a beira da praia virou rampa só no desenho, com a linha d'água no mesmo lugar; capturas em `F:\ferramentas\capturas\fase329\`.
+  **Roteiro concluído.**

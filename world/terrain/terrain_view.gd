@@ -64,7 +64,7 @@ func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
 	EventBus.roads_changed.connect(_on_roads_changed)
 	EventBus.settings_changed.connect(func() -> void: set_hex_tiling(Settings.preset().terrain_hex_tiling))
 	# a porta de um prédio novo (ou demolido) gasta (ou deixa crescer) o chão em frente dela
-	EventBus.building_placed.connect(func(_id: int) -> void: _mark_all_masks())
+	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(func(_id: int) -> void: _mark_all_masks())
 
 
@@ -177,7 +177,10 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
 	# a distância até a água sai uma vez só: o bake e o campo da costa (Fase 35) a dividem
 	var to_water := TerrainBake.distance_to_water(heights, side)
-	_data_images[index] = TerrainBake.bake(heights, side, _config.cell_size_m, _config.terrain_water_distance_m, to_water)
+	# Fase 329: a inclinação e a curvatura saem das alturas desenhadas (a rampa da praia não vira rocha); a água e a costa,
+	# das da simulação (a linha d'água é a mesma)
+	var shown := _with_detail(index, heights, side, origin)
+	_data_images[index] = TerrainBake.bake(shown, side, _config.cell_size_m, _config.terrain_water_distance_m, to_water)
 	material.set_shader_parameter(&"terrain_data", ImageTexture.create_from_image(_data_images[index]))
 	material.set_shader_parameter(&"hex_distance_m", _config.terrain_hex_distance_m)
 	material.set_shader_parameter(&"hex_tiling", _hex_tiling)
@@ -200,7 +203,6 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	_regions[index] = {"heights": heights, "side": side, "origin": origin}
 	_detail_cells[index] = _cells_with_detail(index)
 	_chunk_nodes[index] = {}
-	var shown := _with_detail(index, heights, side, origin)
 	for cy: int in range(0, side - 1, CHUNK_VERTICES):
 		for cx: int in range(0, side - 1, CHUNK_VERTICES):
 			var instance := MeshInstance3D.new()
@@ -226,6 +228,14 @@ func _cells_with_detail(index: int) -> PackedInt32Array:
 			if grid.in_bounds(cell):
 				marked[grid.index(cell)] = true
 	return PackedInt32Array(marked.keys())
+
+
+## Prédio novo: a porta gasta o chão em frente dela e (Fase 329) a célula da rampa da praia volta à altura da simulação.
+func _on_building_placed(building_id: int) -> void:
+	_mark_all_masks()
+	var record := _world.building(building_id)
+	if record != null and record.island_id < _world.islands.size() and _regions.has(record.island_id):
+		_on_roads_changed(record.island_id)
 
 
 ## Estrada nova (ou prédio) numa célula com detalhe: os cantos dela voltam à altura da simulação e o trecho é refeito.

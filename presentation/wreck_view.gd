@@ -126,7 +126,7 @@ static func place_of(grid: IslandGrid, cell: Vector2i, sea: Vector2i, seed: int)
 	var out := Vector3(sea.x, 0.0, sea.y)
 	var along := Vector3(-out.z, 0.0, out.x) * (1.0 if seed % 2 == 0 else -1.0)
 	var at := grid.cell_world(cell) + out * grid.cell_size * 0.2
-	at.y = grid.height_at(at.x, at.z) - SINK_M
+	at.y = TerrainDetail.shown_at(grid, at.x, at.z) - SINK_M
 	# o x do casco ao longo da costa, o z para o mar; adernado em volta do x, a borda do lado do mar mais baixa
 	var heading := Basis(along, Vector3.UP, along.cross(Vector3.UP))
 	return Transform3D(heading * Basis(Vector3.RIGHT, -HEEL_RAD), at)

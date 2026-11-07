@@ -173,7 +173,7 @@ static func goats(world: WorldState, data: GameData, island_id: int) -> Array[Ar
 		for k: int in count:
 			var angle := TAU * k / count + float(seed % 360) * PI / 180.0
 			var at := middle + Vector3(cos(angle), 0.0, sin(angle)) * (0.0 if k == 0 else 0.9 + 0.4 * float((seed >> (k * 2)) % 3))
-			at.y = grid.height_at(at.x, at.z) + (ROCK_M if k == 0 else 0.0)
+			at.y = TerrainDetail.shown_at(grid, at.x, at.z) + (ROCK_M if k == 0 else 0.0)
 			var heading := float((seed >> (k * 4)) % 360) * PI / 180.0
 			result.append([Transform3D(Basis(Vector3.UP, heading), at), seed + k * 7919, k == 0])
 	return result

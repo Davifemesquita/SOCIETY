@@ -90,7 +90,7 @@ func rebuild() -> void:
 		var spot := grid.cell_world(cell)
 		var node := Node3D.new()
 		node.name = "Lighthouse%d" % record.island_id
-		node.position = Vector3(spot.x, grid.height_at(spot.x, spot.z), spot.z)
+		node.position = Vector3(spot.x, TerrainDetail.shown_at(grid, spot.x, spot.z), spot.z)
 		var tower := MeshInstance3D.new()
 		tower.mesh = _tower
 		node.add_child(tower)

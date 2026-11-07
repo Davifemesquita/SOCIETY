@@ -23,17 +23,21 @@ func test_detail_is_zero_on_and_around_every_cell_the_simulation_uses() -> void:
 		var offsets := TerrainDetail.offsets(grid, _config)
 		var width := grid.size.x + 1
 		for value: float in offsets:
-			assert_float(absf(value)).is_less_equal(TerrainDetail.WIDTH_M + TerrainDetail.GULLY_M)
+			# (Fase 329: a rampa da praia mexe até a altura do patamar dela)
+			assert_float(absf(value)).is_less_equal(maxf(TerrainDetail.WIDTH_M + TerrainDetail.GULLY_M, TerrainDetail.BEACH_MAX_M))
 			if value != 0.0:
 				moved += 1
 		for y: int in grid.size.y:
 			for x: int in grid.size.x:
 				if not TerrainDetail.protected_cell(grid, _config, Vector2i(x, y)):
 					continue
-				# nenhum dos 4 cantos da célula se mexe: o que fica em cima dela fica na altura da simulação
+				# nenhum dos 4 cantos da célula se mexe: o que fica em cima dela fica na altura da simulação. Fase 329: a não
+				# ser a rampa da praia, nos cantos baixos de célula sem nada da simulação
+				var holds := TerrainDetail.holds_something(grid, Vector2i(x, y))
 				for cy: int in [y, y + 1]:
 					for cx: int in [x, x + 1]:
-						if offsets[cy * width + cx] != 0.0:
+						var beach := not holds and grid.corner_height(cx, cy) <= TerrainDetail.BEACH_MAX_M
+						if offsets[cy * width + cx] != 0.0 and not beach:
 							assert_bool(false).override_failure_message(
 									"ilha %d: canto (%d, %d) mexido junto da célula (%d, %d)" % [index, cx, cy, x, y]).is_true()
 							return

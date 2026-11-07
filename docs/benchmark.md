@@ -4039,3 +4039,41 @@ vale a segunda. Neutra: só a cor e a normal dos vértices das copas.
 **Fase 328 (capim rente).** 70,2 FPS, 1% low 36,2, p50/p95/p99 13,3/18,5/25,6 ms, GPU 13,2 ms (327: 71,6 FPS, GPU 13,1 ms). O trajeto
 passa quase só pela vila; sobre o prado aberto (`tools/grass_cost.tscn`) o tapete custa +0,61/+0,69/+0,80 ms a 30/60/110 m (antes
 +0,48/+0,38/+0,41), com 56 mil tufos em vez de 32 mil.
+
+### 2026-11-07 12:20:44 — AMD Ryzen 7 5700X 8-Core Processor
+
+| Medida | Resultado |
+|---|---|
+| limite de quadros | 0 FPS (sem limite) |
+| nível gráfico | Alta (nuvens volumétricas desligadas) |
+| placa e driver | NVIDIA GeForce RTX 5060 · vulkan · (1920, 1080) · VSync ligado |
+| gerar o arquipélago: em série / em threads (pior quadro durante) | 3173 / 1367 ms (18 ms; 8 ilhas, 16 núcleos) |
+| jogo novo: arquipélago, terreno, água e árvores | 13147 ms (semente 1840, 19236 árvores desenhadas) |
+| frota | 10 navios em 7 rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: 1357 ms |
+| carga | 10000 moradores em 600 casas; 200 prédios de produção (200 carroças), 14 armazéns, 20 mercados |
+| montar tudo (comandos + eventos + vistas) | 15417 ms |
+| carroças na rua depois de 2 min | 123 de 200 |
+| navios navegando depois de 2 min | 5 de 10 em rota |
+| tick de simulação (média / 95% / pior) | 1.37 / 1.66 / 2.92 ms (orçamento 4.0 ms) |
+| tick por etapa (ms, da mais pesada) | logística 0.42 · produção 0.33 · população 0.31 · necessidades 0.11 · riscos 0.05 · navios 0.04 · força de trabalho 0.03 · marcos, metas e vitória 0.03 · eventos, encomendas, jornal e especialistas 0.02 · estaleiro 0.02 · combate 0.01 · rivais 0.01 · economia 0.00 · estatísticas 0.00 · estado derivado 0.00 |
+| construir um prédio com a ilha cheia | 18.7 ms (limite 50 ms): comando e vistas 18.7 · recálculo 0.0 |
+| recálculo por etapa (ms) | prédios 3.9 · serviços 4.0 · módulos, poluição e beleza 0.1 · armazéns 3.4 · produção 2.9 · grupos de casas 0.5 |
+| obra pelo histórico e o desfazer dela (ilha cheia) | 18.1 / 17.3 ms (ok) |
+| dica que decompõe (um bem, todas as ilhas / o dinheiro) | 0.18 / 1.74 ms |
+| salvar | 91 ms (53 KB) |
+| carregar (inclui refazer as vistas) | 6958 ms |
+| quadro com tudo visível | 15 ms (68 FPS) — NVIDIA GeForce RTX 5060 |
+| objetos, draw calls e primitivas no quadro com tudo visível | 3438 · 1678 · 20656336 |
+| pipelines compiladas montando e desenhando a cidade (desenho / superfície / malha / especialização) | 0 / 4 / 0 / 26 (primeira vez atrás da cortina: ligada) |
+| pedestres | 2000 na multidão, 1905 na rua (teto 2000); 22009 janelas |
+| multidão saindo de casa (rotas novas) | 340 quadros, 1623 ms; 1387 rotas, 0.77 ms cada |
+| multidão na CPU depois de sair (rotina + instâncias) | 0.35 ms por quadro |
+| dia inteiro em 60 s a 1x, Alta, câmera a 40/120/300 m dando a volta (FPS médio / 1% low / 0,1% low / pior quadro) | 63.5 / 33.8 / 28.6 FPS / 36 ms em 3809 quadros (meta 60 FPS), a partir das 10:00 |
+| quadro no Alta (p50 / p95 / p99) | 15.0 / 20.0 / 27.5 ms; GPU média 14.6 ms (p99 19.4); CPU do render média 1.9 ms |
+| tick por quadro no Alta (média / p99 / pior) | 0.16 / 2.19 / 14.99 ms |
+| pipelines compiladas no dia, Alta (desenho / superfície / malha / especialização) | 8 / 47 / 0 / 97 |
+| calçar as ruas da cidade (todas / mais uma) e o quadro com tudo visível | 2812 células: 498 / 47 ms; 19.5 ms (3590 objetos · 1714 draw calls · 64056349 primitivas) |
+
+**Fase 329 (praia em curva).** 63,5 FPS, 1% low 33,8, p50/p95/p99 15,0/20,0/27,5 ms, GPU 14,6 ms; carregar 6.958 ms. A máquina estava no
+estado lento: o A/B no worktree no commit da Fase 328, logo depois, deu 61,6 FPS, GPU 15,1 ms e carregar 6.878 ms. O quadro empata (as
+malhas têm os mesmos vértices); o carregar sobe ~80 ms com a rampa da praia (~134 ms medidos à parte nas oito ilhas).

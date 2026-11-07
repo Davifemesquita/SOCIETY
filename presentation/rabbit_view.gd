@@ -155,7 +155,7 @@ static func rabbits(world: WorldState, data: GameData, island_id: int) -> Array[
 		for k: int in count:
 			var angle := TAU * k / count + float(seed % 360) * PI / 180.0
 			var at := middle + Vector3(cos(angle), 0.0, sin(angle)) * (0.5 + 0.35 * float((seed >> (k * 2)) % 4))
-			at.y = grid.height_at(at.x, at.z)
+			at.y = TerrainDetail.shown_at(grid, at.x, at.z)
 			var heading := float((seed >> (k * 3)) % 360) * PI / 180.0
 			result.append([Transform3D(Basis(Vector3.UP, heading), at), seed + k * 7919])
 	return result

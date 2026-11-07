@@ -3655,6 +3655,15 @@ Regras que já custaram investigação:
   das folhas na tela (`01_prado_de_perto` do `tools/capture_phase285.tscn`): a primeira tentativa, escura demais, virou fiapos pretos.
   Custa +0,2 a +0,4 ms de GPU a mais sobre o prado aberto (`tools/grass_cost.tscn`). As touceiras do recheio (Fase 41) não mudaram.
 
+### Praia em curva (Fase 329, nossa)
+
+- **Plano** em `docs/plano_fase329.md`, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata). O degrau da praia é o
+  relevo (patamar de 1,2 m caindo 2,4 m num canto). `TerrainDetail._add_beach` (somado no `offsets`): a terra até `BEACH_MAX_M`
+  desce e o fundo em frente sobe numa rampa de `BEACH_SLOPE` pela distância até a linha d'água, sem nenhum canto trocar de lado,
+  fora das células com algo da simulação (`holds_something`). **A célula plana da praia pode ficar abaixo da simulação no desenho**:
+  peça nova na beira da praia senta pelo `TerrainDetail.shown_at`, e a `TerrainView` zera a célula quando um prédio chega. O bake
+  dos dados do terreno sai das alturas desenhadas. Captura em `tools/capture_phase280.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3994,6 +4003,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 326 — Mata no tom (nossa) | **feita em 05/11/2026**, a segunda do roteiro `docs/plano_fases_325_329.md` (prado e mata): as folhosas num verde mais fundo e menos saturado, o alto da copa e os tons por árvore sem cortar o azul; plano em `docs/plano_fase326.md` |
 | 327 — Copa sem bolhas (nossa) | **feita em 06/11/2026**, a terceira do roteiro `docs/plano_fases_325_329.md` (prado e mata): a luz das copas das folhosas pela copa inteira, clara no alto e escura na base, com a sombra por dentro entre as massas, no lugar de cada massa clara em cima e escura embaixo; plano em `docs/plano_fase327.md` |
 | 328 — Capim rente (nossa) | **feita em 06/11/2026**, a quarta do roteiro `docs/plano_fases_325_329.md` (prado e mata): o tapete de capim de perto com metade da altura, mais cerrado e no tom do chão, no lugar dos fios verde-limão espetados; plano em `docs/plano_fase328.md` |
+| 329 — Praia em curva (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata): a beira da praia desce em rampa até a água, sem o degrau de 1,2 m nem a escadinha das células, só no desenho e com a linha d'água no mesmo lugar; plano em `docs/plano_fase329.md` |
 
 Pendências já vistas para fases futuras:
 

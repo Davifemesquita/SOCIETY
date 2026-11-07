@@ -155,7 +155,7 @@ static func seals(world: WorldState, data: GameData, island_id: int) -> Array[Ar
 		var count := 2 + seed % 3
 		for k: int in count:
 			var at := middle + along * ((k - (count - 1) * 0.5) * 1.1) + sea * (0.35 + 0.25 * (k % 2))
-			at.y = grid.height_at(at.x, at.z)
+			at.y = TerrainDetail.shown_at(grid, at.x, at.z)
 			# a cabeça (−z) para o mar, torta à toa
 			var heading := atan2(-sea.x, -sea.z) + (float((seed >> (k * 3)) % 7) - 3.0) * 0.18
 			result.append([Transform3D(Basis(Vector3.UP, heading), at), seed + k * 7919])

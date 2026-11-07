@@ -187,7 +187,7 @@ static func deer(world: WorldState, data: GameData, island_id: int) -> Array[Arr
 		for k: int in count:
 			var angle := TAU * k / count + float(seed % 360) * PI / 180.0
 			var at := middle + Vector3(cos(angle), 0.0, sin(angle)) * (0.9 + 0.6 * float((seed >> (k * 2)) % 3))
-			at.y = grid.height_at(at.x, at.z)
+			at.y = TerrainDetail.shown_at(grid, at.x, at.z)
 			var heading := float((seed >> (k * 4)) % 360) * PI / 180.0
 			result.append([Transform3D(Basis(Vector3.UP, heading), at), seed + k * 7919, k == 0])
 	return result

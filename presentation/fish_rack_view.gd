@@ -71,7 +71,7 @@ func rebuild() -> void:
 			var out: Vector3 = found[cell]
 			var across := Vector3(-out.z, 0.0, out.x)
 			var at := grid.cell_world(cell)
-			at.y = grid.height_at(at.x, at.z)
+			at.y = TerrainDetail.shown_at(grid, at.x, at.z)
 			# a vara (o x da malha) de través do mar
 			places.append(Transform3D(Basis(across, Vector3.UP, across.cross(Vector3.UP)), at))
 	_racks.multimesh.instance_count = places.size()
