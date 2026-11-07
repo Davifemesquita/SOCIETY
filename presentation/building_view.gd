@@ -51,6 +51,11 @@ const DUST_COLOR := Color(0.72, 0.64, 0.52, 0.45)
 ## telhado por outro do mesmo material —, a "invertida" (caixilho claro) numa casa de reboco ou tijolo a cada
 ## INVERTED_EVERY, e um desvio de até JITTER_M e JITTER_DEG no modelo. Proposta à espera do dono.
 const PALETTES := 4
+## Fase 351: as classes de reboco claro (engenheiros e investidores) e os tons dele, sorteados por casa e misturados PLASTER_MIX com a
+## cor da classe: no Anno a rua tem casas de tons diferentes lado a lado e o reboco não é branco.
+const PLASTER_TIERS: Array[StringName] = [&"engineers", &"investors"]
+const PLASTER_TONES: Array[Color] = [Color(0.8, 0.72, 0.56), Color(0.78, 0.62, 0.4), Color(0.68, 0.66, 0.6), Color(0.78, 0.62, 0.56)]
+const PLASTER_MIX := 0.75
 const WALL_SHIFTS: Array[Vector3] = [Vector3(0.0, 1.0, 1.0), Vector3(-0.03, 0.85, 0.93), Vector3(0.025, 1.12, 1.05),
 		Vector3(0.05, 0.9, 0.97)]
 ## Fase 258: o telhado de todo prédio pelo material e pela paleta: telhas em terracota, laranja, vermelho-escuro ou marrom de
@@ -325,6 +330,9 @@ func _color(record: BuildingRecord) -> Color:
 		return _simulation.def_of(record).color
 	var shade := (house_hash(record.id) / HOUSE_VARIANTS % HOUSE_SHADE_STEPS - HOUSE_SHADE_STEPS / 2) * HOUSE_SHADE
 	var base := _simulation.data.tier(record.tier).house_color
+	if PLASTER_TIERS.has(record.tier):
+		# Fase 351: o reboco de cada casa num tom (creme, ocre, cinza, rosa-velho), menos branco
+		base = base.lerp(PLASTER_TONES[house_hash(record.id) / 13 % PLASTER_TONES.size()], PLASTER_MIX)
 	return base.lightened(shade) if shade >= 0.0 else base.darkened(-shade)
 
 

@@ -29,3 +29,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 - **350 feita em 07/11/2026** (`docs/plano_fase350.md`): mais casas de tábuas, cinza ou marrom; capturas em
   `F:\ferramentas\capturas\fase350\`.
+- **351 feita em 07/11/2026** (`docs/plano_fase351.md`): o reboco claro num tom por casa; capturas em
+  `F:\ferramentas\capturas\fase351\`.

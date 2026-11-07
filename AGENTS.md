@@ -3786,6 +3786,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase350.md`, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta). `BuildingView.SHINGLE_SIXTHS`
   (operários 4/6, artesãos 2/6) e `shingle_tone` (o parâmetro `shingle` em 1 cinza, 2 marrom `shingle_brown`).
 
+### Reboco sujo (Fase 351, nossa)
+
+- **Plano** em `docs/plano_fase351.md`. `BuildingView.PLASTER_TIERS`, `PLASTER_TONES` e `PLASTER_MIX`: o reboco dos engenheiros e
+  investidores num tom sorteado por casa (creme, ocre, cinza, rosa-velho), menos branco.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4147,6 +4152,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 348 — Fendas escuras (nossa) | **feita em 07/11/2026**: fendas verticais escuras nas faces da rocha e das pedras; plano em `docs/plano_fase348.md` |
 | 349 — Matacões no capim (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_345_349.md` (pedra grande): pedras grandes soltas no capim junto das encostas e dos barrancos das ilhas temperadas; o roteiro custa ~0,3–0,5 ms de GPU; plano em `docs/plano_fase349.md` |
 | 350 — Telhado de madeira (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a maioria das casas dos operários e um terço das dos artesãos com telhado de tábuas, cinza ou marrom; plano em `docs/plano_fase350.md` |
+| 351 — Reboco sujo (nossa) | **feita em 07/11/2026**: o reboco das casas dos engenheiros e investidores num tom por casa (creme, ocre, cinza, rosa-velho), menos branco; plano em `docs/plano_fase351.md` |
 
 Pendências já vistas para fases futuras:
 
