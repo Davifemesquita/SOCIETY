@@ -35,3 +35,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   campo; capturas em `F:\ferramentas\capturas\fase337\`.
 - **338 feita em 07/11/2026** (`docs/plano_fase338.md`): o capim alto e escuro do recheio na beira das estradas de campo; capturas em
   `F:\ferramentas\capturas\fase338\`.
+- **339 feita em 07/11/2026** (`docs/plano_fase339.md`): lanços de cerca nos trechos retos das estradas de campo; capturas em
+  `F:\ferramentas\capturas\fase339\`. **Roteiro concluído.**

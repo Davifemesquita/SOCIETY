@@ -261,6 +261,7 @@ var deer_view: DeerView
 var anchor_view: AnchorView
 ## Fase 237: os marcos de pedra de topo redondo na beira das estradas de terra compridas fora das vilas.
 var milestone_view: MilestoneView
+var road_fence_view: RoadFenceView
 ## Fase 238: o mastro com a bandeira da cidade no alto da cúpula da prefeitura, virando com o vento.
 var town_flag_view: TownFlagView
 ## Fase 240: o lagar de pisar uvas e a prensa de fuso ao lado de cada vinhedo.
@@ -835,6 +836,11 @@ func _ready() -> void:
 	milestone_view.name = "Milestones"
 	add_child(milestone_view)
 	milestone_view.setup(simulation)
+	# Fase 339: as cercas de mourão na beira das estradas de campo
+	road_fence_view = RoadFenceView.new()
+	road_fence_view.name = "RoadFences"
+	add_child(road_fence_view)
+	road_fence_view.setup(simulation)
 	town_flag_view = TownFlagView.new()
 	town_flag_view.name = "TownFlags"
 	add_child(town_flag_view)

@@ -148,7 +148,7 @@ uniform float road_light = 1.4;
 // road_gravel_far_m da câmera (mais longe seriam menores que um pixel)
 uniform float road_gravel_m = 0.09;
 uniform float road_gravel_share = 0.3;
-uniform vec3 road_gravel_color = vec3(0.66, 0.64, 0.6);
+uniform vec3 road_gravel_color = vec3(0.58, 0.56, 0.52);
 uniform float road_gravel_far_m = 70.0;
 uniform vec3 dry_tint = vec3(1.1, 1.0, 0.72);
 uniform vec3 lush_tint = vec3(0.9, 1.04, 0.86);
@@ -607,8 +607,10 @@ void fragment() {
 							* (1.0 - puddle);
 					float stone = step(strata_hash(best_id + vec2(41.0, 17.0)), share) * on_road * gravel_near;
 					float r = sqrt(best);
-					float body = 1.0 - smoothstep(0.32, 0.42, r);
-					float ring = smoothstep(0.3, 0.42, r) * (1.0 - smoothstep(0.42, 0.6, r));
+					// (cada pedra do seu tamanho: iguais, pareciam bolinhas)
+					float size = mix(0.2, 0.42, strata_hash(best_id + vec2(13.0, 47.0)));
+					float body = 1.0 - smoothstep(size - 0.08, size, r);
+					float ring = smoothstep(size - 0.1, size, r) * (1.0 - smoothstep(size, size + 0.16, r));
 					float tone = 0.7 + 0.5 * strata_hash(best_id + vec2(7.0, 23.0));
 					dirt = mix(dirt, dirt * 0.72, ring * stone);
 					dirt = mix(dirt, road_gravel_color * tone, body * stone);

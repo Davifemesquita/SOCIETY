@@ -19,7 +19,8 @@ Anno tem cascalho e pedrinhas; a nossa tinha sulcos numa terra lisa.
 
 ## Medida
 
-Medida no benchmark do fim do roteiro (`docs/plano_fase339.md`).
+Medida no benchmark do fim do roteiro (`docs/plano_fase339.md`): sem diferença no trajeto. Na Fase 339 cada pedra ganhou o seu
+tamanho e o tom ficou mais escuro (iguais e claras, de perto pareciam bolinhas brancas).
 
 ## Como testar
 
