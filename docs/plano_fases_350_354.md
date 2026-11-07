@@ -35,3 +35,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   capturas em `F:\ferramentas\capturas\fase352\`.
 - **353 feita em 07/11/2026** (`docs/plano_fase353.md`): o chão de vila de 3,4 m em volta das casas; capturas em
   `F:\ferramentas\capturas\fase353\`.
+- **354 feita em 07/11/2026** (`docs/plano_fase354.md`): a fumaça das casas mais cheia e vista de mais longe; capturas em
+  `F:\ferramentas\capturas\fase354\`. **Roteiro concluído.**

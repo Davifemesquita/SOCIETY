@@ -3801,6 +3801,11 @@ Regras que já custaram investigação:
 
 - **Plano** em `docs/plano_fase353.md`. `RoadMask.TOWN_YARD_REACH_M` 3,4 m: o chão de vila cobre o miolo entre casas próximas.
 
+### Fumaça cheia (Fase 354, nossa)
+
+- **Plano** em `docs/plano_fase354.md`, a última do roteiro `docs/plano_fases_350_354.md`. `ChimneySmokeView.BASE_AMOUNT` 0,55 e o
+  sumiço de 240 a 380 m; no `shaders/chimney_smoke.gdshader`, `alpha` 0,65, `rise_m` 5, `end_size_m` 3,2.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4165,6 +4170,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 351 — Reboco sujo (nossa) | **feita em 07/11/2026**: o reboco das casas dos engenheiros e investidores num tom por casa (creme, ocre, cinza, rosa-velho), menos branco; plano em `docs/plano_fase351.md` |
 | 352 — Beiral saliente (nossa) | **feita em 07/11/2026**: a faixa de sombra do beiral no alto das fachadas, no shader (o beiral mais largo quebrava a geometria das alas e da igreja); plano em `docs/plano_fase352.md` |
 | 353 — Miolo da quadra (nossa) | **feita em 07/11/2026**: o chão de terra pisada das casas mais largo, cobrindo o miolo entre casas próximas; plano em `docs/plano_fase353.md` |
+| 354 — Fumaça cheia (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a fumaça das chaminés das casas mais cheia, em mais casas e vista de mais longe; plano em `docs/plano_fase354.md` |
 
 Pendências já vistas para fases futuras:
 

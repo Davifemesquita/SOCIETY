@@ -11,17 +11,18 @@ global uniform float wind_strength;
 // Quanto da fumaça aparece agora (a hora do dia: mais de manhã e à noite) e as medidas do ciclo.
 uniform float amount : hint_range(0.0, 1.0) = 0.6;
 uniform float cycle_s = 7.0;
-uniform float rise_m = 4.0;
+uniform float rise_m = 5.0;
 uniform float drift_m = 2.6;
 uniform float start_size_m = 0.6;
-uniform float end_size_m = 2.6;
+uniform float end_size_m = 3.2;
 uniform vec4 tint : source_color = vec4(0.82, 0.82, 0.8, 1.0);
-uniform float alpha = 0.55;
+// (Fase 354: mais cheia, era 0,55; sobe mais e cresce mais)
+uniform float alpha = 0.65;
 // Sem luz própria: escurece com a noite (a vista põe o brilho do céu).
 uniform float brightness : hint_range(0.0, 1.0) = 1.0;
 // Some com a distância da câmera (o MultiMesh cobre o mundo todo: o alcance de visibilidade não serve).
-uniform float fade_begin_m = 160.0;
-uniform float fade_end_m = 260.0;
+uniform float fade_begin_m = 240.0;
+uniform float fade_end_m = 380.0;
 
 varying float v_alpha;
 varying vec2 v_uv;

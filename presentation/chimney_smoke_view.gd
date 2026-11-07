@@ -9,15 +9,17 @@ const SHADER := preload("res://shaders/chimney_smoke.gdshader")
 const PUFFS := 7
 const REFRESH_SECONDS := 1.0
 ## A fumaça de fundo durante o dia e os picos do fogão (hora do meio e meia largura, em horas).
-const BASE_AMOUNT := 0.35
+## (Fase 354: 0,55, era 0,35: no Anno quase toda casa solta fumaça)
+const BASE_AMOUNT := 0.55
 const MORNING_HOUR := 7.0
 const MORNING_HALF_H := 2.0
 const EVENING_HOUR := 19.0
 const EVENING_HALF_H := 2.5
 ## O quanto a fumaça escurece no meio da noite (sem luz própria).
 const NIGHT_BRIGHTNESS := 0.22
-const FADE_BEGIN_M := 160.0
-const FADE_END_M := 260.0
+## (Fase 354: some mais longe, de 240 a 380 m, era de 160 a 260: a fumaça se vê da vista da vila)
+const FADE_BEGIN_M := 240.0
+const FADE_END_M := 380.0
 
 var _simulation: Simulation
 var _instance := MultiMeshInstance3D.new()
