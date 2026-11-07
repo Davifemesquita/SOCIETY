@@ -3680,6 +3680,11 @@ Regras que já custaram investigação:
   do vermelho e o tom de longe das coníferas (`far_cool_tint` no `shaders/foliage.gdshaderinc`) sem azular: com a saturação da cor
   viva, o azul a mais saía ciano. **Cor de folhagem nova: azul abaixo do vermelho.**
 
+### Casca sem laranja (Fase 332, nossa)
+
+- **Plano** em `docs/plano_fase332.md`, no lugar do "pé das árvores" do roteiro (com a sombra do sol à vista, a árvore já assenta).
+  `TreeModel.PINE_UPPER_BARK` castanho-avermelhado: o laranja dos troncos do pinheiro saía como palitos coloridos.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4022,6 +4027,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 329 — Praia em curva (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata): a beira da praia desce em rampa até a água, sem o degrau de 1,2 m nem a escadinha das células, só no desenho e com a linha d'água no mesmo lugar; plano em `docs/plano_fase329.md` |
 | 330 — Sombra funda (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_330_334.md` (luz e sombra): o sol do dia passa para a frente da câmera padrão (estava às costas, e as sombras se escondiam atrás de cada casa e árvore), a luz ambiente fica mais fraca de dia e o mar de longe fica áspero; plano em `docs/plano_fase330.md` |
 | 331 — Abeto sem ciano (nossa) | **feita em 07/11/2026**: os pinheiros e os abetos em verde-escuro oliva, de perto e de longe, no lugar do verde-azulado quase ciano; plano em `docs/plano_fase331.md` |
+| 332 — Casca sem laranja (nossa) | **feita em 07/11/2026**, no lugar do "pé das árvores" (com a sombra do sol à vista, a árvore já assenta): o alto do tronco do pinheiro castanho-avermelhado, sem o laranja vivo; plano em `docs/plano_fase332.md` |
 
 Pendências já vistas para fases futuras:
 

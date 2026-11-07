@@ -21,7 +21,7 @@ das Fases 304 a 329 (`F:\ferramentas\capturas\fase304\depois`, `fase327\depois`,
 |---|---|
 | 330 — Sombra funda | a sombra do sol mais escura no chão e na mata (menos luz do céu no lado da sombra, de dia), medida pela razão entre o capim ao sol e na sombra |
 | 331 — Abeto sem ciano | o verde das coníferas (`TreeModel`, `far_cool_tint`) puxado do ciano para o verde-escuro oliva |
-| 332 — Pé das árvores | uma mancha de sombra de contato debaixo de cada árvore e arbusto, do tamanho da copa |
+| 332 — Casca sem laranja | (no lugar do "pé das árvores": com a sombra do sol à vista, a árvore já assenta) o alto do tronco do pinheiro castanho-avermelhado, sem o laranja vivo |
 | 333 — Ar de longe | a névoa de distância leve, azul-acinzentada, só no longe (perspectiva aérea), sem voltar ao cinza de antes da Fase 255 |
 | 334 — Prado fundo | o capim de longe mais escuro e menos amarelo, pela régua do brilho do prado contra a mata |
 
@@ -33,3 +33,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   luz ambiente de dia caiu para 0,75; capturas em `F:\ferramentas\capturas\fase330\`.
 - **331 feita em 07/11/2026** (`docs/plano_fase331.md`): as agulhas com o azul abaixo do vermelho e o tom de longe sem azular;
   capturas em `F:\ferramentas\capturas\fase331\`.
+- **332 feita em 07/11/2026** (`docs/plano_fase332.md`), trocada: no lugar do "pé das árvores" (a sombra do sol já assenta as
+  árvores), a casca de cima do pinheiro sem o laranja; capturas em `F:\ferramentas\capturas\fase332\`.
