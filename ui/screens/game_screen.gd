@@ -106,6 +106,7 @@ var surf_spray_view: SurfSprayView
 var grass_carpet_view: GrassCarpetView
 ## Fase 128: o afloramento e as pedras do minério nas jazidas ainda sem mina.
 var deposit_view: DepositView
+var summit_rock_view: SummitRockView
 ## Fase 131: as tampas de bueiro nas ruas de paralelepípedo.
 var manhole_view: ManholeView
 ## Fase 132: as bombas d'água junto das casas.
@@ -535,6 +536,11 @@ func _ready() -> void:
 	deposit_view.name = "Deposits"
 	add_child(deposit_view)
 	deposit_view.setup(simulation)
+	# Fase 345: o granito no alto dos morros
+	summit_rock_view = SummitRockView.new()
+	summit_rock_view.name = "SummitRocks"
+	add_child(summit_rock_view)
+	summit_rock_view.setup(simulation)
 	manhole_view = ManholeView.new()
 	manhole_view.name = "Manholes"
 	add_child(manhole_view)

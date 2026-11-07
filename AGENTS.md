@@ -3752,6 +3752,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase344.md`, a última do roteiro `docs/plano_fases_340_344.md`. `CropView.hedge_mesh` com quatro massas de
   tamanhos diferentes (até ~1,3 m), cada lanço de uma altura e um em `HEDGE_TREE_EVERY` como moita alta (`HEDGE_TREE_SCALE`).
 
+### Granito no alto (Fase 345, nossa)
+
+- **Plano** em `docs/plano_fase345.md`, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande). `SummitRockView`
+  (`GameScreen.summit_rock_view`): grupos de rochas da `RockModel` nos topos e cristas (`_crest`) do alto de cada ilha, só em célula
+  livre, refeitos a cada obra (~14 ms o arquipélago). **Pelo alto só, sem a crista, a rocha cobria o planalto da vila.**
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4107,6 +4113,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 342 — Cor de cultura (nossa) | **feita em 07/11/2026**: cada plantação num verde próprio que se distingue de longe (a batata funda, o lúpulo vivo, a uva oliva, a cana lima, o café escuro, o tabaco palha); plano em `docs/plano_fase342.md` |
 | 343 — Restolho e fardos (nossa) | **feita em 07/11/2026**: depois da colheita do cereal, o campo de restolho claro com os sacos sendo levados, até a plantação voltar; plano em `docs/plano_fase343.md` |
 | 344 — Sebe alta (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_340_344.md` (campos em faixa): a sebe entre as fazendas mais alta e irregular, com moitas altas de vez em quando; plano em `docs/plano_fase344.md` |
+| 345 — Granito no alto (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande): grupos de rocha cinza nos topos e cristas dos morros, fora de onde se constrói; plano em `docs/plano_fase345.md` |
 
 Pendências já vistas para fases futuras:
 

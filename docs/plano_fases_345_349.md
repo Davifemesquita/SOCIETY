@@ -29,4 +29,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 ## Estado
 
-- A fazer.
+- **345 feita em 07/11/2026** (`docs/plano_fase345.md`): grupos de rocha nos topos e cristas do alto; capturas em
+  `F:\ferramentas\capturas\fase345\`.
