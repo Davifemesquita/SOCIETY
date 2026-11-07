@@ -20,7 +20,8 @@ uniform float fade_to_m = 95.0;
 uniform float meadow_patch_m = 9.0;
 uniform vec3 tall_tint = vec3(0.64, 0.79, 0.58);
 uniform vec3 short_tint = vec3(1.22, 1.15, 0.8);
-uniform float tall_height = 1.7;
+// Fase 328: o capim alto era 1,7 vezes a folha (passava de 1 m)
+uniform float tall_height = 1.45;
 uniform float short_height = 0.55;
 uniform float backlight = 0.3;
 

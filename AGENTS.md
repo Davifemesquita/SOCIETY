@@ -3647,6 +3647,14 @@ Regras que já custaram investigação:
   (`CONIFER_ROUND` 0,65, sem `whole`). **A régua** é a correlação entre a altura e o brilho das folhas (o teste a mede) e o brilho
   médio, que não pode cair mais de 5% (a Fase 326 acertou a mata em ~0,73 do prado). O contorno em bolas é a forma das massas e ficou.
 
+### Capim rente (Fase 328, nossa)
+
+- **Plano** em `docs/plano_fase328.md`, quarta do roteiro `docs/plano_fases_325_329.md`. O tapete de capim da Fase 286
+  (`GrassCarpetView`) com folhas de 0,2 a 0,38 m (`BLADE_HEIGHT_M`; o capim alto a 1,45 vez, `tall_height`), 14 tufos de 9 folhas por
+  célula e a cor do pé e da ponta no tom do capim do terreno (a ponta era verde-limão, 2,5 vezes o pé). **A régua** é a cor do chão e
+  das folhas na tela (`01_prado_de_perto` do `tools/capture_phase285.tscn`): a primeira tentativa, escura demais, virou fiapos pretos.
+  Custa +0,2 a +0,4 ms de GPU a mais sobre o prado aberto (`tools/grass_cost.tscn`). As touceiras do recheio (Fase 41) não mudaram.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -3985,6 +3993,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 325 — Prado sem xadrez (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata): as manchas do prado sem os quadrados claros e escuros, por um ruído de gradiente girado e torcido, igual no chão e no capim; plano em `docs/plano_fase325.md` |
 | 326 — Mata no tom (nossa) | **feita em 05/11/2026**, a segunda do roteiro `docs/plano_fases_325_329.md` (prado e mata): as folhosas num verde mais fundo e menos saturado, o alto da copa e os tons por árvore sem cortar o azul; plano em `docs/plano_fase326.md` |
 | 327 — Copa sem bolhas (nossa) | **feita em 06/11/2026**, a terceira do roteiro `docs/plano_fases_325_329.md` (prado e mata): a luz das copas das folhosas pela copa inteira, clara no alto e escura na base, com a sombra por dentro entre as massas, no lugar de cada massa clara em cima e escura embaixo; plano em `docs/plano_fase327.md` |
+| 328 — Capim rente (nossa) | **feita em 06/11/2026**, a quarta do roteiro `docs/plano_fases_325_329.md` (prado e mata): o tapete de capim de perto com metade da altura, mais cerrado e no tom do chão, no lugar dos fios verde-limão espetados; plano em `docs/plano_fase328.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -37,3 +37,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   capturas em `F:\ferramentas\capturas\fase326\`.
 - **327 feita em 06/11/2026** (`docs/plano_fase327.md`): a luz das copas das folhosas pela copa inteira e a sombra por dentro, no lugar
   do claro e escuro de cada massa; o contorno em bolas ficou (é a forma); capturas em `F:\ferramentas\capturas\fase327\`.
+- **328 feita em 06/11/2026** (`docs/plano_fase328.md`): o tapete de capim com metade da altura, mais cerrado e no tom do chão; as
+  touceiras do recheio ficaram; capturas em `F:\ferramentas\capturas\fase328\`.

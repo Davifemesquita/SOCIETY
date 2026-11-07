@@ -11,7 +11,8 @@ extends Node3D
 
 const BLOCK_CELLS := 8
 const RADIUS_M := 90.0
-const TUFTS_PER_CELL := 8
+## Fase 328: eram 8; com as folhas mais baixas e mais largas o tapete precisa de mais tufos para fechar.
+const TUFTS_PER_CELL := 14
 const BUILDS_PER_FRAME := 3
 const MAX_CAMERA_M := 150.0
 ## Célula mais íngreme que isto (diferença entre os cantos) fica sem tapete: o tufo flutuaria no detalhe da encosta.
@@ -20,15 +21,20 @@ const MAX_RELIEF_M := 0.6
 const SHORE_CELLS := 3
 const BANK_CELLS := 2
 const SALT := 286
-const BLADES := 7
+## Fase 328: eram 7.
+const BLADES := 9
 ## Meia largura da folha no pé (m).
-const BLADE_HALF_M := 0.04
-const BLADE_HEIGHT_M := Vector2(0.4, 0.75)
-const BASE_COLOR := Color(0.2, 0.34, 0.09)
-const TIP_COLOR := Color(0.5, 0.68, 0.22)
+## Fase 328: era 0,04.
+const BLADE_HALF_M := 0.05
+## Fase 328, capim rente: as folhas eram de 0,4 a 0,75 m (até ~1,3 m nas manchas de capim alto) e iam do verde escuro ao verde-limão,
+## 1,75 vez mais claras que o chão na tela; agora metade da altura e no tom do capim do terreno, a ponta só um pouco mais clara.
+const BLADE_HEIGHT_M := Vector2(0.2, 0.38)
+const BASE_COLOR := Color(0.25, 0.33, 0.105)
+const TIP_COLOR := Color(0.34, 0.43, 0.14)
 ## Fase 287: a flor do tufo (pétalas, altura e raio).
 const FLOWER_PETALS := 5
-const FLOWER_HEIGHT_M := 0.42
+## Fase 328: era 0,42 (as folhas baixaram).
+const FLOWER_HEIGHT_M := 0.32
 const FLOWER_RADIUS_M := 0.075
 
 var _simulation: Simulation
