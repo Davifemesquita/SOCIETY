@@ -49,6 +49,7 @@ func _run() -> void:
 		for variant: String in water_lab.split("|"):
 			_set_uniforms(material, variant)
 			await _shot(game, "w%d_vila_de_longe.png" % index, points[0], 420.0, 0.6)
+			await _horizon(game, "w%d_horizonte.png" % index, points[0])
 			index += 1
 		get_tree().quit()
 		return
@@ -115,5 +116,7 @@ func _set_uniforms(material: ShaderMaterial, pairs: String) -> void:
 			var value: Variant = parts[1].to_float()
 			if numbers.size() == 3:
 				value = Vector3(numbers[0].to_float(), numbers[1].to_float(), numbers[2].to_float())
+			elif numbers.size() == 4:
+				value = Color(numbers[0].to_float(), numbers[1].to_float(), numbers[2].to_float(), numbers[3].to_float())
 			material.set_shader_parameter(StringName(parts[0].strip_edges()), value)
 			print("uniforme ", parts[0], " = ", parts[1])

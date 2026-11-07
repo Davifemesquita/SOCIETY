@@ -180,7 +180,8 @@ uniform float streak_deep_m = 2.5;
 // Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
 // azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
 // shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
-uniform vec4 cold_deep : source_color = vec4(0.04, 0.18, 0.29, 1.0);
+// (Fase 355: mais escuro e menos azul, era (0,04; 0,18; 0,29): de cima o mar das temperadas fica azul-petróleo escuro, como no Anno)
+uniform vec4 cold_deep : source_color = vec4(0.03, 0.12, 0.18, 1.0);
 uniform vec4 cold_shelf : source_color = vec4(0.19, 0.52, 0.53, 0.52);
 uniform float cold_shelf_m = 25.0;
 uniform float tropic_blend_m = 120.0;
