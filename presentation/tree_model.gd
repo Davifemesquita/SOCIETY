@@ -34,7 +34,8 @@ const VARIANTS := 2
 ## verde fundo puxando para o oliva, com ~0,7 do brilho do prado.
 const OAK_LEAF := Color(0.27, 0.4, 0.17)
 const BEECH_LEAF := Color(0.32, 0.46, 0.19)
-const PINE_NEEDLE := Color(0.24, 0.45, 0.21)
+## Fase 331: as agulhas sem o azul que, com a saturação da cor viva, saía ciano (eram (0,24; 0,45; 0,21) e (0,16; 0,36; 0,21)).
+const PINE_NEEDLE := Color(0.26, 0.43, 0.17)
 const OAK_BARK := Color(0.3, 0.25, 0.19)
 const BEECH_BARK := Color(0.46, 0.45, 0.41)
 const PINE_BARK := Color(0.33, 0.22, 0.15)
@@ -49,7 +50,7 @@ const COCONUT := Color(0.36, 0.34, 0.12)
 const TROPICAL_LEAF := Color(0.21, 0.37, 0.14)
 const TROPICAL_BARK := Color(0.52, 0.48, 0.4)
 ## Abeto (Fase 275): agulhas verde-escuras puxando para o azul, casca marrom-acinzentada.
-const SPRUCE_NEEDLE := Color(0.16, 0.36, 0.21)
+const SPRUCE_NEEDLE := Color(0.17, 0.33, 0.14)
 const SPRUCE_BARK := Color(0.32, 0.25, 0.19)
 ## Abeto: altura (antes do sorteio), camadas de galhos de perto, galhos por camada, raio da camada de baixo e altura da beira
 ## dela (as saias descem até quase o chão), em metros.

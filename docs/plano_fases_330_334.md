@@ -31,3 +31,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 
 - **330 feita em 07/11/2026** (`docs/plano_fase330.md`): a sombra rala era o sol às costas da câmera padrão; o sol girou 180° e a
   luz ambiente de dia caiu para 0,75; capturas em `F:\ferramentas\capturas\fase330\`.
+- **331 feita em 07/11/2026** (`docs/plano_fase331.md`): as agulhas com o azul abaixo do vermelho e o tom de longe sem azular;
+  capturas em `F:\ferramentas\capturas\fase331\`.

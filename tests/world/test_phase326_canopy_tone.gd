@@ -53,5 +53,6 @@ func test_the_tree_tones_keep_the_blue() -> void:
 
 
 func test_the_conifers_keep_their_colour() -> void:
-	assert_bool(TreeModel.PINE_NEEDLE.is_equal_approx(Color(0.24, 0.45, 0.21))).is_true()
-	assert_bool(TreeModel.SPRUCE_NEEDLE.is_equal_approx(Color(0.16, 0.36, 0.21))).is_true()
+	# (Fase 331: as coníferas mudaram de propósito, puxadas do ciano para o oliva)
+	assert_bool(TreeModel.PINE_NEEDLE.is_equal_approx(Color(0.26, 0.43, 0.17))).is_true()
+	assert_bool(TreeModel.SPRUCE_NEEDLE.is_equal_approx(Color(0.17, 0.33, 0.14))).is_true()

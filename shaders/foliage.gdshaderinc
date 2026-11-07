@@ -51,7 +51,8 @@ varying flat float tree_pick;
 uniform float far_cool = 0.0;
 uniform float far_cool_from_m = 40.0;
 uniform float far_cool_to_m = 240.0;
-uniform vec3 far_cool_tint = vec3(0.6, 0.72, 0.88);
+// (Fase 331: menos azul; com (0,6; 0,72; 0,88) a mata de abetos de longe saía ciano)
+uniform vec3 far_cool_tint = vec3(0.64, 0.7, 0.74);
 
 #ifdef LEAF_DETAIL
 // tamanho do cacho de folhas (m no modelo), o claro e o escuro dele, quanto a normal estufa para fora do meio do cacho (cada

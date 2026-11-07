@@ -3674,6 +3674,12 @@ Regras que já custaram investigação:
   **Captura que troca o giro chama `SkyAdapter.refresh`** (o Sky3D não recalcula na mesma hora e o giro somaria). Captura em
   `tools/capture_phase330.tscn` (`CAPTURA_AMBIENTE`, `CAPTURA_AGUA`).
 
+### Abeto sem ciano (Fase 331, nossa)
+
+- **Plano** em `docs/plano_fase331.md`. As agulhas do pinheiro e do abeto (`TreeModel.PINE_NEEDLE`, `SPRUCE_NEEDLE`) com o azul abaixo
+  do vermelho e o tom de longe das coníferas (`far_cool_tint` no `shaders/foliage.gdshaderinc`) sem azular: com a saturação da cor
+  viva, o azul a mais saía ciano. **Cor de folhagem nova: azul abaixo do vermelho.**
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4015,6 +4021,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 328 — Capim rente (nossa) | **feita em 06/11/2026**, a quarta do roteiro `docs/plano_fases_325_329.md` (prado e mata): o tapete de capim de perto com metade da altura, mais cerrado e no tom do chão, no lugar dos fios verde-limão espetados; plano em `docs/plano_fase328.md` |
 | 329 — Praia em curva (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata): a beira da praia desce em rampa até a água, sem o degrau de 1,2 m nem a escadinha das células, só no desenho e com a linha d'água no mesmo lugar; plano em `docs/plano_fase329.md` |
 | 330 — Sombra funda (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_330_334.md` (luz e sombra): o sol do dia passa para a frente da câmera padrão (estava às costas, e as sombras se escondiam atrás de cada casa e árvore), a luz ambiente fica mais fraca de dia e o mar de longe fica áspero; plano em `docs/plano_fase330.md` |
+| 331 — Abeto sem ciano (nossa) | **feita em 07/11/2026**: os pinheiros e os abetos em verde-escuro oliva, de perto e de longe, no lugar do verde-azulado quase ciano; plano em `docs/plano_fase331.md` |
 
 Pendências já vistas para fases futuras:
 
