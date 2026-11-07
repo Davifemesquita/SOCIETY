@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ExpeditionDef" format=3]
+
+[ext_resource type="Script" path="res://data/expedition_def.gd" id="1_expedition"]
+
+[resource]
+script = ExtResource("1_expedition")
+id = &"spice_islands"
+reward = 2
+reward_money = 9000
+duration_s = 600.0
+cost_money = 2500
+empty_chance = 0.2
+lost_chance = 0.08
+after_milestone = 0

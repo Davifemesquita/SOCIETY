@@ -47,6 +47,10 @@ var specialists_state := SpecialistsState.new()
 var risks_state := RisksState.new()
 ## Encomendas dos estaleiros.
 var shipyard_state := ShipyardState.new()
+## Peças do zoológico e do museu (Fase 67).
+var exhibits_state := ExhibitsState.new()
+## Expedições em andamento (Fase 69): o navio que viaja fica aqui, fora de ships.
+var expeditions_state := ExpeditionsState.new()
 ## Objetivo da partida (Fase 12); partida livre em mundo novo.
 var victory_state := VictoryState.new()
 ## Plantas (Fase 49): prédios desenhados, sem custo, que ainda não existem.
@@ -58,6 +62,8 @@ var income_per_min: float = 0.0
 var upkeep_per_min: float = 0.0
 ## Renda dos acordos comerciais com rivais (Fase 11), já somada em income_per_min.
 var treaty_income_per_min: float = 0.0
+## Renda do turismo (Fase 68), já somada em income_per_min.
+var tourism_per_min: float = 0.0
 
 
 func island(island_id: int) -> IslandGrid:
@@ -201,8 +207,12 @@ func to_dict() -> Dictionary:
 		for i: int in grid.cleared_trees.size():
 			if grid.cleared_trees[i] == 1:
 				cleared.append(i)
+		var rail_indices := PackedInt32Array()
+		for i: int in grid.rails.size():
+			if grid.rails[i] != 0:
+				rail_indices.append(i)
 		island_list.append({"size": grid.size, "roads": road_indices, "paved": paved_indices, "economy": economies[index].to_dict(),
-				"cleared_trees": cleared, "fingerprint": grid.fingerprint, "origin": grid.origin_m})
+				"cleared_trees": cleared, "fingerprint": grid.fingerprint, "origin": grid.origin_m, "rails": rail_indices})
 	var building_list: Array[Dictionary] = []
 	var cart_list: Array[Dictionary] = []
 	for building_id: int in building_ids():
@@ -229,7 +239,8 @@ func to_dict() -> Dictionary:
 			"goals_done": goals_done, "goals_catch_up": goals_catch_up, "events": events_state.to_dict(),
 			"rivals": rivals_state.to_dict(), "specialists": specialists_state.to_dict(),
 			"risks": risks_state.to_dict(), "shipyard": shipyard_state.to_dict(),
-			"victory": victory_state.to_dict(), "plans": plan_list, "next_plan_id": next_plan_id}
+			"victory": victory_state.to_dict(), "plans": plan_list, "next_plan_id": next_plan_id,
+			"exhibits": exhibits_state.to_dict(), "expeditions": expeditions_state.to_dict()}
 
 
 ## Reconstrói o mundo de um save. Devolve null se o conteúdo for inconsistente. O terreno gerado
@@ -413,6 +424,43 @@ static func from_dict(data: Dictionary, game_data: GameData, config: GameConfig 
 		if plan == null or world.plans.has(plan.id) or plan.id >= world.next_plan_id:
 			return null
 		world.plans[plan.id] = plan
+	# as peças de coleção (Fase 67) não existem nos saves de antes: sem a chave, nenhuma comprada
+	var raw_exhibits: Variant = data.get("exhibits", {"placed": {}})
+	if not raw_exhibits is Dictionary:
+		return null
+	var exhibits_data: Dictionary = raw_exhibits
+	var loaded_exhibits := ExhibitsState.from_dict(exhibits_data, game_data)
+	if loaded_exhibits == null:
+		return null
+	# a peça posta fica num zoológico ou museu do tipo dela, sem passar das vagas
+	var used: Dictionary[int, int] = {}
+	for exhibit_id: StringName in loaded_exhibits.placed:
+		var building_id: int = loaded_exhibits.placed[exhibit_id]
+		if building_id == 0:
+			continue
+		var record := world.building(building_id)
+		var hall_def: BuildingDef = null
+		if record != null:
+			hall_def = game_data.building(record.def_id)
+		if hall_def == null or not hall_def.is_exhibit_hall() or hall_def.exhibit_kind != game_data.exhibit(exhibit_id).kind:
+			return null
+		used[building_id] = used.get(building_id, 0) + 1
+		if used[building_id] > hall_def.exhibit_slots:
+			return null
+	world.exhibits_state = loaded_exhibits
+	# as expedições (Fase 69) não existem nos saves de antes: sem a chave, nenhuma em andamento
+	var raw_expeditions: Variant = data.get("expeditions", {"trips": [], "count": 0})
+	if not raw_expeditions is Dictionary:
+		return null
+	var expeditions_data: Dictionary = raw_expeditions
+	var loaded_expeditions := ExpeditionsState.from_dict(expeditions_data, game_data, world.islands.size())
+	if loaded_expeditions == null:
+		return null
+	# o navio em viagem é da companhia, não está no mapa e tem id já dado
+	for trip: ExpeditionsState.Trip in loaded_expeditions.trips:
+		if trip.ship.owner != Ship.Owner.PLAYER or world.ships.has(trip.ship.id) or trip.ship.id >= world.next_ship_id:
+			return null
+	world.expeditions_state = loaded_expeditions
 	return world
 
 
@@ -536,6 +584,15 @@ func _restore_island(raw: Variant, game_data: GameData, generated: IslandGrid) -
 		if i < 0 or i >= grid.roads.size() or grid.roads[i] != IslandGrid.Road.DIRT:
 			return false
 		grid.roads[i] = IslandGrid.Road.PAVED
+	# a ferrovia (Fase 70) não existe nos saves de antes; trilho não divide célula com estrada
+	var raw_rails: Variant = data.get("rails", PackedInt32Array())
+	if not raw_rails is PackedInt32Array:
+		return false
+	var rail_indices: PackedInt32Array = raw_rails
+	for i: int in rail_indices:
+		if i < 0 or i >= grid.rails.size() or grid.roads[i] != IslandGrid.Road.NONE:
+			return false
+		grid.rails[i] = 1
 	var raw_fingerprint: Variant = data.get("fingerprint")
 	if generated != null and raw_fingerprint is int and raw_fingerprint != generated.fingerprint:
 		terrain_mismatch = true
@@ -563,6 +620,9 @@ func _restore_building(record: BuildingRecord, game_data: GameData) -> bool:
 	if (def.kind == BuildingDef.Kind.RESIDENCE) != record.is_house():
 		return false
 	if record.is_house() and game_data.tier(record.tier) == null:
+		return false
+	# a política (Fase 66) só numa prefeitura e só uma que existe
+	if record.policy != &"" and (not def.is_town_hall() or game_data.policy(record.policy) == null):
 		return false
 	var area := Footprint.rect(record.origin, def.size, record.rotation)
 	if PlacementRules.check_area(grid, area) != &"":

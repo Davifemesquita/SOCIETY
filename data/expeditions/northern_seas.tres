@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ExpeditionDef" format=3]
+
+[ext_resource type="Script" path="res://data/expedition_def.gd" id="1_expedition"]
+
+[resource]
+script = ExtResource("1_expedition")
+id = &"northern_seas"
+reward = 2
+reward_money = 16000
+duration_s = 900.0
+cost_money = 4000
+empty_chance = 0.3
+lost_chance = 0.15
+after_milestone = 2

@@ -8,7 +8,12 @@ extends RefCounted
 ## PedestrianView, que só aplica a lista de mudanças. O pedestre anda na placa de vídeo, trecho
 ## reto por trecho reto (shaders/pedestrian_vat.gdshader); a CPU só mexe nele quando ele troca de
 ## trecho, chega ou sai.
-
+## Fase 80: turistas. Com os eventos ligados, cada ilha com atratividade (DerivedState.attractiveness) ganha
+## tourists_per_point turistas por ponto (até max_tourists_per_island): saem do entreposto, visitam uma das atrações da
+## ilha (os prédios com beleza: zoológico, museu, praças, estátuas), ficam olhando na porta e voltam. Roupa clara
+## (TOURIST_COLORS) e a calça da classe mais rica. Desde a Fase 81, na festa vêm mais (1 + tourism_festival_bonus); desde a
+## Fase 82, na hora dos fogos eles vão ver a festa em volta dos mastros das praças; desde a Fase 83, os moradores também
+## (RESIDENT_WATCH_SHARE de quem sai nessa hora).
 const BUCKET_SECONDS := 0.25
 const REBALANCE_SECONDS := 2.0
 ## Quem não achou caminho tenta de novo depois disto.
@@ -25,10 +30,35 @@ const CLIP_WALK := 0
 const CLIP_WALK_CARRY := 1
 const CLIP_IDLE := 2
 const CLIP_TALK := 3
+## Fase 84: olhando para o céu e batendo palmas (gerada no código, tools/vat/cheer_clip.gd). Desde a Fase 85 é a reação
+## a cada estouro (react_to_burst): quem vê a festa até REACT_RADIUS_M dele, na parte REACT_SHARE, demora REACT_DELAY_S,
+## bate palmas por CHEER_SECONDS e volta a olhar o mastro.
+const CLIP_CHEER := 4
+const REACT_SHARE := 0.85
+const REACT_RADIUS_M := 30.0
+const REACT_DELAY_S := Vector2(0.15, 0.6)
+const CHEER_SECONDS := Vector2(1.6, 2.6)
 ## O que vai na mão de quem anda com a animação de carregar (Fase 15): cesto saindo do mercado, saco saindo
 ## de fazenda.
 enum Load { NONE, BASKET, SACK }
 const BODIES := 2
+## Fase 80: as roupas dos turistas (linho, branco, azul-claro, palha, rosa) e entre quantas atrações (as de mais beleza)
+## cada um escolhe.
+const TOURIST_COLORS: Array[Color] = [Color(0.93, 0.9, 0.8), Color(0.95, 0.95, 0.93), Color(0.62, 0.76, 0.9),
+		Color(0.86, 0.76, 0.5), Color(0.9, 0.72, 0.72)]
+const TOURIST_CHOICES := 4
+## Fase 82: na festa, na hora dos fogos (FestivalView.NIGHT_FIREWORKS), o turista vai a uma das praças da festa e fica na
+## rua em volta do mastro, ao longo das cordas de bandeirolas: de WATCH_NEAR_M até WATCH_FAR_M do mastro, até
+## WATCH_SIDE_SHARE da célula para o lado, de frente para o mastro.
+const WATCH_NEAR_M := 1.2
+const WATCH_FAR_M := 7.0
+const WATCH_SIDE_SHARE := 0.35
+## Fase 83: a parte dos moradores que, saindo na hora dos fogos, vai direto de casa a uma praça da festa (os outros seguem
+## a rotina; o serviço de quem sai do trabalho também vira a festa nessa parte).
+const RESIDENT_WATCH_SHARE := 0.6
+## Fase 83: na hora dos fogos, a ilha da festa põe na rua pelo menos esta parte dos pedestres dela (à noite são só ~18%, e
+## a festa ficava vazia).
+const FESTIVAL_NIGHT_ACTIVITY := 0.5
 
 ## HOME e INSIDE ficam escondidos; INSIDE é a pausa na porta do trabalho ou de casa no meio da
 ## rotina (conta como gente na rua).
@@ -66,6 +96,14 @@ class Agent:
 	var removed: bool = false
 	## Já está na lista de mudanças.
 	var queued: bool = false
+	## Fase 80: turista (a "casa" é o entreposto da ilha).
+	var tourist: bool = false
+	## Fase 82: andando da porta da praça até o lugar de ver a festa (agent.spot).
+	var to_spot: bool = false
+	## Fase 83: parado (ou indo) num lugar de ver a festa, longe da porta: ao sair, anda primeiro até ela.
+	var watching: bool = false
+	## Fase 85: batendo palmas por um estouro até este tempo visual (0 = não).
+	var cheer_until: float = 0.0
 
 
 class Group:
@@ -96,6 +134,19 @@ var _rng := RandomNumberGenerator.new()
 var _strides: Array[PackedFloat32Array] = []
 var _free_agents := PackedInt32Array()
 var _by_house: Dictionary[int, PackedInt32Array] = {}
+## Fase 80: os turistas de cada ilha e as atrações que cada entreposto alcança (em cache).
+var _tourists: Dictionary[int, PackedInt32Array] = {}
+var _attractions_of: Dictionary[int, PackedInt32Array] = {}
+## Fase 82: as praças da festa que cada entreposto alcança (em cache).
+var _squares_of: Dictionary[int, PackedInt32Array] = {}
+## Fase 83: pedestres (moradores e turistas) das ilhas na hora dos fogos, contados a cada _rebalance.
+var _festival_agents: int = 0
+## Fase 84: as ilhas na hora dos fogos e os pedestres das outras na rua (contados a cada _rebalance e somados a cada
+## partida até o próximo).
+var _festive: Dictionary[int, bool] = {}
+var _quiet_out: int = 0
+## Fase 85: quem está batendo palmas por um estouro (índices).
+var _cheering := PackedInt32Array()
 var _buckets: Dictionary[int, PackedInt32Array] = {}
 var _next_bucket: int = 0
 var _home_queue: Array[int] = []
@@ -146,6 +197,11 @@ func reset() -> void:
 	agents.clear()
 	_free_agents.clear()
 	_by_house.clear()
+	_tourists.clear()
+	_festival_agents = 0
+	_festive.clear()
+	_quiet_out = 0
+	_cheering.clear()
 	_buckets.clear()
 	_home_queue.clear()
 	_out = 0
@@ -179,7 +235,8 @@ func out_count() -> int:
 ## Quantos a multidão quer na rua agora.
 func desired_out(hour: float) -> int:
 	var activity := activity_override if activity_override >= 0.0 else DayClock.activity(_config, hour)
-	return roundi(agent_count() * activity)
+	# a festa com fogos (Fase 83) enche a rua da ilha dela
+	return roundi(agent_count() * activity + _festival_agents * maxf(FESTIVAL_NIGHT_ACTIVITY - activity, 0.0))
 
 
 ## Avança dt segundos visuais. Pausado (dt = 0), nada muda: ninguém sai congelado na porta.
@@ -196,6 +253,8 @@ func update(dt: float, hour: float) -> void:
 		_rebalance_left = REBALANCE_SECONDS
 		_rebalance()
 	_process_events()
+	if not _cheering.is_empty():
+		_end_cheers()
 	var wanted := desired_out(hour)
 	if _out < wanted:
 		_start_trips(wanted - _out, wanted)
@@ -237,9 +296,99 @@ func _rebalance() -> void:
 			for index: int in _by_house[house_id]:
 				_remove_agent(agents[index])
 			_by_house.erase(house_id)
+	_rebalance_tourists()
+	_count_festival_agents()
 
 
-func _add_agent(house: BuildingRecord) -> Agent:
+## Fase 83: quantos pedestres (de casa e turistas) estão nas ilhas na hora dos fogos. Desde a Fase 84, também quais
+## ilhas são essas e quantos das outras estão na rua: a cota extra é só para a gente da festa.
+func _count_festival_agents() -> void:
+	_festival_agents = 0
+	_festive.clear()
+	for house_id: int in _by_house:
+		var house := _simulation.world.building(house_id)
+		if house == null:
+			continue
+		if not _festive.has(house.island_id):
+			_festive[house.island_id] = fireworks_now(house.island_id)
+		if _festive[house.island_id]:
+			_festival_agents += _by_house[house_id].size()
+	for island_id: int in _tourists:
+		if not _festive.has(island_id):
+			_festive[island_id] = fireworks_now(island_id)
+		if _festive[island_id]:
+			_festival_agents += _tourists[island_id].size()
+	_quiet_out = 0
+	if _festival_agents > 0:
+		for agent: Agent in agents:
+			if agent != null and not agent.removed and agent.state != State.HOME and not _festive.get(agent.island_id, false):
+				_quiet_out += 1
+
+
+## Fase 84: o pedestre de fora da festa já não cabe na rua: a parte da multidão dele (sem a cota extra) está cheia.
+func _quiet_full(agent: Agent) -> bool:
+	if _festival_agents == 0 or _festive.get(agent.island_id, false):
+		return false
+	var activity := activity_override if activity_override >= 0.0 else DayClock.activity(_config, _hour)
+	return _quiet_out >= roundi((agent_count() - _festival_agents) * activity)
+
+
+## Fase 80: ajusta os turistas de cada ilha à atratividade dela (só com os eventos ligados, como o turismo).
+func _rebalance_tourists() -> void:
+	var world := _simulation.world
+	var derived := _simulation.derived_state()
+	var seen: Dictionary[int, bool] = {}
+	if world.events_state.enabled:
+		for island_id: int in derived.attractiveness:
+			var post := _trading_post(island_id)
+			if post == null:
+				continue
+			seen[island_id] = true
+			var points: float = derived.attractiveness[island_id]
+			# Fase 81: na festa, mais turistas, na mesma proporção da renda (e o teto também sobe)
+			var crowd_factor := 1.0 + _config.tourism_festival_bonus if TourismSystem.has_festival(world, island_id) else 1.0
+			var count := mini(roundi(_config.max_tourists_per_island * crowd_factor),
+					floori(points * _config.tourists_per_point * pedestrian_ratio * crowd_factor))
+			var kept := PackedInt32Array()
+			for index: int in _tourists.get(island_id, PackedInt32Array()):
+				var agent := agents[index] if index < agents.size() else null
+				if agent == null or not agent.tourist or agent.island_id != island_id:
+					continue
+				if kept.size() >= count or agent.home_id != post.id:
+					_retire(agent)
+				else:
+					kept.append(index)
+			while kept.size() < count:
+				kept.append(_add_agent(post, _simulation.data.tiers[_simulation.data.tiers.size() - 1].id, true).index)
+			_tourists[island_id] = kept
+	for island_id: int in _tourists.keys():
+		if seen.has(island_id):
+			continue
+		for index: int in _tourists[island_id]:
+			var agent := agents[index] if index < agents.size() else null
+			if agent != null and agent.tourist and agent.island_id == island_id:
+				_retire(agent)
+		_tourists.erase(island_id)
+
+
+func _trading_post(island_id: int) -> BuildingRecord:
+	for record: BuildingRecord in _simulation.world.buildings.values():
+		if record.island_id == island_id and _simulation.def_of(record).is_trading_post:
+			return record
+	return null
+
+
+## Turistas na multidão agora (testes).
+func tourist_count() -> int:
+	var total := 0
+	for agent: Agent in agents:
+		if agent != null and agent.tourist:
+			total += 1
+	return total
+
+
+## A casa do pedestre; turista (Fase 80): a "casa" é o entreposto, com a classe dada e a roupa de turista.
+func _add_agent(house: BuildingRecord, tier: StringName = &"", tourist: bool = false) -> Agent:
 	var agent := Agent.new()
 	if _free_agents.is_empty():
 		agent.index = agents.size()
@@ -250,12 +399,13 @@ func _add_agent(house: BuildingRecord) -> Agent:
 		agents[agent.index] = agent
 	agent.home_id = house.id
 	agent.island_id = house.island_id
-	agent.tier = house.tier
+	agent.tier = tier if tourist else house.tier
+	agent.tourist = tourist
 	agent.body = _rng.randi_range(0, BODIES - 1)
-	agent.group = _group_of[_group_key(house.tier, agent.body)]
+	agent.group = _group_of[_group_key(agent.tier, agent.body)]
 	agent.slot = _take_slot(groups[agent.group])
-	var palette := _simulation.data.tier(house.tier).clothing_colors
-	var coat := palette[_rng.randi_range(0, palette.size() - 1)] if not palette.is_empty() else Color.GRAY
+	var palette: Array = TOURIST_COLORS if tourist else Array(_simulation.data.tier(agent.tier).clothing_colors)
+	var coat: Color = palette[_rng.randi_range(0, palette.size() - 1)] if not palette.is_empty() else Color.GRAY
 	agent.color = Color(coat.r, coat.g, coat.b, _rng.randf())
 	agent.event_at = time
 	_home_queue.append(agent.index)
@@ -313,11 +463,14 @@ func _start_trips(missing: int, wanted: int) -> void:
 		var agent := agents[index] if index < agents.size() else null
 		if agent == null or agent.state != State.HOME:
 			continue
-		if agent.event_at > time or _route_usec > _config.pedestrian_route_budget_ms * 1000.0 * (4.0 if warm else 1.0):
+		if agent.event_at > time or _route_usec > _config.pedestrian_route_budget_ms * 1000.0 * (4.0 if warm else 1.0) \
+				or _quiet_full(agent):
 			_home_queue.append(index)
 			continue
 		if _begin_routine(agent, warm):
 			started += 1
+			if _festival_agents > 0 and not _festive.get(agent.island_id, false):
+				_quiet_out += 1
 		else:
 			agent.event_at = time + RETRY_SECONDS
 			_home_queue.append(index)
@@ -325,6 +478,10 @@ func _start_trips(missing: int, wanted: int) -> void:
 
 ## Sai de casa para o trabalho (ou, sem trabalho, direto para o serviço).
 func _begin_routine(agent: Agent, warm: bool) -> bool:
+	# na hora dos fogos (Fase 83), parte dos moradores vai direto ver a festa
+	var square := _resident_festival(agent)
+	if square != 0 and _start_leg(agent, Leg.TO_SERVICE, agent.home_id, square, warm):
+		return true
 	var work := _pick_work(agent)
 	if work != 0 and _start_leg(agent, Leg.TO_WORK, agent.home_id, work, warm):
 		return true
@@ -393,7 +550,10 @@ func _arrive(agent: Agent) -> void:
 			_write(agent)
 			_schedule(agent, time + _rng.randf_range(_config.pedestrian_door_seconds.x, _config.pedestrian_door_seconds.y))
 		Leg.TO_SERVICE:
-			_wait_at_service(agent)
+			if agent.to_spot:
+				_stand(agent)
+			else:
+				_wait_at_service(agent)
 		Leg.TO_HOME:
 			var wanted := desired_out(_hour)
 			if _out > wanted:
@@ -441,14 +601,97 @@ func _wait_at_service(agent: Agent) -> void:
 		_next_leg(agent)
 		return
 	var def := _simulation.def_of(service)
-	var front := Footprint.front_direction(service.rotation)
-	var outward := Vector3(front.x, 0.0, front.y)
-	var along := outward.cross(Vector3.UP)
-	var half_width := Footprint.rotated_size(def.size, service.rotation).x * _cell_size * 0.4
-	agent.spot = _door_point(service, def) + outward * _rng.randf_range(0.4, 1.4) + along * _rng.randf_range(-half_width, half_width)
-	agent.spot.y = _simulation.world.island(service.island_id).height_at(agent.spot.x, agent.spot.z)
-	agent.facing = (-outward).rotated(Vector3.UP, _rng.randf_range(-2.2, 2.2))
-	agent.clip = CLIP_TALK if _rng.randf() < 0.6 else CLIP_IDLE
+	# na hora dos fogos (Fase 82), o turista fica na rua em volta do mastro da praça
+	# (desde a Fase 83, também o morador)
+	var watching := fireworks_now(agent.island_id) \
+			and _festival_squares(agent.home_id).has(service.id) and _watch_spot(agent, service)
+	agent.watching = watching
+	if not watching:
+		var front := Footprint.front_direction(service.rotation)
+		var outward := Vector3(front.x, 0.0, front.y)
+		var along := outward.cross(Vector3.UP)
+		var half_width := Footprint.rotated_size(def.size, service.rotation).x * _cell_size * 0.4
+		agent.spot = _door_point(service, def) + outward * _rng.randf_range(0.4, 1.4) + along * _rng.randf_range(-half_width, half_width)
+		agent.spot.y = _simulation.world.island(service.island_id).height_at(agent.spot.x, agent.spot.z)
+		# o turista (Fase 80) fica olhando para o prédio, quase sempre parado
+		var spread := 0.5 if agent.tourist else 2.2
+		agent.facing = (-outward).rotated(Vector3.UP, _rng.randf_range(-spread, spread))
+	elif agent.state == State.WALKING:
+		# da porta da praça até o lugar na rua, andando
+		var from := agent.points[agent.points.size() - 1]
+		agent.points = PackedVector3Array([from, agent.spot])
+		agent.cells = PackedInt32Array()
+		agent.segment = 0
+		agent.segment_start = time
+		agent.to_spot = true
+		_write(agent)
+		_schedule(agent, time + _segment_length(agent) / _config.pedestrian_speed_m_s)
+		return
+	_stand(agent)
+
+
+## Fase 89: quantos batem palmas agora (por qualquer estouro, ainda dentro do tempo das palmas).
+func cheering_count() -> int:
+	var count := 0
+	for index: int in _cheering:
+		var agent := agents[index] if index < agents.size() else null
+		if agent != null and not agent.removed and agent.clip == CLIP_CHEER and agent.cheer_until > time:
+			count += 1
+	return count
+
+
+## Fase 85: um estouro em at, na ilha: quem está parado vendo a festa até REACT_RADIUS_M dele (no chão), na parte
+## REACT_SHARE, bate palmas olhando para o céu depois de REACT_DELAY_S. Devolve quantos (o som das palmas segue isso).
+func react_to_burst(island_id: int, at: Vector3) -> int:
+	var flat := Vector2(at.x, at.z)
+	var count := 0
+	for agent: Agent in agents:
+		if agent == null or agent.removed or not agent.watching or agent.state != State.WAITING:
+			continue
+		if agent.island_id != island_id or Vector2(agent.spot.x, agent.spot.z).distance_to(flat) > REACT_RADIUS_M:
+			continue
+		if agent.cheer_until > time or _rng.randf() >= REACT_SHARE:
+			continue
+		# a animação começa na palma (fase 0) quando ele reage
+		agent.clip = CLIP_CHEER
+		agent.phase = 0.0
+		agent.segment_start = time + _rng.randf_range(REACT_DELAY_S.x, REACT_DELAY_S.y)
+		agent.cheer_until = agent.segment_start + _rng.randf_range(CHEER_SECONDS.x, CHEER_SECONDS.y)
+		_write(agent)
+		_cheering.append(agent.index)
+		count += 1
+	return count
+
+
+## Fase 85: quem acabou de bater palmas volta a olhar o mastro; quem saiu do lugar sai da lista.
+func _end_cheers() -> void:
+	var kept := PackedInt32Array()
+	for index: int in _cheering:
+		var agent := agents[index] if index < agents.size() else null
+		if agent == null or agent.removed:
+			continue
+		if agent.state != State.WAITING or not agent.watching or agent.clip != CLIP_CHEER:
+			agent.cheer_until = 0.0
+			continue
+		if time < agent.cheer_until:
+			kept.append(index)
+			continue
+		agent.cheer_until = 0.0
+		agent.clip = CLIP_IDLE
+		agent.phase = _rng.randf()
+		agent.segment_start = time
+		_write(agent)
+	_cheering = kept
+
+
+## Para no lugar (agent.spot, agent.facing) e fica um tempo, conversando ou parado.
+func _stand(agent: Agent) -> void:
+	agent.to_spot = false
+	if agent.watching:
+		# vendo a festa: olha o mastro e bate palmas a cada estouro (Fase 85, react_to_burst)
+		agent.clip = CLIP_IDLE
+	else:
+		agent.clip = CLIP_TALK if _rng.randf() < (0.25 if agent.tourist else 0.6) else CLIP_IDLE
 	agent.phase = _rng.randf()
 	agent.segment_start = time
 	_set_state(agent, State.WAITING)
@@ -464,9 +707,15 @@ func _start_leg(agent: Agent, leg: Leg, from_id: int, to_id: int, warm: bool) ->
 	var points: PackedVector3Array = route[0]
 	if points.size() < 2:
 		return false
+	# saindo de longe da porta (Fase 82: de ver a festa na rua), anda primeiro até ela
+	if agent.watching and agent.state == State.WAITING and not agent.spot.is_equal_approx(points[0]):
+		points = points.duplicate()
+		points.insert(0, agent.spot)
+	agent.watching = false
 	agent.points = points
 	agent.cells = route[1]
 	agent.leg = leg
+	agent.to_spot = false
 	agent.target_id = to_id
 	agent.segment = 0
 	agent.walked = 0.0
@@ -518,6 +767,8 @@ func _set_state(agent: Agent, state: State) -> void:
 ## mesma rede de estrada. Sem nenhum da classe, qualquer prédio de trabalho da rede (o pedestre
 ## anda atrás de serviço).
 func _pick_work(agent: Agent) -> int:
+	if agent.tourist:
+		return 0
 	if not _work_choices.has(agent.home_id):
 		_work_choices[agent.home_id] = _work_candidates(agent)
 	var choices: PackedInt32Array = _work_choices[agent.home_id]
@@ -558,11 +809,96 @@ func _nearest(agent: Agent, ids: Array[int], accepts: Callable) -> PackedInt32Ar
 
 ## Serviço: um dos que atendem a casa; sem nenhum, um dos mais perto na mesma rede de estrada.
 func _pick_service(agent: Agent) -> int:
+	if agent.tourist:
+		return _pick_attraction(agent)
+	var square := _resident_festival(agent)
+	if square != 0:
+		return square
 	if not _services_of.has(agent.home_id):
 		_services_of[agent.home_id] = _nearest(agent, _simulation.derived_state().services_list(),
 				func(_def: BuildingDef) -> bool: return true)
 	var services: PackedInt32Array = _services_of[agent.home_id]
 	return services[_rng.randi_range(0, services.size() - 1)] if not services.is_empty() else 0
+
+
+## Fase 80: a atração que o turista visita: uma das TOURIST_CHOICES de mais beleza da ilha (os prédios com beleza e raio),
+## na mesma rede de estrada do entreposto.
+func _pick_attraction(agent: Agent) -> int:
+	if fireworks_now(agent.island_id):
+		var squares := _festival_squares(agent.home_id)
+		if not squares.is_empty():
+			return squares[_rng.randi_range(0, squares.size() - 1)]
+	if not _attractions_of.has(agent.home_id):
+		var world := _simulation.world
+		var post := world.building(agent.home_id)
+		var post_label := _label_of(post) if post != null else 0
+		var found: Array[Vector2] = []
+		if post_label > 0:
+			for record: BuildingRecord in world.buildings.values():
+				var def := _simulation.def_of(record)
+				if record.island_id != post.island_id or def.beauty <= 0.0 or def.beauty_radius_cells <= 0:
+					continue
+				if _label_of(record) != post_label:
+					continue
+				found.append(Vector2(-DerivedState.beauty_strength(world, _simulation.data, record.id), record.id))
+		found.sort()
+		var ids := PackedInt32Array()
+		for i: int in mini(found.size(), TOURIST_CHOICES):
+			ids.append(int(found[i].y))
+		_attractions_of[agent.home_id] = ids
+	var choices: PackedInt32Array = _attractions_of[agent.home_id]
+	return choices[_rng.randi_range(0, choices.size() - 1)] if not choices.is_empty() else 0
+
+
+## Fase 83: na hora dos fogos, RESIDENT_WATCH_SHARE dos moradores escolhem uma das praças da festa que a casa alcança; 0 para
+## o turista, fora da hora ou para quem segue a rotina.
+func _resident_festival(agent: Agent) -> int:
+	if agent.tourist or not fireworks_now(agent.island_id) or _rng.randf() >= RESIDENT_WATCH_SHARE:
+		return 0
+	var squares := _festival_squares(agent.home_id)
+	return squares[_rng.randi_range(0, squares.size() - 1)] if not squares.is_empty() else 0
+
+
+## Fase 82: festa na ilha e hora dos fogos (a mesma noite em que a FestivalView os solta).
+func fireworks_now(island_id: int) -> bool:
+	return TourismSystem.has_festival(_simulation.world, island_id) \
+			and DayClock.night_factor(_config, _hour) >= FestivalView.NIGHT_FIREWORKS
+
+
+## Fase 82: as praças da festa (FestivalView.squares) com mastro na rua, na mesma rede de estrada do entreposto
+## (desde a Fase 83, também da casa do morador: a chave é o prédio de onde ele sai).
+func _festival_squares(post_id: int) -> PackedInt32Array:
+	if _squares_of.has(post_id):
+		return _squares_of[post_id]
+	var ids := PackedInt32Array()
+	var post := _simulation.world.building(post_id)
+	var post_label := _label_of(post) if post != null else 0
+	if post_label > 0:
+		for building_id: int in FestivalView.squares(_simulation, post.island_id):
+			var record := _simulation.world.building(building_id)
+			if _label_of(record) == post_label and not FestivalView.strings_of(_simulation, building_id).is_empty():
+				ids.append(building_id)
+	_squares_of[post_id] = ids
+	return ids
+
+
+## Fase 82: lugar para ver a festa: na rua, ao longo de uma das cordas do mastro, de frente para ele. Falso se a praça não
+## tem mastro (a porta não dá para estrada reta).
+func _watch_spot(agent: Agent, square: BuildingRecord) -> bool:
+	var lines := FestivalView.strings_of(_simulation, square.id)
+	if lines.is_empty():
+		return false
+	var line := lines[_rng.randi_range(0, lines.size() - 1)]
+	var mast := Vector3(line[0].x, 0.0, line[0].z)
+	var along := Vector3(line[1].x, 0.0, line[1].z) - mast
+	var reach := along.length()
+	along /= maxf(reach, 0.001)
+	var side := along.cross(Vector3.UP) * _cell_size * WATCH_SIDE_SHARE
+	agent.spot = mast + along * _rng.randf_range(WATCH_NEAR_M, minf(WATCH_FAR_M, reach)) + side * _rng.randf_range(-1.0, 1.0)
+	agent.spot.y = _simulation.world.island(square.island_id).height_at(agent.spot.x, agent.spot.z)
+	var toward := mast - Vector3(agent.spot.x, 0.0, agent.spot.z)
+	agent.facing = toward.normalized().rotated(Vector3.UP, _rng.randf_range(-0.4, 0.4))
+	return true
 
 
 ## Rota de porta a porta: [pontos na calçada, células da estrada], em cache por par de prédios.
@@ -648,6 +984,8 @@ func _refresh_structure() -> void:
 	_legs.clear()
 	_work_choices.clear()
 	_services_of.clear()
+	_attractions_of.clear()
+	_squares_of.clear()
 	var derived := _simulation.derived_state()
 	for service_id: int in derived.service_houses:
 		for house: Variant in derived.service_houses[service_id]:

@@ -1,7 +1,7 @@
 class_name UndoHistory
 extends RefCounted
 ## Desfazer e refazer (Fase 49), fora do save. Cada ação guardada sabe o que o comando mexeu: o dinheiro e o estoque da
-## ilha antes e depois, as estradas, as árvores e as árvores derrubadas do retângulo dele, os prédios que criou e os que
+## ilha antes e depois, as estradas, o trilho (Fase 72), as árvores e as árvores derrubadas do retângulo dele, os prédios que criou e os que
 ## tirou (o próprio registro, com moradores e carroça) e as plantas. O UndoCommand volta tudo; no mesmo tick volta os
 ## valores exatos (o estado fica idêntico), depois devolve a diferença (o reembolso é integral). A janela é de
 ## config.undo_window_s de jogo; um mundo novo (carregar) zera tudo.
@@ -25,6 +25,8 @@ class Entry:
 	var next_id_after: int
 	var roads_before := PackedByteArray()
 	var roads_after := PackedByteArray()
+	var rails_before := PackedByteArray()
+	var rails_after := PackedByteArray()
 	var trees_before := PackedByteArray()
 	var trees_after := PackedByteArray()
 	var cleared_before := PackedByteArray()
@@ -86,6 +88,7 @@ func begin(simulation: Simulation, command: Command) -> Entry:
 	entry.buildings_before = world.buildings.duplicate()
 	entry.carts_before = world.carts.duplicate()
 	entry.roads_before = region(grid.roads, grid.size.x, entry.area)
+	entry.rails_before = region(grid.rails, grid.size.x, entry.area)
 	entry.trees_before = region(grid.trees, grid.size.x, entry.area)
 	entry.cleared_before = region(grid.cleared_trees, grid.size.x, entry.area)
 	return entry
@@ -103,6 +106,7 @@ func commit(simulation: Simulation, entry: Entry, result: CommandResult, clear_r
 	entry.next_plan_after = world.next_plan_id
 	entry.plans_after = world.plans.duplicate()
 	entry.roads_after = region(grid.roads, grid.size.x, entry.area)
+	entry.rails_after = region(grid.rails, grid.size.x, entry.area)
 	entry.trees_after = region(grid.trees, grid.size.x, entry.area)
 	entry.cleared_after = region(grid.cleared_trees, grid.size.x, entry.area)
 	entry.placed = result.placed.duplicate()
@@ -155,12 +159,12 @@ static func area_of(command: Command, simulation: Simulation) -> Rect2i:
 		var place := command as PlaceBuildingCommand
 		var def := data.building(place.def_id)
 		return Footprint.rect(place.origin, def.size, place.rotation) if def != null else Rect2i()
-	if command is BuildRoadCommand:
-		var road := command as BuildRoadCommand
-		if road.cells.is_empty():
+	if command is BuildRoadCommand or command is BuildRailCommand:
+		var cells: Array[Vector2i] = command.get(&"cells")
+		if cells.is_empty():
 			return Rect2i()
-		var box := Rect2i(road.cells[0], Vector2i.ONE)
-		for cell: Vector2i in road.cells:
+		var box := Rect2i(cells[0], Vector2i.ONE)
+		for cell: Vector2i in cells:
 			box = box.expand(cell).expand(cell + Vector2i.ONE)
 		return box
 	if command is DemolishCommand:
@@ -180,7 +184,8 @@ static func area_of(command: Command, simulation: Simulation) -> Rect2i:
 
 
 static func _island_of(command: Command) -> int:
-	for kind: Array in [[PlaceBuildingCommand, &"island_id"], [BuildRoadCommand, &"island_id"], [DemolishCommand, &"island_id"],
+	for kind: Array in [[PlaceBuildingCommand, &"island_id"], [BuildRoadCommand, &"island_id"], [BuildRailCommand, &"island_id"],
+			[DemolishCommand, &"island_id"],
 			[ReplaceCommand, &"island_id"], [BuildPlansCommand, &"island_id"], [PlacePlanCommand, &"island_id"],
 			[RemovePlansCommand, &"island_id"]]:
 		var script: Script = kind[0]

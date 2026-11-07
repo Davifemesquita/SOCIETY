@@ -74,5 +74,7 @@ static func name_of(source: Breakdown.Source, game_data: GameData) -> String:
 			return TranslationServer.translate("BREAKDOWN_SHIPS") % source.count
 		Breakdown.Kind.SALARIES:
 			return TranslationServer.translate("BREAKDOWN_SALARIES")
+		Breakdown.Kind.TOURISM:
+			return TranslationServer.translate("BREAKDOWN_TOURISM")
 		_:
 			return TranslationServer.translate("BREAKDOWN_TREATY")

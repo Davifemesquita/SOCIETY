@@ -41,7 +41,7 @@ func test_each_species_stands_on_the_ground_in_its_size_and_budget() -> void:
 			assert_int(_triangles(far)).override_failure_message(label).is_less(_triangles(mesh) / 3)
 			assert_float(far.get_aabb().end.y).override_failure_message(label).is_equal_approx(box.end.y, box.end.y * 0.1)
 			var material := mesh.surface_get_material(0) as ShaderMaterial
-			assert_str(material.shader.resource_path).is_equal("res://shaders/foliage.gdshader")
+			assert_str(material.shader.resource_path).is_equal(TreeModel.TREE_SHADER)
 			assert_bool(material.get_shader_parameter(&"use_vertex_color")).is_true()
 
 
@@ -50,7 +50,8 @@ func test_the_oak_is_wide_the_beech_oval_and_the_pine_tall_with_a_crown_on_top()
 	var beech := TreeModel.mesh(TreeModel.Species.BEECH, 0).get_aabb()
 	var pine_mesh := TreeModel.mesh(TreeModel.Species.SCOTS_PINE, 0)
 	var pine := pine_mesh.get_aabb()
-	assert_float(oak.size.x).is_greater(oak.size.y * 0.8)
+	# Fase 276: a copa ficou mais estreita (o carvalho deixou de ser mais largo que alto), mas segue a mais larga
+	assert_float(oak.size.x).is_greater(beech.size.x * 1.2)
 	assert_float(beech.size.y).is_greater(beech.size.x)
 	assert_float(pine.size.y).is_greater(oak.size.y)
 	# a copa do pinheiro só no último terço; a do carvalho desce mais

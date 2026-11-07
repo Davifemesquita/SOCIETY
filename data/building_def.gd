@@ -5,8 +5,8 @@ extends Resource
 ## PIER (Fase 6) e DECORATION (Fase 16) entram no fim: o número do tipo fica nos .tres.
 enum Kind { RESIDENCE, PRODUCTION, SERVICE, MODULE, WAREHOUSE, PIER, DECORATION }
 ## Requisitos de terreno. Até a Fase 5 a ilha de teste cumpre todos, menos o litoral,
-## que já é a borda da ilha.
-enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST }
+## que já é a borda da ilha. OIL (Fase 70): cobrir um campo de petróleo (IslandGrid.oil_spots), também na ilha plana.
+enum Terrain { NONE, COAST, TREES, DEPOSIT, RIVER_OR_COAST, OIL }
 ## O que sai da chaminé enquanto o prédio produz (Fase 9): nada, vapor claro, fumaça ou fumaça
 ## pesada (com fuligem no chão em volta).
 enum Smoke { NONE, STEAM, SMOKE, HEAVY }
@@ -15,8 +15,11 @@ enum Smoke { NONE, STEAM, SMOKE, HEAVY }
 enum Hazard { NONE, FIRE, DISEASE }
 ## O que se reconhece de longe no prédio de modelo (Fase 13): moinho de vento, roda d'água, torre de
 ## mina, bancas na frente, guindaste, lanternim no telhado ou bandeiras na fachada; e, desde a Fase 18,
-## o campanário com o sino e, desde a Fase 23, a varanda da casa de engenho (no fim: o número fica nos .tres).
-enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS, BELFRY, VERANDA }
+## o campanário com o sino, desde a Fase 23 a varanda da casa de engenho e, desde a Fase 73, o cavalo-de-pau do poço
+## de petróleo, desde a Fase 74 os cercados do zoológico e os pedestais do museu e, desde a Fase 78, os tanques da usina a
+## petróleo e, desde a Fase 98, os tonéis no pátio de quem trabalha com bebida (no fim: o número fica nos .tres).
+enum Silhouette { NONE, WINDMILL, WATERWHEEL, HEADFRAME, STALLS, CRANE, CLERESTORY, BANNERS, BELFRY, VERANDA, PUMPJACK,
+		MENAGERIE, GALLERY, TANKFARM, VATS }
 ## A planta que a fazenda põe nos campos dela (Fase 14): cereal, tubérculo, lúpulo na estaca, parreira,
 ## cana, arbusto (café) ou folha larga (tabaco).
 enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }
@@ -76,6 +79,12 @@ enum Crop { NONE, GRAIN, TUBER, HOPS, VINE, CANE, BUSH, BROADLEAF }
 @export_group("Serviço")
 ## Raio do serviço medido por estrada; 0 usa GameConfig.service_radius_cells.
 @export var service_radius_cells: int = 0
+## Prefeitura (Fase 66): a política escolhida vale para os prédios a até este raio (em células, pela distância entre
+## os lotes). 0 = não é prefeitura.
+@export var policy_radius_cells: int = 0
+## Zoológico e museu (Fase 67): quantas peças cabem e de que tipo (ExhibitDef.Kind). 0 vagas = não expõe nada.
+@export var exhibit_slots: int = 0
+@export var exhibit_kind: int = 0
 
 @export_group("Eletricidade")
 ## Usina (Fase 11): queima as entradas sem gerar bem e, enquanto produz, eletrifica as fábricas
@@ -111,6 +120,16 @@ func is_decoration() -> bool:
 
 func is_production() -> bool:
 	return kind == Kind.PRODUCTION
+
+
+## Prefeitura (Fase 66): escolhe uma política que vale em volta dela.
+func is_town_hall() -> bool:
+	return policy_radius_cells > 0
+
+
+## Zoológico ou museu (Fase 67): tem vagas para peças de coleção.
+func is_exhibit_hall() -> bool:
+	return exhibit_slots > 0
 
 
 func is_warehouse() -> bool:

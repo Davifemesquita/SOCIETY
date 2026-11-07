@@ -119,3 +119,34 @@ func _key_event(keycode: Key) -> InputEventKey:
 	var event := InputEventKey.new()
 	event.physical_keycode = keycode
 	return event
+
+
+## O limite automático de quadros (achado medindo no monitor de 180 Hz do dono): um ritmo que divide a taxa do monitor.
+func test_the_automatic_frame_limit_divides_the_monitor_rate() -> void:
+	assert_int(Settings.auto_fps(180.0)).is_equal(60)
+	assert_int(Settings.auto_fps(100.0)).is_equal(50)
+	assert_int(Settings.auto_fps(144.0)).is_equal(72)
+	assert_int(Settings.auto_fps(165.0)).is_equal(55)
+	assert_int(Settings.auto_fps(120.0)).is_equal(60)
+	assert_int(Settings.auto_fps(240.0)).is_equal(60)
+	assert_int(Settings.auto_fps(60.0)).is_equal(60)
+	assert_int(Settings.auto_fps(75.0)).is_equal(75)
+	assert_int(Settings.auto_fps(0.0)).is_equal(0)
+	# o padrão é o automático, e ele vai e volta do arquivo; um valor fora da lista volta ao automático
+	var fresh: SettingsScript = auto_free(SettingsScript.new())
+	assert_int(fresh.max_fps).is_equal(Settings.FPS_AUTO)
+	var path := "user://test_settings_fps.cfg"
+	_settings.max_fps = 50
+	_settings.save_to(path)
+	var other: SettingsScript = auto_free(SettingsScript.new())
+	other.load_from(path)
+	assert_int(other.max_fps).is_equal(50)
+	var file := ConfigFile.new()
+	file.set_value("graphics", "max_fps", 77)
+	file.save(path)
+	other.load_from(path)
+	assert_int(other.max_fps).is_equal(Settings.FPS_AUTO)
+	DirAccess.remove_absolute(path)
+	# o escolhido vale como está
+	_settings.max_fps = 100
+	assert_int(_settings.effective_max_fps()).is_equal(100)

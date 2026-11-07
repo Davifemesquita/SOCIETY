@@ -11,10 +11,14 @@ var spacing: float = 2.0
 var size := Vector2i.ZERO
 var max_m: float = 64.0
 var distances := PackedFloat32Array()
+## Fase 314: a altura da terra (m, o mar em 0) nos mesmos pixels, para a sombra das falésias na água; vazia sem as alturas.
+var heights := PackedFloat32Array()
 
 
 ## regions: um Dictionary por região com "origin" (Vector2, canto no mundo), "side" (cantos de lado) e "coast"
-## (PackedFloat32Array de side × side).
+## (PackedFloat32Array de side × side). Fase 314: com "heights" (as alturas dos mesmos cantos), o mapa guarda também a
+## altura da terra.
+
 static func compose(regions: Array[Dictionary], spacing_m: float, limit_m: float) -> CoastField:
 	var field := CoastField.new()
 	field.spacing = spacing_m
@@ -32,6 +36,10 @@ static func compose(regions: Array[Dictionary], spacing_m: float, limit_m: float
 	field.size = Vector2i(roundi((high.x - low.x) / spacing_m) + 1, roundi((high.y - low.y) / spacing_m) + 1)
 	field.distances.resize(field.size.x * field.size.y)
 	field.distances.fill(-limit_m)
+	var with_heights := regions[0].has("heights")
+	if with_heights:
+		field.heights.resize(field.distances.size())
+		field.heights.fill(0.0)
 	for region: Dictionary in regions:
 		var corner: Vector2 = region["origin"]
 		var side: int = region["side"]
@@ -41,6 +49,12 @@ static func compose(regions: Array[Dictionary], spacing_m: float, limit_m: float
 			var row := (first.y + y) * field.size.x + first.x
 			for x: int in side:
 				field.distances[row + x] = coast[y * side + x]
+		if with_heights:
+			var land: PackedFloat32Array = region["heights"]
+			for y: int in side:
+				var row := (first.y + y) * field.size.x + first.x
+				for x: int in side:
+					field.heights[row + x] = maxf(land[y * side + x], 0.0)
 	return field
 
 
@@ -58,6 +72,14 @@ func texture() -> ImageTexture:
 		return null
 	return ImageTexture.create_from_image(Image.create_from_data(size.x, size.y, false, Image.FORMAT_RF,
 			distances.to_byte_array()))
+
+
+## Fase 314: textura de um canal float com a altura da terra (null sem as alturas).
+func height_texture() -> ImageTexture:
+	if size == Vector2i.ZERO or heights.is_empty():
+		return null
+	return ImageTexture.create_from_image(Image.create_from_data(size.x, size.y, false, Image.FORMAT_RF,
+			heights.to_byte_array()))
 
 
 ## Canto (x, z) e tamanho (largura, profundidade) em metros, como os shaders leem: com meio pixel de margem, para o

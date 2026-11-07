@@ -5,7 +5,7 @@ extends RefCounted
 ## (imposto por classe, acordo com rivais, manutenção por tipo de prédio, navios e salários). As parcelas somam
 ## exatamente o que a tela mostra: produção menos consumo da linha das estatísticas, e receita menos manutenção.
 
-enum Kind { BUILDING, TIER, SHIPS, SALARIES, TREATY }
+enum Kind { BUILDING, TIER, SHIPS, SALARIES, TREATY, TOURISM }
 
 
 class Source:
@@ -71,7 +71,7 @@ static func money(world: WorldState, data: GameData, config: GameConfig, derived
 	for house_id: int in derived.houses:
 		var house := world.building(house_id)
 		_add(taxes, Kind.TIER, house.tier, house.tax_per_min)
-	_scale_to(taxes, world.income_per_min - world.treaty_income_per_min, Kind.TIER, data.tiers[0].id)
+	_scale_to(taxes, world.income_per_min - world.treaty_income_per_min - world.tourism_per_min, Kind.TIER, data.tiers[0].id)
 	var ships := Source.new(Kind.SHIPS, &"")
 	for ship: Ship in world.ships.values():
 		if ship.owner == Ship.Owner.PLAYER:
@@ -94,6 +94,11 @@ static func money(world: WorldState, data: GameData, config: GameConfig, derived
 		var treaty := Source.new(Kind.TREATY, &"")
 		treaty.per_min = world.treaty_income_per_min
 		sources.append(treaty)
+	# Fase 68: os turistas
+	if world.tourism_per_min > 0.0:
+		var tourism := Source.new(Kind.TOURISM, &"")
+		tourism.per_min = world.tourism_per_min
+		sources.append(tourism)
 	sources.append_array(_sorted(costs))
 	if ships.count > 0:
 		sources.append(ships)

@@ -12,8 +12,13 @@ extends RefCounted
 ## TerrainV2Params), escolhido para os jogos novos por GameConfig.new_game_terrain_version.
 const VERSION := 1
 const VERSION_V2 := 2
+## Fase 52: o v3, a ilha alongada com enseadas, falésias e rochedos (TerrainV3Params).
+const VERSION_V3 := 3
+## Fase 93: o v4 é o v3 com um porto garantido em toda ilha (_ensure_harbor): nas ilhas pequenas do v3 a costa podia não
+## ter lugar de entreposto, e a ilha não podia ser colonizada. Ilha que já tinha lugar sai igual à do v3.
+const VERSION_V4 := 4
 ## As versões que um save pode ter (além do 0, a ilha plana de antes).
-const VERSIONS: Array[int] = [VERSION, VERSION_V2]
+const VERSIONS: Array[int] = [VERSION, VERSION_V2, VERSION_V3, VERSION_V4]
 ## Regiões vizinhas da principal, onde ficam as outras ilhas (sorteadas pela semente).
 const REGION_SLOTS: Array[Vector2i] = [Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(-1, 0),
 		Vector2i(0, -1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
@@ -31,9 +36,19 @@ const CLIFF_BAND := 0.012
 const LAND_MIN_M := 0.3
 ## Sem árvores a menos disto do mar (praia).
 const BEACH_CELLS := 2
+## v3: acima desta altura (m) a beira do mar não é desenhada como praia (é a falésia).
+const CLIFF_SAND_MAX_M := 2.4
 ## Largura da lama na margem do rio, em células (desenho só).
 const RIVER_BANK_CELLS := 1
 const DEPOSIT_TRIES := 600
+## Fase 93 (v4): o porto garantido. HARBOR_CELLS é o lado do entreposto (data/buildings/trading_post.tres, o teste confere);
+## na escolha do lote a aplainar, a fração mínima de terra nele e quanto pesa (m) cada célula de mar a aterrar; o lote fica
+## pelo menos HARBOR_ABOVE_SEA_M acima do mínimo de terra.
+const HARBOR_CELLS := 6
+const HARBOR_MIN_LAND := 0.5
+const HARBOR_SEA_COST_M := 1.0
+const HARBOR_ABOVE_SEA_M := 0.9
+const NO_HARBOR := Vector2i(-1, -1)
 
 
 ## Uma ilha a gerar: tamanho, lugar no mundo, perfil e a semente dela.
@@ -177,6 +192,8 @@ static func build_island(spec: IslandSpec, config: GameConfig, version: int = VE
 	var noises := Noises.new(spec.seed_value)
 	if version == VERSION_V2:
 		_heights_v2(grid, spec, config, TerrainV2Params.get_default())
+	elif version == VERSION_V3 or version == VERSION_V4:
+		_heights_v3(grid, spec, config, TerrainV3Params.get_v3())
 	else:
 		for y: int in spec.size + 1:
 			for x: int in spec.size + 1:
@@ -186,11 +203,16 @@ static func build_island(spec: IslandSpec, config: GameConfig, version: int = VE
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([spec.seed_value, "features"])
 	for river: int in spec.profile.rivers:
-		_carve_river(grid, config, rng)
-	_place_deposits(grid, spec.profile, config, rng, version == VERSION_V2)
+		_carve_river(grid, config, rng, version >= VERSION_V3)
+	_place_deposits(grid, spec.profile, config, rng, version >= VERSION_V2)
+	if version >= VERSION_V4:
+		_ensure_harbor(grid, config)
 	_grow_forest(grid, spec.profile, noises, config)
 	grid.invalidate_heights()
 	grid.fingerprint = fingerprint(grid)
+	# Fase 70: os campos de petróleo saem depois da assinatura (não a mudam), só nas ilhas temperadas
+	if not spec.profile.is_tropical():
+		grid.oil_spots = OilFields.spots(grid, spec.seed_value, config)
 	return grid
 
 
@@ -439,6 +461,218 @@ static func _limit_steps(grid: IslandGrid, step: float) -> void:
 	grid.corner_heights = heights
 
 
+## ---------------------------------------------------------------------------------------------------------------------
+## Gerador v3 (Fase 52). Os ruídos são os do v2 (outra semente de forma); a forma muda.
+class ShapeV3:
+	## A espinha e as penínsulas (união suave), as enseadas (cortadas da terra) e os rochedos (altura de cada um).
+	var lobes: Array[Lobe] = []
+	var bays: Array[Lobe] = []
+	var stacks: Array[Lobe] = []
+	var stack_heights := PackedFloat32Array()
+
+	## A métrica da terra sem warp nem costa (1 na borda): serve para achar o litoral ao montar enseadas e rochedos.
+	func body_metric(point: Vector2, blend: float) -> float:
+		var value := INF
+		for lobe: Lobe in lobes:
+			var m := lobe.metric(point)
+			value = m if value == INF else ArchipelagoGenerator._smooth_min(value, m, blend)
+		return value
+
+	## Distância de um ponto de terra até o litoral na direção dada (fração da meia largura), em passos de 0,01.
+	func coast_reach(from: Vector2, direction: Vector2, blend: float) -> float:
+		var reach := 0.0
+		while reach < 2.0 and body_metric(from + direction * (reach + 0.01), blend) <= 1.0:
+			reach += 0.01
+		return reach
+
+
+## Elipse com centro, raios e giro.
+static func _lobe(center: Vector2, radii: Vector2, angle: float) -> Lobe:
+	var lobe := Lobe.new()
+	lobe.center = center
+	lobe.radii = radii
+	lobe.angle = angle
+	return lobe
+
+
+## A forma da ilha v3 pela semente dela: as elipses ao longo de uma espinha curva (as das pontas menores) e as
+## penínsulas, tudo esticado para a mais longe tocar params.shore; as enseadas onde a costa é funda o bastante; e grupos
+## de rochedos junto aos cabos, longe das enseadas.
+static func shape_v3(spec: IslandSpec, params: TerrainV3Params) -> ShapeV3:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([spec.seed_value, "v3 shape"])
+	var shape := ShapeV3.new()
+	var axis_angle := rng.randf() * TAU
+	var axis := DetMath.sin_cos(axis_angle)
+	var across := Vector2(-axis.y, axis.x)
+	var bend := rng.randf_range(-1.0, 1.0) * params.spine_bend
+	var count := rng.randi_range(params.spine_lobes_min, params.spine_lobes_max)
+	var spine: Array[Vector2] = []
+	for k: int in count:
+		var t := lerpf(-1.0, 1.0, float(k) / (count - 1))
+		var center := axis * t * params.spine_length + across * bend * (1.0 - t * t) \
+				+ Vector2(rng.randf_range(-0.05, 0.05), rng.randf_range(-0.05, 0.05))
+		spine.append(center)
+		var radius := rng.randf_range(params.lobe_radius.x, params.lobe_radius.y) * (1.0 - 0.3 * absf(t))
+		var stretch := rng.randf_range(1.0, params.lobe_stretch)
+		shape.lobes.append(_lobe(center, Vector2(radius * sqrt(stretch), radius / sqrt(stretch)),
+				axis_angle + rng.randf_range(-0.4, 0.4)))
+	for k: int in rng.randi_range(0, params.side_lobes_max):
+		var root := spine[rng.randi_range(0, spine.size() - 1)]
+		var side := 1.0 if rng.randf() < 0.5 else -1.0
+		var radius := rng.randf_range(params.lobe_radius.x, params.lobe_radius.y) * params.side_lobe_scale
+		var center := root + across * side * rng.randf_range(0.25, 0.4)
+		shape.lobes.append(_lobe(center, Vector2(radius * 1.3, radius / 1.3), axis_angle + PI * 0.5 + rng.randf_range(-0.5, 0.5)))
+	# a ilha chega até shore: o conjunto é esticado ou encolhido para a borda mais longe tocar lá (como no v2)
+	var farthest := 0.0
+	for lobe: Lobe in shape.lobes:
+		var spin := DetMath.sin_cos(lobe.angle)
+		for step: int in 32:
+			var around := DetMath.sin_cos(TAU * step / 32.0)
+			var edge := lobe.center + DetMath.rotate(Vector2(around.x * lobe.radii.x, around.y * lobe.radii.y), spin)
+			farthest = maxf(farthest, edge.length())
+	var fit := params.shore / maxf(farthest, 0.01)
+	for lobe: Lobe in shape.lobes:
+		lobe.center *= fit
+		lobe.radii *= fit
+	var spine_points: Array[Vector2] = []
+	for k: int in count:
+		spine_points.append(shape.lobes[k].center)
+	# enseadas: em ângulos espaçados, onde a costa fica longe o bastante do meio para a enseada não partir a ilha
+	var bay_count := rng.randi_range(params.bays_min, params.bays_max)
+	var bay_angles := PackedFloat32Array()
+	var turn := rng.randf() * TAU
+	for k: int in bay_count:
+		var angle := turn + TAU * k / maxf(bay_count, 1) + rng.randf_range(-0.4, 0.4)
+		var direction := DetMath.sin_cos(angle)
+		# o raio sai do centro de uma elipse da espinha (o meio da grade pode cair no mar, com a espinha curva)
+		var from := spine_points[rng.randi_range(0, spine_points.size() - 1)]
+		var reach := shape.coast_reach(from, direction, params.lobe_blend)
+		# numa ilha estreita a enseada encolhe para não cortar a ilha em duas
+		var radius := minf(rng.randf_range(params.bay_radius.x, params.bay_radius.y), reach * 0.4)
+		if reach < 0.15:
+			continue
+		var center := from + direction * (reach + radius * (1.0 - params.bay_inset))
+		shape.bays.append(_lobe(center, Vector2(radius * 1.25, radius * 0.85), angle + PI * 0.5))
+		bay_angles.append(angle)
+	# rochedos: um ou dois grupos, cada um num cabo longe das enseadas
+	var stack_count := rng.randi_range(2, maxi(params.stacks_max, 2))
+	var groups := rng.randi_range(1, 2)
+	for group: int in groups:
+		var angle := rng.randf() * TAU
+		for attempt: int in 8:
+			var clear := true
+			for bay_angle: float in bay_angles:
+				if absf(angle_difference(angle, bay_angle)) < 0.7:
+					clear = false
+			if clear:
+				break
+			angle = rng.randf() * TAU
+		var direction := DetMath.sin_cos(angle)
+		var from := spine_points[rng.randi_range(0, spine_points.size() - 1)]
+		var reach := shape.coast_reach(from, direction, params.lobe_blend)
+		var base := from + direction * (reach + rng.randf_range(params.stack_offshore.x, params.stack_offshore.y))
+		for k: int in stack_count / groups:
+			# pelo menos três células de raio: menor que isso o rochedo some entre os cantos da grade
+			var radius := maxf(rng.randf_range(params.stack_radius.x, params.stack_radius.y), 6.0 / spec.size)
+			var center := base + Vector2(rng.randf_range(-0.06, 0.06), rng.randf_range(-0.06, 0.06))
+			# solto: o lado de dentro do rochedo fica fora da terra (senão vira só um morro na costa)
+			for push: int in 30:
+				if shape.body_metric(center - direction * radius, params.lobe_blend) > 1.08:
+					break
+				center += direction * 0.01
+			# dentro da área onde a borda da grade ainda não força o mar
+			if maxf(absf(center.x), absf(center.y)) + radius > EDGE_SEA - 0.02:
+				continue
+			shape.stacks.append(_lobe(center, Vector2(radius, radius * rng.randf_range(0.6, 1.0)), rng.randf() * PI))
+			shape.stack_heights.append(rng.randf_range(params.stack_height_m.x, params.stack_height_m.y))
+	return shape
+
+
+## União suave ao contrário (o maior dos dois, sem quina).
+static func _smooth_max(a: float, b: float, k: float) -> float:
+	return -_smooth_min(-a, -b, k)
+
+
+static func _heights_v3(grid: IslandGrid, spec: IslandSpec, config: GameConfig, params: TerrainV3Params) -> void:
+	var noises := NoisesV2.new(hash([spec.seed_value, "v3"]) & 0x7fffffff, params)
+	var shape := shape_v3(spec, params)
+	for y: int in spec.size + 1:
+		for x: int in spec.size + 1:
+			grid.corner_heights[grid.corner_index(x, y)] = height_at_v3(spec, noises, shape, params, config,
+					spec.origin_m.x + x * config.cell_size_m, spec.origin_m.y + y * config.cell_size_m)
+	_limit_steps(grid, params.max_corner_step_m)
+
+
+## Altura v3 num ponto do mundo: a terra da espinha no domínio torcido (como o v2), menos as enseadas; na enseada a praia
+## é larga e a água rasa; no resto a costa vira falésia pelo ruído, com a planície no patamar de cima; os rochedos saem
+## do mar de paredes íngremes e topo quase plano.
+static func height_at_v3(spec: IslandSpec, noises: NoisesV2, shape: ShapeV3, params: TerrainV3Params, config: GameConfig,
+		x: float, z: float) -> float:
+	var side := spec.size * config.cell_size_m
+	var point := Vector2((x - spec.origin_m.x) / side - 0.5, (z - spec.origin_m.y) / side - 0.5) * 2.0
+	var first := Vector2(noises.warp_a.get_noise_2d(x, z), noises.warp_b.get_noise_2d(x, z)) * params.warp_amount.x
+	var warped := point + first
+	var world := Vector2(x, z) + first * side * 0.5
+	warped += Vector2(noises.warp_c.get_noise_2d(world.x, world.y), noises.warp_d.get_noise_2d(world.x, world.y)) \
+			* params.warp_amount.y
+	var main := shape.body_metric(warped, params.lobe_blend)
+	var bay := INF
+	for lobe: Lobe in shape.bays:
+		bay = minf(bay, lobe.metric(warped))
+	var rough := lerpf(params.coast_roughness.x, params.coast_roughness.y, noises.rough.get_noise_2d(x, z) * 0.5 + 0.5)
+	# perto da enseada a costa fica lisa (praia em arco)
+	var bayness := 1.0 - smoothstep(1.0, 1.6, bay)
+	var d := main + noises.coast.get_noise_2d(world.x, world.y) * rough * (1.0 - 0.8 * bayness)
+	if bay < INF:
+		d = _smooth_max(d, 2.0 - bay, params.bay_blend)
+	var border := maxf(absf(point.x), absf(point.y))
+	if border > EDGE_SEA:
+		d = maxf(d, 1.0 + (border - EDGE_SEA) * 12.0)
+	# já no mar (a mistura com a terra só vai até 1,005): pula a conta da terra, que é a parte cara
+	if d >= 1.005:
+		return _stacks_over(shape, config, point, _sea_v3(noises, params, config, x, z, d, bay, border))
+	var cliff := smoothstep(params.cliff_noise.x, params.cliff_noise.y, noises.cliff.get_noise_2d(x, z)) * (1.0 - bayness)
+	var band := lerpf(lerpf(params.beach_band_cells, params.bay_beach_band_cells, bayness), params.cliff_band_cells, cliff) \
+			/ (spec.size * 0.5)
+	var inland := clampf((1.0 - d) / params.plain_width, 0.0, 1.0)
+	var levels := params.terrace_levels_m
+	var top := levels[levels.size() - 1] + 1.5
+	var bent := world + Vector2(noises.warp_c.get_noise_2d(x, z), noises.warp_d.get_noise_2d(z, x)) * PLATEAU_BEND_M
+	var region := noises.plateau.get_noise_2d(bent.x, bent.y) * 0.5 + 0.5
+	var core := clampf(1.0 - d, 0.0, 1.0)
+	var lift := lerpf(region, _rise(core, params.inland_rise), 0.35)
+	var raw := top * spec.profile.relief * lift + (region - 0.5) * params.plateau_jitter_m
+	var edge := lerpf(0.35, 0.9, noises.rough.get_noise_2d(x * 1.7, z * 1.7) * 0.5 + 0.5)
+	var land := lerpf(levels[0], terrace(raw, levels, params.terrace_flat_fraction), smoothstep(edge, edge + 0.12, inland))
+	# na falésia a planície fica no patamar de cima: a terra sai do mar de uma vez
+	# (degrau curto entre a planície da falésia e a da praia: a rampa larga tirava terra de construir)
+	land = maxf(land, lerpf(levels[0], levels[params.cliff_plain_level], smoothstep(0.35, 0.65, cliff)))
+	land += noises.undulate.get_noise_2d(x, z) * params.undulation_m * smoothstep(0.0, 0.5, inland)
+	var sea := _sea_v3(noises, params, config, x, z, d, bay, border)
+	return _stacks_over(shape, config, point, lerpf(land, sea, smoothstep(1.0 - band, 1.0 + 0.005, d)))
+
+
+## O fundo do mar v3 num ponto: o banco de areia junto à costa, a enseada rasa e, na borda da grade, o mar aberto (a
+## plataforma desenhada fora da grade conta com isso).
+static func _sea_v3(noises: NoisesV2, params: TerrainV3Params, config: GameConfig, x: float, z: float, d: float, bay: float,
+		border: float) -> float:
+	var sea := config.sea_floor_m
+	if d > 1.0 and noises.sand.get_noise_2d(x, z) > 1.0 - 2.0 * params.sandbank_chance:
+		sea = lerpf(params.sandbank_depth_m, config.sea_floor_m, smoothstep(1.0, 1.14, d))
+	sea = lerpf(sea, maxf(sea, params.bay_shallow_m), smoothstep(1.4, 1.0, bay))
+	return lerpf(sea, config.sea_floor_m, smoothstep(EDGE_SEA - 0.1, EDGE_SEA, border))
+
+
+## Os rochedos saindo do mar por cima da altura dada.
+static func _stacks_over(shape: ShapeV3, config: GameConfig, point: Vector2, height: float) -> float:
+	for k: int in shape.stacks.size():
+		var m := shape.stacks[k].metric(point)
+		if m < 1.0:
+			height = maxf(height, lerpf(config.sea_floor_m, shape.stack_heights[k], smoothstep(1.0, 0.7, m)))
+	return height
+
+
 ## Degraus: cada faixa entre dois patamares fica plana em terrace_flat_fraction e sobe no resto.
 static func terrace(raw: float, levels: PackedFloat32Array, flat_fraction: float) -> float:
 	if raw <= levels[0]:
@@ -462,8 +696,10 @@ static func _classify_ground(grid: IslandGrid) -> void:
 ## Rio: um braço de mar que entra pela planície do litoral (fica no nível do mar, sem precisar de
 ## água própria). Começa numa praia e anda para dentro, desviando de morro. Só os cantos de
 ## dentro descem: as margens ficam planas e dá para construir encostado (olaria).
-static func _carve_river(grid: IslandGrid, config: GameConfig, rng: RandomNumberGenerator) -> void:
-	var low_limit := config.terrace_levels_m[0] + 0.2
+static func _carve_river(grid: IslandGrid, config: GameConfig, rng: RandomNumberGenerator, high_plain: bool = false) -> void:
+	# no v3 o rio também corre pela planície de cima da falésia (a de baixo é estreita: numa ilha pequena não sobrava rio)
+	var low_limit := (TerrainV3Params.get_v3().terrace_levels_m[TerrainV3Params.get_v3().cliff_plain_level] if high_plain
+			else config.terrace_levels_m[0]) + 0.2
 	var center := Vector2(grid.size) * 0.5
 	for attempt: int in 40:
 		var start := Vector2i(rng.randi_range(4, grid.size.x - 5), rng.randi_range(4, grid.size.y - 5))
@@ -482,7 +718,8 @@ static func _carve_river(grid: IslandGrid, config: GameConfig, rng: RandomNumber
 		if mouth.x < 0 or grid.cell_height(mouth) > low_limit:
 			continue
 		var path := _river_path(grid, mouth, -outward, config, low_limit, rng)
-		if path.size() >= 20:
+		# no v3 a ilha pequena aceita rio mais curto (as enseadas e o formato comprido encurtam o caminho até o morro)
+		if path.size() >= (mini(20, grid.size.x / 6) if high_plain else 20):
 			_carve(grid, path, config)
 			return
 
@@ -577,6 +814,100 @@ static func _place_deposits(grid: IslandGrid, profile: IslandProfileDef, config:
 			for y: int in range(best.position.y, best.end.y):
 				for x: int in range(best.position.x, best.end.x):
 					grid.deposits[y * grid.size.x + x] = good_index + 1
+
+
+## Fase 93 (v4): sem lote de HARBOR_CELLS em terra, plano, encostado no mar e com uma frente onde passa estrada, aplaina o
+## lote de costa que menos mexe no relevo (o desnível dos cantos de terra mais HARBOR_SEA_COST_M por célula de mar a
+## aterrar), longe de rio e de jazida: o lote vai à altura média da terra dele e o anel em volta fica a até meio
+## max_road_relief_m dessa altura (a rua da frente cabe). As células de mar vizinhas continuam mar: o lote encosta nele.
+## Só reclassifica as células mexidas (classificar a ilha toda apagaria os rios).
+static func _ensure_harbor(grid: IslandGrid, config: GameConfig) -> void:
+	if harbor_site(grid, config) != NO_HARBOR:
+		return
+	var best := NO_HARBOR
+	var best_cost := INF
+	var best_level := 0.0
+	var cells := HARBOR_CELLS * HARBOR_CELLS
+	for y: int in range(1, grid.size.y - HARBOR_CELLS - 1):
+		for x: int in range(1, grid.size.x - HARBOR_CELLS - 1):
+			var area := Rect2i(x, y, HARBOR_CELLS, HARBOR_CELLS)
+			var land := 0
+			var blocked := false
+			for cy: int in range(y, y + HARBOR_CELLS):
+				for cx: int in range(x, x + HARBOR_CELLS):
+					var index := cy * grid.size.x + cx
+					if grid.ground[index] == IslandGrid.Ground.RIVER or grid.deposits[index] != 0:
+						blocked = true
+					elif grid.ground[index] == IslandGrid.Ground.LAND:
+						land += 1
+			if blocked or land < cells * HARBOR_MIN_LAND or not grid.area_touches(area, IslandGrid.Ground.SEA):
+				continue
+			var low := INF
+			var high := -INF
+			var sum := 0.0
+			var count := 0
+			for cy: int in range(y, y + HARBOR_CELLS + 1):
+				for cx: int in range(x, x + HARBOR_CELLS + 1):
+					var height := grid.corner_height(cx, cy)
+					if height < LAND_MIN_M:
+						continue
+					low = minf(low, height)
+					high = maxf(high, height)
+					sum += height
+					count += 1
+			if count == 0:
+				continue
+			var cost := (high - low) + (cells - land) * HARBOR_SEA_COST_M
+			if cost < best_cost:
+				best = Vector2i(x, y)
+				best_cost = cost
+				best_level = maxf(sum / count, LAND_MIN_M + HARBOR_ABOVE_SEA_M)
+	if best == NO_HARBOR:
+		return
+	var half_road := config.max_road_relief_m * 0.5
+	var ring := Rect2i(best, Vector2i(HARBOR_CELLS, HARBOR_CELLS)).grow(1)
+	for cy: int in range(ring.position.y, ring.end.y + 1):
+		for cx: int in range(ring.position.x, ring.end.x + 1):
+			var index := grid.corner_index(cx, cy)
+			var inner := cx > ring.position.x and cx < ring.end.x and cy > ring.position.y and cy < ring.end.y
+			if inner:
+				grid.corner_heights[index] = best_level
+			elif grid.corner_heights[index] >= LAND_MIN_M:
+				grid.corner_heights[index] = clampf(grid.corner_heights[index], best_level - half_road, best_level + half_road)
+	grid.invalidate_heights()
+	var touched := ring.grow(1).intersection(Rect2i(Vector2i.ZERO, grid.size))
+	for cy: int in range(touched.position.y, touched.end.y):
+		for cx: int in range(touched.position.x, touched.end.x):
+			var index := cy * grid.size.x + cx
+			if grid.ground[index] == IslandGrid.Ground.RIVER:
+				continue
+			var low := minf(minf(grid.corner_height(cx, cy), grid.corner_height(cx + 1, cy)),
+					minf(grid.corner_height(cx, cy + 1), grid.corner_height(cx + 1, cy + 1)))
+			grid.ground[index] = IslandGrid.Ground.LAND if low >= LAND_MIN_M else IslandGrid.Ground.SEA
+
+
+## Fase 93: a origem do primeiro lote de HARBOR_CELLS (o tamanho do entreposto) em terra, plano, encostado no mar e com
+## uma frente onde passa estrada, varrendo linha a linha; NO_HARBOR sem nenhum. As mesmas regras do PlacementRules e do
+## SiteFinder, sem o perfil (o entreposto não pede fertilidade).
+static func harbor_site(grid: IslandGrid, config: GameConfig) -> Vector2i:
+	var size := Vector2i(HARBOR_CELLS, HARBOR_CELLS)
+	for y: int in range(0, grid.size.y - HARBOR_CELLS + 1):
+		for x: int in range(0, grid.size.x - HARBOR_CELLS + 1):
+			var origin := Vector2i(x, y)
+			var area := Rect2i(origin, size)
+			if not grid.area_is_land(area) or grid.area_relief(area) > config.max_build_height_delta_m + 0.0001:
+				continue
+			if not grid.area_touches(area, IslandGrid.Ground.SEA):
+				continue
+			for rotation: int in 4:
+				var front_ok := true
+				for cell: Vector2i in Footprint.front_cells(origin, size, rotation):
+					if not grid.is_land(cell) or PlacementRules.check_road_cell(grid, cell, config) != PlacementRules.OK:
+						front_ok = false
+						break
+				if front_ok:
+					return origin
+	return NO_HARBOR
 
 
 static func _has_deposit(grid: IslandGrid, area: Rect2i) -> bool:
@@ -708,6 +1039,10 @@ static func region_corners(world: WorldState, index: int, config: GameConfig, da
 	var drop := config.sea_floor_m - config.deep_sea_floor_m
 	var shelf_start := SHORE + 0.005
 	var shelf_end := shelf_start + config.sea_shelf_width_m / (spec.size * cell_m * 0.5)
+	# v3 (Fase 52): a plataforma acompanha a costa de verdade (distância até a terra), não o quadrado do v1
+	var coast_m := PackedFloat32Array()
+	if world.terrain_version >= VERSION_V3:
+		coast_m = _distance_to_land(grid, side, first, cell_m)
 	for py: int in side:
 		var gy := py - first.y
 		var z := origin.y + py * cell_m
@@ -725,11 +1060,66 @@ static func region_corners(world: WorldState, index: int, config: GameConfig, da
 					kind = Surface.FOREST if trees[cell] > 0 else Surface.AUTO
 				if bank[cell] == 1 and beach[cell] == 0:
 					kind = Surface.MUD
-			if sea and height < 0.0:
+				# v3 (Fase 53): em cima da falésia não há praia; o chão é o da terra (grama, e rocha pela inclinação)
+				if not coast_m.is_empty() and kind == Surface.SAND and height > CLIFF_SAND_MAX_M:
+					kind = Surface.FOREST if trees[cell] > 0 else Surface.AUTO
+			# v3: canto que toca terra ou rio fica na altura da simulação (a ilha pode chegar perto da borda da região)
+			if sea and height < 0.0 and (coast_m.is_empty() or coast_m[py * side + px] > 0.0):
 				var x := origin.x + px * cell_m
-				var from_coast := smoothstep(shelf_start, shelf_end, _coast_metric(spec, noises, config, x, z))
+				var from_coast := 0.0
+				if coast_m.is_empty():
+					from_coast = smoothstep(shelf_start, shelf_end, _coast_metric(spec, noises, config, x, z))
+				else:
+					from_coast = smoothstep(cell_m * 2.0, config.sea_shelf_width_m, coast_m[py * side + px])
 				var edge := mini(edge_y, mini(px, side - 1 - px)) * cell_m
 				height -= drop * maxf(from_coast, 1.0 - smoothstep(0.0, config.sea_shelf_width_m, edge))
 			heights[py * side + px] = height
 			surface[py * side + px] = kind
 	return {"side": side, "origin": origin, "heights": heights, "surface": surface}
+
+
+## Distância (m) de cada canto da região até a terra da ilha, por chanfro 3-4 em duas passadas (perto da euclidiana).
+static func _distance_to_land(grid: IslandGrid, side: int, first: Vector2i, cell_m: float) -> PackedFloat32Array:
+	var far := 1.0e9
+	var dist := PackedFloat32Array()
+	dist.resize(side * side)
+	dist.fill(far)
+	var ground := grid.ground
+	# zero nos cantos que tocam terra ou rio (as quatro células em volta do canto): o leito do rio fica como a simulação
+	for gy: int in grid.size.y:
+		for gx: int in grid.size.x:
+			if ground[gy * grid.size.x + gx] == IslandGrid.Ground.SEA:
+				continue
+			for corner: Vector2i in [Vector2i(gx, gy), Vector2i(gx + 1, gy), Vector2i(gx, gy + 1), Vector2i(gx + 1, gy + 1)]:
+				var p := corner + first
+				if p.x >= 0 and p.y >= 0 and p.x < side and p.y < side:
+					dist[p.y * side + p.x] = 0.0
+	var straight := cell_m
+	var diagonal := cell_m * 1.4142
+	for py: int in side:
+		for px: int in side:
+			var i := py * side + px
+			var best := dist[i]
+			if px > 0:
+				best = minf(best, dist[i - 1] + straight)
+			if py > 0:
+				best = minf(best, dist[i - side] + straight)
+				if px > 0:
+					best = minf(best, dist[i - side - 1] + diagonal)
+				if px < side - 1:
+					best = minf(best, dist[i - side + 1] + diagonal)
+			dist[i] = best
+	for py: int in range(side - 1, -1, -1):
+		for px: int in range(side - 1, -1, -1):
+			var i := py * side + px
+			var best := dist[i]
+			if px < side - 1:
+				best = minf(best, dist[i + 1] + straight)
+			if py < side - 1:
+				best = minf(best, dist[i + side] + straight)
+				if px < side - 1:
+					best = minf(best, dist[i + side + 1] + diagonal)
+				if px > 0:
+					best = minf(best, dist[i + side - 1] + diagonal)
+			dist[i] = best
+	return dist

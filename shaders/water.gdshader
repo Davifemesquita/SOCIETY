@@ -33,6 +33,7 @@ render_mode blend_mix,depth_draw_always,cull_disabled,diffuse_burley,specular_sc
 #define REFRACTION_SCALING // refraction refracts distant objects way too much; scale it down with distance.
 
 #include "res://shaders/coast_waves.gdshaderinc"
+#include "res://shaders/cloud_shadow.gdshaderinc"
 
 uniform bool freeze_time = false; // Toki wo tomare.
 uniform vec4 albedo: source_color;
@@ -102,12 +103,160 @@ uniform sampler2D coast_field : filter_linear, repeat_disable;
 // canto (x, z) e tamanho do mapa no mundo, em metros (CoastField.bounds)
 uniform vec4 coast_bounds = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float coast_far_m = 64.0;
+// Fase 314: a sombra das falésias na água. A altura da terra (WaterView, do CoastField) e, na água a até cliff_shade_reach_m da
+// costa, uma marcha de cliff_shade_steps passos na direção do sol: a terra mais alta que o raio de sol naquele ponto encobre a
+// água, que escurece cliff_shade (a cor dela sai pela EMISSION e não recebe a sombra de verdade).
+uniform bool has_cliff_shade = false;
+uniform sampler2D land_height : filter_linear, repeat_disable;
+uniform float cliff_shade = 0.45;
+uniform float cliff_shade_reach_m = 36.0;
+uniform int cliff_shade_steps = 8;
+// Fase 324: o fundo da garganta. No canal, a água escurece até gorge_shade e perde o reflexo do céu (gorge_specular) pelo tanto de
+// céu que as paredes em volta tapam (sky_closed: de gorge_closed.x a gorge_closed.y), olhando até gorge_reach_m em gorge_steps passos.
+uniform float gorge_shade = 0.7;
+uniform float gorge_specular = 0.85;
+uniform float gorge_roughness = 0.6;
+uniform vec2 gorge_closed = vec2(0.25, 0.7);
+uniform float gorge_reach_m = 9.0;
+uniform int gorge_steps = 3;
 // até onde da costa a água fica com a cor de plataforma, a espuma anda e as ondas se acalmam
 uniform float shelf_m = 28.0;
 uniform vec4 color_shelf : source_color = vec4(0.45, 0.66, 0.58, 0.5);
 uniform float shore_foam_width_m = 9.0;
 uniform vec3 shore_foam_color : source_color = vec3(0.93, 0.95, 0.93);
 uniform float wave_calm_m = 22.0;
+// Society (Fase 281): a espuma colada na linha d'água vai até shore_line_m dela; as bandas que chegam na praia são linhas
+// tanto mais finas quanto mais perto de 1 for band_sharpness (era 0,8)
+uniform float shore_line_m = 3.0;
+uniform float band_sharpness = 0.93;
+// Society (Fase 295): longe da areia as bandas se quebram em trechos de band_piece_m, sorteados de novo a cada onda; a falta
+// cresce até band_gap de band_whole_m (inteiras junto da areia) até o fim do alcance delas
+uniform float band_piece_m = 6.0;
+uniform float band_gap = 0.55;
+uniform float band_whole_m = 2.5;
+// Society (Fase 358): a onda que quebra — uma crista em breaker_every é uma série: a banda mais grossa (breaker_sharpness) e com menos
+// falhas (breaker_gap_share da falta das outras), correndo junto ao longo da costa (o número da crista é o mesmo na banda inteira)
+uniform float breaker_every = 4.0;
+uniform float breaker_sharpness = 0.72;
+uniform float breaker_gap_share = 0.45;
+// Society (Fase 282): quanto da cor da água sobra de noite, por canal (fator linear, não cor: puxa para o azul de lua)
+uniform vec3 night_water = vec3(0.16, 0.2, 0.3);
+// Society (Fase 283): o canal estreito (ver channel no fragment) e a cor da água dele, escura e calma
+uniform float channel_probe_m = 12.0;
+uniform float channel_open_m = 10.0;
+uniform vec4 river_color : source_color = vec4(0.07, 0.14, 0.13, 0.72);
+// Society (Fase 284): o marulho (ver o começo do fragment): força, comprimento e inclinação de cada trem, a velocidade (fração da
+// das ondas de água funda) e a distância da costa onde ele chega cheio
+uniform float swell_strength = 1.0;
+uniform vec3 swell_lengths_m = vec3(52.0, 33.0, 21.0);
+uniform vec3 swell_slopes = vec3(0.09, 0.07, 0.05);
+uniform float swell_speed = 0.6;
+uniform float swell_open_m = 40.0;
+// Society (Fase 296): a água picada de perto, quatro trens de ondinhas curtas (chop_lengths_m) cruzando em volta do vento, com a
+// fase torcida por um ruído (sem o desenho regular de seno), só na normal; some de chop_near_m a chop_far_m da câmera
+uniform float chop_strength = 0.16;
+uniform vec4 chop_lengths_m = vec4(2.7, 1.8, 1.15, 0.75);
+uniform float chop_speed = 1.0;
+uniform float chop_near_m = 35.0;
+uniform float chop_far_m = 90.0;
+// Society (Fase 356): a onda de perto, três trens de wave_lengths_m entre o marulho e o picado, tortos pelo ruído, na normal, e a crista
+// mais clara (wave_crest_light); somem de wave_near_m a wave_far_m da câmera
+uniform float wave_strength = 1.0;
+uniform vec3 wave_lengths_m = vec3(12.0, 8.0, 5.5);
+// (um trem só: com os três cruzados o mar saía num favo de bolinhas; os outros ficam em zero)
+uniform vec3 wave_slopes = vec3(0.11, 0.0, 0.0);
+uniform float wave_speed = 0.8;
+uniform float wave_near_m = 120.0;
+uniform float wave_far_m = 250.0;
+uniform float wave_crest_light = 0.1;
+uniform float wave_twist_amount = 15.0;
+// Society (Fase 293): até que diferença de profundidade (m, ao longo da vista) o anel de espuma em volta das pedras vai
+uniform float rock_foam_m = 0.45;
+// Society (Fase 318): a espuma em volta das pedras do rio (0 = sem): quantas vezes rock_foam_m ela vai e a faixa da margem (m da
+// linha d'água) que fica de fora
+uniform float river_foam = 1.0;
+uniform float river_foam_reach = 1.6;
+uniform float river_foam_line_m = 0.6;
+// Society (Fase 319): a correnteza no canal (0 = sem): a força dos riscos, o comprimento e a largura deles (m), a velocidade (m/s)
+// e a distância (m) das sondas do rumo no mapa da costa
+uniform float river_flow = 0.4;
+uniform float river_flow_length_m = 7.0;
+uniform float river_flow_width_m = 0.35;
+uniform float river_flow_speed = 0.6;
+uniform float river_flow_probe_m = 1.5;
+// Society (Fase 297): os fiapos de espuma que saem levados das pedras, compridos ao longo do vento (streak_length_m) e finos de
+// través (streak_width_m), andando com ele, até streak_reach_m da costa, do lado de baixo do vento e só onde a água já é funda
+// junto da costa (a pedra: na plataforma rasa da praia a diferença de profundidade fica abaixo de streak_deep_m)
+uniform float streak_strength = 0.6;
+uniform float streak_length_m = 16.0;
+uniform float streak_width_m = 1.1;
+uniform float streak_drift_m_s = 0.7;
+uniform float streak_reach_m = 26.0;
+uniform float streak_deep_m = 2.5;
+// Society (Fase 280): o mar das ilhas temperadas (a oeste de reef_min_x, que marca as regiões tropicais) mais fundo, em
+// azul-petróleo, com a plataforma mais estreita e menos clara; o das tropicais segue o turquesa (color_deep, color_shelf,
+// shelf_m). A troca é gradual em tropic_blend_m centrados em reef_min_x (as ilhas ficam dentro das regiões delas).
+// (Fase 355: mais escuro e menos azul, era (0,04; 0,18; 0,29): de cima o mar das temperadas fica azul-petróleo escuro, como no Anno)
+uniform vec4 cold_deep : source_color = vec4(0.03, 0.12, 0.18, 1.0);
+// (Fase 359: verde sobre o fundo, era (0,19; 0,52; 0,53; 0,52), turquesa)
+uniform vec4 cold_shelf : source_color = vec4(0.22, 0.44, 0.38, 0.5);
+uniform float cold_shelf_m = 25.0;
+uniform float tropic_blend_m = 120.0;
+// Society (Fase 299): nas temperadas, a água rasa fica mais clara para o fundo aparecer: até clear_depth_m de água (ao longo da
+// vista) a plataforma e a cor do raso perdem até clear_strength da cobertura
+uniform float clear_depth_m = 3.5;
+uniform float clear_strength = 0.6;
+// Society (Fase 298): de far_sea_from_m a far_sea_to_m da câmera, a cor do fundo escurece até far_sea_dark e o reflexo do céu cai
+// até far_sea_specular dele (o céu claro no ângulo raso deixava o mar de longe leitoso): o mar de longe fica azul-marinho
+uniform float far_sea_from_m = 200.0;
+uniform float far_sea_to_m = 700.0;
+uniform float far_sea_dark = 0.45;
+uniform float far_sea_specular = 0.4;
+uniform float far_sea_roughness = 0.5;
+group_uniforms;
+
+// Society (Fase 110): a cintilação do sol no mar. Pontos de brilho onde o reflexo do sol cai, em células de glint_cell_m que
+// acendem e apagam glint_rate vezes por segundo; mais no mar aberto (a partir de glint_open_m da costa), nada de noite.
+global uniform vec3 sun_direction;
+global uniform float night_light;
+group_uniforms Glints;
+// (Fase 356: 1,0, era 3,0: com o sol na frente da câmera, desde a Fase 330, a cintilação perto da praia virava pontos brancos grandes)
+uniform float glint_strength = 1.0;
+uniform float glint_sharpness = 40.0;
+uniform float glint_cell_m = 0.45;
+uniform float glint_rate = 3.0;
+uniform float glint_share = 0.14;
+uniform float glint_open_m = 18.0;
+uniform float glint_fade_m = 260.0;
+group_uniforms;
+
+// Society (Fase 125): o recife de coral das ilhas tropicais. Manchas escuras e irregulares no raso (de reef_from_m a
+// reef_to_m da costa), por um ruído de duas oitavas de reef_cell_m, só a leste de reef_min_x (as regiões tropicais).
+group_uniforms Reef;
+uniform bool has_reef = false;
+uniform float reef_min_x = 1e9;
+uniform float reef_from_m = 4.0;
+uniform float reef_to_m = 34.0;
+uniform float reef_cell_m = 9.0;
+uniform float reef_share = 0.42;
+uniform vec4 reef_color : source_color = vec4(0.1, 0.3, 0.32, 0.55);
+group_uniforms;
+
+// Society (Fase 155): carneirinhos, manchas de espuma que nascem e se desfazem no mar aberto, mais com o vento forte (global
+// sea_whitecaps, de 0 a 1, que a WeatherView tira da força do vento). No máximo uma por célula de whitecap_cell_m, sorteada de
+// novo a cada volta de whitecap_period_s (cada célula na sua fase); a mancha é comprida de través ao vento (wind_direction),
+// acende depressa, se desfaz no resto de whitecap_life da volta e anda com o vento, crescendo um pouco.
+global uniform float sea_whitecaps;
+global uniform vec2 wind_direction;
+group_uniforms Whitecaps;
+uniform float whitecap_cell_m = 8.0;
+uniform float whitecap_period_s = 6.0;
+uniform float whitecap_life = 0.55;
+uniform float whitecap_share = 0.4;
+uniform float whitecap_open_m = 30.0;
+uniform float whitecap_drift_m_s = 0.8;
+uniform float whitecap_strength = 0.85;
+uniform float whitecap_fade_m = 700.0;
 group_uniforms;
 
 group_uniforms DepthFog;
@@ -205,6 +354,73 @@ vec3 N_DEG(float x, float z, float t, float Steepness, float Amplitude, float Di
 	return result;
 }
 
+// Society (Fase 125): ruído de valor liso (o recife). O hash é sem seno: com as coordenadas do arquipélago (centenas de
+// células) o fract(sin(...)) perdia precisão na GPU e as manchas saíam em escada.
+float reef_hash(vec2 p) {
+	vec3 q = fract(vec3(mod(p, 1024.0).xyx) * 0.1031);
+	q += dot(q, q.yzx + 33.33);
+	return fract((q.x + q.y) * q.z);
+}
+
+float reef_noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(reef_hash(i), reef_hash(i + vec2(1.0, 0.0)), f.x),
+			mix(reef_hash(i + vec2(0.0, 1.0)), reef_hash(i + vec2(1.0)), f.x), f.y);
+}
+
+// Quanto de recife no ponto (0 a 1): o ruído acima de 1 - reef_share, na faixa rasa, a leste de reef_min_x.
+float reef_at(vec2 xz, float shore_m) {
+	if (!has_reef || xz.x < reef_min_x) {
+		return 0.0;
+	}
+	float band = smoothstep(reef_from_m * 0.5, reef_from_m, shore_m) * (1.0 - smoothstep(reef_to_m * 0.7, reef_to_m, shore_m));
+	float n = reef_noise(xz / reef_cell_m) * 0.65 + reef_noise(xz / (reef_cell_m * 0.37) + 17.0) * 0.35;
+	return band * smoothstep(1.0 - reef_share, 1.0 - reef_share + 0.08, n);
+}
+
+// Quanto de carneirinho no ponto (0 a 1). A mancha e a deriva cabem na célula dela (jitter, raios e deriva somam menos de
+// meia célula), então basta olhar a célula do ponto.
+float whitecap_at(vec2 xz, float shore_m, float time) {
+	if (sea_whitecaps <= 0.01) {
+		return 0.0;
+	}
+	float open_sea = smoothstep(whitecap_open_m * 0.5, whitecap_open_m, shore_m);
+	if (open_sea <= 0.0) {
+		return 0.0;
+	}
+	vec2 cell = floor(xz / whitecap_cell_m);
+	float turn = time / whitecap_period_s + reef_hash(cell + 91.0);
+	float cycle = floor(turn);
+	float f = turn - cycle;
+	if (f > whitecap_life || reef_hash(cell + vec2(cycle * 13.0, cycle * 7.0)) > whitecap_share * sea_whitecaps) {
+		return 0.0;
+	}
+	vec2 wind = length(wind_direction) > 0.01 ? normalize(wind_direction) : vec2(1.0, 0.0);
+	vec2 across = vec2(-wind.y, wind.x);
+	vec2 jitter = vec2(reef_hash(cell + vec2(cycle, 3.0)), reef_hash(cell + vec2(5.0, cycle))) - 0.5;
+	float size = mix(0.6, 1.25, reef_hash(cell + vec2(cycle * 3.0, 11.0)));
+	vec2 center = (cell + 0.5 + jitter * 0.2) * whitecap_cell_m
+			+ wind * whitecap_drift_m_s * whitecap_period_s * (f - whitecap_life * 0.5);
+	// a borda torta pelo ruído (metros), a crista fina na frente e a espuma arrastada atrás
+	vec2 warp = vec2(reef_noise(xz * 0.9 + 3.0), reef_noise(xz * 0.9 + 41.0)) - 0.5;
+	vec2 d = xz - center + warp * 1.6;
+	float along = dot(d, wind);
+	float reach = whitecap_cell_m * size * (along > 0.0 ? 0.07 : 0.2);
+	float grow = mix(0.7, 1.15, f / whitecap_life) * size;
+	float shape = length(vec2(along / reach, dot(d, across) / (whitecap_cell_m * 0.36 * grow)));
+	float blob = 1.0 - smoothstep(0.15, 1.0, shape);
+	float life = smoothstep(0.0, 0.06, f) * (1.0 - smoothstep(0.12, whitecap_life, f));
+	// renda: furos macios pelo ruído, em riscas ao longo do vento; quanto mais fraca a mancha (na borda, ao se desfazer),
+	// mais furos
+	float amount = blob * life;
+	vec2 streak = vec2(dot(xz, wind) * 0.8, dot(xz, across) * 2.6);
+	float lace = reef_noise(streak + cycle * 5.3) * 0.55 + reef_noise(xz * 4.0 - 7.0) * 0.45;
+	float holes = smoothstep(0.25 + (1.0 - amount) * 0.5, 0.75 + (1.0 - amount) * 0.25, lace);
+	return holes * amount * open_sea;
+}
+
 // Society: distância até a costa com sinal no ponto (negativa na água); fora do mapa, mar fundo.
 float coast_at(vec2 xz) {
 	vec2 uv = (xz - coast_bounds.xy) / coast_bounds.zw;
@@ -212,6 +428,55 @@ float coast_at(vec2 xz) {
 		return -coast_far_m;
 	}
 	return textureLod(coast_field, uv, 0.0).r;
+}
+
+// Society (Fase 314): quanto a água no ponto fica na sombra de uma falésia (0 a 1), pela marcha até a terra na direção do sol.
+float cliff_shadow(vec2 xz, vec3 sun) {
+	if (!has_cliff_shade || sun.y < 0.03 || coast_at(xz) < -cliff_shade_reach_m) {
+		return 0.0;
+	}
+	vec2 flat_sun = sun.xz;
+	float run = max(length(flat_sun), 1e-3);
+	vec2 toward = flat_sun / run;
+	float rise = sun.y / run;
+	float shade = 0.0;
+	for (int k = 1; k <= cliff_shade_steps; k++) {
+		float d = cliff_shade_reach_m * float(k) / float(cliff_shade_steps);
+		vec2 uv = (xz + toward * d - coast_bounds.xy) / coast_bounds.zw;
+		if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+			break;
+		}
+		float land = textureLod(land_height, uv, 0.0).r;
+		shade = max(shade, smoothstep(0.0, 1.5, land - d * rise));
+	}
+	return shade;
+}
+
+// Society (Fase 324): quanto do céu as paredes em volta tapam (0 aberto a 1 fechado): em GORGE_DIRECTIONS rumos, o ângulo mais alto
+// da terra a até gorge_reach_m (gorge_steps passos), pelo seno dele, na média dos rumos. Só para o canal (a garganta do rio).
+const int GORGE_DIRECTIONS = 8;
+float sky_closed(vec2 xz) {
+	if (!has_cliff_shade) {
+		return 0.0;
+	}
+	float closed = 0.0;
+	for (int r = 0; r < GORGE_DIRECTIONS; r++) {
+		float angle = TAU * float(r) / float(GORGE_DIRECTIONS);
+		vec2 toward = vec2(cos(angle), sin(angle));
+		float best = 0.0;
+		for (int k = 1; k <= gorge_steps; k++) {
+			float d = gorge_reach_m * float(k) / float(gorge_steps);
+			vec2 uv = (xz + toward * d - coast_bounds.xy) / coast_bounds.zw;
+			if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) {
+				break;
+			}
+			float land = textureLod(land_height, uv, 0.0).r;
+			// o seno do ângulo da terra vista da água (que fica no zero)
+			best = max(best, max(land, 0.0) / length(vec2(d, max(land, 0.0))));
+		}
+		closed += best;
+	}
+	return closed / float(GORGE_DIRECTIONS);
 }
 
 // Rotate a vector from vec3(0,1,0) to the normal, rotation about the z and y axes.
@@ -373,6 +638,70 @@ float depth_from_water_to_object(vec2 screen_uv, mat4 inv_projection_matrix, vec
 
 void fragment() {
 	ALPHA = 1.0;
+	// Society (Fase 284): o marulho, a ondulação larga do mar aberto que se lê de longe. Três trens de ondas longas
+	// (swell_lengths_m) andando com o vento, só na normal (os vértices não mudam), somados à normal das ondas. Somem perto da costa
+	// (swell_open_m) e no rio, e o trem mais curto some de longe (sem cintilar). Antes do resto: o Fresnel, o reflexo do céu e o
+	// brilho do sol seguem a normal nova.
+	if (swell_strength > 0.0) {
+		float swell_open = has_coast ? smoothstep(swell_open_m * 0.4, swell_open_m, -coast_at(world_coordinates.xz)) : 1.0;
+		if (swell_open > 0.0) {
+			vec2 swell_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+			float swell_t = TIME * float(!freeze_time) * swell_speed;
+			vec2 slope = vec2(0.0);
+			for (int i = 0; i < 3; i++) {
+				float turn = i == 0 ? 0.0 : (i == 1 ? 0.55 : -0.8);
+				vec2 dir = vec2(swell_wind.x * cos(turn) - swell_wind.y * sin(turn), swell_wind.x * sin(turn) + swell_wind.y * cos(turn));
+				float k = TAU / swell_lengths_m[i];
+				float steep = swell_slopes[i];
+				if (i == 2) {
+					steep *= 1.0 - smoothstep(500.0, 900.0, length(VERTEX));
+				}
+				slope += dir * steep * cos(dot(dir, world_coordinates.xz) * k - sqrt(9.8 * k) * swell_t + float(i) * 1.7);
+			}
+			slope *= swell_strength * swell_open * mix(0.6, 1.2, sea_whitecaps);
+			NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(slope.x, 0.0, slope.y, 0.0)).xyz);
+		}
+	}
+
+	// Society (Fase 356): a onda de perto, entre o marulho e o picado
+	float mid_crest = 0.0;
+	float wave_near = 1.0 - smoothstep(wave_near_m, wave_far_m, length(VERTEX));
+	if (wave_strength > 0.0 && wave_near > 0.0) {
+		vec2 wave_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+		float wave_t = TIME * float(!freeze_time) * wave_speed;
+		float wave_twist = reef_noise(world_coordinates.xz / 26.0) * wave_twist_amount;
+		vec2 wave_slope = vec2(0.0);
+		float wave_height = 0.0;
+		for (int i = 0; i < 3; i++) {
+			float turn = i == 0 ? 0.2 : (i == 1 ? -0.45 : 0.75);
+			vec2 dir = vec2(wave_wind.x * cos(turn) - wave_wind.y * sin(turn), wave_wind.x * sin(turn) + wave_wind.y * cos(turn));
+			float k = TAU / wave_lengths_m[i];
+			float phase = dot(dir, world_coordinates.xz) * k - sqrt(9.8 * k) * wave_t + wave_twist * (0.6 + float(i) * 0.35);
+			wave_slope += dir * wave_slopes[i] * cos(phase);
+			wave_height += sin(phase) * wave_slopes[i] / max(wave_slopes.x, 0.001);
+		}
+		float wave_amount = wave_strength * wave_near * mix(0.7, 1.3, sea_whitecaps);
+		NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(wave_slope.x * wave_amount, 0.0, wave_slope.y * wave_amount, 0.0)).xyz);
+		mid_crest = smoothstep(0.55, 1.0, wave_height) * wave_amount;
+	}
+
+	// Society (Fase 296): a água picada de perto (as ondinhas que quebram o reflexo), por cima das ondas e do marulho
+	float chop_near = 1.0 - smoothstep(chop_near_m, chop_far_m, length(VERTEX));
+	if (chop_strength > 0.0 && chop_near > 0.0) {
+		vec2 chop_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+		float chop_t = TIME * float(!freeze_time) * chop_speed;
+		// a fase torcida pelo ruído: as cristas deixam de ser retas e paralelas
+		float twist = reef_noise(world_coordinates.xz / 6.0) * 9.0;
+		vec2 chop = vec2(0.0);
+		for (int i = 0; i < 4; i++) {
+			float turn = i == 0 ? 0.35 : (i == 1 ? -0.6 : (i == 2 ? 1.1 : -1.4));
+			vec2 dir = vec2(chop_wind.x * cos(turn) - chop_wind.y * sin(turn), chop_wind.x * sin(turn) + chop_wind.y * cos(turn));
+			float k = TAU / chop_lengths_m[i];
+			chop += dir * cos(dot(dir, world_coordinates.xz) * k - sqrt(9.8 * k) * chop_t + twist * (0.5 + float(i) * 0.3)) / float(i + 2);
+		}
+		chop *= chop_strength * chop_near * mix(0.7, 1.3, sea_whitecaps);
+		NORMAL = normalize(NORMAL - (VIEW_MATRIX * vec4(chop.x, 0.0, chop.y, 0.0)).xyz);
+	}
 
 	// Calculate distance from the camera to the water
 #if defined(DISTANCE_FADE) || defined(FOAM_FADE) || defined (SHORE_FADE) || defined(DEPTH_FOG_FADE)
@@ -417,6 +746,11 @@ void fragment() {
 	METALLIC = metallic;
 	SPECULAR = specular;
 	ROUGHNESS = roughness;
+	// Fase 298: menos reflexo do céu de longe
+	SPECULAR *= mix(1.0, far_sea_specular, smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX)));
+	// Fase 330: com o sol na frente da câmera, o reflexo dele nas ondas lisas de longe virava manchas brancas: o mar de longe
+	// fica mais áspero (o reflexo se espalha num brilho largo e fraco)
+	ROUGHNESS = mix(ROUGHNESS, far_sea_roughness, smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX)));
 	
 	vec4 albedo_tex;
 #ifdef WORLD_TRIPLANAR
@@ -470,20 +804,47 @@ void fragment() {
 	vec3 screen_color = textureLod(screen_texture, screen_uv, screen_lod).rgb;
 #endif
 
+	// Society (Fase 280): 0 no mar das temperadas, 1 no das tropicais (sem ilha tropical, reef_min_x fica em 1e9)
+	float tropic = reef_min_x > 1e8 ? 0.0 : smoothstep(reef_min_x - tropic_blend_m * 0.5, reef_min_x + tropic_blend_m * 0.5, world_coordinates.x);
+	// Society (Fase 282): a cor da água sai pela EMISSION (a refração do Ocean), que não recebe a luz da cena: de noite o fundo
+	// e a plataforma ficavam acesos. As cores postas (fundo, raso, plataforma, recife) escurecem para o azul de lua night_water
+	// pelo night_light (o mesmo das janelas); a tela lida por baixo já vem com a luz certa.
+	vec3 water_light = mix(vec3(1.0), night_water, night_light);
+	// Fase 299: nas temperadas, a água rasa mais clara (o fundo aparece)
+	float clear = 0.0;
 	// Blend the screen color with depth fade
 #ifdef DEPTH_FOG
-	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb, color_shallow.a);
-	vec3 deep_screen_color = mix(screen_color, color_deep.rgb, color_deep.a);
+	vec4 deep_color = mix(cold_deep, color_deep, tropic);
+	// Fase 298: o mar de longe mais escuro
+	float far_sea = smoothstep(far_sea_from_m, far_sea_to_m, length(VERTEX));
+	deep_color.rgb *= mix(1.0, far_sea_dark, far_sea);
+	clear = clear_strength * (1.0 - tropic) * (1.0 - smoothstep(clear_depth_m * 0.4, clear_depth_m, z_diff_refracted));
+	vec3 shallow_screen_color = mix(screen_color, color_shallow.rgb * water_light, color_shallow.a * (1.0 - clear));
+	vec3 deep_screen_color = mix(screen_color, deep_color.rgb * water_light, deep_color.a);
 	if (FRONT_FACING) {
 		screen_color = mix(shallow_screen_color, deep_screen_color, depth_blend_power);
 	}
 #endif
 	// Society: plataforma de areia clara junto da costa, no lugar do fundo escuro misturado com a profundidade
 	float shore_m = has_coast ? -coast_at(world_coordinates.xz) : coast_far_m;
+	// Society (Fase 283): o canal estreito (o rio, a enseada fina): nenhum ponto a channel_probe_m em volta fica a mais de
+	// channel_open_m da terra. Nele a água é escura e calma: sem as bandas, quase sem espuma, na cor river_color.
+	float channel = 0.0;
+	// só perto da terra: no mar aberto as sondas não rodam (a maior parte da água na tela)
+	if (has_coast && shore_m < channel_open_m) {
+		vec2 at_xz = world_coordinates.xz;
+		float open_m = max(max(-coast_at(at_xz + vec2(channel_probe_m, 0.0)), -coast_at(at_xz - vec2(channel_probe_m, 0.0))),
+				max(-coast_at(at_xz + vec2(0.0, channel_probe_m)), -coast_at(at_xz - vec2(0.0, channel_probe_m))));
+		channel = 1.0 - smoothstep(channel_open_m * 0.6, channel_open_m, max(open_m, shore_m));
+	}
 #if defined(REFRACTION) || defined(DEPTH_FOG)
 	if (has_coast && FRONT_FACING) {
-		float shelf = 1.0 - smoothstep(0.0, shelf_m, shore_m);
-		screen_color = mix(screen_color, color_shelf.rgb, color_shelf.a * shelf);
+		vec4 shelf_color = mix(cold_shelf, color_shelf, tropic);
+		float shelf = 1.0 - smoothstep(0.0, mix(cold_shelf_m, shelf_m, tropic), shore_m);
+		screen_color = mix(screen_color, shelf_color.rgb * water_light, shelf_color.a * shelf * (1.0 - clear));
+		// Fase 125: o recife escurece o fundo raso das ilhas tropicais
+		screen_color = mix(screen_color, reef_color.rgb * water_light, reef_color.a * reef_at(world_coordinates.xz, shore_m));
+		screen_color = mix(screen_color, river_color.rgb * water_light, river_color.a * channel);
 	}
 #endif
 
@@ -527,6 +888,45 @@ void fragment() {
 	shore_alpha = clamp(shore_alpha, 0.0, 1.0);
 	shore_alpha = foam_tex.a * shore_alpha; // disable this line when you have an all-white foam texture
 	shore_alpha = shore_fade_alpha * shore_alpha;
+	// Society (Fase 281): só colada na linha d'água (até shore_line_m dela). Vista de cima e de lado, a diferença de
+	// profundidade fica pequena na praia rasa inteira, e a espuma virava uma faixa branca de ~20 m.
+	if (has_coast) {
+		float from_line = -coast_at(world_coordinates.xz);
+		shore_alpha *= 1.0 - smoothstep(shore_line_m * 0.4, shore_line_m, from_line);
+		// Fase 283: no rio, nada (a espuma da beira fica só no fio da linha d'água, abaixo)
+		shore_alpha *= 1.0 - channel;
+		// Fase 293: o anel fino de espuma em volta das pedras na água (os rochedos, as rochas da falésia, as pedras do rio), que o
+		// corte da Fase 281 tirava longe da linha d'água: só onde a pedra fica a menos de rock_foam_m da superfície (no raso
+		// da praia a diferença de profundidade cresce devagar e o anel não se forma), batendo com o marulho e menos no rio
+		float ring = (1.0 - smoothstep(rock_foam_m * 0.3, rock_foam_m, z_diff)) * mix(0.55, 1.0, foam_tex.a);
+		ring *= 0.75 + 0.25 * sin(TIME * float(!freeze_time) * 1.4 + world_coordinates.x * 0.37 + world_coordinates.z * 0.23);
+		ring *= smoothstep(shore_line_m * 0.4, shore_line_m, from_line) * (1.0 - channel * 0.5) * shore_fade_alpha;
+		shore_alpha = max(shore_alpha, ring);
+		// Fase 318: no rio (o canal da Fase 283), a água mexida em volta das pedras e dos blocos caídos: o mesmo anel, mais largo
+		// (river_foam_reach), sem o corte da linha d'água (no rio estreito tudo fica perto dela; só o fio da margem, river_foam_line_m,
+		// fica de fora) e borbulhando mais depressa
+		if (river_foam > 0.0 && channel > 0.0) {
+			float churn = (1.0 - smoothstep(rock_foam_m * 0.3, rock_foam_m * river_foam_reach, z_diff)) * mix(0.45, 1.0, foam_tex.a);
+			churn *= 0.7 + 0.3 * sin(TIME * float(!freeze_time) * 3.1 + world_coordinates.x * 1.3 + world_coordinates.z * 0.9);
+			churn *= smoothstep(river_foam_line_m * 0.5, river_foam_line_m, from_line) * channel * river_foam * shore_fade_alpha;
+			shore_alpha = max(shore_alpha, churn);
+		}
+		// Fase 297: os fiapos levados das pedras pelo vento
+		vec2 streak_wind = length(wind_direction) > 0.001 ? normalize(wind_direction) : vec2(1.0, 0.0);
+		vec2 streak_at = vec2(dot(world_coordinates.xz, streak_wind) - TIME * float(!freeze_time) * streak_drift_m_s,
+				dot(world_coordinates.xz, vec2(-streak_wind.y, streak_wind.x)));
+		float streak = reef_noise(streak_at / vec2(streak_length_m, streak_width_m)) * 0.65
+				+ reef_noise(streak_at / vec2(streak_length_m * 0.45, streak_width_m * 0.6) + 31.0) * 0.35;
+		// rendados ao longo do fio por um ruído miúdo (não uma fita lisa)
+		float lace = smoothstep(0.3, 0.7, reef_noise(streak_at / vec2(3.0, 0.45) + 7.0));
+		streak = smoothstep(0.62, 0.76, streak) * lace * mix(0.5, 1.0, foam_tex.a);
+		// perto da costa, do lado de baixo do vento (a terra fica para trás, contra o vento) e na água funda junto da pedra
+		streak *= smoothstep(shore_line_m * 0.6, shore_line_m * 1.5, from_line) * (1.0 - smoothstep(streak_reach_m * 0.5, streak_reach_m, from_line));
+		streak *= smoothstep(-streak_reach_m * 0.6, 0.0, coast_at(world_coordinates.xz - streak_wind * streak_reach_m * 0.5));
+		streak *= smoothstep(streak_deep_m, streak_deep_m * 2.0, z_diff);
+		streak *= streak_strength * (1.0 - channel) * shore_fade_alpha;
+		shore_alpha = max(shore_alpha, streak);
+	}
 	
 	EMISSION *= (1.0-shore_alpha); // block emission
 	ALBEDO = mix(ALBEDO, foam_tex.rgb, shore_alpha);
@@ -535,12 +935,53 @@ void fragment() {
 	// Society: bandas de espuma que andam para a praia e a espuma fina na linha d'água
 	if (has_coast) {
 		float reach = 1.0 - smoothstep(1.0, shore_foam_width_m, shore_m);
-		float band = smoothstep(0.8, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
-		float edge = 1.0 - smoothstep(0.0, 1.5, shore_m);
-		float coast_foam = clamp(band * 0.75 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
+		// Fase 281: as bandas viram linhas finas (band_sharpness) e quebradas ao longo da costa pela textura da espuma
+		float band = smoothstep(band_sharpness, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
+		band *= smoothstep(0.3, 0.6, foam_tex.a) * (1.0 - channel);
+		// Fase 295: a onda (o número da crista, que só muda no vale, quando a banda não aparece) sorteia os trechos dela
+		float wave_at = coast_phase(-shore_m, TIME * float(!freeze_time)) / TAU - 0.75;
+		float crest = floor(wave_at);
+		float pieces = reef_noise(world_coordinates.xz / band_piece_m + vec2(crest * 7.31, crest * 3.17));
+		float gap = band_gap * smoothstep(band_whole_m, shore_foam_width_m, shore_m);
+		band *= smoothstep(gap, gap + 0.18, pieces);
+		// Fase 358: a série — a crista em breaker_every, mais grossa e com menos falhas, no mesmo alcance (mais longe, ou inteira, ela virava
+		// a fita branca solta no mar que a Fase 295 tirou)
+		if (breaker_every > 0.0 && mod(crest, breaker_every) < 0.5) {
+			float breaker = smoothstep(breaker_sharpness, 1.0, sin(coast_phase(-shore_m, TIME * float(!freeze_time)))) * reach;
+			breaker *= smoothstep(0.3, 0.6, foam_tex.a) * (1.0 - channel);
+			breaker *= smoothstep(gap * breaker_gap_share, gap * breaker_gap_share + 0.18, pieces);
+			band = max(band, breaker);
+		}
+		float edge = (1.0 - smoothstep(0.0, shore_line_m * 0.5, shore_m)) * (1.0 - channel * 0.8);
+		float coast_foam = clamp(band * 0.8 + edge * 0.6, 0.0, 1.0) * mix(0.6, 1.0, foam_tex.a) * shore_fade_alpha;
 		EMISSION *= 1.0 - coast_foam;
 		ALBEDO = mix(ALBEDO, shore_foam_color, coast_foam);
+		// Fase 319: a correnteza no canal, riscos claros e finos andando ao longo do rio. O rumo é o da margem: de través da
+		// distância até a terra (o gradiente do mapa da costa), virado sempre para o mesmo lado (FLOW_SIDE) para as duas margens
+		// andarem juntas; o desenho é um ruído esticado ao longo dele, quebrado pela textura da espuma
+		if (river_flow > 0.0 && channel > 0.0) {
+			vec2 at_xz = world_coordinates.xz;
+			vec2 grad = vec2(coast_at(at_xz + vec2(river_flow_probe_m, 0.0)) - coast_at(at_xz - vec2(river_flow_probe_m, 0.0)),
+					coast_at(at_xz + vec2(0.0, river_flow_probe_m)) - coast_at(at_xz - vec2(0.0, river_flow_probe_m)));
+			if (dot(grad, grad) > 1e-6) {
+				vec2 along = normalize(vec2(-grad.y, grad.x));
+				along *= dot(along, vec2(0.83, 0.56)) < 0.0 ? -1.0 : 1.0;
+				vec2 flow_at = vec2(dot(at_xz, along) - TIME * float(!freeze_time) * river_flow_speed, dot(at_xz, vec2(-along.y, along.x)));
+				float lines = reef_noise(flow_at / vec2(river_flow_length_m, river_flow_width_m)) * 0.7
+						+ reef_noise(flow_at / vec2(river_flow_length_m * 0.4, river_flow_width_m * 0.7) + 17.0) * 0.3;
+				float flow = smoothstep(0.62, 0.78, lines) * mix(0.5, 1.0, foam_tex.a) * river_flow * channel * shore_fade_alpha;
+				EMISSION *= 1.0 - flow;
+				ALBEDO = mix(ALBEDO, shore_foam_color, flow);
+			}
+		}
 	}
+
+	// Society (Fase 155): os carneirinhos no mar aberto, rendados pela textura da espuma
+	float caps = whitecap_at(world_coordinates.xz, shore_m, TIME * float(!freeze_time));
+	caps = clamp(caps * mix(0.7, 1.0, foam_tex.a) * 1.3, 0.0, 1.0) * whitecap_strength;
+	caps *= 1.0 - smoothstep(whitecap_fade_m * 0.5, whitecap_fade_m, length(VERTEX));
+	EMISSION *= 1.0 - caps;
+	ALBEDO = mix(ALBEDO, shore_foam_color, caps);
 
 
 	// Society: poluição turva a água (depois da espuma: ela também fica suja)
@@ -551,4 +992,44 @@ void fragment() {
 	// água suja é fosca: menos reflexo do céu
 	ROUGHNESS = mix(ROUGHNESS, 0.55, murk);
 	SPECULAR = mix(SPECULAR, 0.1, murk);
+	// Society (Fase 283): o rio reflete menos o céu (a água escura do canal aparece)
+	SPECULAR = mix(SPECULAR, 0.15, channel * 0.75);
+	// Society (Fase 129): a sombra das nuvens também passa pelo mar (a cor da água sai pela EMISSION com a refração)
+	float cloud_dim = 1.0 - cloud_shadow(world_coordinates.xz, sun_direction.y) * 0.8;
+	ALBEDO *= cloud_dim;
+	EMISSION *= cloud_dim;
+	// Society (Fase 314): a sombra das falésias na água, de dia
+	float cliff_dark = 1.0 - cliff_shade * cliff_shadow(world_coordinates.xz, sun_direction) * (1.0 - night_light);
+	ALBEDO *= cliff_dark;
+	EMISSION *= cliff_dark;
+	// Society (Fase 324): no fundo da garganta as paredes tapam o céu: a água escurece e quase não reflete (também de noite: o
+	// reflexo da lua some igual). Só no canal; a conta dos 24 pontos só roda nele.
+	if (gorge_shade > 0.0 && channel > 0.0) {
+		float deep = smoothstep(gorge_closed.x, gorge_closed.y, sky_closed(world_coordinates.xz)) * channel;
+		ALBEDO *= 1.0 - gorge_shade * deep;
+		EMISSION *= 1.0 - gorge_shade * deep;
+		SPECULAR *= 1.0 - gorge_specular * deep;
+		// fosca: o reflexo do céu que sobra sai borrado, sem o brilho claro
+		ROUGHNESS = mix(ROUGHNESS, gorge_roughness, deep);
+		cliff_dark *= 1.0 - deep;
+	}
+
+	// Society (Fase 110): a cintilação do sol (no espaço da câmera: o reflexo da vista contra a direção do sol)
+	vec3 sun_view = normalize((VIEW_MATRIX * vec4(sun_direction, 0.0)).xyz);
+	float facing = max(dot(reflect(-VIEW, NORMAL), sun_view), 0.0);
+	vec2 cell = floor(world_coordinates.xz / glint_cell_m);
+	// (Fase 330: o hash sem seno do recife; com o fract(sin(...)) as coordenadas do arquipélago juntavam os pontos em bolhas, e com
+	// o sol na frente da câmera elas apareciam de longe)
+	float tick = floor(TIME * glint_rate * float(!freeze_time) + reef_hash(cell + 17.0) * 4.0);
+	float sparkle = step(1.0 - glint_share, reef_hash(cell + vec2(tick * 7.0, tick * 3.0)));
+	// um ponto redondo no meio da célula, não o quadrado dela
+	sparkle *= 1.0 - smoothstep(0.12, 0.38, length(fract(world_coordinates.xz / glint_cell_m) - 0.5));
+	float open_sea = smoothstep(glint_open_m * 0.4, glint_open_m, shore_m);
+	float far = 1.0 - smoothstep(glint_fade_m * 0.6, glint_fade_m, length(VERTEX));
+	float day = (1.0 - night_light) * smoothstep(0.0, 0.08, sun_direction.y);
+	float glint = pow(facing, glint_sharpness) * sparkle * open_sea * far * day * (1.0 - murk);
+	// sem cintilação na sombra da falésia
+	EMISSION += vec3(1.0, 0.95, 0.85) * glint * glint_strength * cliff_dark;
+	// Fase 356: a crista da onda de perto, mais clara
+	EMISSION *= 1.0 + mid_crest * wave_crest_light;
 }

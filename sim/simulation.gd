@@ -89,6 +89,11 @@ func execute(command: Command) -> CommandResult:
 		EventBus.rivals_changed.emit()
 	if result.missions_changed:
 		EventBus.missions_changed.emit()
+	if result.newspaper_changed:
+		EventBus.newspaper_changed.emit()
+	if result.rails_changed:
+		_dirty = true
+		EventBus.rails_changed.emit(result.island_id)
 	if result.specialists_changed:
 		_dirty = true
 		EventBus.specialists_changed.emit()
@@ -144,6 +149,9 @@ func tick(_tick_index: int) -> void:
 	_lap(&"estado derivado")
 	WorkforceSystem.run(world, derived)
 	_lap(&"força de trabalho")
+	# Fase 70: o trilho leva o petróleo do poço até a usina
+	if not derived.rail_feeds.is_empty():
+		RailSystem.run(world, config, derived)
 	ProductionSystem.run(config, derived, dt, world.events_state, world.risks_state)
 	_lap(&"produção")
 	var built := ShipyardSystem.run(world, data, config, derived, dt)
@@ -168,6 +176,7 @@ func tick(_tick_index: int) -> void:
 	VictorySystem.run(world, data, config, derived)
 	_lap(&"marcos, metas e vitória")
 	EconomySystem.run(world, derived, dt)
+	TourismSystem.run(world, config, derived, dt)
 	_lap(&"economia")
 	if not world.ships.is_empty() or world.any_trading_post(data):
 		ShipSystem.run(world, data, config, derived, harbors(), dt)
@@ -176,8 +185,14 @@ func tick(_tick_index: int) -> void:
 		_lap(&"combate")
 	EventSystem.run(world, data, config)
 	MissionSystem.run(world, data, config)
+	NewspaperSystem.run(world, data, config)
 	SpecialistSystem.run(world, data, config)
-	_lap(&"eventos, encomendas e especialistas")
+	# Fase 69: o navio que volta da expedição entra de novo no mapa
+	if not ExpeditionSystem.run(world, data, config).is_empty():
+		_dirty = true
+		place_new_ships()
+		EventBus.ships_changed.emit()
+	_lap(&"eventos, encomendas, jornal e especialistas")
 	if world.risks_state.enabled:
 		_remove_lost(RiskSystem.run(world, data, config, derived))
 	_lap(&"riscos")
@@ -212,6 +227,7 @@ func _remove_lost(lost: Array[int]) -> void:
 		world.shipyard_state.forget(building_id)
 		if world.specialists_state.release(building_id):
 			EventBus.specialists_changed.emit()
+		world.exhibits_state.release(building_id)
 		_dirty = true
 		EventBus.building_removed.emit(building_id)
 		EventBus.fire_ended.emit(building_id, true)

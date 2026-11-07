@@ -21,6 +21,20 @@ const GULLY_M := 0.7
 const WIDTH_PERIOD_M := 22.0
 const GULLY_PERIOD_M := 9.0
 
+## Fase 329: a beira da praia em rampa. Os cantos baixos da terra (até BEACH_MAX_M) descem e os do mar logo em frente sobem
+## até uma rampa de BEACH_SLOPE (m por m, variando BEACH_SLOPE_VARIATION pelo ruído) pela distância até a linha d'água, a
+## até BEACH_REACH cantos dela: some o degrau de 1,2 m do patamar da praia sobre a água e a borda de cima dele, que seguia a
+## escada das células. A linha d'água fica onde estava (a rampa é a mesma dos dois lados). Só onde nada da simulação está
+## (prédio, estrada, trilho, árvore ou derrubada, rio): a célula plana da praia pode receber prédio, e a TerrainView a volta à
+## altura da simulação quando ele chega.
+const BEACH_MAX_M := 2.5
+const BEACH_SLOPE := 0.3
+const BEACH_SLOPE_VARIATION := 0.25
+const BEACH_SLOPE_PERIOD_M := 26.0
+const BEACH_REACH := 4
+## O fundo do mar sobe no máximo isto (m): a rampa debaixo d'água não vira banco de areia.
+const BEACH_SEA_RAISE_M := 1.5
+
 static var _cache: Dictionary[int, PackedFloat32Array] = {}
 
 
@@ -50,6 +64,35 @@ static func offset_at(grid: IslandGrid, config: GameConfig, x_m: float, z_m: flo
 	var top := lerpf(values[z0 * width + x0], values[z0 * width + x0 + 1], gx - x0)
 	var bottom := lerpf(values[(z0 + 1) * width + x0], values[(z0 + 1) * width + x0 + 1], gx - x0)
 	return lerpf(top, bottom, gz - z0)
+
+
+## Altura desenhada num ponto (Fase 329): a da simulação mais o detalhe já calculado (zero antes da TerrainView montar a
+## ilha, nos testes sem ela). Para quem põe coisas na praia, onde a rampa baixa o chão.
+static func shown_at(grid: IslandGrid, x_m: float, z_m: float) -> float:
+	var height := grid.height_at(x_m, z_m)
+	var values := offsets_cached(grid)
+	if values.is_empty():
+		return height
+	var gx := clampf((x_m - grid.origin_m.x) / grid.cell_size, 0.0, grid.size.x)
+	var gz := clampf((z_m - grid.origin_m.y) / grid.cell_size, 0.0, grid.size.y)
+	var x0 := mini(floori(gx), grid.size.x - 1)
+	var z0 := mini(floori(gz), grid.size.y - 1)
+	var width := grid.size.x + 1
+	var top := lerpf(values[z0 * width + x0], values[z0 * width + x0 + 1], gx - x0)
+	var bottom := lerpf(values[(z0 + 1) * width + x0], values[(z0 + 1) * width + x0 + 1], gx - x0)
+	return height + lerpf(top, bottom, gz - z0)
+
+
+## Célula onde algo da simulação está (Fase 329): prédio, estrada, trilho, árvore (ou derrubada) ou rio. A rampa da praia
+## não mexe nos cantos dela.
+static func holds_something(grid: IslandGrid, cell: Vector2i) -> bool:
+	var index := grid.index(cell)
+	if grid.ground[index] == IslandGrid.Ground.RIVER or grid.trees[index] > 0 or grid.occupancy[index] != 0 \
+			or grid.roads[index] != IslandGrid.Road.NONE:
+		return true
+	if not grid.rails.is_empty() and grid.rails[index] != 0:
+		return true
+	return not grid.cleared_trees.is_empty() and grid.cleared_trees[index] == 1
 
 
 ## Célula onde algo da simulação está ou pode receber prédio: fora da terra, com árvore (ou derrubada), com estrada ou
@@ -143,7 +186,89 @@ static func _compute(grid: IslandGrid, config: GameConfig) -> PackedFloat32Array
 			var wz := grid.origin_m.y + y * grid.cell_size
 			var ridged := 1.0 - absf(gully.get_noise_2d(wx, wz))
 			result[i] = strength * (wide.get_noise_2d(wx, wz) * WIDTH_M - pow(ridged, 3.0) * GULLY_M)
+	_add_beach(grid, result, seed_value)
 	return result
+
+
+## Fase 329: a rampa da beira da praia (ver BEACH_MAX_M) somada nos cantos que o detalhe das encostas não mexeu.
+static func _add_beach(grid: IslandGrid, result: PackedFloat32Array, seed_value: int) -> void:
+	var width := grid.size.x + 1
+	var rows := grid.size.y + 1
+	var heights := grid.corner_heights
+	# os pontos da linha d'água: onde a altura cruza o zero em cada lado de canto a canto, com o mar de verdade (o rio fica
+	# de fora) e a altura da terra daquele lado (a falésia não ganha rampa nem embaixo d'água)
+	var points := PackedVector2Array()
+	var lands := PackedFloat32Array()
+	for y: int in rows:
+		var row := y * width
+		for x: int in width:
+			var h := heights[row + x]
+			var below := h < 0.0
+			# o lado para +x e o para +y, um a um (a ilha inteira passa aqui: nada de montar array por canto)
+			if x + 1 < width:
+				var other := heights[row + x + 1]
+				if below != (other < 0.0) and (_touches_sea(grid, x, y) if below else _touches_sea(grid, x + 1, y)):
+					points.append(Vector2(x + h / (h - other), y))
+					lands.append(maxf(h, other))
+			if y + 1 < rows:
+				var other := heights[row + width + x]
+				if below != (other < 0.0) and (_touches_sea(grid, x, y) if below else _touches_sea(grid, x, y + 1)):
+					points.append(Vector2(x, y + h / (h - other)))
+					lands.append(maxf(h, other))
+	if points.is_empty():
+		return
+	var best := PackedFloat32Array()
+	best.resize(width * rows)
+	best.fill(INF)
+	var best_land := PackedFloat32Array()
+	best_land.resize(width * rows)
+	for p: int in points.size():
+		var point := points[p]
+		for y: int in range(maxi(0, ceili(point.y) - BEACH_REACH), mini(rows, floori(point.y) + BEACH_REACH + 1)):
+			for x: int in range(maxi(0, ceili(point.x) - BEACH_REACH), mini(width, floori(point.x) + BEACH_REACH + 1)):
+				var d := point.distance_to(Vector2(x, y))
+				var i := y * width + x
+				if d < best[i]:
+					best[i] = d
+					best_land[i] = lands[p]
+	var slope_noise := FastNoiseLite.new()
+	slope_noise.seed = seed_value + 2
+	slope_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	slope_noise.frequency = 1.0 / BEACH_SLOPE_PERIOD_M
+	for i: int in best.size():
+		if best[i] > BEACH_REACH:
+			continue
+		if result[i] != 0.0 or best_land[i] > BEACH_MAX_M:
+			continue
+		var x := i % width
+		var y := i / width
+		if _corner_holds_something(grid, x, y):
+			continue
+		var h := heights[i]
+		var wx := grid.origin_m.x + x * grid.cell_size
+		var wz := grid.origin_m.y + y * grid.cell_size
+		var slope := BEACH_SLOPE * (1.0 + slope_noise.get_noise_2d(wx, wz) * BEACH_SLOPE_VARIATION)
+		var ramp := best[i] * grid.cell_size * slope
+		if h > 0.0 and h <= BEACH_MAX_M:
+			result[i] = minf(h, ramp) - h
+		elif h < 0.0:
+			result[i] = minf(maxf(h, -ramp) - h, BEACH_SEA_RAISE_M)
+
+
+## O canto (x, y) toca uma célula de mar.
+static func _touches_sea(grid: IslandGrid, x: int, y: int) -> bool:
+	for cell: Vector2i in [Vector2i(x - 1, y - 1), Vector2i(x, y - 1), Vector2i(x - 1, y), Vector2i(x, y)]:
+		if grid.in_bounds(cell) and grid.ground[grid.index(cell)] == IslandGrid.Ground.SEA:
+			return true
+	return false
+
+
+## Alguma das células que tocam o canto (x, y) tem algo da simulação (holds_something).
+static func _corner_holds_something(grid: IslandGrid, x: int, y: int) -> bool:
+	for cell: Vector2i in [Vector2i(x - 1, y - 1), Vector2i(x, y - 1), Vector2i(x - 1, y), Vector2i(x, y)]:
+		if grid.in_bounds(cell) and holds_something(grid, cell):
+			return true
+	return false
 
 
 ## As 4 células que tocam o canto (x, y) estão livres.

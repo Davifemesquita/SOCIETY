@@ -37,8 +37,9 @@ const DAY_SECONDS := 60.0
 const DAY_DISTANCES: Array[float] = [40.0, 120.0, 300.0]
 const SLOT := "benchmark"
 const RESULT_PATH := "user://benchmark.md"
-## Versão do JSON dos quadros: mudou o formato, some 1.
-const FRAMES_FORMAT := 1
+## Versão do JSON dos quadros: mudou o formato, some 1. A 2 (Fase 91) acrescenta, por quadro, a hora do jogo (hour) e as
+## pipelines compiladas (pipelines_frame).
+const FRAMES_FORMAT := 2
 const SEED := 1840
 
 var _lines: PackedStringArray = []
@@ -46,6 +47,8 @@ var _lines: PackedStringArray = []
 var _frames_doc: Dictionary = {}
 ## Aberto pelo executável (-- --benchmark): mostra o resultado em vez de fechar.
 var _from_game: bool = false
+## Fase 92: ilhas do arquipélago sem lugar de entreposto (ficam sem colônia e sem rota no benchmark).
+var _islands_without_post: int = 0
 
 
 func _ready() -> void:
@@ -82,7 +85,19 @@ func _run() -> void:
 	if at >= 0 and at + 1 < args.size() and args[at + 1].is_valid_int():
 		level = args[at + 1].to_int()
 	Settings.set_graphics_preset(level)
+	# mede sem limite de quadros (o automático, pelo monitor, prenderia o FPS na taxa dele); `-- --limite N` mede com um
+	# (N = -1: o automático), para ver o ritmo dos quadros como o jogador vê
+	var limit_at := args.find("--limite")
+	Settings.max_fps = args[limit_at + 1].to_int() if limit_at >= 0 and limit_at + 1 < args.size() else 0
+	# Fase 92: `-- --sem-vsync` mede com o VSync desligado (só nesta execução: nada vai para as preferências)
+	if "--sem-vsync" in args:
+		Settings.vsync = false
 	Settings.apply()
+	_supersample()
+	if "--4k" in args:
+		_report("resolução do 3D", "%s (200%% da janela: os pixels do 4K; a interface na resolução da janela)" % [
+				DisplayServer.window_get_size() * 2])
+	_report("limite de quadros", "%d FPS (%s)" % [Settings.effective_max_fps(), "escolhido" if limit_at >= 0 else "sem limite"])
 	_report("nível gráfico", "%s (nuvens volumétricas %s)" % [tr(Settings.preset().name_key),
 			"ligadas" if Settings.preset().clouds and not CloudsAdapter.software_renderer() else "desligadas"])
 	_report("placa e driver", "%s · %s · %s · VSync %s" % [RenderingServer.get_video_adapter_name(),
@@ -136,8 +151,9 @@ func _run() -> void:
 	var fleet_started := Time.get_ticks_usec()
 	var routes := _fleet(sim)
 	var on_routes := sim.world.player_ships().filter(func(ship: Ship) -> bool: return ship.route_id != 0).size()
-	_report("frota", "%d navios em %d rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: %.0f ms" % [
-			on_routes, routes, (Time.get_ticks_usec() - fleet_started) / 1000.0])
+	_report("frota", "%d navios em %d rotas, o inicial e o do comerciante; entrepostos nas colônias, carta náutica e navios: %.0f ms%s" % [
+			on_routes, routes, (Time.get_ticks_usec() - fleet_started) / 1000.0,
+			"; %d ilhas sem lugar de entreposto" % _islands_without_post if _islands_without_post > 0 else ""])
 	for index: int in houses.size():
 		var house := sim.world.building(houses[index])
 		house.tier = &"peasants" if index < PEASANT_HOUSES else &"workers"
@@ -311,6 +327,7 @@ func _paved_city(game: GameScreen, config: GameConfig) -> void:
 func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	Settings.set_graphics_preset(level)
 	Settings.apply()
+	_supersample()
 	var preset := Settings.preset()
 	var viewport := get_viewport().get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(viewport, true)
@@ -325,6 +342,10 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	var cpu := PackedFloat64Array()
 	var gpu := PackedFloat64Array()
 	var ticks := PackedFloat64Array()
+	# Fase 91: por quadro, a hora do jogo e quantas pipelines o motor compilou nele (as travadas da noite eram isso)
+	var hours := PackedFloat64Array()
+	var compiled := PackedInt32Array()
+	var last_compiled := _pipelines_total()
 	GameClock.set_speed(0)
 	var start := Time.get_ticks_usec()
 	var last := start
@@ -349,6 +370,10 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 			tick_usec += sim.profile[step]
 		ticks.append((tick_usec - last_tick_usec) / 1000.0)
 		last_tick_usec = tick_usec
+		hours.append(GameClock.clock.hour())
+		var total := _pipelines_total()
+		compiled.append(total - last_compiled)
+		last_compiled = total
 		last = now
 		progress = (now - start) / 1000000.0 / DAY_SECONDS
 	GameClock.set_speed(TickClock.PAUSED)
@@ -376,8 +401,26 @@ func _day_cycle(game: GameScreen, config: GameConfig, level: int) -> void:
 	runs.append({"level": String(preset.id), "render_scale": Settings.render_scale,
 			"aa": "fsr2" if preset.uses_temporal(Settings.render_scale) else ["none", "fxaa", "smaa"][preset.screen_aa_for(Settings.render_scale)],
 			"summary": stats, "gpu_summary": gpu_stats, "tick_summary": tick_stats, "pipelines": pipelines,
-			"frames_ms": frames, "cpu_ms": cpu, "gpu_ms": gpu, "tick_ms": ticks})
+			"frames_ms": frames, "cpu_ms": cpu, "gpu_ms": gpu, "tick_ms": ticks, "hour": hours, "pipelines_frame": compiled})
 	_frames_doc["runs"] = runs
+
+
+## Fase 92: com `-- --4k`, o 3D em 200% da janela (numa janela de 1080p, os pixels do 4K: o Windows não deixa a janela
+## passar da altura da tela). Só no benchmark: o jogo prende a escala em até 100%.
+func _supersample() -> void:
+	if "--4k" not in OS.get_cmdline_user_args():
+		return
+	var root := get_tree().root
+	root.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	root.scaling_3d_scale = 2.0
+
+
+## Fase 91: todas as compilações de pipeline somadas (para contar por quadro).
+static func _pipelines_total() -> int:
+	var total := 0
+	for value: int in _pipelines().values():
+		total += value
+	return total
 
 
 ## Os contadores de compilação de pipeline do motor (acumulados desde o início do jogo).
@@ -396,7 +439,10 @@ func _fleet(sim: Simulation) -> int:
 	sim.ignore_terrain = false
 	var routes: Array[int] = []
 	for island_id: int in range(1, sim.world.islands.size()):
-		TradeDemo.post(sim, island_id)
+		# ilha sem lugar de entreposto fica sem rota (Fase 92: antes a rota era criada e o navio pulava a parada)
+		if TradeDemo.post(sim, island_id) == 0:
+			_islands_without_post += 1
+			continue
 		var route_id := sim.execute(CreateRouteCommand.new()).created_id
 		var out := TradeRoute.Stop.new(Simulation.MAIN_ISLAND)
 		out.orders.append(TradeRoute.Order.new(&"planks", true, 20))

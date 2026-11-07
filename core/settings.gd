@@ -6,7 +6,12 @@ extends Node
 const SETTINGS_PATH := "user://settings.cfg"
 ## Barramentos de áudio (seção 11), criados ao iniciar se o projeto não os tiver.
 const AUDIO_BUSES: Array[StringName] = [&"Master", &"Music", &"Ambience", &"Effects", &"Interface"]
-const FPS_LIMITS: Array[int] = [0, 30, 60, 120, 144]
+## Limites de quadros oferecidos (0 = sem limite). FPS_AUTO: o ritmo que divide a taxa do monitor (com VSync, um quadro
+## que perde a batida fica uma batida a mais na tela e o movimento treme): o maior divisor dela que fica até AUTO_FPS_MAX.
+const FPS_AUTO := -1
+## O teto do automático: o que o nível alto sustenta com folga (GPU ~11,5 ms na RTX 5060); 180 Hz → 60, 144 → 72.
+const AUTO_FPS_MAX := 75
+const FPS_LIMITS: Array[int] = [0, FPS_AUTO, 30, 50, 60, 100, 120, 144]
 ## Intervalos do salvamento automático oferecidos (minutos de jogo; 0 = desligado).
 const AUTOSAVE_CHOICES: Array[float] = [0.0, 5.0, 10.0, 15.0, 30.0]
 const CAMERA_SPEED_RANGE := Vector2(0.5, 2.0)
@@ -26,10 +31,12 @@ var graphics_preset: int = 2
 ## Salvamento automático a cada tantos minutos de jogo (0 = desligado) e o conselheiro falando.
 var autosave_minutes: float = 10.0
 var advisor: bool = true
+## Fase 94: no grand finale (às 23h nas noites de festa), a câmera vai sozinha para a praça.
+var finale_camera: bool = false
 ## Velocidade do pan da câmera (multiplica GameConfig.camera_pan_speed).
 var camera_speed: float = 1.0
-## Limite de quadros por segundo (0 = sem limite).
-var max_fps: int = 0
+## Limite de quadros por segundo (0 = sem limite, FPS_AUTO = pelo monitor).
+var max_fps: int = FPS_AUTO
 ## Fase 37: gradação de cor de época (LUT) e o AgX ajustado. Desligada por padrão, para comparar com o visual de antes.
 var period_look: bool = false
 ## Volume de cada barramento, de 0 a 1.
@@ -129,7 +136,7 @@ func apply() -> void:
 		if index >= 0:
 			AudioServer.set_bus_volume_db(index, linear_to_db(maxf(volume(bus), 0.0001)))
 			AudioServer.set_bus_mute(index, volume(bus) <= 0.0)
-	Engine.max_fps = max_fps
+	Engine.max_fps = effective_max_fps()
 	_apply_font()
 	if is_inside_tree():
 		var root := get_tree().root
@@ -241,6 +248,7 @@ func save_to(path: String) -> Error:
 	file.set_value("graphics", "period_look", period_look)
 	file.set_value("game", "autosave_minutes", autosave_minutes)
 	file.set_value("game", "advisor", advisor)
+	file.set_value("game", "finale_camera", finale_camera)
 	file.set_value("controls", "camera_speed", camera_speed)
 	for bus: StringName in volumes:
 		file.set_value("audio", String(bus), volumes[bus])
@@ -270,6 +278,7 @@ func load_from(path: String) -> void:
 	var raw_autosave := _number(file.get_value("game", "autosave_minutes", _config.autosave_interval_minutes), _config.autosave_interval_minutes)
 	autosave_minutes = raw_autosave if AUTOSAVE_CHOICES.has(raw_autosave) else _config.autosave_interval_minutes
 	advisor = _flag(file.get_value("game", "advisor", true), true)
+	finale_camera = _flag(file.get_value("game", "finale_camera", false), false)
 	fullscreen = _flag(file.get_value("graphics", "fullscreen", false), false)
 	vsync = _flag(file.get_value("graphics", "vsync", true), true)
 	period_look = _flag(file.get_value("graphics", "period_look", false), false)
@@ -277,8 +286,8 @@ func load_from(path: String) -> void:
 	graphics_preset = raw_preset if raw_preset is int and raw_preset >= 0 and raw_preset < _config.graphics_presets.size() \
 			else _config.default_graphics_preset
 	set_render_scale(_number(file.get_value("graphics", "render_scale", preset().render_scale), preset().render_scale))
-	var raw_fps: Variant = file.get_value("graphics", "max_fps", 0)
-	max_fps = raw_fps if raw_fps is int and FPS_LIMITS.has(raw_fps) else 0
+	var raw_fps: Variant = file.get_value("graphics", "max_fps", FPS_AUTO)
+	max_fps = raw_fps if raw_fps is int and FPS_LIMITS.has(raw_fps) else FPS_AUTO
 	volumes.clear()
 	for bus: StringName in AUDIO_BUSES:
 		set_volume(bus, _number(file.get_value("audio", String(bus), 1.0), 1.0))
@@ -312,3 +321,20 @@ static func ensure_audio_buses() -> void:
 			var index := AudioServer.bus_count - 1
 			AudioServer.set_bus_name(index, bus)
 			AudioServer.set_bus_send(index, &"Master")
+
+
+## O limite que vale: o escolhido, ou o automático pela taxa do monitor (0 se ela é desconhecida, sem tela).
+func effective_max_fps() -> int:
+	if max_fps != FPS_AUTO:
+		return max_fps
+	return auto_fps(DisplayServer.screen_get_refresh_rate())
+
+
+## O ritmo automático para uma taxa de monitor (Hz): a taxa dividida pelo menor inteiro que a deixa até AUTO_FPS_MAX
+## (180 → 60, 165 → 55, 144 → 72, 120 → 60, 100 → 50, 75 → 75, 60 → 60); cada quadro fica o mesmo número de batidas.
+static func auto_fps(refresh_hz: float) -> int:
+	if refresh_hz <= 0.0:
+		return 0
+	var hz := roundi(refresh_hz)
+	var step := ceili(float(hz) / AUTO_FPS_MAX)
+	return roundi(float(hz) / step)

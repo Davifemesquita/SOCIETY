@@ -22,6 +22,110 @@ const FOUNDATION_UP_M := 0.15
 ## Beiral do telhado e espessura das águas.
 const ROOF_OVERHANG_M := 0.35
 const ROOF_THICKNESS_M := 0.18
+## Fase 95: a capa redonda da cumeeira e dos espigões (raio, faces da meia volta) e o beiral redondo (raio, faces).
+const RIDGE_CAP_M := 0.14
+const RIDGE_SIDES := 6
+const EAVE_ROLL_M := 0.11
+const EAVE_SIDES := 6
+## Fase 96: o telhado da ala em fração do do corpo, e a classe a partir da qual a casa pode ter ala (os camponeses ficam
+## na casinha de um volume, com o quintal).
+const WING_ROOF := 0.7
+const WING_ROOF_FLOOR := 0.8
+const WING_SHARE := 2
+## Fase 97: a cúpula de cobre (os serviços de DOMED, no telhado de quatro águas): raio em fração do lado menor (até
+## DOME_MAX_M), o tambor de pedra (DRUM_M acima da cumeeira), a subida da cúpula em fração do raio e o lanternim; e o
+## torreão dos investidores no canto da frente de +X, em balanço do primeiro andar: raio, quanto passa do beiral, o
+## telhado cônico e o cone de pedra que o segura por baixo.
+const DOMED: Array[StringName] = [&"theater", &"university", &"town_hall", &"museum"]
+const DOME_SHARE := 0.2
+const DOME_MAX_M := 3.2
+const DRUM_M := 1.3
+const DOME_RISE := 1.1
+const DOME_SIDES := 16
+const TURRET_R := 0.85
+const TURRET_ABOVE := 0.75
+const TURRET_ROOF_M := 2.4
+const TURRET_CORBEL_M := 1.0
+const TURRET_SIDES := 12
+## A cor do cobre velho (célula (2, 1) da paleta, que o kit não usa).
+const UV_COPPER := Vector2(2.5 / 8.0, 1.5 / 4.0)
+## Fase 98: a abóbada (os de VAULTED, no lugar das duas águas): arco abatido sobre o lado curto em VAULT_SEGMENTS faixas
+## lisas, VAULT_RISE da altura do telhado de duas águas; e os tonéis do pátio (Silhouette.VATS): VATS_PER_SIDE de cada lado
+## do caminho da porta, de VAT_MAX_M de altura no máximo, com o bojo de VAT_BULGE e os arcos de ferro.
+const VAULTED: Array[StringName] = [&"market", &"weavery", &"sewing_machine_factory", &"cannery", &"soap_factory",
+		&"window_works", &"coffee_roaster"]
+const VAULT_SEGMENTS := 10
+const VAULT_RISE := 0.8
+const VATS_PER_SIDE := 2
+const VAT_MAX_M := 2.4
+const VAT_BULGE := 1.08
+const VAT_SIDES := 16
+## Fase 99: a cabeça em arco das janelas (ARCH_SEGMENTS trechos, a arquivolta de ARCH_BAND_M saltando ARCH_PROUD_M da
+## parede e o tímpano de vidro) e a arcada do mercado (na fileira do pátio junto do corpo: pilares de ARCADE_PIER_M, o
+## arco nascendo a ARCADE_SPRING_M, a espessura e a água que sobe ARCADE_ROOF_RISE_M até a parede).
+const ARCH_SEGMENTS := 8
+const ARCH_BAND_M := 0.11
+const ARCH_PROUD_M := 0.06
+const ARCADE_PIER_M := 0.34
+const ARCADE_SPRING_M := 1.9
+const ARCADE_THICK_M := 0.32
+const ARCADE_ROOF_RISE_M := 0.6
+## Fase 101: o toldo listrado sobre a porta e as janelas do térreo da frente — as lojas de AWNING_SHOPS e uma casa em
+## AWNING_HOUSE_SHARE dos artesãos e engenheiros; preso a AWNING_AT do andar, saindo AWNING_OUT_M e caindo AWNING_DROP_M,
+## em AWNING_STRIPES listras alternando a cor e o creme, com a sanefa de AWNING_VALANCE_M na ponta.
+const AWNING_SHOPS: Array[StringName] = [&"bakery", &"butcher", &"tavern"]
+const AWNING_HOUSE_SHARE := 3
+const AWNING_AT := 0.86
+const AWNING_OUT_M := 0.75
+const AWNING_DROP_M := 0.42
+const AWNING_STRIPES := 7
+const AWNING_VALANCE_M := 0.16
+const UV_AWNING_COLORS: Array[Vector2] = [Vector2(3.5 / 8.0, 1.5 / 4.0), Vector2(4.5 / 8.0, 1.5 / 4.0),
+		Vector2(5.5 / 8.0, 1.5 / 4.0)]
+const UV_CANVAS := Vector2(6.5 / 8.0, 1.5 / 4.0)
+## Fase 102: o andar saliente das casas dos operários e artesãos (telhado com a cumeeira ao longo da frente, dois andares
+## ou mais): os andares de cima da frente avançam JETTY_M (menos que o menor beiral), sobre a viga do balanço e as
+## mãos-francesas de JETTY_BRACKET_M, com o enxaimel (frechal, baldrame, esteios e escoras de TIMBER_M) na frente.
+const JETTY_M := 0.28
+const JETTY_BRACKET_M := 0.6
+const TIMBER_M := 0.1
+## Fase 103: as claraboias das fábricas de lote de SKYLIGHT_MIN_CELLS ou mais (sem silhueta, telhado de duas águas ou
+## abóbada): uma fileira de vidraças em cada água, no meio da descida (SKYLIGHT_AT da meia largura), de SKYLIGHT_PANE_M
+## de lado a cada SKYLIGHT_STEP_M ao longo da cumeeira, com o caixilho de ferro; acendem à noite com a fábrica.
+const SKYLIGHT_MIN_CELLS := 4
+const SKYLIGHT_AT := 0.45
+const SKYLIGHT_PANE_M := Vector2(1.1, 0.9)
+const SKYLIGHT_STEP_M := 1.6
+const SKYLIGHT_LIFT_M := 0.05
+## Fase 104: a chaminé de tijolo das casas (no lugar do bloco do kit): fuste de CHIMNEY_SIDE_M de lado até CHIMNEY_ABOVE_M
+## acima da cumeeira, o capitel e dois potes de CHIMNEY_POT_M; o tijolo é a célula (7, 1) da paleta, desenhado no shader.
+const CHIMNEY_SIDE_M := 0.6
+const CHIMNEY_ABOVE_M := 0.6
+const CHIMNEY_POT_M := 0.3
+const UV_BRICK := Vector2(7.5 / 8.0, 1.5 / 4.0)
+## Fase 104: o lampião de parede ao lado da porta, a LANTERN_AT do andar e LANTERN_OUT_M da parede, com a vidraça de
+## LANTERN_PANE_M (que acende à noite como as janelas); e a grade de ferro do pátio do museu, de GALLERY_FENCE_M.
+const LANTERN_AT := 0.72
+const LANTERN_OUT_M := 0.32
+const LANTERN_PANE_M := Vector2(0.18, 0.24)
+const GALLERY_FENCE_M := 1.2
+## Fase 114: o gradil baixo de ferro na frente das casas dos engenheiros, na faixa entre a parede e a divisa do lote, com
+## o vão da porta: FRONT_RAIL_M de alto, os pilaretes nas pontas e no vão, as lanças no alto dos balaústres.
+const FRONT_RAIL_M := 0.85
+## Fase 143: a cerca de estacas dos operários: a altura e o passo das estacas.
+const PICKET_M := 0.75
+const PICKET_STEP_M := 0.15
+## Fase 151: as lojas com a placa pendurada e a figura de cada uma: 1 pão (bronze), 2 presunto (vermelho), 3 caneca (bronze),
+## 4 anel (bronze), 5 relógio (pedra clara e ferro), 6 óculos (ferro), 7 xícara (azul), 8 charuto (madeira e vermelho), sobre
+## o painel creme.
+const SHOP_SIGNS: Dictionary[StringName, int] = {&"bakery": 1, &"butcher": 2, &"tavern": 3, &"goldsmith": 4,
+		&"clockmaker": 5, &"optician": 6, &"coffee_roaster": 7, &"cigar_factory": 8}
+## A placa: a tábua (ao longo da normal, de alto, de grosso), quanto sai da parede, a folga sob o braço e a altura do braço
+## (acima do toldo, ou no térreo sem ele).
+const SIGN_BOARD_M := Vector3(0.05, 0.46, 0.62)
+const SIGN_OUT_M := 0.18
+const SIGN_GAP_M := 0.08
+const SIGN_ABOVE_AWNING_M := 0.65
 ## Telhado da casa em fração da altura (como a caixa de antes: fica acima das paredes).
 const HOUSE_ROOF_FRACTION := 0.35
 ## Telhado dos outros em fração do lado curto.
@@ -39,6 +143,8 @@ const WINDOW_GAP_M := 0.06
 ## shader usa a mesma divisão: parede = (1, 2) e (5, 3); telhado = (0, 3) e (1, 3).
 const UV_WALL := Vector2(1.25 / 8.0, 2.5 / 4.0)
 const UV_ROOF := Vector2(0.25 / 8.0, 3.5 / 4.0)
+## Fase 95: a capa da cumeeira e o beiral (célula (1, 3), que o shader trata como telhado: textura e tom, sem as telhas).
+const UV_ROOF_TRIM := Vector2(1.5 / 8.0, 3.5 / 4.0)
 const UV_STONE := Vector2(7.5 / 8.0, 3.5 / 4.0)
 ## Fase 18: madeiramento (o shader escurece), ferro (cinza-chumbo da paleta) e bronze (o marrom-cobre).
 const UV_TIMBER := Vector2(4.5 / 8.0, 3.5 / 4.0)
@@ -63,7 +169,6 @@ const PIECES := {
 		&"door": "wall-wood-door", &"arch": "wall-wood-doorway-round",
 	},
 }
-const CHIMNEY := "chimney"
 ## Silhueta por cadeia (Fase 13, BuildingDef.silhouette): as peças do mesmo kit.
 const WINDMILL := "windmill"
 const WATERWHEEL := "watermill"
@@ -84,6 +189,36 @@ const PLANKS := "planks-half"
 const FENCE_M := 1.0
 const BALCONY_OUT_M := 0.8
 const FLOWER_BOX_OUT_M := 0.16
+## Fase 153: a floreira das sacadas sai tanto além da frente da sacada e fica tanto acima do piso dela (por fora do
+## guarda-corpo, logo abaixo do corrimão).
+const BALCONY_FLOWERS_OUT_M := 0.16
+const BALCONY_FLOWERS_UP_M := 0.62
+## A célula (3, 3) da paleta: folhagem com flores no shader do kit (a sebe e as floreiras).
+const UV_FOLIAGE := Vector2(3.5 / 8.0, 3.5 / 4.0)
+## Fase 160: os cunhais — a altura de cada fiada (com a junta), o lado comprido e o curto dos blocos e quanto saltam da parede.
+## Fase 177: os postigos — as duas folhas de madeira abertas dos lados de cada janela das casas de SHUTTER_TRIMS (camponeses,
+## operários e artesãos), cada uma da metade do vão, SHUTTER_GAP_M além dele (passa do caixilho do kit), na altura do vão; a
+## célula (1, 1) da paleta, que o kit não usa, pintada pelo shader numa das cores de postigo pelo prédio, com as réguas.
+const UV_SHUTTER := Vector2(1.5 / 8.0, 1.5 / 4.0)
+const SHUTTER_TRIMS: Array[int] = [TierDef.HouseTrim.YARD, TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES]
+const SHUTTER_GAP_M := 0.03
+const SHUTTER_OUT_M := 0.05
+const SHUTTER_THICK_M := 0.035
+## Fase 217: as cortinas — nas janelas do corpo das casas, os dois panos presos dos lados do vidro (franzidos embaixo, na
+## abraçadeira) e a sanefa em cima, logo à frente do vidro (CURTAIN_X, entre ele e o caixilho); cada pano cobre de
+## CURTAIN_MIN a CURTAIN_MAX do vão, pela janela. A célula UV_CURTAIN da paleta, que o kit não usa, pintada pelo shader numa
+## cor de pano por casa, com as pregas.
+const UV_CURTAIN := Vector2(0.5 / 8.0, 0.5 / 4.0)
+const CURTAIN_X := 0.447
+const CURTAIN_MIN := 0.3
+const CURTAIN_MAX := 0.42
+const CURTAIN_TIE := 0.45
+const VALANCE := 0.2
+const QUOIN_COURSE_M := 0.36
+const QUOIN_JOINT_M := 0.035
+const QUOIN_LONG_M := 0.52
+const QUOIN_SHORT_M := 0.28
+const QUOIN_OUT_M := 0.05
 const PORTICO_HEIGHT := 0.95
 ## Ornamento das casas (Fase 18), dos artesãos para cima: cornija no alto das paredes, verga de pedra
 ## sobre cada janela e, nos engenheiros e investidores, a faixa entre os andares; o frontão no alto da
@@ -146,6 +281,27 @@ const HOIST_LOAD_M := 1.5
 const WINDMILL_SPEED := 0.7
 const WATERWHEEL_SPEED := 0.5
 const SHEAVE_SPEED := 1.6
+## Cavalo-de-pau do poço de petróleo (Fase 73): o pátio da frente (PUMPJACK_ROWS fileiras) com o cavalete, a caixa de
+## engrenagens com os contrapesos e a cabeça do poço; o galpão baixo atrás. O balancim balança (não gira) em torno do
+## eixo no alto do cavalete: até PUMPJACK_ROCK rad para cada lado, PUMPJACK_SPEED rad de fase por segundo de jogo.
+const PUMPJACK_ROWS := 2
+const PUMPJACK_SHED_M := 3.0
+const PUMPJACK_PIVOT_M := 2.4
+const PUMPJACK_ROCK := 0.28
+const PUMPJACK_SPEED := 1.3
+## Zoológico e museu (Fase 74): o galpão do zoológico fica nas MENAGERIE_HALL_ROWS fileiras de trás e o pátio da frente
+## tem os cercados (3 por fileira de cercados, cerca de MENAGERIE_FENCE_M); o museu tem uma fileira de pátio com os
+## pedestais (GALLERY_PEDESTAL_M de altura) dos dois lados do caminho da porta. Uma vaga de peça por cercado ou pedestal.
+## Tanques da usina a petróleo (Fase 78): o pátio da frente (TANKFARM_ROWS fileiras) com dois tanques verticais de
+## TANK_SIDES faces (no máximo TANK_MAX_M de altura), dentro de um dique baixo de TANKFARM_BUND_M, com escada e tubo até o
+## galpão; o galpão nas fileiras de trás.
+const TANKFARM_ROWS := 2
+const TANKFARM_BUND_M := 0.45
+const TANK_SIDES := 12
+const TANK_MAX_M := 5.5
+const MENAGERIE_HALL_ROWS := 2
+const MENAGERIE_FENCE_M := 0.9
+const GALLERY_PEDESTAL_M := 0.9
 ## Campanário da igreja (Fase 18): torre quadrada no canto da frente, saindo um pouco das paredes, que
 ## passa do beiral, sineira aberta com o sino e a agulha com a cruz.
 const BELFRY_SIDE_M := 2.4
@@ -172,6 +328,9 @@ const VERANDA_RAIL_STEP_M := 0.24
 const VERANDA_EAVE := 0.95
 const VERANDA_WALL := 1.15
 const VERANDA_OVERHANG_M := 0.25
+## Fase 126: as casas das ilhas tropicais com estes detalhes (operários e artesãos, dois andares ou mais) ganham a varanda
+## na fileira da frente, no lugar do enxaimel saliente e do toldo.
+const PORCH_TRIMS: Array[int] = [TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES]
 ## Plataforma de carga do armazém (Fase 23): a fileira da frente vira plataforma na altura da caçamba da
 ## carroça, de tijolo com tampo de tábuas e defensa de madeira, com uma rampa de pedra em cada ponta. Com o
 ## nível 1 ganha alpendre em mãos-francesas de ferro e portas de carga em células alternadas; no 2 (o que
@@ -198,6 +357,17 @@ const LUCARNE_W := 0.9
 const LUCARNE_H := 0.75
 const LUCARNE_AT := 0.62
 const LUCARNE_PEAK_M := 0.32
+## Fase 124: a mansarda das casas dos investidores. A água de baixo, íngreme, sobe MANSARD_LOWER da altura do telhado do
+## beiral (MANSARD_EAVE_M para fora da parede) até o rebordo (MANSARD_INSET_M para dentro dela); a de cima, quase plana,
+## fecha em quatro águas. Na água de baixo da frente e de trás, lucarnas de DORMER_W de largura e DORMER_H de altura,
+## com a frente a DORMER_AT da água e o telhadinho DORMER_PEAK_M acima dela.
+const MANSARD_LOWER := 0.72
+const MANSARD_INSET_M := 0.75
+const MANSARD_EAVE_M := 0.25
+const DORMER_W := 0.85
+const DORMER_H := 1.2
+const DORMER_AT := 0.3
+const DORMER_PEAK_M := 0.35
 ## Vidro e caixilho nas janelas: o kit só tem o vão. O vidro fica na espessura da parede (x da peça), o caixilho em
 ## cruz logo à frente dele, MULLION_M de largura.
 const UV_GLASS := Vector2(0.5 / 8.0, 1.5 / 4.0)
@@ -246,11 +416,43 @@ class Spec:
 	var storehouse: bool = false
 	## Fase 50: a peça do kit de época para este prédio (caminho), se houver; vazio, a forma procedural.
 	var asset: String = ""
+	## Fase 96: a ala mais baixa (0 sem; -1 no lado de −X): a coluna de células da ponta perde o último andar e ganha
+	## telhado próprio, cruzado com o do corpo.
+	var wing: int = 0
+	## Fase 97: cúpula de cobre no alto do telhado (os serviços grandes) e torreão redondo no canto da frente (investidores).
+	var dome: bool = false
+	var turret: bool = false
+	## Fase 98: o telhado de duas águas vira abóbada (arco abatido sobre o lado curto).
+	var vault: bool = false
+	## Fase 99: as janelas com a cabeça em arco (os serviços de pedra e os investidores).
+	var arched: bool = false
+	## Fase 101: o toldo listrado do térreo da frente (0 sem; 1 a 3, a cor da listra).
+	var awning: int = 0
+	## Fase 102: os andares de cima da frente avançam JETTY_M sobre a rua, com o enxaimel à mostra.
+	var jetty: bool = false
+	## Fase 103: as claraboias nas águas (ou na abóbada) das fábricas grandes.
+	var skylights: bool = false
+	## Fase 104: o lampião de parede ao lado da porta (serviços e casas dos artesãos para cima, sem toldo).
+	var lantern: bool = false
+	## Fase 124: o telhado de duas águas vira mansarda (as casas dos investidores sem ala).
+	var mansard: bool = false
+	## Fase 143: a cerca de estacas caiadas na frente das casas dos operários.
+	var picket: bool = false
+	## Fase 151: a placa da loja pendurada no braço de ferro ao lado da porta (0 sem; 1.., a figura do ofício).
+	var shop_sign: int = 0
+	## Fase 153: as floreiras penduradas por fora do guarda-corpo das sacadas (engenheiros e investidores).
+	var balcony_flowers: bool = false
+	## Fase 160: os cunhais de pedra nas quinas do corpo (artesãos e engenheiros).
+	var quoins: bool = false
+	## Fase 177: os postigos abertos dos lados das janelas (camponeses, operários e artesãos).
+	var shutters: bool = false
+	## Fase 217: as cortinas nas janelas do corpo (todas as casas).
+	var curtains: bool = false
 
 	func key() -> String:
-		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d" % [cells.x, cells.y, cell_m,
+		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins), int(shutters), int(curtains)]
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -276,6 +478,22 @@ class Spec:
 		copy.side_gap_m = hall_side_gap_m
 		copy.lucarnes = lucarnes
 		copy.storehouse = storehouse
+		copy.wing = wing
+		copy.dome = dome
+		copy.turret = turret
+		copy.vault = vault
+		copy.arched = arched
+		copy.awning = awning
+		copy.jetty = jetty
+		copy.skylights = skylights
+		copy.lantern = lantern
+		copy.mansard = mansard
+		copy.picket = picket
+		copy.shop_sign = shop_sign
+		copy.balcony_flowers = balcony_flowers
+		copy.quoins = quoins
+		copy.shutters = shutters
+		copy.curtains = curtains
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -289,6 +507,76 @@ class Spec:
 
 	func floor_m() -> float:
 		return height_m / floors()
+
+	## Fase 96: a largura de uma coluna de células, a parte do corpo (sem a coluna da ala) e a da ala, cada uma no
+	## referencial dela (main_offset e wing_offset as levam ao do prédio).
+	func column_m() -> float:
+		return size_m().x / cells.x
+
+	func main_part() -> Spec:
+		var copy := hall()
+		if copy == self:
+			copy = _copy()
+		copy.cells = Vector2i(cells.x - 1, cells.y)
+		copy.wing = 0
+		return copy
+
+	func main_offset() -> Vector3:
+		# a ponta de fora do corpo fica na parede (com a largura de uma coluna o telhado ficava curto do beiral)
+		return Vector3(-wing * (size_m().x - main_part().size_m().x) * 0.5, 0.0, 0.0)
+
+	func wing_part() -> Spec:
+		var copy := _copy()
+		copy.cells = Vector2i(1, cells.y)
+		copy.wing = 0
+		copy.height_m = height_m - floor_m()
+		copy.lucarnes = 0
+		copy.chimney = false
+		copy.overhang_m = minf(overhang_m, 0.3)
+		copy.mansard = false
+		# o telhado da ala cruza o do corpo: com a cumeeira do corpo ao longo de x, a da ala corre em z
+		copy.roof = Roof.GABLE_Z if roof == Roof.GABLE_X else Roof.HIP
+		# cabe no andar que a ala tirou: a cumeeira dela fica abaixo do beiral do corpo (mais alto virava uma agulha)
+		copy.roof_m = minf(roof_m * WING_ROOF, floor_m() * WING_ROOF_FLOOR)
+		return copy
+
+	func wing_offset() -> Vector3:
+		return Vector3(wing * (size_m().x * 0.5 - column_m() * 0.5), 0.0, 0.0)
+
+	func _copy() -> Spec:
+		var copy := Spec.new()
+		copy.cells = cells
+		copy.cell_m = cell_m
+		copy.height_m = height_m
+		copy.walls = walls
+		copy.roof = roof
+		copy.roof_m = roof_m
+		copy.door = door
+		copy.door_index = door_index
+		copy.window_style = window_style
+		copy.sparse_windows = sparse_windows
+		copy.chimney = chimney
+		copy.silhouette = silhouette
+		copy.court_rows = court_rows
+		copy.trim = trim
+		copy.dock = dock
+		copy.level = level
+		copy.overhang_m = overhang_m
+		copy.side_gap_m = side_gap_m
+		copy.hall_side_gap_m = hall_side_gap_m
+		copy.lucarnes = lucarnes
+		copy.storehouse = storehouse
+		copy.wing = wing
+		copy.dome = dome
+		copy.turret = turret
+		copy.vault = vault
+		copy.arched = arched
+		copy.awning = awning
+		copy.jetty = jetty
+		copy.skylights = skylights
+		copy.lantern = lantern
+		copy.mansard = mansard
+		return copy
 
 
 static var _parts: Dictionary[String, Array] = {}
@@ -329,10 +617,47 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 			spec.lucarnes = 1 if spec.cells.x <= 3 else 2
 		spec.window_style = BuildingView.house_hash(record.id) / 3 % 2
 		spec.trim = tier.house_trim
+		var porch := spec.trim in PORCH_TRIMS and spec.cells.y > 2 and spec.floors() >= 2 \
+				and simulation.world.is_tropical(record.island_id, simulation.data)
 		if spec.trim == TierDef.HouseTrim.YARD and spec.cells.y > 2:
 			# a fileira da frente vira quintal cercado; a casa fica nas de trás, recuada das divisas dos lados
 			spec.court_rows = 1
 			spec.hall_side_gap_m = YARD_SIDE_GAP_M
+		elif porch:
+			# Fase 126: nas ilhas tropicais a fileira da frente vira alpendre de tábuas (a varanda da Fase 23)
+			spec.court_rows = 1
+			spec.silhouette = BuildingDef.Silhouette.VERANDA
+		elif spec.cells.x >= 3 and spec.roof != Roof.FLAT and spec.floors() >= 2 \
+				and BuildingView.house_hash(record.id) / 7 % WING_SHARE == 0:
+			# Fase 96: metade das casas de dois andares para cima ganha a ala mais baixa num lado (a chaminé fica no outro)
+			spec.wing = -1
+		# Fase 97: o torreão de canto das casas dos investidores (três andares ou mais)
+		spec.turret = spec.trim == TierDef.HouseTrim.PORTICO and spec.floors() >= 3
+		# Fase 124: a mansarda das casas dos investidores de duas águas sem ala (a ala tem o telhado cruzado)
+		spec.mansard = spec.trim == TierDef.HouseTrim.PORTICO and spec.roof != Roof.FLAT and spec.wing == 0
+		# Fase 102: o andar saliente com enxaimel dos operários e artesãos
+		spec.jetty = spec.trim in [TierDef.HouseTrim.NONE, TierDef.HouseTrim.FLOWER_BOXES] and spec.roof == Roof.GABLE_X \
+				and spec.floors() >= 2 and not porch
+		# Fase 99: as janelas em arco das casas dos investidores
+		spec.arched = spec.trim == TierDef.HouseTrim.PORTICO
+		# Fase 101: uma casa em AWNING_HOUSE_SHARE dos artesãos e engenheiros tem loja no térreo, com o toldo
+		if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES] and not porch \
+				and BuildingView.house_hash(record.id) / 11 % AWNING_HOUSE_SHARE == 0:
+			# uma cor por classe (cada forma nova custa ~18 ms; três cores triplicavam as casas com loja)
+			spec.awning = 1 if spec.trim == TierDef.HouseTrim.FLOWER_BOXES else 2
+		# Fase 104: o lampião de parede junto da porta (a casa com toldo já tem a loja)
+		spec.lantern = spec.awning == 0 and spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES,
+				TierDef.HouseTrim.PORTICO]
+		# Fase 153: as floreiras das sacadas dos engenheiros e investidores
+		spec.balcony_flowers = spec.trim in [TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]
+		# (os investidores ficam sem: a parede deles já é de pedra clara, e a casa está no teto de triângulos)
+		spec.quoins = spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES]
+		# Fase 143: a cerca de estacas dos operários (sem o alpendre tropical, que tem o guarda-corpo dele)
+		spec.picket = spec.trim == TierDef.HouseTrim.NONE and spec.court_rows == 0
+		# Fase 177: os postigos das casas mais simples (todas da classe: uma forma a mais por casa custaria o dobro de malhas)
+		spec.shutters = spec.trim in SHUTTER_TRIMS
+		# Fase 217: as cortinas em todas as casas
+		spec.curtains = true
 		return spec
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
@@ -361,6 +686,7 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.roof_m = short * (SPIRE_SLOPE if def.id == &"church" else ROOF_SLOPE * 1.4)
 		spec.door = Door.ARCH
 		spec.window_style = 2
+		spec.arched = true
 	elif def.kind == BuildingDef.Kind.PRODUCTION and def.smoke != BuildingDef.Smoke.NONE:
 		spec.sparse_windows = true
 		if def.smoke == BuildingDef.Smoke.HEAVY or def.silhouette == BuildingDef.Silhouette.CLERESTORY:
@@ -373,6 +699,8 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	if brick(spec):
 		spec.walls = Walls.PLASTER
 	spec.silhouette = def.silhouette
+	# Fase 97: a cúpula de cobre dos serviços grandes (no telhado de quatro águas)
+	spec.dome = def.id in DOMED and spec.roof == Roof.HIP
 	if def.silhouette == BuildingDef.Silhouette.STALLS:
 		# metade da frente vira pátio; o telhado segue o lado curto do corpo
 		spec.court_rows = def.size.y / 2
@@ -385,6 +713,26 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var house := spec.hall()
 		spec.roof = Roof.GABLE_X if house.cells.x >= house.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(house.cells.x, house.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.PUMPJACK and def.size.y > PUMPJACK_ROWS:
+		# o pátio da frente fica com o cavalo-de-pau; o galpão baixo, nas fileiras de trás
+		spec.court_rows = PUMPJACK_ROWS
+		spec.height_m = minf(spec.height_m, PUMPJACK_SHED_M)
+		var shed := spec.hall()
+		spec.roof = Roof.GABLE_X if shed.cells.x >= shed.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(shed.cells.x, shed.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.TANKFARM and def.size.y > TANKFARM_ROWS:
+		# o pátio da frente fica com os tanques; o galpão, nas fileiras de trás
+		spec.court_rows = TANKFARM_ROWS
+		var hall := spec.hall()
+		spec.roof = Roof.GABLE_X if hall.cells.x >= hall.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(hall.cells.x, hall.cells.y) * cell_size * ROOF_SLOPE
+	elif (def.silhouette == BuildingDef.Silhouette.MENAGERIE and def.size.y > MENAGERIE_HALL_ROWS) \
+			or (def.silhouette == BuildingDef.Silhouette.GALLERY and def.size.y > 1):
+		# o pátio da frente fica com os cercados ou os pedestais; o corpo, nas fileiras de trás
+		spec.court_rows = def.size.y - MENAGERIE_HALL_ROWS if def.silhouette == BuildingDef.Silhouette.MENAGERIE else 1
+		var body := spec.hall()
+		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.WINDMILL:
 		# a empena fica na frente e as pás giram nela
 		spec.roof = Roof.GABLE_Z
@@ -392,8 +740,27 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		var body := spec.hall()
 		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
 		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
+	elif def.silhouette == BuildingDef.Silhouette.VATS and def.size.y > 2:
+		# Fase 98: a fileira da frente fica com os tonéis; o corpo, nas de trás
+		spec.court_rows = 1
+		var body := spec.hall()
+		spec.roof = Roof.GABLE_X if body.cells.x >= body.cells.y else Roof.GABLE_Z
+		spec.roof_m = minf(body.cells.x, body.cells.y) * cell_size * ROOF_SLOPE
 	elif def.silhouette == BuildingDef.Silhouette.CLERESTORY and spec.roof == Roof.FLAT:
 		spec.roof = Roof.GABLE_X if def.size.x >= def.size.y else Roof.GABLE_Z
+	# Fase 104: o lampião de parede dos serviços (o mercado tem a arcada; a taverna, o toldo)
+	spec.lantern = def.kind == BuildingDef.Kind.SERVICE and def.silhouette != BuildingDef.Silhouette.STALLS \
+			and def.id not in AWNING_SHOPS
+	# Fase 101: o toldo das lojas, na cor sorteada pelo tipo
+	if def.id in AWNING_SHOPS:
+		spec.awning = 1 + absi(hash(String(def.id))) % UV_AWNING_COLORS.size()
+	# Fase 151: a placa pendurada das lojas, com a figura do ofício
+	spec.shop_sign = SHOP_SIGNS.get(def.id, 0)
+	# Fase 98: a abóbada no lugar das duas águas (o mercado e as fábricas de nave comprida)
+	spec.vault = def.id in VAULTED and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z]
+	# Fase 103: as claraboias das fábricas grandes
+	spec.skylights = def.kind == BuildingDef.Kind.PRODUCTION and def.silhouette == BuildingDef.Silhouette.NONE \
+			and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z] and mini(def.size.x, def.size.y) >= SKYLIGHT_MIN_CELLS
 	return spec
 
 
@@ -498,7 +865,19 @@ static func cached_meshes() -> int:
 
 ## O que vai em cada célula da borda de cada andar: &"door", &"arch", &"plain" ou &"window".
 ## faces: 0 = frente (−Z), 1 = +X, 2 = fundo (+Z), 3 = −X; índice crescendo em x ou z.
+## Fase 96: a célula de parede que a ala tira (o último andar da coluna da ponta e o lado da ala nesse andar).
+static func in_wing(spec: Spec, face: int, index: int, level: int) -> bool:
+	if spec.wing == 0 or spec.floors() < 2 or level != spec.floors() - 1:
+		return false
+	var wing_face := 3 if spec.wing < 0 else 1
+	if face == wing_face:
+		return true
+	return face % 2 == 0 and index == (0 if spec.wing < 0 else spec.cells.x - 1)
+
+
 static func slot(spec: Spec, face: int, index: int, level: int) -> StringName:
+	if in_wing(spec, face, index, level):
+		return &"none"
 	if face == 0 and level == 0 and index == spec.door_index and spec.door != Door.NONE:
 		return &"arch" if spec.door in [Door.ARCH, Door.GATE] else &"door"
 	if spec.silhouette == BuildingDef.Silhouette.BANNERS and face == 0 and level == 1 and index == spec.door_index:
@@ -545,6 +924,11 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
 				var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(step * WINDOW_WIDTH, floor_m * WINDOW_HEIGHT, 1.0))
 				result.append(Transform3D(basis, origin))
+	# Fase 103: as claraboias também são vidro que acende; e, desde a Fase 104, o lampião de parede
+	result.append_array(skylight_panes(spec))
+	var lamp: Variant = lantern_pane(spec)
+	if lamp != null:
+		result.append(lamp)
 	return result
 
 
@@ -586,6 +970,9 @@ static func _cell_transform(spec: Spec, face: int, index: int, level: int) -> Tr
 	center += normal * ((size.y if along else size.x) * 0.5)
 	# a peça ocupa x de -0,5 a 0,5 com a parede em 0,4..0,5: o meio da célula fica meia célula para dentro
 	center -= normal * depth * 0.5
+	# Fase 102: os andares de cima da frente avançam sobre a rua (tudo o que se põe pela célula acompanha)
+	if spec.jetty and face == 0 and level >= 1:
+		center += normal * JETTY_M
 	var yaw := FACE_YAWS[face]
 	var basis := Basis(Vector3.UP, yaw) * Basis.from_scale(Vector3(depth, spec.floor_m(), step))
 	return Transform3D(basis, center)
@@ -626,12 +1013,22 @@ static func _build(spec: Spec) -> ArrayMesh:
 		for level: int in hall.floors():
 			for index: int in count:
 				var kind := slot(hall, face, index, level)
+				if kind == &"none":
+					continue
 				var piece: String = pieces[&"plain"]
 				if kind == &"window":
 					piece = choices[spec.window_style % choices.size()]
 				elif kind != &"plain":
 					piece = pieces[kind]
 				_append_piece(tool, piece, offset * _cell_transform(hall, face, index, level))
+	if hall.wing != 0 and hall.floors() >= 2:
+		# Fase 96: no último andar, a parede do corpo do lado da ala (uma coluna para dentro), lisa
+		var wing_face := 3 if hall.wing < 0 else 1
+		var inward := -_face_normal(wing_face) * hall.column_m()
+		var plain_piece: String = pieces[&"plain"]
+		for index: int in hall.cells.y:
+			_append_piece(tool, plain_piece,
+					offset * _cell_transform(hall, wing_face, index, hall.floors() - 1).translated(inward))
 	var size := spec.size_m()
 	# alicerce e telhado à parte: as peças do kit chegam indexadas, e vértice solto depois delas
 	# ficaria fora do índice
@@ -642,7 +1039,17 @@ static func _build(spec: Spec) -> ArrayMesh:
 	var base_center := spec.hall_offset() if spec.trim == TierDef.HouseTrim.YARD else Vector3.ZERO
 	_box(extra, base_center + Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0),
 			Vector3(base.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, base.y + 0.1), UV_STONE)
-	if spec.court_rows > 0:
+	if hall.wing != 0 and hall.floors() >= 2:
+		# Fase 96: o telhado do corpo, uma coluna mais estreito, e o da ala, mais baixo e cruzado com ele
+		for part: Array in [[hall.main_part(), hall.main_offset()], [hall.wing_part(), hall.wing_offset()]]:
+			var piece_spec: Spec = part[0]
+			var shift: Vector3 = part[1]
+			var roof := SurfaceTool.new()
+			roof.begin(Mesh.PRIMITIVE_TRIANGLES)
+			_roof(roof, piece_spec)
+			_lucarnes(roof, piece_spec)
+			extra.append_from(roof.commit(), 0, offset.translated(shift))
+	elif spec.court_rows > 0:
 		# o telhado do corpo é feito no referencial dele e trazido para o do prédio
 		var roof := SurfaceTool.new()
 		roof.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -652,25 +1059,432 @@ static func _build(spec: Spec) -> ArrayMesh:
 	else:
 		_roof(extra, spec)
 		_lucarnes(extra, spec)
+	# Fase 97: a cúpula de cobre e o torreão de canto
+	if spec.dome:
+		_dome(extra, spec)
+	if hall.turret:
+		_turret(extra, hall, offset)
 	_glazing(extra, hall, offset)
+	if hall.curtains:
+		_curtains(extra, hall, offset)
 	_silhouette(tool, extra, spec)
 	_trim(tool, extra, spec)
+	if spec.shutters:
+		_shutters(extra, spec)
+	if spec.awning > 0:
+		_awnings(extra, spec)
+	if spec.jetty:
+		_jetty(extra, spec)
+	if spec.skylights:
+		_skylights(extra, spec)
+	if spec.chimney:
+		_brick_chimney(extra, spec)
+	if spec.lantern:
+		_lantern(extra, spec)
+	if spec.trim == TierDef.HouseTrim.BALCONIES and spec.court_rows == 0:
+		_front_railing(extra, spec)
+	if spec.picket and spec.court_rows == 0:
+		_front_picket(extra, spec)
+	if spec.shop_sign > 0:
+		_shop_sign(extra, spec)
 	if spec.door == Door.GATE:
 		_gate(tool, extra, hall, offset)
 	extra.index()
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
-	if spec.chimney:
-		var stack := spec.roof_m + 0.6
-		var body := hall.size_m()
-		_append_piece(tool, CHIMNEY, offset * Transform3D(Basis.from_scale(Vector3(3.0, stack, 3.0)),
-				Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5)))
 	var arrays := tool.commit_to_arrays()
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	importer.generate_lods(25.0, 60.0, [])
 	return importer.get_mesh()
 
+
+## Fase 101: as células do térreo da frente que levam toldo (porta e janelas).
+static func awning_cells(spec: Spec) -> Array[int]:
+	var cells: Array[int] = []
+	if spec.awning <= 0:
+		return cells
+	var hall := spec.hall()
+	for index: int in hall.cells.x:
+		if slot(hall, 0, index, 0) in [&"window", &"door", &"arch"]:
+			cells.append(index)
+	return cells
+
+
+## O toldo de cada célula: a água de lona listrada da parede para fora e para baixo (de cima e de baixo), as duas abas
+## dos lados e a sanefa na ponta, nas listras alternadas da cor do toldo e do creme.
+static func _awnings(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var size := hall.size_m()
+	var step := size.x / hall.cells.x
+	var normal := _face_normal(0)
+	var color := UV_AWNING_COLORS[(spec.awning - 1) % UV_AWNING_COLORS.size()]
+	var width := step * 0.86
+	var high := hall.floor_m() * AWNING_AT
+	for index: int in awning_cells(spec):
+		var wall := spec.hall_offset() + _wall_point(hall, 0, index, 0)
+		var base := Vector3(wall.x, high, wall.z) + normal * 0.02
+		var tip := base + normal * AWNING_OUT_M + Vector3.DOWN * AWNING_DROP_M
+		var up_side := (tip - base).cross(Vector3.RIGHT).normalized()
+		if up_side.y < 0.0:
+			up_side = -up_side
+		for stripe: int in AWNING_STRIPES:
+			var uv := color if stripe % 2 == 0 else UV_CANVAS
+			var x0 := -width * 0.5 + width * stripe / AWNING_STRIPES
+			var x1 := -width * 0.5 + width * (stripe + 1) / AWNING_STRIPES
+			var a := base + Vector3.RIGHT * x0
+			var b := base + Vector3.RIGHT * x1
+			var c := tip + Vector3.RIGHT * x1
+			var d := tip + Vector3.RIGHT * x0
+			_quad(tool, a, b, c, d, up_side, uv)
+			_quad(tool, a, b, c, d, -up_side, uv)
+			# a sanefa: a aba que cai na ponta, de cada listra
+			var drop := Vector3.DOWN * AWNING_VALANCE_M
+			_quad(tool, d, c, c + drop, d + drop, normal, uv)
+			_quad(tool, d, c, c + drop, d + drop, -normal, uv)
+		# as abas dos lados, um triângulo de lona de cada lado
+		for side: float in [-0.5, 0.5]:
+			var at := Vector3.RIGHT * width * side
+			var corner := base + at + Vector3.DOWN * AWNING_DROP_M
+			_triangle(tool, base + at, tip + at, corner, Vector3.RIGHT * side, UV_CANVAS)
+			_triangle(tool, base + at, tip + at, corner, Vector3.LEFT * side, UV_CANVAS)
+
+
+## Fase 102: o andar saliente — a viga do balanço e as mãos-francesas embaixo, o enxaimel na frente de cada andar de cima
+## (baldrame, frechal, esteios nas divisas e as escoras ao lado da janela, ou em diagonal na parede lisa) e, nas pontas da
+## frente que avançou, o pedaço de parede que fecha o vão até a parede do lado.
+static func _jetty(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var size := hall.size_m()
+	var step := size.x / hall.cells.x
+	var floor_m := hall.floor_m()
+	var shift := spec.hall_offset()
+	var front := -size.y * 0.5
+	var out := front - JETTY_M
+	var timber_z := out - 0.03
+	_box(tool, shift + Vector3(0.0, floor_m - 0.07, (front + out) * 0.5), Vector3(size.x, 0.14, JETTY_M), UV_TIMBER)
+	for k: int in hall.cells.x + 1:
+		var x := clampf(-size.x * 0.5 + step * k, -size.x * 0.5 + 0.06, size.x * 0.5 - 0.06)
+		_bar(tool, shift + Vector3(x, floor_m - JETTY_BRACKET_M, front - 0.02), shift + Vector3(x, floor_m - 0.12, out + 0.04),
+				0.09, UV_TIMBER)
+	for level: int in range(1, hall.floors()):
+		var y0 := level * floor_m
+		var y1 := y0 + floor_m
+		for index: int in hall.cells.x:
+			var kind := slot(hall, 0, index, level)
+			if kind == &"none":
+				continue
+			var x0 := -size.x * 0.5 + step * index
+			var x1 := x0 + step
+			var middle := (x0 + x1) * 0.5
+			_box(tool, shift + Vector3(middle, y0 + 0.07, timber_z), Vector3(step, TIMBER_M, 0.06), UV_TIMBER)
+			_box(tool, shift + Vector3(middle, y1 - 0.07, timber_z), Vector3(step, TIMBER_M, 0.06), UV_TIMBER)
+			for x: float in [x0 + 0.05, x1 - 0.05]:
+				_box(tool, shift + Vector3(x, (y0 + y1) * 0.5, timber_z), Vector3(TIMBER_M, floor_m, 0.06), UV_TIMBER)
+			if kind == &"window":
+				# uma escora de cada lado da janela, do pé do esteio até o alto do vão
+				var beside := step * WINDOW_WIDTH * 0.5 + 0.14
+				var top := y0 + floor_m * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5)
+				_bar(tool, shift + Vector3(x0 + 0.08, y0 + 0.12, timber_z), shift + Vector3(middle - beside, top, timber_z), 0.08,
+						UV_TIMBER)
+				_bar(tool, shift + Vector3(x1 - 0.08, y0 + 0.12, timber_z), shift + Vector3(middle + beside, top, timber_z), 0.08,
+						UV_TIMBER)
+			else:
+				_bar(tool, shift + Vector3(x0 + 0.08, y0 + 0.12, timber_z), shift + Vector3(x1 - 0.08, y1 - 0.12, timber_z), 0.08,
+						UV_TIMBER)
+			# o vão entre a frente que avançou e a parede do lado, nas pontas de cada trecho da frente
+			var last := hall.cells.x - 1
+			if index == 0 or slot(hall, 0, index - 1, level) == &"none":
+				_box(tool, shift + Vector3(x0 + 0.06, (y0 + y1) * 0.5, (front + out) * 0.5), Vector3(0.12, floor_m, JETTY_M),
+						UV_WALL)
+			if index == last or slot(hall, 0, index + 1, level) == &"none":
+				_box(tool, shift + Vector3(x1 - 0.06, (y0 + y1) * 0.5, (front + out) * 0.5), Vector3(0.12, floor_m, JETTY_M),
+						UV_WALL)
+
+
+## Fase 103: as vidraças das claraboias, no formato das janelas de windows() (x e y na escala da vidraça, z a normal do
+## telhado para fora): uma fileira em cada água, assentada na água (ou na abóbada) e erguida SKYLIGHT_LIFT_M dela.
+static func skylight_panes(spec: Spec) -> Array[Transform3D]:
+	var panes: Array[Transform3D] = []
+	if not spec.skylights or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z]:
+		return panes
+	var size := spec.size_m()
+	var along_x := spec.roof == Roof.GABLE_X
+	var hu := (size.x if along_x else size.y) * 0.5
+	var hv := (size.y if along_x else size.x) * 0.5
+	var count := maxi(2, floori(hu * 1.6 / SKYLIGHT_STEP_M))
+	var along := _uv_point(along_x, 1.0, 0.0, 0.0)
+	for side: float in [-1.0, 1.0]:
+		var v := side * hv * SKYLIGHT_AT
+		var y: float
+		var flat_normal: Vector2
+		if spec.vault:
+			var profile := vault_profile(spec, v)
+			y = profile[0]
+			flat_normal = profile[1]
+		else:
+			y = spec.height_m + spec.roof_m * (1.0 - absf(v) / hv)
+			flat_normal = Vector2(side * spec.roof_m, hv).normalized()
+		var normal := _uv_point(along_x, 0.0, flat_normal.y, flat_normal.x)
+		var up_slope := normal.cross(along).normalized()
+		var basis := Basis(along, up_slope, normal).scaled_local(Vector3(SKYLIGHT_PANE_M.x, SKYLIGHT_PANE_M.y, 1.0))
+		for k: int in count:
+			var u := -hu * 0.8 + hu * 1.6 * (k + 0.5) / count
+			panes.append(Transform3D(basis, _uv_point(along_x, u, y, v) + normal * SKYLIGHT_LIFT_M))
+	return panes
+
+
+## As claraboias: a vidraça (um quadrilátero de vidro) e o caixilho de ferro em volta, com o montante do meio.
+static func _skylights(tool: SurfaceTool, spec: Spec) -> void:
+	for pane: Transform3D in skylight_panes(spec):
+		var half_x := pane.basis.x * 0.5
+		var half_y := pane.basis.y * 0.5
+		var normal := pane.basis.z.normalized()
+		var at := pane.origin
+		_quad(tool, at - half_x - half_y, at + half_x - half_y, at + half_x + half_y, at - half_x + half_y, normal, UV_GLASS)
+		var lift := normal * 0.03
+		for corner: Array in [[-half_x - half_y, half_x - half_y], [half_x - half_y, half_x + half_y],
+				[half_x + half_y, -half_x + half_y], [-half_x + half_y, -half_x - half_y], [-half_y, half_y]]:
+			var a: Vector3 = corner[0]
+			var b: Vector3 = corner[1]
+			_bar(tool, at + a + lift, at + b + lift, 0.06, UV_IRON)
+
+
+## A chaminé da casa no telhado, no referencial do prédio: o meio do pé (na altura do beiral) e a altura do fuste, até
+## CHIMNEY_ABOVE_M acima da cumeeira.
+static func _chimney_base(spec: Spec) -> Vector3:
+	var body := spec.hall().size_m()
+	return spec.hall_offset() + Vector3(body.x * 0.25 - 0.6, spec.height_m, -body.y * 0.2 + 0.5)
+
+
+static func _chimney_height(spec: Spec) -> float:
+	return spec.roof_m + CHIMNEY_ABOVE_M
+
+
+## Fase 100: a boca da chaminé (desde a Fase 104, o alto dos potes), no referencial do prédio; null sem chaminé.
+static func chimney_top(spec: Spec) -> Variant:
+	if spec == null or not spec.chimney:
+		return null
+	return _chimney_base(spec) + Vector3(0.0, _chimney_height(spec) + 0.12 + CHIMNEY_POT_M, 0.0)
+
+
+## Fase 104: a chaminé de tijolo — o fuste, o capitel em duas fiadas mais largas e dois potes de barro.
+static func _brick_chimney(tool: SurfaceTool, spec: Spec) -> void:
+	var base := _chimney_base(spec)
+	var height := _chimney_height(spec)
+	var side := CHIMNEY_SIDE_M
+	_box(tool, base + Vector3(0.0, height * 0.5, 0.0), Vector3(side, height, side), UV_BRICK)
+	_box(tool, base + Vector3(0.0, height - 0.09, 0.0), Vector3(side + 0.12, 0.08, side + 0.12), UV_BRICK)
+	_box(tool, base + Vector3(0.0, height + 0.06, 0.0), Vector3(side + 0.06, 0.12, side + 0.06), UV_BRICK)
+	for x: float in [-0.13, 0.13]:
+		var foot := base + Vector3(x, height + 0.12, 0.0)
+		_turned(tool, foot, [Vector2(0.1, 0.0), Vector2(0.08, CHIMNEY_POT_M * 0.85), Vector2(0.095, CHIMNEY_POT_M),
+				Vector2(0.06, CHIMNEY_POT_M)], 8, UV_ROOF_TRIM)
+
+
+## Fase 104: a vidraça do lampião de parede (no formato das janelas de windows()), ao lado da porta, no referencial do
+## prédio; null sem lampião.
+static func lantern_pane(spec: Spec) -> Variant:
+	if not spec.lantern:
+		return null
+	var hall := spec.hall()
+	var step := hall.size_m().x / hall.cells.x
+	var normal := _face_normal(0)
+	var wall := spec.hall_offset() + _wall_point(hall, 0, hall.door_index, 0)
+	var at := wall + Vector3.RIGHT * step * 0.5 + Vector3.UP * hall.floor_m() * LANTERN_AT + normal * LANTERN_OUT_M
+	var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(LANTERN_PANE_M.x, LANTERN_PANE_M.y, 1.0))
+	return Transform3D(basis, at)
+
+
+## O lampião: o braço de ferro com a voluta saindo da parede, o chapéu e o fundo de ferro, os montantes e a vidraça da frente.
+static func _lantern(tool: SurfaceTool, spec: Spec) -> void:
+	var pane: Variant = lantern_pane(spec)
+	if pane == null:
+		return
+	var place: Transform3D = pane
+	var normal := place.basis.z.normalized()
+	var at := place.origin
+	var half := LANTERN_PANE_M * 0.5
+	var wall := at - normal * LANTERN_OUT_M
+	_bar(tool, wall + Vector3.UP * (half.y + 0.12), at - normal * 0.1 + Vector3.UP * (half.y + 0.12), 0.04, UV_IRON)
+	_bar(tool, wall + Vector3.UP * (half.y - 0.15), wall + Vector3.UP * (half.y + 0.1) + normal * 0.18, 0.03, UV_IRON)
+	var center := at - normal * 0.1
+	_box(tool, center + Vector3.UP * (half.y + 0.04), Vector3(0.28, 0.06, 0.28), UV_IRON)
+	_turned(tool, center + Vector3.UP * (half.y + 0.07), [Vector2(0.12, 0.0), Vector2(0.0, 0.12)], 4, UV_IRON)
+	_box(tool, center - Vector3.UP * (half.y + 0.03), Vector3(0.22, 0.06, 0.22), UV_IRON)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		var x := Vector3.RIGHT * corner.x * 0.1
+		var z := normal * corner.y * 0.1
+		_bar(tool, center + x + z - Vector3.UP * half.y, center + x + z + Vector3.UP * half.y, 0.025, UV_IRON)
+	var right := place.basis.x * 0.5
+	var up := place.basis.y * 0.5
+	_quad(tool, at - right - up, at + right - up, at + right + up, at - right + up, normal, UV_GLASS)
+
+
+## Fase 114: o trecho do gradil da frente, [x de, x até], de cada lado do vão da porta, no referencial do prédio; e a
+## linha dele (z), no meio da faixa entre a parede e a divisa.
+static func front_railing_spans(spec: Spec) -> Array[Vector2]:
+	var size := spec.size_m()
+	var step := size.x / spec.cells.x
+	var door_x := -size.x * 0.5 + step * (spec.door_index + 0.5)
+	var gap := step * 0.36
+	var spans: Array[Vector2] = []
+	for span: Vector2 in [Vector2(-size.x * 0.5, door_x - gap), Vector2(door_x + gap, size.x * 0.5)]:
+		if span.y - span.x > 0.3:
+			spans.append(span)
+	return spans
+
+
+static func front_railing_z(spec: Spec) -> float:
+	return -(spec.cells.y * spec.cell_m) * 0.5 + INSET_M * 0.25
+
+
+## Fase 143: a cerca de estacas caiadas, nos mesmos trechos do gradil (a faixa entre a parede e a divisa, com o vão da
+## porta): as duas travessas, uma estaca a cada PICKET_STEP_M com a ponta em pirâmide e o mourão mais grosso nas pontas.
+static func _front_picket(tool: SurfaceTool, spec: Spec) -> void:
+	var z := front_railing_z(spec)
+	for span: Vector2 in front_railing_spans(spec):
+		var middle := (span.x + span.y) * 0.5
+		for height: float in [PICKET_M * 0.28, PICKET_M * 0.72]:
+			_box(tool, Vector3(middle, height, z + 0.03), Vector3(span.y - span.x, 0.06, 0.03), UV_CANVAS)
+		var count := maxi(1, roundi((span.y - span.x) / PICKET_STEP_M))
+		for i: int in count + 1:
+			var x := lerpf(span.x + 0.04, span.y - 0.04, float(i) / count)
+			_box(tool, Vector3(x, PICKET_M * 0.5, z), Vector3(0.07, PICKET_M, 0.025), UV_CANVAS)
+			_turned(tool, Vector3(x, PICKET_M, z), [Vector2(0.05, 0.0), Vector2(0.0, 0.08)], 4, UV_CANVAS)
+		for x: float in [span.x, span.y]:
+			_box(tool, Vector3(x, (PICKET_M + 0.1) * 0.5, z), Vector3(0.1, PICKET_M + 0.1, 0.1), UV_CANVAS)
+
+
+## Fase 151: onde fica a placa da loja (referencial canônico): o meio da tábua, pendurada do braço que sai da parede na
+## divisa de −X da célula da porta, acima do toldo (ou a meia altura do térreo sem ele). A normal da fachada é −Z.
+static func shop_sign_center(spec: Spec) -> Vector3:
+	var hall := spec.hall()
+	var step := hall.size_m().x / hall.cells.x
+	var wall := spec.hall_offset() + _wall_point(hall, 0, hall.door_index, 0) + Vector3.LEFT * step * 0.5
+	var arm := hall.floor_m() * (AWNING_AT if spec.awning > 0 else 0.62) + SIGN_ABOVE_AWNING_M
+	var out := SIGN_OUT_M + SIGN_BOARD_M.z * 0.5
+	return wall + _face_normal(0) * out + Vector3.UP * (arm - SIGN_GAP_M - SIGN_BOARD_M.y * 0.5)
+
+
+## Fase 153: a floreira da sacada com o meio da caixa em at (referencial canônico, a fachada da frente com a normal −Z): a
+## caixa de madeira de comprimento width ao longo da parede e a folhagem com flores transbordando (a célula (3, 3) da
+## paleta, que o shader do kit pinta de folha e flor).
+static func _balcony_box(tool: SurfaceTool, at: Vector3, width: float) -> void:
+	_box(tool, at, Vector3(width, 0.2, 0.22), UV_TIMBER)
+	_box(tool, at + Vector3(0.0, 0.16, 0.0), Vector3(width - 0.04, 0.16, 0.2), UV_FOLIAGE)
+	for k: int in 3:
+		var x := (k - 1) * width * 0.32
+		_box(tool, at + Vector3(x, 0.27, -0.02), Vector3(width * 0.26, 0.12, 0.18), UV_FOLIAGE)
+		# os ramos que pendem por fora da caixa
+		_box(tool, at + Vector3(x + width * 0.08, 0.0, -0.13), Vector3(width * 0.14, 0.26, 0.04), UV_FOLIAGE)
+
+
+## A placa: o braço de ferro com a mão-francesa, as duas argolas, a tábua de madeira escura com a moldura e a figura do
+## ofício dos dois lados (formas simples, sem texto).
+static func _shop_sign(tool: SurfaceTool, spec: Spec) -> void:
+	var center := shop_sign_center(spec)
+	var normal := _face_normal(0)
+	var top := center + Vector3.UP * (SIGN_BOARD_M.y * 0.5 + SIGN_GAP_M)
+	var wall := top - normal * (SIGN_OUT_M + SIGN_BOARD_M.z * 0.5)
+	var tip := top + normal * (SIGN_BOARD_M.z * 0.5 + 0.06)
+	_bar(tool, wall, tip, 0.035, UV_IRON)
+	_bar(tool, wall + Vector3.DOWN * 0.32, wall + normal * 0.32, 0.025, UV_IRON)
+	for along: float in [-0.22, 0.22]:
+		var ring := top + normal * along
+		_bar(tool, ring, ring + Vector3.DOWN * SIGN_GAP_M, 0.015, UV_IRON)
+	_box(tool, center, SIGN_BOARD_M, UV_TIMBER)
+	for side: float in [-1.0, 1.0]:
+		# o painel pintado de creme dentro da moldura de madeira, e a figura sobre ele
+		_box(tool, center + Vector3.RIGHT * side * (SIGN_BOARD_M.x * 0.5 + 0.004),
+				Vector3(0.008, SIGN_BOARD_M.y - 0.09, SIGN_BOARD_M.z - 0.09), UV_CANVAS)
+		var face := center + Vector3.RIGHT * side * (SIGN_BOARD_M.x * 0.5 + 0.012)
+		_sign_figure(tool, face, side, spec.shop_sign)
+
+
+## A figura de um lado da placa (o plano yz, saindo para side em x).
+static func _sign_figure(tool: SurfaceTool, at: Vector3, side: float, figure: int) -> void:
+	var out := Vector3.RIGHT * side * 0.012
+	match figure:
+		1:
+			# pão: um anel torcido de bronze
+			_sign_ring(tool, at + out, 0.13, 0.035, UV_BRONZE)
+			_box(tool, at + out + Vector3(0.0, -0.02, 0.0), Vector3(0.02, 0.04, 0.2), UV_BRONZE)
+		2:
+			# presunto: a peça larga embaixo e o osso em cima
+			_box(tool, at + out + Vector3(0.0, -0.05, 0.0), Vector3(0.02, 0.17, 0.2), UV_AWNING_COLORS[0])
+			_box(tool, at + out + Vector3(0.0, 0.09, 0.0), Vector3(0.02, 0.12, 0.05), UV_LIGHT_STONE)
+		3:
+			# caneca: o corpo, a espuma e a asa
+			_box(tool, at + out + Vector3(0.0, -0.03, -0.02), Vector3(0.02, 0.2, 0.15), UV_BRONZE)
+			_box(tool, at + out + Vector3(0.0, 0.09, -0.02), Vector3(0.02, 0.05, 0.17), UV_LIGHT_STONE)
+			_box(tool, at + out + Vector3(0.0, -0.03, 0.08), Vector3(0.02, 0.12, 0.04), UV_BRONZE)
+		4:
+			# anel com a pedra
+			_sign_ring(tool, at + out + Vector3(0.0, -0.03, 0.0), 0.1, 0.028, UV_BRONZE)
+			_box(tool, at + out + Vector3(0.0, 0.1, 0.0), Vector3(0.02, 0.06, 0.06), UV_AWNING_COLORS[0])
+		5:
+			# relógio: o mostrador claro e os ponteiros
+			_box(tool, at + out, Vector3(0.02, 0.26, 0.26), UV_LIGHT_STONE)
+			_box(tool, at + out * 2.0 + Vector3(0.0, 0.04, 0.0), Vector3(0.02, 0.1, 0.02), UV_IRON)
+			_box(tool, at + out * 2.0 + Vector3(0.0, 0.0, 0.04), Vector3(0.02, 0.02, 0.09), UV_IRON)
+		6:
+			# óculos: as duas lentes e a ponte
+			for z: float in [-0.1, 0.1]:
+				_sign_ring(tool, at + out + Vector3(0.0, 0.0, z), 0.07, 0.022, UV_IRON)
+			_box(tool, at + out + Vector3(0.0, 0.03, 0.0), Vector3(0.02, 0.02, 0.07), UV_IRON)
+		7:
+			# xícara no pires (azul sobre o creme)
+			_box(tool, at + out, Vector3(0.02, 0.14, 0.15), UV_AWNING_COLORS[2])
+			_box(tool, at + out + Vector3(0.0, -0.09, 0.0), Vector3(0.02, 0.03, 0.26), UV_AWNING_COLORS[2])
+			_box(tool, at + out + Vector3(0.0, 0.02, 0.1), Vector3(0.02, 0.07, 0.04), UV_AWNING_COLORS[2])
+		8:
+			# charuto com a cinta
+			_box(tool, at + out, Vector3(0.02, 0.06, 0.34), UV_TIMBER)
+			_box(tool, at + out * 2.0 + Vector3(0.0, 0.0, -0.08), Vector3(0.02, 0.07, 0.04), UV_AWNING_COLORS[0])
+
+
+## Um anel no plano yz (a figura da placa), em 10 lanços.
+static func _sign_ring(tool: SurfaceTool, center: Vector3, radius: float, thickness: float, uv: Vector2) -> void:
+	for k: int in 10:
+		var a0 := TAU * k / 10.0
+		var a1 := TAU * (k + 1) / 10.0
+		_bar(tool, center + Vector3(0.0, sin(a0), cos(a0)) * radius, center + Vector3(0.0, sin(a1), cos(a1)) * radius,
+				thickness, uv)
+
+
+## O gradil: a grade de ferro dos trechos, os pilaretes nas pontas e uma lança no alto de cada balaústre.
+static func _front_railing(tool: SurfaceTool, spec: Spec) -> void:
+	var z := front_railing_z(spec)
+	for span: Vector2 in front_railing_spans(spec):
+		_railing(tool, Vector3(span.x, 0.0, z), Vector3(span.y, 0.0, z), UV_IRON, FRONT_RAIL_M, 0.025, 0.14)
+		for x: float in [span.x, span.y]:
+			_box(tool, Vector3(x, (FRONT_RAIL_M + 0.12) * 0.5, z), Vector3(0.07, FRONT_RAIL_M + 0.12, 0.07), UV_IRON)
+		var count := maxi(1, roundi((span.y - span.x) / 0.14))
+		for i: int in count + 1:
+			var x := lerpf(span.x, span.y, float(i) / count)
+			_turned(tool, Vector3(x, FRONT_RAIL_M, z), [Vector2(0.025, 0.0), Vector2(0.0, 0.1)], 4, UV_IRON)
+
+
+## Fase 104: a grade de ferro do pátio do museu — na frente (com o portão: dois pilares de pedra diante do caminho da
+## porta) e nos dois lados até a parede do corpo.
+static func _gallery_fence(tool: SurfaceTool, spec: Spec) -> void:
+	if spec.court_rows == 0:
+		return
+	var size := spec.size_m()
+	var front := -size.y * 0.5 + 0.12
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var left := -size.x * 0.5 + 0.12
+	var step := size.x / spec.cells.x
+	var door_x := -size.x * 0.5 + step * (spec.door_index + 0.5)
+	var gap := 0.75
+	_railing(tool, Vector3(left, 0.0, front), Vector3(door_x - gap, 0.0, front), UV_IRON, GALLERY_FENCE_M)
+	_railing(tool, Vector3(door_x + gap, 0.0, front), Vector3(-left, 0.0, front), UV_IRON, GALLERY_FENCE_M)
+	for x: float in [left, -left]:
+		_railing(tool, Vector3(x, 0.0, front), Vector3(x, 0.0, wall_z), UV_IRON, GALLERY_FENCE_M)
+	for x: float in [door_x - gap, door_x + gap]:
+		_box(tool, Vector3(x, (GALLERY_FENCE_M + 0.3) * 0.5, front), Vector3(0.34, GALLERY_FENCE_M + 0.3, 0.34), UV_LIGHT_STONE)
+		_box(tool, Vector3(x, GALLERY_FENCE_M + 0.34, front), Vector3(0.42, 0.08, 0.42), UV_LIGHT_STONE)
 
 ## As peças paradas da silhueta (Fase 13). As que giram ficam em rotor().
 static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
@@ -691,9 +1505,11 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 				_beam(tool, feet[i].lerp(heads[i], 0.5), feet[j].lerp(heads[j], 0.5), BEAM_M * 0.6)
 				_beam(tool, heads[i], heads[j], BEAM_M * 0.6)
 		BuildingDef.Silhouette.STALLS:
-			# bancas no pátio, menos na coluna que leva à porta
+			# bancas no pátio, menos na coluna que leva à porta (e, desde a Fase 99, na fileira da arcada)
 			var step := size.x / spec.cells.x
-			for row: int in spec.court_rows:
+			var stall_rows := spec.court_rows - (1 if arcade_bays(spec) > 0 else 0)
+			_arcade(extra, spec)
+			for row: int in stall_rows:
 				for column: int in spec.cells.x:
 					if column == spec.door_index:
 						continue
@@ -728,8 +1544,191 @@ static func _silhouette(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> vo
 		BuildingDef.Silhouette.VERANDA:
 			if spec.court_rows > 0:
 				_veranda(extra, spec)
+		BuildingDef.Silhouette.PUMPJACK:
+			if spec.court_rows > 0:
+				_pumpjack(tool, extra, spec)
+		BuildingDef.Silhouette.TANKFARM:
+			if spec.court_rows > 0:
+				_tankfarm(extra, spec)
+		BuildingDef.Silhouette.VATS:
+			_vats(extra, spec)
+		BuildingDef.Silhouette.MENAGERIE:
+			_pens(extra, spec)
+		BuildingDef.Silhouette.GALLERY:
+			_gallery_fence(extra, spec)
+			for spot: Vector3 in exhibit_spots(spec):
+				_box(extra, spot - Vector3(0.0, GALLERY_PEDESTAL_M * 0.5, 0.0), Vector3(0.7, GALLERY_PEDESTAL_M, 0.7), UV_LIGHT_STONE)
+				_box(extra, spot - Vector3(0.0, 0.05, 0.0), Vector3(0.82, 0.1, 0.82), UV_LIGHT_STONE)
 	if spec.dock:
 		_dock(extra, spec)
+
+
+## Fase 73: as medidas do cavalo-de-pau no pátio — o fundo do pátio (z da frente da área), a profundidade dele, o eixo
+## do balancim e quanto o balancim sai para a frente (até a cabeça) e para trás (até a biela).
+static func pumpjack_layout(spec: Spec) -> Dictionary:
+	var size := spec.size_m()
+	var front := -size.y * 0.5
+	var depth := spec.court_rows * spec.cell_m
+	var middle := front + depth * 0.5
+	return {
+		&"front": front,
+		&"depth": depth,
+		&"pivot": Vector3(0.0, PUMPJACK_PIVOT_M, middle + depth * 0.05),
+		&"ahead": depth * 0.45,
+		&"behind": depth * 0.34,
+		&"gearbox": Vector3(0.0, 0.62, middle + depth * 0.36),
+	}
+
+
+## As peças paradas do cavalo-de-pau: o estrado, o cavalete em A com a escora, o mancal do eixo, a caixa de engrenagens
+## com as manivelas e os contrapesos, e a cabeça do poço com a haste, embaixo da cabeça do balancim.
+static func _pumpjack(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
+	var layout := pumpjack_layout(spec)
+	var depth: float = layout[&"depth"]
+	var pivot: Vector3 = layout[&"pivot"]
+	var gearbox: Vector3 = layout[&"gearbox"]
+	var ahead: float = layout[&"ahead"]
+	var middle: float = layout[&"front"] + depth * 0.5
+	_box(extra, Vector3(0.0, 0.12, middle), Vector3(1.0, 0.24, depth * 0.86), UV_TIMBER)
+	for side: float in [-1.0, 1.0]:
+		_beam(tool, Vector3(side * 0.7, 0.24, pivot.z), Vector3(side * 0.12, pivot.y - 0.12, pivot.z), 0.18)
+	_beam(tool, Vector3(0.0, 0.24, pivot.z + depth * 0.22), Vector3(0.0, pivot.y - 0.15, pivot.z + 0.05), 0.16)
+	_box(extra, pivot + Vector3(0.0, -0.05, 0.0), Vector3(0.5, 0.2, 0.3), UV_IRON)
+	_box(extra, gearbox, Vector3(0.66, 0.76, 0.6), UV_IRON)
+	for side: float in [-1.0, 1.0]:
+		_box(extra, gearbox + Vector3(side * 0.42, 0.0, 0.0), Vector3(0.12, 1.0, 0.34), UV_IRON)
+	var well_z := pivot.z - ahead - 0.12
+	_box(extra, Vector3(0.0, 0.4, well_z), Vector3(0.4, 0.8, 0.4), UV_IRON)
+	_box(extra, Vector3(0.0, 1.2, well_z), Vector3(0.06, 0.8, 0.06), UV_IRON)
+
+
+## Fase 74: onde fica cada vaga de peça do zoológico (o meio do cercado, no chão) ou do museu (o tampo do pedestal), no
+## referencial do prédio, na ordem em que as peças entram; vazio fora dessas silhuetas ou sem pátio.
+static func exhibit_spots(spec: Spec) -> Array[Vector3]:
+	var spots: Array[Vector3] = []
+	if spec.court_rows == 0:
+		return spots
+	var size := spec.size_m()
+	var front := -size.y * 0.5
+	var depth := spec.court_rows * spec.cell_m
+	match spec.silhouette:
+		BuildingDef.Silhouette.MENAGERIE:
+			var rows := maxi(1, spec.court_rows / 2)
+			for row: int in rows:
+				for column: int in 3:
+					# Fase 77: em cima do piso (até a Fase 76 o bicho ficava com as patas no piso)
+					spots.append(Vector3(size.x * (column - 1) / 3.0, FOUNDATION_UP_M, front + depth * (row + 0.5) / rows))
+		BuildingDef.Silhouette.GALLERY:
+			var z := front + depth * 0.5
+			for k: int in 6:
+				# três de cada lado do caminho da porta, do meio para fora
+				var side := -1.0 if k % 2 == 0 else 1.0
+				spots.append(Vector3(side * (1.6 + (k / 2) * 1.35) * size.x / 9.7, GALLERY_PEDESTAL_M, z))
+	return spots
+
+
+## Os cercados do zoológico: em volta de cada vaga, a cerca de madeira (mourões nos cantos e no meio dos lados, duas
+## travessas) com a abertura do portão no lado da frente.
+static func _pens(tool: SurfaceTool, spec: Spec) -> void:
+	var spots := exhibit_spots(spec)
+	if spots.is_empty():
+		return
+	var half := pen_half(spec)
+	for spot: Vector3 in spots:
+		var corners: Array[Vector3] = [spot + Vector3(-half.x, 0.0, -half.y), spot + Vector3(half.x, 0.0, -half.y),
+				spot + Vector3(half.x, 0.0, half.y), spot + Vector3(-half.x, 0.0, half.y)]
+		for i: int in 4:
+			var a := corners[i]
+			var b := corners[(i + 1) % 4]
+			for t: float in [0.0, 0.5]:
+				var post := a.lerp(b, t)
+				_box(tool, post + Vector3(0.0, MENAGERIE_FENCE_M * 0.55, 0.0), Vector3(0.12, MENAGERIE_FENCE_M * 1.1, 0.12), UV_TIMBER)
+			for rail: float in [0.4, 0.85]:
+				var y := Vector3(0.0, MENAGERIE_FENCE_M * rail, 0.0)
+				if i == 0:
+					# o lado da frente com o portão (um vão no meio)
+					_rail(tool, a + y, a.lerp(b, 0.4) + y)
+					_rail(tool, a.lerp(b, 0.6) + y, b + y)
+				else:
+					_rail(tool, a + y, b + y)
+
+
+## Fase 78: os tanques da usina a petróleo no pátio — cada um [meio da base, raio, altura do costado], lado a lado.
+static func tank_layout(spec: Spec) -> Array[Array]:
+	var tanks: Array[Array] = []
+	if spec.court_rows == 0:
+		return tanks
+	var size := spec.size_m()
+	var depth := spec.court_rows * spec.cell_m
+	var middle := -size.y * 0.5 + depth * 0.5
+	var radius := minf(depth * 0.4, size.x * 0.18)
+	var height := minf(spec.height_m * 0.6, TANK_MAX_M)
+	for side: float in [-1.0, 1.0]:
+		tanks.append([Vector3(side * size.x * 0.25, 0.0, middle), radius, height])
+	return tanks
+
+
+## O pátio dos tanques: o dique baixo de pedra em volta (com a passagem até a porta no meio da frente), cada tanque com o
+## teto em cone, os anéis de ferro, a escada na frente e o tubo até a parede do galpão.
+static func _tankfarm(extra: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var front := -size.y * 0.5 + 0.15
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var left := -size.x * 0.5 + 0.15
+	var y := TANKFARM_BUND_M * 0.5
+	var gap := 0.9
+	_box(extra, Vector3((left - gap) * 0.5, y, front), Vector3(-gap - left, TANKFARM_BUND_M, 0.2), UV_STONE)
+	_box(extra, Vector3((gap - left) * 0.5, y, front), Vector3(-gap - left, TANKFARM_BUND_M, 0.2), UV_STONE)
+	for side: float in [-1.0, 1.0]:
+		_box(extra, Vector3(side * -left, y, (front + wall_z) * 0.5), Vector3(0.2, TANKFARM_BUND_M, wall_z - front), UV_STONE)
+	for tank: Array in tank_layout(spec):
+		var base: Vector3 = tank[0]
+		var radius: float = tank[1]
+		var height: float = tank[2]
+		_tank(extra, base, radius, height, UV_LIGHT_STONE)
+		for ring: float in [0.33, 0.66]:
+			_tank(extra, base + Vector3(0.0, height * ring - 0.05, 0.0), radius + 0.03, 0.1, UV_IRON, false)
+		# a escada: dois montantes e os degraus, encostados na frente do costado
+		var face := base.z - radius - 0.08
+		for rail: float in [-0.22, 0.22]:
+			_bar(extra, Vector3(base.x + rail, 0.0, face), Vector3(base.x + rail, height + 0.6, face), 0.05, UV_IRON)
+		var rung := 0.5
+		while rung < height + 0.4:
+			_box(extra, Vector3(base.x, rung, face), Vector3(0.44, 0.04, 0.04), UV_IRON)
+			rung += 0.5
+		# o tubo do fundo do tanque até o galpão, num suporte
+		var from := Vector3(base.x * 0.6, 0.7, base.z + radius * 0.7)
+		_bar(extra, from, Vector3(base.x * 0.6, 0.7, wall_z), 0.16, UV_IRON)
+		_box(extra, Vector3(base.x * 0.6, 0.3, (from.z + wall_z) * 0.5), Vector3(0.12, 0.6, 0.12), UV_IRON)
+
+
+## Tanque vertical de TANK_SIDES faces com a base em "base"; com teto, o cone baixo em cima.
+static func _tank(tool: SurfaceTool, base: Vector3, radius: float, height: float, uv: Vector2, roof: bool = true) -> void:
+	var top := base + Vector3(0.0, height, 0.0)
+	var peak := top + Vector3(0.0, radius * 0.25, 0.0)
+	for i: int in TANK_SIDES:
+		var a0 := TAU * i / TANK_SIDES
+		var a1 := TAU * (i + 1) / TANK_SIDES
+		var d0 := Vector3(cos(a0), 0.0, sin(a0)) * radius
+		var d1 := Vector3(cos(a1), 0.0, sin(a1)) * radius
+		_quad(tool, base + d0, base + d1, top + d1, top + d0, (d0 + d1) * 0.5, uv)
+		if roof:
+			_triangle(tool, top + d0, top + d1, peak, (d0 + d1) * 0.5 + Vector3(0.0, radius, 0.0), uv)
+		else:
+			_triangle(tool, top + d0, top + d1, top, Vector3.UP, uv)
+
+
+## Meia largura (x) e meia profundidade (z) de cada cercado do zoológico, da vaga até a linha da cerca.
+static func pen_half(spec: Spec) -> Vector2:
+	var rows := maxi(1, spec.court_rows / 2)
+	return Vector2(spec.size_m().x / 3.0, spec.court_rows * spec.cell_m / rows) * 0.5 - Vector2(0.25, 0.25)
+
+
+static func _rail(tool: SurfaceTool, a: Vector3, b: Vector3) -> void:
+	var middle := (a + b) * 0.5
+	var along := b - a
+	var size := Vector3(absf(along.x) + 0.06, 0.08, absf(along.z) + 0.06)
+	_box(tool, middle, size, UV_TIMBER)
 
 
 ## Onde fica a plataforma de carga (Fase 23): x entre as rampas, z da frente da área até a parede do corpo,
@@ -1086,25 +2085,33 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 		TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO:
 			# sacada corrida no primeiro andar (e nos do meio, nos engenheiros): piso de tábuas e grade de ferro
 			var top := hall.floors() - 1 if spec.trim == TierDef.HouseTrim.BALCONIES else mini(2, hall.floors())
+			# Fase 97: com o torreão no canto de +X, a sacada para uma célula antes (o canto é dele)
+			var cells_out := hall.cells.x - (1 if hall.turret else 0)
 			for level: int in range(1, top):
-				for index: int in hall.cells.x:
+				for index: int in cells_out:
 					# o piso de tábuas vai da parede (x = 0 da peça) até a frente da sacada
 					_append_piece(tool, PLANKS, offset * _face_place(hall, 0, index, level,
 							Vector3(BALCONY_OUT_M * 2.0, 2.0, 1.0), BALCONY_OUT_M, -0.12))
+					# Fase 153: a floreira pendurada por fora do guarda-corpo, uma por célula
+					if hall.balcony_flowers:
+						var spot := spec.hall_offset() + _wall_point(hall, 0, index, level) \
+								+ _face_normal(0) * (BALCONY_OUT_M + BALCONY_FLOWERS_OUT_M) + Vector3.UP * BALCONY_FLOWERS_UP_M
+						_balcony_box(extra, spot, hall.size_m().x / hall.cells.x * 0.62)
 				# grade de ferro na frente e nas duas pontas da sacada corrida
 				var floor_y := level * hall.floor_m()
 				var half := hall.size_m() * 0.5
+				var step_x := hall.size_m().x / hall.cells.x
+				var right := half.x - (step_x if hall.turret else 0.0)
 				var wall := spec.hall_offset() + Vector3(0.0, floor_y, -half.y)
 				var out := Vector3(0.0, 0.0, -BALCONY_OUT_M)
 				# investidores: balaustrada de pedra (Fase 24); engenheiros: a grade de ferro
 				var fence := _balustrade if spec.trim == TierDef.HouseTrim.PORTICO else _railing
-				fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(half.x, 0.0, 0.0))
-				for end: float in [-half.x, half.x]:
+				fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(right, 0.0, 0.0))
+				for end: float in [-half.x, right]:
 					fence.call(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
 				# consolos de pedra sob a sacada, em cada divisa de célula (os das pontas um pouco para dentro)
-				var step_x := hall.size_m().x / hall.cells.x
-				for k: int in hall.cells.x + 1:
-					var x := clampf(-half.x + step_x * k, -half.x + CORBEL_WIDTH_M, half.x - CORBEL_WIDTH_M)
+				for k: int in cells_out + 1:
+					var x := clampf(-half.x + step_x * k, -half.x + CORBEL_WIDTH_M, right - CORBEL_WIDTH_M)
 					_corbel(extra, wall + Vector3(x, -0.12, 0.0), BALCONY_OUT_M * 0.85)
 			if spec.trim == TierDef.HouseTrim.PORTICO:
 				# duas colunas de pedra dos lados da porta e sebe diante das outras células do térreo
@@ -1122,6 +2129,8 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 								Vector3(1.6, 3.0, 0.9), 0.45, 0.0))
 	if spec.trim in [TierDef.HouseTrim.FLOWER_BOXES, TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]:
 		_ornament(extra, spec)
+	elif spec.arched:
+		_arches(extra, spec)
 
 
 ## Cornija, vergas das janelas e (engenheiros e investidores) a faixa entre os andares, em pedra clara.
@@ -1129,8 +2138,24 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 	var hall := spec.hall()
 	var center := spec.hall_offset()
 	var size := hall.size_m()
-	_box(tool, center + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
-			Vector3(size.x + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	if hall.wing != 0 and hall.floors() >= 2:
+		# Fase 96: a cornija do alto só no corpo; a da ala no topo dela (a altura do último andar a menos)
+		var main_width := size.x - hall.column_m()
+		_box(tool, center + hall.main_offset() + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
+				Vector3(main_width + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+		var wing_top := hall.height_m - hall.floor_m()
+		_box(tool, center + hall.wing_offset() + Vector3(0.0, wing_top - CORNICE_M * 0.5, 0.0),
+				Vector3(hall.column_m() + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	else:
+		_box(tool, center + Vector3(0.0, hall.height_m - CORNICE_M * 0.5, 0.0),
+				Vector3(size.x + CORNICE_OUT_M * 2.0, CORNICE_M, size.y + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
+	if hall.jetty:
+		# Fase 102: a cornija da frente acompanha o andar que avançou (só no corpo, se houver ala)
+		var winged := hall.wing != 0 and hall.floors() >= 2
+		var top_width := size.x - (hall.column_m() if winged else 0.0)
+		var top_x := hall.main_offset().x if winged else 0.0
+		_box(tool, center + Vector3(top_x, hall.height_m - CORNICE_M * 0.5, -size.y * 0.5 - JETTY_M * 0.5),
+				Vector3(top_width + CORNICE_OUT_M * 2.0, CORNICE_M, JETTY_M + CORNICE_OUT_M * 2.0), UV_LIGHT_STONE)
 	if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
 		for level: int in range(1, hall.floors()):
 			_box(tool, center + Vector3(0.0, level * hall.floor_m(), 0.0),
@@ -1146,7 +2171,12 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 				var at := center + _wall_point(hall, face, index, level) + Vector3(0.0, top, 0.0) \
 						+ _face_normal(face) * 0.04
 				var width := step * WINDOW_WIDTH * 1.5
-				_box(tool, at, Vector3(width, LINTEL_M, 0.1) if face % 2 == 0 else Vector3(0.1, LINTEL_M, width), UV_LIGHT_STONE)
+				if hall.arched:
+					# Fase 99: a cabeça em arco no lugar da verga reta (a pedra de fecho vai no alto do arco)
+					_arch_head(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m())
+				else:
+					_box(tool, at, Vector3(width, LINTEL_M, 0.1) if face % 2 == 0 else Vector3(0.1, LINTEL_M, width),
+							UV_LIGHT_STONE)
 				# o peitoril (Fase 24), mais estreito que a verga e saindo um pouco mais da parede
 				var sill := center + _wall_point(hall, face, index, level) + _face_normal(face) * 0.07 \
 						+ Vector3(0.0, hall.floor_m() * (WINDOW_CENTER - WINDOW_HEIGHT * 0.5) - SILL_M * 0.5, 0.0)
@@ -1154,14 +2184,74 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 				_box(tool, sill, Vector3(sill_width, SILL_M, 0.16) if face % 2 == 0 else Vector3(0.16, SILL_M, sill_width),
 						UV_LIGHT_STONE)
 				if spec.trim != TierDef.HouseTrim.FLOWER_BOXES:
-					_window_frame(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m(), top)
+					_window_frame(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m(), top,
+							not hall.arched)
+	if hall.quoins:
+		_quoins(tool, spec)
 
+
+## Fase 177: os postigos — em cada janela do corpo (o que a ala tira fica de fora: o slot dela é &"none"), as duas folhas
+## abertas encostadas na parede, uma de cada lado do vão, cada uma da metade dele e da altura dele.
+static func _shutters(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	var floor_m := hall.floor_m()
+	var height := floor_m * WINDOW_HEIGHT
+	for face: int in 4:
+		var along_x := face % 2 == 0
+		var lateral := Vector3.RIGHT if along_x else Vector3.BACK
+		var count := hall.cells.x if along_x else hall.cells.y
+		var step := (size.x if along_x else size.y) / count
+		var opening := step * WINDOW_WIDTH
+		var leaf := opening * 0.5
+		var box := Vector3(leaf, height, SHUTTER_THICK_M) if along_x else Vector3(SHUTTER_THICK_M, height, leaf)
+		for level: int in hall.floors():
+			for index: int in count:
+				if slot(hall, face, index, level) != &"window":
+					continue
+				var middle := center + _wall_point(hall, face, index, level) + _face_normal(face) * SHUTTER_OUT_M \
+						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
+				for side: float in [-1.0, 1.0]:
+					_box(tool, middle + lateral * side * (opening * 0.5 + SHUTTER_GAP_M + leaf * 0.5), box, UV_SHUTTER)
+
+
+## Fase 160: os cunhais — nas quatro quinas do corpo, da soleira até a cornija, blocos de pedra clara em fiadas de
+## QUOIN_COURSE_M, alternando o lado comprido (QUOIN_LONG_M) entre as duas faces da quina, saltados QUOIN_OUT_M da parede.
+## A quina do lado da ala (Fase 96) para no alto da ala; no balanço (Fase 102) a quina da frente sobe pela frente que
+## avançou.
+static func _quoins(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	var floor_m := hall.floor_m()
+	var winged := hall.wing != 0 and hall.floors() >= 2
+	for sx: float in [-1.0, 1.0]:
+		for sz: float in [-1.0, 1.0]:
+			var top := hall.height_m - CORNICE_M
+			if winged and signf(hall.wing) == sx:
+				top = hall.height_m - floor_m - CORNICE_M
+			var course := 0
+			var y := 0.0
+			while y + QUOIN_COURSE_M <= top + 0.001:
+				var corner := Vector3(sx * size.x * 0.5, 0.0, sz * size.y * 0.5)
+				if hall.jetty and sz < 0.0 and y >= floor_m:
+					corner.z -= JETTY_M
+				var long_x := course % 2 == 0
+				var reach := Vector2(QUOIN_LONG_M if long_x else QUOIN_SHORT_M, QUOIN_SHORT_M if long_x else QUOIN_LONG_M)
+				# o bloco vai da quina para dentro de cada face (reach) e sai QUOIN_OUT_M para fora delas
+				var low := Vector3(corner.x - sx * reach.x, y, corner.z - sz * reach.y)
+				var high := Vector3(corner.x + sx * QUOIN_OUT_M, y + QUOIN_COURSE_M - QUOIN_JOINT_M,
+						corner.z + sz * QUOIN_OUT_M)
+				_box(tool, center + (low + high) * 0.5, (high - low).abs(), UV_LIGHT_STONE)
+				y += QUOIN_COURSE_M
+				course += 1
 
 ## Guarnição de pedra da janela (Fase 25): as ombreiras dos dois lados do vão, do peitoril à verga, e a pedra
 ## de fecho no meio da verga. "wall" é o ponto da fachada no meio da célula, no chão do andar; "lintel_y", o
 ## meio da verga acima dele.
 static func _window_frame(tool: SurfaceTool, wall: Vector3, face: int, step: float, floor_m: float,
-		lintel_y: float) -> void:
+		lintel_y: float, keystone := true) -> void:
 	var along_x := face % 2 == 0
 	var lateral := Vector3.RIGHT if along_x else Vector3.BACK
 	var normal := _face_normal(face)
@@ -1171,9 +2261,109 @@ static func _window_frame(tool: SurfaceTool, wall: Vector3, face: int, step: flo
 		var at := wall + lateral * side * (step * WINDOW_WIDTH * 0.5 + JAMB_M * 0.5) \
 				+ Vector3(0.0, floor_m * WINDOW_CENTER + LINTEL_M * 0.25, 0.0) + normal * 0.04
 		_box(tool, at, Vector3(JAMB_M, height, 0.08) if along_x else Vector3(0.08, height, JAMB_M), UV_LIGHT_STONE)
+	if not keystone:
+		return
 	var key := wall + Vector3(0.0, lintel_y - LINTEL_M * 0.5 + KEYSTONE_M * 0.5, 0.0) + normal * 0.07
 	_box(tool, key, Vector3(KEYSTONE_WIDTH_M, KEYSTONE_M, 0.14) if along_x
 			else Vector3(0.14, KEYSTONE_M, KEYSTONE_WIDTH_M), UV_LIGHT_STONE)
+
+
+## Fase 99: a cabeça em arco da janela, por cima do vão — o tímpano de vidro em meio círculo, a arquivolta de pedra que
+## salta da parede (face, borda de fora e intradorso) e a pedra de fecho no alto. "wall" como no _window_frame.
+static func _arch_head(tool: SurfaceTool, wall: Vector3, face: int, step: float, floor_m: float) -> void:
+	var lateral := Vector3.RIGHT if face % 2 == 0 else Vector3.BACK
+	var normal := _face_normal(face)
+	var spring := wall + Vector3(0.0, arch_spring(floor_m), 0.0)
+	var inner := arch_radius(step)
+	var outer := inner + ARCH_BAND_M
+	var proud := normal * ARCH_PROUD_M
+	for k: int in ARCH_SEGMENTS:
+		var a0 := PI * k / ARCH_SEGMENTS
+		var a1 := PI * (k + 1) / ARCH_SEGMENTS
+		var r0 := lateral * cos(a0) + Vector3.UP * sin(a0)
+		var r1 := lateral * cos(a1) + Vector3.UP * sin(a1)
+		_triangle(tool, spring + normal * 0.03, spring + r0 * inner + normal * 0.03, spring + r1 * inner + normal * 0.03,
+				normal, UV_GLASS)
+		_quad(tool, spring + r0 * inner + proud, spring + r1 * inner + proud, spring + r1 * outer + proud,
+				spring + r0 * outer + proud, normal, UV_LIGHT_STONE)
+		_quad(tool, spring + r0 * outer, spring + r1 * outer, spring + r1 * outer + proud, spring + r0 * outer + proud,
+				r0 + r1, UV_LIGHT_STONE)
+		_quad(tool, spring + r0 * inner, spring + r1 * inner, spring + r1 * inner + proud, spring + r0 * inner + proud,
+				-(r0 + r1), UV_LIGHT_STONE)
+	var key := spring + Vector3.UP * (inner + ARCH_BAND_M * 0.5) + normal * (ARCH_PROUD_M + 0.02)
+	_box(tool, key, Vector3(KEYSTONE_WIDTH_M, ARCH_BAND_M * 1.8, 0.1) if face % 2 == 0
+			else Vector3(0.1, ARCH_BAND_M * 1.8, KEYSTONE_WIDTH_M), UV_LIGHT_STONE)
+
+
+## Onde o arco da janela nasce (o alto do vão, acima do chão do andar) e o raio dele (a meia largura do vão).
+static func arch_spring(floor_m: float) -> float:
+	return floor_m * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5)
+
+
+static func arch_radius(step: float) -> float:
+	return step * WINDOW_WIDTH * 0.5
+
+
+## Fase 99: as cabeças em arco de todas as janelas do corpo (os serviços de pedra, que não têm o _ornament das casas).
+static func _arches(tool: SurfaceTool, spec: Spec) -> void:
+	var hall := spec.hall()
+	var center := spec.hall_offset()
+	var size := hall.size_m()
+	for face: int in 4:
+		var count := hall.cells.x if face % 2 == 0 else hall.cells.y
+		var step := (size.x if face % 2 == 0 else size.y) / count
+		for level: int in hall.floors():
+			for index: int in count:
+				if slot(hall, face, index, level) == &"window":
+					_arch_head(tool, center + _wall_point(hall, face, index, level), face, step, hall.floor_m())
+
+
+## Fase 99: a arcada do mercado na fileira do pátio junto do corpo — um pilar em cada divisa de célula, o arco de volta
+## inteira entre eles (o tímpano por cima do arco, a face de trás e o intradorso) e a água de telhas subindo até a parede.
+static func arcade_bays(spec: Spec) -> int:
+	if spec.silhouette != BuildingDef.Silhouette.STALLS or spec.court_rows < 2:
+		return 0
+	return spec.cells.x
+
+
+static func _arcade(tool: SurfaceTool, spec: Spec) -> void:
+	var bays := arcade_bays(spec)
+	if bays == 0:
+		return
+	var size := spec.size_m()
+	var step := size.x / bays
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	var front := wall_z - spec.cell_m + 0.15
+	var radius := (step - ARCADE_PIER_M) * 0.5
+	var top := ARCADE_SPRING_M + radius + 0.35
+	var y0 := FOUNDATION_UP_M
+	for k: int in bays + 1:
+		var x := -size.x * 0.5 + step * k
+		x = clampf(x, -size.x * 0.5 + ARCADE_PIER_M * 0.5, size.x * 0.5 - ARCADE_PIER_M * 0.5)
+		_box(tool, Vector3(x, (y0 + top) * 0.5, front + ARCADE_THICK_M * 0.5),
+				Vector3(ARCADE_PIER_M, top - y0, ARCADE_THICK_M), UV_LIGHT_STONE)
+		# o capitel: a pedra mais larga onde o arco nasce
+		_box(tool, Vector3(x, ARCADE_SPRING_M, front + ARCADE_THICK_M * 0.5),
+				Vector3(ARCADE_PIER_M + 0.12, 0.12, ARCADE_THICK_M + 0.08), UV_LIGHT_STONE)
+	for bay: int in bays:
+		var middle := -size.x * 0.5 + step * (bay + 0.5)
+		for i: int in ARCH_SEGMENTS:
+			var a0 := PI * i / ARCH_SEGMENTS
+			var a1 := PI * (i + 1) / ARCH_SEGMENTS
+			var p0 := Vector3(middle + cos(a0) * radius, ARCADE_SPRING_M + sin(a0) * radius, front)
+			var p1 := Vector3(middle + cos(a1) * radius, ARCADE_SPRING_M + sin(a1) * radius, front)
+			var back := Vector3(0.0, 0.0, ARCADE_THICK_M)
+			# o tímpano: do arco até o alto da arcada, na frente e atrás
+			var q0 := Vector3(p0.x, top, front)
+			var q1 := Vector3(p1.x, top, front)
+			_quad(tool, p0, p1, q1, q0, Vector3.FORWARD, UV_LIGHT_STONE)
+			_quad(tool, p0 + back, p1 + back, q1 + back, q0 + back, Vector3.BACK, UV_LIGHT_STONE)
+			var down := Vector3(middle, ARCADE_SPRING_M, front) - (p0 + p1) * 0.5
+			_quad(tool, p0, p1, p1 + back, p0 + back, down, UV_LIGHT_STONE)
+	# a cornija no alto e a água de telhas até a parede do corpo
+	_box(tool, Vector3(0.0, top + 0.06, front + ARCADE_THICK_M * 0.5), Vector3(size.x + 0.1, 0.12, ARCADE_THICK_M + 0.14),
+			UV_LIGHT_STONE)
+	_lean_to(tool, Vector3(0.0, top + ARCADE_ROOF_RISE_M, wall_z), Vector3(0.0, top + 0.12, front - 0.2), size.x + 0.2)
 
 
 ## Frontão: a base de pedra em "height" (o alto da parede) e o triângulo sobre ela, centrados em "front"
@@ -1320,17 +2510,24 @@ class Rotor:
 	## Onde fica o eixo, no referencial canônico; o giro é em torno do x local.
 	var pivot: Transform3D
 	var speed: float
+	## Fase 73: maior que zero, a parte balança até esse ângulo (rad) para cada lado em vez de girar; speed é a fase.
+	var rock: float = 0.0
 
 
 static var _rotors: Dictionary[String, Rotor] = {}
 
 
 static func rotor(spec: Spec) -> Rotor:
+	if spec.silhouette == BuildingDef.Silhouette.PUMPJACK and spec.court_rows == 0:
+		return null
 	if spec.silhouette not in [BuildingDef.Silhouette.WINDMILL, BuildingDef.Silhouette.WATERWHEEL,
-			BuildingDef.Silhouette.HEADFRAME]:
+			BuildingDef.Silhouette.HEADFRAME, BuildingDef.Silhouette.PUMPJACK]:
 		return null
 	var key := spec.key()
 	if _rotors.has(key):
+		return _rotors[key]
+	if spec.silhouette == BuildingDef.Silhouette.PUMPJACK:
+		_rotors[key] = _walking_beam(spec)
 		return _rotors[key]
 	var size := spec.size_m()
 	var result := Rotor.new()
@@ -1365,6 +2562,32 @@ static func rotor(spec: Spec) -> Rotor:
 	return result
 
 
+## Fase 73: o balancim do cavalo-de-pau, no referencial do eixo: a viga de madeira, a cabeça de ferro na frente (sobre
+## o poço), a travessa atrás e as duas bielas descendo até as manivelas.
+static func _walking_beam(spec: Spec) -> Rotor:
+	var layout := pumpjack_layout(spec)
+	var pivot: Vector3 = layout[&"pivot"]
+	var ahead: float = layout[&"ahead"]
+	var behind: float = layout[&"behind"]
+	var gearbox: Vector3 = layout[&"gearbox"]
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_box(tool, Vector3(0.0, 0.14, (behind - ahead) * 0.5), Vector3(0.26, 0.28, ahead + behind), UV_TIMBER)
+	_box(tool, Vector3(0.0, -0.2, -ahead - 0.1), Vector3(0.3, 0.9, 0.36), UV_IRON)
+	_box(tool, Vector3(0.0, 0.0, behind), Vector3(0.95, 0.16, 0.22), UV_IRON)
+	var drop := pivot.y - gearbox.y
+	for side: float in [-1.0, 1.0]:
+		_box(tool, Vector3(side * 0.42, -drop * 0.5, behind), Vector3(0.07, drop, 0.07), UV_IRON)
+	tool.index()
+	tool.generate_tangents()
+	var result := Rotor.new()
+	result.mesh = tool.commit()
+	result.pivot = Transform3D(Basis.IDENTITY, pivot)
+	result.speed = PUMPJACK_SPEED
+	result.rock = PUMPJACK_ROCK
+	return result
+
+
 ## Telhado: as águas com a UV do telhado; as empenas (triângulos das pontas) com a UV da parede.
 static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 	var size := spec.size_m()
@@ -1392,6 +2615,22 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 			_quad(tool, c11, c01, r01, r11, Vector3(0, 1, 1), UV_ROOF)
 			_quad(tool, c01, c00, r00, r01, Vector3(-1, 1, 0), UV_ROOF)
 			_quad(tool, c00, c10, c11, c01, Vector3.DOWN, UV_ROOF)
+			# Fase 95: as quinas arredondadas (espigões e cumeeira) e o beiral redondo
+			var lift := Vector3(0.0, RIDGE_CAP_M * 0.4, 0.0)
+			for pair: Array in [[c00, r00], [c10, r10], [c11, r11], [c01, r01]]:
+				var low: Vector3 = pair[0]
+				var high: Vector3 = pair[1]
+				_rod(tool, low + lift, high + lift, RIDGE_CAP_M * 0.8, RIDGE_SIDES, UV_ROOF_TRIM, true)
+			if r00.distance_to(r11) > 0.01:
+				_rod(tool, r00 + lift, r11 + lift, RIDGE_CAP_M, RIDGE_SIDES, UV_ROOF_TRIM, true)
+			for edge: Array in [[c00, c10], [c10, c11], [c11, c01], [c01, c00]]:
+				var start: Vector3 = edge[0]
+				var finish: Vector3 = edge[1]
+				_rod(tool, start, finish, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+		_ when spec.mansard:
+			_mansard(tool, spec)
+		_ when spec.vault:
+			_vault(tool, spec)
 		_:
 			var along_x := spec.roof == Roof.GABLE_X
 			# a cumeeira corre em u (x ou z) e as águas descem em v
@@ -1409,6 +2648,12 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				_quad(tool, low_a, low_b, high_b, high_a, away + Vector3.UP, UV_ROOF)
 				_quad(tool, low_a + down, low_b + down, high_b + down, high_a + down, -away - Vector3.UP, UV_ROOF)
 				_quad(tool, low_a + down, low_b + down, low_b, low_a, away, UV_ROOF)
+				# Fase 95: o beiral redondo (a borda grossa da água, no lugar da quina viva)
+				_rod(tool, low_a + down * 0.5, low_b + down * 0.5, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+			# Fase 95: a capa redonda da cumeeira, de ponta a ponta
+			var cap_lift := Vector3(0.0, RIDGE_CAP_M * 0.35, 0.0)
+			_rod(tool, _uv_point(along_x, -hu - o, ridge, 0.0) + cap_lift, _uv_point(along_x, hu + o, ridge, 0.0) + cap_lift,
+					RIDGE_CAP_M, RIDGE_SIDES, UV_ROOF_TRIM, true)
 			for end: float in [-1.0, 1.0]:
 				var left := _uv_point(along_x, end * hu, top, -hv)
 				var right := _uv_point(along_x, end * hu, top, hv)
@@ -1422,6 +2667,219 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				_quad(tool, side_b, side_b + down, tip + down, tip, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
 
 
+## Fase 124: os três níveis da mansarda — [meia medida do beiral, do rebordo e da cumeeira (x e z), alturas do beiral,
+## do rebordo e da cumeeira].
+static func mansard_levels(spec: Spec) -> Array:
+	var half := spec.size_m() * 0.5
+	var eave := half + Vector2.ONE * MANSARD_EAVE_M
+	var curb := half - Vector2.ONE * MANSARD_INSET_M
+	var ridge := Vector2(maxf(curb.x - curb.y, 0.0), maxf(curb.y - curb.x, 0.0))
+	var top := spec.height_m
+	return [eave, curb, ridge, top - 0.05, top + spec.roof_m * MANSARD_LOWER, top + spec.roof_m]
+
+
+## Fase 124: a mansarda — a água de baixo íngreme do beiral ao rebordo, a de cima quase plana em quatro águas, o fundo do
+## beiral, o beiral e o rebordo redondos, os espigões e a cumeeira com a capa, e as lucarnas da frente e de trás.
+static func _mansard(tool: SurfaceTool, spec: Spec) -> void:
+	var levels := mansard_levels(spec)
+	var eave: Vector2 = levels[0]
+	var curb: Vector2 = levels[1]
+	var ridge: Vector2 = levels[2]
+	var low: float = levels[3]
+	var mid: float = levels[4]
+	var high: float = levels[5]
+	var signs: Array[Vector2] = [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]
+	var e: Array[Vector3] = []
+	var k: Array[Vector3] = []
+	var r: Array[Vector3] = []
+	for s: Vector2 in signs:
+		e.append(Vector3(s.x * eave.x, low, s.y * eave.y))
+		k.append(Vector3(s.x * curb.x, mid, s.y * curb.y))
+		r.append(Vector3(s.x * ridge.x, high, s.y * ridge.y))
+	var outs: Array[Vector3] = [Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(-1, 0, 0)]
+	for i: int in 4:
+		var j := (i + 1) % 4
+		_quad(tool, e[i], e[j], k[j], k[i], outs[i] + Vector3.UP * 0.3, UV_ROOF)
+		_quad(tool, k[i], k[j], r[j], r[i], outs[i] * 0.4 + Vector3.UP, UV_ROOF)
+		_rod(tool, e[i], e[j], EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+		_rod(tool, k[i], k[j], RIDGE_CAP_M * 0.7, RIDGE_SIDES, UV_ROOF_TRIM)
+		_rod(tool, k[i], r[i], RIDGE_CAP_M * 0.6, RIDGE_SIDES, UV_ROOF_TRIM, true)
+	_quad(tool, e[0], e[1], e[2], e[3], Vector3.DOWN, UV_ROOF)
+	if r[0].distance_to(r[2]) > 0.01:
+		_rod(tool, r[0], r[2], RIDGE_CAP_M, RIDGE_SIDES, UV_ROOF_TRIM, true)
+	_dormers(tool, spec, levels)
+
+
+## Fase 124: as lucarnas na água de baixo da frente (−z) e de trás (+z), uma por célula menos as pontas: a parede da
+## frente em pé a DORMER_AT da água, o corpo entrando até o rebordo, o telhadinho de duas águas e o vidro com o caixilho.
+static func _dormers(tool: SurfaceTool, spec: Spec, levels: Array) -> void:
+	var eave: Vector2 = levels[0]
+	var curb: Vector2 = levels[1]
+	var low: float = levels[3]
+	var mid: float = levels[4]
+	var count := maxi(spec.cells.x - 1, 1)
+	var span := curb.x * 2.0 - DORMER_W
+	if span <= 0.0:
+		return
+	var face_z := lerpf(eave.y, curb.y, DORMER_AT)
+	var sill := lerpf(low, mid, DORMER_AT)
+	var crown := minf(sill + DORMER_H, mid - 0.15)
+	var half := DORMER_W * 0.5
+	for side: float in [-1.0, 1.0]:
+		var out := Vector3(0.0, 0.0, side)
+		for i: int in count:
+			var x := -span * 0.5 + span * (i + 0.5) / count
+			var front := side * face_z
+			var back := side * curb.y
+			_box(tool, Vector3(x, (sill + crown) * 0.5, (front + back) * 0.5), Vector3(DORMER_W, crown - sill,
+					absf(front - back)), UV_WALL)
+			var peak := crown + DORMER_PEAK_M
+			for s: float in [-1.0, 1.0]:
+				_quad(tool, Vector3(x + s * (half + 0.08), crown - 0.03, front + side * 0.1),
+						Vector3(x + s * (half + 0.08), crown - 0.03, back), Vector3(x, peak, back),
+						Vector3(x, peak, front + side * 0.1), Vector3(s, 1.0, 0.0), UV_ROOF)
+			_triangle(tool, Vector3(x - half, crown, front + side * 0.005), Vector3(x + half, crown, front + side * 0.005),
+					Vector3(x, peak - 0.04, front + side * 0.005), out, UV_WALL)
+			var glass_z := front + side * 0.01
+			var glass_low := sill + 0.15
+			var glass_high := crown - 0.12
+			var glass_x := DORMER_W * 0.3
+			_quad(tool, Vector3(x - glass_x, glass_low, glass_z), Vector3(x + glass_x, glass_low, glass_z),
+					Vector3(x + glass_x, glass_high, glass_z), Vector3(x - glass_x, glass_high, glass_z), out, UV_GLASS)
+			var bar_z := front + side * 0.02
+			_quad(tool, Vector3(x - MULLION_M * 0.5, glass_low, bar_z), Vector3(x + MULLION_M * 0.5, glass_low, bar_z),
+					Vector3(x + MULLION_M * 0.5, glass_high, bar_z), Vector3(x - MULLION_M * 0.5, glass_high, bar_z), out,
+					UV_TIMBER)
+
+
+## Fase 98: a altura da abóbada em v (de -largura a +largura, com o beiral): o arco de círculo que passa pelo beiral dos
+## dois lados e pelo alto. Devolve [altura, normal no plano (v, y)].
+static func vault_profile(spec: Spec, v: float) -> Array:
+	var size := spec.size_m()
+	var hv := (size.y if spec.roof == Roof.GABLE_X else size.x) * 0.5
+	var width := hv + spec.overhang_m
+	var rise := spec.roof_m * VAULT_RISE
+	var eave := spec.height_m - spec.overhang_m * 0.3
+	var h := spec.height_m + rise - eave
+	var radius := (width * width + h * h) / (2.0 * h)
+	var center_y := spec.height_m + rise - radius
+	var y := center_y + sqrt(maxf(radius * radius - v * v, 0.0))
+	return [y, Vector2(v, y - center_y) / radius]
+
+
+## A abóbada: as faixas do arco com as normais dele (sai lisa), a espessura por baixo e na borda, o beiral redondo e as
+## empenas em arco nas duas pontas.
+static func _vault(tool: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var along_x := spec.roof == Roof.GABLE_X
+	var hu := (size.x if along_x else size.y) * 0.5
+	var hv := (size.y if along_x else size.x) * 0.5
+	var o := spec.overhang_m
+	var top := spec.height_m
+	var width := hv + o
+	var down := Vector3(0.0, -ROOF_THICKNESS_M, 0.0)
+	for i: int in VAULT_SEGMENTS:
+		var v0 := -width + 2.0 * width * i / VAULT_SEGMENTS
+		var v1 := -width + 2.0 * width * (i + 1) / VAULT_SEGMENTS
+		var p0 := vault_profile(spec, v0)
+		var p1 := vault_profile(spec, v1)
+		var y0: float = p0[0]
+		var y1: float = p1[0]
+		var m0: Vector2 = p0[1]
+		var m1: Vector2 = p1[1]
+		var n0 := _uv_point(along_x, 0.0, m0.y, m0.x)
+		var n1 := _uv_point(along_x, 0.0, m1.y, m1.x)
+		var a := _uv_point(along_x, -hu - o, y0, v0)
+		var b := _uv_point(along_x, hu + o, y0, v0)
+		var c := _uv_point(along_x, hu + o, y1, v1)
+		var d := _uv_point(along_x, -hu - o, y1, v1)
+		_smooth_quad(tool, [a, b, c, d], [n0, n0, n1, n1], UV_ROOF)
+		_quad(tool, a + down, b + down, c + down, d + down, -(n0 + n1), UV_ROOF)
+		# a borda da faixa nas duas pontas
+		for end: float in [-1.0, 1.0]:
+			var e0 := _uv_point(along_x, end * (hu + o), y0, v0)
+			var e1 := _uv_point(along_x, end * (hu + o), y1, v1)
+			_quad(tool, e0, e1, e1 + down, e0 + down, _uv_point(along_x, end, 0.0, 0.0), UV_ROOF)
+		# a empena: do alto da parede até o arco, só por cima da parede
+		var w0 := clampf(v0, -hv, hv)
+		var w1 := clampf(v1, -hv, hv)
+		if w1 - w0 > 0.001:
+			var r0: float = vault_profile(spec, w0)[0]
+			var r1: float = vault_profile(spec, w1)[0]
+			var g0 := maxf(r0, top)
+			var g1 := maxf(r1, top)
+			for end: float in [-1.0, 1.0]:
+				var outward := _uv_point(along_x, end, 0.0, 0.0)
+				_quad(tool, _uv_point(along_x, end * hu, top, w0), _uv_point(along_x, end * hu, top, w1),
+						_uv_point(along_x, end * hu, g1, w1), _uv_point(along_x, end * hu, g0, w0), outward, UV_WALL)
+	# a borda grossa no beiral e o beiral redondo
+	for side: float in [-1.0, 1.0]:
+		var eave: float = vault_profile(spec, side * width)[0]
+		var low_a := _uv_point(along_x, -hu - o, eave, side * width)
+		var low_b := _uv_point(along_x, hu + o, eave, side * width)
+		_quad(tool, low_a + down, low_b + down, low_b, low_a, _uv_point(along_x, 0.0, 0.0, side), UV_ROOF)
+		_rod(tool, low_a + down * 0.5, low_b + down * 0.5, EAVE_ROLL_M, EAVE_SIDES, UV_ROOF_TRIM)
+
+
+## Quadrilátero com uma normal por vértice (a, b, c, d em volta), virado para a média delas.
+static func _smooth_quad(tool: SurfaceTool, points: Array[Vector3], normals: Array[Vector3], uv: Vector2) -> void:
+	var outward := normals[0] + normals[1] + normals[2] + normals[3]
+	var order: Array[int] = [0, 1, 2, 0, 2, 3]
+	if (points[1] - points[0]).cross(points[2] - points[0]).dot(outward) > 0.0:
+		order = [0, 2, 1, 0, 3, 2]
+	for index: int in order:
+		tool.set_normal(normals[index].normalized())
+		tool.set_uv(uv)
+		tool.add_vertex(points[index])
+
+
+## Fase 98: os tonéis do pátio — cada um [meio da base, raio do bojo, altura], de cada lado do caminho da porta.
+static func vat_layout(spec: Spec) -> Array[Array]:
+	var vats: Array[Array] = []
+	if spec.court_rows == 0 or spec.silhouette != BuildingDef.Silhouette.VATS:
+		return vats
+	var size := spec.size_m()
+	var depth := spec.court_rows * spec.cell_m
+	var z := -size.y * 0.5 + depth * 0.5
+	var step := size.x / spec.cells.x
+	var door_x := -size.x * 0.5 + step * (spec.door_index + 0.5)
+	var radius := minf(depth * 0.34, 0.75)
+	var height := minf(spec.height_m * 0.36, VAT_MAX_M)
+	for span: Vector2 in [Vector2(-size.x * 0.5 + 0.2, door_x - 0.9), Vector2(door_x + 0.9, size.x * 0.5 - 0.2)]:
+		var room := span.y - span.x
+		var count := mini(VATS_PER_SIDE, floori(room / (radius * 2.0 + 0.25)))
+		for k: int in count:
+			var x := span.x + room * (k + 0.5) / count
+			vats.append([Vector3(x, FOUNDATION_UP_M, z), radius, height])
+	return vats
+
+
+## Os tonéis: aduelas com o bojo (sólido de revolução), três arcos de ferro, a tampa e o cano de cobre até a parede.
+static func _vats(tool: SurfaceTool, spec: Spec) -> void:
+	var wall_z := spec.hall_offset().z - spec.hall().size_m().y * 0.5
+	for vat: Array in vat_layout(spec):
+		var base: Vector3 = vat[0]
+		var radius: float = vat[1]
+		var height: float = vat[2]
+		var profile: Array[Vector2] = []
+		for step: int in 7:
+			var t := step / 6.0
+			profile.append(Vector2(_vat_radius(radius, t), height * t))
+		_turned(tool, base, profile, VAT_SIDES, UV_TIMBER)
+		_turned(tool, base, [Vector2(radius / VAT_BULGE, height), Vector2(0.0, height + 0.05)], VAT_SIDES, UV_TIMBER)
+		for t: float in [0.12, 0.5, 0.88]:
+			var ring := _vat_radius(radius, t) + 0.025
+			_turned(tool, base, [Vector2(ring, height * t - 0.05), Vector2(ring, height * t + 0.05)], VAT_SIDES, UV_IRON)
+		_bar(tool, base + Vector3(0.0, height * 0.8, radius * 0.8), Vector3(base.x, base.y + height * 0.8, wall_z), 0.1,
+				UV_COPPER)
+
+
+## O raio do tonel a "t" da altura (0 embaixo, 1 em cima): a parábola do bojo.
+static func _vat_radius(radius: float, t: float) -> float:
+	var narrow := radius / VAT_BULGE
+	return narrow + (radius - narrow) * (1.0 - pow(2.0 * t - 1.0, 2.0))
+
+
 ## Lucarnas (Fase 39) na água da frente do telhado de duas águas (na de cumeeira em z a frente é a empena: vão na água
 ## de +x). Caixa de parede enterrada no telhado, com a frente de pé a LUCARNE_AT da meia largura da água, telhadinho de
 ## duas águas, empena, vidro e caixilho.
@@ -1430,7 +2888,7 @@ static func lucarne_fits(roof_m: float) -> bool:
 
 
 static func _lucarnes(tool: SurfaceTool, spec: Spec) -> void:
-	if spec.lucarnes <= 0 or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z] or not lucarne_fits(spec.roof_m):
+	if spec.lucarnes <= 0 or spec.roof not in [Roof.GABLE_X, Roof.GABLE_Z] or spec.mansard or not lucarne_fits(spec.roof_m):
 		return
 	var size := spec.size_m()
 	var along_x := spec.roof == Roof.GABLE_X
@@ -1496,6 +2954,36 @@ static func _glazing(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void
 				_quad(tool, place * Vector3(MULLION_X, middle - bar_y, -half_w), place * Vector3(MULLION_X, middle - bar_y, half_w),
 						place * Vector3(MULLION_X, middle + bar_y, half_w), place * Vector3(MULLION_X, middle + bar_y, -half_w), out,
 						UV_TIMBER)
+
+
+## Fase 217: as cortinas — em cada janela do corpo (no mesmo referencial do vidro, pelo _cell_transform: o balanço do enxaimel
+## e as rotações acompanham), logo à frente dele: os dois panos presos dos lados do vão, cada um de CURTAIN_MIN a CURTAIN_MAX
+## dele no alto (pela janela, sem sorteio) e franzidos até CURTAIN_TIE disso embaixo, e a sanefa de VALANCE do vão em cima.
+static func _curtains(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
+	var half_w := WINDOW_WIDTH * 0.5
+	var half_h := WINDOW_HEIGHT * 0.5
+	var top := WINDOW_CENTER + half_h
+	var bottom := WINDOW_CENTER - half_h
+	var valance := top - WINDOW_HEIGHT * VALANCE
+	for face: int in 4:
+		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
+		for level: int in spec.floors():
+			for index: int in count:
+				if slot(spec, face, index, level) != &"window":
+					continue
+				var place := offset * _cell_transform(spec, face, index, level)
+				var out := place.basis.x.normalized()
+				for side: float in [-1.0, 1.0]:
+					var share := CURTAIN_MIN + (CURTAIN_MAX - CURTAIN_MIN) * float(posmod(face * 7 + index * 5 + level * 3
+							+ int(side) * 2, 5)) / 4.0
+					var edge := side * half_w
+					var inner := edge - side * share * WINDOW_WIDTH
+					var tied := edge - side * share * WINDOW_WIDTH * CURTAIN_TIE
+					_quad(tool, place * Vector3(CURTAIN_X, bottom, edge), place * Vector3(CURTAIN_X, bottom, tied),
+							place * Vector3(CURTAIN_X, valance, inner), place * Vector3(CURTAIN_X, valance, edge), out,
+							UV_CURTAIN)
+				_quad(tool, place * Vector3(CURTAIN_X, valance, -half_w), place * Vector3(CURTAIN_X, valance, half_w),
+						place * Vector3(CURTAIN_X, top, half_w), place * Vector3(CURTAIN_X, top, -half_w), out, UV_CURTAIN)
 
 
 ## Plinto e degraus do prédio no barranco (Fase 39), no referencial canônico: a pedra desce do piso até "depth" abaixo
@@ -1577,6 +3065,174 @@ static func _triangle(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, out
 		tool.set_normal(normal)
 		tool.set_uv(uv)
 		tool.add_vertex(point)
+
+
+## Fase 95: haste redonda de from até to (raio radius, sides faces) com a normal de cada vértice para fora do eixo (o
+## sombreado sai liso, redondo). Com half, só a metade de cima (a capa da cumeeira, que assenta nas duas águas).
+static func _rod(tool: SurfaceTool, from: Vector3, to: Vector3, radius: float, sides: int, uv: Vector2, half: bool = false) -> void:
+	var axis := to - from
+	if axis.length_squared() < 1e-6:
+		return
+	var direction := axis.normalized()
+	var side := direction.cross(Vector3.UP)
+	if side.length_squared() < 1e-6:
+		side = direction.cross(Vector3.RIGHT)
+	side = side.normalized()
+	var up := side.cross(direction).normalized()
+	if up.y < 0.0:
+		up = -up
+		side = -side
+	var arc := PI if half else TAU
+	var normals: Array[Vector3] = []
+	for i: int in sides + 1:
+		var angle := arc * i / sides
+		normals.append(side * cos(angle) + up * sin(angle))
+	for i: int in sides:
+		var n0 := normals[i]
+		var n1 := normals[i + 1]
+		var quad: Array[Vector3] = [from + n0 * radius, to + n0 * radius, to + n1 * radius, from + n1 * radius]
+		var quad_normals: Array[Vector3] = [n0, n0, n1, n1]
+		# o sentido dos vértices pela normal média (a face para fora do eixo)
+		var outward := (n0 + n1).normalized()
+		var order: Array[int] = [0, 1, 2, 0, 2, 3]
+		if (quad[1] - quad[0]).cross(quad[2] - quad[0]).dot(outward) > 0.0:
+			order = [0, 2, 1, 0, 3, 2]
+		for index: int in order:
+			tool.set_normal(quad_normals[index])
+			tool.set_uv(uv)
+			tool.add_vertex(quad[index])
+
+
+## Fase 97: sólido de revolução em volta do eixo vertical que passa por center: o perfil em (raio, altura) de baixo para
+## cima, em sides faces, com a normal de cada vértice pela média dos trechos vizinhos (a cúpula sai lisa).
+static func _turned(tool: SurfaceTool, center: Vector3, profile: Array[Vector2], sides: int, uv: Vector2) -> void:
+	var normals: Array[Vector2] = []
+	for i: int in profile.size():
+		var sum := Vector2.ZERO
+		if i > 0:
+			sum += _profile_normal(profile[i - 1], profile[i])
+		if i < profile.size() - 1:
+			sum += _profile_normal(profile[i], profile[i + 1])
+		normals.append(sum.normalized())
+	for i: int in profile.size() - 1:
+		var low := profile[i]
+		var high := profile[i + 1]
+		if low.x < 0.0001 and high.x < 0.0001:
+			continue
+		for k: int in sides:
+			var a0 := TAU * k / sides
+			var a1 := TAU * (k + 1) / sides
+			var quad: Array[Vector3] = [_ring_point(center, low, a0), _ring_point(center, low, a1),
+					_ring_point(center, high, a1), _ring_point(center, high, a0)]
+			var quad_normals: Array[Vector3] = [_ring_normal(normals[i], a0), _ring_normal(normals[i], a1),
+					_ring_normal(normals[i + 1], a1), _ring_normal(normals[i + 1], a0)]
+			var outward := (quad_normals[0] + quad_normals[2]).normalized()
+			var order: Array[int] = [0, 1, 2, 0, 2, 3]
+			if (quad[1] - quad[0]).cross(quad[2] - quad[0]).dot(outward) > 0.0:
+				order = [0, 2, 1, 0, 3, 2]
+			for index: int in order:
+				tool.set_normal(quad_normals[index])
+				tool.set_uv(uv)
+				tool.add_vertex(quad[index])
+
+
+## A normal de um trecho do perfil (raio, altura), para fora: subindo reto ela aponta para fora; fechando, para cima.
+static func _profile_normal(a: Vector2, b: Vector2) -> Vector2:
+	var along := b - a
+	return Vector2(along.y, -along.x).normalized() if along.length_squared() > 1e-8 else Vector2(1.0, 0.0)
+
+
+static func _ring_point(center: Vector3, point: Vector2, angle: float) -> Vector3:
+	return center + Vector3(cos(angle) * point.x, point.y, sin(angle) * point.x)
+
+
+static func _ring_normal(normal: Vector2, angle: float) -> Vector3:
+	return Vector3(cos(angle) * normal.x, normal.y, sin(angle) * normal.x)
+
+
+## Fase 97: a cúpula de cobre no meio do telhado de quatro águas: o tambor de pedra saindo do telhado até DRUM_M acima da
+## cumeeira, com a cornija e os vãos escuros, a meia esfera de cobre (DOME_RISE do raio) e o lanternim com o remate.
+static func _dome(tool: SurfaceTool, spec: Spec) -> void:
+	var size := spec.size_m()
+	var radius := minf(minf(size.x, size.y) * DOME_SHARE, DOME_MAX_M)
+	var center := Vector3(0.0, 0.0, 0.0)
+	var peak := spec.height_m + spec.roof_m
+	var foot := spec.height_m + spec.roof_m * 0.4
+	var drum_top := peak + DRUM_M
+	_turned(tool, center, [Vector2(radius, foot), Vector2(radius, drum_top)], DOME_SIDES, UV_LIGHT_STONE)
+	# a cornija do tambor e os vãos (o vidro escuro do kit)
+	_turned(tool, center, [Vector2(radius, drum_top - 0.18), Vector2(radius + 0.16, drum_top - 0.1),
+			Vector2(radius + 0.16, drum_top), Vector2(radius * 0.98, drum_top + 0.02)], DOME_SIDES, UV_LIGHT_STONE)
+	for k: int in 8:
+		var angle := TAU * (k + 0.5) / 8.0
+		var at := Vector3(cos(angle) * (radius + 0.02), (peak + drum_top) * 0.5, sin(angle) * (radius + 0.02))
+		var window := SurfaceTool.new()
+		window.begin(Mesh.PRIMITIVE_TRIANGLES)
+		_box(window, Vector3.ZERO, Vector3(0.06, DRUM_M * 0.45, radius * 0.35), UV_GLASS)
+		tool.append_from(window.commit(), 0, Transform3D(Basis(Vector3.UP, -angle), at))
+	# a meia esfera de cobre
+	var profile: Array[Vector2] = []
+	for step: int in 9:
+		var angle := PI * 0.5 * step / 8.0
+		profile.append(Vector2(cos(angle) * radius, drum_top + sin(angle) * radius * DOME_RISE))
+	_turned(tool, center, profile, DOME_SIDES, UV_COPPER)
+	# o lanternim: tambor pequeno de pedra, a capinha de cobre e o remate
+	var crown := drum_top + radius * DOME_RISE
+	var small := radius * 0.2
+	_turned(tool, center, [Vector2(small, crown - 0.1), Vector2(small, crown + small * 1.6)], 8, UV_LIGHT_STONE)
+	var cap: Array[Vector2] = []
+	for step: int in 5:
+		var angle := PI * 0.5 * step / 4.0
+		cap.append(Vector2(cos(angle) * small * 1.15, crown + small * 1.6 + sin(angle) * small))
+	_turned(tool, center, cap, 8, UV_COPPER)
+	var finial := dome_finial(spec)
+	_rod(tool, finial, finial + Vector3(0.0, 0.9, 0.0), 0.05, 6, UV_COPPER)
+
+
+## Fase 238: o pé do remate da cúpula (no alto da capinha do lanternim), no referencial do prédio; é onde sobe o mastro da
+## bandeira da prefeitura.
+static func dome_finial(spec: Spec) -> Vector3:
+	var size := spec.size_m()
+	var radius := minf(minf(size.x, size.y) * DOME_SHARE, DOME_MAX_M)
+	var crown := spec.height_m + spec.roof_m + DRUM_M + radius * DOME_RISE
+	return Vector3(0.0, crown + radius * 0.2 * 2.5, 0.0)
+
+
+## Fase 97: o torreão redondo no canto da frente de +X (no referencial do corpo), em balanço do primeiro andar: o cone de
+## pedra que o segura, o fuste na parede do prédio subindo TURRET_ABOVE de um andar acima do beiral, os vãos escuros por
+## andar virados para a rua e o telhado cônico com o remate. O meio fica na linha da fachada: metade sai para a frente.
+static func turret_center(spec: Spec) -> Vector3:
+	var size := spec.size_m()
+	return Vector3(size.x * 0.5 - TURRET_R, 0.0, -size.y * 0.5)
+
+
+static func _turret(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
+	var part := SurfaceTool.new()
+	part.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var center := turret_center(spec)
+	var bottom := spec.floor_m()
+	var top := spec.height_m + spec.floor_m() * TURRET_ABOVE
+	_turned(part, center, [Vector2(0.12, bottom - TURRET_CORBEL_M), Vector2(TURRET_R, bottom)], TURRET_SIDES, UV_LIGHT_STONE)
+	_turned(part, center, [Vector2(TURRET_R, bottom), Vector2(TURRET_R, top)], TURRET_SIDES, UV_WALL)
+	# a cornija no alto do fuste
+	_turned(part, center, [Vector2(TURRET_R, top - 0.2), Vector2(TURRET_R + 0.12, top - 0.1), Vector2(TURRET_R + 0.12, top)],
+			TURRET_SIDES, UV_LIGHT_STONE)
+	# um vão por andar em cada um dos três lados que dão para fora (a frente, o canto e o lado)
+	for level: int in range(1, spec.floors() + 1):
+		var y := level * spec.floor_m() + spec.floor_m() * 0.5
+		if y > top - 0.4:
+			break
+		for angle: float in [-PI * 0.5, -PI * 0.25, 0.0]:
+			var at := center + Vector3(cos(angle) * (TURRET_R + 0.02), y, sin(angle) * (TURRET_R + 0.02))
+			var window := SurfaceTool.new()
+			window.begin(Mesh.PRIMITIVE_TRIANGLES)
+			_box(window, Vector3.ZERO, Vector3(0.06, spec.floor_m() * 0.45, 0.42), UV_GLASS)
+			part.append_from(window.commit(), 0, Transform3D(Basis(Vector3.UP, -angle), at))
+	# o telhado cônico (na célula do acabamento: liso, sem as fileiras de telha) e o remate
+	_turned(part, center, [Vector2(TURRET_R + 0.22, top), Vector2(0.0, top + TURRET_ROOF_M)], TURRET_SIDES, UV_ROOF_TRIM)
+	_rod(part, center + Vector3(0.0, top + TURRET_ROOF_M - 0.1, 0.0), center + Vector3(0.0, top + TURRET_ROOF_M + 0.7, 0.0),
+			0.05, 6, UV_IRON)
+	tool.append_from(part.commit(), 0, offset)
 
 
 static func _box(tool: SurfaceTool, center: Vector3, size: Vector3, uv: Vector2) -> void:

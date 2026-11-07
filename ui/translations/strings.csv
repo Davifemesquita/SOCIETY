@@ -359,7 +359,7 @@ OPTIONS_PERIOD_LOOK_TIP,"Realces âmbar, sombras frias e verdes mais contidos, c
 OPTIONS_RENDER_SCALE,Escala da imagem 3D,3D image scale
 OPTIONS_RENDER_SCALE_TIP,Abaixo de 100% usa o FSR 2: mais leve para placas mais fracas,Below 100% uses FSR 2: lighter on weaker graphics cards
 OPTIONS_MAX_FPS,Limite de quadros,Frame limit
-OPTIONS_MAX_FPS_TIP,Quadros por segundo no máximo,Maximum frames per second
+OPTIONS_MAX_FPS_TIP,"Quadros por segundo no máximo. O automático segue o monitor (o maior divisor da taxa dele até 75: 60 num de 180 Hz, 72 num de 144 Hz): um ritmo que divide a taxa do monitor não treme com o VSync","Maximum frames per second. Automatic follows the monitor (the largest divisor of its rate up to 75: 60 on 180 Hz, 72 on 144 Hz): a pace that divides the monitor rate does not judder with VSync"
 OPTIONS_FPS_UNLIMITED,Sem limite,Unlimited
 OPTIONS_GRAPHICS_NOTE,A simulação é a mesma em qualquer nível,The simulation is the same at every level
 OPTIONS_VOLUME_TIP,Volume deste canal,Volume of this channel
@@ -457,9 +457,10 @@ NOTICE_CLICK_TIP,Clique para ir até lá,Click to go there
 OPTIONS_SMALL_TEXT,Nesta escala o texto fica abaixo de 18 px e pode ficar difícil de ler.,At this scale text is below 18 px and may be hard to read.
 OPTIONS_SCALE_LIMITED,Nesta janela a interface não cabe nessa escala: ela fica no máximo que cabe (200% pede uma tela de 4K).,The interface does not fit at this scale in this window: it stays at the largest that fits (200% needs a 4K screen).
 NEW_GAME_TERRAIN,Ilhas,Islands
-NEW_GAME_TERRAIN_TIP,O gerador das ilhas: o clássico ou o novo (contorno orgânico e patamares em regiões; experimental),The island generator: the classic one or the new one (organic outline and regional plateaus; experimental)
+NEW_GAME_TERRAIN_TIP,"O gerador das ilhas: as clássicas, as orgânicas (experimental) ou as de enseadas (alongadas, com praias nas enseadas, falésias e rochedos)","The island generator: classic, organic (experimental) or coves (elongated, with beaches in the coves, cliffs and sea stacks)"
 NEW_GAME_TERRAIN_CLASSIC,Clássicas,Classic
 NEW_GAME_TERRAIN_ORGANIC,Orgânicas (experimental),Organic (experimental)
+NEW_GAME_TERRAIN_COVES,Enseadas e falésias,Coves and cliffs
 NEW_GAME_PREVIEW_TIP,A carta do arquipélago desta semente,The chart of this seed's archipelago
 NEW_GAME_PREVIEW_WORKING,Desenhando a carta…,Drawing the chart…
 NEW_GAME_PREVIEW_DONE,Semente %d,Seed %d
@@ -538,6 +539,17 @@ BUILDING_CIGAR_FACTORY,Charutaria,Cigar factory
 BUILDING_GOLDSMITH,Ourivesaria,Goldsmith
 BUILDING_THEATER,Teatro,Theatre
 BUILDING_UNIVERSITY,Universidade,University
+BUILDING_TOWN_HALL,Prefeitura,Town hall
+BUILDING_ZOO,Zoológico,Zoo
+BUILDING_MUSEUM,Museu,Museum
+BUILDING_OIL_WELL,Poço de petróleo,Oil well
+BUILDING_OIL_POWER_STATION,Usina a petróleo,Oil power station
+GOOD_OIL,Petróleo,Oil
+HUD_RAIL,Trilho,Rail
+HUD_RAIL_TIP,"Ferrovia: liga o poço de petróleo à usina (o petróleo só anda por trilho). %s moedas e %s tábua por célula; não leva carroça nem gente.","Railway: links the oil well to the power station (oil only travels by rail). %s coins and %s plank per cell; carries no carts or people."
+HUD_HINT_RAIL,"Arraste para pôr o trilho · encoste-o num lado do poço e da usina","Drag to lay rail · make it touch a side of the well and of the power station"
+REASON_ON_RAIL,Há trilho aqui,There is rail here
+REASON_NEEDS_OIL,O poço precisa ficar num campo de petróleo,The well must stand on an oil field
 TIER_ARTISANS,Artesãos,Artisans
 TIER_ENGINEERS,Engenheiros,Engineers
 TIER_INVESTORS,Investidores,Investors
@@ -628,19 +640,53 @@ OPTIONS_AUTOSAVE_OFF,Desligado,Off
 OPTIONS_AUTOSAVE_EVERY,A cada %s min,Every %s min
 OPTIONS_ADVISOR,Conselheiro,Advisor
 OPTIONS_ADVISOR_TIP,O conselheiro apresenta e comenta as metas guiadas,The advisor introduces and comments on the guided goals
+OPTIONS_FINALE_CAMERA,Câmera no grand finale,Camera at the grand finale
+OPTIONS_FINALE_CAMERA_TIP,"Nas noites de festa, às 23h, a câmera vai sozinha para a praça ver o grand finale","On festival nights, at 11 pm, the camera moves to the square on its own to watch the grand finale"
 OPTIONS_CAMERA_SPEED,Velocidade da câmera,Camera speed
 OPTIONS_CAMERA_SPEED_TIP,Rapidez do movimento da câmera pelo teclado e pela borda da tela,How fast the camera moves with the keyboard and the screen edge
 NEW_GAME_EVENTS,Eventos e encomendas,Events and orders
 NEW_GAME_EVENTS_TIP,"De tempos em tempos acontecem eventos (boa colheita, feira, tempestade) e o comerciante faz encomendas com prêmio","From time to time events happen (good harvest, fair, storm) and the trader places orders with a bonus"
 HUD_MISSIONS,Encomendas (%d),Orders (%d)
-HUD_MISSIONS_TIP,Encomendas do comerciante e eventos em andamento (J),Trader's orders and current events (J)
+HUD_MISSIONS_TIP,"Jornal, encomendas do comerciante e eventos em andamento (J)","Newspaper, trader's orders and current events (J)"
 ACTION_GAME_MISSIONS,Encomendas e eventos,Orders and events
-MISSIONS_TITLE,Encomendas,Orders
+MISSIONS_TITLE,Jornal e encomendas,Newspaper and orders
 MISSIONS_HINT,"Entregue vendendo o bem no posto do comerciante, por rota ou pelo painel do navio. Cada tonelada é paga; no prazo, ganha o prêmio.","Deliver by selling the good at the trader's post, by route or from the ship panel. Every ton is paid; on time, you earn the bonus."
 MISSIONS_EVENTS,Eventos em andamento,Current events
 MISSIONS_DISABLED,Esta partida não tem eventos nem encomendas,This game has no events or orders
 MISSIONS_NONE,Nenhuma encomenda agora,No orders right now
 MISSIONS_NO_EVENTS,Nenhum evento agora,No events right now
+NEWSPAPER_TITLE,Gazeta do Arquipélago,The Archipelago Gazette
+NEWSPAPER_DISABLED,Esta partida não tem jornal (os eventos estão desligados),This game has no newspaper (events are off)
+NEWSPAPER_NONE,A primeira edição ainda não saiu,The first issue is not out yet
+NEWSPAPER_NEXT,Próxima edição em %s,Next issue in %s
+NEWSPAPER_EFFECT_UP,+%s de felicidade em todas as ilhas até a próxima edição,+%s happiness on every island until the next issue
+NEWSPAPER_EFFECT_DOWN,−%s de felicidade em todas as ilhas até a próxima edição,−%s happiness on every island until the next issue
+NEWSPAPER_NO_EFFECT,Sem efeito na felicidade,No effect on happiness
+NEWSPAPER_PROPAGANDA,Publicar «%s» (%s moedas),Print “%s” (%s coins)
+NEWSPAPER_PROPAGANDA_TIP,Troca a manchete desta edição pela propaganda até a próxima edição (uma vez por edição),Replaces this issue's headline with the propaganda until the next issue (once per issue)
+NEWSPAPER_PROPAGANDA_USED,Esta edição já tem propaganda,This issue already has propaganda
+NOTICE_NEWSPAPER,Saiu o jornal: %s,The newspaper is out: %s
+REASON_NO_EDITION,O jornal ainda não saiu,The newspaper is not out yet
+REASON_PROPAGANDA_USED,Esta edição já tem propaganda,This issue already has propaganda
+REASON_NOT_PROPAGANDA,Esta manchete não é de propaganda,This headline is not propaganda
+HEADLINE_QUIET_WEEK,Semana tranquila no arquipélago,A quiet week in the archipelago
+HEADLINE_QUIET_WEEK_DESC,"Nada de novo nos cais nem nas praças: o povo lê as notas do comércio e segue a vida.","Nothing new on the docks or in the squares: people read the trade notes and carry on."
+HEADLINE_HARBOR_PRAISE,Gazeta elogia o movimento do porto,Gazette praises the busy harbour
+HEADLINE_HARBOR_PRAISE_DESC,"Navios cheios e preços justos: a Gazeta diz que as ilhas nunca viveram tão bem.","Full ships and fair prices: the Gazette says the islands have never had it so good."
+HEADLINE_PRICE_RUMOR,Boatos de carestia assustam o povo,Rumours of scarcity alarm the people
+HEADLINE_PRICE_RUMOR_DESC,"Um panfleto anônimo diz que o pão vai faltar. Ninguém sabe de onde veio, mas todos falam disso.","An anonymous pamphlet says bread will run short. Nobody knows where it came from, but everyone is talking."
+HEADLINE_CHOLERA_FEAR,Medo do cólera chega pelos jornais,Fear of cholera spreads through the papers
+HEADLINE_CHOLERA_FEAR_DESC,"Notícias do continente falam de cólera nos portos. As famílias evitam as ruas e as tavernas.","News from the mainland tells of cholera in the ports. Families avoid the streets and the taverns."
+HEADLINE_COMPANY_SCANDAL,Escândalo na Companhia,Scandal at the Company
+HEADLINE_COMPANY_SCANDAL_DESC,"Um contador acusa a Companhia de esconder lucros. Os moradores desconfiam de quem governa as ilhas.","A bookkeeper accuses the Company of hiding profits. Residents distrust those who run the islands."
+HEADLINE_ROYAL_VISIT,Visita real anunciada,A royal visit is announced
+HEADLINE_ROYAL_VISIT_DESC,"A Coroa promete visitar as ilhas. Fachadas pintadas, bandeiras nas janelas e muito orgulho nas ruas.","The Crown promises to visit the islands. Painted façades, flags in the windows and a lot of pride in the streets."
+HEADLINE_PROGRESS,O progresso chegou às ilhas,Progress has reached the islands
+HEADLINE_PROGRESS_DESC,"Propaganda da Companhia: fábricas novas, trabalho para todos e um futuro de vapor e ferro.","Company propaganda: new factories, work for everyone and a future of steam and iron."
+HEADLINE_PROSPERITY,Prosperidade para todos,Prosperity for all
+HEADLINE_PROSPERITY_DESC,"Propaganda da Companhia: mesas fartas e salários em dia em cada casa do arquipélago.","Company propaganda: full tables and wages paid on time in every home of the archipelago."
+HEADLINE_COMPANY_PRIDE,Orgulho da Companhia,The Company's pride
+HEADLINE_COMPANY_PRIDE_DESC,"Propaganda da Companhia: as ilhas são o exemplo do mundo e cada morador é parte dessa glória.","Company propaganda: the islands are an example to the world and every resident shares in the glory."
 MISSION_REQUEST,%s t de %s,%s t of %s
 MISSION_REWARD,"Prêmio de %s moedas, prazo de %s","Bonus of %s coins, %s to deliver"
 MISSION_ANSWER_IN,Responda em %s,Answer within %s
@@ -755,6 +801,55 @@ SPECIALIST_DISMISS_TIP,"Dispensar: sai da companhia, sem devolução","Dismiss: 
 PANEL_SPECIALIST,Especialista,Specialist
 PANEL_SPECIALIST_TIP,Contratar ou designar um especialista para este prédio,Hire or assign a specialist for this building
 PANEL_SPECIALIST_AT,Especialista: %s,Specialist: %s
+PANEL_POLICY,Política: %s,Policy: %s
+PANEL_POLICY_NONE,"Nenhuma política: escolha uma abaixo","No policy: choose one below"
+PANEL_POLICY_REACH,"Vale em %s prédios a até %s células (manutenção %s/min)","Applies to %s buildings within %s cells (upkeep %s/min)"
+PANEL_POLICY_NO_ROAD,A prefeitura sem estrada não aplica a política,A town hall without a road does not apply its policy
+PANEL_POLICY_CLEAR,Sem política,No policy
+PANEL_POLICY_CLEAR_TIP,Tira a política desta prefeitura (para a manutenção dela),Remove this town hall's policy (stops its upkeep)
+PANEL_POLICY_CHOOSE_TIP,"%s. Manutenção: %s/min; vale nos prédios em volta da prefeitura.","%s. Upkeep: %s/min; applies to the buildings around the town hall."
+POLICY_LONG_SHIFTS,Jornada longa,Long shifts
+POLICY_LONG_SHIFTS_DESC,+%s na velocidade da produção em volta,+%s production speed around
+POLICY_FIRE_WATCH,Vigia de incêndio,Fire watch
+POLICY_FIRE_WATCH_DESC,−%s na chance de incêndio em volta,−%s fire chance around
+POLICY_HOLIDAYS,Feriados,Public holidays
+POLICY_HOLIDAYS_DESC,+%s de felicidade nas casas em volta,+%s happiness in the houses around
+POLICY_TAX_OFFICE,Coletoria,Tax office
+POLICY_TAX_OFFICE_DESC,+%s no imposto das casas em volta,+%s tax from the houses around
+REASON_NOT_TOWN_HALL,Só a prefeitura escolhe política,Only a town hall chooses a policy
+PANEL_EXHIBITS,"Peças: %s de %s · %s de felicidade nas casas em volta","Exhibits: %s of %s · %s happiness in the houses around"
+PANEL_EXHIBIT_HERE,Exposta aqui,On display here
+PANEL_EXHIBIT_STORED,Guardada: expor aqui não custa nada,In storage: displaying it here is free
+PANEL_EXHIBIT_BUY,Comprar e expor por %s moedas,Buy and display for %s coins
+REASON_NOT_EXHIBIT_HALL,Esta peça não vai neste prédio,This exhibit does not go in this building
+REASON_EXHIBIT_HALL_FULL,Não há vaga para mais peças,There is no room for more exhibits
+REASON_EXHIBIT_SHOWN,Esta peça já está exposta,This exhibit is already on display
+REASON_EXHIBIT_LOCKED,Esta peça ainda não está à venda,This exhibit is not for sale yet
+EXHIBIT_PARROTS,Araras,Macaws
+EXHIBIT_PARROTS_DESC,Um viveiro de araras coloridas trazidas das ilhas do sul,An aviary of colourful macaws brought from the southern islands
+EXHIBIT_ZEBRAS,Zebras,Zebras
+EXHIBIT_ZEBRAS_DESC,Uma pequena manada de zebras africanas,A small herd of African zebras
+EXHIBIT_GIRAFFE,Girafa,Giraffe
+EXHIBIT_GIRAFFE_DESC,A primeira girafa que o arquipélago já viu,The first giraffe the archipelago has ever seen
+EXHIBIT_LION,Leão,Lion
+EXHIBIT_LION_DESC,Um leão do Atlas que ruge na hora da comida,An Atlas lion that roars at feeding time
+EXHIBIT_ELEPHANT,Elefante,Elephant
+EXHIBIT_ELEPHANT_DESC,Um elefante indiano que encanta as crianças,An Indian elephant that delights the children
+EXHIBIT_TIGER,Tigre,Tiger
+EXHIBIT_TIGER_DESC,Um tigre de Bengala atrás de grades de ferro forjado,A Bengal tiger behind wrought-iron bars
+EXHIBIT_AMPHORA,Ânfora grega,Greek amphora
+EXHIBIT_AMPHORA_DESC,Uma ânfora pintada achada num naufrágio antigo,A painted amphora found in an ancient shipwreck
+EXHIBIT_SHIP_MODEL,Maquete de navio,Ship model
+EXHIBIT_SHIP_MODEL_DESC,A maquete do primeiro navio da Companhia,A model of the Company's first ship
+EXHIBIT_FOSSIL,Fóssil,Fossil
+EXHIBIT_FOSSIL_DESC,O esqueleto de um réptil marinho das falésias,The skeleton of a sea reptile from the cliffs
+EXHIBIT_TELESCOPE,Telescópio,Telescope
+EXHIBIT_TELESCOPE_DESC,Um grande telescópio de latão para ver as estrelas,A great brass telescope for watching the stars
+EXHIBIT_MUMMY,Múmia egípcia,Egyptian mummy
+EXHIBIT_MUMMY_DESC,Uma múmia num sarcófago dourado,A mummy in a gilded sarcophagus
+EXHIBIT_OLD_MASTER,Pintura de mestre,Old master painting
+EXHIBIT_OLD_MASTER_DESC,Uma tela de um mestre flamengo,A canvas by a Flemish master
+REASON_POLICY_LOCKED,Esta política ainda não foi liberada,This policy is not unlocked yet
 REASON_NO_SPECIALIST_OFFER,Fora da oferta desta volta,Not in this tour's offer
 REASON_NO_SPECIALIST,Especialista não encontrado,Specialist not found
 REASON_SPECIALIST_LIMIT,Teto de especialistas contratados,Specialist limit reached
@@ -895,6 +990,30 @@ BREAKDOWN_BUILDINGS,Prédios,Buildings
 BREAKDOWN_SHIPS,Navios (%d),Ships (%d)
 BREAKDOWN_SALARIES,Salários dos especialistas,Specialist salaries
 BREAKDOWN_TREATY,Acordos comerciais,Trade agreements
+BREAKDOWN_TOURISM,Turistas,Tourists
+SHIP_EXPEDITIONS,Mandar em expedição,Send on an expedition
+EXPEDITION_TERMS,"Custa %s moedas e leva %s · volta vazia: %s · naufrágio: %s","Costs %s coins and takes %s · returns empty: %s · shipwreck: %s"
+EXPEDITION_REWARD_MONEY,Pode trazer %s moedas,May bring back %s coins
+EXPEDITION_REWARD_ANIMAL,Pode trazer um animal para o zoológico,May bring back an animal for the zoo
+EXPEDITION_REWARD_ARTIFACT,Pode trazer uma peça para o museu,May bring back an exhibit for the museum
+EXPEDITION_UNDER_WAY,%s — %s,%s — %s
+EXPEDITION_BACK_IN,Volta em %s,Back in %s
+NOTICE_EXPEDITION_LOST,A expedição %s naufragou: o navio se perdeu,The %s expedition was shipwrecked: the ship is lost
+NOTICE_EXPEDITION_EMPTY,A expedição %s voltou de mãos vazias,The %s expedition came back empty-handed
+NOTICE_EXPEDITION_EXHIBIT,"A expedição %s trouxe: %s (guardada, para expor)","The %s expedition brought back: %s (in storage, ready to display)"
+NOTICE_EXPEDITION_RICH,A expedição %s voltou com o porão cheio de moedas,The %s expedition came back with a hold full of coins
+REASON_EXPEDITION_NO_SHIP,"O navio precisa estar parado num porto da companhia, fora de rota","The ship must be idle at a Company port, off any route"
+REASON_EXPEDITION_LOCKED,Este destino ainda não foi liberado,This destination is not unlocked yet
+EXPEDITION_SAVANNA_COAST,Costa das savanas,Savanna coast
+EXPEDITION_SAVANNA_COAST_DESC,Uma viagem à costa africana atrás de animais para o zoológico,A voyage to the African coast in search of animals for the zoo
+EXPEDITION_ANCIENT_RUINS,Ruínas antigas,Ancient ruins
+EXPEDITION_ANCIENT_RUINS_DESC,Uma viagem ao Mediterrâneo atrás de peças para o museu,A voyage to the Mediterranean in search of exhibits for the museum
+EXPEDITION_SPICE_ISLANDS,Ilhas das especiarias,Spice islands
+EXPEDITION_SPICE_ISLANDS_DESC,Uma viagem de comércio às ilhas das especiarias,A trading voyage to the spice islands
+EXPEDITION_NORTHERN_SEAS,Mares do norte,Northern seas
+EXPEDITION_NORTHERN_SEAS_DESC,"Caça à baleia nos mares gelados: muito lucro, muito risco","Whaling in the icy seas: big profit, big risk"
+PANEL_ATTRACTIVENESS,"Atratividade: %s · turistas %s/min","Attractiveness: %s · tourists %s/min"
+PANEL_ATTRACTIVENESS_TIP,"A beleza que a ilha espalha (decorações, zoológico e museu com as peças) menos a poluição dos prédios. Com a festa na ilha, os turistas pagam mais.","The beauty the island spreads (decorations, zoo and museum with their exhibits) minus the buildings' pollution. With a festival on the island, tourists pay more."
 BREAKDOWN_MONEY,"De onde vem e para onde vai o dinheiro, por minuto","Where the money comes from and goes, per minute"
 BREAKDOWN_GOOD,"%s: o que produz e o que consome, em t/min","%s: what produces and consumes it, in t/min"
 STATS_PRODUCERS_TIP,Ir ao próximo prédio que produz este bem,Go to the next building that produces this good
@@ -938,3 +1057,4 @@ ROUTES_NAME,Nome da rota,Route name
 ROUTES_NAME_TIP,"Um nome para achar a rota na lista (Enter guarda)","A name to find the route in the list (Enter saves)"
 ROUTES_GROUP,Grupo,Group
 ROUTES_GROUP_TIP,"As rotas do mesmo grupo ficam juntas na lista","Routes in the same group stay together in the list"
+OPTIONS_FPS_AUTO,"Automático (%s, pelo monitor)","Automatic (%s, from the monitor)"

@@ -61,6 +61,7 @@ func execute(context: CommandContext) -> CommandResult:
 		world.shipyard_state.forget(record.id)
 		if world.specialists_state.release(record.id):
 			result.specialists_changed = true
+		world.exhibits_state.release(record.id)
 		result.removed.append(record.id)
 		if not context.free_build:
 			for material: StringName in old.cost_materials:

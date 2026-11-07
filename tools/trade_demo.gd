@@ -74,11 +74,14 @@ static func brick_route(sim: Simulation, colony: int) -> int:
 	return route_id
 
 
-## Entreposto no litoral mais perto do meio da borda norte da ilha.
+## Entreposto no litoral mais perto do meio da borda norte da ilha; 0 se a ilha não tem lugar para ele (Fase 92: o
+## assert de antes some no executável exportado, e o índice vazio derrubava o jogo).
 static func post(sim: Simulation, island_id: int) -> int:
 	var grid := sim.world.island(island_id)
 	var site := SiteFinder.find(sim, &"trading_post", island_id, Vector2i(grid.size.x / 2, 0))
-	assert(not site.is_empty(), "sem lugar de entreposto na ilha %d" % island_id)
+	if site.is_empty():
+		push_warning("TradeDemo: sem lugar de entreposto na ilha %d" % island_id)
+		return 0
 	var origin: Vector2i = site[0]
 	var rotation: int = site[1]
 	var result := sim.execute(PlaceBuildingCommand.new(island_id, &"trading_post", origin, rotation))

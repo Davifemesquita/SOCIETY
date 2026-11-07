@@ -66,7 +66,9 @@ static func _plan(world: WorldState, config: GameConfig, derived: DerivedState, 
 	var economy := entry.economy
 	# Fase 29: sem saída pronta, sem carga e sem entrada que caiba e que o estoque tenha, fica em casa (a maior parte
 	# das carroças, a cada tick); é o mesmo que o resto da função decide, sem montar o pedido
-	if entry.record.output_buffer < 1.0 and cart.cargo.is_empty():
+	# a saída que só anda por trilho (o petróleo, Fase 70) não vai de carroça
+	var output_ready := entry.record.output_buffer >= 1.0 and not entry.rail_output
+	if not output_ready and cart.cargo.is_empty():
 		var needs_input := false
 		for input: StringName in entry.def.inputs:
 			var held: float = entry.record.input_buffer.get(input, 0.0)
@@ -77,7 +79,7 @@ static func _plan(world: WorldState, config: GameConfig, derived: DerivedState, 
 			cart.wanted.clear()
 			return
 	var room := float(config.cart_capacity_t) - cart.tons()
-	if entry.record.output_buffer >= 1.0 and room > 0.0:
+	if output_ready and room > 0.0:
 		var taken := minf(entry.record.output_buffer, room)
 		entry.record.output_buffer -= taken
 		cart.cargo[entry.def.output] = cart.cargo.get(entry.def.output, 0.0) + taken

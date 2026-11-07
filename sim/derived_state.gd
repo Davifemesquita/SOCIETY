@@ -30,8 +30,13 @@ class ProductionEntry:
 	## Estaleiro (sem ciclo, o ShipyardSystem cuida) e a classe de quem trabalha, guardados para o tick (Fase 29).
 	var shipyard: bool = false
 	var workforce_tier: StringName
+	## Ferrovia (Fase 70): a saída só anda por trilho (o poço de petróleo): a carroça não a leva ao estoque.
+	var rail_output: bool = false
 
 var road_access: Dictionary[int, bool] = {}
+## Ferrovia (Fase 70): cada prédio que recebe um bem só de trilho (a usina a petróleo) → as entradas de produção que
+## o mandam (os poços), ligados por trilho contínuo na mesma ilha.
+var rail_feeds: Dictionary[int, Array] = {}
 ## Casa → serviços (id do tipo) que a cobrem.
 var coverage: Dictionary[int, Array] = {}
 ## Fazenda → módulos atribuídos a ela.
@@ -51,6 +56,16 @@ var service_reach: Dictionary[int, PackedInt32Array] = {}
 var fire_protected: Dictionary[int, bool] = {}
 var health_protected: Dictionary[int, bool] = {}
 var protected_by: Dictionary[int, Array] = {}
+## Políticas das prefeituras (Fase 66), já somadas por prédio: fração de velocidade da produção, multiplicador da chance
+## de incêndio, pontos de felicidade e fração do imposto das casas. Sem política, o prédio não está na lista.
+var policy_speed: Dictionary[int, float] = {}
+var policy_fire: Dictionary[int, float] = {}
+var policy_happiness: Dictionary[int, float] = {}
+var policy_tax: Dictionary[int, float] = {}
+## Prefeitura → os prédios em que a política dela vale (para o painel e os testes).
+var policy_reach: Dictionary[int, Array] = {}
+## Turismo (Fase 68): a atratividade de cada ilha com entreposto e casas (sem a festa, que o TourismSystem soma).
+var attractiveness: Dictionary[int, float] = {}
 var houses: Array[int] = []
 ## Ilhas com pelo menos uma casa (as outras não têm necessidade a calcular).
 var islands_with_houses: Dictionary[int, bool] = {}
@@ -115,6 +130,12 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	fire_protected.clear()
 	health_protected.clear()
 	protected_by.clear()
+	policy_speed.clear()
+	policy_fire.clear()
+	policy_happiness.clear()
+	policy_tax.clear()
+	policy_reach.clear()
+	attractiveness.clear()
 	houses.clear()
 	islands_with_houses.clear()
 	production.clear()
@@ -175,10 +196,12 @@ func rebuild(world: WorldState, data: GameData, config: GameConfig) -> void:
 	for service_id: int in services:
 		_cover(world, data, config, service_id, houses_at_road)
 		_protect(world, data, service_id, production_at_road)
+	_apply_policies(world, data, services)
 	_lap("serviços")
 	_assign_modules(world, data, farms, modules)
 	_spread_pollution(world, data, polluters)
 	_spread_beauty(world, data, decorations)
+	_attract(world, data, config, decorations, polluters)
 	_lap("módulos, poluição e beleza")
 	_index_warehouses(world, data, config, depots, piers)
 	_lap("armazéns")
@@ -347,6 +370,7 @@ func _index_production(world: WorldState, data: GameData) -> void:
 		entry.shipyard = entry.def.is_shipyard()
 		entry.workforce_tier = entry.def.workforce_tier
 		entry.modules_ok = module_count.get(building_id, 0) >= entry.def.modules_required
+		entry.rail_output = entry.def.output != &"" and data.good(entry.def.output).rail_only
 		var grid := world.island(entry.record.island_id)
 		if entry.def.terrain == BuildingDef.Terrain.TREES and not grid.flat:
 			var area := Footprint.rect(entry.record.origin, entry.def.size, entry.record.rotation)
@@ -369,6 +393,41 @@ func _index_production(world: WorldState, data: GameData) -> void:
 				var list: Array = by_good[input]
 				list.append(entry)
 	_wire_power()
+	_link_rails(world, data)
+
+
+## Ferrovia (Fase 70): em cada ilha, os trilhos em grupos ligados (vizinhos de lado); o prédio que encosta num trilho
+## está naquele grupo; quem recebe um bem só de trilho é servido por quem o produz no mesmo grupo.
+func _link_rails(world: WorldState, data: GameData) -> void:
+	rail_feeds.clear()
+	var senders: Array[ProductionEntry] = []
+	var receivers: Array[ProductionEntry] = []
+	for entry: ProductionEntry in production_entries:
+		if entry.rail_output:
+			senders.append(entry)
+		for input: StringName in entry.def.inputs:
+			if data.good(input).rail_only:
+				receivers.append(entry)
+				break
+	if senders.is_empty() or receivers.is_empty():
+		return
+	var groups_by_island: Dictionary[int, PackedInt32Array] = {}
+	for entry: ProductionEntry in receivers:
+		var island := entry.record.island_id
+		if not groups_by_island.has(island):
+			groups_by_island[island] = RailNetwork.groups(world.island(island))
+		var groups := groups_by_island[island]
+		var mine := RailNetwork.touching(world.island(island), groups, entry.record, entry.def)
+		var fed: Array = []
+		for sender: ProductionEntry in senders:
+			if sender.record.island_id != island or not entry.def.inputs.has(sender.def.output):
+				continue
+			for group: int in RailNetwork.touching(world.island(island), groups, sender.record, sender.def):
+				if mine.has(group):
+					fed.append(sender)
+					break
+		if not fed.is_empty():
+			rail_feeds[entry.record.id] = fed
 
 
 ## Liga cada fábrica às usinas da mesma ilha cujo raio a alcança (folga entre os retângulos).
@@ -554,6 +613,51 @@ func _protect(world: WorldState, data: GameData, service_id: int, production_at_
 		into[building_id] = true
 
 
+## Políticas (Fase 66): cada prefeitura com política e estrada aplica o efeito dela nos prédios (casas e produção) a até
+## policy_radius_cells do lote, e soma a manutenção da política. A mesma política em duas prefeituras vale uma vez no
+## prédio; políticas diferentes somam.
+func _apply_policies(world: WorldState, data: GameData, services: Array[int]) -> void:
+	var applied: Dictionary[int, Dictionary] = {}
+	for hall_id: int in services:
+		var hall := world.building(hall_id)
+		var hall_def := data.building(hall.def_id)
+		if not hall_def.is_town_hall() or hall.policy == &"" or not road_access.get(hall_id, false):
+			continue
+		var policy_def := data.policy(hall.policy)
+		if policy_def == null:
+			continue
+		upkeep_per_min += policy_def.upkeep_per_min
+		var area := Footprint.rect(hall.origin, hall_def.size, hall.rotation)
+		var reached: Array[int] = []
+		for building_id: int in houses + production:
+			var record := world.building(building_id)
+			if record.island_id != hall.island_id:
+				continue
+			var def := data.building(record.def_id)
+			if _rect_gap(area, Footprint.rect(record.origin, def.size, record.rotation)) > hall_def.policy_radius_cells:
+				continue
+			reached.append(building_id)
+			if not applied.has(building_id):
+				applied[building_id] = {}
+			var seen: Dictionary = applied[building_id]
+			if seen.has(policy_def.id):
+				continue
+			seen[policy_def.id] = true
+			match policy_def.effect:
+				PolicyDef.Effect.PRODUCTION_SPEED:
+					if def.is_production():
+						policy_speed[building_id] = policy_speed.get(building_id, 0.0) + policy_def.amount
+				PolicyDef.Effect.FIRE_RISK:
+					policy_fire[building_id] = policy_fire.get(building_id, 1.0) * policy_def.amount
+				PolicyDef.Effect.HAPPINESS:
+					if record.is_house():
+						policy_happiness[building_id] = policy_happiness.get(building_id, 0.0) + policy_def.amount
+				PolicyDef.Effect.TAX:
+					if record.is_house():
+						policy_tax[building_id] = policy_tax.get(building_id, 0.0) + policy_def.amount
+		policy_reach[hall_id] = reached
+
+
 ## Cada módulo serve a uma fazenda só: a de menor id que o tem no raio e ainda precisa dele.
 func _assign_modules(world: WorldState, data: GameData, farms: Array[int], modules: Dictionary[StringName, Array]) -> void:
 	for farm_id: int in farms:
@@ -593,11 +697,12 @@ func _spread_pollution(world: WorldState, data: GameData, polluters: Array[int])
 
 
 ## Beleza (Fase 16): como a poluição, cada decoração cai linear com a distância até o raio dela, e a soma
-## por casa vai até 1.
+## por casa vai até 1. Fase 67: a beleza do zoológico e do museu é a dele mais a das peças que ele expõe.
 func _spread_beauty(world: WorldState, data: GameData, decorations: Array[int]) -> void:
 	for source_id: int in decorations:
 		var source := world.building(source_id)
 		var def := data.building(source.def_id)
+		var strength := beauty_strength(world, data, source_id)
 		var area := Footprint.rect(source.origin, def.size, source.rotation)
 		for house_id: int in houses:
 			var house := world.building(house_id)
@@ -607,7 +712,35 @@ func _spread_beauty(world: WorldState, data: GameData, decorations: Array[int]) 
 			var gap := _rect_gap(area, house_area)
 			if gap <= def.beauty_radius_cells:
 				var falloff := 1.0 - float(gap) / float(def.beauty_radius_cells + 1)
-				beauty[house_id] = minf(1.0, beauty[house_id] + def.beauty * falloff)
+				beauty[house_id] = minf(1.0, beauty[house_id] + strength * falloff)
+
+
+## Turismo (Fase 68): a atratividade de cada ilha com entreposto e casas — a beleza que ela espalha menos a poluição dos
+## prédios dela, nos pesos da config, nunca abaixo de zero.
+func _attract(world: WorldState, data: GameData, config: GameConfig, decorations: Array[int], polluters: Array[int]) -> void:
+	for island_id: int in islands_with_houses:
+		if not world.has_trading_post(island_id, data):
+			continue
+		var points := 0.0
+		for source_id: int in decorations:
+			if world.building(source_id).island_id == island_id:
+				points += beauty_strength(world, data, source_id) * config.attractiveness_per_beauty
+		for source_id: int in polluters:
+			var source := world.building(source_id)
+			if source.island_id == island_id:
+				points -= data.building(source.def_id).pollution_strength * config.attractiveness_per_pollution
+		attractiveness[island_id] = maxf(points, 0.0)
+
+
+## A beleza que o prédio espalha: a da definição e, no zoológico e no museu (Fase 67), mais a das peças que ele expõe.
+static func beauty_strength(world: WorldState, data: GameData, building_id: int) -> float:
+	var record := world.building(building_id)
+	var def := data.building(record.def_id)
+	var strength := def.beauty
+	if def.is_exhibit_hall():
+		for exhibit: ExhibitDef in world.exhibits_state.in_building(building_id, data):
+			strength += exhibit.beauty
+	return strength
 
 
 static func _rect_gap(a: Rect2i, b: Rect2i) -> int:

@@ -22,7 +22,7 @@ const URGENCY_CAP := 1 << 30
 static func run(world: WorldState, config: GameConfig, derived: DerivedState) -> void:
 	var buffer := float(config.building_buffer_t)
 	for entry: DerivedState.ProductionEntry in derived.production_entries:
-		if entry.has_road and entry.record.output_buffer > 0.0:
+		if entry.has_road and entry.record.output_buffer > 0.0 and not entry.rail_output:
 			var capacity: float = derived.capacity.get(entry.record.island_id, float(config.island_storage_capacity_t))
 			entry.record.output_buffer -= entry.economy.add(entry.def.output, entry.record.output_buffer, capacity)
 	for island_id: int in derived.consumers:

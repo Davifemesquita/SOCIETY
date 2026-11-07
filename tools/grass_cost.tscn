@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tools/grass_cost.gd" id="1_cost"]
+
+[node name="GrassCost" type="Node"]
+script = ExtResource("1_cost")

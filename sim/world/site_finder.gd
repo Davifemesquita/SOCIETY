@@ -14,7 +14,9 @@ static func find(sim: Simulation, def_id: StringName, island_id: int, near: Vect
 		return []
 	var profile := sim.data.profile(sim.world.economy(island_id).profile_id)
 	var needs_water := def.terrain in [BuildingDef.Terrain.COAST, BuildingDef.Terrain.RIVER_OR_COAST] and not grid.flat
-	var near_water := _near_water(grid, maxi(def.size.x, def.size.y) + 1) if needs_water else PackedByteArray()
+	# a dilatação anda em 4 direções (Manhattan): a água que o lote encosta pode estar a largura + altura da origem (Fase 93;
+	# com o maior lado + 1, lotes encostados no mar pelo canto oposto ficavam de fora)
+	var near_water := _near_water(grid, def.size.x + def.size.y) if needs_water else PackedByteArray()
 	for radius: int in max_radius + 1:
 		for origin: Vector2i in _ring(near, radius):
 			# filtros baratos antes da conferência inteira: jazida debaixo da origem, água por perto

@@ -18,6 +18,9 @@ const CHUNK_VERTICES := 64
 ## Fase 38: a terra batida das estradas (camada 0 das texturas das estradas) pintada no terreno.
 const ROAD_ALBEDO := preload("res://assets/materials/roads_albedo_rough.png")
 const ROAD_NORMAL := preload("res://assets/materials/roads_normal.png")
+## Fase 170: a cor da lama da margem do rio nas ilhas tropicais (a laterita, terra vermelha), sobre a textura da areia; nas
+## temperadas fica a do shader (marrom escura).
+const TROPICAL_MUD_TINT := Vector3(0.42, 0.2, 0.11)
 
 var _world: WorldState
 var _config: GameConfig
@@ -61,7 +64,7 @@ func setup(world: WorldState, config: GameConfig, data: GameData) -> void:
 	EventBus.roads_changed.connect(_on_roads_changed)
 	EventBus.settings_changed.connect(func() -> void: set_hex_tiling(Settings.preset().terrain_hex_tiling))
 	# a porta de um prédio novo (ou demolido) gasta (ou deixa crescer) o chão em frente dela
-	EventBus.building_placed.connect(func(_id: int) -> void: _mark_all_masks())
+	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(func(_id: int) -> void: _mark_all_masks())
 
 
@@ -120,6 +123,18 @@ func coast_field() -> CoastField:
 	return _coast
 
 
+## Fase 56: as alturas desenhadas da região da ilha (com o detalhe das encostas), o lado e o canto dela; vazio na ilha
+## plana. As rochas das falésias e dos rochedos (RockView) sentam nelas.
+func region_heights(index: int) -> Dictionary:
+	if not _regions.has(index):
+		return {}
+	var region: Dictionary = _regions[index]
+	var origin: Vector2 = region["origin"]
+	var side: int = region["side"]
+	var heights: PackedFloat32Array = region["heights"]
+	return {"heights": _with_detail(index, heights, side, origin), "side": side, "origin": origin}
+
+
 ## Altura desenhada num ponto (para conferir com a simulação): a mesma interpolação da grade, mais o detalhe visual
 ## das encostas (Fase 36, zero onde a simulação manda).
 func shown_height(x: float, z: float) -> float:
@@ -145,15 +160,31 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 	for key: String in textures:
 		material.set_shader_parameter(StringName(key), textures[key])
 	material.set_shader_parameter(&"surface_weights", _surfaces[index])
+	# Fase 170: na ilha tropical, a margem do rio é de terra vermelha (laterita), não de lama escura; Fase 283: na temperada, de
+	# cascalho cinza, e (Fase 292) a praia junto da rocha, de seixos
+	if _world.is_tropical(index, _data):
+		material.set_shader_parameter(&"mud_tint", TROPICAL_MUD_TINT)
+	else:
+		material.set_shader_parameter(&"gravel", 1.0)
+		# Fase 315: o alto da garganta de capim, não de lama
+		material.set_shader_parameter(&"high_bank_grass", 1.0)
+		# Fase 321: a beira do barranco de capim e pedra, não de terra alaranjada
+		material.set_shader_parameter(&"bank_edge_grass", 1.0)
+		material.set_shader_parameter(&"pebble_beach", 1.0)
+		# Fase 299: o fundo do raso
+		material.set_shader_parameter(&"seabed_detail", 1.0)
 	var size := (side - 1) * _config.cell_size_m
 	material.set_shader_parameter(&"region_bounds", Vector4(origin.x, origin.y, size, size))
 	# a distância até a água sai uma vez só: o bake e o campo da costa (Fase 35) a dividem
 	var to_water := TerrainBake.distance_to_water(heights, side)
-	_data_images[index] = TerrainBake.bake(heights, side, _config.cell_size_m, _config.terrain_water_distance_m, to_water)
+	# Fase 329: a inclinação e a curvatura saem das alturas desenhadas (a rampa da praia não vira rocha); a água e a costa,
+	# das da simulação (a linha d'água é a mesma)
+	var shown := _with_detail(index, heights, side, origin)
+	_data_images[index] = TerrainBake.bake(shown, side, _config.cell_size_m, _config.terrain_water_distance_m, to_water)
 	material.set_shader_parameter(&"terrain_data", ImageTexture.create_from_image(_data_images[index]))
 	material.set_shader_parameter(&"hex_distance_m", _config.terrain_hex_distance_m)
 	material.set_shader_parameter(&"hex_tiling", _hex_tiling)
-	var coast := TerrainBake.signed_coast(heights, side, _config.cell_size_m, _config.coast_field_max_m, to_water)
+	var coast := TerrainBake.signed_coast(heights, side, _config.cell_size_m, _config.coast_field_max_m)
 	material.set_shader_parameter(&"coast_distance", ImageTexture.create_from_image(
 			Image.create_from_data(side, side, false, Image.FORMAT_RF, coast.to_byte_array())))
 	material.set_shader_parameter(&"has_coast", true)
@@ -167,12 +198,11 @@ func _build_island(index: int, textures: Dictionary[String, Texture2D]) -> void:
 		material.set_shader_parameter(&"road_mask_max_m", _config.road_mask_max_m)
 		material.set_shader_parameter(&"road_albedo", ROAD_ALBEDO)
 		material.set_shader_parameter(&"road_normal", ROAD_NORMAL)
-	_coast_regions.append({"origin": origin, "side": side, "coast": coast})
+	_coast_regions.append({"origin": origin, "side": side, "coast": coast, "heights": heights})
 	_materials.append(material)
 	_regions[index] = {"heights": heights, "side": side, "origin": origin}
 	_detail_cells[index] = _cells_with_detail(index)
 	_chunk_nodes[index] = {}
-	var shown := _with_detail(index, heights, side, origin)
 	for cy: int in range(0, side - 1, CHUNK_VERTICES):
 		for cx: int in range(0, side - 1, CHUNK_VERTICES):
 			var instance := MeshInstance3D.new()
@@ -198,6 +228,14 @@ func _cells_with_detail(index: int) -> PackedInt32Array:
 			if grid.in_bounds(cell):
 				marked[grid.index(cell)] = true
 	return PackedInt32Array(marked.keys())
+
+
+## Prédio novo: a porta gasta o chão em frente dela e (Fase 329) a célula da rampa da praia volta à altura da simulação.
+func _on_building_placed(building_id: int) -> void:
+	_mark_all_masks()
+	var record := _world.building(building_id)
+	if record != null and record.island_id < _world.islands.size() and _regions.has(record.island_id):
+		_on_roads_changed(record.island_id)
 
 
 ## Estrada nova (ou prédio) numa célula com detalhe: os cantos dela voltam à altura da simulação e o trecho é refeito.
@@ -252,7 +290,8 @@ func _with_detail(index: int, heights: PackedFloat32Array, side: int, origin: Ve
 	return shown
 
 
-## Malha de um trecho: vértices nos cantos (x, z de 2 em 2 m) com a normal pelas alturas vizinhas.
+## Malha de um trecho: vértices nos cantos (x, z de 2 em 2 m) com a normal pelas alturas vizinhas; cada quadrado pela
+## diagonal que segue o relevo, e os da linha d'água (Fase 55) e da face da falésia (Fase 62) mais finos.
 func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: int, cy: int) -> ArrayMesh:
 	var spacing := _config.cell_size_m
 	var count_x := mini(CHUNK_VERTICES, side - 1 - cx) + 1
@@ -268,15 +307,18 @@ func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: in
 			var gy := cy + y
 			var h := heights[gy * side + gx]
 			vertices[y * count_x + x] = Vector3(origin.x + gx * spacing, h, origin.y + gy * spacing)
-			var left := heights[gy * side + maxi(gx - 1, 0)]
-			var right := heights[gy * side + mini(gx + 1, side - 1)]
-			var up := heights[maxi(gy - 1, 0) * side + gx]
-			var down := heights[mini(gy + 1, side - 1) * side + gx]
-			normals[y * count_x + x] = Vector3(left - right, 2.0 * spacing, up - down).normalized()
+			normals[y * count_x + x] = CoastRefine.corner_normal(heights, side, gx, gy, spacing)
+	# Fase 55: o quadrado que a linha d'água atravessa vira uma subgrade mais fina (CoastRefine); Fase 62: e o da face
+	# seca da falésia
+	var n := _config.terrain_coast_subdivisions
+	var relief := _config.terrain_cliff_refine_relief_m
 	for y: int in count_y - 1:
 		for x: int in count_x - 1:
+			if n > 1 and CoastRefine.refines(heights, side, cx + x, cy + y, relief):
+				_refined_quad(heights, side, origin, cx + x, cy + y, n, vertices, normals, indices)
+				continue
 			var a := y * count_x + x
-			indices.append_array(PackedInt32Array([a, a + 1, a + count_x, a + 1, a + count_x + 1, a + count_x]))
+			_append_quad(vertices, indices, a, a + 1, a + count_x, a + count_x + 1)
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -285,6 +327,53 @@ func _chunk_mesh(heights: PackedFloat32Array, side: int, origin: Vector2, cx: in
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
+
+
+## Fase 54: o quadrado (a b / c d) se divide pela diagonal de menor diferença de altura (a que segue o relevo); com a
+## diagonal sempre igual, a costa e a falésia que correm na outra diagonal viravam escada.
+static func _append_quad(vertices: PackedVector3Array, indices: PackedInt32Array, a: int, b: int, c: int, d: int) -> void:
+	if absf(vertices[a].y - vertices[d].y) < absf(vertices[b].y - vertices[c].y):
+		indices.append_array(PackedInt32Array([a, b, d, a, d, c]))
+	else:
+		indices.append_array(PackedInt32Array([a, b, c, b, d, c]))
+
+
+## Fase 55: subgrade de n × n no quadrado de canto (gx, gy); na borda com um quadrado que não se divide, a altura fica
+## na reta do vizinho. Fase 62: com a aspereza da falésia, e a normal dos pontos novos pelas alturas da subgrade em
+## volta (a rocha partida aparece na luz); nos cantos da grade, a normal de sempre (contínua com o resto da malha).
+func _refined_quad(heights: PackedFloat32Array, side: int, origin: Vector2, gx: int, gy: int, n: int,
+		vertices: PackedVector3Array, normals: PackedVector3Array, indices: PackedInt32Array) -> void:
+	var spacing := _config.cell_size_m
+	var max_m := _config.terrain_coast_refine_max_m
+	var relief := _config.terrain_cliff_refine_relief_m
+	var rough := _config.terrain_cliff_rough_m
+	var linear_left := not CoastRefine.refines(heights, side, gx - 1, gy, relief)
+	var linear_right := not CoastRefine.refines(heights, side, gx + 1, gy, relief)
+	var linear_up := not CoastRefine.refines(heights, side, gx, gy - 1, relief)
+	var linear_down := not CoastRefine.refines(heights, side, gx, gy + 1, relief)
+	var step := spacing / n
+	var first := vertices.size()
+	for j: int in n + 1:
+		for i: int in n + 1:
+			var linear := (i == 0 and linear_left) or (i == n and linear_right) or (j == 0 and linear_up) \
+					or (j == n and linear_down)
+			var sx := gx * n + i
+			var sy := gy * n + j
+			var h := CoastRefine.height(heights, side, sx, sy, n, max_m, linear, rough, relief)
+			vertices.append(Vector3(origin.x + float(sx) / n * spacing, h, origin.y + float(sy) / n * spacing))
+			if (i == 0 or i == n) and (j == 0 or j == n):
+				normals.append(CoastRefine.corner_normal(heights, side, gx + (1 if i == n else 0), gy + (1 if j == n else 0),
+						spacing))
+				continue
+			var left := CoastRefine.height(heights, side, maxi(sx - 1, 0), sy, n, max_m, false, rough, relief)
+			var right := CoastRefine.height(heights, side, sx + 1, sy, n, max_m, false, rough, relief)
+			var up := CoastRefine.height(heights, side, sx, maxi(sy - 1, 0), n, max_m, false, rough, relief)
+			var down := CoastRefine.height(heights, side, sx, sy + 1, n, max_m, false, rough, relief)
+			normals.append(Vector3(left - right, 2.0 * step, up - down).normalized())
+	for j: int in n:
+		for i: int in n:
+			var a := first + j * (n + 1) + i
+			_append_quad(vertices, indices, a, a + 1, a + n + 1, a + n + 2)
 
 
 static func _surface_color(kind: int) -> Color:

@@ -4,6 +4,7 @@ extends Node3D
 ## flor dos dois lados da porta. O varal vai na célula de trás, livre (a mesma da fogueira da LampView), numa
 ## casa a cada CLOTHESLINE_EVERY pelo id, com resto diferente do da fogueira: as duas nunca disputam o lugar.
 ## Os vasos vão na frente do corpo da casa (no quintal cercado dos camponeses, que recua a casa uma fileira).
+## Fase 173: ao lado de cada varal, a tina de lavar com a água ensaboada e a tábua de esfregar encostada nela.
 ## Tudo gerado aqui, cor no vértice ou na instância, um MultiMesh por peça. Só lê o mundo.
 
 const TIERS: Array[StringName] = [&"peasants", &"workers"]
@@ -21,6 +22,15 @@ const POT_SIDE_M := 0.9
 const POT_OUT_M := 0.35
 const POLE_COLOR := Color(0.4, 0.3, 0.2)
 const ROPE_COLOR := Color(0.78, 0.72, 0.6)
+## Fase 173: a tina de lavar — onde ela fica em relação ao meio do varal, o tamanho e as cores.
+const TUB_OUT_M := 0.62
+const TUB_SIDE_M := 0.45
+const TUB_RADIUS_M := 0.3
+const TUB_HEIGHT_M := 0.34
+const TUB_WOOD := Color(0.55, 0.42, 0.28)
+const TUB_IRON := Color(0.22, 0.22, 0.23)
+const TUB_SUDS := Color(0.78, 0.8, 0.8)
+const TUB_RIDGE := Color(0.46, 0.35, 0.23)
 ## Roupa de varal: linho cru, camisa azul, pano vermelho, avental branco, saia parda.
 const CLOTH_COLORS: Array[Color] = [Color(0.86, 0.82, 0.72), Color(0.42, 0.52, 0.66), Color(0.7, 0.3, 0.25),
 		Color(0.93, 0.92, 0.88), Color(0.55, 0.45, 0.33)]
@@ -30,6 +40,8 @@ var _poles := MultiMeshInstance3D.new()
 var _ropes := MultiMeshInstance3D.new()
 var _clothes := MultiMeshInstance3D.new()
 var _pots := MultiMeshInstance3D.new()
+## Fase 173: a tina de lavar com a tábua de esfregar ao lado de cada varal.
+var _tubs := MultiMeshInstance3D.new()
 var _dirty: bool = false
 
 
@@ -45,7 +57,7 @@ func setup(simulation: Simulation) -> void:
 	var rope := BoxMesh.new()
 	rope.size = Vector3(LINE_HALF_M * 2.0, 0.015, 0.015)
 	for part: Array in [[_poles, "Poles", pole], [_ropes, "Ropes", rope], [_clothes, "Clothes", cloth_mesh()],
-			[_pots, "Pots", pot_mesh()]]:
+			[_pots, "Pots", pot_mesh()], [_tubs, "Washtubs", tub_mesh()]]:
 		var layer: MultiMeshInstance3D = part[0]
 		layer.name = part[1]
 		layer.multimesh = MultiMesh.new()
@@ -65,7 +77,7 @@ func setup(simulation: Simulation) -> void:
 
 func set_quality(preset: GraphicsPresetDef) -> void:
 	var scale := preset.visibility_scale if preset != null else 1.0
-	for layer: MultiMeshInstance3D in [_poles, _ropes, _clothes, _pots]:
+	for layer: MultiMeshInstance3D in [_poles, _ropes, _clothes, _pots, _tubs]:
 		layer.visibility_range_end = _simulation.config.building_detail_range_m * scale
 
 
@@ -79,6 +91,15 @@ func cloth_count() -> int:
 
 func pot_count() -> int:
 	return _pots.multimesh.instance_count
+
+
+## Fase 173: as tinas à vista e o lugar de uma.
+func tub_count() -> int:
+	return _tubs.multimesh.instance_count
+
+
+func tub_transform(index: int) -> Transform3D:
+	return _tubs.multimesh.get_instance_transform(index)
 
 
 func pot_transform(index: int) -> Transform3D:
@@ -96,6 +117,7 @@ func rebuild() -> void:
 	var ropes: Array = []
 	var clothes: Array = []
 	var pots: Array = []
+	var tubs: Array = []
 	var world := _simulation.world
 	for building_id: int in world.building_ids():
 		var record := world.building(building_id)
@@ -106,6 +128,7 @@ func rebuild() -> void:
 			if spot is Vector3:
 				var point: Vector3 = spot
 				_clothesline(record, point, poles, ropes, clothes)
+				tubs.append([tub_place(record, point), Color.WHITE])
 		if building_id % POT_EVERY == 0:
 			for place: Transform3D in pot_places(_simulation, record):
 				pots.append([place, Color.WHITE])
@@ -113,6 +136,38 @@ func rebuild() -> void:
 	_fill(_ropes, ropes)
 	_fill(_clothes, clothes)
 	_fill(_pots, pots)
+	_fill(_tubs, tubs)
+
+
+## Fase 173: a tina fica na célula do varal, TUB_OUT_M para longe da casa (fora da roupa pendurada) e TUB_SIDE_M para o lado,
+## girada pelo id.
+static func tub_place(record: BuildingRecord, spot: Vector3) -> Transform3D:
+	var front := Footprint.front_direction(record.rotation)
+	var along := Vector3(front.y, 0.0, -front.x)
+	var back := Vector3(-front.x, 0.0, -front.y)
+	return Transform3D(Basis(Vector3.UP, float(posmod(record.id * 41, 360)) * PI / 180.0),
+			spot + back * TUB_OUT_M + along * TUB_SIDE_M)
+
+
+## Fase 173: a tina de aduelas baixa e larga com dois arcos de ferro, a água ensaboada, e a tábua de esfregar encostada nela.
+static func tub_mesh() -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	VertexShapes.cylinder(tool, Vector3.ZERO, Vector3(0.0, TUB_HEIGHT_M, 0.0), TUB_RADIUS_M, TUB_WOOD, 12)
+	for height: float in [0.06, TUB_HEIGHT_M - 0.05]:
+		VertexShapes.cylinder(tool, Vector3(0.0, height - 0.015, 0.0), Vector3(0.0, height + 0.015, 0.0), TUB_RADIUS_M + 0.01,
+				TUB_IRON, 12)
+	VertexShapes.cylinder(tool, Vector3(0.0, TUB_HEIGHT_M - 0.07, 0.0), Vector3(0.0, TUB_HEIGHT_M - 0.065, 0.0),
+			TUB_RADIUS_M - 0.02, TUB_SUDS, 12)
+	# a tábua de esfregar: a moldura e as ondas, encostada de pé na borda da tina
+	var lean := Basis(Vector3.RIGHT, -0.35)
+	var foot := Vector3(0.0, 0.0, TUB_RADIUS_M + 0.12)
+	VertexShapes.oriented_box(tool, Transform3D(lean, foot + lean * Vector3(0.0, 0.3, 0.0)), Vector3(0.17, 0.3, 0.012), TUB_WOOD)
+	for k: int in 6:
+		VertexShapes.oriented_box(tool, Transform3D(lean, foot + lean * Vector3(0.0, 0.2 + k * 0.045, -0.015)),
+				Vector3(0.14, 0.012, 0.008), TUB_RIDGE)
+	tool.generate_normals()
+	return tool.commit()
 
 
 ## O varal no meio da célula de trás, de través (paralelo à parede de trás), com a roupa pendurada.

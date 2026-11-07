@@ -3,7 +3,8 @@ extends SceneTree
 ##   tools/godot.sh godot --headless --path . --script res://tools/bake_pedestrians.gd
 ## Com a pasta dos pacotes baixados, refaz antes as animações guardadas no repositório:
 ##   ... --script res://tools/bake_pedestrians.gd -- /pasta/com/UAL1_Standard.glb/e/UAL2_Standard.glb
-## Saída: assets/vat/pedestrian_male.res e pedestrian_female.res.
+## Saída: assets/vat/pedestrian_male.res e pedestrian_female.res, com as animações de CLIPS e, depois, a de ver os fogos
+## (CheerClip, Fase 84).
 
 const SOURCE_DIR := "res://assets/source/quaternius"
 const CLIPS_PATH := "res://assets/source/quaternius/pedestrian_clips.res"
@@ -19,6 +20,8 @@ const CLIPS := {
 	"talk": ["UAL1_Standard.glb", "Idle_Talking_Loop"],
 }
 const WALKING := ["walk", "walk_carry"]
+## Fase 84: a quinta animação, gerada no código (CheerClip), não vem da biblioteca.
+const CHEER := "cheer"
 const BODIES := {
 	"male": ["Superhero_Male_FullBody.gltf", "SuperHero_Male"],
 	"female": ["Superhero_Female_FullBody.gltf", "Superhero_Female"],
@@ -44,7 +47,7 @@ func _run() -> void:
 		var files: Array = BODIES[body]
 		var file_name: String = files[0]
 		var mesh_name: String = files[1]
-		var root := _load_gltf(ProjectSettings.globalize_path(SOURCE_DIR.path_join(file_name)), true)
+		var root := load_gltf(ProjectSettings.globalize_path(SOURCE_DIR.path_join(file_name)), true)
 		var source := VatBaker.from_scene(root, PackedStringArray([mesh_name]))
 		root.free()
 		if source == null:
@@ -56,6 +59,8 @@ func _run() -> void:
 		var clips: Array[VatBaker.ClipSource] = []
 		for clip_name: String in CLIPS:
 			clips.append(VatBaker.ClipSource.new(clip_name, library.get_animation(clip_name), WALKING.has(clip_name)))
+		# Fase 84: ver os fogos, gerada da parada (olhando para o céu e batendo palmas)
+		clips.append(VatBaker.ClipSource.new(CHEER, CheerClip.make(source, library.get_animation("idle")), false))
 		var started := Time.get_ticks_msec()
 		var model := VatBaker.bake(reduced, clips, FPS)
 		var path := OUT_DIR.path_join("pedestrian_%s.res" % body)
@@ -73,7 +78,7 @@ func _extract_clips(folder: String) -> bool:
 		var spec: Array = CLIPS[clip_name]
 		var file_name: String = spec[0]
 		var animation_name: String = spec[1]
-		var root := _load_gltf(folder.path_join(file_name), false)
+		var root := load_gltf(folder.path_join(file_name), false)
 		if root == null:
 			push_error("não abri %s" % folder.path_join(file_name))
 			return false
@@ -94,7 +99,7 @@ func _extract_clips(folder: String) -> bool:
 
 ## Abre o glTF sem as imagens (a cor vem do shader da multidão; as texturas nem estão no
 ## repositório). Num .gltf, tira do JSON imagens, texturas e materiais antes de carregar.
-func _load_gltf(path: String, strip_images: bool) -> Node:
+static func load_gltf(path: String, strip_images: bool) -> Node:
 	var document := GLTFDocument.new()
 	var state := GLTFState.new()
 	state.handle_binary_image = GLTFState.HANDLE_BINARY_DISCARD_TEXTURES

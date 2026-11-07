@@ -23,17 +23,21 @@ func test_detail_is_zero_on_and_around_every_cell_the_simulation_uses() -> void:
 		var offsets := TerrainDetail.offsets(grid, _config)
 		var width := grid.size.x + 1
 		for value: float in offsets:
-			assert_float(absf(value)).is_less_equal(TerrainDetail.WIDTH_M + TerrainDetail.GULLY_M)
+			# (Fase 329: a rampa da praia mexe até a altura do patamar dela)
+			assert_float(absf(value)).is_less_equal(maxf(TerrainDetail.WIDTH_M + TerrainDetail.GULLY_M, TerrainDetail.BEACH_MAX_M))
 			if value != 0.0:
 				moved += 1
 		for y: int in grid.size.y:
 			for x: int in grid.size.x:
 				if not TerrainDetail.protected_cell(grid, _config, Vector2i(x, y)):
 					continue
-				# nenhum dos 4 cantos da célula se mexe: o que fica em cima dela fica na altura da simulação
+				# nenhum dos 4 cantos da célula se mexe: o que fica em cima dela fica na altura da simulação. Fase 329: a não
+				# ser a rampa da praia, nos cantos baixos de célula sem nada da simulação
+				var holds := TerrainDetail.holds_something(grid, Vector2i(x, y))
 				for cy: int in [y, y + 1]:
 					for cx: int in [x, x + 1]:
-						if offsets[cy * width + cx] != 0.0:
+						var beach := not holds and grid.corner_height(cx, cy) <= TerrainDetail.BEACH_MAX_M
+						if offsets[cy * width + cx] != 0.0 and not beach:
 							assert_bool(false).override_failure_message(
 									"ilha %d: canto (%d, %d) mexido junto da célula (%d, %d)" % [index, cx, cy, x, y]).is_true()
 							return
@@ -121,10 +125,11 @@ func test_rocks_are_stone_on_tall_banks_and_rocky_coast() -> void:
 	var view: TreeView = auto_free(TreeView.new())
 	add_child(view)
 	view.setup(_world, GameData.get_default(), _config)
-	var material := view.rock_material() as StandardMaterial3D
+	# desde a Fase 261, a rocha triplanar do shaders/sea_rock.gdshader (sem a faixa da maré), com a textura de rocha
+	var material := view.rock_material() as ShaderMaterial
 	assert_object(material).override_failure_message("a pedra continua com o recolorido verde-cinza").is_not_null()
-	assert_bool(material.uv1_triplanar and material.uv1_world_triplanar).is_true()
-	assert_object(material.albedo_texture).is_not_null()
+	assert_str(material.shader.resource_path).is_equal("res://shaders/sea_rock.gdshader")
+	assert_object(material.get_shader_parameter("albedo_height")).is_not_null()
 	var grid := _world.island(0)
 	var bank := 0
 	var coast := 0

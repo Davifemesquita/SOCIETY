@@ -17,6 +17,8 @@ signal specialists_requested(building_id: int)
 signal statistics_requested(good: StringName, island_id: int)
 
 const REFRESH_SECONDS := 0.25
+## Fase 51: altura da faixa da foto (a largura é a do painel; a foto é cortada para cobrir).
+const PHOTO_HEIGHT := 150
 ## Produtividade média a partir da qual o prédio aparece como produzindo.
 const SHOWN_PRODUCING := 0.9
 
@@ -25,6 +27,8 @@ var _simulation: Simulation
 var _title := Label.new()
 var _title_icon := TextureRect.new()
 var _portrait := TextureRect.new()
+## Fase 51: a foto do prédio numa faixa larga no topo (a da classe, na casa), como o painel ilustrado do Anno 1800.
+var _photo := TextureRect.new()
 var _body := VBoxContainer.new()
 ## Botões do bloco numa linha, que quebra quando não cabe (estaleiro com vários navios).
 var _buttons := HFlowContainer.new()
@@ -55,6 +59,12 @@ func setup(tool: BuildTool, simulation: Simulation) -> void:
 	head.add_child(_title)
 	head.add_child(UiKit.icon_button("action_center", "INFO_CENTER_HINT", func() -> void: center_requested.emit()))
 	head.add_child(UiKit.icon_button("action_close", "UI_CLOSE", func() -> void: tool.select(0)))
+	_photo.name = "Photo"
+	_photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_photo.custom_minimum_size = Vector2(0, PHOTO_HEIGHT)
+	_photo.visible = false
+	column.add_child(_photo)
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_portrait.custom_minimum_size = Vector2(96, 120)
@@ -122,6 +132,8 @@ func show_building(building_id: int) -> void:
 		return
 	var def := _simulation.def_of(record)
 	_title_icon.texture = Icons.building(def.id)
+	_photo.texture = Icons.photo(def.id, record.tier if record.is_house() else &"")
+	_photo.visible = _photo.texture != null
 	match def.kind:
 		BuildingDef.Kind.PRODUCTION:
 			_build_production(record, def)
@@ -131,6 +143,10 @@ func show_building(building_id: int) -> void:
 			_build_warehouse(record, def)
 		_:
 			_add_lines(1)
+			if def.is_town_hall():
+				_build_town_hall(record)
+			if def.is_exhibit_hall():
+				_build_exhibit_hall(record, def)
 	# Fase 47: copiar (tipo, rotação e configuração) e passar pelos prédios do mesmo tipo
 	var copy := _add_button("PANEL_COPY", "action_copy", func() -> void: _tool.copy_building(record.id))
 	copy.name = "Copy"
@@ -158,7 +174,7 @@ func _process(delta: float) -> void:
 
 
 func _build_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
-	_add_lines(6)
+	_add_lines(7)
 	var upgrade := _add_button("PANEL_UPGRADE", "action_upgrade", func() -> void:
 		var result := _simulation.execute(UpgradeBuildingCommand.new(record.id))
 		if not result.ok():
@@ -294,6 +310,108 @@ func _build_house(record: BuildingRecord) -> void:
 	_buttons.add_child(_block)
 
 
+## Prefeitura (Fase 66): a linha da política e do alcance, e um botão por política (o da escolhida fica marcado) mais o
+## de tirar a política.
+func _build_town_hall(record: BuildingRecord) -> void:
+	_add_lines(1)
+	for policy: PolicyDef in _simulation.data.policies:
+		var button := UiKit.button(policy.title_key(), "building_town_hall", func() -> void: _choose_policy(record.id, policy.id))
+		button.name = "Policy_" + String(policy.id)
+		button.toggle_mode = true
+		_buttons.add_child(button)
+	var clear := _add_button("PANEL_POLICY_CLEAR", "action_close", func() -> void: _choose_policy(record.id, &""))
+	clear.name = "PolicyClear"
+
+
+func _choose_policy(building_id: int, policy_id: StringName) -> void:
+	var result := _simulation.execute(SetPolicyCommand.new(building_id, policy_id))
+	if not result.ok():
+		_tool.refused.emit(result.reason)
+	_refresh()
+
+
+## A política escolhida, quantos prédios ela alcança e os botões (marcado o da escolhida, desligado o bloqueado).
+func _refresh_town_hall(record: BuildingRecord, def: BuildingDef) -> void:
+	var derived := _simulation.derived_state()
+	var chosen := _simulation.data.policy(record.policy)
+	if chosen == null:
+		_lines[0].text = tr("PANEL_POLICY_NONE")
+		_lines[1].text = ""
+	elif not _simulation.has_road_access(record.id):
+		_lines[0].text = tr("PANEL_POLICY") % tr(chosen.title_key())
+		_lines[1].text = tr("PANEL_POLICY_NO_ROAD")
+	else:
+		var reach: Array = derived.policy_reach.get(record.id, [])
+		_lines[0].text = tr("PANEL_POLICY") % tr(chosen.title_key())
+		_lines[1].text = tr("PANEL_POLICY_REACH") % [Fmt.integer(reach.size()), Fmt.integer(def.policy_radius_cells),
+				Fmt.integer(chosen.upkeep_per_min)]
+	for policy: PolicyDef in _simulation.data.policies:
+		var button := _buttons.find_child("Policy_" + String(policy.id), false, false) as Button
+		if button == null:
+			continue
+		button.set_pressed_no_signal(policy.id == record.policy)
+		button.tooltip_text = tr("PANEL_POLICY_CHOOSE_TIP") % [policy_effect(policy), Fmt.integer(policy.upkeep_per_min)]
+		button.disabled = policy.after_milestone > _simulation.world.milestones_reached and not _simulation.free_build
+		if button.disabled:
+			button.tooltip_text += "\n" + tr(SetPolicyCommand.POLICY_LOCKED)
+
+
+## Zoológico e museu (Fase 67): a linha das peças e um botão por peça do tipo dele (comprar, ou expor a guardada).
+func _build_exhibit_hall(record: BuildingRecord, def: BuildingDef) -> void:
+	_add_lines(1)
+	for exhibit: ExhibitDef in _simulation.data.exhibits:
+		if exhibit.kind != def.exhibit_kind:
+			continue
+		var icon := "building_zoo" if exhibit.kind == ExhibitDef.Kind.ANIMAL else "building_museum"
+		var button := UiKit.button(exhibit.title_key(), icon, func() -> void:
+			var result := _simulation.execute(PlaceExhibitCommand.new(exhibit.id, record.id))
+			if not result.ok():
+				_tool.refused.emit(result.reason)
+			_refresh())
+		button.name = "Exhibit_" + String(exhibit.id)
+		_buttons.add_child(button)
+
+
+## Quantas peças, a beleza que elas somam e os botões: a exposta aqui marcada e desligada, a de outro prédio escondida,
+## a que dá para comprar com o preço na dica, a que não dá desligada com o motivo.
+func _refresh_exhibit_hall(record: BuildingRecord, def: BuildingDef) -> void:
+	var state := _simulation.world.exhibits_state
+	var shown := state.in_building(record.id, _simulation.data)
+	# o zoológico e o museu não atendem necessidade: embelezam, como a decoração
+	_lines[0].text = tr("DECORATION_HOUSES") % Fmt.integer(DecorationView.houses_near(_simulation, record).size())
+	var bonus := 0.0
+	for exhibit: ExhibitDef in shown:
+		bonus += exhibit.beauty
+	_lines[1].text = tr("PANEL_EXHIBITS") % [Fmt.integer(shown.size()), Fmt.integer(def.exhibit_slots),
+			Fmt.integer(roundi((def.beauty + bonus) * _simulation.config.happiness_per_beauty))]
+	for exhibit: ExhibitDef in _simulation.data.exhibits:
+		var button := _buttons.find_child("Exhibit_" + String(exhibit.id), false, false) as Button
+		if button == null:
+			continue
+		var at: int = state.placed.get(exhibit.id, -1)
+		button.visible = at == -1 or at == 0 or at == record.id
+		var description := tr(exhibit.description_key())
+		if at == record.id:
+			button.disabled = true
+			button.tooltip_text = description + "\n" + tr("PANEL_EXHIBIT_HERE")
+			continue
+		var reason := PlaceExhibitCommand.check(_simulation.world, _simulation.data, exhibit.id, record.id, _simulation.free_build)
+		button.disabled = reason != &""
+		var action := tr("PANEL_EXHIBIT_STORED") if at == 0 else tr("PANEL_EXHIBIT_BUY") % Fmt.integer(exhibit.price)
+		button.tooltip_text = description + "\n" + action + ("\n" + tr(reason) if reason != &"" else "")
+
+
+## O efeito da política em texto: "+15% na velocidade da produção em volta".
+static func policy_effect(policy: PolicyDef) -> String:
+	var text := TranslationServer.translate(policy.description_key())
+	match policy.effect:
+		PolicyDef.Effect.HAPPINESS:
+			return text % Fmt.integer(policy.amount)
+		PolicyDef.Effect.FIRE_RISK:
+			return text % Fmt.percent(1.0 - policy.amount)
+	return text % Fmt.percent(policy.amount)
+
+
 func _add_lines(count: int) -> void:
 	for i: int in count:
 		var label := Label.new()
@@ -328,6 +446,10 @@ func _refresh() -> void:
 			if def.protects != BuildingDef.Hazard.NONE:
 				var guarded: Array = _simulation.derived_state().protected_by.get(record.id, [])
 				_lines[0].text = tr("SERVICE_PROTECTS") % Fmt.integer(guarded.size())
+			if def.is_town_hall():
+				_refresh_town_hall(record, def)
+			if def.is_exhibit_hall():
+				_refresh_exhibit_hall(record, def)
 		BuildingDef.Kind.DECORATION:
 			_title.text = tr(def.name_key)
 			_lines[0].text = tr("DECORATION_HOUSES") % Fmt.integer(DecorationView.houses_near(_simulation, record).size())
@@ -492,6 +614,14 @@ func _refresh_warehouse(record: BuildingRecord, def: BuildingDef) -> void:
 		_lines[5].text = tr("WAREHOUSE_BERTHS") % [docked, berths.size()]
 	else:
 		_lines[5].text = ""
+	# Fase 68: a atratividade da ilha e o que os turistas pagam (com os eventos ligados)
+	var attraction: float = derived.attractiveness.get(record.island_id, -1.0)
+	_lines[6].visible = def.is_trading_post and _simulation.world.events_state.enabled and attraction >= 0.0
+	if _lines[6].visible:
+		_lines[6].text = tr("PANEL_ATTRACTIVENESS") % [Fmt.integer(roundi(attraction)),
+				Fmt.integer(TourismSystem.island_income(_simulation.world, _simulation.config, derived, record.island_id))]
+		_lines[6].tooltip_text = "PANEL_ATTRACTIVENESS_TIP"
+		_lines[6].mouse_filter = Control.MOUSE_FILTER_PASS
 	var upgrade := _buttons.get_node_or_null("Upgrade") as Button
 	if upgrade != null:
 		var next := record.level + 1

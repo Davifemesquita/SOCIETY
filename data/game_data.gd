@@ -26,6 +26,14 @@ static var _default: GameData
 ## Cenários prontos e conquistas (Fase 12).
 @export var scenarios: Array[ScenarioDef] = []
 @export var achievements: Array[AchievementDef] = []
+## Manchetes do jornal (Fase 63): as de notícia, sorteadas a cada edição, e as de propaganda, compradas.
+@export var headlines: Array[HeadlineDef] = []
+## Políticas da prefeitura (Fase 66).
+@export var policies: Array[PolicyDef] = []
+## Peças do zoológico e do museu (Fase 67).
+@export var exhibits: Array[ExhibitDef] = []
+## Destinos das expedições (Fase 69).
+@export var expeditions: Array[ExpeditionDef] = []
 
 var _building_index: Dictionary[StringName, BuildingDef] = {}
 var _good_index: Dictionary[StringName, GoodDef] = {}
@@ -105,6 +113,34 @@ func profile(id: StringName) -> IslandProfileDef:
 
 func event(id: StringName) -> EventDef:
 	for def: EventDef in events:
+		if def.id == id:
+			return def
+	return null
+
+
+func expedition(id: StringName) -> ExpeditionDef:
+	for def: ExpeditionDef in expeditions:
+		if def.id == id:
+			return def
+	return null
+
+
+func exhibit(id: StringName) -> ExhibitDef:
+	for def: ExhibitDef in exhibits:
+		if def.id == id:
+			return def
+	return null
+
+
+func policy(id: StringName) -> PolicyDef:
+	for def: PolicyDef in policies:
+		if def.id == id:
+			return def
+	return null
+
+
+func headline(id: StringName) -> HeadlineDef:
+	for def: HeadlineDef in headlines:
 		if def.id == id:
 			return def
 	return null
@@ -222,6 +258,32 @@ func validate() -> PackedStringArray:
 			problems.append("evento %s: duração e peso positivos, marco não negativo" % event_def.id)
 		if event_def.effect != EventDef.Effect.HAPPINESS and event_def.amount <= 0.0:
 			problems.append("evento %s: multiplicador deve ser positivo" % event_def.id)
+	_check_ids(problems, "expedição", expeditions.map(func(def: ExpeditionDef) -> StringName: return def.id))
+	for expedition_def: ExpeditionDef in expeditions:
+		if expedition_def.duration_s <= 0.0 or expedition_def.cost_money < 0 or expedition_def.after_milestone < 0:
+			problems.append("expedição %s: duração positiva, custo e marco não negativos" % expedition_def.id)
+		if expedition_def.empty_chance < 0.0 or expedition_def.lost_chance < 0.0 \
+				or expedition_def.empty_chance + expedition_def.lost_chance >= 1.0:
+			problems.append("expedição %s: as chances de voltar vazia e de naufragar somam menos que 1" % expedition_def.id)
+	_check_ids(problems, "peça", exhibits.map(func(def: ExhibitDef) -> StringName: return def.id))
+	for exhibit_def: ExhibitDef in exhibits:
+		if exhibit_def.price < 0 or exhibit_def.beauty < 0.0 or exhibit_def.after_milestone < 0:
+			problems.append("peça %s: preço, beleza e marco não negativos" % exhibit_def.id)
+	_check_ids(problems, "política", policies.map(func(def: PolicyDef) -> StringName: return def.id))
+	for policy_def: PolicyDef in policies:
+		if policy_def.upkeep_per_min < 0 or policy_def.after_milestone < 0:
+			problems.append("política %s: manutenção e marco não negativos" % policy_def.id)
+		if policy_def.effect == PolicyDef.Effect.FIRE_RISK and (policy_def.amount < 0.0 or policy_def.amount >= 1.0):
+			problems.append("política %s: o multiplicador do incêndio fica entre 0 e 1" % policy_def.id)
+	_check_ids(problems, "manchete", headlines.map(func(def: HeadlineDef) -> StringName: return def.id))
+	var news := 0
+	for headline_def: HeadlineDef in headlines:
+		if headline_def.weight <= 0 or headline_def.after_milestone < 0:
+			problems.append("manchete %s: peso positivo, marco não negativo" % headline_def.id)
+		if not headline_def.propaganda and headline_def.after_milestone == 0:
+			news += 1
+	if not headlines.is_empty() and news == 0:
+		problems.append("manchetes: pelo menos uma de notícia sem marco (a primeira edição precisa de uma)")
 	_check_ids(problems, "encomenda", missions.map(func(def: MissionDef) -> StringName: return def.id))
 	for mission_def: MissionDef in missions:
 		if good(mission_def.good) == null:

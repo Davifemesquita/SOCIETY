@@ -51,18 +51,43 @@ const DUST_COLOR := Color(0.72, 0.64, 0.52, 0.45)
 ## telhado por outro do mesmo material —, a "invertida" (caixilho claro) numa casa de reboco ou tijolo a cada
 ## INVERTED_EVERY, e um desvio de até JITTER_M e JITTER_DEG no modelo. Proposta à espera do dono.
 const PALETTES := 4
+## Fase 351: as classes de reboco claro (engenheiros e investidores) e os tons dele, sorteados por casa e misturados PLASTER_MIX com a
+## cor da classe: no Anno a rua tem casas de tons diferentes lado a lado e o reboco não é branco.
+const PLASTER_TIERS: Array[StringName] = [&"engineers", &"investors"]
+const PLASTER_TONES: Array[Color] = [Color(0.8, 0.72, 0.56), Color(0.78, 0.62, 0.4), Color(0.68, 0.66, 0.6), Color(0.78, 0.62, 0.56)]
+const PLASTER_MIX := 0.75
 const WALL_SHIFTS: Array[Vector3] = [Vector3(0.0, 1.0, 1.0), Vector3(-0.03, 0.85, 0.93), Vector3(0.025, 1.12, 1.05),
 		Vector3(0.05, 0.9, 0.97)]
+## Fase 258: o telhado de todo prédio pelo material e pela paleta: telhas em terracota, laranja, vermelho-escuro ou marrom de
+## telha velha (um cinza-azulado sobre a textura de telha saía lilás) e tábuas em marrons quentes. Antes a paleta 0 e todo
+## prédio que não é casa tiravam o tom da parede escurecida e clareada, e o telhado saía rosa-acinzentado.
 const ROOF_TINTS := {
-	BuildingMaterials.Roof.TILES: [Color(0.0, 0.0, 0.0, 0.0), Color(0.6, 0.28, 0.2), Color(0.45, 0.33, 0.27),
-			Color(0.38, 0.4, 0.45)],
-	BuildingMaterials.Roof.PLANKS: [Color(0.0, 0.0, 0.0, 0.0), Color(0.45, 0.35, 0.25), Color(0.36, 0.31, 0.25),
-			Color(0.52, 0.44, 0.32)],
+	BuildingMaterials.Roof.TILES: [Color(0.64, 0.31, 0.2), Color(0.7, 0.38, 0.22), Color(0.56, 0.24, 0.14),
+			Color(0.46, 0.27, 0.2)],
+	BuildingMaterials.Roof.PLANKS: [Color(0.52, 0.38, 0.25), Color(0.46, 0.34, 0.23), Color(0.41, 0.32, 0.24),
+			Color(0.56, 0.44, 0.3)],
 }
 const NON_HOUSE_SHIFT := 0.35
 const INVERTED_EVERY := 5
 const JITTER_M := 0.01
 const JITTER_DEG := 0.5
+## Fase 134: os serviços de pedra com o telhado de ardósia (o shader do kit troca as telhas por ela).
+const SLATE_ROOFS: Array[StringName] = [&"church", &"school", &"market", &"town_hall", &"theater", &"university",
+		&"museum"]
+## Fase 138: as fábricas pesadas com o telhado de chapa de ferro ondulada.
+## Fase 185: a hera — os serviços de pedra cobertos até o alto, as casas de alvenaria em parte e menos.
+const IVY_SERVICES: Array[StringName] = [&"church", &"school", &"town_hall", &"university", &"museum", &"theater"]
+const IVY_TIERS: Array[StringName] = [&"artisans", &"engineers", &"investors"]
+const IVY_FULL := 1.0
+const IVY_HOUSE := 0.55
+const IVY_HOUSE_EVERY := 4
+## Fase 303: as casas de telhado de tábuas. Fase 350: a parte delas por classe (sextos), mais que a metade dos operários de antes e
+## um terço dos artesãos: no Anno a casa do povo é quase toda de madeira gasta, e a terracota fica para os prédios maiores.
+const SHINGLE_SIXTHS: Dictionary[StringName, int] = {&"workers": 4, &"artisans": 2}
+const IRON_ROOFS: Array[StringName] = [&"brickworks", &"furnace", &"glassworks", &"power_station", &"steel_beam_works",
+		&"oil_power_station", &"sewing_machine_factory", &"cannery", &"lamp_factory"]
+## Fase 79: quanto o bicho inclina para a frente bebendo (rad).
+const DRINK_TILT := 0.12
 
 var _simulation: Simulation
 var _cell_size: float
@@ -81,6 +106,13 @@ var _selected_id: int = 0
 ## Partes que giram (BuildingKit.Rotor), pelo prédio, e quanto giram por segundo de jogo.
 var _rotors: Dictionary[int, Node3D] = {}
 var _rotor_speeds: Dictionary[int, float] = {}
+## Fase 73: as partes que balançam em vez de girar — [amplitude, fase] pelo prédio.
+var _rotor_rocks: Dictionary[int, Array] = {}
+## Fase 74: os bichos e as peças postos no zoológico e no museu (ExhibitModels), com cor por vértice — o mesmo jeito de
+## material do trilho e do trem, sem pipeline nova.
+var _exhibit_material := StandardMaterial3D.new()
+## Fase 75: os bichos que andam no cercado, pelo prédio: [PenWalk, corpo, peça, escala] de cada um.
+var _walkers: Dictionary[int, Array] = {}
 ## Chave da forma (BuildingKit.Spec.key) de cada prédio de modelo, para refazer quando ela muda.
 var _spec_keys: Dictionary[int, String] = {}
 var _refresh_left: float = 0.0
@@ -104,6 +136,9 @@ func setup(simulation: Simulation, cell_size: float) -> void:
 	_simulation = simulation
 	_cell_size = cell_size
 	_door_material.albedo_color = DOOR_COLOR
+	_exhibit_material.vertex_color_use_as_albedo = true
+	_exhibit_material.vertex_color_is_srgb = true
+	_exhibit_material.roughness = 0.75
 	_selection = MeshInstance3D.new()
 	var selection_material := StandardMaterial3D.new()
 	selection_material.albedo_color = SELECTED_COLOR
@@ -187,6 +222,7 @@ func select(building_id: int) -> void:
 
 func _process(delta: float) -> void:
 	spin_rotors(delta * GameClock.clock.speed_multiplier())
+	walk_animals(delta * GameClock.clock.speed_multiplier())
 	_refresh_left -= delta
 	if _refresh_left <= 0.0:
 		_refresh_left = REFRESH_SECONDS
@@ -228,8 +264,49 @@ func spin_rotors(game_seconds: float) -> void:
 		return
 	for building_id: int in _rotors:
 		var record := _simulation.world.building(building_id)
-		if record != null and record.state == BuildingRecord.State.PRODUCING and not record.paused:
+		if record == null or record.state != BuildingRecord.State.PRODUCING or record.paused:
+			continue
+		if _rotor_rocks.has(building_id):
+			# Fase 73: o balancim balança em volta do eixo (a fase anda; o ângulo é o seno dela)
+			var rock: Array = _rotor_rocks[building_id]
+			var phase: float = rock[1] + _rotor_speeds[building_id] * game_seconds
+			rock[1] = phase
+			var amplitude: float = rock[0]
+			_rotors[building_id].basis = Basis(Vector3.RIGHT, sin(phase) * amplitude)
+		else:
 			_rotors[building_id].rotate_object_local(Vector3.RIGHT, _rotor_speeds[building_id] * game_seconds)
+
+
+## Fase 75: os bichos andam no cercado por "game_seconds" segundos de jogo (parados com o jogo pausado).
+func walk_animals(game_seconds: float) -> void:
+	if game_seconds <= 0.0:
+		return
+	for building_id: int in _walkers:
+		for entry: Array in _walkers[building_id]:
+			var walk: PenWalk = entry[0]
+			walk.advance(game_seconds)
+			_place_walker(entry)
+
+
+func _place_walker(entry: Array) -> void:
+	var walk: PenWalk = entry[0]
+	var body: Node3D = entry[1]
+	var exhibit_id: StringName = entry[2]
+	var fit: float = entry[3]
+	var facing: float = ExhibitModels.FACING[exhibit_id]
+	# o corpo olha para "heading" (desfeito o giro com que a malha foi feita); bebendo (Fase 79), inclina para a frente
+	# em volta do eixo de lado do próprio bicho, com o pé no chão
+	var tilt := -DRINK_TILT if walk.drinking else 0.0
+	var turn := Basis(Vector3.UP, walk.heading) * Basis(Vector3.RIGHT, tilt) * Basis(Vector3.UP, -facing)
+	body.transform = Transform3D(turn * Basis.from_scale(Vector3.ONE * fit), Vector3(walk.position.x, 0.0, walk.position.y))
+
+
+## O passeio do bicho no cercado, ou null se ele não anda (testes).
+func exhibit_walk(building_id: int, exhibit_id: StringName) -> PenWalk:
+	for entry: Array in _walkers.get(building_id, []):
+		if entry[2] == exhibit_id:
+			return entry[0]
+	return null
 
 
 func rotor_count() -> int:
@@ -253,6 +330,9 @@ func _color(record: BuildingRecord) -> Color:
 		return _simulation.def_of(record).color
 	var shade := (house_hash(record.id) / HOUSE_VARIANTS % HOUSE_SHADE_STEPS - HOUSE_SHADE_STEPS / 2) * HOUSE_SHADE
 	var base := _simulation.data.tier(record.tier).house_color
+	if PLASTER_TIERS.has(record.tier):
+		# Fase 351: o reboco de cada casa num tom (creme, ocre, cinza, rosa-velho), menos branco
+		base = base.lerp(PLASTER_TONES[house_hash(record.id) / 13 % PLASTER_TONES.size()], PLASTER_MIX)
 	return base.lightened(shade) if shade >= 0.0 else base.darkened(-shade)
 
 
@@ -279,9 +359,9 @@ static func palette_wall(color: Color, palette: int, house: bool) -> Color:
 	return result
 
 
-## O tom do telhado na paleta: a 0 fica o de antes; as outras trocam pelo do material (só nas casas; o resto fica).
-static func palette_roof(color: Color, roof_layer: int, palette: int, house: bool) -> Color:
-	if not house or palette == 0 or not ROOF_TINTS.has(roof_layer):
+## O tom do telhado na paleta, pelo material (Fase 258: em todo prédio e em toda paleta); o material sem tabela fica com color.
+static func palette_roof(color: Color, roof_layer: int, palette: int) -> Color:
+	if not ROOF_TINTS.has(roof_layer):
 		return color
 	var tints: Array = ROOF_TINTS[roof_layer]
 	var tint: Color = tints[palette]
@@ -292,6 +372,58 @@ static func palette_roof(color: Color, roof_layer: int, palette: int, house: boo
 static func inverted(record: BuildingRecord, wall_layer: int) -> bool:
 	return record.is_house() and wall_layer in [BuildingMaterials.Wall.PLASTER, BuildingMaterials.Wall.BRICK] \
 			and BuildingKit.variation_hash(record) / 8748 % INVERTED_EVERY == 0
+
+
+## Onde o modelo do kit do prédio fica no mundo: o piso no canto mais alto do lote (Fase 39), o giro da rotação e o desvio
+## mínimo de posição e giro pela variação. As peças presas na fachada (o relógio da Fase 145) usam a mesma conta: com o
+## giro de meio grau, a parede passava na frente delas.
+static func model_place(grid: IslandGrid, record: BuildingRecord, area: Rect2i) -> Transform3D:
+	return Transform3D(Basis(Vector3.UP, model_yaw(record)), BuildingKit.seat(grid, area) + model_offset(record))
+
+
+static func model_offset(record: BuildingRecord) -> Vector3:
+	var pick := BuildingKit.variation_hash(record)
+	return Vector3(pick / 81 % 3 - 1, 0.0, pick / 243 % 3 - 1) * JITTER_M
+
+
+static func model_yaw(record: BuildingRecord) -> float:
+	var pick := BuildingKit.variation_hash(record)
+	return -PI * 0.5 * posmod(record.rotation, 4) + deg_to_rad(JITTER_DEG) * (pick / 729 % 3 - 1)
+
+
+## Fase 185: quanto a hera sobe nas paredes do prédio (0 sem; o shader do kit a desenha só nas células de parede), só nas
+## ilhas temperadas: IVY_FULL nos serviços de pedra de IVY_SERVICES; IVY_HOUSE numa casa a cada IVY_HOUSE_EVERY dos artesãos
+## para cima (as de alvenaria); nada no resto.
+static func ivy_of(simulation: Simulation, record: BuildingRecord) -> float:
+	if simulation.world.is_tropical(record.island_id, simulation.data):
+		return 0.0
+	if record.def_id in IVY_SERVICES:
+		return IVY_FULL
+	if record.is_house() and record.tier in IVY_TIERS and posmod(house_hash(record.id) / 5, IVY_HOUSE_EVERY) == 0:
+		return IVY_HOUSE
+	return 0.0
+
+
+## Fase 130: o telhado de sapê — as casas da classe com o detalhe de quintal cercado (os camponeses).
+static func thatched(simulation: Simulation, record: BuildingRecord) -> bool:
+	if not record.is_house():
+		return false
+	var tier := simulation.data.tier(record.tier)
+	return tier != null and tier.house_trim == TierDef.HouseTrim.YARD
+
+
+## Fase 303: o telhado de tábuas cinzentas — a parte das casas de cada classe de SHINGLE_SIXTHS (pelo hash), nas ilhas temperadas.
+static func shingled(simulation: Simulation, record: BuildingRecord) -> bool:
+	if not record.is_house() or not SHINGLE_SIXTHS.has(record.tier) or simulation.world.is_tropical(record.island_id, simulation.data):
+		return false
+	return posmod(house_hash(record.id) / 11, 6) < SHINGLE_SIXTHS[record.tier]
+
+
+## Fase 350: o parâmetro das tábuas da casa: 0 sem tábuas, 1 no cinza, 2 no marrom (metade de cada, pelo hash).
+static func shingle_tone(simulation: Simulation, record: BuildingRecord) -> float:
+	if not shingled(simulation, record):
+		return 0.0
+	return 2.0 if posmod(house_hash(record.id) / 7, 2) == 0 else 1.0
 
 
 ## Sombra de contato (Fase 39): para cada fachada do referencial canônico (frente, +X, fundo, −X), a parte da divisa de
@@ -451,9 +583,8 @@ func _add(building_id: int) -> void:
 		body.mesh = BuildingKit.mesh(spec)
 		# Fase 39: o piso no canto mais alto do lote, com um desvio mínimo de posição e giro pela variação
 		root.position = BuildingKit.seat(_grid(record), area)
-		var pick := BuildingKit.variation_hash(record)
-		body.position = Vector3(pick / 81 % 3 - 1, 0.0, pick / 243 % 3 - 1) * JITTER_M
-		body.rotation.y = -PI * 0.5 * posmod(record.rotation, 4) + deg_to_rad(JITTER_DEG) * (pick / 729 % 3 - 1)
+		body.position = model_offset(record)
+		body.rotation.y = model_yaw(record)
 		body.material_override = BuildingMaterials.kit()
 		var tier := _simulation.data.tier(record.tier) if record.is_house() else null
 		var wall_layer := tier.wall_material if tier != null else def.wall_material
@@ -465,12 +596,26 @@ func _add(building_id: int) -> void:
 		_spec_keys[building_id] = spec.key()
 		var palette := palette_of(record)
 		var color := palette_wall(_color(record), palette, record.is_house())
-		var roof_color := palette_roof(color.darkened(ROOF_DARKEN).lightened(0.35), roof_layer, palette, record.is_house())
+		var roof_color := palette_roof(color.darkened(ROOF_DARKEN).lightened(0.35), roof_layer, palette)
 		BuildingMaterials.dress_kit(body, wall_layer, color, roof_layer, roof_color, root.position.y, soot)
 		body.set_instance_shader_parameter(&"trim_paint", 1.0 if inverted(record, wall_layer) else 0.0)
 		body.set_instance_shader_parameter(&"side_shade", side_shade(_simulation, record))
+		# Fase 130: o telhado de sapê das casas dos camponeses
+		body.set_instance_shader_parameter(&"thatch", 1.0 if thatched(_simulation, record) else 0.0)
+		# Fase 134: o telhado de ardósia dos serviços de pedra
+		body.set_instance_shader_parameter(&"slate", 1.0 if record.def_id in SLATE_ROOFS else 0.0)
+		# Fase 138: a chapa ondulada das fábricas pesadas
+		body.set_instance_shader_parameter(&"corrugated", 1.0 if record.def_id in IRON_ROOFS else 0.0)
+		# Fase 303: as tábuas cinzentas de parte das casas dos operários
+		body.set_instance_shader_parameter(&"shingle", shingle_tone(_simulation, record))
+		# Fase 185: a hera nas paredes de pedra e de alvenaria velhas
+		body.set_instance_shader_parameter(&"ivy", ivy_of(_simulation, record))
+		# Fase 352: a altura do beiral, para a faixa de sombra debaixo dele
+		body.set_instance_shader_parameter(&"eave_m", spec.height_m)
 		_lots[building_id] = [record.island_id, area]
 		_add_plinth(body, record, spec, area)
+		if def.is_exhibit_hall():
+			_dress_exhibits(building_id, body, spec)
 		var rotor := BuildingKit.rotor(spec)
 		if rotor != null:
 			var pivot := Node3D.new()
@@ -485,6 +630,8 @@ func _add(building_id: int) -> void:
 			body.add_child(pivot)
 			_rotors[building_id] = pivot
 			_rotor_speeds[building_id] = rotor.speed
+			if rotor.rock > 0.0:
+				_rotor_rocks[building_id] = [rotor.rock, 0.0]
 		if _occluders and height >= OCCLUDER_MIN_HEIGHT_M:
 			root.add_child(_occluder(box_size, Vector3(0.0, (height - FOUNDATION_M) * 0.5, 0.0)))
 		root.add_child(body)
@@ -725,6 +872,8 @@ func _remove(building_id: int, sink: bool = false) -> void:
 		_label_keys.erase(building_id)
 		_rotors.erase(building_id)
 		_rotor_speeds.erase(building_id)
+		_rotor_rocks.erase(building_id)
+		_walkers.erase(building_id)
 		_spec_keys.erase(building_id)
 		_lots.erase(building_id)
 		if _plinths.erase(building_id):
@@ -822,7 +971,82 @@ func _on_building_state_changed(building_id: int) -> void:
 			_scaffold(building_id)
 			if building_id == _selected_id:
 				select(building_id)
+		elif spec != null and _simulation.def_of(record).is_exhibit_hall():
+			# Fase 74: peça posta no prédio (a forma não muda): só os bichos e as peças são refeitos
+			var body := _nodes[building_id].get_node_or_null(^"Model") as Node3D
+			if body != null:
+				_dress_exhibits(building_id, body, spec)
 	_refresh_label(building_id)
+
+
+## Fase 74: os bichos nos cercados do zoológico e as peças nos pedestais do museu, na ordem do catálogo, como filhos do
+## modelo (seguem o giro dele); refeitos quando uma peça entra. Cada vaga é um nó no meio dela com o corpo ("Body")
+## dentro; no cercado, o corpo do bicho que anda é posto pelo PenWalk (Fase 75), que segue o mesmo quando outra peça entra.
+func _dress_exhibits(building_id: int, body: Node3D, spec: BuildingKit.Spec) -> void:
+	var old := body.get_node_or_null(^"Exhibits")
+	if old != null:
+		body.remove_child(old)
+		old.queue_free()
+	var old_walks: Dictionary[StringName, PenWalk] = {}
+	for entry: Array in _walkers.get(building_id, []):
+		old_walks[entry[2]] = entry[0]
+	_walkers.erase(building_id)
+	var spots := BuildingKit.exhibit_spots(spec)
+	var shown := _simulation.world.exhibits_state.in_building(building_id, _simulation.data)
+	if spots.is_empty() or shown.is_empty():
+		return
+	var group := Node3D.new()
+	group.name = "Exhibits"
+	var walkers: Array[Array] = []
+	for k: int in mini(spots.size(), shown.size()):
+		var exhibit_id := shown[k].id
+		var item := Node3D.new()
+		item.name = String(exhibit_id)
+		item.position = spots[k]
+		var shape := MeshInstance3D.new()
+		shape.name = "Body"
+		shape.mesh = ExhibitModels.mesh(exhibit_id)
+		shape.material_override = _exhibit_material
+		shape.visibility_range_end = _detail_range_m
+		item.add_child(shape)
+		group.add_child(item)
+		var half := BuildingKit.pen_half(spec)
+		if spec.silhouette == BuildingDef.Silhouette.MENAGERIE:
+			# Fase 77: o chão do bicho e o bebedouro no cercado ocupado
+			var pen := MeshInstance3D.new()
+			pen.name = "Pen"
+			pen.mesh = ExhibitModels.pen_dressing(exhibit_id, half)
+			pen.material_override = _exhibit_material
+			pen.visibility_range_end = _detail_range_m
+			item.add_child(pen)
+		if spec.silhouette == BuildingDef.Silhouette.MENAGERIE and ExhibitModels.roams(exhibit_id):
+			# o bicho grande demais para virar no cercado fica menor (PenWalk.fit_scale)
+			var footprint := ExhibitModels.footprint(exhibit_id)
+			var fit := PenWalk.fit_scale(half, footprint)
+			shape.scale = Vector3.ONE * fit
+			var walk: PenWalk = old_walks.get(exhibit_id)
+			if walk == null:
+				walk = PenWalk.new(half, Rect2(footprint.position * fit, footprint.size * fit),
+						hash([building_id, k, exhibit_id]), ExhibitModels.FACING[exhibit_id], ExhibitModels.trough_rect(half))
+			var entry: Array = [walk, shape, exhibit_id, fit]
+			_place_walker(entry)
+			walkers.append(entry)
+	body.add_child(group)
+	if not walkers.is_empty():
+		_walkers[building_id] = walkers
+
+
+## Os bichos e as peças à mostra no prédio (testes).
+func exhibit_nodes(building_id: int) -> Array[Node3D]:
+	var found: Array[Node3D] = []
+	var root: Node3D = _nodes.get(building_id)
+	if root == null:
+		return found
+	var group := root.get_node_or_null(^"Model/Exhibits")
+	if group != null:
+		for child: Node in group.get_children():
+			found.append(child as Node3D)
+	return found
 
 
 func _on_house_upgraded(building_id: int) -> void:

@@ -25,7 +25,12 @@ const MODEL_DIR := "res://assets/models/ships/%s.glb"
 const MODEL_YAW := PI * 0.5
 const MODEL_DRAFT := 0.6
 const SELECTION_COLOR := Color(1.0, 0.85, 0.3)
-const WAKE_PARTICLES := 40
+## (Fase 357: 64 e 10 s, eram 40 e 6 s: a esteira em V comprida)
+const WAKE_PARTICLES := 64
+const WAKE_LIFETIME_S := 10.0
+## Fase 357: o ângulo de abertura da esteira (graus para cada lado da popa) e a velocidade com que a espuma sai dela (m/s).
+const WAKE_SPREAD_DEG := 65.0
+const WAKE_SPEED_M_S := Vector2(0.35, 0.8)
 ## Gaivotas: quantas por porto, o raio e a altura do voo em volta dele.
 const GULLS_PER_PORT := 6
 const GULL_RADIUS_M := Vector2(10.0, 26.0)
@@ -602,8 +607,12 @@ func _model(def: ShipDef, sails: Color) -> Node3D:
 	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
 		var mesh: MeshInstance3D = node
 		mesh.material_override = material
+	# Fase 225: a lanterna de popa, acesa à noite. A busca do casco é lida uma vez para ela e para o cordame, e antes de os dois
+	# entrarem no modelo: ela lê todas as malhas dele, e as do cordame e da lanterna não são do casco
+	var points := ShipRigging.hull_points(model)
+	var lantern := SternLantern.node(scale_factor, points)
 	# Fase 26: o cordame e a carga no convés, no espaço do modelo (ShipRigging)
-	var rigging := ShipRigging.rigging(model, scale_factor, _material(ShipRigging.ROPE_COLOR))
+	var rigging := ShipRigging.rigging(model, scale_factor, _material(ShipRigging.ROPE_COLOR), points)
 	if rigging != null:
 		rigging.visibility_range_end = _detail_range_m
 		var deck := Node3D.new()
@@ -613,6 +622,8 @@ func _model(def: ShipDef, sails: Color) -> Node3D:
 		deck.set_meta(&"goods", "")
 		model.add_child(rigging)
 		model.add_child(deck)
+	if lantern != null:
+		model.add_child(lantern)
 	return model
 
 
@@ -805,12 +816,20 @@ func _build_wake(length: float, beam: float) -> GPUParticles3D:
 	var wake := GPUParticles3D.new()
 	wake.local_coords = false
 	wake.amount = maxi(1, roundi(WAKE_PARTICLES * _particles_ratio))
-	wake.lifetime = 6.0
+	wake.lifetime = WAKE_LIFETIME_S
 	wake.position = Vector3(-length * 0.5, 0.15 - BOB_AMPLITUDE_M, 0.0)
 	var process := ParticleProcessMaterial.new()
 	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
 	process.emission_box_extents = Vector3(0.5, 0.0, beam * 0.4)
 	process.gravity = Vector3.ZERO
+	# Fase 357: a esteira em V — a espuma sai da popa para trás e para os lados (a proa é o +X do navio) e se abre devagar
+	process.direction = Vector3(-1.0, 0.0, 0.0)
+	process.spread = WAKE_SPREAD_DEG
+	process.flatness = 1.0
+	process.initial_velocity_min = WAKE_SPEED_M_S.x
+	process.initial_velocity_max = WAKE_SPEED_M_S.y
+	process.damping_min = 0.04
+	process.damping_max = 0.08
 	process.scale_min = 1.0
 	process.scale_max = 1.6
 	var growth := Curve.new()

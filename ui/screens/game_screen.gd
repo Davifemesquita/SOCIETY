@@ -53,6 +53,8 @@ var photo_mode: PhotoMode
 var plan_view: PlanView
 var building_view: BuildingView
 var road_view: RoadView
+var rail_view: RailView
+var train_view: TrainView
 var cart_view: CartView
 var overlay: DebugOverlay
 var sky: SkyAdapter
@@ -72,21 +74,257 @@ var stockpile_view: StockpileView
 var lamp_view: LampView
 var animal_view: AnimalView
 var crop_view: CropView
+var crow_view: CrowView
 var bird_view: BirdView
+## Fase 65: bandeirolas e fogos nas praças da ilha em festa.
+var festival_view: FestivalView
 var harbor_view: HarborView
+## Fase 168: as gaivotas pousadas nos cabeços do cais.
+var perched_gull_view: PerchedGullView
+var fishing_boat_view: FishingBoatView
+var lighthouse_view: LighthouseView
+## Fase 115: a carreira dos estaleiros, com o casco em obra.
+var shipway_view: ShipwayView
+## Fase 116: as mesas e os guarda-sóis em volta das tavernas.
+var tavern_garden_view: TavernGardenView
+## Fase 117: silos e caixas d'água ao lado das fazendas.
+var farm_silo_view: FarmSiloView
+## Fase 118: o cocho de cada pasto (as manchas de chão gasto ficam na máscara das estradas).
+var pasture_trough_view: PastureTroughView
+## Fase 119: as poças de luz no chão à noite, debaixo dos postes, das fogueiras e nas portas das casas.
+var light_pool_view: LightPoolView
+## Fase 120: os postes e os fios pelas ruas em volta das usinas.
+var power_line_view: PowerLineView
+var wire_bird_view: WireBirdView
+## Fase 121: o gavião planando sobre cada cidade.
+var hawk_view: HawkView
+## Fase 122: matacões no leito dos rios e seixos na margem.
+var river_stone_view: RiverStoneView
+## Fase 123: o borrifo do mar batendo nos rochedos e nas falésias perto da câmera.
+var surf_spray_view: SurfSprayView
+## Fase 286: o tapete de capim perto da câmera.
+var grass_carpet_view: GrassCarpetView
+## Fase 128: o afloramento e as pedras do minério nas jazidas ainda sem mina.
+var deposit_view: DepositView
+var summit_rock_view: SummitRockView
+## Fase 131: as tampas de bueiro nas ruas de paralelepípedo.
+var manhole_view: ManholeView
+## Fase 132: as bombas d'água junto das casas.
+var water_pump_view: WaterPumpView
+## Fase 133: as bandeirolas fixas sobre o pátio dos mercados.
+var market_bunting_view: MarketBuntingView
+## Fase 135: as galinhas no quintal cercado das casas dos camponeses.
+var chicken_view: ChickenView
+## Fase 136: a vagoneta e o monte de rejeito das minas.
+var spoil_tip_view: SpoilTipView
+## Fase 137: a boca do forno acesa nas fábricas de forno.
+var furnace_glow_view: FurnaceGlowView
+## Fase 139: as redes de pesca secando ao lado das cabanas de pesca.
+var fish_net_view: FishNetView
+## Fase 140: os tocos e as toras da clareira em volta dos lenhadores.
+var stump_view: StumpView
+## Fase 142: os botes a remo dando voltas diante dos entrepostos.
+var rowboat_view: RowboatView
+## Fase 144: as boias marcando a entrada diante dos entrepostos.
+var buoy_view: BuoyView
+## Fase 145: os mostradores do relógio na torre da igreja.
+var clock_view: ClockView
+## Fase 146: a grade de ferro e os lampiões no cais de pedra.
+var quay_rail_view: QuayRailView
+## Fase 147: os mastros com flâmulas nas pontas do cais de pedra.
+var quay_mast_view: QuayMastView
+## Fase 148: o cavalete, o cepo e a lenha rachada junto dos lenhadores.
+var lumber_yard_view: LumberYardView
+## Fase 159: o pátio de tijolos crus secando junto das olarias.
+var brick_yard_view: BrickYardView
+## Fase 163: a horta atrás de parte das casas dos camponeses e operários.
+var kitchen_garden_view: KitchenGardenView
+var yard_wall_view: YardWallView
+## Fase 166: as medas de feno ao lado das fazendas de gado e de trigo.
+var haystack_view: HaystackView
+## Fase 169: o barril de chuva atrás de parte das casas dos camponeses e operários.
+var rain_barrel_view: RainBarrelView
+## Fase 171: a lenha empilhada na parede do lado de parte das casas dos camponeses e operários.
+var log_pile_view: LogPileView
+## Fase 172: o carrinho de mão no pátio de parte das oficinas.
+var wheelbarrow_view: WheelbarrowView
+## Fase 174: o banco de tábua na porta de parte das casas dos camponeses.
+var door_bench_view: DoorBenchView
+## Fase 175: o espantalho no meio de parte dos campos de trigo e de batata.
+var scarecrow_view: ScarecrowView
+## Fase 176: o ninho com a cegonha na chaminé de parte das casas dos camponeses e operários.
+var stork_view: StorkView
+## Fase 178: os vaga-lumes piscando no capim e na beira da mata à noite.
+var firefly_view: FireflyView
+## Fase 180: as borboletas esvoaçando sobre os canteiros de papoulas, de dia.
+var butterfly_view: ButterflyView
+## Fase 181: a caixa de correio de ferro na calçada de parte das ruas calçadas.
+var post_box_view: PostBoxView
+## Fase 182: o galo de bronze no alto da cumeeira das fazendas, virando com o vento.
+var weathercock_view: WeathercockView
+## Fase 183: o barco virado na areia, com os remos, junto das cabanas de pesca.
+var beach_boat_view: BeachBoatView
+## Fase 186: os feixes de estacas de atracação na água diante do entreposto e dos píeres.
+var mooring_pile_view: MooringPileView
+## Fase 187: a placa de madeira nas encruzilhadas das estradas de terra fora das vilas.
+var signpost_view: SignpostView
+## Fase 188: o arco-íris quando a chuva passa e o sol volta.
+var rainbow_view: RainbowView
+var valley_mist_view: ValleyMistView
+var cliff_fringe_view: CliffFringeView
+## Fase 189: as focas deitadas na costa baixa das ilhas temperadas, longe das vilas.
+var seal_view: SealView
+## Fase 190: as colmeias de palha com as abelhas ao lado de parte das fazendas.
+var beehive_view: BeehiveView
+## Fase 191: o pombal no poste no canto de parte das fazendas, com os pombos pousados.
+var dovecote_view: DovecoteView
+## Fase 192: o varal com a roupa atravessando a rua entre casas de operários frente a frente.
+var street_laundry_view: StreetLaundryView
+## Fase 193: a carroça carregada de feno parada ao lado das medas de parte das fazendas.
+var hay_wagon_view: HayWagonView
+## Fase 194: a escada de pedra descendo do cais de pedra até a água, com a argola de ferro.
+var quay_stairs_view: QuayStairsView
+## Fase 195: o cemitério atrás da igreja, com as lápides, as cruzes e o muro baixo de pedra.
+var graveyard_view: GraveyardView
+## Fase 196: os bandos de patos nadando em roda na água rasa da costa, de dia.
+var duck_view: DuckView
+## Fase 197: a casinha do cão ao lado das casas que têm cão na porta.
+var kennel_view: KennelView
+## Fase 198: os bancos no cais de pedra, virados para o mar.
+var quay_bench_view: QuayBenchView
+## Fase 199: a rede listrada na varanda das casas das ilhas tropicais, balançando de leve.
+var hammock_view: HammockView
+## Fase 200: o gato sentado ao lado da porta de parte das casas, virando a cabeça de vez em quando.
+var cat_view: CatView
+## Fase 201: o poço de pedra com o telhadinho e o sarilho junto das casas dos camponeses.
+var well_view: WellView
+## Fase 202: o secadouro com os peixes pendurados ao lado das cabanas de pesca das ilhas temperadas.
+var fish_rack_view: FishRackView
+## Fase 203: o carrinho de feira com a fruta e o guarda-sol junto de cada mercado.
+var market_cart_view: MarketCartView
+## Fase 204: os guarda-sóis de palha com o banco de toras nas praias das ilhas tropicais.
+var palapa_view: PalapaView
+## Fase 205: os estandartes pendurados de cada lado da porta dos serviços, balançando com o vento.
+var banner_view: BannerView
+## Fase 206: o bebedouro de cavalos de pedra junto da rua, ao lado das tavernas.
+var horse_trough_view: HorseTroughView
+## Fase 208: as ramas de madeira com os panos tingidos secando ao lado das tecelagens.
+var tenter_view: TenterView
+## Fase 210: a fila de pombos pousados na cumeeira de parte das casas.
+var roof_pigeon_view: RoofPigeonView
+## Fase 211: as mós de pedra e os sacos de farinha encostados no lado de cada moinho.
+var millstone_view: MillstoneView
+## Fase 212: os vasos de pedra com o buxo podado em bola na porta das casas dos investidores.
+var topiary_view: TopiaryView
+## Fase 213: a pilha de lenha e a pá de forno ao lado da boca do forno das padarias.
+var oven_wood_view: OvenWoodView
+## Fase 214: a escada de mão encostada na parede do lado de parte das casas, com o balde no pé.
+var ladder_view: LadderView
+## Fase 215: as pilhas de tábuas secando no lado da serraria oposto à roda d'água.
+var plank_stack_view: PlankStackView
+## Fase 216: o monte de carvão na baia de tábuas ao lado de cada usina a carvão.
+var coal_heap_view: CoalHeapView
+## Fase 218: o bando de andorinhas dando voltas em volta da torre de cada igreja, de dia.
+var swallow_view: SwallowView
+## Fase 219: o balanço e a gangorra no lado de cada escola.
+var playground_view: PlaygroundView
+## Fase 220: a bomba de incêndio de mão, o carretel, a escada e os baldes no lado de cada quartel.
+var fire_pump_view: FirePumpView
+## Fase 221: a pirâmide de barris no lado da cervejaria, das destilarias e da adega.
+var barrel_rack_view: BarrelRackView
+## Fase 222: as pilhas de covos, o cabo enrolado e as boias em parte dos lanços do cais de pedra.
+var lobster_pot_view: LobsterPotView
+## Fase 223: os varais com os lençóis brancos no lado de cada hospital.
+var linen_view: LinenView
+## Fase 224: o relógio de sol de pedra num canto do largo calçado de cada serviço.
+var sundial_view: SundialView
+## Fase 226: os fardos de lã, o cepo de tosquia e o velo no lado de cada fazenda de ovelhas.
+var wool_bale_view: WoolBaleView
+## Fase 227: a poça de lama em cada pasto das fazendas de porcos.
+var mud_wallow_view: MudWallowView
+## Fase 228: os barris de petróleo e a mancha de óleo no lado de cada poço de petróleo.
+var oil_barrel_view: OilBarrelView
+## Fase 229: os morcegos esvoaçando em volta da torre de cada igreja, à noite.
+var bat_view: BatView
+## Fase 230: o poste de sinal de braço na ponta de cada linha de trilho.
+var rail_signal_view: RailSignalView
+## Fase 231: os cormorões de asas abertas no alto das estacas de atracação.
+var cormorant_view: CormorantView
+## Fase 232: o tapete estendido no peitoril de uma janela de cima de parte das casas.
+var window_rug_view: WindowRugView
+## Fase 233: as cabines de banho de rodas na areia perto dos entrepostos das ilhas temperadas.
+var bathing_machine_view: BathingMachineView
+## Fase 234: o carrinho do fogareiro de castanhas numa esquina calçada, com as brasas acesas à noite.
+var chestnut_roaster_view: ChestnutRoasterView
+## Fase 235: os cervos pastando na beira da mata das ilhas temperadas, longe das vilas.
+var deer_view: DeerView
+## Fase 236: a âncora velha de ferro deitada no cais de pedra dos entrepostos, com a amarra enrolada ao lado.
+var anchor_view: AnchorView
+## Fase 237: os marcos de pedra de topo redondo na beira das estradas de terra compridas fora das vilas.
+var milestone_view: MilestoneView
+var road_fence_view: RoadFenceView
+## Fase 238: o mastro com a bandeira da cidade no alto da cúpula da prefeitura, virando com o vento.
+var town_flag_view: TownFlagView
+## Fase 240: o lagar de pisar uvas e a prensa de fuso ao lado de cada vinhedo.
+var wine_press_view: WinePressView
+## Fase 241: o terreiro com o café secando ao sol ao lado de cada cafezal.
+var coffee_yard_view: CoffeeYardView
+## Fase 242: o varal com as folhas de tabaco secando ao lado de cada plantação de tabaco.
+var tobacco_rack_view: TobaccoRackView
+## Fase 243: a pilha de vigas de ferro em I sobre os dormentes ao lado de cada fábrica de vigas de aço.
+var steel_beam_view: SteelBeamView
+## Fase 244: os feixes de estacas compridas nos cavaletes ao lado de cada fazenda de lúpulo.
+var hop_pole_view: HopPoleView
+## Fase 245: os coelhos no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando.
+var rabbit_view: RabbitView
+## Fase 247: as tábuas e as cavernas curvas esperando ao lado de cada estaleiro.
+var ship_timber_view: ShipTimberView
+## Fase 248: o cavalete com as chapas de vidro e os caixotes com palha ao lado de cada vidraria e janelaria.
+var glass_crate_view: GlassCrateView
+## Fase 249: os montes de pedras tiradas da terra num canto de parte dos campos das ilhas temperadas.
+var field_stone_view: FieldStoneView
+## Fase 250: a balança decimal de plataforma com os sacos e os pesos ao lado de cada armazém.
+var scale_view: ScaleView
+## Fase 251: as cabras nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra.
+var goat_view: GoatView
+## Fase 252: a carruagem fechada parada sem os cavalos na rua diante de cada teatro.
+var carriage_view: CarriageView
+## Fase 253: os cestos e sacos de batata e o forcado ao lado de cada fazenda de batata.
+var potato_basket_view: PotatoBasketView
+## Fase 254: as canoas escavadas puxadas para a margem baixa dos rios, longe das vilas.
+var canoe_view: CanoeView
+var heron_view: HeronView
+var wreck_view: WreckView
+var summit_cross_view: SummitCrossView
+## Fase 149: o cata-vento junto do cocho de cada pasto, girando com o vento.
+var windpump_view: WindpumpView
+## Fase 150: as colunas de anúncios nas esquinas calçadas.
+var ad_column_view: AdColumnView
+## Fase 152: as balizas com corrente na beira do largo calçado.
+var bollard_view: BollardView
+## Fase 154: o velocípede encostado na frente de umas casas dos artesãos.
+var velocipede_view: VelocipedeView
+var forecourt_view: ForecourtView
+var avenue_view: AvenueView
 var yard_view: YardView
+var chimney_smoke_view: ChimneySmokeView
 var decoration_view: DecorationView
 var fire_view: FireView
 ## Áudio (Fase 10): música adaptativa, ambiente por zona e efeitos.
 var music: MusicDirector
 var ambience: AmbiencePlayer
 var sound: SoundEffects
+## Fase 85: estouros e palmas da festa.
+var festival_sounds: FestivalSounds
 var autosave: Autosave
 ## Chão do mundo: a ilha plana (FlatIsland) ou terreno, água e árvores do arquipélago.
 var terrain_view: TerrainView
 var water_view: WaterView
 var tree_view: TreeView
+var rock_view: RockView
 var scatter_view: ScatterView
+## Fase 64: baleias e golfinhos no mar.
+var marine_view: MarineLifeView
 var _ground: Node3D
 ## Destaque de terreno por ilha e prédio (percorre a ilha inteira: guardado até árvores caírem).
 var _terrain_highlights: Dictionary[String, Image] = {}
@@ -133,6 +371,16 @@ func _ready() -> void:
 	road_view = RoadView.new()
 	road_view.setup(simulation, _config.cell_size_m)
 	add_child(road_view)
+	# Fase 70: os trilhos e os campos de petróleo
+	rail_view = RailView.new()
+	rail_view.name = "Rails"
+	add_child(rail_view)
+	rail_view.setup(simulation, _config)
+	# Fase 71: o trem andando no trilho
+	train_view = TrainView.new()
+	train_view.name = "Trains"
+	add_child(train_view)
+	train_view.setup(simulation, _config)
 	building_view = BuildingView.new()
 	building_view.setup(simulation, _config.cell_size_m)
 	add_child(building_view)
@@ -184,6 +432,9 @@ func _ready() -> void:
 	smoke_view.weather = weather
 	smoke_view.setup(simulation, _config.cell_size_m)
 	graphics.add_effect(smoke_view)
+	# Fase 76: a fumaça da locomotiva deita no mesmo vento e segue o nível gráfico
+	train_view.weather = weather
+	graphics.add_effect(train_view)
 	stockpile_view = StockpileView.new()
 	stockpile_view.name = "Stockpiles"
 	add_child(stockpile_view)
@@ -204,20 +455,520 @@ func _ready() -> void:
 	add_child(crop_view)
 	crop_view.setup(simulation)
 	graphics.add_effect(crop_view)
+	crow_view = CrowView.new()
+	crow_view.name = "Crows"
+	add_child(crow_view)
+	crow_view.setup(crop_view, simulation.config)
 	bird_view = BirdView.new()
 	bird_view.name = "Birds"
 	add_child(bird_view)
 	bird_view.setup(simulation)
 	graphics.add_effect(bird_view)
+	festival_view = FestivalView.new()
+	festival_view.name = "Festival"
+	add_child(festival_view)
+	festival_view.setup(simulation)
 	harbor_view = HarborView.new()
 	harbor_view.name = "Harbor"
 	add_child(harbor_view)
 	harbor_view.setup(simulation)
+	perched_gull_view = PerchedGullView.new()
+	perched_gull_view.name = "PerchedGulls"
+	add_child(perched_gull_view)
+	perched_gull_view.setup(harbor_view, simulation.config)
+	fishing_boat_view = FishingBoatView.new()
+	fishing_boat_view.name = "FishingBoats"
+	add_child(fishing_boat_view)
+	fishing_boat_view.setup(simulation)
+	lighthouse_view = LighthouseView.new()
+	lighthouse_view.name = "Lighthouses"
+	add_child(lighthouse_view)
+	lighthouse_view.setup(simulation)
+	shipway_view = ShipwayView.new()
+	shipway_view.name = "Shipways"
+	add_child(shipway_view)
+	shipway_view.setup(simulation)
+	tavern_garden_view = TavernGardenView.new()
+	tavern_garden_view.name = "TavernGardens"
+	add_child(tavern_garden_view)
+	tavern_garden_view.setup(simulation)
+	farm_silo_view = FarmSiloView.new()
+	farm_silo_view.name = "FarmSilos"
+	add_child(farm_silo_view)
+	farm_silo_view.setup(simulation)
+	pasture_trough_view = PastureTroughView.new()
+	pasture_trough_view.name = "PastureTroughs"
+	add_child(pasture_trough_view)
+	pasture_trough_view.setup(simulation)
+	light_pool_view = LightPoolView.new()
+	light_pool_view.name = "LightPools"
+	add_child(light_pool_view)
+	light_pool_view.setup(simulation, lamp_view)
+	power_line_view = PowerLineView.new()
+	power_line_view.name = "PowerLines"
+	add_child(power_line_view)
+	power_line_view.setup(simulation)
+	wire_bird_view = WireBirdView.new()
+	wire_bird_view.name = "WireBirds"
+	add_child(wire_bird_view)
+	wire_bird_view.setup(power_line_view, simulation.config)
+	hawk_view = HawkView.new()
+	hawk_view.name = "Hawks"
+	add_child(hawk_view)
+	hawk_view.setup(simulation)
+	river_stone_view = RiverStoneView.new()
+	river_stone_view.name = "RiverStones"
+	add_child(river_stone_view)
+	river_stone_view.setup(simulation)
+	surf_spray_view = SurfSprayView.new()
+	surf_spray_view.name = "SurfSpray"
+	add_child(surf_spray_view)
+	surf_spray_view.setup(func() -> PackedVector3Array:
+		return rock_view.spray_sites() if rock_view != null else PackedVector3Array(),
+		func(x: float, z: float) -> float: return simulation.world.surface_height(x, z))
+	graphics.add_effect(surf_spray_view)
+	grass_carpet_view = GrassCarpetView.new()
+	grass_carpet_view.name = "GrassCarpet"
+	add_child(grass_carpet_view)
+	grass_carpet_view.setup(simulation)
+	graphics.add_effect(grass_carpet_view)
+	deposit_view = DepositView.new()
+	deposit_view.name = "Deposits"
+	add_child(deposit_view)
+	deposit_view.setup(simulation)
+	# Fase 345: o granito no alto dos morros
+	summit_rock_view = SummitRockView.new()
+	summit_rock_view.name = "SummitRocks"
+	add_child(summit_rock_view)
+	summit_rock_view.setup(simulation)
+	manhole_view = ManholeView.new()
+	manhole_view.name = "Manholes"
+	add_child(manhole_view)
+	manhole_view.setup(simulation)
+	water_pump_view = WaterPumpView.new()
+	water_pump_view.name = "WaterPumps"
+	add_child(water_pump_view)
+	water_pump_view.setup(simulation)
+	market_bunting_view = MarketBuntingView.new()
+	market_bunting_view.name = "MarketBunting"
+	add_child(market_bunting_view)
+	market_bunting_view.setup(simulation)
+	chicken_view = ChickenView.new()
+	chicken_view.name = "Chickens"
+	add_child(chicken_view)
+	chicken_view.setup(simulation)
+	spoil_tip_view = SpoilTipView.new()
+	spoil_tip_view.name = "SpoilTips"
+	add_child(spoil_tip_view)
+	spoil_tip_view.setup(simulation)
+	furnace_glow_view = FurnaceGlowView.new()
+	furnace_glow_view.name = "FurnaceGlows"
+	add_child(furnace_glow_view)
+	furnace_glow_view.setup(simulation)
+	fish_net_view = FishNetView.new()
+	fish_net_view.name = "FishNets"
+	add_child(fish_net_view)
+	fish_net_view.setup(simulation)
+	stump_view = StumpView.new()
+	stump_view.name = "Stumps"
+	add_child(stump_view)
+	stump_view.setup(simulation)
+	rowboat_view = RowboatView.new()
+	rowboat_view.name = "Rowboats"
+	add_child(rowboat_view)
+	rowboat_view.setup(simulation)
+	buoy_view = BuoyView.new()
+	buoy_view.name = "Buoys"
+	add_child(buoy_view)
+	buoy_view.setup(simulation)
+	clock_view = ClockView.new()
+	clock_view.name = "Clocks"
+	add_child(clock_view)
+	clock_view.setup(simulation)
+	quay_rail_view = QuayRailView.new()
+	quay_rail_view.name = "QuayRails"
+	add_child(quay_rail_view)
+	quay_rail_view.setup(simulation)
+	quay_mast_view = QuayMastView.new()
+	quay_mast_view.name = "QuayMasts"
+	add_child(quay_mast_view)
+	quay_mast_view.setup(simulation)
+	lumber_yard_view = LumberYardView.new()
+	lumber_yard_view.name = "LumberYards"
+	add_child(lumber_yard_view)
+	lumber_yard_view.setup(simulation)
+	brick_yard_view = BrickYardView.new()
+	brick_yard_view.name = "BrickYards"
+	add_child(brick_yard_view)
+	brick_yard_view.setup(simulation)
+	kitchen_garden_view = KitchenGardenView.new()
+	kitchen_garden_view.name = "KitchenGardens"
+	add_child(kitchen_garden_view)
+	kitchen_garden_view.setup(simulation)
+	# Fase 304: o muro dos quintais
+	yard_wall_view = YardWallView.new()
+	yard_wall_view.name = "YardWalls"
+	add_child(yard_wall_view)
+	yard_wall_view.setup(simulation)
+	haystack_view = HaystackView.new()
+	haystack_view.name = "Haystacks"
+	add_child(haystack_view)
+	haystack_view.setup(simulation)
+	rain_barrel_view = RainBarrelView.new()
+	rain_barrel_view.name = "RainBarrels"
+	add_child(rain_barrel_view)
+	rain_barrel_view.setup(simulation)
+	log_pile_view = LogPileView.new()
+	log_pile_view.name = "LogPiles"
+	add_child(log_pile_view)
+	log_pile_view.setup(simulation)
+	wheelbarrow_view = WheelbarrowView.new()
+	wheelbarrow_view.name = "Wheelbarrows"
+	add_child(wheelbarrow_view)
+	wheelbarrow_view.setup(simulation)
+	door_bench_view = DoorBenchView.new()
+	door_bench_view.name = "DoorBenches"
+	add_child(door_bench_view)
+	door_bench_view.setup(simulation)
+	scarecrow_view = ScarecrowView.new()
+	scarecrow_view.name = "Scarecrows"
+	add_child(scarecrow_view)
+	scarecrow_view.setup(simulation)
+	stork_view = StorkView.new()
+	stork_view.name = "Storks"
+	add_child(stork_view)
+	stork_view.setup(simulation)
+	firefly_view = FireflyView.new()
+	firefly_view.name = "Fireflies"
+	add_child(firefly_view)
+	firefly_view.setup(simulation)
+	butterfly_view = ButterflyView.new()
+	butterfly_view.name = "Butterflies"
+	add_child(butterfly_view)
+	butterfly_view.setup(simulation)
+	post_box_view = PostBoxView.new()
+	post_box_view.name = "PostBoxes"
+	add_child(post_box_view)
+	post_box_view.setup(simulation)
+	beach_boat_view = BeachBoatView.new()
+	beach_boat_view.name = "BeachBoats"
+	add_child(beach_boat_view)
+	beach_boat_view.setup(simulation)
+	mooring_pile_view = MooringPileView.new()
+	mooring_pile_view.name = "MooringPiles"
+	add_child(mooring_pile_view)
+	mooring_pile_view.setup(simulation)
+	signpost_view = SignpostView.new()
+	signpost_view.name = "Signposts"
+	add_child(signpost_view)
+	signpost_view.setup(simulation)
+	seal_view = SealView.new()
+	seal_view.name = "Seals"
+	add_child(seal_view)
+	seal_view.setup(simulation)
+	beehive_view = BeehiveView.new()
+	beehive_view.name = "Beehives"
+	add_child(beehive_view)
+	beehive_view.setup(simulation)
+	dovecote_view = DovecoteView.new()
+	dovecote_view.name = "Dovecotes"
+	add_child(dovecote_view)
+	dovecote_view.setup(simulation)
+	street_laundry_view = StreetLaundryView.new()
+	street_laundry_view.name = "StreetLaundry"
+	add_child(street_laundry_view)
+	street_laundry_view.setup(simulation)
+	hay_wagon_view = HayWagonView.new()
+	hay_wagon_view.name = "HayWagons"
+	add_child(hay_wagon_view)
+	hay_wagon_view.setup(simulation)
+	quay_stairs_view = QuayStairsView.new()
+	quay_stairs_view.name = "QuayStairs"
+	add_child(quay_stairs_view)
+	quay_stairs_view.setup(simulation)
+	graveyard_view = GraveyardView.new()
+	graveyard_view.name = "Graveyards"
+	add_child(graveyard_view)
+	graveyard_view.setup(simulation)
+	duck_view = DuckView.new()
+	duck_view.name = "Ducks"
+	add_child(duck_view)
+	duck_view.setup(simulation)
+	kennel_view = KennelView.new()
+	kennel_view.name = "Kennels"
+	add_child(kennel_view)
+	kennel_view.setup(simulation)
+	quay_bench_view = QuayBenchView.new()
+	quay_bench_view.name = "QuayBenches"
+	add_child(quay_bench_view)
+	quay_bench_view.setup(simulation)
+	hammock_view = HammockView.new()
+	hammock_view.name = "Hammocks"
+	add_child(hammock_view)
+	hammock_view.setup(simulation)
+	cat_view = CatView.new()
+	cat_view.name = "Cats"
+	add_child(cat_view)
+	cat_view.setup(simulation)
+	well_view = WellView.new()
+	well_view.name = "Wells"
+	add_child(well_view)
+	well_view.setup(simulation)
+	fish_rack_view = FishRackView.new()
+	fish_rack_view.name = "FishRacks"
+	add_child(fish_rack_view)
+	fish_rack_view.setup(simulation)
+	market_cart_view = MarketCartView.new()
+	market_cart_view.name = "MarketCarts"
+	add_child(market_cart_view)
+	market_cart_view.setup(simulation)
+	palapa_view = PalapaView.new()
+	palapa_view.name = "Palapas"
+	add_child(palapa_view)
+	palapa_view.setup(simulation)
+	banner_view = BannerView.new()
+	banner_view.name = "Banners"
+	add_child(banner_view)
+	banner_view.setup(simulation)
+	horse_trough_view = HorseTroughView.new()
+	horse_trough_view.name = "HorseTroughs"
+	add_child(horse_trough_view)
+	horse_trough_view.setup(simulation)
+	tenter_view = TenterView.new()
+	tenter_view.name = "Tenters"
+	add_child(tenter_view)
+	tenter_view.setup(simulation)
+	roof_pigeon_view = RoofPigeonView.new()
+	roof_pigeon_view.name = "RoofPigeons"
+	add_child(roof_pigeon_view)
+	roof_pigeon_view.setup(simulation)
+	millstone_view = MillstoneView.new()
+	millstone_view.name = "Millstones"
+	add_child(millstone_view)
+	millstone_view.setup(simulation)
+	topiary_view = TopiaryView.new()
+	topiary_view.name = "Topiary"
+	add_child(topiary_view)
+	topiary_view.setup(simulation)
+	oven_wood_view = OvenWoodView.new()
+	oven_wood_view.name = "OvenWood"
+	add_child(oven_wood_view)
+	oven_wood_view.setup(simulation)
+	ladder_view = LadderView.new()
+	ladder_view.name = "Ladders"
+	add_child(ladder_view)
+	ladder_view.setup(simulation)
+	plank_stack_view = PlankStackView.new()
+	plank_stack_view.name = "PlankStacks"
+	add_child(plank_stack_view)
+	plank_stack_view.setup(simulation)
+	coal_heap_view = CoalHeapView.new()
+	coal_heap_view.name = "CoalHeaps"
+	add_child(coal_heap_view)
+	coal_heap_view.setup(simulation)
+	swallow_view = SwallowView.new()
+	swallow_view.name = "Swallows"
+	add_child(swallow_view)
+	swallow_view.setup(simulation)
+	playground_view = PlaygroundView.new()
+	playground_view.name = "Playgrounds"
+	add_child(playground_view)
+	playground_view.setup(simulation)
+	fire_pump_view = FirePumpView.new()
+	fire_pump_view.name = "FirePumps"
+	add_child(fire_pump_view)
+	fire_pump_view.setup(simulation)
+	barrel_rack_view = BarrelRackView.new()
+	barrel_rack_view.name = "BarrelRacks"
+	add_child(barrel_rack_view)
+	barrel_rack_view.setup(simulation)
+	lobster_pot_view = LobsterPotView.new()
+	lobster_pot_view.name = "LobsterPots"
+	add_child(lobster_pot_view)
+	lobster_pot_view.setup(simulation)
+	linen_view = LinenView.new()
+	linen_view.name = "Linen"
+	add_child(linen_view)
+	linen_view.setup(simulation)
+	sundial_view = SundialView.new()
+	sundial_view.name = "Sundials"
+	add_child(sundial_view)
+	sundial_view.setup(simulation)
+	wool_bale_view = WoolBaleView.new()
+	wool_bale_view.name = "WoolBales"
+	add_child(wool_bale_view)
+	wool_bale_view.setup(simulation)
+	mud_wallow_view = MudWallowView.new()
+	mud_wallow_view.name = "MudWallows"
+	add_child(mud_wallow_view)
+	mud_wallow_view.setup(simulation)
+	oil_barrel_view = OilBarrelView.new()
+	oil_barrel_view.name = "OilBarrels"
+	add_child(oil_barrel_view)
+	oil_barrel_view.setup(simulation)
+	bat_view = BatView.new()
+	bat_view.name = "Bats"
+	add_child(bat_view)
+	bat_view.setup(simulation)
+	rail_signal_view = RailSignalView.new()
+	rail_signal_view.name = "RailSignals"
+	add_child(rail_signal_view)
+	rail_signal_view.setup(simulation)
+	cormorant_view = CormorantView.new()
+	cormorant_view.name = "Cormorants"
+	add_child(cormorant_view)
+	cormorant_view.setup(simulation)
+	window_rug_view = WindowRugView.new()
+	window_rug_view.name = "WindowRugs"
+	add_child(window_rug_view)
+	window_rug_view.setup(simulation)
+	bathing_machine_view = BathingMachineView.new()
+	bathing_machine_view.name = "BathingMachines"
+	add_child(bathing_machine_view)
+	bathing_machine_view.setup(simulation)
+	chestnut_roaster_view = ChestnutRoasterView.new()
+	chestnut_roaster_view.name = "ChestnutRoasters"
+	add_child(chestnut_roaster_view)
+	chestnut_roaster_view.setup(simulation)
+	deer_view = DeerView.new()
+	deer_view.name = "Deer"
+	add_child(deer_view)
+	deer_view.setup(simulation)
+	anchor_view = AnchorView.new()
+	anchor_view.name = "Anchors"
+	add_child(anchor_view)
+	anchor_view.setup(simulation)
+	milestone_view = MilestoneView.new()
+	milestone_view.name = "Milestones"
+	add_child(milestone_view)
+	milestone_view.setup(simulation)
+	# Fase 339: as cercas de mourão na beira das estradas de campo
+	road_fence_view = RoadFenceView.new()
+	road_fence_view.name = "RoadFences"
+	add_child(road_fence_view)
+	road_fence_view.setup(simulation)
+	town_flag_view = TownFlagView.new()
+	town_flag_view.name = "TownFlags"
+	add_child(town_flag_view)
+	town_flag_view.setup(simulation)
+	wine_press_view = WinePressView.new()
+	wine_press_view.name = "WinePresses"
+	add_child(wine_press_view)
+	wine_press_view.setup(simulation)
+	coffee_yard_view = CoffeeYardView.new()
+	coffee_yard_view.name = "CoffeeYards"
+	add_child(coffee_yard_view)
+	coffee_yard_view.setup(simulation)
+	tobacco_rack_view = TobaccoRackView.new()
+	tobacco_rack_view.name = "TobaccoRacks"
+	add_child(tobacco_rack_view)
+	tobacco_rack_view.setup(simulation)
+	steel_beam_view = SteelBeamView.new()
+	steel_beam_view.name = "SteelBeams"
+	add_child(steel_beam_view)
+	steel_beam_view.setup(simulation)
+	hop_pole_view = HopPoleView.new()
+	hop_pole_view.name = "HopPoles"
+	add_child(hop_pole_view)
+	hop_pole_view.setup(simulation)
+	rabbit_view = RabbitView.new()
+	rabbit_view.name = "Rabbits"
+	add_child(rabbit_view)
+	rabbit_view.setup(simulation)
+	ship_timber_view = ShipTimberView.new()
+	ship_timber_view.name = "ShipTimbers"
+	add_child(ship_timber_view)
+	ship_timber_view.setup(simulation)
+	glass_crate_view = GlassCrateView.new()
+	glass_crate_view.name = "GlassCrates"
+	add_child(glass_crate_view)
+	glass_crate_view.setup(simulation)
+	field_stone_view = FieldStoneView.new()
+	field_stone_view.name = "FieldStones"
+	add_child(field_stone_view)
+	field_stone_view.setup(simulation)
+	scale_view = ScaleView.new()
+	scale_view.name = "Scales"
+	add_child(scale_view)
+	scale_view.setup(simulation)
+	goat_view = GoatView.new()
+	goat_view.name = "Goats"
+	add_child(goat_view)
+	goat_view.setup(simulation)
+	carriage_view = CarriageView.new()
+	carriage_view.name = "Carriages"
+	add_child(carriage_view)
+	carriage_view.setup(simulation)
+	potato_basket_view = PotatoBasketView.new()
+	potato_basket_view.name = "PotatoBaskets"
+	add_child(potato_basket_view)
+	potato_basket_view.setup(simulation)
+	canoe_view = CanoeView.new()
+	canoe_view.name = "Canoes"
+	add_child(canoe_view)
+	canoe_view.setup(simulation)
+	heron_view = HeronView.new()
+	heron_view.name = "Herons"
+	add_child(heron_view)
+	heron_view.setup(simulation)
+	wreck_view = WreckView.new()
+	wreck_view.name = "Wrecks"
+	add_child(wreck_view)
+	wreck_view.setup(simulation)
+	summit_cross_view = SummitCrossView.new()
+	summit_cross_view.name = "SummitCrosses"
+	add_child(summit_cross_view)
+	summit_cross_view.setup(simulation)
+	windpump_view = WindpumpView.new()
+	windpump_view.name = "Windpumps"
+	add_child(windpump_view)
+	windpump_view.setup(simulation, weather)
+	weathercock_view = WeathercockView.new()
+	weathercock_view.name = "Weathercocks"
+	add_child(weathercock_view)
+	weathercock_view.setup(simulation, weather)
+	rainbow_view = RainbowView.new()
+	rainbow_view.name = "Rainbow"
+	add_child(rainbow_view)
+	rainbow_view.setup(simulation, sky)
+	valley_mist_view = ValleyMistView.new()
+	valley_mist_view.name = "ValleyMist"
+	add_child(valley_mist_view)
+	valley_mist_view.setup(simulation)
+	cliff_fringe_view = CliffFringeView.new()
+	cliff_fringe_view.name = "CliffFringe"
+	add_child(cliff_fringe_view)
+	cliff_fringe_view.setup(simulation)
+	ad_column_view = AdColumnView.new()
+	ad_column_view.name = "AdColumns"
+	add_child(ad_column_view)
+	ad_column_view.setup(simulation)
+	bollard_view = BollardView.new()
+	bollard_view.name = "Bollards"
+	add_child(bollard_view)
+	bollard_view.setup(simulation)
+	velocipede_view = VelocipedeView.new()
+	velocipede_view.name = "Velocipedes"
+	add_child(velocipede_view)
+	velocipede_view.setup(simulation)
+	forecourt_view = ForecourtView.new()
+	forecourt_view.name = "Forecourts"
+	add_child(forecourt_view)
+	forecourt_view.setup(simulation)
+	avenue_view = AvenueView.new()
+	avenue_view.name = "Avenues"
+	add_child(avenue_view)
+	avenue_view.setup(simulation)
 	yard_view = YardView.new()
 	yard_view.name = "Yards"
 	add_child(yard_view)
 	yard_view.setup(simulation)
 	graphics.add_effect(yard_view)
+	chimney_smoke_view = ChimneySmokeView.new()
+	chimney_smoke_view.name = "ChimneySmoke"
+	add_child(chimney_smoke_view)
+	chimney_smoke_view.setup(simulation)
+	graphics.add_effect(chimney_smoke_view)
 	decoration_view = DecorationView.new()
 	decoration_view.name = "Decorations"
 	add_child(decoration_view)
@@ -241,6 +992,11 @@ func _ready() -> void:
 	sound.name = "Sound"
 	add_child(sound)
 	sound.setup(_config, simulation, camera)
+	festival_sounds = FestivalSounds.new()
+	festival_sounds.name = "FestivalSounds"
+	add_child(festival_sounds)
+	festival_sounds.setup(camera, festival_view, pedestrian_view.crowd)
+	festival_view.finale_started.connect(_on_finale_started)
 	autosave = Autosave.new()
 	autosave.name = "Autosave"
 	add_child(autosave)
@@ -326,6 +1082,13 @@ func _process(delta: float) -> void:
 	sky.set_hour(hour)
 	night_light = DayClock.night_factor(_config, hour)
 	RenderingServer.global_shader_parameter_set(&"night_light", night_light)
+	# Fase 110: para onde fica o sol (o brilho dele no mar)
+	var sun_light := sky.sun()
+	if sun_light != null and sun_light.is_inside_tree():
+		RenderingServer.global_shader_parameter_set(&"sun_direction", sun_light.global_basis.z.normalized())
+		# Fase 260: com o sol baixo a exposição sobe (o fim da tarde e a manhã ficavam escuros)
+		if graphics != null:
+			graphics.follow_sun(sun_light.global_basis.z.normalized().y)
 
 
 func _exit_tree() -> void:
@@ -336,13 +1099,15 @@ func _exit_tree() -> void:
 ## O chão do mundo atual: a ilha plana de antes ou o terreno, a água e as árvores do arquipélago.
 ## Refeito ao carregar um save de outro mundo.
 func _build_ground() -> void:
-	for node: Node in [_ground, terrain_view, water_view, tree_view, scatter_view]:
+	for node: Node in [_ground, terrain_view, water_view, tree_view, rock_view, scatter_view, marine_view]:
 		if node != null:
 			node.queue_free()
 	_ground = null
 	terrain_view = null
 	water_view = null
+	marine_view = null
 	tree_view = null
+	rock_view = null
 	scatter_view = null
 	var world := simulation.world
 	if world.terrain_version == 0:
@@ -357,9 +1122,17 @@ func _build_ground() -> void:
 	water_view = WaterView.new()
 	add_child(water_view)
 	water_view.setup(simulation, terrain_view.coast_field())
+	marine_view = MarineLifeView.new()
+	marine_view.name = "MarineLife"
+	add_child(marine_view)
+	marine_view.setup(terrain_view.coast_field(), world_bounds(), world.seed)
 	tree_view = TreeView.new()
 	add_child(tree_view)
 	tree_view.setup(world, simulation.data, _config)
+	# Fase 56: rocha nos rochedos e nas falésias
+	rock_view = RockView.new()
+	add_child(rock_view)
+	rock_view.setup(terrain_view, world, _config)
 	# Fase 41: o recheio entre as casas, na beira da mata, da estrada e do mar
 	scatter_view = ScatterView.new()
 	add_child(scatter_view)
@@ -390,6 +1163,12 @@ func look_at_start() -> void:
 	camera.rig.focus = focus
 	camera.rig.ground_height = simulation.world.surface_height(focus.x, focus.z)
 	camera.apply()
+
+
+## Fase 94: com a opção ligada (Opções → Jogo), o grand finale leva a câmera à praça dele (desliza, como o clique num aviso).
+func _on_finale_started(site: Vector3) -> void:
+	if Settings.finale_camera and not photo_mode.active:
+		camera.rig.center_on(site)
 
 
 func game_state() -> Dictionary:

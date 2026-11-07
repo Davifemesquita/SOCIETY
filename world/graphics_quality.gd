@@ -15,6 +15,8 @@ var _windows: WindowLightsView
 ## Quem recebe a fração de partículas e se mostra fuligem: nós com set_quality(preset).
 var _effects: Array[Node] = []
 var _attributes := CameraAttributesPractical.new()
+## Fase 260: a exposição segue a altura do sol (follow_sun); o laboratório de cor desliga para pôr a dele.
+var sun_exposure := true
 
 
 func setup(config: GameConfig, sky: SkyAdapter, camera: StrategyCamera, crowd: Crowd, windows: WindowLightsView) -> void:
@@ -65,16 +67,18 @@ func apply(chosen: GraphicsPresetDef) -> void:
 
 
 ## Os efeitos do ambiente de um nível (estático para os testes). period: a "Cor de época" (Fase 37), o LUT e o AgX
-## ajustado; desligada, o Environment volta ao de antes.
+## ajustado; desligada, a cor viva da Fase 255 (exposição, contraste do AgX e saturação do GameConfig).
 static func apply_to_environment(environment: Environment, chosen: GraphicsPresetDef, config: GameConfig,
 		period: bool = false) -> void:
 	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
 	environment.ssr_enabled = chosen.ssr
-	environment.adjustment_enabled = period
+	environment.adjustment_enabled = true
 	environment.adjustment_color_correction = PeriodGrade.texture() if period else null
+	environment.adjustment_saturation = 1.0 if period else config.vivid_saturation
 	var defaults := _environment_defaults()
+	environment.tonemap_exposure = defaults.tonemap_exposure if period else config.vivid_exposure
 	environment.tonemap_agx_white = config.period_agx_white if period else defaults.tonemap_agx_white
-	environment.tonemap_agx_contrast = config.period_agx_contrast if period else defaults.tonemap_agx_contrast
+	environment.tonemap_agx_contrast = config.period_agx_contrast if period else config.vivid_agx_contrast
 	environment.ssao_enabled = chosen.ssao
 	environment.ssao_intensity = config.ssao_intensity
 	environment.ssil_enabled = chosen.ssil
@@ -85,6 +89,31 @@ static func apply_to_environment(environment: Environment, chosen: GraphicsPrese
 	environment.volumetric_fog_enabled = chosen.volumetric_fog
 	environment.volumetric_fog_density = config.volumetric_fog_density
 	environment.volumetric_fog_length = config.volumetric_fog_length_m
+
+
+## Fase 260: quanto a exposição sobe com o sol nesta altura (o seno da elevação, positivo de dia): 1 com o sol alto, até
+## 1 + dusk_exposure_boost com ele no horizonte e, desde a Fase 263, 1 + night_exposure_boost de noite.
+static func dusk_factor(config: GameConfig, sun_height: float) -> float:
+	var low := 1.0 - smoothstep(0.02, config.dusk_sun_high, sun_height)
+	var up := smoothstep(-0.12, 0.02, sun_height)
+	return 1.0 + config.dusk_exposure_boost * low * up + config.night_exposure_boost * (1.0 - up)
+
+
+## Fase 260: a exposição do quadro pela altura do sol (chamada a cada quadro pela partida): a do nível vezes dusk_factor.
+func follow_sun(sun_height: float) -> void:
+	if _sky == null or _config == null or not sun_exposure:
+		return
+	var base := _environment_defaults().tonemap_exposure if Settings.period_look else _config.vivid_exposure
+	_sky.environment().tonemap_exposure = base * dusk_factor(_config, sun_height)
+	# Fase 330: a luz ambiente mais fraca de dia (a sombra do sol aparece)
+	_sky.environment().ambient_light_energy = ambient_factor(_config, sun_height)
+
+
+## Fase 330: a força da luz ambiente pela altura do sol: ambient_fill_energy com o sol baixo e de noite, descendo para
+## ambient_day_energy dela com o sol alto.
+static func ambient_factor(config: GameConfig, sun_height: float) -> float:
+	var day := smoothstep(0.05, config.ambient_day_sun_high, sun_height)
+	return config.ambient_fill_energy * lerpf(1.0, config.ambient_day_energy, day)
 
 
 static var _defaults: Environment

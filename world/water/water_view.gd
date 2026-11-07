@@ -29,6 +29,16 @@ var _pollution := Image.new()
 var _polluters: Dictionary[int, bool] = {}
 
 
+## Fase 125: a borda oeste (x, m) das regiões das ilhas tropicais do mundo; INF sem ilha tropical (o recife não aparece).
+static func reef_min_x(config: GameConfig, world: WorldState, data: GameData) -> float:
+	var result := INF
+	for index: int in world.islands.size():
+		if world.is_tropical(index, data):
+			var west := floorf(world.island(index).origin_m.x / config.terrain_region_m) * config.terrain_region_m
+			result = minf(result, west)
+	return result
+
+
 func setup(simulation: Simulation, coast: CoastField = null) -> void:
 	_simulation = simulation
 	for grid: IslandGrid in simulation.world.islands:
@@ -43,6 +53,15 @@ func setup(simulation: Simulation, coast: CoastField = null) -> void:
 		_material.set_shader_parameter(&"coast_bounds", coast.bounds())
 		_material.set_shader_parameter(&"coast_far_m", coast.max_m)
 		_material.set_shader_parameter(&"has_coast", true)
+		# Fase 314: a altura da terra, para a sombra das falésias na água
+		var land := coast.height_texture()
+		if land != null:
+			_material.set_shader_parameter(&"land_height", land)
+			_material.set_shader_parameter(&"has_cliff_shade", true)
+		# Fase 125: o recife no raso das ilhas tropicais (a leste da borda oeste das regiões delas)
+		var reef := reef_min_x(simulation.config, simulation.world, simulation.data)
+		_material.set_shader_parameter(&"has_reef", reef < INF)
+		_material.set_shader_parameter(&"reef_min_x", reef if reef < INF else 1e9)
 	EventBus.building_placed.connect(_on_building_placed)
 	EventBus.building_removed.connect(func(building_id: int) -> void:
 		if _polluters.erase(building_id):
@@ -105,7 +124,11 @@ func _create_ocean() -> void:
 	# perto do litoral o fundo aparece: a cor funda chega mais devagar
 	_material.set_shader_parameter(&"beers_law", 0.12)
 	_material.set_shader_parameter(&"depth_offset", -1.0)
-	_material.set_shader_parameter(&"color_shallow", Color(0.25, 0.55, 0.55, 0.35))
+	_material.set_shader_parameter(&"color_shallow", Color(0.2, 0.62, 0.62, 0.4))
+	# Fase 53: plataforma turquesa mais viva e mais larga, e o fundo azul de mar aberto (a água do Anno)
+	_material.set_shader_parameter(&"color_shelf", Color(0.24, 0.76, 0.72, 0.62))
+	_material.set_shader_parameter(&"shelf_m", 40.0)
+	_material.set_shader_parameter(&"color_deep", Color(0.05, 0.19, 0.42, 1.0))
 	var script := load(OCEAN_SCRIPT) as GDScript
 	var created: Variant = script.new()
 	if not created is Node3D:

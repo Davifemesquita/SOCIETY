@@ -81,3 +81,48 @@ func test_v2_small_archipelagos_keep_their_fingerprints() -> void:
 	for seed_value: int in V2_SMALL:
 		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 2)
 		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V2_SMALL[seed_value])
+
+## Fase 52: o v3 (ilhas alongadas, enseadas, falésias, rochedos), gravado na fase em que entrou e conferido igual no
+## Windows e no Linux (WSL). Mudou de propósito (um número do TerrainV3Params ou o algoritmo), regrave e diga no registro
+## que os saves v3 de antes refazem outro mapa. Regravadas na Fase 53 (a falésia desce em 1,6 célula, não 0,8).
+const V3_SEED_1840: Array[int] = [3367206289, 1450471548, 3766615438, 2352703255, 2902494946, 3964152210, 1566865390,
+		1505054608]
+const V3_SMALL: Dictionary[int, Array] = {
+	1: [2039150493, 1662957455, 3768358827, 3250197690, 1120289341],
+	7: [1628227579, 4173651663, 1513721506, 233982599, 2161096221],
+	2026: [502928890, 77928081, 4188060032, 1516317686, 3298660580],
+	999999: [2433594250, 101362162, 3752159171, 2564319341, 1377263279],
+}
+
+func test_v3_seed_1840_keeps_its_fingerprints() -> void:
+	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default(), -1, -1, 3)
+	assert_array(_fingerprints(world)).is_equal(V3_SEED_1840)
+
+
+func test_v3_small_archipelagos_keep_their_fingerprints() -> void:
+	var config := _small_config()
+	for seed_value: int in V3_SMALL:
+		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 3)
+		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V3_SMALL[seed_value])
+
+## Fase 93: o v4 (o v3 com porto garantido em toda ilha). Na semente 1840 só as ilhas 3 e 4 mudam (as que não tinham lugar
+## de entreposto); as outras são as do v3, número por número. Mudou de propósito, regrave e diga no registro.
+const V4_SEED_1840: Array[int] = [3367206289, 1450471548, 3766615438, 643021793, 631651224, 3964152210, 1566865390,
+		1505054608]
+const V4_SMALL: Dictionary[int, Array] = {
+	1: [2039150493, 1662957455, 4031346039, 3152036395, 3741952931],
+	7: [1628227579, 2498633088, 2465791277, 2943140433, 2161096221],
+	2026: [502928890, 554403638, 1086738741, 3627644210, 3100827700],
+	999999: [3765091319, 3070326829, 1925196695, 2564319341, 1751673520],
+}
+
+func test_v4_seed_1840_keeps_its_fingerprints() -> void:
+	var world := ArchipelagoGenerator.new_world(1840, GameConfig.get_default(), GameData.get_default(), -1, -1, 4)
+	assert_array(_fingerprints(world)).is_equal(V4_SEED_1840)
+
+
+func test_v4_small_archipelagos_keep_their_fingerprints() -> void:
+	var config := _small_config()
+	for seed_value: int in V4_SMALL:
+		var world := ArchipelagoGenerator.new_world(seed_value, config, GameData.get_default(), -1, -1, 4)
+		assert_array(_fingerprints(world)).override_failure_message("semente %d" % seed_value).is_equal(V4_SMALL[seed_value])

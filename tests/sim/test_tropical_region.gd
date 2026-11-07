@@ -25,7 +25,7 @@ func test_tropical_islands_come_after_the_temperate_ones_in_their_own_regions() 
 		if index < temperate:
 			assert_bool(world.is_tropical(index, data)).is_false()
 			# as temperadas são as mesmas de antes da Fase 11 (o gerador delas não mudou)
-			var alone := ArchipelagoGenerator.build_island(specs[index], config)
+			var alone := ArchipelagoGenerator.build_island(specs[index], config, world.terrain_version)
 			assert_int(world.island(index).fingerprint).is_equal(alone.fingerprint)
 			continue
 		assert_bool(world.is_tropical(index, data)).is_true()

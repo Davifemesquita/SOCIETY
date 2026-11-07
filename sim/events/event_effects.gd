@@ -32,9 +32,9 @@ static func ship_speed(state: EventsState) -> float:
 	return factor
 
 
-## Pontos de felicidade somados ao alvo das casas da ilha.
+## Pontos de felicidade somados ao alvo das casas da ilha (com a manchete do jornal, Fase 63, que vale em todas).
 static func happiness(state: EventsState, island_id: int) -> float:
-	var points := 0.0
+	var points := state.headline.happiness if state.headline != null else 0.0
 	for event: WorldEvent in state.events:
 		if event.def.effect == EventDef.Effect.HAPPINESS and event.island_id == island_id:
 			points += event.def.amount

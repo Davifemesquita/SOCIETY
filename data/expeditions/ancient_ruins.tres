@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ExpeditionDef" format=3]
+
+[ext_resource type="Script" path="res://data/expedition_def.gd" id="1_expedition"]
+
+[resource]
+script = ExtResource("1_expedition")
+id = &"ancient_ruins"
+reward = 1
+reward_money = 0
+duration_s = 480.0
+cost_money = 3000
+empty_chance = 0.25
+lost_chance = 0.05
+after_milestone = 0

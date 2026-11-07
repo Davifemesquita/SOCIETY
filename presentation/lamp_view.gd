@@ -54,6 +54,9 @@ const LIGHT_RANGE_M := 11.0
 const LIGHT_SECONDS := 0.5
 const SIDES: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 
+## Fase 119: os postes e as fogueiras foram refeitos (as poças de luz no chão acompanham).
+signal rebuilt
+
 var _simulation: Simulation
 var _cell_size: float
 var _posts := MultiMeshInstance3D.new()
@@ -159,6 +162,7 @@ func rebuild() -> void:
 	_fill(_glass.multimesh, posts, Color(LAMP_COLOR, 0.0))
 	_fill(_pits.multimesh, pits, Color.WHITE)
 	_fill(_flames.multimesh, pits, Color(FIRE_COLOR, 1.0))
+	rebuilt.emit()
 
 
 ## Lado da célula da rua que dá para fora dela (calçada); ZERO se a célula está cercada de rua.

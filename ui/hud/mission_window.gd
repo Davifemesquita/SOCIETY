@@ -4,8 +4,11 @@ extends PanelContainer
 ## prêmio e o tempo para responder, com aceitar e recusar; a aceita mostra o entregue e o prazo. A
 ## entrega é vender o bem no posto do comerciante (rota ou painel do navio). Abaixo, os eventos com
 ## a descrição, o lugar e o tempo que falta.
+## Fase 63: no alto, o jornal — a manchete da edição com o efeito e o tempo até a próxima, e a propaganda que troca a
+## manchete (uma vez por edição, pelo preço da config).
 
 var _simulation: Simulation
+var _newspaper := VBoxContainer.new()
 var _missions := VBoxContainer.new()
 var _events := VBoxContainer.new()
 ## Rótulos de tempo que andam sozinhos, o tick em que o tempo acaba e a chave do texto.
@@ -24,6 +27,10 @@ func setup(simulation: Simulation) -> void:
 	column.add_theme_constant_override(&"separation", 10)
 	add_child(column)
 	column.add_child(UiKit.header("MISSIONS_TITLE", func() -> void: visible = false))
+	_newspaper.name = "Newspaper"
+	_newspaper.add_theme_constant_override(&"separation", 6)
+	column.add_child(_newspaper)
+	column.add_child(HSeparator.new())
 	var intro := HBoxContainer.new()
 	intro.add_theme_constant_override(&"separation", 12)
 	column.add_child(intro)
@@ -50,6 +57,9 @@ func setup(simulation: Simulation) -> void:
 	EventBus.mission_completed.connect(func(_def: StringName, _bonus: int) -> void: _rebuild_if_open())
 	EventBus.world_event_started.connect(func(_def: StringName, _island: int) -> void: _rebuild_if_open())
 	EventBus.world_event_ended.connect(func(_def: StringName, _island: int) -> void: _rebuild_if_open())
+	EventBus.newspaper_published.connect(func(_headline: StringName) -> void: _rebuild_if_open())
+	EventBus.newspaper_changed.connect(_rebuild_if_open)
+	EventBus.ships_changed.connect(_rebuild_if_open)
 
 
 func toggle() -> void:
@@ -85,9 +95,11 @@ func rebuild() -> void:
 	_timer_labels.clear()
 	_timer_ends.clear()
 	_timer_keys.clear()
+	UiKit.clear(_newspaper)
 	UiKit.clear(_missions)
 	UiKit.clear(_events)
 	var state := _simulation.world.events_state
+	_fill_newspaper(state)
 	if not state.enabled:
 		_missions.add_child(UiKit.label("MISSIONS_DISABLED", &"DimLabel"))
 	elif state.missions.is_empty():
@@ -98,6 +110,21 @@ func rebuild() -> void:
 		_events.add_child(UiKit.label("MISSIONS_NO_EVENTS", &"DimLabel"))
 	for event: WorldEvent in state.events:
 		_events.add_child(_event_row(event))
+	# Fase 69: as expedições em andamento (o navio fica fora do mapa até a volta)
+	for trip: ExpeditionsState.Trip in _simulation.world.expeditions_state.trips:
+		var row := HBoxContainer.new()
+		row.name = "Trip_%d" % trip.number
+		row.add_theme_constant_override(&"separation", 10)
+		row.add_child(UiKit.icon_rect(Icons.get_icon("notice_ship_arrived"), 32))
+		var text := VBoxContainer.new()
+		row.add_child(text)
+		var ship_def := _simulation.data.ship(trip.ship.def_id)
+		text.add_child(UiKit.label(tr("EXPEDITION_UNDER_WAY") % [tr(trip.def.title_key()),
+				tr("SHIP_TITLE") % [tr(ship_def.name_key), trip.ship.id]], &"HeaderLabel"))
+		var timer := Label.new()
+		text.add_child(timer)
+		_track(timer, trip.ends_tick, "EXPEDITION_BACK_IN")
+		_events.add_child(row)
 	_refresh_left = 0.0
 	reset_size()
 	_center.call_deferred()
@@ -163,6 +190,72 @@ func _event_row(event: WorldEvent) -> Control:
 	text.add_child(timer)
 	_track(timer, event.ends_tick, "EVENT_TIME_LEFT")
 	return row
+
+
+## O jornal: título, a manchete com o texto e o efeito, o tempo até a próxima edição e os botões de propaganda.
+func _fill_newspaper(state: EventsState) -> void:
+	_newspaper.add_child(UiKit.label("NEWSPAPER_TITLE", &"HeaderLabel"))
+	if not state.enabled:
+		_newspaper.add_child(UiKit.label("NEWSPAPER_DISABLED", &"DimLabel"))
+		return
+	if state.edition_count == 0 or state.headline == null:
+		_newspaper.add_child(UiKit.label("NEWSPAPER_NONE", &"DimLabel"))
+		if state.next_edition_tick > 0:
+			_next_edition(state)
+		return
+	var headline := UiKit.label(state.headline.title_key(), &"HeaderLabel")
+	headline.name = "Headline"
+	headline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	headline.custom_minimum_size.x = 520
+	_newspaper.add_child(headline)
+	var story := UiKit.label(state.headline.description_key(), &"DimLabel")
+	story.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	story.custom_minimum_size.x = 520
+	_newspaper.add_child(story)
+	var effect := UiKit.label(headline_effect(state.headline))
+	effect.name = "Effect"
+	_newspaper.add_child(effect)
+	_next_edition(state)
+	var choices := NewspaperSystem.propaganda_choices(_simulation.world, _simulation.data)
+	if choices.is_empty():
+		return
+	var cost := _simulation.config.newspaper_propaganda_cost
+	var row := HFlowContainer.new()
+	row.name = "Propaganda"
+	row.add_theme_constant_override(&"h_separation", 8)
+	_newspaper.add_child(row)
+	for def: HeadlineDef in choices:
+		var text := tr("NEWSPAPER_PROPAGANDA") % [tr(def.title_key()), Fmt.integer(cost)]
+		var button := UiKit.button(text, "notice_mission", func() -> void: _buy(def.id), "NEWSPAPER_PROPAGANDA_TIP")
+		button.name = "Buy_" + String(def.id)
+		if state.propaganda_used:
+			button.disabled = true
+			button.tooltip_text = "NEWSPAPER_PROPAGANDA_USED"
+		elif _simulation.world.money < cost:
+			button.disabled = true
+			button.tooltip_text = "REASON_NO_MONEY"
+		row.add_child(button)
+
+
+## O tempo até a próxima edição, que anda sozinho.
+func _next_edition(state: EventsState) -> void:
+	var next := Label.new()
+	next.name = "NextEdition"
+	_newspaper.add_child(next)
+	_track(next, state.next_edition_tick, "NEWSPAPER_NEXT")
+
+
+func _buy(headline_id: StringName) -> void:
+	_simulation.execute(BuyPropagandaCommand.new(headline_id))
+	rebuild()
+
+
+## O efeito da manchete: "+6 de felicidade em todas as ilhas" (ou sem efeito).
+static func headline_effect(def: HeadlineDef) -> String:
+	if is_zero_approx(def.happiness):
+		return TranslationServer.translate("NEWSPAPER_NO_EFFECT")
+	var points := Fmt.integer(absf(def.happiness))
+	return TranslationServer.translate("NEWSPAPER_EFFECT_UP" if def.happiness > 0.0 else "NEWSPAPER_EFFECT_DOWN") % points
 
 
 func _track(label: Label, end_tick: int, key: String) -> void:

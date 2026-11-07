@@ -255,7 +255,8 @@ func test_the_church_gets_a_belfry_with_a_bell_above_the_roof() -> void:
 	var size := church.size_m()
 	assert_float(tower.x).is_less(-size.x * 0.25)
 	assert_float(tower.z).is_less(-size.y * 0.25)
-	assert_float(box.position.x).is_greater_equal(-size.x * 0.5 - BuildingKit.BELFRY_OUT_M - 0.3)
+	# (desde a Fase 95 o beiral redondo põe a borda do telhado EAVE_ROLL_M mais para fora)
+	assert_float(box.position.x).is_greater_equal(-size.x * 0.5 - BuildingKit.BELFRY_OUT_M - 0.3 - BuildingKit.EAVE_ROLL_M)
 	var plain := _spec(&"church")
 	plain.silhouette = BuildingDef.Silhouette.NONE
 	assert_int(BuildingKit.triangles(church)).is_greater(BuildingKit.triangles(plain) + BuildingKit.BELL_SEGMENTS * 6)
@@ -301,6 +302,8 @@ func test_upper_class_houses_get_cornice_lintels_pediment_and_iron_railings() ->
 ## peitoril.
 func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 	var investors := _house(&"investors")
+	# (sem as floreiras da Fase 153, que os engenheiros têm em mais andares: aqui só a grade e a balaustrada)
+	investors.balcony_flowers = false
 	var bare := _house(&"investors")
 	bare.trim = TierDef.HouseTrim.NONE
 	# cada balaústre: os segmentos do perfil em BALUSTER_SIDES faces, dois triângulos cada, um a cada
@@ -310,9 +313,18 @@ func test_balconies_get_turned_balusters_corbels_and_sills() -> void:
 	assert_int(BuildingKit.triangles(investors) - BuildingKit.triangles(bare)).is_greater(front * baluster)
 	# a dos engenheiros continua de ferro: os balaústres finos da grade, sem o perfil torneado
 	var engineers := _house(&"engineers")
+	engineers.balcony_flowers = false
+	# (e sem os cunhais da Fase 160, que só os engenheiros têm)
+	engineers.quoins = false
 	var engineers_bare := _house(&"engineers")
 	engineers_bare.trim = TierDef.HouseTrim.NONE
-	assert_int(BuildingKit.triangles(engineers) - BuildingKit.triangles(engineers_bare)).is_less(
+	# (sem o gradil da frente da Fase 114, que é dos engenheiros e não da sacada)
+	var railing := SurfaceTool.new()
+	railing.begin(Mesh.PRIMITIVE_TRIANGLES)
+	BuildingKit._front_railing(railing, engineers)
+	var railing_vertices: PackedVector3Array = railing.commit_to_arrays()[Mesh.ARRAY_VERTEX]
+	var railing_triangles := railing_vertices.size() / 3
+	assert_int(BuildingKit.triangles(engineers) - BuildingKit.triangles(engineers_bare) - railing_triangles).is_less(
 			BuildingKit.triangles(investors) - BuildingKit.triangles(bare))
 	# consolos: o fundo da sacada fica CORBEL_M abaixo do piso dela
 	for tier: StringName in [&"engineers", &"investors"]:
@@ -340,14 +352,22 @@ func test_upper_houses_frame_their_windows_in_stone() -> void:
 		var plain := _house(tier)
 		plain.trim = TierDef.HouseTrim.NONE
 		assert_int(BuildingKit.triangles(spec) - BuildingKit.triangles(plain)).override_failure_message(String(tier)) \
-				.is_greater(BuildingKit.windows(spec).size() * 60)
+				.is_greater((BuildingKit.windows(spec).size() - int(spec.lantern)) * 60)
 	# a pedra de fecho passa da verga para cima: há vértice na altura do alto dela (em cada andar) nos
 	# engenheiros e investidores, e não nos artesãos
 	for tier: StringName in [&"artisans", &"engineers", &"investors"]:
 		var spec := _house(tier)
+		# só a fachada: as peças das Fases 102 e 104 podem cair na mesma altura por acaso
+		spec.lantern = false
+		spec.chimney = false
+		spec.jetty = false
 		var floor_m := spec.hall().floor_m()
 		var key_top := floor_m * (BuildingKit.WINDOW_CENTER + BuildingKit.WINDOW_HEIGHT * 0.5) \
 				+ BuildingKit.LINTEL_M * 0.5 + BuildingKit.KEYSTONE_M
+		if spec.arched:
+			# Fase 99: nos investidores a pedra de fecho fica no alto do arco da janela
+			var step := spec.hall().size_m().x / spec.hall().cells.x
+			key_top = BuildingKit.arch_spring(floor_m) + BuildingKit.arch_radius(step) + BuildingKit.ARCH_BAND_M * 1.4
 		var found := false
 		for vertex: Vector3 in BuildingKit.mesh(spec).surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
 			if absf(fposmod(vertex.y, floor_m) - key_top) < 0.002:

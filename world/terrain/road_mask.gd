@@ -6,7 +6,8 @@ extends RefCounted
 ##    diagonal pura (um segmento a 45°, sem escada); na esquina em L, um segmento entre os meios dos dois lados arredonda o
 ##    canto de dentro; célula solta é um ponto; o trecho entre dois paralelepípedos não entra;
 ## g: calçamento (1 dentro da célula de paralelepípedo);
-## b: desgaste em frente das portas;
+## b: desgaste em frente das portas (e, desde a Fase 111, o terreiro das casas nas ilhas tropicais; desde a Fase 118, o
+##    chão gasto dos pastos; desde a Fase 165, o chão batido em volta dos prédios de produção);
 ## a: poças na terra, no meio da rua.
 ## Função pura do estado da simulação (nada vai para o save). refresh() refaz só o retângulo das células que mudaram.
 
@@ -18,6 +19,32 @@ const DOOR_WEAR_RADIUS_M := 1.5
 ## largura, e o canto recuado da cerca.
 const TRAIL_RADIUS_M := 0.45
 const TRAIL_CORNER_M := 0.9
+## Fase 111: o terreiro das casas nas ilhas tropicais, no canal b: o lote da casa e mais YARD_REACH_M em volta, com a borda
+## somindo em YARD_SOFT_M.
+const YARD_REACH_M := 1.6
+const YARD_SOFT_M := 1.0
+## Fase 301: o chão de vila das casas nas ilhas temperadas, no mesmo canal: o lote e mais TOWN_YARD_REACH_M em volta, com a
+## borda recortada por TOWN_YARD_RAGGED_M de ruído (como o pátio das fábricas), mais fraco que o terreiro tropical
+## (TOWN_YARD_STRENGTH).
+## (Fase 353: 3,4 m, era 2,2: o miolo entre as casas próximas fica todo de terra pisada, como no Anno)
+const TOWN_YARD_REACH_M := 3.4
+const TOWN_YARD_RAGGED_M := 1.2
+const TOWN_YARD_STRENGTH := 0.85
+## Fase 165: o chão batido em volta dos prédios de produção (o pátio de trabalho), em todas as ilhas: o lote e mais
+## WORKS_REACH_M em volta, com a borda somindo em WORKS_SOFT_M e recortada por WORKS_RAGGED_M de ruído.
+const WORKS_REACH_M := 2.0
+const WORKS_SOFT_M := 0.9
+const WORKS_RAGGED_M := 1.1
+## Fase 118: o chão gasto do pasto, no canal b: uma mancha na porteira (onde os bichos se juntam), uma no cocho e
+## PATCHES_PER_PASTURE soltas pelo hash, de borda recortada. O cocho fica TROUGH_INSET_M para dentro da cerca de trás, a
+## TROUGH_SIDE_M do meio dela para um lado (pelo hash).
+const GATE_PATCH_M := 1.5
+const TROUGH_PATCH_M := 1.2
+const PATCH_RADIUS_M := Vector2(0.55, 1.0)
+const PATCHES_PER_PASTURE := 2
+const PATCH_STRENGTH := 0.8
+const TROUGH_INSET_M := 0.9
+const TROUGH_SIDE_M := 1.4
 ## Quantas células em volta de uma mudança o desenho pode mudar (segmento até a vizinha, mais a distância máxima).
 const MARGIN_CELLS := 3
 ## Os lados e as diagonais que cada célula desenha (os outros são da vizinha).
@@ -42,6 +69,11 @@ var _bytes := PackedByteArray()
 var _roads := PackedByteArray()
 var _doors: Dictionary[int, Vector2] = {}
 var _trails: Dictionary[int, PackedVector2Array] = {}
+var _yards: Dictionary[int, Rect2] = {}
+## Fase 301: na ilha temperada o terreiro das casas é o chão de vila (recortado e mais fraco).
+var _town := false
+var _works: Dictionary[int, Rect2] = {}
+var _patches: Dictionary[int, PackedVector3Array] = {}
 
 
 func _init(world: WorldState, data: GameData, island_id: int, per_cell: int, max_m: float) -> void:
@@ -59,6 +91,10 @@ func _init(world: WorldState, data: GameData, island_id: int, per_cell: int, max
 	_roads = _grid.roads.duplicate()
 	_doors = doors(world, data, island_id)
 	_trails = trails(world, data, island_id)
+	_yards = yards(world, data, island_id)
+	_town = not world.is_tropical(island_id, data)
+	_works = works(world, data, island_id)
+	_patches = patches(world, data, island_id)
 	_draw(Rect2i(Vector2i.ZERO, _grid.size), false)
 	image = Image.create_from_data(_width, _height, false, Image.FORMAT_RGBA8, _bytes)
 	texture = ImageTexture.create_from_image(image)
@@ -110,6 +146,30 @@ func refresh() -> Rect2i:
 		if not paths.has(id):
 			area = _merge(area, _trail_cells(_trails[id]))
 	_trails = paths
+	var lots := yards(_world, _data, _island_id)
+	for id: int in lots:
+		if not _yards.has(id) or _yards[id] != lots[id]:
+			area = _merge(area, _yard_cells(lots[id]))
+	for id: int in _yards:
+		if not lots.has(id):
+			area = _merge(area, _yard_cells(_yards[id]))
+	_yards = lots
+	var worked := works(_world, _data, _island_id)
+	for id: int in worked:
+		if not _works.has(id) or _works[id] != worked[id]:
+			area = _merge(area, _yard_cells(worked[id]))
+	for id: int in _works:
+		if not worked.has(id):
+			area = _merge(area, _yard_cells(_works[id]))
+	_works = worked
+	var worn := patches(_world, _data, _island_id)
+	for id: int in worn:
+		if not _patches.has(id) or _patches[id] != worn[id]:
+			area = _merge(area, _patch_cells(worn[id]))
+	for id: int in _patches:
+		if not worn.has(id):
+			area = _merge(area, _patch_cells(_patches[id]))
+	_patches = worn
 	if area.size == Vector2i.ZERO:
 		return area
 	area = area.grow(MARGIN_CELLS).intersection(Rect2i(Vector2i.ZERO, _grid.size))
@@ -157,6 +217,120 @@ static func trails(world: WorldState, data: GameData, island_id: int) -> Diction
 	return result
 
 
+## Fase 118: o cocho do pasto, em m da grade: [meio, direção ao longo dele], junto da cerca de trás (a oposta à porteira),
+## TROUGH_INSET_M para dentro dela e TROUGH_SIDE_M do meio dela para um lado pelo hash.
+static func trough_of(record: BuildingRecord, def: BuildingDef, cell_size: float) -> PackedVector2Array:
+	var area := Footprint.rect(record.origin, def.size, record.rotation)
+	var front := Vector2(Footprint.front_direction(record.rotation))
+	var along := Vector2(-front.y, front.x)
+	var middle := (Vector2(area.position) + Vector2(area.size) * 0.5) * cell_size
+	var depth := (area.size.y if front.y != 0.0 else area.size.x) * cell_size * 0.5
+	var side := 1.0 if absi(hash([record.id, &"trough"])) % 2 == 0 else -1.0
+	return PackedVector2Array([middle - front * (depth - TROUGH_INSET_M) + along * side * TROUGH_SIDE_M, along])
+
+
+## Fase 118: as manchas de chão gasto de cada pasto da ilha (m da grade): x, y e o raio, na porteira, no cocho e
+## PATCHES_PER_PASTURE soltas dentro da cerca, pelo hash.
+static func patches(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, PackedVector3Array]:
+	var result: Dictionary[int, PackedVector3Array] = {}
+	var cell_size := world.island(island_id).cell_size
+	for id: int in world.buildings:
+		var record := world.buildings[id]
+		if record.island_id != island_id or record.def_id != &"pasture":
+			continue
+		var def := data.building(record.def_id)
+		var area := Footprint.rect(record.origin, def.size, record.rotation)
+		var entrance := Footprint.entrance_cell(record.origin, def.size, record.rotation)
+		var front := Vector2(Footprint.front_direction(record.rotation))
+		var gate := (Vector2(entrance) + Vector2(0.5, 0.5) - front * 0.5) * cell_size - front * GATE_PATCH_M * 0.7
+		var trough := trough_of(record, def, cell_size)[0]
+		var list := PackedVector3Array([Vector3(gate.x, gate.y, GATE_PATCH_M), Vector3(trough.x, trough.y, TROUGH_PATCH_M)])
+		var low := Vector2(area.position) * cell_size + Vector2.ONE * PATCH_RADIUS_M.y
+		var span := Vector2(area.size) * cell_size - Vector2.ONE * PATCH_RADIUS_M.y * 2.0
+		for k: int in PATCHES_PER_PASTURE:
+			var roll := absi(hash([id, &"patch", k]))
+			var spot := low + Vector2(span.x * (roll % 1000) / 1000.0, span.y * ((roll / 1000) % 1000) / 1000.0)
+			var radius := lerpf(PATCH_RADIUS_M.x, PATCH_RADIUS_M.y, ((roll / 1000000) % 100) / 100.0)
+			list.append(Vector3(spot.x, spot.y, radius))
+		result[id] = list
+	return result
+
+
+## Fase 165: o pátio de chão batido de cada prédio de produção da ilha (m da grade): o lote crescido de WORKS_REACH_M. Campo,
+## pasto e as fazendas de campo (cuja terra lavrada é a da CropView) ficam de fora.
+static func works(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Rect2]:
+	var result: Dictionary[int, Rect2] = {}
+	var grid := world.island(island_id)
+	if grid == null:
+		return result
+	for id: int in world.buildings:
+		var record := world.buildings[id]
+		if record.island_id != island_id:
+			continue
+		var def := data.building(record.def_id)
+		if def == null or not def.is_production() or def.module_id != &"":
+			continue
+		var area := Footprint.rect(record.origin, def.size, record.rotation)
+		result[id] = Rect2(Vector2(area.position) * grid.cell_size, Vector2(area.size) * grid.cell_size).grow(WORKS_REACH_M)
+	return result
+
+
+## Fase 165: quanto a borda recortada entra no ponto p (pixels): um ruído de valor liso de duas oitavas, de 0 a amount.
+func _edge_noise(p: Vector2, amount: float, seed: int) -> float:
+	var step := amount * 2.5
+	return (_value_noise(p / step, seed) * 0.7 + _value_noise(p / (step * 0.4), seed + 7) * 0.3) * amount
+
+
+static func _value_noise(p: Vector2, seed: int) -> float:
+	var base := Vector2i(floori(p.x), floori(p.y))
+	var f := p - Vector2(base)
+	f = f * f * (Vector2(3.0, 3.0) - 2.0 * f)
+	var top := lerpf(_node(base, seed), _node(base + Vector2i(1, 0), seed), f.x)
+	var bottom := lerpf(_node(base + Vector2i(0, 1), seed), _node(base + Vector2i(1, 1), seed), f.x)
+	return lerpf(top, bottom, f.y)
+
+
+static func _node(at: Vector2i, seed: int) -> float:
+	var h := (at.x * 374761393 + at.y * 668265263 + seed * 1442695041 + 977) & 0xFFFFFFFF
+	h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+	h ^= h >> 16
+	return float(h & 0xFFFF) / 65535.0
+
+
+## Fase 111: o terreiro de cada casa da ilha tropical (m da grade): o lote crescido de YARD_REACH_M. Fase 301: na temperada, o
+## chão de vila, o lote crescido de TOWN_YARD_REACH_M.
+static func yards(world: WorldState, data: GameData, island_id: int) -> Dictionary[int, Rect2]:
+	var result: Dictionary[int, Rect2] = {}
+	var grid := world.island(island_id)
+	if grid == null:
+		return result
+	var cell_size := grid.cell_size
+	var reach := YARD_REACH_M if world.is_tropical(island_id, data) else TOWN_YARD_REACH_M
+	for id: int in world.buildings:
+		var record := world.buildings[id]
+		if record.island_id != island_id or not record.is_house():
+			continue
+		var def := data.building(record.def_id)
+		var area := Footprint.rect(record.origin, def.size, record.rotation)
+		result[id] = Rect2(Vector2(area.position) * cell_size, Vector2(area.size) * cell_size).grow(reach)
+	return result
+
+
+func _yard_cells(lot: Rect2) -> Rect2i:
+	var low := Vector2i((lot.position / _grid.cell_size).floor())
+	var high := Vector2i((lot.end / _grid.cell_size).ceil())
+	return Rect2i(low, high - low)
+
+
+func _patch_cells(spots: PackedVector3Array) -> Rect2i:
+	var area := Rect2i()
+	for spot: Vector3 in spots:
+		var low := Vector2i((Vector2(spot.x - spot.z, spot.y - spot.z) / _grid.cell_size).floor())
+		var high := Vector2i((Vector2(spot.x + spot.z, spot.y + spot.z) / _grid.cell_size).ceil())
+		area = _merge(area, Rect2i(low, high - low))
+	return area
+
+
 func _trail_cells(points: PackedVector2Array) -> Rect2i:
 	var area := Rect2i()
 	for point: Vector2 in points:
@@ -202,6 +376,22 @@ func _draw(area: Rect2i, clear: bool) -> void:
 		var points := _trails[id]
 		for k: int in points.size() - 1:
 			_stamp_wear(points[k] / _grid.cell_size * _per_cell, points[k + 1] / _grid.cell_size * _per_cell, trail_px, clip)
+	var scale := _per_cell / _grid.cell_size
+	for id: int in _patches:
+		var spots := _patches[id]
+		for k: int in spots.size():
+			var spot := spots[k]
+			_stamp_patch(Vector2(spot.x, spot.y) * scale, spot.z * scale, hash([id, k]), clip)
+	for id: int in _yards:
+		var lot := _yards[id]
+		if _town:
+			_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip, TOWN_YARD_RAGGED_M * scale, id,
+					TOWN_YARD_STRENGTH)
+		else:
+			_stamp_yard(Rect2(lot.position * scale, lot.size * scale), YARD_SOFT_M * scale, clip)
+	for id: int in _works:
+		var lot := _works[id]
+		_stamp_yard(Rect2(lot.position * scale, lot.size * scale), WORKS_SOFT_M * scale, clip, WORKS_RAGGED_M * scale, id)
 
 
 func _draw_cell(cell: Vector2i, dirt: bool, clip: Rect2i) -> void:
@@ -317,6 +507,45 @@ func _stamp_wear(a: Vector2, b: Vector2, radius: float, clip: Rect2i) -> void:
 			if d >= 1.0:
 				continue
 			var value := int((1.0 - smoothstep(0.3, 1.0, d)) * 0.85 * 255.0)
+			var i := (y * _width + x) * 4 + 2
+			if value > _bytes[i]:
+				_bytes[i] = value
+
+
+## Fase 118: mancha de chão gasto no canal b, ficando com o maior: um disco de raio radius (pixels) com a borda em lóbulos
+## (o raio varia com o ângulo, pela semente) somindo para fora, a PATCH_STRENGTH; só dentro de clip.
+func _stamp_patch(center: Vector2, radius: float, seed_value: int, clip: Rect2i) -> void:
+	var reach := radius * 1.25
+	var box := Rect2i(Vector2i(floori(center.x - reach), floori(center.y - reach)),
+			Vector2i(ceili(reach * 2.0) + 1, ceili(reach * 2.0) + 1)).intersection(clip)
+	var phase := float(absi(seed_value) % 628) / 100.0
+	for y: int in range(box.position.y, box.end.y):
+		for x: int in range(box.position.x, box.end.x):
+			var offset := Vector2(x + 0.5, y + 0.5) - center
+			var edge := radius * (1.0 + 0.2 * sin(offset.angle() * 3.0 + phase) + 0.08 * sin(offset.angle() * 7.0 - phase))
+			var t := offset.length() / edge
+			if t >= 1.0:
+				continue
+			var value := int((1.0 - smoothstep(0.4, 1.0, t)) * PATCH_STRENGTH * 255.0)
+			var i := (y * _width + x) * 4 + 2
+			if value > _bytes[i]:
+				_bytes[i] = value
+
+
+## Fase 111: o terreiro no canal b, ficando com o maior: cheio dentro do retângulo (pixels) menos a borda e somindo até a
+## borda dele; só dentro de clip. Fase 165: com ragged (pixels), a borda entra até essa medida por um ruído ao longo dela,
+## semeado por seed (o pátio das fábricas não é um retângulo).
+func _stamp_yard(lot: Rect2, soft: float, clip: Rect2i, ragged: float = 0.0, seed: int = 0, strength: float = 1.0) -> void:
+	var box := Rect2i(Vector2i(lot.position.floor()), Vector2i(lot.size.ceil()) + Vector2i.ONE).intersection(clip)
+	for y: int in range(box.position.y, box.end.y):
+		for x: int in range(box.position.x, box.end.x):
+			var p := Vector2(x + 0.5, y + 0.5)
+			var inside := minf(minf(p.x - lot.position.x, lot.end.x - p.x), minf(p.y - lot.position.y, lot.end.y - p.y))
+			if ragged > 0.0:
+				inside -= _edge_noise(p, ragged, seed)
+			if inside <= 0.0:
+				continue
+			var value := int(smoothstep(0.0, soft, inside) * 0.9 * strength * 255.0)
 			var i := (y * _width + x) * 4 + 2
 			if value > _bytes[i]:
 				_bytes[i] = value

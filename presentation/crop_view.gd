@@ -15,24 +15,60 @@ extends Node3D
 ## alinhados nunca na mesma direção), com cabeceira nas pontas; cada campo tem o seu tom de terra e de planta; sebe
 ## (ou muro de pedra seca no lote em encosta) em cada divisa, uma vez por aresta, com a porteira na entrada; nada disso
 ## nas ilhas tropicais (proposta à espera do dono). O pasto também perdeu a caixa: cerca e capim ficam no chão.
+## Fase 157: perto da colheita, caixotes e sacos vão aparecendo entre as fileiras do campo, e somem quando ele é colhido.
 
 const REFRESH_SECONDS := 0.5
 ## O crescimento anda em degraus (menos reescrita), e a planta nova já aparece com este tamanho.
 const GROWTH_STEPS := 20
 const MIN_GROWTH := 0.25
 ## Folga das plantas até a borda do campo (passa do recuo máximo do contorno) e quanto cada uma sai do lugar da grade.
-const MARGIN_M := 0.65
+## (Fase 341: 0,8, era 0,65: o recuo do contorno cresceu)
+const MARGIN_M := 0.8
 const JITTER_M := 0.08
 ## Cereal verde no começo do ciclo (a cor da instância multiplica a do vértice).
 const GREEN_TINT := Color(0.55, 1.0, 0.45)
+## Colheita (Fase 157): HARVEST_SPOTS lugares por campo, entre as fileiras, onde caixotes e sacos vão aparecendo a partir do
+## degrau HARVEST_FROM do crescimento (todos no degrau cheio) e somem na colheita; as peças do CargoKit em HARVEST_SCALE.
+const HARVEST_SPOTS := 5
+const HARVEST_FROM := 12
+const HARVEST_SCALE := 0.62
+## Fase 343: depois da colheita do cereal, nos STUBBLE_STEPS primeiros degraus, as leiras são de restolho (STUBBLE, a palha cortada
+## clara) que vai sumindo na terra, e os sacos da colheita ficam no campo e vão sendo levados (`left_after_harvest`).
+const STUBBLE_STEPS := 4
+const STUBBLE := Color(0.74, 0.64, 0.4)
+## A juta dos sacos da colheita (mais escura que a dos sacos do estoque: no meio da planta clara eles sumiam), puxada de leve
+## para a cor do bem.
+const HARVEST_SACK := Color(0.42, 0.32, 0.2)
+## As plantas que se colhem em caixote (as outras, em saco); a batata, nos dois.
+const HARVEST_CRATES: Array[int] = [BuildingDef.Crop.VINE, BuildingDef.Crop.BROADLEAF]
+const HARVEST_MIXED: Array[int] = [BuildingDef.Crop.TUBER]
 
 ## Leiras (Fase 19): altura, quanto da fileira cada uma ocupa, espaço no campo sem dono e a cor da terra
 ## lavrada (úmida) e seca.
 const FURROW_HEIGHT_M := 0.13
-const FURROW_FILL := 0.7
+## (Fase 340: 0,62, era 0,7: o sulco escuro entre as leiras aparece mais)
+const FURROW_FILL := 0.62
 const BARE_SPACING_M := 0.75
 const FRESH_SOIL := Color(0.25, 0.17, 0.1)
 const DRY_SOIL := Color(0.58, 0.46, 0.32)
+## Fase 262: as leiras ganham a cor da plantação conforme ela cresce (a folhagem rasteira cobrindo a terra entre as plantas),
+## até COVER_MAX dela no degrau cheio (escolhido no tools/color_lab.tscn entre 0,5, 0,7 e 0,85; `cover_max` muda no
+## laboratório): de longe cada campo vira um retalho da cor da planta, não um quadrado de terra. O cereal vai do verde
+## (CEREAL_GREEN) ao dourado (CEREAL_GOLD); as outras, na cor de CROP_COVER.
+const COVER_MAX := 0.7
+static var cover_max := COVER_MAX
+const CEREAL_GREEN := Color(0.42, 0.6, 0.2)
+const CEREAL_GOLD := Color(0.86, 0.68, 0.28)
+## Fase 342: cada cultura num verde que se distingue de longe (eram quase iguais): a batata verde-escuro fundo, o lúpulo verde-
+## amarelado vivo, a uva oliva fosca, a cana lima clara, o café verde-escuro e o tabaco verde-palha.
+const CROP_COVER := {
+	BuildingDef.Crop.TUBER: Color(0.2, 0.4, 0.14),
+	BuildingDef.Crop.HOPS: Color(0.48, 0.62, 0.2),
+	BuildingDef.Crop.VINE: Color(0.36, 0.44, 0.2),
+	BuildingDef.Crop.CANE: Color(0.52, 0.72, 0.26),
+	BuildingDef.Crop.BUSH: Color(0.13, 0.29, 0.13),
+	BuildingDef.Crop.BROADLEAF: Color(0.64, 0.67, 0.3),
+}
 
 ## Pasto: lanço de cerca (m), folga da cerca até a borda e touceiras de capim por célula.
 const PASTURE := &"pasture"
@@ -48,19 +84,24 @@ const PLANT_SWAY_SPEED := 2.1
 ## Fase 40: contorno (recuo mínimo e ondulação, em m, e o passo do ruído ao longo da divisa), altura da terra sobre o
 ## terreno, cabeceira nas pontas das fileiras, tons da terra e da planta por campo, peças de sebe e de muro por metro de
 ## divisa e o desnível do lote que troca a sebe pelo muro.
-const FIELD_INSET_M := 0.22
+## (Fase 341: 0,38, era 0,22: a faixa de capim entre os campos mais larga, de 0,76 a 1,48 m)
+const FIELD_INSET_M := 0.38
 const FIELD_WIGGLE_M := 0.36
 const WIGGLE_STEP_M := 1.4
 const BORDER_SAMPLE_M := 0.5
 const SOIL_M := 0.05
-const HEADLAND_M := 0.95
-const FIELD_SOILS: Array[Color] = [Color(0.45, 0.34, 0.22), Color(0.38, 0.28, 0.18), Color(0.5, 0.39, 0.26),
-		Color(0.42, 0.33, 0.24)]
+const HEADLAND_M := 1.1
+## (Fase 340: mais escuras, ~0,7 das de antes: a terra do sulco entre as leiras é esta, e as fileiras precisam se ler de cima)
+const FIELD_SOILS: Array[Color] = [Color(0.31, 0.23, 0.15), Color(0.27, 0.2, 0.13), Color(0.35, 0.27, 0.18),
+		Color(0.3, 0.23, 0.17)]
 const FIELD_SHADES: Array[Color] = [Color(1.0, 1.0, 1.0), Color(0.9, 0.95, 0.85), Color(1.08, 1.04, 0.92),
 		Color(0.95, 1.05, 0.95)]
 const BORDER_PIECE_M := 1.0
 const WALL_RELIEF_M := 0.3
 const HEDGE_COLOR := Color(0.24, 0.36, 0.16)
+## Fase 344: uma peça da sebe em HEDGE_TREE_EVERY vira uma moita alta, HEDGE_TREE_SCALE (largura, altura) vezes a peça.
+const HEDGE_TREE_EVERY := 8
+const HEDGE_TREE_SCALE := Vector2(1.35, 2.3)
 const WALL_COLOR := Color(0.55, 0.53, 0.48)
 
 ## Por planta: espaço entre plantas na fileira e entre fileiras (m).
@@ -89,6 +130,12 @@ var _place_cache: Dictionary[String, Array] = {}
 ## leira, quantidade de leiras].
 var _fields: Dictionary[int, Array] = {}
 var _growth: Dictionary[int, int] = {}
+## Fase 157: os caixotes e os sacos da colheita; por campo, os lugares [lugar, saco?, índice na camada] e quantos estão à
+## vista (lista à parte: sem tela o MultiMesh devolve transformações zeradas).
+var _crates := MultiMeshInstance3D.new()
+var _sacks := MultiMeshInstance3D.new()
+var _harvest: Dictionary[int, Array] = {}
+var _harvest_shown: Dictionary[int, int] = {}
 var _range_m: float = 260.0
 var _refresh_left: float = 0.0
 var _dirty: bool = false
@@ -134,6 +181,18 @@ func setup(simulation: Simulation) -> void:
 		if layer in [_hedges, _walls]:
 			# milhares de peças: sem sombra
 			layer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(layer)
+	for pair: Array in [[_crates, "HarvestCrates", GoodDef.Pile.CRATE], [_sacks, "HarvestSacks", GoodDef.Pile.SACK]]:
+		var layer: MultiMeshInstance3D = pair[0]
+		var name_text: String = pair[1]
+		var pile: int = pair[2]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_colors = true
+		multimesh.mesh = CargoKit.mesh(pile)
+		multimesh.visible_instance_count = 0
+		layer.name = name_text
+		layer.multimesh = multimesh
 		add_child(layer)
 	_apply_range()
 	EventBus.building_placed.connect(func(_building_id: int) -> void: _dirty = true)
@@ -202,7 +261,27 @@ func soil_mesh() -> ArrayMesh:
 	return _soil.mesh as ArrayMesh
 
 
+## Fase 157: caixotes e sacos da colheita à vista no campo, e os lugares de todos eles (mundo, mesmo os escondidos).
+func harvest_count(field_id: int) -> int:
+	return _harvest_shown.get(field_id, 0)
+
+
+func harvest_places(field_id: int) -> Array[Transform3D]:
+	var result: Array[Transform3D] = []
+	for spot: Array in _harvest.get(field_id, []):
+		var place: Transform3D = spot[0]
+		result.append(place)
+	return result
+
+
 ## Quanto o campo cresceu (0..1, em degraus); -1 se ele não tem plantas.
+## Fase 270: os campos que a vista desenha (os com dono).
+func field_ids() -> Array[int]:
+	var result: Array[int] = []
+	result.assign(_fields.keys())
+	return result
+
+
 func growth_of(field_id: int) -> float:
 	return float(_growth[field_id]) / GROWTH_STEPS if _growth.has(field_id) else -1.0
 
@@ -229,6 +308,11 @@ func rebuild() -> void:
 	_dirty = false
 	_fields.clear()
 	_growth.clear()
+	_harvest.clear()
+	_harvest_shown.clear()
+	# a cor de cada caixote e saco da colheita (os lugares ficam no _harvest)
+	var crates: Array[Color] = []
+	var sacks: Array[Color] = []
 	var world := _simulation.world
 	var derived := _simulation.derived_state()
 	var lists: Dictionary[int, Array] = {}
@@ -267,6 +351,18 @@ func rebuild() -> void:
 		list.append_array(places)
 		for place: Transform3D in rows:
 			furrows.append([place, DRY_SOIL])
+		var produce := _simulation.data.good(_simulation.def_of(farm).output)
+		var sack_color := HARVEST_SACK.lerp(produce.color, 0.15) if produce != null else HARVEST_SACK
+		var spots: Array = []
+		for piece: Array in _cached_harvest(record, def, crop):
+			var place: Transform3D = piece[0]
+			var sack: bool = piece[1]
+			var spot: int = piece[2]
+			var into := sacks if sack else crates
+			spots.append([place, sack, into.size(), spot])
+			# o material dos sacos lê a cor da instância como linear (o do estoque também): a juta vai convertida
+			into.append(sack_color.srgb_to_linear() if sack else Color.WHITE)
+		_harvest[building_id] = spots
 	for crop: int in lists:
 		var multimesh := _layers[crop].multimesh
 		var count: int = lists[crop].size()
@@ -303,6 +399,16 @@ func rebuild() -> void:
 			var color: Color = item[1]
 			multimesh.set_instance_transform(index, place)
 			multimesh.set_instance_color(index, color)
+	for pair: Array in [[_crates, crates], [_sacks, sacks]]:
+		var layer: MultiMeshInstance3D = pair[0]
+		var colors: Array[Color] = pair[1]
+		var multimesh := layer.multimesh
+		if multimesh.instance_count < colors.size():
+			multimesh.visible_instance_count = -1
+			multimesh.instance_count = colors.size() + 32
+		multimesh.visible_instance_count = colors.size()
+		for index: int in colors.size():
+			multimesh.set_instance_color(index, colors[index])
 	for field_id: int in _fields:
 		_draw_field(field_id)
 
@@ -349,11 +455,20 @@ func _pasture(record: BuildingRecord, def: BuildingDef, fences: Array, tufts: Ar
 				var origin := low + start + direction * from
 				origin.y = grid.height_at(origin.x, origin.z)
 				fences.append([Transform3D(Basis(Vector3.UP, turn).scaled_local(Vector3(length, 1.0, 1.0)), origin), wood])
+	# Fase 227: o capim não nasce dentro do lamaçal do pasto dos porcos
+	var mud := Vector2(INF, INF)
+	var owner_id: int = _simulation.derived_state().module_owner.get(record.id, 0)
+	var owner := _simulation.world.building(owner_id)
+	if owner != null and owner.def_id == MudWallowView.PIG_FARM:
+		var spot := MudWallowView.spot(_simulation.world, _simulation.data, record)
+		mud = Vector2(spot.origin.x, spot.origin.z)
 	for i: int in area.size.x * area.size.y * TUFTS_PER_CELL:
 		var random := RandomNumberGenerator.new()
 		random.seed = hash([record.id, &"tuft", i])
 		var point := low + Vector3(random.randf_range(0.3, area.size.x * cell_size - 0.3), 0.0,
 				random.randf_range(0.3, area.size.y * cell_size - 0.3))
+		if Vector2(point.x, point.z).distance_to(mud) < MudWallowView.RADIUS_M.x * (1.0 + MudWallowView.RAGGED) + MudWallowView.RIM_M:
+			continue
 		point.y = grid.height_at(point.x, point.z)
 		var shade := random.randf_range(0.8, 1.15)
 		tufts.append([Transform3D(Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3.ONE * random.randf_range(0.7, 1.3)),
@@ -395,11 +510,58 @@ func _draw_field(field_id: int) -> void:
 		var place: Transform3D = places[index]
 		multimesh.set_instance_transform(first + index, Transform3D(place.basis.scaled_local(size), place.origin))
 		multimesh.set_instance_color(first + index, tint)
-	var soil := FRESH_SOIL.lerp(DRY_SOIL, float(step) / GROWTH_STEPS)
+	var soil := furrow_color_at(crop, step)
 	var first_furrow: int = field[5]
 	var furrow_total: int = field[6]
 	for index: int in furrow_total:
 		_furrows.multimesh.set_instance_color(first_furrow + index, soil)
+	_draw_harvest(field_id, step, crop)
+
+
+## Fase 157: mostra os caixotes e sacos da colheita que o degrau do campo pede; os outros ficam encolhidos a zero.
+func _draw_harvest(field_id: int, step: int, crop: int) -> void:
+	var pieces: Array = _harvest.get(field_id, [])
+	var shown := harvest_shown_at(step) if not pieces.is_empty() else 0
+	if crop == BuildingDef.Crop.GRAIN and not pieces.is_empty():
+		# Fase 343: os sacos ficam no restolho até serem levados
+		shown = maxi(shown, left_after_harvest(step))
+	_harvest_shown[field_id] = shown
+	for piece: Array in pieces:
+		var place: Transform3D = piece[0]
+		var sack: bool = piece[1]
+		var index: int = piece[2]
+		var spot: int = piece[3]
+		var layer := _sacks if sack else _crates
+		layer.multimesh.set_instance_transform(index, place if spot < shown
+				else Transform3D(Basis.from_scale(Vector3.ZERO), place.origin))
+
+
+## Fase 262: a cor das leiras do campo no degrau: a terra de FRESH_SOIL a DRY_SOIL e a cobertura da planta por cima.
+static func furrow_color_at(crop: int, step: int) -> Color:
+	var t := float(step) / GROWTH_STEPS
+	var soil := FRESH_SOIL.lerp(DRY_SOIL, t)
+	var cover: Color = CROP_COVER.get(crop, CEREAL_GREEN)
+	if crop == BuildingDef.Crop.GRAIN:
+		cover = CEREAL_GREEN.lerp(CEREAL_GOLD, smoothstep(0.45, 0.95, t))
+	var grown := soil.lerp(cover, cover_max * smoothstep(0.0, 0.6, t))
+	if crop == BuildingDef.Crop.GRAIN and step < STUBBLE_STEPS:
+		# Fase 343: o restolho do cereal, sumindo na terra
+		return STUBBLE.lerp(grown, float(step) / STUBBLE_STEPS)
+	return grown
+
+
+## Fase 343: quantos lugares da colheita do cereal seguem no campo logo depois dela: todos no degrau 0, nenhum no STUBBLE_STEPS.
+static func left_after_harvest(step: int) -> int:
+	if step >= STUBBLE_STEPS:
+		return 0
+	return ceili(HARVEST_SPOTS * float(STUBBLE_STEPS - step) / STUBBLE_STEPS)
+
+
+## Quantos lugares da colheita aparecem no degrau do crescimento: nenhum antes de HARVEST_FROM, todos no degrau cheio.
+static func harvest_shown_at(step: int) -> int:
+	if step < HARVEST_FROM:
+		return 0
+	return ceili(HARVEST_SPOTS * float(step - HARVEST_FROM + 1) / (GROWTH_STEPS - HARVEST_FROM + 1))
 
 
 ## Lugares das plantas no campo (mundo, tamanho cheio): fileiras pelo espaço da planta, com a folga da
@@ -439,6 +601,45 @@ func _cached_plants(record: BuildingRecord, def: BuildingDef, crop: int) -> Arra
 	if not _place_cache.has(key):
 		_place_cache[key] = _plant_places(record, def, crop)
 	return _place_cache[key]
+
+
+func _cached_harvest(record: BuildingRecord, def: BuildingDef, crop: int) -> Array:
+	var key := "h|%d|%s|%d|%d" % [record.id, record.origin, record.rotation, crop]
+	if not _place_cache.has(key):
+		_place_cache[key] = _harvest_places(record, def, crop)
+	return _place_cache[key]
+
+
+## Fase 157: as peças da colheita do campo (mundo, já no tamanho delas): cada lugar no vão entre duas fileiras, num ponto
+## sorteado pelo id ao longo delas (fora da cabeceira), girado à toa, com um par de peças; [lugar, saco?, lugar da peça] —
+## caixote nas plantas de HARVEST_CRATES, alternando na de HARVEST_MIXED, saco nas outras.
+func _harvest_places(record: BuildingRecord, def: BuildingDef, crop: int) -> Array:
+	var grid := _simulation.world.island(record.island_id)
+	var area := Footprint.rect(record.origin, def.size, record.rotation)
+	var center := grid.rect_world(area)
+	var frame := _row_frame(record)
+	var cell_size := _simulation.config.cell_size_m
+	var half := Vector2(area.size) * cell_size * 0.5 - Vector2(HEADLAND_M, MARGIN_M)
+	var spacing: Vector2 = SPACING[crop]
+	var rows := maxi(1, floori(half.y * 2.0 / spacing.y) + 1)
+	var start := -(rows - 1) * spacing.y * 0.5
+	var random := RandomNumberGenerator.new()
+	random.seed = hash([record.id, &"colheita"])
+	var result: Array = []
+	var item := CargoKit.ITEM_M * HARVEST_SCALE
+	for i: int in HARVEST_SPOTS:
+		var gap := random.randi_range(0, maxi(rows - 2, 0))
+		var along := random.randf_range(-half.x + 0.6, half.x - 0.6)
+		var sack := crop not in HARVEST_CRATES and (crop not in HARVEST_MIXED or i % 2 == 0)
+		var turn := random.randf() * TAU
+		# o par: duas peças lado a lado ao longo do vão, cada uma girada à toa (caixote em cima de caixote parecia um
+		# caixote sobre pernas)
+		for piece: int in 2:
+			var point := center + frame * Vector3(along + (piece - 0.5) * item * 1.05, 0.0, start + (gap + 0.5) * spacing.y)
+			point.y = grid.height_at(point.x, point.z) + SOIL_M
+			var basis := Basis(Vector3.UP, turn + piece * random.randf_range(0.2, 0.7))
+			result.append([Transform3D(basis.scaled(Vector3.ONE * HARVEST_SCALE), point), sack, i])
+	return result
 
 
 func _cached_furrows(record: BuildingRecord, def: BuildingDef, spacing: float) -> Array:
@@ -669,9 +870,16 @@ func _border_pieces(grid: IslandGrid, cell: Vector2i, step: Vector2i, stone: boo
 		point.y = grid.height_at(point.x, point.z)
 		var noise := absi(hash(Vector2i(roundi(point.x * 10.0), roundi(point.z * 10.0))))
 		var scale := 0.85 + float(noise % 300) / 1000.0
+		var width := 1.0
+		if not stone:
+			# Fase 344: a sebe varia mais de altura, e uma peça em HEDGE_TREE_EVERY vira uma moita alta (quase uma árvore pequena)
+			scale = 0.8 + float(noise % 650) / 1000.0
+			if noise / 7 % HEDGE_TREE_EVERY == 0:
+				scale = HEDGE_TREE_SCALE.y
+				width = HEDGE_TREE_SCALE.x
 		var basis := Basis(Vector3.UP, atan2(-along.z, along.x) + (float(noise / 300 % 100) / 100.0 - 0.5) * 0.3)
 		var shade := 0.82 + float(noise / 30000 % 300) / 1000.0
-		var item := [Transform3D(basis.scaled(Vector3(1.0, scale, 1.0)), point), Color(shade, shade, shade)]
+		var item := [Transform3D(basis.scaled(Vector3(width, scale, width)), point), Color(shade, shade, shade)]
 		(walls if stone else hedges).append(item)
 
 
@@ -786,10 +994,13 @@ static func fence_mesh() -> ArrayMesh:
 static func hedge_mesh() -> ArrayMesh:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for i: int in 3:
+	# Fase 344: quatro massas de tamanhos e alturas diferentes (era uma fileira de três bolas iguais, baixa e regular)
+	var lumps: Array[Vector4] = [Vector4(-0.36, 0.5, 0.0, 0.44), Vector4(-0.08, 0.64, 0.06, 0.5), Vector4(0.2, 0.52, -0.05, 0.42),
+			Vector4(0.42, 0.7, 0.04, 0.4)]
+	for i: int in lumps.size():
+		var lump := lumps[i]
 		var color := HEDGE_COLOR if i % 2 == 0 else HEDGE_COLOR.lightened(0.12)
-		_part(tool, _sphere(0.42), Transform3D(Basis.from_scale(Vector3(0.95, 1.0 + 0.12 * (i % 2), 0.8)),
-				Vector3(-0.33 + 0.33 * i, 0.42, 0.0)), color)
+		_part(tool, _sphere(lump.w), Transform3D(Basis.from_scale(Vector3(0.9, 1.15, 0.85)), Vector3(lump.x, lump.y, lump.z)), color)
 	tool.index()
 	return tool.commit()
 

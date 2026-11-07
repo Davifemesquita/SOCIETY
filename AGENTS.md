@@ -109,6 +109,25 @@ tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 12000 res://to
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 400000 res://tools/capture_phase32.tscn -- /pasta/de/saida
 # Fase 39: uma rua de casas por classe, o entreposto e a casa no barranco, de perto, às 10h
 tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase39.tscn -- /pasta/de/saida
+# Fase 83: o bairro com a festa às 22 h (hora presa), moradores e turistas em volta do mastro; o resumo vai em <pasta>/fase83.txt
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase83.tscn -- /pasta/de/saida
+# Fase 84: a mesma, e de perto alguém batendo palmas olhando para o céu (palmas.png, palmas_lado.png)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 30000 res://tools/capture_phase84.tscn -- /pasta/de/saida
+# Fase 85: a mesma com as palmas por estouro; grava estouro.wav e palmas.wav para ouvir
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://tools/capture_phase85.tscn -- /pasta/de/saida
+# Fase 86: um foguete parado no meio da subida (foguete.png); grava também assobio.wav
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 40000 res://tools/capture_phase86.tscn -- /pasta/de/saida
+# Fase 87: cada forma de estouro sozinha no céu (forma_<forma>.png) e o foguete com o rastro
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase87.tscn -- /pasta/de/saida
+# Fase 88: a mesma com a bomba de duas etapas (forma_dupla.png)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase88.tscn -- /pasta/de/saida
+# Fase 89: o grand finale (finale_meio.png e finale_chuva.png)
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase89.tscn -- /pasta/de/saida
+# Fase 94: a câmera indo à praça no rufar (camera_na_praca.png), o grand finale e rufar.wav
+tools/godot.sh godot --path . --resolution 1920x1080 --quit-after 60000 res://tools/capture_phase94.tscn -- /pasta/de/saida
+# cidade de teste: o jogador-robô joga 4 h (todas as classes), mais praças, zoológico e museu cheios, prefeitura, eventos
+# ligados com uma festa e o relógio às 18h, no slot "cidade_de_teste" (abre pelo Carregar); ~3 min, sem tela
+tools/godot.sh godot --headless --path . res://tools/build_test_city.tscn
 # benchmark da fase, anexado ao registro (os quadros brutos vão em docs/benchmark_quadros.json); -- --nivel N mede
 # outro nível e -- --todos-os-niveis, os quatro
 tools/godot.sh godot --path . --resolution 1920x1080 res://tools/benchmark.tscn -- "$PWD/docs/benchmark.md"
@@ -1767,6 +1786,2053 @@ Regras que já custaram investigação:
 - **Gancho**: `BuildingKit.kit_root`, `asset_path`, `asset_mesh`, `Spec.asset`: a peça `<prédio>[_<classe>].glb` entra no
   lugar da forma procedural em `BuildingKit.mesh`; `forget_assets` nos testes.
 
+### Fotos e retratos nos menus (Fase 51, nossa)
+
+- **Plano** em `docs/plano_fase51.md`. Ideias de apresentação do Anno 1800, nenhum arquivo dele.
+- **Fotos**: `tools/bake_building_photos.tscn` fotografa os nossos modelos (`ui/photos/building_<id>.png`,
+  `house_<classe>.png`, 320 × 240) com o acabamento de `PhotoGrade` (`ui/photo_grade.gd`); `Icons.photo(prédio, classe)`,
+  null sem foto (cai no ícone). Prédio novo: refazer as fotos.
+- **Retratos**: pinturas CC0 do Art Institute of Chicago (`assets/source/portraits/aic_<id>.jpg`), recortadas por
+  `tools/build_portraits.gd` em `ui/portraits/`; crédito de cada obra no `CREDITS.md`. O `build_icons.gd` não gera mais
+  retratos.
+- **Interface**: cartões do menu com a foto (`Hud.PHOTO_CARD_HEIGHT`); faixa `Photo` no topo do painel do selecionado.
+
+### Ilhas no jeito do Anno (Fase 52, nossa)
+
+- **Plano** em `docs/plano_fase52.md`. O Anno 1800 do dono foi só olhado (capturas fora do repositório); nada de
+  engenharia reversa nem arquivo dele.
+- **Gerador v3** (`terrain_version = 3`, padrão dos jogos novos até a Fase 93, que trouxe o v4 com porto em toda ilha): `ArchipelagoGenerator.shape_v3` (espinha curva,
+  penínsulas, enseadas, rochedos) e `height_at_v3`; parâmetros em `TerrainV3Params` (herda do `TerrainV2Params`, pega por
+  `TerrainV3Params.get_v3()`). Faixas da costa em células. Mudou um número dali, regrave as assinaturas do v3 no
+  `test_terrain_golden.gd` (pegue os valores dentro do gdUnit: o modo `--script` não carrega os autoloads e os perfis
+  das ilhas podem sair diferentes).
+- **Plataforma desenhada** no v3 pela distância até a terra (`_distance_to_land`), não pelo quadrado do v1.
+
+### Cor no jeito do Anno (Fase 53, nossa)
+
+- **Plano** em `docs/plano_fase53.md`. Tratamento de cor no `terrain.gdshader` (`grass_grade`, `grass_saturation`,
+  `dry_strength`, `forest_grade`, `sand_grade`, `rock_grade`), folhas do `TreeModel`, água turquesa no `WaterView`
+  (`color_shelf`, `shelf_m`, `color_deep`) e névoa mais leve no `GameConfig`. No v3 não se desenha praia acima de
+  `ArchipelagoGenerator.CLIFF_SAND_MAX_M`.
+
+### Costa lisa (Fase 54, nossa)
+
+- **Plano** em `docs/plano_fase54.md`. `TerrainBake.signed_coast` parte de onde a altura cruza o zero (não mais do meio
+  da célula; a assinatura perdeu o `to_water`); `TerrainView._chunk_mesh` divide cada quadrado pela diagonal de menor
+  diferença de altura; a praia do `terrain.gdshader` sai do `coast_distance` (`beach_m`, `beach_top_m`), sem rocha nem
+  falésia. Só apresentação: as assinaturas do terreno não mudam.
+
+### Malha fina na linha d'água (Fase 55, nossa)
+
+- **Plano** em `docs/plano_fase55.md`. `CoastRefine` (`world/terrain/coast_refine.gd`): o quadrado da malha que a linha
+  d'água atravessa vira subgrade de `terrain_coast_subdivisions` (3) de lado, com alturas por Catmull-Rom limitadas aos
+  cantos que pesam e a `terrain_coast_refine_max_m` (0,8 m) da reta; os cantos da grade não mudam, a borda comum sai da
+  mesma conta dos dois lados e a borda com quadrado comum fica na reta dele. Só apresentação.
+
+### Rocha nos rochedos e nas falésias (Fase 56, nossa)
+
+- **Plano** em `docs/plano_fase56.md`. `RockModel` (`presentation/rock_model.gd`): rocha gerada no código (icosfera com
+  ruído, planos de corte e topo cortado, faces chapadas, 4 variantes). `RockView` (`presentation/rock_view.gd`, montada
+  pela `GameScreen`): pelas alturas desenhadas (`TerrainView.region_heights`), bloco e pilar em cada rochedo solto no
+  mar e rochas encaixadas na face das falésias, com o topo abaixo da borda e nunca onde caberia estrada ou prédio
+  (`RockView.places` é função pura). Só apresentação.
+
+### Pedras soltas com a rocha gerada (Fase 57, nossa)
+
+- **Plano** em `docs/plano_fase57.md`. As pedras soltas da `TreeView` (barrancos e litoral rochoso, Fase 36) usam as
+  quatro formas da `RockModel` com o material da `RockView` (`TreeView._stone`), raio de 1 m e 1,25 vez mais altas que
+  largas (`ROCK_SIZE_M`, `ROCK_TALL`), nos mesmos lugares e chances de antes. Os `.glb` das pedras do Kenney saíram.
+  Só apresentação.
+
+### Coqueiro gerado no código (Fase 58, nossa)
+
+- **Plano** em `docs/plano_fase58.md`. `TreeModel.Species.COCONUT_PALM`: tronco curvo em gomos com anéis, coroa de
+  folhas que sobem e caem com folíolos em serra, dobradas em V, e cocos; malha de longe. A `TreeView` desenha três
+  variantes nas ilhas tropicais, perto e longe. A pasta `assets/models/nature/` (Kenney Nature Kit) saiu. Só
+  apresentação.
+
+### Mata tropical (Fase 59, nossa)
+
+- **Plano** em `docs/plano_fase59.md`. `TreeModel.Species.TROPICAL_BROADLEAF`: tronco nu com sapopemas e copa em
+  guarda-chuva; malha de longe. Na ilha tropical a `TreeView` sorteia coqueiro ou folhosa pela altura do terreno (80% de
+  coqueiro abaixo de `PALM_HEIGHT_M`, 30% acima); camadas `Tropical<n>` e `tropical_count`. Só apresentação.
+
+### Sub-bosque tropical (Fase 60, nossa)
+
+- **Plano** em `docs/plano_fase60.md`. `ScatterView.Kind.BANANA` e `Kind.FERN` (bananeira e samambaia, geradas no
+  código): na ilha tropical o arbusto do recheio vira uma delas (`BANANA_SHARE`); o contexto da ilha diz se ela é
+  tropical. As temperadas ficam iguais. Só apresentação.
+
+### Helicônias (Fase 61, nossa)
+
+- **Plano** em `docs/plano_fase61.md`. `ScatterView.Kind.HELICONIA` (gerada no código, brácteas vermelhas de ponta
+  amarela no vértice): na ilha tropical as flores do campo do recheio viram helicônia. Só apresentação.
+
+### Malha fina na face da falésia (Fase 62, nossa)
+
+- **Plano** em `docs/plano_fase62.md`. `CoastRefine.steep`/`refines`: o quadrado seco com desnível de
+  `terrain_cliff_refine_relief_m` (2,4 m, sempre acima de `max_road_relief_m`) também vira a subgrade da Fase 55; os
+  pontos novos acima d'água ganham aspereza de rocha (`terrain_cliff_rough_m`) pelo desnível dos cantos, e a normal
+  pela subgrade. Cantos, bordas e linha d'água como na Fase 55. Só apresentação.
+
+### Jornal (Fase 63, nossa)
+
+- **Plano** em `docs/plano_fase63.md`. `HeadlineDef` (`data/headlines/`, notícia e propaganda), `NewspaperSystem`
+  (edição a cada `newspaper_interval_s`, manchete pela semente e pelo número da edição, felicidade em todas as ilhas
+  pelo `EventEffects.happiness`) e `BuyPropagandaCommand` (uma vez por edição, `newspaper_propaganda_cost`). Só com os
+  eventos ligados; vai no `EventsState` (save antigo sem as chaves carrega sem edição). Na tela, no alto da janela das
+  encomendas (J), e aviso a cada edição.
+
+### Baleias e golfinhos (Fase 64, nossa)
+
+- **Plano** em `docs/plano_fase64.md`. `MarineLifeView` (montada com a água): baleias no mar aberto e bandos de
+  golfinhos em águas médias, pelo `CoastField` e pela semente, malhas geradas no código; a baleia sobe, sopra e
+  mergulha com a cauda erguida, o golfinho salta em arco (`whale_pose`, `dolphin_pose`, no tempo de jogo). Só
+  apresentação.
+
+### Festa na cidade (Fase 65, nossa)
+
+- **Plano** em `docs/plano_fase65.md`. `FestivalView`: com o evento `festival` numa ilha, mastro na porta de cada
+  praça (chafariz, coreto, mercado; sem nenhum, o entreposto) e cordas de bandeirolas só por cima da rua
+  (`strings_of`); fogos de artifício à noite sobre os mastros. Some quando a festa acaba. Só apresentação.
+
+### Prefeitura e políticas (Fase 66, nossa)
+
+- **Plano** em `docs/plano_fase66.md`. Prédio `town_hall` (`BuildingDef.policy_radius_cells`), `PolicyDef`
+  (`data/policies/`: velocidade da produção, chance de incêndio, felicidade, imposto), `SetPolicyCommand` e
+  `BuildingRecord.policy` no save. `DerivedState._apply_policies` soma os efeitos por prédio no raio (a mesma política
+  uma vez) e a manutenção; produção, riscos e população leem `policy_speed`, `policy_fire`, `policy_happiness` e
+  `policy_tax`. Painel com um botão por política.
+
+### Zoológico e museu (Fase 67, nossa)
+
+- **Plano** em `docs/plano_fase67.md`. Prédios `zoo` e `museum` (`BuildingDef.exhibit_slots`, `exhibit_kind`),
+  `ExhibitDef` (`data/exhibits/`: seis animais, seis objetos), `PlaceExhibitCommand` (compra e põe; a guardada de
+  graça) e `ExhibitsState` no save (demolir guarda). A beleza do prédio soma as peças (`DerivedState.beauty_strength`,
+  também na camada Beleza). Painel com um botão por peça.
+
+### Atratividade e turistas (Fase 68, nossa)
+
+- **Plano** em `docs/plano_fase68.md`. `DerivedState.attractiveness` (por ilha com entreposto e casas: beleza menos
+  poluição, nos pesos da config) e `TourismSystem` (só com os eventos ligados: paga por ponto, mais na festa; soma no
+  dinheiro e em `income_per_min`, guarda `WorldState.tourism_per_min`). Parcela `Breakdown.Kind.TOURISM` e a linha no
+  painel do entreposto.
+
+### Expedições (Fase 69, nossa)
+
+- **Plano** em `docs/plano_fase69.md`. `ExpeditionDef` (`data/expeditions/`), `StartExpeditionCommand` (o navio sai
+  do mapa para o `ExpeditionsState`), `ExpeditionSystem` (a volta sorteada pela semente e pelo número: naufrágio, mãos
+  vazias ou a recompensa — peça guardada da Fase 67 ou moedas; o navio volta ao porto de origem) e o sinal
+  `expedition_returned`. Botões no painel do navio, viagens na janela das encomendas, aviso da frota.
+
+### Ferrovia e petróleo (Fase 70, nossa)
+
+- **Plano** em `docs/plano_fase70.md`. `OilFields` (campos pela semente, depois da assinatura: `IslandGrid.oil_spots`),
+  `GoodDef.rail_only` (petróleo), `oil_well` (`Terrain.OIL`) e `oil_power_station`, `IslandGrid.rails` com
+  `BuildRailCommand` (bloqueia prédio e estrada; demolir tira; no save), `RailNetwork` e `DerivedState._link_rails`
+  (poço e usina no mesmo grupo de trilho) e `RailSystem` (leva o petróleo, sem carroça). `BuildTool.road_rail` (o
+  arrasto da estrada, sempre em L), cartão "Trilho", `RailView` (trilho e manchas de petróleo).
+
+### O trem no trilho (Fase 71, nossa)
+
+- **Plano** em `docs/plano_fase71.md`. Só apresentação: `RailNetwork.route` (o caminho mais curto pelo trilho entre os
+  lotes) e `TrainView` (um trem por ligação do `rail_feeds`, locomotiva e vagão-tanque gerados no código, vaivém com
+  espera nas pontas, parado com o poço ou a usina pausados; mesmo material do trilho).
+
+### Desfazer o trilho (Fase 72, nossa)
+
+- **Plano** em `docs/plano_fase72.md`. `UndoHistory` guarda a camada de trilho do retângulo (`rails_before`/`after`) e
+  aceita o `BuildRailCommand`; o `UndoCommand` devolve o trilho (posto ou demolido) e recusa se ele mudou depois.
+
+### O cavalo-de-pau (Fase 73, nossa)
+
+- **Plano** em `docs/plano_fase73.md`. `Silhouette.PUMPJACK` (no fim do enum) no poço: pátio na frente com o cavalete,
+  a caixa de engrenagens e a cabeça do poço (`BuildingKit._pumpjack`, `pumpjack_layout`), galpão baixo atrás, e o
+  balancim que balança (`Rotor.rock`, `BuildingView._rotor_rocks`) enquanto o poço produz.
+
+### Recintos e vitrines (Fase 74, nossa)
+
+- **Plano** em `docs/plano_fase74.md`. `Silhouette.MENAGERIE` (zoológico: seis cercados no pátio) e `GALLERY` (museu:
+  seis pedestais na frente), `BuildingKit.exhibit_spots` (uma vaga por cercado ou pedestal), `ExhibitModels` (bichos e
+  peças com cor por vértice) e `BuildingView._dress_exhibits`; formas simples em `VertexShapes`.
+
+### Bichos no cercado (Fase 75, nossa)
+
+- **Plano** em `docs/plano_fase75.md`. `PenWalk` (descansa, vira no lugar e anda até um ponto sorteado; toda pose
+  conferida pela pegada do corpo contra a cerca), `ExhibitModels.FACING`/`footprint`/`roams`, `BuildingKit.pen_half`,
+  `PenWalk.fit_scale` (o bicho grande demais fica menor no cercado) e `BuildingView.walk_animals` pelos segundos de jogo.
+
+### Fumaça do trem (Fase 76, nossa)
+
+- **Plano** em `docs/plano_fase76.md`. `TrainView._chimney_smoke` (a fumaça das fábricas, `SmokeView._process_material` e
+  `_draw_mesh` agora estáticas, solta no mundo na boca da chaminé), forte andando e fraca na ponta (`moving_at`), parada
+  com o trem ou o jogo parados, no vento (`weather`) e pelo nível gráfico (`set_quality`).
+
+### Chão e bebedouro no cercado (Fase 77, nossa)
+
+- **Plano** em `docs/plano_fase77.md`. `ExhibitModels.pen_dressing` (o chão do bicho e o cocho, por cercado ocupado),
+  `trough_rect` e `PenWalk.blocked`/`path_clear` (o bicho desvia do cocho pelo teste dos eixos separadores).
+
+### Tanques da usina a petróleo (Fase 78, nossa)
+
+- **Plano** em `docs/plano_fase78.md`. `Silhouette.TANKFARM` (no fim do enum) na usina a petróleo: pátio da frente com
+  dois tanques (`BuildingKit._tankfarm`, `_tank`, `tank_layout`), dique, escada e tubo; galpão atrás. Peças geradas no
+  código vão no `extra` do `_build` (no `tool`, já indexado, somem).
+
+### O bicho vai beber (Fase 79, nossa)
+
+- **Plano** em `docs/plano_fase79.md`. `PenWalk._choose_drink` (por um ponto de virar até o `drink_spot`, de frente para
+  o bebedouro), `drinking`, `_back_up` (sai de ré), `BuildingView.DRINK_TILT`; o bebedouro no meio da cerca de trás.
+
+### Turistas na rua (Fase 80, nossa)
+
+- **Plano** em `docs/plano_fase80.md`. Na `Crowd`: `Agent.tourist`, `_rebalance_tourists` (pela atratividade da ilha,
+  com os eventos ligados; `tourists_per_point`, `max_tourists_per_island`), `_pick_attraction` (as atrações de mais
+  beleza na rede do entreposto) e `TOURIST_COLORS`. Só visual.
+
+### Festa cheia (Fase 81, nossa)
+
+- **Plano** em `docs/plano_fase81.md`. Na festa, os turistas na rua (e o teto) vezes `1 + tourism_festival_bonus`;
+  `TourismSystem.has_festival` usado pela renda e pela `Crowd`.
+
+### Ver os fogos (Fase 82, nossa)
+
+- **Plano** em `docs/plano_fase82.md`. Na festa, na hora dos fogos (`Crowd.fireworks_now`), o turista vai a uma das
+  praças da festa (`FestivalView.squares`) e fica na rua ao longo das cordas do mastro, de frente para ele
+  (`WATCH_NEAR_M`, `WATCH_FAR_M`, `WATCH_SIDE_SHARE`); anda da porta até o lugar e, ao sair, do lugar até a porta.
+
+### Moradores na festa (Fase 83, nossa)
+
+- **Plano** em `docs/plano_fase83.md`. Na hora dos fogos, `RESIDENT_WATCH_SHARE` dos moradores que saem vão a uma praça da
+  festa que a casa alcança (`Crowd._resident_festival`) e ficam em volta do mastro como os turistas; a ilha da festa
+  conta com pelo menos `FESTIVAL_NIGHT_ACTIVITY` dos pedestres dela na rua (`_festival_agents`, somado no
+  `desired_out`); `Agent.watching` marca quem está num lugar de ver a festa (ao sair, anda dele até a porta). Só visual.
+
+### Palmas e cota da festa (Fase 84, nossa)
+
+- **Plano** em `docs/plano_fase84.md`. `CheerClip` (`tools/vat/cheer_clip.gd`): a animação de ver os fogos gerada da
+  parada (cabeça erguida, palmas por IK de dois ossos), gravada pelo `tools/bake_pedestrians.gd` como a quinta do VAT
+  (`Crowd.CLIP_CHEER`; o shader tem `clips[8]`, a `PedestrianView` completa até `MAX_CLIPS`). Quem vê a festa usa ela
+  (desde a Fase 85, só ao reagir a um estouro). Na hora dos fogos, o pedestre de ilha sem festa só sai na cota da hora (`_quiet_full`): a gente a mais
+  é só da ilha da festa. Mudou a parada ou o esqueleto, refaça os pedestres (`tools/bake_pedestrians.gd`).
+
+### Palmas nos estouros (Fase 85, nossa)
+
+- **Plano** em `docs/plano_fase85.md`. `FestivalView.exploded(ilha, posição)` a cada estouro; `Crowd.react_to_burst`
+  (quem vê a festa perto bate palmas por `CHEER_SECONDS` depois de `REACT_DELAY_S` e volta a olhar o mastro;
+  `_end_cheers`, `Agent.cheer_until`); `FestivalSounds` (`audio/festival_sounds.gd`, na `GameScreen`): estouro e palmas
+  gerados no código (em cache, ~21 ms uma vez), o estouro atrasado pela distância até a câmera e as palmas pelo número de
+  gente. Script que usa o `GameClock` (como este) não roda por `--script`: meça dentro de um teste.
+
+### Foguete e assobio (Fase 86, nossa)
+
+- **Plano** em `docs/plano_fase86.md`. O `_process` da `FestivalView` lança foguetes (`fire`): sobem do mastro em
+  `ROCKET_RISE_S` (`advance_rockets`, `rocket_point`, no tempo de jogo) e estouram lá em cima (`burst_at`); `launch` segue
+  sendo o estouro imediato. `launched(ilha, de, até, segundos)` dá ao `FestivalSounds` o assobio (`whistle_stream`, a voz
+  segue o voo e cala no estouro); o estrondo ganha o eco (`ECHO_*`).
+
+### Formas e vivas (Fase 87, nossa)
+
+- **Plano** em `docs/plano_fase87.md`. `FestivalView.Shape` (bola, crisântemo, salgueiro, anel; `pick_shape`,
+  `shape_burst` rearma a bomba a cada estouro); **os fogos estouram de 14 a 22 m** (`FIREWORK_HEIGHT_M`; de 28 a 42 m
+  ficavam acima da borda da tela); o rastro do foguete mais forte. As vivas são a única gravação de terceiros da festa
+  (`assets/audio/sfx/crowd_cheer.mp3`, Gregor Quendel, CC BY 4.0): em laço na praça, o nível (`cheer_level`) sobe a cada
+  estouro com 3 ou mais reagindo e some devagar.
+
+### Duas etapas e vivas calmas (Fase 88, nossa)
+
+- **Plano** em `docs/plano_fase88.md`. `Shape.DOUBLE`: cada bomba tem o sub-emissor filho `Sub` (ligado só nessa forma,
+  `SUB_EMITTER_AT_END`); as estrelas estouram de novo na segunda cor. As vivas tocam duas faixas do mesmo pacote
+  (`crowd_cheer_soft.mp3` e `crowd_cheer.mp3`), misturadas pelo nível (`FestivalSounds.cheer_mix`).
+
+### Grand finale (Fase 89, nossa)
+
+- **Plano** em `docs/plano_fase89.md`. Às 23h de cada noite de festa, uma vez, a salva de `FINALE_SHAPES`
+  (`FestivalView.start_finale`, `advance_finale`); o foguete leva a forma (`fire(site, shape)`). Todo foguete estoura
+  (`burst_at` reaproveita a bomba usada há mais tempo). As vivas seguem `Crowd.cheering_count` (quem ainda bate palmas),
+  não só quem reagiu ao estouro.
+
+### Porto em toda ilha (Fase 93, nossa)
+
+- **Plano** em `docs/plano_fase93.md`. **O terreno dos jogos novos é o v4** (`ArchipelagoGenerator.VERSION_V4`): o v3 com
+  `_ensure_harbor` no fim, que aplaina um lote de costa do tamanho do entreposto na ilha que não tem nenhum lugar para ele
+  (`harbor_site`); ilha que já tinha sai igual à do v3. O v3 fica para os saves dele. `SiteFinder` dilata a água até largura
+  + altura do prédio (antes pulava lotes bons). Mudou um número do porto (`HARBOR_*`), regrave as assinaturas do v4.
+
+### Rufar e câmera do grand finale (Fase 94, nossa)
+
+- **Plano** em `docs/plano_fase94.md`. O grand finale começa com o rufar (`FestivalSounds.roll_stream`, `on_finale`) e o
+  primeiro foguete espera `FestivalView.FINALE_ROLL_S`; `finale_started(site)` leva o mastro. Com `Settings.finale_camera`
+  (Opções → Jogo, desligada por padrão) a câmera desliza até a praça.
+
+### Telhado de telhas (Fase 95, nossa)
+
+- **Plano** em `docs/plano_fase95.md` (roteiro `docs/plano_fases_95_99.md`, formas mais redondas, olhando o Anno do dono:
+  só a ideia). As águas do telhado ganham telhas no shader (`roof_tile_shade`, só na célula (0, 3) da paleta, sem
+  triângulo a mais) e as quinas ganham hastes redondas (`BuildingKit._rod`: capa da cumeeira e dos espigões, beiral
+  redondo) na célula (1, 3) (`UV_ROOF_TRIM`). A captura das casas é `tools/capture_phase95.tscn` (ilha plana; a da Fase
+  39 não acha mais lugar no terreno v3/v4).
+
+### Casa em mais de um volume (Fase 96, nossa)
+
+- **Plano** em `docs/plano_fase96.md`. `Spec.wing` (metade das casas dos operários para cima): a coluna de −X perde o último
+  andar e ganha telhado próprio, cruzado e mais baixo que o beiral do corpo (`main_part`, `wing_part`). **`slot()` devolve
+  `&"none"` nas células que a ala tira** (`in_wing`): paredes, vidros acesos, caixilho, floreiras e vergas acompanham
+  sozinhos. Código novo que ande pelas paredes do prédio deve pular `&"none"`.
+
+### Cúpulas e torreões (Fase 97, nossa)
+
+- **Plano** em `docs/plano_fase97.md`. `Spec.dome` (os serviços de `DOMED` com telhado de quatro águas: tambor de pedra,
+  meia esfera de cobre e lanternim, `_dome`) e `Spec.turret` (casas de pórtico com três andares ou mais: torreão redondo
+  no canto da frente de +X, `_turret`, `turret_center`; a sacada encurta uma célula). Peças torneadas por `_turned`. O
+  cobre é a célula (2, 1) da paleta (`UV_COPPER`), pintada de azinhavre no `shaders/building_kit.gdshader`.
+
+### Abóbadas e tonéis (Fase 98, nossa)
+
+- **Plano** em `docs/plano_fase98.md`. `Spec.vault` (os de `VAULTED`, no lugar das duas águas: `vault_profile`, `_vault`,
+  faixas com a normal do arco por `_smooth_quad`), `Silhouette.VATS` (no fim do enum: cervejaria, destilarias e adega, com
+  os tonéis no pátio da frente, `vat_layout`, `_vats`) e a chaminé redonda das fábricas (`SmokeView.stack_mesh`). **Erro de
+  compilação num teste com a janela oculta deixa o Godot parado até o tempo acabar**: rode o arquivo sem janela primeiro.
+
+### Arcos (Fase 99, nossa)
+
+- **Plano** em `docs/plano_fase99.md`. `Spec.arched` (serviços de pedra e investidores: `_arch_head` com o tímpano de
+  vidro, a arquivolta e a pedra de fecho; `_arches` nos serviços, o `_ornament` nas casas) e a arcada do mercado na fileira
+  do pátio junto do corpo (`arcade_bays`, `_arcade`; as bancas ficam na fileira da rua). O tímpano usa `UV_GLASS`: contar
+  vidro por janela tem de somar `ARCH_SEGMENTS` triângulos por janela em arco.
+
+### Fumaça das casas (Fase 100, nossa)
+
+- **Plano** em `docs/plano_fase100.md`, primeira do roteiro `docs/plano_fases_100_104.md` (a rua habitada).
+  `BuildingKit.chimney_top` (a boca, pela mesma conta da chaminé), `ChimneySmokeView` (`GameScreen.chimney_smoke_view`:
+  baforadas num MultiMesh só, só de casa com morador, `amount_at` pela hora) e `shaders/chimney_smoke.gdshader` (sobe,
+  cresce e deita com o vento no tempo visual; esmaece pela distância, porque o alcance de visibilidade de um MultiMesh do
+  mundo todo conta do meio dele).
+
+### Toldos listrados (Fase 101, nossa)
+
+- **Plano** em `docs/plano_fase101.md`. `Spec.awning` (as lojas de `AWNING_SHOPS` e uma em `AWNING_HOUSE_SHARE` das casas
+  dos artesãos e engenheiros; `awning_cells`, `_awnings`). A lona usa as células (3..6, 1) da paleta (`UV_AWNING_COLORS`,
+  `UV_CANVAS`), pintadas no `shaders/building_kit.gdshader`; o teste confere que nenhuma peça do kit cai nelas.
+
+### Enxaimel saliente (Fase 102, nossa)
+
+- **Plano** em `docs/plano_fase102.md`. `Spec.jetty` (operários e artesãos, cumeeira ao longo da frente, dois andares ou
+  mais): **o avanço está no `_cell_transform`** (face 0, andar 1 para cima, `JETTY_M`), então tudo o que se põe pela célula
+  acompanha; código novo que desenhe na fachada da frente sem passar por ele precisa somar o avanço. `_jetty` desenha a
+  viga do balanço, as mãos-francesas, o enxaimel e o fecho das pontas.
+
+### Claraboias (Fase 103, nossa)
+
+- **Plano** em `docs/plano_fase103.md`. `Spec.skylights` (produção sem silhueta, lado menor de `SKYLIGHT_MIN_CELLS` ou mais,
+  duas águas ou abóbada), `skylight_panes` (no formato das janelas) e `_skylights`. **As vidraças entram em `windows()`**:
+  acendem com a fábrica pela `WindowLightsView` e contam como janela em qualquer teste que conte a lista.
+
+### Lampião, grade e chaminé de tijolo (Fase 104, nossa)
+
+- **Plano** em `docs/plano_fase104.md`. A chaminé das casas é gerada (`_brick_chimney`, tijolo na célula (7, 1),
+  `UV_BRICK`, desenhado no shader); a peça `chimney.glb` do kit não é mais desenhada. `Spec.lantern` (serviços sem arcada
+  nem toldo e casas dos artesãos para cima sem toldo): `lantern_pane` entra em `windows()` e acende à noite. A grade do pátio
+  do museu é `_gallery_fence`. Antes de dar outra célula da paleta a uma peça gerada, confira (como os testes das Fases
+  101 e 104) que nenhuma peça do kit cai nela.
+
+### Árvores de quintal (Fase 105, nossa)
+
+- **Plano** em `docs/plano_fase105.md`, primeira do roteiro `docs/plano_fases_105_109.md` (cidade e porto).
+  `ScatterView.Kind.YARD_TREE` (macieira pequena) no fim da lista `NEAR_HOUSE`, no meio da célula; bananeira na tropical.
+  **Regra nova no recheio vai no fim da lista dela**: o sorteio da célula anda pela lista em ordem, e assim as peças de
+  antes não mudam. A captura com relevo é `tools/capture_phase105.tscn` (a da Fase 95 é na ilha plana, que não tem
+  recheio).
+
+### Cais de pedra (Fase 106, nossa)
+
+- **Plano** em `docs/plano_fase106.md`. `HarborView.stone_quay` (lanços retos dos dois lados do entreposto, na linha do
+  cais de tábuas) e `_quay_segment`. **Nada que acompanhe a costa pela escada das células**: a linha d'água desenhada é
+  curva e não bate com ela. Base de MultiMesh tem de ser de mão direita (`Basis(along, UP, -outward)`), senão as faces
+  invertem.
+
+### Barcos de pesca (Fase 107, nossa)
+
+- **Plano** em `docs/plano_fase107.md`. `FishingBoatView` (`GameScreen.fishing_boat_view`): um barco a vela por cabana de
+  pesca, `route` (amarra e pesqueiro em água funda), `pose` (ida, volta de pesca e regresso) e `phase_of` (pelo id), no
+  tempo de jogo; amarrado com a cabana parada. Captura em `tools/capture_phase107.tscn`.
+
+### Farol (Fase 108, nossa)
+
+- **Plano** em `docs/plano_fase108.md`. `LighthouseView` (`GameScreen.lighthouse_view`): `site` (a ponta livre e baixa mais
+  exposta ao mar perto do entreposto, não reservada), `tower_mesh`, `lantern_mesh` (vidro dos postes) e `beam_mesh` (fachos
+  aditivos girando à noite). **Efeito transparente sobre o mar precisa de `render_priority` acima da água**, senão ela o
+  cobre. Captura em `tools/capture_phase108.tscn`.
+
+### Largo calçado (Fase 109, nossa)
+
+- **Plano** em `docs/plano_fase109.md`. `ForecourtView` (`GameScreen.forecourt_view`): `cells` (o anel livre e quase plano
+  em volta dos serviços de `PLAZA_SERVICES`) e `slabs` (lajes no relevo). O recheio deixa essas células limpas
+  (`ScatterView.island_context` as soma às portas). Captura em `tools/capture_phase109.tscn`.
+
+### Brilho do sol no mar (Fase 110, nossa)
+
+- **Plano** em `docs/plano_fase110.md`, primeira do roteiro `docs/plano_fases_110_114.md` (sol, trópico e avenida). Global de
+  shader `sun_direction` (para o sol, atualizado pela `GameScreen`) e o grupo `Glints` do `shaders/water.gdshader`. O brilho só
+  aparece de frente para o sol: a captura (`tools/capture_phase110.tscn`) gira a câmera nos quatro lados.
+
+### Terreiro tropical (Fase 111, nossa)
+
+- **Plano** em `docs/plano_fase111.md`. `RoadMask.yards` e `_stamp_yard`: o lote das casas das ilhas tropicais, crescido, no
+  canal b (chão batido) da máscara das estradas, refeito no `refresh` como as trilhas. Captura em
+  `tools/capture_phase111.tscn`.
+
+### Coqueiros na rua tropical (Fase 112, nossa)
+
+- **Plano** em `docs/plano_fase112.md`. `ScatterView.Kind.STREET_PALM` (o coqueiro do `TreeModel` reduzido, com o material
+  dele) no fim de `NEAR_ROAD`, só nas tropicais.
+
+### Alameda (Fase 113, nossa)
+
+- **Plano** em `docs/plano_fase113.md`. `AvenueView` (`GameScreen.avenue_view`): `cells` (as livres em volta das células
+  calçadas da vez, achadas pelo `find` do array) e a faia reduzida num MultiMesh do arquipélago, **sem alcance de
+  visibilidade** (contaria do meio do arquipélago). O recheio deixa as células limpas. Captura em `tools/capture_phase113.tscn`.
+
+### Gradil das casas ricas (Fase 114, nossa)
+
+- **Plano** em `docs/plano_fase114.md`. `BuildingKit._front_railing` (casas de `HouseTrim.BALCONIES`, na faixa de `INSET_M`
+  entre a parede e a divisa, com o vão da porta).
+
+### Carreira do estaleiro (Fase 115, nossa)
+
+- **Plano** em `docs/plano_fase115.md`, primeira do roteiro `docs/plano_fases_115_119.md` (fazenda, taverna e estaleiro).
+  `ShipwayView` (`GameScreen.shipway_view`): `site` (a rampa do lado do mar até a água funda, sem prédio nem estrada no
+  caminho), `ramp_mesh` e o casco em obra (`hull_mesh` pelo progresso da encomenda, `hull_transform` com a popa para o mar),
+  refeito só quando muda de degrau. Captura em `tools/capture_phase115.tscn`.
+
+### Mesas da taverna (Fase 116, nossa)
+
+- **Plano** em `docs/plano_fase116.md`. `TavernGardenView` (`GameScreen.tavern_garden_view`): `cells` (até `MAX_TABLES`
+  células livres em volta de cada taverna, fora do largo e da alameda), mesa com bancos e guarda-sol listrado (duas malhas:
+  gomos brancos e gomos tingidos pela instância), fechado à noite (`set_furled`). O recheio deixa as células limpas.
+  Captura em `tools/capture_phase116.tscn`.
+
+### Silos das fazendas (Fase 117, nossa)
+
+- **Plano** em `docs/plano_fase117.md`. `FarmSiloView` (`GameScreen.farm_silo_view`): `cells` (a célula livre atrás de
+  cada fazenda de `FARMS`), silo de aduelas ou caixa d'água sobre pés (`kind_of`, pelo resto do id: o `hash` de ids pequenos
+  puxa para um lado). O recheio deixa a célula limpa. Captura em `tools/capture_phase117.tscn`.
+
+### Chão gasto no pasto (Fase 118, nossa)
+
+- **Plano** em `docs/plano_fase118.md`. `RoadMask.patches` (manchas de borda recortada no canal b: porteira, cocho e duas
+  soltas pelo hash, comparadas no `refresh` como as trilhas) e `RoadMask.trough_of` (o cocho junto da cerca de trás), que a
+  `PastureTroughView` (`GameScreen.pasture_trough_view`) desenha. Captura em `tools/capture_phase118.tscn`.
+
+### Poças de luz à noite (Fase 119, nossa)
+
+- **Plano** em `docs/plano_fase119.md`. `LightPoolView` (`GameScreen.light_pool_view`): `pools` (postes, fogueiras e portas
+  das casas com morador), discos no chão somados pelo `shaders/light_pool.gdshader` (aceso pelo global `night_light`, sem
+  luz de verdade), escondidos de dia; a `LampView` avisa com o sinal `rebuilt`. Captura em `tools/capture_phase119.tscn`.
+
+### Postes e fios (Fase 120, nossa)
+
+- **Plano** em `docs/plano_fase120.md`, primeira do roteiro `docs/plano_fases_120_124.md` (fios, riacho e mansarda).
+  `PowerLineView` (`GameScreen.power_line_view`): `poles` (ruas até o raio das usinas, resto `POLE_REST` de `x + 3y`, longe
+  dos postes de gás), `links` só com vão livre (`clear_span`: fio por cima de prédio entrava na parede) e dois fios por
+  ligação pelo `HarborView.rope_span`. Captura em `tools/capture_phase120.tscn`.
+
+### Gavião sobre a cidade (Fase 121, nossa)
+
+- **Plano** em `docs/plano_fase121.md`. `HawkView` (`GameScreen.hawk_view`): `centers` (um por ilha com `MIN_HOUSES` casas,
+  mais um a cada `HOUSES_PER_HAWK`), `pose` (círculos altos derivando) e `beat` (planeio quase sempre), com a `hawk_mesh`
+  gerada aqui no `shaders/bird.gdshader`. **A câmera da partida fica presa ao chão**: a captura
+  (`tools/capture_phase121.tscn`) põe a `Camera3D` à mão e para o processamento da `StrategyCamera`.
+
+### Pedras no rio (Fase 122, nossa)
+
+- **Plano** em `docs/plano_fase122.md`. `RiverStoneView` (`GameScreen.river_stone_view`): `places` (matacões da `RockModel`
+  no leito raso dos rios, saindo da água, fora das pontes; seixos na margem baixa e livre). Os rios do v4 correm quase todos
+  em gargantas: a captura (`tools/capture_phase122.tscn`) procura a margem mais baixa.
+
+### Borrifo nas falésias (Fase 123, nossa)
+
+- **Plano** em `docs/plano_fase123.md`. `RockView.spray_sites` (as rochas que encostam no mar, com o raio) e `SurfSprayView`
+  (`GameScreen.surf_spray_view`): `pick` (um dos pontos mais perto de onde a câmera olha), `spot` (o lado de chão mais baixo
+  da rocha) e um punhado de jatos `one_shot` reaproveitados, parados na pausa. Partículas só sobem com o relógio andando: a
+  captura (`tools/capture_phase123.tscn`) põe o jogo a 1x.
+
+### Mansarda dos investidores (Fase 124, nossa)
+
+- **Plano** em `docs/plano_fase124.md`. `Spec.mansard` (investidores de duas águas sem ala; na chave), `mansard_levels`,
+  `_mansard` (água de baixo íngreme até o rebordo, a de cima quase plana, cumeeira na altura de antes) e `_dormers` (as
+  lucarnas da água de baixo); a `_lucarnes` da Fase 39 pula a mansarda. Captura em `tools/capture_phase124.tscn`.
+
+### Recife de coral (Fase 125, nossa)
+
+- **Plano** em `docs/plano_fase125.md`, primeira do roteiro `docs/plano_fases_125_129.md` (recife, alpendre e nuvens).
+  `shaders/water.gdshader` (grupo `Reef`, `reef_at`) e `WaterView.reef_min_x` (a borda oeste das regiões tropicais).
+  **Hash de ruído em shader sem `sin`**: com as coordenadas do arquipélago o `fract(sin(...))` perde precisão na GPU e o
+  desenho sai em escada. Captura em `tools/capture_phase125.tscn`.
+
+### Alpendre tropical (Fase 126, nossa)
+
+- **Plano** em `docs/plano_fase126.md`. No `BuildingKit.spec_for`, as casas de `PORCH_TRIMS` (operários e artesãos) de dois
+  andares nas ilhas tropicais ganham `Silhouette.VERANDA` com `court_rows = 1` (a varanda da Fase 23), sem enxaimel, toldo
+  nem ala. Captura em `tools/capture_phase126.tscn`.
+
+### Cisternas no cais (Fase 127, nossa)
+
+- **Plano** em `docs/plano_fase127.md`. `HarborView.cistern_places` (no cais de pedra da Fase 106, uma de cada lado, fora da
+  largura do entreposto) e `FarmSiloView.cistern_mesh`. Captura: `CAPTURA_SO=porto` no `tools/capture_phase5.tscn`
+  (`14b_cisternas.png`).
+
+### Jazidas à vista (Fase 128, nossa)
+
+- **Plano** em `docs/plano_fase128.md`. `DepositView` (`GameScreen.deposit_view`): `patches` (as células de jazida ligadas
+  pelos lados) e `places` (o afloramento no meio da mancha livre e as pedras do minério na cor do bem, `ORE_COLORS`); a mina
+  em cima tira os da mancha. Captura em `tools/capture_phase128.tscn`.
+
+### Sombra das nuvens (Fase 129, nossa)
+
+- **Plano** em `docs/plano_fase129.md`. `shaders/cloud_shadow.gdshaderinc` (incluído pelo terreno e pela água) e os globais
+  `cloud_cover` (a cobertura do `WeatherCycle`) e `cloud_offset` (que a `WeatherView.drift_clouds` soma com o vento a cada
+  quadro). Captura em `tools/capture_phase129.tscn` (põe a cobertura direto no global, com a `WeatherView` parada).
+
+### Telhado de sapê (Fase 130, nossa)
+
+- **Plano** em `docs/plano_fase130.md`, primeira do roteiro `docs/plano_fases_130_134.md` (sapê, bueiro e ardósia).
+  `BuildingView.thatched` (as casas de `HouseTrim.YARD`) põe o parâmetro de instância `thatch`, e o
+  `shaders/building_kit.gdshader` troca as telhas por `thatch_shade` (fiadas, fios e palha velha). Captura em
+  `tools/capture_phase130.tscn`.
+
+### Bueiros na rua calçada (Fase 131, nossa)
+
+- **Plano** em `docs/plano_fase131.md`. `ManholeView` (`GameScreen.manhole_view`): `cells` (paralelepípedo da vez pela grade,
+  no meio de rua reta) e `cover_mesh`. **O que se põe sobre o paralelepípedo parte de `PavedDual.LIFT_M`**: pela altura da
+  estrada fica debaixo do calçamento. Captura em `tools/capture_phase131.tscn`.
+
+### Bomba d'água (Fase 132, nossa)
+
+- **Plano** em `docs/plano_fase132.md`. `WaterPumpView` (`GameScreen.water_pump_view`): `cells` (a célula livre junto de uma
+  casa a cada `PUMP_EVERY`, com a rua ao lado, e o lado da rua) e `pump_mesh`. O recheio deixa a célula limpa. Captura em
+  `tools/capture_phase132.tscn`.
+
+### Bandeirolas da feira (Fase 133, nossa)
+
+- **Plano** em `docs/plano_fase133.md`. `MarketBuntingView` (`GameScreen.market_bunting_view`): `posts` (os quatro cantos
+  do pátio das bancas) e as cordas em xis com o poste e a corda da festa (`FestivalView._post`, `_string`). Captura em
+  `tools/capture_phase133.tscn`.
+
+### Ardósia nos prédios de pedra (Fase 134, nossa)
+
+- **Plano** em `docs/plano_fase134.md`. `BuildingView.SLATE_ROOFS` põe o parâmetro de instância `slate`, e o
+  `shaders/building_kit.gdshader` troca as telhas por `slate_shade` (placas retangulares cinza-azuladas). As bancas do
+  mercado, peças do kit na célula do telhado, ficam de ardósia junto. Captura: a rua dos prédios grandes do
+  `tools/capture_phase95.tscn`.
+
+### Galinhas no quintal (Fase 135, nossa)
+
+- **Plano** em `docs/plano_fase135.md`, primeira do roteiro `docs/plano_fases_135_139.md` (galinha, forno e mina).
+  `ChickenView` (`GameScreen.chicken_view`): `yards` (a fileira da frente do lote das casas de `HouseTrim.YARD`, uma a cada
+  `CHICKEN_EVERY`), `patch` (o trecho de cada galinha), `pose` (anda e bica, no tempo de jogo) e `chicken_mesh`, com a
+  plumagem tingida pelo `INSTANCE_CUSTOM` no `shaders/chicken.gdshader`. Captura em `tools/capture_phase135.tscn`.
+
+### Vagoneta e rejeito (Fase 136, nossa)
+
+- **Plano** em `docs/plano_fase136.md`. `SpoilTipView` (`GameScreen.spoil_tip_view`): `sites` (duas células em linha num lado
+  de cada mina de `Silhouette.HEADFRAME`), `track` (da parede até a beira do monte), `_heap` e `_rails` numa malha só, e a
+  vagoneta (`cart_pose`, `loaded`, `phase_of`) indo e virando só com a mina produzindo. O recheio, os silos e as bombas
+  deixam as células limpas (`cells`). Captura em `tools/capture_phase136.tscn`.
+
+### Boca do forno acesa (Fase 137, nossa)
+
+- **Plano** em `docs/plano_fase137.md`. `FurnaceGlowView` (`GameScreen.furnace_glow_view`): `mouth` (no térreo de uma fachada do
+  lado das fábricas de `FURNACES`, na parede lisa mais perto do meio), `frame_mesh` (arco de tijolo, soleira e portinhola),
+  `glow_mesh` com o fogo do `shaders/furnace_glow.gdshader` (aceso produzindo, `INSTANCE_CUSTOM.r`) e a poça de luz da
+  Fase 119 à noite. Captura em `tools/capture_phase137.tscn`.
+
+### Telhado de chapa ondulada (Fase 138, nossa)
+
+- **Plano** em `docs/plano_fase138.md`. `BuildingView.IRON_ROOFS` (as fábricas pesadas) põe o parâmetro de instância
+  `corrugated`, e o `shaders/building_kit.gdshader` troca as telhas por `iron_sheet_shade` (ondas, chapas sobrepostas e a
+  ferrugem escorrendo das juntas), sem o relevo das telhas no mapa de normais. Captura em `tools/capture_phase138.tscn`.
+
+### Redes de pesca (Fase 139, nossa)
+
+- **Plano** em `docs/plano_fase139.md`. `FishNetView` (`GameScreen.fish_net_view`): `sites` (a célula livre ao lado de cada
+  cabana de pesca, mais para o mar, e o lado longe dela), dois cavaletes com a rede recortada em losangos no
+  `shaders/fish_net.gdshader` (alpha scissor pela UV em metros) e as caixas de peixe, numa malha de duas superfícies. O
+  recheio, os silos e as bombas deixam a célula limpa (`cells`). Captura em `tools/capture_phase139.tscn`.
+
+### Clareira do lenhador (Fase 140, nossa)
+
+- **Plano** em `docs/plano_fase140.md`, primeira do roteiro `docs/plano_fases_140_144.md` (toco, bote e boia).
+  `StumpView` (`GameScreen.stump_view`): `cut_cells` / `cut_cells_of` (as células de mata em volta de cada lenhador que o
+  desenho corta, mais perto mais cortadas) e os tocos e toras por trecho; a `TreeView` não desenha as árvores delas
+  (`is_cut`). As duas guardam os lenhadores pelo id: **só um lenhador que entra ou sai refaz o corte**, só na ilha dele e
+  no quadro seguinte (refazer tudo a cada prédio custava 11 ms na obra com a ilha cheia). Captura em
+  `tools/capture_phase140.tscn`.
+
+### Árvore seca (Fase 141, nossa)
+
+- **Plano** em `docs/plano_fase141.md`. `ScatterView.Kind.SNAG` (no fim do enum e no fim das listas `NEAR_FOREST` e
+  `NEAR_SEA`, para o sorteio de antes não mudar) e `snag_mesh` (tronco nu torto com cinco galhos, madeira cinzenta); só
+  nas ilhas temperadas. Captura em `tools/capture_phase141.tscn`.
+
+### Botes no porto (Fase 142, nossa)
+
+- **Plano** em `docs/plano_fase142.md`. `RowboatView` (`GameScreen.rowboat_view`): `loop` (a roda de água funda diante de
+  cada entreposto), `pose` (os botes na roda, um em cada sentido, com o arranco da remada), `rower_pose` e `oar_pose`; o
+  casco é o `HarborView.boat_mesh`. Captura em `tools/capture_phase142.tscn`.
+
+### Cerca de estacas (Fase 143, nossa)
+
+- **Plano** em `docs/plano_fase143.md`. `Spec.picket` (casas de `HouseTrim.NONE`, os operários, sem pátio; na chave) e
+  `BuildingKit._front_picket` (nos trechos do gradil da Fase 114, estacas com a ponta em pirâmide na célula `UV_CANVAS`,
+  pintada de creme pelo shader). Captura: `cerca_de_estacas.png` no `tools/capture_phase95.tscn`.
+
+### Boias no porto (Fase 144, nossa)
+
+- **Plano** em `docs/plano_fase144.md`. `BuoyView` (`GameScreen.buoy_view`): `spots` (pares mar adentro diante de cada
+  entreposto, além do cais de pedra, a vermelha no +través do mar), `pose` (afundada, subindo, descendo e tombando) e
+  `buoy_mesh`. Captura em `tools/capture_phase144.tscn`.
+
+### Relógio da igreja (Fase 145, nossa)
+
+- **Plano** em `docs/plano_fase145.md`, primeira do roteiro `docs/plano_fases_145_149.md` (relógio, cais e cata-vento).
+  `ClockView` (`GameScreen.clock_view`): `dials` (dois mostradores na torre do campanário, `Silhouette.BELFRY`), o disco
+  aceso à noite pelo `shaders/night_glow.gdshader`, a moldura e os ponteiros marcando a hora do jogo (`hand_angles`).
+  **Peça presa na fachada usa `BuildingView.model_place`** (o lugar do modelo com o desvio de meio grau da variação; sem
+  ele a parede passava na frente). Captura em `tools/capture_phase145.tscn`.
+
+### Grade e lampiões no cais (Fase 146, nossa)
+
+- **Plano** em `docs/plano_fase146.md`. `QuayRailView` (`GameScreen.quay_rail_view`): `rails` (a grade de ferro na beira dos
+  lanços do cais de pedra, aberta nos cabeços e na frente do entreposto) e `lamps` (o poste de gás da rua com o vidro aceso
+  num lanço a cada `LAMP_EVERY`). Captura em `tools/capture_phase146.tscn`.
+
+### Mastros no cais (Fase 147, nossa)
+
+- **Plano** em `docs/plano_fase147.md`. `QuayMastView` (`GameScreen.quay_mast_view`): `masts` (na ponta de cada lado do cais de
+  pedra), `mast_mesh` e a flâmula de rabo de andorinha (`pennant_mesh`) como `WindFlag`, que o `WeatherView` vira com o
+  vento. Captura em `tools/capture_phase147.tscn`.
+
+### Cavalete do lenhador (Fase 148, nossa)
+
+- **Plano** em `docs/plano_fase148.md`. `LumberYardView` (`GameScreen.lumber_yard_view`): `cell_of` (a célula num lado do
+  lenhador) e `yard_mesh` (cavalete com a tora, cepo com o machado, lenha rachada e lascas). A clareira corta a célula
+  inteira sem toco (`StumpView.cut_cells_of`), e a `TreeView` refaz o corte também na estrada e na derrubada de árvores, no
+  quadro seguinte (`_recut`, `_recut_now`). Captura em `tools/capture_phase148.tscn`.
+
+### Cata-vento no pasto (Fase 149, nossa)
+
+- **Plano** em `docs/plano_fase149.md`. `WindpumpView` (`GameScreen.windpump_view`, com o `WeatherView`): `spot` (ao lado do
+  cocho de cada pasto), `tower_mesh` e a roda (`rotor_mesh`, `rotor_pose`) que vira para o vento e gira pela força
+  (`turn`, `spin_of`). Captura em `tools/capture_phase149.tscn`.
+
+### Coluna de anúncios (Fase 150, nossa)
+
+- **Plano** em `docs/plano_fase150.md`, primeira do roteiro `docs/plano_fases_150_154.md` (coluna, placa e velocípede).
+  `AdColumnView` (`GameScreen.ad_column_view`): `cells` (o canto de dentro das esquinas calçadas, achado pelo `find` das
+  células calçadas) e `column_mesh` (cartazes coloridos sem texto, cornija e chapéu de ferro). O recheio deixa a célula
+  limpa. Captura em `tools/capture_phase150.tscn`.
+
+### Placas das lojas (Fase 151, nossa)
+
+- **Plano** em `docs/plano_fase151.md`. `BuildingKit.SHOP_SIGNS` / `Spec.shop_sign` (na chave): `shop_sign_center` (meia célula
+  ao lado da porta, acima do toldo) e `_shop_sign` (braço de ferro, tábua com o painel creme e a figura do ofício, sem
+  texto: `_sign_figure`, `_sign_ring`). Captura em `tools/capture_phase151.tscn`.
+
+### Balizas com corrente (Fase 152, nossa)
+
+- **Plano** em `docs/plano_fase152.md`. `BollardView` (`GameScreen.bollard_view`): `edges` (os lados do largo calçado da Fase
+  109 que dão para a estrada, com aberturas e sem o lado do poste de gás), `bollard_mesh` e `_chain`, numa malha só.
+  Captura em `tools/capture_phase152.tscn`.
+
+### Flores nas sacadas (Fase 153, nossa)
+
+- **Plano** em `docs/plano_fase153.md`. `Spec.balcony_flowers` (engenheiros e investidores; na chave) e `_balcony_box` (a caixa
+  de madeira e a folhagem com flores na célula (3, 3) da paleta, `UV_FOLIAGE`, por fora do guarda-corpo). **Teste que
+  compara a forma com e sem um detalhe usa a mesma casa** (cada id tem a sua variação). Captura: `sacadas_floridas.png` no
+  `tools/capture_phase95.tscn`.
+
+### Velocípede encostado (Fase 154, nossa)
+
+- **Plano** em `docs/plano_fase154.md`. `VelocipedeView` (`GameScreen.velocipede_view`): `spot` (na célula ao lado da porta de
+  uma casa dos artesãos a cada `BIKE_EVERY`, no lugar do modelo com `BuildingView.model_place`) e `bike_mesh` (roda grande,
+  rodinha, quadro curvo, guidão e selim). Captura: `velocipede.png` no `tools/capture_phase95.tscn`.
+
+### Carneirinhos no mar (Fase 155, nossa)
+
+- **Plano** em `docs/plano_fase155.md`, primeira do roteiro `docs/plano_fases_155_159.md` (carneirinho, papoula e colheita).
+  Global `sea_whitecaps` (`WeatherView.whitecaps_of`, pela força do vento) e o grupo `Whitecaps` do `shaders/water.gdshader`
+  (`whitecap_at`: uma mancha por célula sorteada a cada volta, comprida de través ao vento, andando com ele e se desfazendo em
+  renda). Captura em `tools/capture_phase155.tscn` (põe o vento direto nos globais, com a `WeatherView` parada).
+
+### Papoulas no prado (Fase 156, nossa)
+
+- **Plano** em `docs/plano_fase156.md`. `ScatterView.Kind.POPPIES` (no fim do enum e das listas `OPEN` e `NEAR_ROAD`) só nas
+  células de canteiro (`poppy_patch`, ruído de valor com hash aritmético e os nós da última célula guardados: o recheio passa
+  por dezenas de milhares de células), nas temperadas e acima da areia (`POPPY_MIN_HEIGHT_M`); `poppy_mesh` (~10 triângulos
+  por flor). Captura em `tools/capture_phase156.tscn`.
+
+### Caixas da colheita (Fase 157, nossa)
+
+- **Plano** em `docs/plano_fase157.md`. Na `CropView`, `harvest_shown_at` (nenhum antes do degrau `HARVEST_FROM`, todos no
+  cheio), `_harvest_places` (pares de caixotes ou sacos do `CargoKit` no vão entre as fileiras, em cache pelo lote) e os
+  MultiMesh `HarvestCrates` e `HarvestSacks` (a peça escondida fica encolhida a zero; `harvest_count` e `harvest_places` para os
+  testes). **O material dos sacos do `CargoKit` lê a cor da instância como linear**: cor nova para ele vai com
+  `srgb_to_linear()`. Captura em `tools/capture_phase157.tscn`.
+
+### Carroça de lona (Fase 158, nossa)
+
+- **Plano** em `docs/plano_fase158.md`. `CartView.covers` (bem da casa em saco ou caixote, uma casa a cada `COVER_EVERY`),
+  `canvas_mesh` (a lona com os arcos, medida na caçamba do modelo do kit: tábuas de z −0,59 a 1,35) e o MultiMesh `Covers`; a
+  carga da carroça coberta não aparece. Captura em `tools/capture_phase158.tscn` (ilha plana, mira a carroça de lona mais
+  adiantada).
+
+### Tijolos secando (Fase 159, nossa)
+
+- **Plano** em `docs/plano_fase159.md`. `BrickYardView` (`GameScreen.brick_yard_view`): `sites` (três células em fila ao longo
+  de um lado da olaria; **o lado de +X da frente fica por último, porque é o da boca do forno da Fase 137**), `cells` (o
+  recheio, os silos e as bombas deixam limpas) e `yard_mesh` (fileiras de tijolos crus em grade com as tábuas na cumeeira e o
+  monte de barro). Captura em `tools/capture_phase159.tscn` (a câmera do lado do pátio: o offset da câmera do `CameraRig` é
+  (sen yaw, ·, cos yaw)).
+
+### Cunhais de pedra (Fase 160, nossa)
+
+- **Plano** em `docs/plano_fase160.md`, primeira do roteiro `docs/plano_fases_160_164.md` (cunhal, deriva e horta; o Anno não
+  foi aberto: o dono estava usando o PC, e as ideias vieram das capturas guardadas). `Spec.quoins` (artesãos e engenheiros; na
+  chave) e `BuildingKit._quoins` (blocos alternados nas quatro quinas, a da ala até o alto dela, a da frente pelo balanço). **A
+  casa dos investidores está no teto de 20.000 triângulos** do `test_building_kit.gd` (19.480): detalhe novo nela precisa caber.
+  Captura: `cunhais.png` no `tools/capture_phase95.tscn`.
+
+### Madeira à deriva (Fase 161, nossa)
+
+- **Plano** em `docs/plano_fase161.md`. `ScatterView.Kind.DRIFTWOOD` (no fim do enum e da lista `NEAR_SEA`) só nas células baixas
+  da costa (`DRIFTWOOD_MAX_HEIGHT_M`) e de chão pouco inclinado (`DRIFTWOOD_MAX_SLOPE`), deitado com o terreno; `driftwood_mesh`.
+  **Peça nova do recheio vai no fim do enum**: os testes das peças de antes conferem só a ordem relativa. Captura em
+  `tools/capture_phase161.tscn`.
+
+### Cascalho nas encostas (Fase 162, nossa)
+
+- **Plano** em `docs/plano_fase162.md`. `ScatterView.Kind.SCREE` (no fim do enum e das listas `OPEN`, `NEAR_FOREST` e `NEAR_SEA`)
+  só nas células de encosta (`cell_relief` pelos cantos, a partir de `SCREE_MIN_RELIEF_M`), deitado no plano dela
+  (`cell_normal`); `scree_mesh`. Captura em `tools/capture_phase162.tscn`.
+
+### Horta no quintal (Fase 163, nossa)
+
+- **Plano** em `docs/plano_fase163.md`. `KitchenGardenView` (`GameScreen.kitchen_garden_view`): `cells`/`spot` (a célula de trás
+  das casas de camponeses e operários no resto `GARDEN_REST` do id; **a mesma célula da fogueira, resto 0, e do varal, resto 1**)
+  e `garden_mesh` (canteiro, couves, alfaces e a tenda de feijão). O recheio e as bombas deixam a célula. **Não misture
+  `CropView._part` (põe normal) com `VertexShapes` (sem normal) no mesmo `SurfaceTool`**: o Godot reclama no log; aqui as folhas
+  vão por `_blob`, sem normal. Captura: `hortas_*.png` no `tools/capture_phase95.tscn`.
+
+### Caldeira das árvores (Fase 164, nossa)
+
+- **Plano** em `docs/plano_fase164.md`. Na `AvenueView`, `pit_mesh` (anel de pedra, terra e grade de ferro) num MultiMesh
+  `TreePits` no pé de cada árvore da alameda, alinhado com a rua; `pit_places` para os testes. Captura: `caldeiras.png` no
+  `tools/capture_phase113.tscn`.
+
+### Chão batido das fábricas (Fase 165, nossa)
+
+- **Plano** em `docs/plano_fase165.md`, primeira do roteiro `docs/plano_fases_165_169.md` (chão batido, feno e gaivota; o Anno
+  não foi aberto: o dono estava no PC). `RoadMask.works` (o lote dos prédios de produção, menos as fazendas de campo, crescido de
+  `WORKS_REACH_M`) no canal b, pelo `_stamp_yard` com a borda recortada (`ragged`, `_edge_noise`). Captura em
+  `tools/capture_phase165.tscn`.
+
+### Medas de feno (Fase 166, nossa)
+
+- **Plano** em `docs/plano_fase166.md`. `HaystackView` (`GameScreen.haystack_view`): `cells` (a célula livre ao lado das fazendas
+  de ovelhas, porcos e trigo, mais perto do meio da face de +X da frente, fora do silo e das outras peças de célula) e
+  `stack_mesh` (corpo em barril, cúpula em anéis e a vara). O recheio e as bombas deixam a célula. **Anel girado em volta de +y:
+  o ângulo anda no sentido do `VertexShapes.cylinder`** (x = cos, z = −sen), senão as faces ficam para dentro. Captura em
+  `tools/capture_phase166.tscn`.
+
+### Capim alto nos terrenos vazios (Fase 167, nossa)
+
+- **Plano** em `docs/plano_fase167.md`. `ScatterView.Kind.TALL_GRASS` (no fim do enum e da lista `OPEN`) só nas manchas de
+  `tall_grass_patch` (o ruído das papoulas com outro passo e semente), fora dos canteiros de papoulas e das tropicais;
+  `tall_grass_mesh`. Captura em `tools/capture_phase167.tscn`.
+
+### Gaivotas no cais (Fase 168, nossa)
+
+- **Plano** em `docs/plano_fase168.md`. `PerchedGullView` (`GameScreen.perched_gull_view`): uma gaivota de pé em parte dos
+  cabeços que a `HarborView` desenhou (`bollard_places`, e o sinal `rebuilt` a cada desenho), virando de tempos em tempos pelo
+  tempo de jogo (`heading_at`, `advance`); `gull_mesh`. Captura em `tools/capture_phase168.tscn`.
+
+### Barril de chuva (Fase 169, nossa)
+
+- **Plano** em `docs/plano_fase169.md`. `RainBarrelView` (`GameScreen.rain_barrel_view`): `spot` (a quina de −X de trás das casas
+  de camponeses e operários do resto certo, no lugar do modelo, com a calha até o beiral ou o da ala), `_cell`/`cells` (a célula
+  só pelo lote, sem a `Simulation`, para o recheio, as bombas, os silos e as medas a deixarem limpa), `barrel_body_mesh` e o cano
+  esticado até o beiral (`pipe_mesh`, `pipe_place`), em dois MultiMesh (a malha inteira refeita em GDScript custava ~120 ms
+  com 300 barris). Captura: `barris_de_chuva.png` no `tools/capture_phase95.tscn`.
+
+### Barranco de terra vermelha (Fase 170, nossa)
+
+- **Plano** em `docs/plano_fase170.md`, primeira do roteiro `docs/plano_fases_170_174.md` (laterita, lenha e carrinho; o Anno
+  não foi aberto: o dono estava no PC). O material do terreno das ilhas tropicais leva `mud_tint` =
+  `TerrainView.TROPICAL_MUD_TINT`: a margem dos rios em laterita vermelha. Captura em `tools/capture_phase170.tscn`.
+
+### Lenha na parede (Fase 171, nossa)
+
+- **Plano** em `docs/plano_fase171.md`. `LogPileView` (`GameScreen.log_pile_view`): `spot`/`_cell`/`cells` (a parede de +X do
+  corpo das casas de camponeses e operários do resto certo, na célula do lado livre; o recheio e as bombas a deixam) e
+  `pile_mesh`, num MultiMesh. Captura: `lenha_*.png` no `tools/capture_phase95.tscn` (rua nova de casas espaçadas).
+
+### Carrinho de mão (Fase 172, nossa)
+
+- **Plano** em `docs/plano_fase172.md`. `WheelbarrowView` (`GameScreen.wheelbarrow_view`): `cells` (a célula livre atrás de um
+  prédio de produção a cada `BARROW_EVERY`, no pátio da Fase 165; o recheio e as bombas a deixam) e `barrow_mesh`, num
+  MultiMesh. Captura em `tools/capture_phase172.tscn`.
+
+### Tina de lavar (Fase 173, nossa)
+
+- **Plano** em `docs/plano_fase173.md`. Na `YardView`, `tub_place` (ao lado de cada varal, mais para longe da casa) e `tub_mesh`
+  num MultiMesh `Washtubs` (`tub_count`, `tub_transform`). Captura: `tina_de_lavar.png` no `tools/capture_phase95.tscn`.
+
+### Banco na porta (Fase 174, nossa)
+
+- **Plano** em `docs/plano_fase174.md`. `DoorBenchView` (`GameScreen.door_bench_view`): `spot` (no quintal cercado da frente de
+  parte das casas dos camponeses, encostado na parede além dos vasos, no lugar do modelo) e `bench_mesh`, num MultiMesh. Captura:
+  `banco_na_porta.png` no `tools/capture_phase95.tscn`.
+
+### Espantalho no campo (Fase 175, nossa)
+
+- **Plano** em `docs/plano_fase175.md`, primeira do roteiro `docs/plano_fases_175_179.md` (espantalho, cegonha e vaga-lume; o
+  Anno não foi aberto: o dono estava no PC). `ScarecrowView` (`GameScreen.scarecrow_view`): `spot` (um campo a cada
+  `SCARECROW_EVERY` cuja fazenda, pelo `module_owner`, planta uma das `CROPS`; no vão do meio entre as fileiras, pela conta da
+  `CropView`) e `scarecrow_mesh`, num MultiMesh. Captura em `tools/capture_phase175.tscn`.
+
+### Cegonha na chaminé (Fase 176, nossa)
+
+- **Plano** em `docs/plano_fase176.md`. `StorkView` (`GameScreen.stork_view`): `has_nest` (camponeses e operários a cada
+  `STORK_EVERY`, nas temperadas), `nest_place` (o capitel da chaminé, no lugar do modelo), `nest_mesh` e `stork_mesh`, virando pelo
+  `PerchedGullView.heading_at`. **A chaminé com ninho não fumega** (`ChimneySmokeView.chimney_world` a pula). Captura em
+  `tools/capture_phase176.tscn` (a câmera à mão: a da partida fica presa ao chão).
+
+### Postigos nas janelas (Fase 177, nossa)
+
+- **Plano** em `docs/plano_fase177.md`. `Spec.shutters` (todas as casas de `SHUTTER_TRIMS`; na chave) e `BuildingKit._shutters`
+  (duas folhas por janela do corpo, na célula (1, 1) da paleta, `UV_SHUTTER`). O `shaders/building_kit.gdshader` pinta a célula
+  numa das quatro cores de postigo pelo lugar do prédio (`shutter_pick`, hash inteiro da origem do modelo), com as réguas.
+  Captura: as ruas do `tools/capture_phase95.tscn`.
+
+### Vaga-lumes no prado (Fase 178, nossa)
+
+- **Plano** em `docs/plano_fase178.md`. `FireflyView` (`GameScreen.firefly_view`): `swarms` (a rede de pontos a cada
+  `SWARM_STEP` células, em terra livre longe de prédio e estrada, mais na beira da mata) e `flies`, num MultiMesh com o dado da
+  instância, escondido de dia; o `shaders/firefly.gdshader` os faz vagar e piscar no tempo visual, acesos pelo `night_light`.
+  Captura em `tools/capture_phase178.tscn`.
+
+### Juncos na margem (Fase 179, nossa)
+
+- **Plano** em `docs/plano_fase179.md`. `ScatterView.Kind.REEDS` (no fim do enum e nas `PLANTS`) e `reeds_mesh`; `_reeds` põe as
+  touceiras na terra encostada no rio, na margem baixa (`REEDS_MAX_HEIGHT_M`), com **sorteio próprio depois das outras peças da
+  célula** (a regra dela não muda, e o recheio de antes sai igual). Captura em `tools/capture_phase179.tscn`.
+
+### Borboletas nos canteiros (Fase 180, nossa)
+
+- **Plano** em `docs/plano_fase180.md`, primeira do roteiro `docs/plano_fases_180_184.md` (borboleta, correio e galo; o Anno não
+  foi aberto: o dono estava no PC). `ButterflyView` (`GameScreen.butterfly_view`): `groups` (a rede de pontos a cada
+  `GROUP_STEP` células, sobre as papoulas nas temperadas e no capim aberto nas tropicais) e `butterfly_mesh`, num MultiMesh com
+  o dado da instância, escondido à noite; o `shaders/butterfly.gdshader` as faz esvoaçar e bater as asas no tempo visual.
+  Captura em `tools/capture_phase180.tscn`.
+- **`IslandDirty`** (`presentation/island_dirty.gd`): quais ilhas uma vista do arquipélago inteiro refaz — a obra, a estrada e as
+  árvores dizem a ilha, o demolido sai pela ilha guardada; as borboletas e os vaga-lumes (Fase 178) refazem só ela, com o hash
+  aritmético `FireflyView.cell_hash` (o `hash()` de um Array por ponto custava dezenas de ms).
+
+### Caixa de correio (Fase 181, nossa)
+
+- **Plano** em `docs/plano_fase181.md`. `PostBoxView` (`GameScreen.post_box_view`): `spots` (células calçadas do desenho
+  `posmod(7x + 13y, POST_EVERY)`, fora das dos postes de gás e da escada diagonal, no lado da calçada como o poste) e `box_mesh`
+  (sólido de revolução por `_lathe`), num MultiMesh. Captura: `caixa_de_correio.png` no `tools/capture_phase150.tscn`.
+
+### Galo do cata-vento (Fase 182, nossa)
+
+- **Plano** em `docs/plano_fase182.md`. `WeathercockView` (`GameScreen.weathercock_view`, com o `WeatherView`): `spot` (o alto da
+  cumeeira das fazendas de `FARMS` das temperadas, no lugar do modelo), `mast_mesh` e `cock_mesh` (o galo em chapa recortada,
+  `_plate`, visto dos dois lados), virando a cabeça para o vento (`turn`). Captura em `tools/capture_phase182.tscn` (a câmera à
+  mão no alto do telhado, com as árvores em volta derrubadas).
+
+### Barco na areia (Fase 183, nossa)
+
+- **Plano** em `docs/plano_fase183.md`. `BeachBoatView` (`GameScreen.beach_boat_view`): `sites` (a célula de praia livre junto da
+  cabana de pesca, encostada no mar pelo lado, com as vizinhas ao longo da costa livres), `boat_place` (o `HarborView.boat_mesh`
+  de borco ao longo da costa) e `oar_places_of` (os remos do `RowboatView` na areia). O recheio deixa as três células (`cells`,
+  no `ScatterView.island_context`). Captura em `tools/capture_phase183.tscn`.
+
+### Limo na pedra (Fase 184, nossa)
+
+- **Plano** em `docs/plano_fase184.md`. `RockView.sea_material` (`shaders/sea_rock.gdshader`: a rocha triplanar de sempre com a faixa
+  de limo e sargaço junto da linha d'água, a pedra molhada acima e a crosta da maré em manchas) nos rochedos, nas rochas da
+  falésia e nos matacões do rio; as pedras soltas dos barrancos e das jazidas seguem com o `RockView.material`. Captura em
+  `tools/capture_phase184.tscn`.
+
+### Hera nas paredes (Fase 185, nossa)
+
+- **Plano** em `docs/plano_fase185.md`, primeira do roteiro `docs/plano_fases_185_189.md` (hera, estaca e arco-íris; o Anno não foi
+  aberto: o dono estava no PC). `BuildingView.ivy_of` põe o parâmetro de instância `ivy` (cheio nos serviços de pedra de
+  `IVY_SERVICES`, menos numa casa a cada `IVY_HOUSE_EVERY` dos artesãos para cima, nada nas tropicais) e o
+  `shaders/building_kit.gdshader` desenha a hera só nas células de parede, em colunas subindo do chão. **Parâmetro de instância
+  não aparece no `get_shader_uniform_list`** (o teste confere os uniformes comuns). Captura: as ruas do `tools/capture_phase95.tscn`.
+
+### Estacas na água (Fase 186, nossa)
+
+- **Plano** em `docs/plano_fase186.md`. `MooringPileView` (`GameScreen.mooring_pile_view`): `spots` (diante do entreposto e na ponta
+  do píer, pelo `HarborView.seaward`, onde boia) e `cluster_mesh` (cinco estacas amarradas, com o limo junto da água), num
+  MultiMesh. **Objeto que entra fundo na água vira coluna branca pela espuma por profundidade**: o pé fica a `FOOT_M` (meio
+  metro). Captura em `tools/capture_phase186.tscn`.
+
+### Placa na encruzilhada (Fase 187, nossa)
+
+- **Plano** em `docs/plano_fase187.md`. `SignpostView` (`GameScreen.signpost_view`): `junctions` (as células de terra com três ou
+  quatro estradas pelos lados, sem casa a até `TOWN_CELLS`; o poste no lado sem estrada ou no canto entre duas) e uma tábua
+  por estrada (`arm_mesh`, o +x apontando), em dois MultiMesh. Captura em `tools/capture_phase187.tscn`.
+
+### Arco-íris (Fase 188, nossa)
+
+- **Plano** em `docs/plano_fase188.md`. `RainbowView` (`GameScreen.rainbow_view`, com o `SkyAdapter`): `amount_at` (função pura da
+  semente e das horas: logo depois da chuva do dia de chuva), `place` (o anel de 42 graus em volta do ponto oposto ao sol, a
+  `DISTANCE_M` da câmera a cada quadro; nada com o sol baixo ou alto demais) e `ring_mesh` no `shaders/rainbow.gdshader`
+  (somado, cortado no mar). `hours_override` prende a hora nas capturas. Captura em `tools/capture_phase188.tscn`.
+
+### Focas nas pedras (Fase 189, nossa)
+
+- **Plano** em `docs/plano_fase189.md`. `SealView` (`GameScreen.seal_view`): `colonies` (pontos a cada `COLONY_STEP` células, a
+  célula da costa baixa e livre mais perto, longe dos prédios por blocos de `WILD_CELLS`; só temperadas) e `seals` (duas a
+  quatro deitadas, a cabeça para o mar); o corpo parado (`body_mesh`) e a cabeça (`head_mesh`) erguendo pelo `head_lift`, em
+  dois MultiMesh. Captura em `tools/capture_phase189.tscn`.
+
+### Colmeias de palha (Fase 190, nossa)
+
+- **Plano** em `docs/plano_fase190.md`, primeira do roteiro `docs/plano_fases_190_194.md` (colmeia, pombal e varal; o Anno não foi
+  aberto: o dono estava no PC). `BeehiveView` (`GameScreen.beehive_view`): `cells` (a célula livre do lado de −X das fazendas de
+  `FARMS`, o oposto das medas) e `hive_mesh` (o banco com três colmeias de palha), e as abelhas no `shaders/bee.gdshader`. O
+  recheio deixa a célula. As capturas das Fases 191 e 193 herdam o `tools/capture_phase190.gd` (`_shoot`, `_away_from_farm`).
+
+### Pombal (Fase 191, nossa)
+
+- **Plano** em `docs/plano_fase191.md`. `DovecoteView` (`GameScreen.dovecote_view`): `spot` (a célula na diagonal do canto da frente
+  de +X das fazendas de `FARMS` do resto certo, se livre), `dovecote_mesh` e os pombos pousados da `BirdView` nos `PERCHES`,
+  virando pelo `PerchedGullView.heading_at`. Captura em `tools/capture_phase191.tscn`.
+
+### Roupa sobre a rua (Fase 192, nossa)
+
+- **Plano** em `docs/plano_fase192.md`. `StreetLaundryView` (`GameScreen.street_laundry_view`): `lines` (a casa de operários do resto
+  certo com uma rua de uma célula diante dela e outra casa de operários virada para a rua do outro lado: o varal de beira a
+  beira, a `HEIGHT_M`), o cabo pelo `HarborView.rope_span` e a roupa nas cores do `YardView.CLOTH_COLORS`, numa malha só.
+  Captura em `tools/capture_phase192.tscn` (ilha plana, a câmera posta na rua).
+
+### Carroça de feno parada (Fase 193, nossa)
+
+- **Plano** em `docs/plano_fase193.md`. `HayWagonView` (`GameScreen.hay_wagon_view`): `cells` (a célula livre vizinha das medas da
+  Fase 166, numa fazenda a cada `WAGON_EVERY`), `wagon_place` (o `CartView.model_mesh` sem cavalo, tombado para a frente) e
+  `load_mesh` (o feno em camadas moles, `PerchedGullView._blob`). O recheio deixa a célula. Captura em `tools/capture_phase193.tscn`.
+
+### Escada do cais (Fase 194, nossa)
+
+- **Plano** em `docs/plano_fase194.md`. `QuayStairsView` (`GameScreen.quay_stairs_view`): `flights` (o alto de cada lance, no lanço do
+  cais de pedra que passa `STAIR_CLEAR_M` da largura do entreposto, de cada lado), `step_places` (os degraus de pedra até dentro
+  da água, encostados no paredão, na pedra das paredes do cais) e a argola (`ring_mesh`). Captura em `tools/capture_phase194.tscn`.
+
+### Cemitério da igreja (Fase 195, nossa)
+
+- **Plano** em `docs/plano_fase195.md`, primeira do roteiro `docs/plano_fases_195_199.md` (cemitério, pato e rede; o Anno não foi
+  aberto: o dono estava no PC). `GraveyardView` (`GameScreen.graveyard_view`): `layout`/`cells` (as fileiras livres atrás da
+  igreja, além do anel do largo da Fase 109, e o portão), `graves_of` (as covas com a lápide virada para a igreja, o tipo, o
+  tombo e o tom pelo hash) e `walls` (o muro baixo nas bordas, aberto no portão), em quatro MultiMesh. O recheio e as bombas
+  deixam as células. Captura em `tools/capture_phase195.tscn`.
+
+### Patos na água (Fase 196, nossa)
+
+- **Plano** em `docs/plano_fase196.md`. `DuckView` (`GameScreen.duck_view`): `candidates` (os bandos que o terreno permite, uma vez
+  por mundo: a água rasa da beira de terra baixa e a roda sobre fundo de `RING_FLOOR_M`, a `LAND_CLEAR_M` da terra, fora da
+  espuma da linha d'água), `flocks` (sem os perto dos portos), `pose` e `dabble` (a roda no tempo de jogo, o mergulho girando
+  no peito). **Busca pela grade inteira em GDScript pesa**: leia o `PackedByteArray` direto e pule cedo o que não serve antes de
+  chamar função por célula. Captura em `tools/capture_phase196.tscn`.
+
+### Casinha do cão (Fase 197, nossa)
+
+- **Plano** em `docs/plano_fase197.md`. `KennelView` (`GameScreen.kennel_view`): `spot`/`_cell`/`cells` (a célula do lado de −X do
+  lote, na fileira da frente, das casas com cão do `AnimalView.DOG_EVERY`; o recheio e as bombas a deixam) e `kennel_mesh`, num
+  MultiMesh. Captura: `casinha_do_cao.png` no `tools/capture_phase95.tscn`.
+
+### Bancos no cais (Fase 198, nossa)
+
+- **Plano** em `docs/plano_fase198.md`. `QuayBenchView` (`GameScreen.quay_bench_view`): `benches` (nos lanços do cais de pedra do
+  resto `BENCH_REST`, para dentro da beira, a `CLEAR_M` dos lampiões, das cisternas, dos mastros e das escadas) com o banco de
+  praça da decoração (`DecorationView._bench`), num MultiMesh. Captura em `tools/capture_phase198.tscn`.
+
+### Rede na varanda (Fase 199, nossa)
+
+- **Plano** em `docs/plano_fase199.md`. `HammockView` (`GameScreen.hammock_view`): `hang` (pela forma: o vão do lado da porta entre
+  dois esteios da varanda, `post_xs` com a conta da `BuildingKit._veranda`), `spot` (no lugar do modelo), `hammock_mesh` (o pano
+  listrado, as varas e os cabos) e `swing` (o balanço em volta dos nós), num MultiMesh sem descarte de face. Mudou a varanda,
+  confira `post_xs`. Captura em `tools/capture_phase199.tscn`.
+
+### Gato na porta (Fase 200, nossa)
+
+- **Plano** em `docs/plano_fase200.md`, primeira do roteiro `docs/plano_fases_200_204.md` (gato, poço e carrinho; o Anno não foi
+  aberto: o dono estava no PC). `CatView` (`GameScreen.cat_view`): `spot` (ao lado da porta das casas do resto certo sem cão,
+  pela conta da porta do banco da Fase 174), `body_mesh` e `head_mesh` (a pelagem na cor da instância) e o giro da cabeça no
+  `shaders/cat_head.gdshader` (`glance`, `glance_data`), em dois MultiMesh sem sombra. **Subida de classe é o sinal
+  `house_upgraded`**: o `building_state_changed` dispara a cada troca de estado das fábricas, e uma vista de casas que se refaz
+  nele (chamando `spec_for` em centenas delas) pesa no quadro. Captura: `gato_na_porta.png` no `tools/capture_phase95.tscn`.
+
+### Poço da vila (Fase 201, nossa)
+
+- **Plano** em `docs/plano_fase201.md`. `WellView` (`GameScreen.well_view`): `cells` (as casas dos camponeses do resto certo, fora
+  das da bomba, pela busca da bomba) e `well_mesh` (o bocal em fiadas, `_ring`), num MultiMesh. A busca da bomba d'água foi
+  separada em `WaterPumpView.taken_cells` e `beside_street`: **peça nova junto da rua usa as duas** (e a lista das tomadas
+  ganha a peça nova, para a bomba e o poço desviarem dela). Captura em `tools/capture_phase201.tscn`.
+
+### Secadouro de peixe (Fase 202, nossa)
+
+- **Plano** em `docs/plano_fase202.md`. `FishRackView` (`GameScreen.fish_rack_view`): `sites`/`cells` (a célula livre ao lado de
+  cada cabana de pesca das temperadas, na metade da terra, fora das redes e do barco virado; o recheio e as bombas a deixam) e
+  `rack_mesh` (as varas em X e os peixes de `_fish`, lâminas dos dois lados), num MultiMesh. Captura em
+  `tools/capture_phase202.tscn`.
+
+### Carrinho de feira (Fase 203, nossa)
+
+- **Plano** em `docs/plano_fase203.md`. `MarketCartView` (`GameScreen.market_cart_view`): `cells` (a célula da rua ao lado de cada
+  mercado, pela busca da bomba) e `cart_mesh`, num MultiMesh. **Peça que usa `WaterPumpView.taken_cells` não pode entrar nela**
+  (a lista chamaria a si mesma): a bomba e o poço desviam do carrinho à parte, nas buscas deles. Captura em
+  `tools/capture_phase203.tscn`.
+
+### Guarda-sol de palha (Fase 204, nossa)
+
+- **Plano** em `docs/plano_fase204.md`. `PalapaView` (`GameScreen.palapa_view`): `cells` (a areia livre perto do mar em volta do
+  entreposto e da cabana de pesca das tropicais, a partir de `near_of`, que no entreposto passa do cais de pedra) e
+  `palapa_mesh`, num MultiMesh. **O cais de pedra é só desenho**: a célula debaixo dele parece livre; peça que procura areia em
+  volta do entreposto precisa da folga. **O recheio se refaz até `ScatterView.FAR_REACH` em volta de um prédio novo**: peça cuja
+  célula fica longe do prédio que a cria entra lá. **As buscas junto da rua ficam guardadas** (`WaterPumpView.remembered`,
+  esquecidas a cada obra, estrada, trilho, árvore, subida de classe e troca de mundo, só com a vista da bomba na árvore): lista
+  nova cara do mesmo tipo entra nela. Captura em `tools/capture_phase204.tscn`.
+
+### Estandartes na fachada (Fase 205, nossa)
+
+- **Plano** em `docs/plano_fase205.md`, primeira do roteiro `docs/plano_fases_205_209.md` (estandarte, bebedouro e lanterna; o
+  Anno não foi aberto: o dono estava no PC). `BannerView` (`GameScreen.banner_view`): `places_of` (as divisas da célula da porta
+  dos serviços de `SERVICES`, no alto do segundo andar, pela conta da porta do banco da Fase 174) e `banner_mesh`, num MultiMesh
+  com o `shaders/banner.gdshader` (a cor do prédio e a fase no dado da instância; o balanço pelo vento global, menor que o braço,
+  para o pano nunca entrar na parede). Captura: `estandartes.png` no `tools/capture_phase95.tscn`.
+
+### Bebedouro de cavalos (Fase 206, nossa)
+
+- **Plano** em `docs/plano_fase206.md`. `HorseTroughView` (`GameScreen.horse_trough_view`): `cells` (a célula encostada na taverna
+  pelo lado mais perto da porta, fora das tomadas e do carrinho, guardada na memória da bomba) e `trough_mesh`, num MultiMesh. A
+  bomba e o poço desviam das peças escolhidas antes deles pela `WaterPumpView.street_pieces` (o carrinho e o bebedouro). **As
+  buscas de célula se consultam em cadeia** (as mesas, os silos, as medas, a lista das tomadas): antes de fazer uma peça
+  desviar de outra, confira que a outra não chega nela, senão a busca chama a si mesma. Captura em `tools/capture_phase206.tscn`.
+
+### Pinheiro-anão na encosta (Fase 207, nossa)
+
+- **Plano** em `docs/plano_fase207.md`. `ScatterView.Kind.ROCK_PINE` (no fim do enum e das listas `OPEN` e `NEAR_FOREST`, entre as
+  `PLANTS`) só nas células de desnível `ROCK_PINE_MIN_RELIEF_M` das temperadas, de pé; `rock_pine_mesh`. Captura em
+  `tools/capture_phase207.tscn`.
+
+### Rama de tecido (Fase 208, nossa)
+
+- **Plano** em `docs/plano_fase208.md`. `TenterView` (`GameScreen.tenter_view`): `sites`/`cells` (três células em fila no meio de um
+  lado da tecelagem, o de trás primeiro, como o pátio de tijolos da Fase 159; o recheio e as bombas as deixam) e `tenter_mesh`,
+  num MultiMesh. Captura: `ramas_de_tecido.png` no `tools/capture_phase95.tscn`.
+
+### Lanterna nas carroças (Fase 209, nossa)
+
+- **Plano** em `docs/plano_fase209.md`. `CartView.lantern_mesh`, `lantern_glass_mesh` e `with_lantern` (a armação e o vidro como
+  superfícies a mais da malha do corpo, no `night_glow` com o alfa 0 do vértice marcando o vidro). **Peça presa num objeto que
+  anda vai na malha dele**: camada própria reposicionada a cada quadro custa caro com centenas de instâncias. Captura em
+  `tools/capture_phase209.tscn`.
+
+### Pombos na cumeeira (Fase 210, nossa)
+
+- **Plano** em `docs/plano_fase210.md`, primeira do roteiro `docs/plano_fases_210_214.md` (pombo, mó e buxo; o Anno não foi aberto:
+  o dono estava no PC). `RoofPigeonView` (`GameScreen.roof_pigeon_view`): `pigeons` (a fila na capa da cumeeira das casas de duas
+  águas do resto certo, longe da chaminé) e `pigeon_mesh` (bolas de 6 × 3 faces), num MultiMesh sem sombra. **Peça que se repete
+  centenas de vezes pede poucas faces**: as bolas do `PerchedGullView._blob` custaram ~1 FPS. Captura: `pombos_na_cumeeira.png`
+  no `tools/capture_phase95.tscn` (câmera à mão, `_aimed`).
+
+### Mós no moinho (Fase 211, nossa)
+
+- **Plano** em `docs/plano_fase211.md`. `MillstoneView` (`GameScreen.millstone_view`): `sites`/`cells` (a célula do meio de um lado
+  do moinho, nunca na frente das pás; o recheio e as bombas a deixam) e `millstone_mesh`, num MultiMesh. Captura:
+  `mos_no_moinho.png` no `tools/capture_phase95.tscn`.
+
+### Buxo na porta (Fase 212, nossa)
+
+- **Plano** em `docs/plano_fase212.md`. `TopiaryView` (`GameScreen.topiary_view`): `places_of` (os dois lados da porta das casas de
+  pórtico, por fora das colunas, pela conta da porta do banco da Fase 174) e `pot_mesh`, num MultiMesh. Captura:
+  `buxo_na_porta.png` no `tools/capture_phase95.tscn`.
+
+### Lenha da padaria (Fase 213, nossa)
+
+- **Plano** em `docs/plano_fase213.md`. `OvenWoodView` (`GameScreen.oven_wood_view`): `spot` (no referencial da boca do forno da
+  Fase 137, `ALONG_M` ao lado, só com a célula do lado livre) e `wood_mesh`, num MultiMesh. **Peça presa na fachada de lado
+  confere a célula do lado**: com o vizinho encostado, entraria na parede dele. Captura: `lenha_da_padaria.png` no
+  `tools/capture_phase95.tscn` (a padaria sozinha no fim da rua espaçada).
+
+### Escada de mão (Fase 214, nossa)
+
+- **Plano** em `docs/plano_fase214.md`. `LadderView` (`GameScreen.ladder_view`): `spot`/`_cell`/`cells` (a parede de −X do corpo
+  das casas de duas águas do resto certo, na metade de trás, com a célula do lado livre; o recheio e as bombas a deixam) e
+  `ladder_mesh` (esticada até o beiral), num MultiMesh. Captura: `escada_de_mao.png` no `tools/capture_phase95.tscn`.
+
+### Tábuas secando na serraria (Fase 215, nossa)
+
+- **Plano** em `docs/plano_fase215.md`, primeira do roteiro `docs/plano_fases_215_219.md` (tábua, cortina e andorinha; o Anno não
+  foi aberto: o dono estava no PC). `PlankStackView` (`GameScreen.plank_stack_view`): `sites`/`cells` (as duas células do meio do
+  lado de −X do modelo, oposto à roda d'água, ou dos fundos; o recheio e as bombas as deixam) e `stack_mesh` (camadas de tábuas
+  com os tabiques sobre dormentes e a cobertura de tábuas velhas), num MultiMesh. Captura em `tools/capture_phase215.tscn`.
+
+### Monte de carvão na usina (Fase 216, nossa)
+
+- **Plano** em `docs/plano_fase216.md`. `CoalHeapView` (`GameScreen.coal_heap_view`): `sites`/`cells` (as duas células do meio de um
+  lado da usina a carvão, pela regra das tábuas da Fase 215; o recheio e as bombas as deixam) e `heap_mesh` (a baia de tábuas e o
+  monte de duas cristas pelo `height_at`, em faces chapadas com `set_smooth_group(-1)`, e a pá), num MultiMesh. Captura em
+  `tools/capture_phase216.tscn`.
+
+### Cortinas nas janelas (Fase 217, nossa)
+
+- **Plano** em `docs/plano_fase217.md`. `Spec.curtains` (todas as casas; na chave) e `BuildingKit._curtains` (dois panos franzidos
+  e a sanefa em cada janela do corpo, em `CURTAIN_X`, entre o vidro e o caixilho) na célula (0, 0) da paleta (`UV_CURTAIN`: a
+  fileira de cima inteira o kit não usa), pintada pelo `shaders/building_kit.gdshader` numa cor de pano por casa
+  (`curtain_pick`), com as pregas. Captura em `tools/capture_phase217.tscn`.
+
+### Andorinhas no campanário (Fase 218, nossa)
+
+- **Plano** em `docs/plano_fase218.md`. `SwallowView` (`GameScreen.swallow_view`): `towers` (o meio da sineira das igrejas, pelo
+  `BuildingKit.belfry_center` no lugar do modelo), `pose` (elipses inclinadas em oito em volta dela), `beat` (rajadas) e
+  `swallow_mesh` no `shaders/bird.gdshader`, num MultiMesh sem sombra, no tempo de jogo; some à noite. Captura em
+  `tools/capture_phase218.tscn` (a câmera à mão).
+
+### Balanço e gangorra na escola (Fase 219, nossa)
+
+- **Plano** em `docs/plano_fase219.md`. `SideYard` (`presentation/side_yard.gd`): a busca das duas células do meio de um lado de um
+  prédio, na ordem pedida no referencial do modelo (`pick`, `pair`, `is_free`, `cells_of`, `place`), usada pelas tábuas, pelo
+  carvão e pelo pátio da escola. **Pátio novo de lado usa o `SideYard`** e põe na `taken` dele as células dos pátios de antes.
+  `PlaygroundView` (`GameScreen.playground_view`): `sites`/`cells` e `playground_mesh` (o balanço em cavalete e a gangorra), num
+  MultiMesh. Captura em `tools/capture_phase219.tscn`.
+
+### Bomba de incêndio no quartel (Fase 220, nossa)
+
+- **Plano** em `docs/plano_fase220.md`, primeira do roteiro `docs/plano_fases_220_224.md` (bomba, barril e lençol; o Anno não foi
+  aberto: o dono estava no PC). `FirePumpView` (`GameScreen.fire_pump_view`): `sites`/`cells` (as duas células de lado do quartel
+  pelo `SideYard`, fora dos pátios de lado de antes; o recheio e as bombas as deixam) e `pump_mesh` (a bomba de mão vermelha com
+  os cilindros de latão e os braços, o carretel, a escada e os baldes na parede), num MultiMesh. Captura em
+  `tools/capture_phase220.tscn`.
+
+### Barris na cervejaria (Fase 221, nossa)
+
+- **Plano** em `docs/plano_fase221.md`. `BarrelRackView` (`GameScreen.barrel_rack_view`): `sites`/`cells` (as duas células de lado
+  da cervejaria, das destilarias e da adega pelo `SideYard`) e `rack_mesh` (a pirâmide de barris torneados sobre os calços e dois
+  de pé com o funil), num MultiMesh. **O torneado anda de +x para +z**: as faces vão no sentido contrário ao do
+  `VertexShapes.cylinder`. **As buscas de lado ficam guardadas** (`SideYard.remember`, na memória da Fase 204): pátio novo
+  de lado chama `sites` por ela. Captura em `tools/capture_phase221.tscn`.
+
+### Covos no cais (Fase 222, nossa)
+
+- **Plano** em `docs/plano_fase222.md`. `LobsterPotView` (`GameScreen.lobster_pot_view`): `pots` (nos primeiros lanços livres do cais
+  de pedra, até `PILES_PER_POST` afastadas, longe das outras peças do cais e dos bancos) e `pot_mesh` (covos de vime em meia-lua, o
+  cabo enrolado e as boias), num MultiMesh. **Peça nova do cais procura lanço livre**: os restos fixos (bancos, cabeços) já se
+  sobrepõem a lampiões, mastros e escadas. Captura em `tools/capture_phase222.tscn`.
+
+### Lençóis no hospital (Fase 223, nossa)
+
+- **Plano** em `docs/plano_fase223.md`. `LinenView` (`GameScreen.linen_view`): `sites`/`cells` (as duas células de lado do hospital
+  pelo `SideYard`) e `linen_mesh` (dois varais com os lençóis enfunados e o cesto), num MultiMesh sem descarte de face. Captura em
+  `tools/capture_phase223.tscn`.
+
+### Relógio de sol no largo (Fase 224, nossa)
+
+- **Plano** em `docs/plano_fase224.md`. `SundialView` (`GameScreen.sundial_view`): `cells` (o canto do anel do largo da Fase 109 mais
+  para a frente, um por serviço) e `dial_mesh` (a coluna torneada com o mostrador de bronze e o gnomon), num MultiMesh, só na ilha
+  com relevo. Captura em `tools/capture_phase224.tscn` (a câmera à mão do lado de fora do canto: entre os prédios a da partida
+  fica dentro deles).
+
+### Lanterna na popa (Fase 225, nossa)
+
+- **Plano** em `docs/plano_fase225.md`, primeira do roteiro `docs/plano_fases_225_229.md` (lanterna, lã e morcego; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `SternLantern` (`presentation/stern_lantern.gd`, chamada pelo `ShipView._model`):
+  `stern_point` (a ré do casco pelos triângulos dele), `node` (filha do modelo, com a escala desfeita, a partir dos triângulos do
+  casco lidos uma vez para ela e para o cordame), `frame_mesh` e `glass_mesh`
+  (no `shaders/night_glow.gdshader`). **Peça nova no modelo do navio é montada antes do cordame**: a busca do casco
+  (`ShipRigging.hull_points`) lê todas as malhas do modelo e quebra nas que não têm índice. Captura em
+  `tools/capture_phase225.tscn`.
+
+### Fardos de lã (Fase 226, nossa)
+
+- **Plano** em `docs/plano_fase226.md`. `WoolBaleView` (`GameScreen.wool_bale_view`): `sites`/`cells` (as duas células de lado da
+  fazenda de ovelhas pelo `SideYard`, fora das medas, do silo e da carroça de feno) e `bale_mesh` (os fardos estufados com as
+  cordas em volta, o cepo com a tesoura e o velo), num MultiMesh. Captura em `tools/capture_phase226.tscn`.
+
+### Lamaçal do chiqueiro (Fase 227, nossa)
+
+- **Plano** em `docs/plano_fase227.md`. `MudWallowView` (`GameScreen.mud_wallow_view`): `spot` (em cada pasto de fazenda de porcos,
+  do lado oposto ao cocho, pelo `module_owner`) e `mud_mesh` (a lama de borda recortada com a orla e os torrões), num MultiMesh
+  sem sombra; a `CropView` não põe capim dentro dela. Captura em `tools/capture_phase227.tscn`.
+
+### Barris de petróleo (Fase 228, nossa)
+
+- **Plano** em `docs/plano_fase228.md`. `OilBarrelView` (`GameScreen.oil_barrel_view`): `sites`/`cells` (as duas células de lado do
+  poço de petróleo pelo `SideYard`) e `barrels_mesh` (os barris da Fase 221 enegrecidos, em pé e deitados, e a mancha de óleo),
+  num MultiMesh. Captura em `tools/capture_phase228.tscn`.
+
+### Morcegos ao anoitecer (Fase 229, nossa)
+
+- **Plano** em `docs/plano_fase229.md`. `BatView` (`GameScreen.bat_view`): as torres das andorinhas (`SwallowView.towers`), `pose`
+  (voltas em zigue-zague em volta da sineira), `beat` (sem planeio) e `bat_mesh` (asas de membrana recortada) no
+  `shaders/bird.gdshader`, num MultiMesh sem sombra; só à noite (`show_for_night`). Captura em `tools/capture_phase229.tscn`.
+
+### Sinal no trilho (Fase 230, nossa)
+
+- **Plano** em `docs/plano_fase230.md`, primeira do roteiro `docs/plano_fases_230_234.md` (sinal, cormorão e castanha; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `RailSignalView` (`GameScreen.rail_signal_view`): `ends` (as pontas de linha do
+  trilho), `place_of` (ao lado da linha, à direita de quem chega), `signal_mesh` (o poste, a escada e o braço) e `glass_mesh` (no
+  `shaders/night_glow.gdshader`), em dois MultiMesh. Captura em `tools/capture_phase230.tscn`.
+
+### Cormorões nas estacas (Fase 231, nossa)
+
+- **Plano** em `docs/plano_fase231.md`. `CormorantView` (`GameScreen.cormorant_view`): `perches` (no alto da estaca do meio de um a
+  cada `PERCH_EVERY` feixes de atracação da Fase 186, o primeiro sempre) e `cormorant_mesh` (de asas abertas), num MultiMesh sem
+  descarte de face; some à noite. Captura em `tools/capture_phase231.tscn`.
+
+### Tapete na janela (Fase 232, nossa)
+
+- **Plano** em `docs/plano_fase232.md`. `WindowRugView` (`GameScreen.window_rug_view`): `spot` (o peitoril da primeira janela de cima
+  da fachada da frente de parte das casas dos operários e artesãos, pelo `BuildingKit._cell_transform` no lugar do modelo) e
+  `rug_mesh` (a dobra, o pano listrado e a franja), num MultiMesh com a cor por casa. Captura em `tools/capture_phase232.tscn`.
+
+### Cabines de banho (Fase 233, nossa)
+
+- **Plano** em `docs/plano_fase233.md`. `BathingMachineView` (`GameScreen.bathing_machine_view`): `cells` (a areia livre junto do mar
+  perto dos entrepostos das ilhas temperadas, pela conta dos guarda-sóis da Fase 204; o recheio a deixa), `place_of` (a porta para
+  o mar) e `machine_mesh` (a cabine listrada sobre rodas), num MultiMesh. Captura em `tools/capture_phase233.tscn`.
+
+### Fogareiro de castanhas (Fase 234, nossa)
+
+- **Plano** em `docs/plano_fase234.md`. `ChestnutRoasterView` (`GameScreen.chestnut_roaster_view`): `cells` (as esquinas calçadas da
+  busca das colunas de anúncios, no resto ímpar que nunca é o delas; o recheio as deixa), `roaster_mesh` (o carrinho com o fogareiro)
+  e `ember_mesh` (as brasas no `shaders/night_glow.gdshader`, como vidro), em dois MultiMesh. **Peça que acende no `night_glow` fora do
+  pé da malha vai como vidro (alfa 0)**: a chama (alfa 1) encolhe até o y = 0. Captura em `tools/capture_phase234.tscn`.
+
+### Cervos na beira da mata (Fase 235, nossa)
+
+- **Plano** em `docs/plano_fase235.md`, primeira do roteiro `docs/plano_fases_235_239.md` (cervo, âncora e marco; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `DeerView` (`GameScreen.deer_view`): `herds` (capim livre com mata perto, longe
+  das vilas pela regra das focas), `deer`, `head_pitch` (a cabeça pastando e se erguendo) e as malhas do corpo e das cabeças (com e
+  sem galhada), em três MultiMesh. Captura em `tools/capture_phase235.tscn`.
+
+### Âncora no cais (Fase 236, nossa)
+
+- **Plano** em `docs/plano_fase236.md`. `AnchorView` (`GameScreen.anchor_view`): `spot` (no fundo do cais de pedra, `ANCHOR_IN_M` da
+  beira, do último lanço para o primeiro, longe das outras peças do cais, covos incluídos) e `anchor_mesh` (montada reta e tombada
+  até o cepo e a pata tocarem o chão), num MultiMesh. **As peças do cais de pedra já tomam todos os lanços junto da beira**: peça
+  nova procura o fundo do cais. Captura em `tools/capture_phase236.tscn`.
+
+### Marco de légua (Fase 237, nossa)
+
+- **Plano** em `docs/plano_fase237.md`. `MilestoneView` (`GameScreen.milestone_view`): `stones` (célula de terra do desenho
+  `posmod(7x + 13y, STONE_EVERY)`, no meio de um trecho reto de `RUN_CELLS` para cada lado, fora das vilas pela regra das placas e
+  dos postes de fio; na beira do lado livre, a face para a estrada) e `stone_mesh`, num MultiMesh. **As estradas retas e compridas
+  são raras no relevo da semente 1840**: a captura (`tools/capture_phase237.tscn`) procura onde a obra passa.
+
+### Bandeira na prefeitura (Fase 238, nossa)
+
+- **Plano** em `docs/plano_fase238.md`. `TownFlagView` (`GameScreen.town_flag_view`): `foot_of` (o remate da cúpula pelo
+  `BuildingKit.dome_finial`, que o `_dome` também usa, no lugar do modelo), `pole_mesh` e `flag_mesh` (a bandeira da cidade, sem
+  nenhuma de verdade) numa `WindFlag`, um nó por prefeitura. Captura em `tools/capture_phase238.tscn`.
+
+### Algas na praia (Fase 239, nossa)
+
+- **Plano** em `docs/plano_fase239.md`. `ScatterView.Kind.SEAWEED` (no fim do enum e da lista `NEAR_SEA`) só nas células baixas e
+  planas da costa (`SEAWEED_MAX_HEIGHT_M`, `SEAWEED_MAX_RELIEF_M`), deitada no plano da célula; `seaweed_mesh` (uma faixa torta de
+  bolos chatos encostados, não bolos soltos: soltos pareciam bichos ou contas). Captura em `tools/capture_phase239.tscn`.
+
+### Lagar no vinhedo (Fase 240, nossa)
+
+- **Plano** em `docs/plano_fase240.md`, primeira do roteiro `docs/plano_fases_240_244.md` (lagar, terreiro e estacas; o Anno não
+  foi aberto: a sessão não tinha o controle da tela). `WinePressView` (`GameScreen.wine_press_view`): `sites`/`cells` (as duas
+  células de lado do vinhedo pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e
+  `press_mesh` (a tina com o mosto, a prensa de fuso e os cestos), num MultiMesh. Captura em `tools/capture_phase240.tscn`.
+
+### Terreiro de café (Fase 241, nossa)
+
+- **Plano** em `docs/plano_fase241.md`. `CoffeeYardView` (`GameScreen.coffee_yard_view`): `sites`/`cells` (as duas células de lado
+  do cafezal pelo `SideYard`; o recheio e as bombas as deixam) e `yard_mesh` (o terreiro com a camada de café e os sulcos do rodo),
+  num MultiMesh. **Grão espalhado se faz com uma camada e sulcos**, não com bolinhos (pareciam escamas). Captura em
+  `tools/capture_phase241.tscn`.
+
+### Tabaco secando (Fase 242, nossa)
+
+- **Plano** em `docs/plano_fase242.md`. `TobaccoRackView` (`GameScreen.tobacco_rack_view`): `sites`/`cells` (as duas células de lado
+  da plantação pelo `SideYard`; o recheio e as bombas as deixam) e `rack_mesh` (os cavaletes, as varas e as réstias de folhas em
+  três tons de cura), num MultiMesh sem descarte de face. Captura em `tools/capture_phase242.tscn`.
+
+### Vigas de aço empilhadas (Fase 243, nossa)
+
+- **Plano** em `docs/plano_fase243.md`. `SteelBeamView` (`GameScreen.steel_beam_view`): `sites`/`cells` (as duas células de lado da
+  fábrica pelo `SideYard`, o −X primeiro, longe da boca do forno no +X, fora do carrinho de mão; o recheio e as bombas as deixam)
+  e `pile_mesh` (`_beam`, a viga em I), num MultiMesh. Captura em `tools/capture_phase243.tscn`.
+
+### Estacas de lúpulo (Fase 244, nossa)
+
+- **Plano** em `docs/plano_fase244.md`. `HopPoleView` (`GameScreen.hop_pole_view`): `sites`/`cells` (as duas células de lado da
+  fazenda pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e `pole_mesh` (os cavaletes
+  com as estacas deitadas e o feixe de pé), num MultiMesh. Captura em `tools/capture_phase244.tscn`.
+
+### Coelhos no prado (Fase 245, nossa)
+
+- **Plano** em `docs/plano_fase245.md`, primeira do roteiro `docs/plano_fases_245_249.md` (coelho, cogumelo e pedra; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `RabbitView` (`GameScreen.rabbit_view`): `warrens` (capim aberto longe das vilas
+  pela regra das focas), `rabbits`, `sit_up` (o coelho sentando, girado em volta do pé de trás) e `rabbit_mesh`, num MultiMesh sem
+  sombra. Captura em `tools/capture_phase245.tscn`. **Não edite `.gd` do projeto com um benchmark ou uma captura rodando**: o
+  Godot carrega os scripts sob demanda e pega o arquivo pela metade (a primeira medida desta fase saiu inválida assim).
+
+### Tronco caído com cogumelos (Fase 246, nossa)
+
+- **Plano** em `docs/plano_fase246.md`. `ScatterView.Kind.MOSSY_LOG` (no fim do enum e da lista `NEAR_FOREST`, com sombra) só nas
+  temperadas e no chão de pouco desnível, deitado com o chão pela conta da madeira à deriva; `mossy_log_mesh` (o tronco, o musgo,
+  as orelhas-de-pau e os cogumelos). Captura em `tools/capture_phase246.tscn`.
+
+### Madeira curvada no estaleiro (Fase 247, nossa)
+
+- **Plano** em `docs/plano_fase247.md`. `ShipTimberView` (`GameScreen.ship_timber_view`): `sites`/`cells` (as duas células de lado
+  do estaleiro pelo `SideYard`, com a fileira do lado do mar tomada para a carreira; o recheio e as bombas as deixam) e
+  `timber_mesh` (`_rib`, a caverna em U), num MultiMesh. Captura em `tools/capture_phase247.tscn`.
+
+### Caixotes de vidro (Fase 248, nossa)
+
+- **Plano** em `docs/plano_fase248.md`. `GlassCrateView` (`GameScreen.glass_crate_view`): `sites`/`cells` (as duas células de lado
+  da vidraria e da janelaria pelo `SideYard`, o −X primeiro, longe da boca do forno, fora do carrinho de mão; o recheio e as bombas
+  as deixam) e `crate_mesh` (`_crate`), num MultiMesh. Captura em `tools/capture_phase248.tscn`.
+
+### Montes de pedra nos campos (Fase 249, nossa)
+
+- **Plano** em `docs/plano_fase249.md`. `FieldStoneView` (`GameScreen.field_stone_view`): `spot` (um campo com dono a cada
+  `STONE_EVERY` das temperadas, num canto da cabeceira pelo `CropView._row_frame`, além do fim das fileiras) e `heap_mesh`, num
+  MultiMesh. Captura em `tools/capture_phase249.tscn`.
+
+### Balança de carga no armazém (Fase 250, nossa)
+
+- **Plano** em `docs/plano_fase250.md`, primeira do roteiro `docs/plano_fases_250_254.md` (balança, cabra e canoa; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). `ScaleView` (`GameScreen.scale_view`): `sites`/`cells` (as duas células de lado do
+  armazém pelo `SideYard`; o recheio e as bombas as deixam) e `scale_mesh` (`_sack`, o saco amarrado), num MultiMesh. Captura em
+  `tools/capture_phase250.tscn`.
+
+### Cabras nas encostas (Fase 251, nossa)
+
+- **Plano** em `docs/plano_fase251.md`. `GoatView` (`GameScreen.goat_view`): `herds` (encosta livre de `MIN_RELIEF_M`, longe das
+  vilas pela regra das focas), `goats` (a primeira na pedra), `head_pitch` e as malhas do corpo, da cabeça e da pedra, em três
+  MultiMesh. Captura em `tools/capture_phase251.tscn`.
+
+### Carruagem à porta do teatro (Fase 252, nossa)
+
+- **Plano** em `docs/plano_fase252.md`. `CarriageView` (`GameScreen.carriage_view`): `spot` (a célula de estrada das
+  `Footprint.front_cells` do teatro mais perto do meio da fachada, ao longo da rua) e `carriage_mesh`, num MultiMesh. Captura em
+  `tools/capture_phase252.tscn`.
+
+### Cestos de batata (Fase 253, nossa)
+
+- **Plano** em `docs/plano_fase253.md`. `PotatoBasketView` (`GameScreen.potato_basket_view`): `sites`/`cells` (as duas células de lado
+  da fazenda pelo `SideYard`, o +X primeiro, fora das colmeias e do silo; o recheio e as bombas as deixam) e `basket_mesh`
+  (`_basket`, `_potato`), num MultiMesh. Captura em `tools/capture_phase253.tscn`.
+
+### Canoas na margem do rio (Fase 254, nossa)
+
+- **Plano** em `docs/plano_fase254.md`. `CanoeView` (`GameScreen.canoe_view`): `banks` (terra livre e baixa com o rio do lado, numa
+  rede de pontos, longe das vilas pela regra das focas), `place_of` (de comprido ao longo da margem, deitada com o chão) e
+  `canoe_mesh` (o casco em seções, como o barco da `HarborView`), num MultiMesh sem descarte de face. **Busca rara pela grade sai
+  das células raras**: as margens partem das células de rio pelo `find` nativo (varrer a vizinhança de cada ponto custava 160 ms
+  a cada obra; os bichos das Fases 235, 245 e 251 ainda varrem, de 27 a 44 ms). Captura em
+  `tools/capture_phase254.tscn`.
+
+### Ar limpo e tom vivo (Fase 255, nossa)
+
+- **Plano** em `docs/plano_fase255.md`, primeira do roteiro `docs/plano_fases_255_259.md` (cor viva, a pedido do dono: "muito
+  morto, gostaria de algo mais vivo, parecido com o anno"; o Anno não foi aberto, as ideias vêm das capturas guardadas). A cor
+  viva (`GameConfig.vivid_exposure`, `vivid_agx_contrast`, `vivid_saturation`, no `GraphicsQuality.apply_to_environment`) é o
+  padrão com a "Cor de época" desligada; névoa volumétrica 0,0004 e a do domo 0,0001; o sol do Sky3D quente e mais forte
+  (`sun_light_color`, `sun_light_energy`, pelo `SkyAdapter`). **Ajuste de cor se escolhe no `tools/color_lab.tscn`** (a mesma
+  vila com várias combinações, lado a lado) e se confere no `tools/capture_phase255.tscn` (as vistas do ciclo, antes e depois).
+
+### Copas verdes (Fase 256, nossa)
+
+- **Plano** em `docs/plano_fase256.md`. Folhas mais claras no `TreeModel`, o alto de cada massa puxando para o amarelo
+  (`CROWN_SUN`) e a luz própria das folhas de dia (`leaf_fill` no `shaders/foliage.gdshader`, `TreeModel.LEAF_FILL`, apagada
+  pelo `night_light`); as plantações e o capim, no mesmo shader, ficam com 0.
+
+### Grama viva (Fase 257, nossa)
+
+- **Plano** em `docs/plano_fase257.md`. No `shaders/terrain.gdshader`, depois da graduação, a grama vai `grass_tint_mix` (0,6)
+  para o verde-amarelado `grass_tint` escalado à luminância do texel (o claro e o escuro da textura ficam, o matiz deixa de ser
+  oliva); `grass_grade` (0,6; 1,12; 0,7), saturação 1,25 e a seca 0,15.
+
+### Telhado e parede com cor (Fase 258, nossa)
+
+- **Plano** em `docs/plano_fase258.md`. Todo telhado tira a cor de `BuildingView.ROOF_TINTS` pelo material e pela paleta
+  (`palette_roof`; telhas de terracota, tábuas marrons); no `shaders/building_kit.gdshader` a tinta pesa `tint_strength` 0,68 na
+  parede e `roof_tint_strength` 0,85 no telhado; o reboco dos artesãos, engenheiros e investidores é quente (`house_color`).
+  **Cor azul ou cinza sobre a textura de telha vermelha sai lilás**: o telhado de outro matiz pede outra textura (a ardósia da
+  Fase 134).
+
+### Praia dourada (Fase 259, nossa)
+
+- **Plano** em `docs/plano_fase259.md`. No `shaders/terrain.gdshader`, a areia vai `sand_tint_mix` (0,55) para o dourado
+  `sand_tint` escalado à luminância, com `sand_grade` (1,5; 1,35; 1,1); a lama sai de `mud_base` (a areia com a graduação de antes),
+  então a margem dos rios e a laterita não mudam.
+
+### Hora dourada (Fase 260, nossa)
+
+- **Plano** em `docs/plano_fase260.md`, primeira do roteiro `docs/plano_fases_260_264.md` (cor viva II). O sol do horizonte em ouro
+  claro (`GameConfig.sun_horizon_color`, no domo pelo `SkyAdapter`); a exposição pela altura do sol (`GraphicsQuality.dusk_factor`
+  e `follow_sun`, a cada quadro pela `GameScreen`; **quem mexe na exposição desliga o `sun_exposure`**, senão ela é refeita no
+  quadro seguinte); a luz das folhas pelo global `sun_direction` (`shaders/foliage.gdshader`). Capturas do ciclo em
+  `tools/capture_phase260.tscn` (campos, falésia, ilha tropical, fim da tarde, manhã e noite).
+
+### Rocha cinza (Fase 261, nossa)
+
+- **Plano** em `docs/plano_fase261.md`. Toda pedra no `shaders/sea_rock.gdshader`: a do mar (rochedos, falésia, rio) com a faixa
+  da maré e as soltas (`RockView.material`, barrancos, jazidas) com `sea` desligado; o matiz vai `RockView.STONE_GREY_MIX` para o
+  cinza e clareia `STONE_LIGHT`; a rocha do terreno faz a mesma conta (`rock_grey`, `rock_grey_mix`, `rock_light`). **Os testes da
+  pasta `presentation` precisam da janela** (`testes_janela_oculta.ps1`): sem ela o MultiMesh devolve zeros e falham à toa.
+
+### Campos coloridos (Fase 262, nossa)
+
+- **Plano** em `docs/plano_fase262.md`. As leiras levam a cor da plantação conforme ela cresce (`CropView.furrow_color_at`, até
+  `COVER_MAX`; o cereal do verde ao dourado, as outras em `CROP_COVER`): de longe cada campo é um retalho da cor da planta.
+
+### Noite azul (Fase 263, nossa)
+
+- **Plano** em `docs/plano_fase263.md`. De noite a exposição fica em 1 + `GameConfig.night_exposure_boost` vezes a do dia
+  (`GraphicsQuality.dusk_factor`, sem degrau desde o fim da tarde). **O Sky3D leva 3 s para passar a luz ambiente do dia para a
+  da noite**: captura de noite espera antes de fotografar.
+
+### Sombra aberta (Fase 264, nossa)
+
+- **Plano** em `docs/plano_fase264.md`. `GameConfig.ssao_intensity` 0,9 (era 1,6): o vão entre as copas e o pé das matas deixam de
+  ficar quase pretos. A parte do céu na luz ambiente quase não muda a sombra (medido no laboratório).
+
+### Garças no rio (Fase 265, nossa)
+
+- **Plano** em `docs/plano_fase265.md`, primeira do roteiro `docs/plano_fases_265_269.md` (garça, ruína e cruzeiro; o Anno não foi
+  aberto: a sessão não tinha o controle da tela). A busca das margens das canoas virou `CanoeView.river_banks` (rede, sal e chance
+  como parâmetros). `HeronView` (`GameScreen.heron_view`): `spot` (junto da água, do lado do rio) e `heron_mesh`, virando pelo
+  `PerchedGullView.heading_at` em volta da frente para o rio, num MultiMesh sem sombra. Captura em `tools/capture_phase265.tscn`.
+
+### Ruínas de muro (Fase 266, nossa)
+
+- **Plano** em `docs/plano_fase266.md`. `ScatterView.Kind.RUIN` (no fim do enum e da lista `OPEN`, com sombra) só nas temperadas e no
+  chão de pouco desnível, de pé; `ruin_mesh` (o muro de pedra seca quebrado em degraus, as pedras caídas e o musgo). Captura em
+  `tools/capture_phase266.tscn`.
+
+### Espinheiro florido (Fase 267, nossa)
+
+- **Plano** em `docs/plano_fase267.md`. `ScatterView.Kind.HAWTHORN` (no fim do enum e da lista `NEAR_FOREST`, entre as `PLANTS` e
+  as `SHADOWED`) só nas temperadas, de pé; `hawthorn_mesh` (a copa em massas com as pencas de flor branca por toda ela). Captura em
+  `tools/capture_phase267.tscn`.
+
+### Casco naufragado (Fase 268, nossa)
+
+- **Plano** em `docs/plano_fase268.md`. `WreckView` (`GameScreen.wreck_view`): `sites` (a costa baixa das temperadas pela regra das
+  focas, com as vizinhas ao longo dela livres, fora das focas, longe das vilas, no máximo `MAX_PER_ISLAND` por ilha), `place_of`
+  (ao longo da costa, adernado e afundado) e `wreck_mesh` (a quilha e as cavernas), num MultiMesh. Captura em
+  `tools/capture_phase268.tscn` (a câmera do lado do mar).
+
+### Cruzeiro no morro (Fase 269, nossa)
+
+- **Plano** em `docs/plano_fase269.md`. `SummitCrossView` (`GameScreen.summit_cross_view`): `summit` (a célula livre e quase plana
+  mais alta de cada ilha temperada, acima de `MIN_HEIGHT_M`), `place_of` (virado para o meio da ilha) e `cross_mesh`, num
+  MultiMesh. Captura em `tools/capture_phase269.tscn`.
+
+### Corvos no campo (Fase 270, nossa)
+
+- **Plano** em `docs/plano_fase270.md`, primeira do roteiro `docs/plano_fases_270_274.md` (corvo, dedaleira e girassol; o Anno não
+  foi aberto: a sessão não tinha o controle da tela). `CropView.field_ids` e `CrowView` (`GameScreen.crow_view`, com a `CropView`):
+  `crow_spots` (os lugares da colheita dos campos novos da vez), `peck` e `crow_mesh`, num MultiMesh sem sombra, escondido de noite.
+  Captura em `tools/capture_phase270.tscn`.
+
+### Dedaleiras (Fase 271, nossa)
+
+- **Plano** em `docs/plano_fase271.md`. `ScatterView.Kind.FOXGLOVE` (no fim do enum e da lista `NEAR_FOREST`, entre as `PLANTS`) só
+  nas temperadas; `foxglove_mesh` (cinco hastes com os sinos roxos). Captura em `tools/capture_phase271.tscn`.
+
+### Anel de cogumelos (Fase 272, nossa)
+
+- **Plano** em `docs/plano_fase272.md`. `ScatterView.Kind.FAIRY_RING` (no fim do enum e da lista `OPEN`) só nas temperadas e no chão
+  pouco inclinado, deitado no plano da célula; `fairy_ring_mesh` (a roda de cogumelos claros). Captura em `tools/capture_phase272.tscn`.
+
+### Andorinhas no fio (Fase 273, nossa)
+
+- **Plano** em `docs/plano_fase273.md`. `PowerLineView.rebuilt` e `spans` (as curvas dos fios); `WireBirdView`
+  (`GameScreen.wire_bird_view`): `perches` (a fila no meio da curva de um vão a cada `SPAN_EVERY`) e `swallow_mesh`, num MultiMesh sem
+  sombra, escondido de noite. Captura em `tools/capture_phase273.tscn` (a câmera à mão na altura do fio).
+
+### Girassóis (Fase 274, nossa)
+
+- **Plano** em `docs/plano_fase274.md`. `ScatterView.Kind.SUNFLOWER` (no fim do enum e da lista `NEAR_HOUSE`, entre as `PLANTS`) só nas
+  temperadas; `sunflower_mesh` (quatro hastes com as flores amarelas). **A água dos rios fica coberta da espuma da beira** (são
+  estreitos): peça que precise de água calma no rio não aparece (os nenúfares do roteiro sumiam). Captura em
+  `tools/capture_phase274.tscn`.
+
+### Abeto em camadas (Fase 275, nossa)
+
+- **Plano** em `docs/plano_fase275.md`, primeira do roteiro `docs/plano_fases_275_279.md` (a mata no jeito do Anno; o Anno foi
+  aberto em 02/11/2026, capturas `c10_*` fora do repositório). `TreeModel.Species.NORWAY_SPRUCE` (no fim do enum): `_spruce`
+  (camadas de galhos em cone até perto do chão, `_skirt`, `_needle`); `TreeView.CONIFER` com abetos e pinheiros, escolhidos por
+  `conifer_pick` (pinheiro mais acima de `PINE_HEIGHT_M`). **Face gerada para o material de duas faces vai no sentido horário
+  visto de fora** (como o `_limb`): com a face trocada o Godot vira a normal e ela acende do lado da sombra. Captura do ciclo em
+  `tools/capture_phase275.tscn` (a vila, os campos e a mata alta e baixa fora da vila).
+
+### Copas na medida (Fase 276, nossa)
+
+- **Plano** em `docs/plano_fase276.md`. Copas do carvalho, da faia e do pinheiro ~35% mais estreitas, da mesma altura; na mata
+  temperada uma árvore por célula (`TreeView.TEMPERATE_PER_CELL`) e só em parte delas (`draws_tree`: 50% na beira, 65% e 80% para
+  dentro); tamanho de 0,65 a 1,25 (`tree_scale`). **As árvores desenhadas numa célula saem de `TreeView.drawn_seeds`**, que os
+  tocos da clareira (`StumpView.stump_places`) também usam; a simulação conta todas.
+
+### Bétula (Fase 277, nossa)
+
+- **Plano** em `docs/plano_fase277.md`. `TreeModel.Species.BIRCH` (no fim do enum): `_birch` (tronco branco com o pé escuro,
+  massas pequenas e soltas) e `_birch_marks` (as manchas pretas, só de perto); `TreeView.BROADLEAF` com as bétulas no fim,
+  escolhidas por `broadleaf_pick` (mais na beira da mata e na terra baixa). A cor da malha volta em 8 bits por canal: teste que
+  procura uma cor exata compara com folga.
+
+### Orla da mata (Fase 278, nossa)
+
+- **Plano** em `docs/plano_fase278.md`. `TreeView.young_entry`: na célula de mata temperada com um lado de terra sem árvore, uma
+  árvore nova (abeto, um pouco de bétula, carvalho ou faia de arbusto) de 0,32 a 0,55 do tamanho, puxada para o lado aberto sem
+  sair da célula, nas mesmas camadas da mata.
+
+### Folhas recortadas (Fase 279, nossa)
+
+- **Plano** em `docs/plano_fase279.md`. **O corpo da folhagem está em `shaders/foliage.gdshaderinc`**: o `foliage.gdshader` só o
+  inclui, e o `shaders/tree_foliage.gdshader` (`TreeModel.TREE_SHADER`, as árvores de perto menos o coqueiro) define
+  `LEAF_DETAIL`: cachos de folhas por células sorteadas no modelo, com a normal estufada, e a borda da copa recortada por
+  `discard`, até `leaf_far_m` (90 m). Mudança na folhagem vai no `.gdshaderinc`; o `discard` fica atrás do `LEAF_DETAIL` (tira a
+  profundidade antecipada das plantações e do capim). GPU +0,3 a 0,4 ms.
+
+### Mar fundo (Fase 280, nossa)
+
+- **Plano** em `docs/plano_fase280.md`, primeira do roteiro `docs/plano_fases_280_284.md` (o mar e o rio). No
+  `shaders/water.gdshader`, `cold_deep`, `cold_shelf` e `cold_shelf_m`: o mar das temperadas em azul-petróleo, com a plataforma
+  mais estreita; o das tropicais segue o turquesa, pela borda `reef_min_x` (`tropic`, com a guarda do 1e9 sem ilha tropical).
+  Captura do ciclo em `tools/capture_phase280.tscn` (`CAPTURA_MAR=lab` compara cores de água lado a lado).
+
+### Rebentação fina (Fase 281, nossa)
+
+- **Plano** em `docs/plano_fase281.md`. No `shaders/water.gdshader`, a espuma por profundidade do Ocean (`SHORE_FOAM`) só vale até
+  `shore_line_m` (3 m) da linha d'água: vista de cima a diferença de profundidade é pequena na praia rasa inteira, e virava uma
+  faixa branca de ~20 m. As bandas da Fase 35 viram linhas finas (`band_sharpness`) e quebradas pela textura da espuma.
+
+### Água de noite (Fase 282, nossa)
+
+- **Plano** em `docs/plano_fase282.md`. **A cor da água sai pela `EMISSION`, que não recebe luz**: no `shaders/water.gdshader`
+  as cores postas (raso, fundo, plataforma, recife) passam pelo `water_light`, de 1 a `night_water` pelo global `night_light`.
+  Cor nova posta na água passa por ele também.
+
+### Rio escuro (Fase 283, nossa)
+
+- **Plano** em `docs/plano_fase283.md`. No `shaders/water.gdshader`, `channel` (quatro sondas no mapa da costa, só perto da terra:
+  em toda a água custavam 0,2 ms) marca o rio e a enseada fina: cor `river_color`, sem bandas nem espuma do Ocean, menos reflexo.
+  No `shaders/terrain.gdshader`, `gravel` (a `TerrainView` liga nas temperadas): a lama junto da água vira cascalho cinza até
+  `gravel_top_m`. A captura do ciclo procura o rio com água (`05_rio.png`) e o leito seco (`05b_leito_seco.png`).
+
+### Marulho (Fase 284, nossa)
+
+- **Plano** em `docs/plano_fase284.md`. No começo do fragment do `shaders/water.gdshader`, três trens de ondas longas
+  (`swell_lengths_m`, `swell_slopes`) dobram a normal com o vento, longe da costa (`swell_open_m`), antes do Fresnel e do brilho:
+  o mar aberto ondula de longe sem mexer nos vértices.
+
+### Manchas do prado (Fase 285, nossa)
+
+- **Plano** em `docs/plano_fase285.md`, primeira do roteiro `docs/plano_fases_285_289.md` (o prado). No `shaders/terrain.gdshader`,
+  logo depois da cor da grama, manchas de capim alto escuro (com mais relevo) e baixo claro pelo ruído de `meadow_patch_m`; só na
+  grama. Captura do ciclo em `tools/capture_phase285.tscn` (o prado aberto fora da vila, as papoulas e a borda de um barranco).
+
+### Tapete de capim (Fase 286, nossa)
+
+- **Plano** em `docs/plano_fase286.md`. `GrassCarpetView` (`GameScreen.grass_carpet_view`), **a primeira vista que segue a câmera**:
+  blocos de 8 × 8 células em volta do ponto que ela olha (`wanted_blocks`, até `radius_m`), três por quadro, o mais perto
+  primeiro; tufos (`tuft_mesh`, `tufts`) só no capim livre (`grows_at`); escondida com a câmera alta. O
+  `shaders/grass_carpet.gdshader` repete o ruído das manchas do prado do `terrain.gdshader` (mudou um, mude o outro), balança com o
+  vento e encolhe com a distância. Custo na GPU sobre o prado medido no `tools/grass_cost.tscn`.
+
+### Flores miúdas (Fase 287, nossa)
+
+- **Plano** em `docs/plano_fase287.md`. Pontos brancos e amarelos no capim do `shaders/terrain.gdshader` (`flower_*`, até
+  `flower_far_m`) e a flor do tufo do tapete (as pétalas com o alfa 0 no vértice; o `shaders/grass_carpet.gdshader` a deixa só nos
+  tufos sorteados pelas mesmas regras e números e reduz as outras a um ponto).
+
+### Papoulas soltas (Fase 288, nossa)
+
+- **Plano** em `docs/plano_fase288.md`. Na `ScatterView`, o canteiro anda mais do meio da célula (`POPPY_SPREAD`), fica menor na
+  borda (`poppy_strength`, `POPPY_EDGE_SCALE`) e o meio do canteiro ganha touceiras pequenas a mais (`_poppy_extras`, sorteio
+  próprio pelo hash da célula: o das outras peças não muda).
+
+### Beira do barranco (Fase 289, nossa)
+
+- **Plano** em `docs/plano_fase289.md`. No `shaders/terrain.gdshader` (`bank_*`), uma faixa de terra escura, pedras e raízes na
+  crista dos barrancos (a curvatura dos dados abaixo do meio e a inclinação deles subindo antes da rocha), recortada e
+  interrompida a trechos, fora da rocha, da areia e da lama.
+
+### Estratos na rocha (Fase 290, nossa)
+
+- **Plano** em `docs/plano_fase290.md`, primeira do roteiro `docs/plano_fases_290_294.md` (a rocha e a costa).
+  `shaders/rock_strata.gdshaderinc` (`strata_factor`: camadas onduladas com a borda clara e a sombra, sulcos descendo) no
+  `terrain.gdshader` (só onde há rocha) e no `sea_rock.gdshader`. **Função de `.gdshaderinc` não usa nome de varying nos
+  parâmetros** (`world_position` não compilava). **Teste de uniformes de shader exige a lista cheia com tela**
+  (`DisplayServer.get_name() != "headless"`): a lista vazia é também o shader que não compilou. Captura do ciclo em
+  `tools/capture_phase290.tscn`.
+
+### Musgo nas saliências (Fase 291, nossa)
+
+- **Plano** em `docs/plano_fase291.md`. `moss_amount` no `shaders/rock_strata.gdshaderinc` (as partes planas e os ressaltos das
+  camadas, em manchas, mais no lado da sombra fixo `moss_shade_dir`, nunca pelo sol do dia) pinta `moss_color` na rocha do terreno
+  e nas pedras (na do mar, só acima da pedra molhada).
+
+### Praia de seixos (Fase 292, nossa)
+
+- **Plano** em `docs/plano_fase292.md`. No `shaders/terrain.gdshader` (`pebble_*`, ligado pela `TerrainView` nas temperadas), a
+  areia com rocha a 5 m vira, em trechos, seixos de Voronoi (tom por pedra, junta escura, normal estufada), escuros e brilhantes
+  na beira. **Hash de coordenada do mundo em shader é inteiro** (`strata_hash`): o `fract(p * 123,34)` quantiza a milhares de
+  metros.
+
+### Espuma nas pedras (Fase 293, nossa)
+
+- **Plano** em `docs/plano_fase293.md`. No bloco `SHORE_FOAM` do `shaders/water.gdshader`, o anel fino (`rock_foam_m`) em volta do
+  que entra na água longe da linha d'água (estacas, boias, degraus, cascos, pedras), por `max` com a espuma da Fase 281.
+
+### Abetos na rocha (Fase 294, nossa)
+
+- **Plano** em `docs/plano_fase294.md`. `ScatterView.Kind.CLIFF_SPRUCE` (no fim do enum e das listas `OPEN`, `NEAR_FOREST` e
+  `NEAR_SEA`, com sombra): o abeto de perto da Fase 275 a 0,4 do tamanho, com o material dele, só nas células de desnível
+  `CLIFF_SPRUCE_MIN_RELIEF_M` das temperadas, de pé.
+
+### Espuma em trechos (Fase 295, nossa)
+
+- **Plano** em `docs/plano_fase295.md`, primeira do roteiro `docs/plano_fases_295_299.md` (mar e costa II; o Anno não foi aberto:
+  o dono estava no PC). No `shaders/water.gdshader`, as bandas da Fase 35 se quebram em trechos (`band_piece_m`, `band_gap`) longe
+  da areia (`band_whole_m`), sorteados de novo a cada onda pelo número da crista (só muda no vale). A linha branca solta no mar era
+  a última banda, não a espuma das pedras. Laboratório: `CAPTURA_MAR=espuma` (um parâmetro da água por vez) e `CAPTURA_MAR=perfil`
+  (as alturas da praia) no `tools/capture_phase295.tscn`.
+
+### Água picada de perto (Fase 296, nossa)
+
+- **Plano** em `docs/plano_fase296.md`. No começo do fragment do `shaders/water.gdshader`, depois do marulho, quatro trens de
+  ondinhas curtas (`chop_lengths_m`) em volta do vento, com a fase torcida por um ruído, dobram a normal até `chop_far_m` da câmera.
+
+### Fiapos de espuma nas pedras (Fase 297, nossa)
+
+- **Plano** em `docs/plano_fase297.md`. No bloco `SHORE_FOAM` do `shaders/water.gdshader`, depois do anel da Fase 293, fiapos de
+  espuma (`streak_*`) compridos ao longo do vento e rendados, andando com ele, do lado de baixo do vento e só na água funda junto
+  da costa (a pedra; a praia rasa fica de fora).
+
+### Mar escuro de longe (Fase 298, nossa)
+
+- **Plano** em `docs/plano_fase298.md`. No `shaders/water.gdshader`, de `far_sea_from_m` a `far_sea_to_m` da câmera, o fundo
+  escurece (`far_sea_dark`) e o reflexo do céu cai (`far_sea_specular`). O horizonte claro é o reflexo do céu no ângulo raso e a
+  névoa; a cor de Fresnel do material do Ocean fica (sem ela aparecem listras). Laboratório: `CAPTURA_MAR=longe` no
+  `tools/capture_phase295.tscn`.
+
+### Fundo à vista no raso (Fase 299, nossa)
+
+- **Plano** em `docs/plano_fase299.md`. No fundo do mar do `shaders/terrain.gdshader`, nas temperadas (`seabed_detail`, ligado pela
+  `TerrainView`): ondulações paralelas à costa, manchas de alga e pedrinhas até `seabed_detail_m`; no `shaders/water.gdshader`, a
+  água rasa das temperadas perde até `clear_strength` da cobertura até `clear_depth_m` de água.
+
+### Telhas gastas (Fase 300, nossa)
+
+- **Plano** em `docs/plano_fase300.md`, primeira do roteiro `docs/plano_fases_300_304.md` (telhado gasto e chão de vila). No
+  `shaders/building_kit.gdshader`, nas águas de telha: o tom de cada casa (`roof_pick`, outros bits do hash dos postigos), as telhas
+  trocadas (`roof_tile_at`, `roof_swap_share`), o musgo em manchas e a sujeira escorrida (`roof_wear`). Captura do ciclo em
+  `tools/capture_phase300.tscn`.
+
+### Chão de vila (Fase 301, nossa)
+
+- **Plano** em `docs/plano_fase301.md`. `RoadMask.yards` também nas temperadas (`TOWN_YARD_REACH_M`), carimbado com a borda recortada e
+  mais fraco (`_town`, `TOWN_YARD_RAGGED_M`, `TOWN_YARD_STRENGTH`); o tapete de capim (`GrassCarpetView.grows_at`) não cresce colado
+  em prédio, para o chão batido aparecer.
+
+### Sujeira nas paredes (Fase 302, nossa)
+
+- **Plano** em `docs/plano_fase302.md`. No `shaders/building_kit.gdshader`, nas células de parede de lado: o respingo de terra no pé
+  (`splash_*`, borda de cima irregular) e os escorridos de chuva verticais (`wall_streak_strength`).
+
+### Telhado de tábuas (Fase 303, nossa)
+
+- **Plano** em `docs/plano_fase303.md`. `BuildingView.shingled` (uma em cada `SHINGLE_EVERY` casas de `SHINGLE_TIER`, nas temperadas)
+  põe o parâmetro de instância `shingle`, e o `shaders/building_kit.gdshader` troca as telhas por `shingle_shade` (tábuas cinzentas
+  de largura sorteada) nas águas e pela madeira escura na capa e no beiral.
+
+### Muro dos quintais (Fase 304, nossa)
+
+- **Plano** em `docs/plano_fase304.md`. `YardWallView` (`GameScreen.yard_wall_view`): `yard_lines` (com a fileira de trás livre, o
+  fundo e os dois lados do quintal das casas de `TIERS` nas temperadas), `segments` (cada divisa uma vez: os lados ficam na divisa
+  exata do lote) e a mureta de pedra seca ou a cerca de tábuas pelo hash, numa malha só. Captura: `05_` e `06_` no
+  `tools/capture_phase300.tscn`.
+
+
+### Tom por árvore (Fase 305, nossa)
+
+- **Plano** em `docs/plano_fase305.md`, primeira do roteiro `docs/plano_fases_305_309.md` (mata funda; o Anno não foi aberto: o
+  dono estava no PC). No `shaders/foliage.gdshaderinc`, `tree_tint` (o tom de cada árvore pelo hash inteiro da origem da instância:
+  escura, oliva, amarelada ou a de sempre, só na folhagem), posto pelo `TreeModel.tint_of` (cheio nas folhosas, `CONIFER_TINT` nas
+  coníferas e no coqueiro, nada nas plantações). Captura do ciclo em `tools/capture_phase305.tscn`.
+
+
+### Chão da mata (Fase 306, nossa)
+
+- **Plano** em `docs/plano_fase306.md`. No `shaders/terrain.gdshader`, depois da mistura da grama com a mata, o miolo da mata
+  (`deep`) escurece `floor_dark` e ganha manchas de musgo (`floor_moss_*`); `forest_floor` 0 desliga.
+
+
+### Sub-bosque (Fase 307, nossa)
+
+- **Plano** em `docs/plano_fase307.md`. `ScatterView.Kind.FOREST_FERN` e `Kind.UNDERBRUSH` (no fim do enum, entre as `PLANTS`, fora
+  das listas de regras): as células de mata das temperadas, que o laço pulava, ganham `_understory` (sorteio aritmético próprio,
+  `UNDERSTORY_FERN_CHANCE` e `UNDERSTORY_BRUSH_CHANCE`); o recheio das outras células não muda.
+
+
+### Abetos de longe (Fase 308, nossa)
+
+- **Plano** em `docs/plano_fase308.md`. No `shaders/foliage.gdshaderinc`, `far_cool` (a folhagem vai para `far_cool_tint`, mais escura
+  e azulada, de `far_cool_from_m` a `far_cool_to_m` da câmera), posto pelo `TreeModel.far_cool_of` só no pinheiro e no abeto.
+
+
+### Névoa nos vales (Fase 309, nossa)
+
+- **Plano** em `docs/plano_fase309.md`. `ValleyMistView` (`GameScreen.valley_mist_view`): `sites` (a terra das temperadas mais baixa
+  que a volta, com mata perto, numa rede de `STEP` células), `sheets` (duas camadas planas por lugar) e `amount_at` (de madrugada
+  até o fim da manhã, mais no dia de neblina do `WeatherCycle`), no `shaders/valley_mist.gdshader` (borda mole, ruído andando com
+  o vento, o pé esmaecido pela profundidade da tela). Captura: `06_` e `07_` no `tools/capture_phase305.tscn`.
+
+
+### Blocos na face (Fase 310, nossa)
+
+- **Plano** em `docs/plano_fase310.md`, primeira do roteiro `docs/plano_fases_310_314.md` (falésia de verdade; o Anno não foi aberto:
+  o dono estava no PC). `block_factor` no `shaders/rock_strata.gdshaderinc` (blocos de um Voronoi 3D no mundo, com tom, faceta pela
+  luz fixa `block_light_dir` e juntas escuras, só nas faces de pé), chamado pela rocha do terreno e pelas pedras. **Desenho na face
+  da rocha não se projeta pela normal**: ela muda a cada faceta da pedra e o desenho sai em riscos. Captura do ciclo em
+  `tools/capture_phase310.tscn`.
+
+
+### Blocos caídos (Fase 311, nossa)
+
+- **Plano** em `docs/plano_fase311.md`. `RockView.Kind.TALUS`: no `_cliffs`, depois de cada rocha de falésia e do mesmo sorteio (as de
+  antes não mudam), de 2 a 4 blocos da `RockModel` em volta do primeiro canto de mar abaixo dela, meio dentro da água.
+
+
+### Capim na borda (Fase 312, nossa)
+
+- **Plano** em `docs/plano_fase312.md`. `CliffFringeView` (`GameScreen.cliff_fringe_view`): `places_of` (a borda de cima das
+  falésias, com o mar abaixo, fora de prédio e estrada) e `fringe_mesh` (folhas compridas pendendo para fora), um MultiMesh por
+  ilha refeito pela `IslandDirty`. `IslandGrid.cell_heights` dá as alturas das células para os laços pela grade inteira.
+
+
+### Fendas com mato (Fase 313, nossa)
+
+- **Plano** em `docs/plano_fase313.md`. `ScatterView.Kind.CLIFF_SHRUB` (no fim do enum e das listas `OPEN`, `NEAR_FOREST` e
+  `NEAR_SEA`, entre as `PLANTS`) só nas células de desnível `CLIFF_SHRUB_MIN_RELIEF_M`, meio deitada para fora da face e na parte de
+  cima da célula (mais abaixo ficam as rochas encaixadas da falésia); `cliff_shrub_mesh`.
+
+
+### Sombra da falésia na água (Fase 314, nossa)
+
+- **Plano** em `docs/plano_fase314.md`. O `CoastField` guarda a altura da terra (`heights`, `height_texture`), que a `WaterView` põe no
+  `land_height`; no `shaders/water.gdshader`, `cliff_shadow` marcha na direção do sol a até `cliff_shade_reach_m` da costa e escurece
+  a cor da água (e a cintilação) onde a terra encobre o sol. Captura: `05_` e `06_` no `tools/capture_phase310.tscn`.
+
+
+### Capim no alto da garganta (Fase 315, nossa)
+
+- **Plano** em `docs/plano_fase315.md`, primeira do roteiro `docs/plano_fases_315_319.md` (garganta do rio). No
+  `shaders/terrain.gdshader`, com `high_bank_grass` (a `TerrainView` põe 1 nas temperadas, junto do `gravel`), a lama acima de
+  `gravel_top_m` some no capim em `high_bank_fade_m`, com a borda recortada pelo mesmo ruído da lama; o corte vem logo depois do
+  `mud`, antes da areia, da mata e da camada da lama. Na crista fica a beira do barranco da Fase 289. As tropicais seguem com a
+  laterita. Captura: `05_rio` e `05b_leito_seco` no `tools/capture_phase280.tscn`.
+
+
+### Capim pendendo na garganta (Fase 316, nossa)
+
+- **Plano** em `docs/plano_fase316.md`. `CliffFringeView._water_below` (antes `_sea_below`): a franja da Fase 312 vale com o mar ou o
+  rio a até `SEA_REACH` células para o lado da queda, e sai também na borda de cima das gargantas. Captura: `05_rio` no
+  `tools/capture_phase280.tscn`.
+
+
+### Blocos no pé da garganta (Fase 317, nossa)
+
+- **Plano** em `docs/plano_fase317.md`. `RiverStoneView.Kind.FALLEN` (no fim do enum, sorteio próprio, por último na lista): na célula
+  de rio junto de uma parede de `FALL_DROP_M`, blocos da `RockModel` meio dentro da água, saindo de um ponto molhado da célula e
+  andando para a parede até onde o leito ainda fica debaixo d'água. **O meio da célula de rio estreito fica acima da água** (os cantos
+  sobem com as paredes): procure a água numa grade de pontos. Captura do ciclo: `tools/capture_phase317.tscn` (garganta de ilha
+  temperada com mais blocos).
+
+
+### Espuma nas pedras do rio (Fase 318, nossa)
+
+- **Plano** em `docs/plano_fase318.md`. No `shaders/water.gdshader`, logo depois do anel da Fase 293 e só no canal: o anel até
+  `rock_foam_m` × `river_foam_reach`, sem o corte da linha d'água (no rio estreito tudo fica perto dela), só fora do fio de
+  `river_foam_line_m` da margem, somado por `max`. Captura: `rio_de_perto` no `tools/capture_phase122.tscn`.
+
+
+### Correnteza (Fase 319, nossa)
+
+- **Plano** em `docs/plano_fase319.md`. No `shaders/water.gdshader`, depois da espuma da costa e só no canal: riscos claros de um
+  ruído esticado ao longo do rumo do rio, andando a `river_flow_speed`. **O rio não tem rumo**: ele sai do mapa da costa (de través
+  do gradiente), virado sempre para o mesmo lado, para as duas margens andarem juntas. Captura: `rio_de_perto` no
+  `tools/capture_phase122.tscn`.
+
+
+### Franja em tufos (Fase 320, nossa)
+
+- **Plano** em `docs/plano_fase320.md`, primeira do roteiro `docs/plano_fases_320_324.md` (garganta de perto). A malha da
+  `CliffFringeView` sai de `tuft_blades` (semente fixa): `TUFTS` tufos de `BLADES_PER_TUFT` folhas em leque, cada uma de rumo,
+  comprimento, largura, torção e tom sorteados; cada pedaço sai girado até `YAW_JITTER_RAD` e recuado até `INSET_JITTER_M` por um
+  sorteio à parte (o lugar e o tamanho da Fase 312 não mudam). Captura: `tools/capture_phase317.tscn`.
+
+
+### Crista sem risco (Fase 321, nossa)
+
+- **Plano** em `docs/plano_fase321.md`. A linha alaranjada no alto das gargantas era a beira do barranco da Fase 289 (a terra dela
+  sai da textura da estrada). No `shaders/terrain.gdshader`, com `bank_edge_grass` (a `TerrainView` põe 1 nas temperadas), acima de
+  `gravel_top_m` a terra da beira vira capim rente (`bank_turf_shade` sobre a grama) e a pedra aparece mais (`bank_turf_stones`).
+  **`CAPTURA_TERRENO` e `CAPTURA_AGUA`** (`nome=valor,...`) no `tools/capture_phase317.tscn` trocam uniformes para o antes e depois.
+
+
+### Parede sem esticado (Fase 322, nossa)
+
+- **Plano** em `docs/plano_fase322.md`. **Na parede de uma célula a normal do vértice aponta quase para cima** (média do alto com o
+  leito), e o triplanar da rocha lia de cima e esticava. No `shaders/terrain.gdshader`, `face_normal` (derivadas da posição, fora do
+  `if` da rocha) misturada à do vértice em `wall_face_blend` dá a `blend_normal` do triplanar (`triplanar_sharpness`), dos estratos e
+  dos blocos; o musgo segue pela do vértice.
+
+
+### Parede que avança (Fase 323, tentada)
+
+- **Registro** em `docs/plano_fase323.md`: na garganta, a beira de cima da parede é a borda das células do planalto e o pé é o leito,
+  os dois presos pela simulação; empurrar na horizontal os pontos do meio da subgrade não aparece. Nada entrou no código.
+
+
+### Fundo na sombra (Fase 324, nossa)
+
+- **Plano** em `docs/plano_fase324.md`. No `shaders/water.gdshader`, `sky_closed` (o ângulo mais alto da terra em oito rumos, pela
+  `land_height` da Fase 314) e, só no canal, depois da sombra da falésia: a água escurece (`gorge_shade`), perde o reflexo
+  (`gorge_specular`), fica fosca (`gorge_roughness`) e sem cintilação onde as paredes tapam o céu. **Só cortar o SPECULAR não basta**:
+  com a rugosidade baixa o reflexo do céu ainda clareava a água. Captura: `tools/capture_phase317.tscn` com `CAPTURA_AGUA`.
+
+
+### Prado sem xadrez (Fase 325, nossa)
+
+- **Plano** em `docs/plano_fase325.md`, primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata). As manchas do prado da
+  Fase 285 saem de `meadow_patch` (`shaders/meadow_patch.gdshaderinc`), a mesma no terreno e no tapete de capim da Fase 286: ruído
+  de gradiente girado sobre as coordenadas torcidas, mais a oitava fina de valor. **O ruído de valor fica quadrado** (cada nó vira um
+  quadrado de cantos redondos e as curvas de nível dentro da célula são quase retas): com um corte estreito por cima, ele desenha
+  xadrez de perto e facetas de longe; só girar e torcer não bastou. Mancha com corte estreito, use o `meadow_gradient`. A captura do
+  ciclo do mar (`tools/capture_phase280.tscn`) ganhou `CAPTURA_TERRENO` (uniformes do terreno, `true`/`false` nos bool) e
+  `CAPTURA_SO=prado` (a falésia e o mar de cima) ou `dia`.
+
+### Mata no tom (Fase 326, nossa)
+
+- **Plano** em `docs/plano_fase326.md`, segunda do roteiro `docs/plano_fases_325_329.md`. As folhosas do `TreeModel` (carvalho,
+  faia, bétula e tropical) voltam para um verde mais fundo e menos saturado, o azul do sol do alto da copa (`CROWN_SUN`) menos
+  cortado, os tufos clareados no mesmo tom (`PUFF_LIGHT`; o `lightened` puxava para o branco) e os tons por árvore da Fase 305
+  (`tint_*` no `shaders/foliage.gdshaderinc`) sem cortar o azul. **A régua é relativa**: no Anno a mata tem ~0,7 do brilho do
+  prado; a nossa tinha 1,1 (mais clara que o capim) e ficou em ~0,73. O pinheiro e o abeto não mudaram.
+
+### Copa sem bolhas (Fase 327, nossa)
+
+- **Plano** em `docs/plano_fase327.md`, terceira do roteiro `docs/plano_fases_325_329.md`. No `TreeModel._crown`, nas folhosas
+  (`whole`, passado pelo carvalho, faia, bétula e tropical e pelos `_puffs` deles), o claro e o escuro e o sol do alto saem
+  `CROWN_WHOLE` da altura do vértice em relação ao `hull` (a copa inteira), não só da massa, e o lado da massa virado para o meio da
+  copa desce até `CROWN_INNER`; a normal puxa `CROWN_ROUND` (0,85) para a da copa. O pinheiro e o abeto ficam como antes
+  (`CONIFER_ROUND` 0,65, sem `whole`). **A régua** é a correlação entre a altura e o brilho das folhas (o teste a mede) e o brilho
+  médio, que não pode cair mais de 5% (a Fase 326 acertou a mata em ~0,73 do prado). O contorno em bolas é a forma das massas e ficou.
+
+### Capim rente (Fase 328, nossa)
+
+- **Plano** em `docs/plano_fase328.md`, quarta do roteiro `docs/plano_fases_325_329.md`. O tapete de capim da Fase 286
+  (`GrassCarpetView`) com folhas de 0,2 a 0,38 m (`BLADE_HEIGHT_M`; o capim alto a 1,45 vez, `tall_height`), 14 tufos de 9 folhas por
+  célula e a cor do pé e da ponta no tom do capim do terreno (a ponta era verde-limão, 2,5 vezes o pé). **A régua** é a cor do chão e
+  das folhas na tela (`01_prado_de_perto` do `tools/capture_phase285.tscn`): a primeira tentativa, escura demais, virou fiapos pretos.
+  Custa +0,2 a +0,4 ms de GPU a mais sobre o prado aberto (`tools/grass_cost.tscn`). As touceiras do recheio (Fase 41) não mudaram.
+
+### Praia em curva (Fase 329, nossa)
+
+- **Plano** em `docs/plano_fase329.md`, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata). O degrau da praia é o
+  relevo (patamar de 1,2 m caindo 2,4 m num canto). `TerrainDetail._add_beach` (somado no `offsets`): a terra até `BEACH_MAX_M`
+  desce e o fundo em frente sobe numa rampa de `BEACH_SLOPE` pela distância até a linha d'água, sem nenhum canto trocar de lado,
+  fora das células com algo da simulação (`holds_something`). **A célula plana da praia pode ficar abaixo da simulação no desenho**:
+  peça nova na beira da praia senta pelo `TerrainDetail.shown_at`, e a `TerrainView` zera a célula quando um prédio chega. O bake
+  dos dados do terreno sai das alturas desenhadas. Captura em `tools/capture_phase280.tscn`.
+
+### Sombra funda (Fase 330, nossa)
+
+- **Plano** em `docs/plano_fase330.md`, primeira do roteiro `docs/plano_fases_330_334.md` (luz e sombra; seis roteiros, Fases 330 a
+  359, idealizados em 07/11/2026). **O sol ficava às costas da câmera padrão** (que olha para −z) e as sombras se escondiam atrás de
+  cada casa e árvore: o `SkyAdapter._turn_sky` gira o sol e a lua `sun_azimuth_offset_deg` (180°) depois de cada conta do Sky3D, e o
+  céu simples gira junto. A luz ambiente de dia cai para `ambient_day_energy` (0,75) pela altura do sol (`GraphicsQuality.ambient_factor`,
+  no `follow_sun`). O mar de longe fica áspero (`far_sea_roughness`): com o sol na frente, o reflexo dele virava manchas brancas.
+  **Captura que troca o giro chama `SkyAdapter.refresh`** (o Sky3D não recalcula na mesma hora e o giro somaria). Captura em
+  `tools/capture_phase330.tscn` (`CAPTURA_AMBIENTE`, `CAPTURA_AGUA`).
+
+### Abeto sem ciano (Fase 331, nossa)
+
+- **Plano** em `docs/plano_fase331.md`. As agulhas do pinheiro e do abeto (`TreeModel.PINE_NEEDLE`, `SPRUCE_NEEDLE`) com o azul abaixo
+  do vermelho e o tom de longe das coníferas (`far_cool_tint` no `shaders/foliage.gdshaderinc`) sem azular: com a saturação da cor
+  viva, o azul a mais saía ciano. **Cor de folhagem nova: azul abaixo do vermelho.**
+
+### Casca sem laranja (Fase 332, nossa)
+
+- **Plano** em `docs/plano_fase332.md`, no lugar do "pé das árvores" do roteiro (com a sombra do sol à vista, a árvore já assenta).
+  `TreeModel.PINE_UPPER_BARK` castanho-avermelhado: o laranja dos troncos do pinheiro saía como palitos coloridos.
+
+### Ar de longe (Fase 333, nossa)
+
+- **Plano** em `docs/plano_fase333.md`. A neblina atmosférica do domo do Sky3D (a cor sai do céu) só a partir de `sky_fog_start_m`
+  (250 m), cheia em `sky_fog_end_m` (3000 m, repassado pelo `SkyAdapter`) e mais densa (`sky_fog_density` 0,0012): perto nada muda,
+  o longe clareia e azula. A captura do ciclo ganhou o horizonte de dia, no fim da tarde e à noite (`CAPTURA_AR`, `CAPTURA_AR_ANTIGO`).
+
+### Prado fundo (Fase 334, nossa)
+
+- **Plano** em `docs/plano_fase334.md`, a última do roteiro `docs/plano_fases_330_334.md`. O capim alto mais escuro (`meadow_tall_tint`
+  no terreno, `tall_tint` no tapete, iguais) e a oitava fina das manchas (`meadow_patch.gdshaderinc`) de ruído de gradiente: a de
+  valor fazia as manchas escuras em facetas. O matiz e a saturação do prado já eram os do Anno depois da Fase 330; o brilho fica
+  (cor viva). **Captura com `CAPTURA_TERRENO` no `tools/capture_phase330.tscn`** (vec3 como `a:b:c`).
+
+### Estrada clara (Fase 335, nossa)
+
+- **Plano** em `docs/plano_fase335.md`, primeira do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno). No
+  `shaders/terrain.gdshader`, a terra das estradas vai `road_tint_mix` para o cinza-bege `road_tint` na luminância da textura e
+  clareia `road_light`, antes dos sulcos e das poças: a faixa clara se lê de longe.
+
+### Cascalho na estrada (Fase 336, nossa)
+
+- **Plano** em `docs/plano_fase336.md`. No bloco da estrada de terra do `shaders/terrain.gdshader`, pedrinhas de Voronoi de
+  `road_gravel_m` pelo `strata_hash`, mais no meio, poucas nos sulcos, nenhuma na poça, só até `road_gravel_far_m`.
+
+### Rua larga na vila (Fase 337, nossa)
+
+- **Plano** em `docs/plano_fase337.md`. A meia largura da estrada de terra (`road_half_width_m`, 0,72 no campo) cresce
+  `road_town_widen_m` onde o canal b da máscara (o chão de vila) passa de 0,25: a rua quase enche a célula entre as casas.
+
+### Capim na beira (Fase 338, nossa)
+
+- **Plano** em `docs/plano_fase338.md`. `ScatterView.Kind.VERGE_GRASS` (no fim do enum, das `PLANTS` e da lista `NEAR_ROAD`): a touceira
+  de capim alto sem a mancha, mais escura, junto das estradas de campo das temperadas.
+
+### Mourões na estrada (Fase 339, nossa)
+
+- **Plano** em `docs/plano_fase339.md`, a última do roteiro `docs/plano_fases_335_339.md`. `RoadFenceView` (`GameScreen.road_fence_view`):
+  nos trechos retos de estrada de terra fora das vilas, em blocos de `BLOCK_CELLS` sorteados, um lanço de mourões e travessas por célula
+  na beira livre, inclinado com o chão (nada acima de `MAX_RISE_M`). Captura: `marco_0_longe.png` do `tools/capture_phase237.tscn`.
+  **A vila das capturas do ciclo não tem estrada de campo**: peça de estrada de campo se confere nessa captura.
+
+### Leiras marcadas (Fase 340, nossa)
+
+- **Plano** em `docs/plano_fase340.md`, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa). Na `CropView`, a terra do
+  campo (`FIELD_SOILS`, a dos sulcos) mais escura e a leira mais estreita (`FURROW_FILL` 0,62): as fileiras se leem de cima.
+
+### Cabeceira de capim (Fase 341, nossa)
+
+- **Plano** em `docs/plano_fase341.md`. Na `CropView`, o recuo da terra lavrada (`FIELD_INSET_M` 0,38) e, junto, a margem das plantas
+  (`MARGIN_M` 0,8) e a cabeceira (`HEADLAND_M` 1,1): a faixa de capim entre os campos fica de 0,76 a 1,48 m. **A margem e a cabeceira
+  passam sempre do recuo máximo do contorno** (senão as plantas caem no capim).
+
+### Cor de cultura (Fase 342, nossa)
+
+- **Plano** em `docs/plano_fase342.md`. `CropView.CROP_COVER` espalhado pelo brilho e pelo matiz (cada cultura se lê de longe), sempre
+  verde pela regra da Fase 262.
+
+### Restolho e fardos (Fase 343, nossa)
+
+- **Plano** em `docs/plano_fase343.md`. Na `CropView`, nos `STUBBLE_STEPS` primeiros degraus do cereal, a leira de restolho
+  (`STUBBLE`) que some na terra, e os sacos da colheita ficam e vão sendo levados (`left_after_harvest`, no `_draw_harvest`).
+
+### Sebe alta (Fase 344, nossa)
+
+- **Plano** em `docs/plano_fase344.md`, a última do roteiro `docs/plano_fases_340_344.md`. `CropView.hedge_mesh` com quatro massas de
+  tamanhos diferentes (até ~1,3 m), cada lanço de uma altura e um em `HEDGE_TREE_EVERY` como moita alta (`HEDGE_TREE_SCALE`).
+
+### Granito no alto (Fase 345, nossa)
+
+- **Plano** em `docs/plano_fase345.md`, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande). `SummitRockView`
+  (`GameScreen.summit_rock_view`): grupos de rochas da `RockModel` nos topos e cristas (`_crest`) do alto de cada ilha, só em célula
+  livre, refeitos a cada obra (~14 ms o arquipélago). **Pelo alto só, sem a crista, a rocha cobria o planalto da vila.**
+
+### Estratos de longe (Fase 346, nossa)
+
+- **Plano** em `docs/plano_fase346.md`. `strata_broad(at, normal, distância)` no `shaders/rock_strata.gdshaderinc`: bancadas de 4,2 m,
+  mais marcadas, só de longe, depois dos estratos, na rocha do terreno e nas pedras. **Função de include que precisa da câmera recebe a
+  distância de quem chama.**
+
+### Leque de cascalho (Fase 347, nossa)
+
+- **Plano** em `docs/plano_fase347.md`. No `shaders/terrain.gdshader` (`scree_*`), o cascalho no pé das encostas: encosta íngreme a
+  `scree_reach_m` (a inclinação dos dados), o chão plano e côncavo, recortado por ruído.
+
+### Fendas escuras (Fase 348, nossa)
+
+- **Plano** em `docs/plano_fase348.md`. `crack_factor` no `shaders/rock_strata.gdshaderinc`: fendas como planos verticais do mundo (cortes
+  em x e z), não pela normal, na rocha do terreno e nas pedras.
+
+### Matacões no capim (Fase 349, nossa)
+
+- **Plano** em `docs/plano_fase349.md`, a última do roteiro `docs/plano_fases_345_349.md`. `ScatterView.Kind.BOULDER` (no fim do enum e
+  das listas `OPEN` e `NEAR_FOREST`), a `RockModel` com o material da `RockView`, junto de desnível (`_near_relief`), nas temperadas.
+  **Teste de peça do recheio confere a ordem relativa, não "a última"** (peças novas entram depois). **A rocha triplanar é cara por
+  pixel**: o roteiro das Fases 345 a 349 custou ~0,3–0,5 ms de GPU, das rochas novas.
+
+### Telhado de madeira (Fase 350, nossa)
+
+- **Plano** em `docs/plano_fase350.md`, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta). `BuildingView.SHINGLE_SIXTHS`
+  (operários 4/6, artesãos 2/6) e `shingle_tone` (o parâmetro `shingle` em 1 cinza, 2 marrom `shingle_brown`).
+
+### Reboco sujo (Fase 351, nossa)
+
+- **Plano** em `docs/plano_fase351.md`. `BuildingView.PLASTER_TIERS`, `PLASTER_TONES` e `PLASTER_MIX`: o reboco dos engenheiros e
+  investidores num tom sorteado por casa (creme, ocre, cinza, rosa-velho), menos branco.
+
+### Beiral saliente (Fase 352, nossa)
+
+- **Plano** em `docs/plano_fase352.md`. A sombra do beiral no alto das paredes, no `shaders/building_kit.gdshader` (`eave_m` por
+  instância, `eave_band_m`, `eave_shade`). **O beiral mais largo (`OVERHANGS_M`) quebra a geometria** (o telhado do corpo por cima da
+  ala, o enxaimel, a igreja): ficou como estava.
+
+### Miolo da quadra (Fase 353, nossa)
+
+- **Plano** em `docs/plano_fase353.md`. `RoadMask.TOWN_YARD_REACH_M` 3,4 m: o chão de vila cobre o miolo entre casas próximas.
+
+### Fumaça cheia (Fase 354, nossa)
+
+- **Plano** em `docs/plano_fase354.md`, a última do roteiro `docs/plano_fases_350_354.md`. `ChimneySmokeView.BASE_AMOUNT` 0,55 e o
+  sumiço de 240 a 380 m; no `shaders/chimney_smoke.gdshader`, `alpha` 0,65, `rise_m` 5, `end_size_m` 3,2.
+
+### Marinho (Fase 355, nossa)
+
+- **Plano** em `docs/plano_fase355.md`, primeira do roteiro `docs/plano_fases_355_359.md` (mar aberto). `cold_deep` no
+  `shaders/water.gdshader` em (0,03; 0,12; 0,18). **No laboratório da água, o que pesa de cima é a cor do fundo** (o escurecido de longe e
+  o reflexo quase não mudam a tela).
+
+### Onda de perto (Fase 356, nossa)
+
+- **Plano** em `docs/plano_fase356.md`. No `shaders/water.gdshader`, um trem de onda de 12 m de fase bem torcida, na normal, de perto
+  (`wave_*`), com a crista mais clara; `glint_strength` 1,0. **Três trens de seno cruzados fazem um favo de bolinhas no mar**: um só,
+  torcido.
+
+### Esteira em V (Fase 357, nossa)
+
+- **Plano** em `docs/plano_fase357.md`. No `ShipView._build_wake`, a espuma sai da popa para trás e para os lados (`WAKE_SPREAD_DEG`,
+  `WAKE_SPEED_M_S`, `flatness` 1), vive `WAKE_LIFETIME_S` e são `WAKE_PARTICLES` (64).
+
+### Onda quebrando (Fase 358, nossa)
+
+- **Plano** em `docs/plano_fase358.md`. No `shaders/water.gdshader`, uma crista em `breaker_every` é série: mais grossa e com menos falhas,
+  no mesmo alcance. **Espuma inteira ou mais longe da praia vira a fita branca solta no mar** (o defeito da Fase 295).
+
+### Raso verde (Fase 359, nossa)
+
+- **Plano** em `docs/plano_fase359.md`, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto). `cold_shelf` no
+  `shaders/water.gdshader` em (0,22; 0,44; 0,38): o raso das temperadas verde-escuro sobre o fundo, sem o turquesa.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -1812,33 +3878,343 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 32 — Medida e nitidez (nossa) | **concluída em 25/10/2026** (fechada pelo dono do produto): teste dourado do terreno, AA em todos os níveis (sem MSAA), primeira vez atrás da cortina, caixa fixa dos MultiMeshes (e dos pedestres nas ilhas tropicais), benchmark com quadros brutos e lows, shader baker no export; primeira medição numa GPU (RTX 5060, 1080p, Vulkan e D3D12): fica o Vulkan, alto a ~48 FPS, ultra com travadas; plano em `docs/plano_fase32.md` |
 | 33 — Por cima do mundo (nossa) | **concluída em 25/10/2026** (regra dos ícones aprovada pelo dono do produto): grade de construção com teste de profundidade e só em volta do cursor (o destaque é que atravessa), prévia com o modelo do prédio e listras quando não pode, ícones de estado iguais agregados de longe; no benchmark da RTX 5060 o FPS ficou igual ao da Fase 32 (uma primeira rodada com o alto a 62 FPS não se repetiu); a suíte inteira passou no Windows, menos o `test_colorblind_option_repaints_the_house_needs`, que já falhava ali antes da fase; plano em `docs/plano_fase33.md` |
 | 34 — Chão sem xadrez (nossa) | **concluída em 25/10/2026** (capturas aprovadas; hex-tiling só no ultra, decisão do dono do produto): texturas de dados do terreno (inclinação, curvatura, água, umidade), bordas com ruído e height-blend, macro-variação, hex-tiling perto da câmera e reamostragem por distância (o xadrez de 12 m sumiu a 420 m), triplanar na rocha; a suíte inteira passou no CI; no benchmark da RTX 5060 a GPU subiu 0,4 ms no baixo e ~1,2 ms nos outros (o hex-tiling, medido à parte no `tools/terrain_cost.tscn`); plano em `docs/plano_fase34.md` |
-| 35 — Costa viva (nossa) | **em andamento desde 25/10/2026**, feita sem tela: distância até a costa com sinal (por região e no arquipélago), plataforma rasa, espuma andando para a praia e ondas calmas na água; fundo raso pela distância, cáusticas, espraiado e detritos no terreno; as pastas sem tela passaram e o CI compilou os shaders (pasta `world`); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase35.md` |
-| 36 — Encostas de pedra (nossa) | **em andamento desde 25/10/2026**, feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
-| 37 — Luz e cor de época (nossa) | **em andamento desde 25/10/2026**, feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
-| 38 — Estradas no chão (nossa) | **em andamento desde 25/10/2026**, feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); a suíte inteira passou no CI; faltam, com tela, as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
-| 39 — Prédios assentados (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); a suíte inteira passou no CI; falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
-| 40 — Campos em colcha (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: terra lavrada com contorno ondulado igual dos dois lados da divisa, sem a caixa; fileiras em x ou z (vizinhos sempre diferentes) com cabeceira; tom por campo; sebe (muro de pedra na encosta) em volta de cada fazenda com porteira, nada nas tropicais; pasto sem caixa, com trilhas no terreno; GPU igual no bairro rural medido; falta o dono escolher sebe ou muro por região e o tratamento das tropicais; plano em `docs/plano_fase40.md` |
-| 41 — Mata e recheio (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copas fofas (normais da copa inteira, tufos, luz de trás) e histerese na troca de detalhe; recheio determinístico fora do save (arbustos, capim, flores, pedrinhas, barris, caixotes e lenha pela vizinhança), refeito só nos trechos atingidos; GPU de 11,1 para 11,4 ms no alto, jogo novo e carregar ~0,4 s a mais; folha recortada e impostor ficaram de fora; falta o dono aprovar a densidade e escolher a textura de folha; plano em `docs/plano_fase41.md` |
-| 42 — Quadro estável e carregamento real (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: o jogo novo gera uma ilha por thread (idêntico ao direto, teste em três sementes) com porcentagem, barra e dicas na cortina; geração de ~980 para ~430 ms com pior quadro de 15 ms; tick p95 1,5 ms, obra 18 ms, o 4× limitado por quadro; montar as vistas (~5 s) segue na thread principal (fica de fora, medido); falta o dono medir no PC e aprovar as metas de quadro; plano em `docs/plano_fase42.md` |
-| 43 — Interface enxuta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: contraste WCAG provado em teste (estados e foco corrigidos), Playfair só nos títulos grandes e números tabulares, escala até 200% com aviso abaixo de 18 px, fonte legível e reduzir movimento, avisos com contador, categorias silenciáveis, pausa no alerta e duração, painel dos prédios do tamanho do conteúdo, sons de interface em toda tela, créditos dos ícones por autor; DPITexture e a barra de cima reorganizada ficaram de fora; falta o teste com uma pessoa de fora e o dono aprovar as fontes; plano em `docs/plano_fase43.md` |
-| 44 — Primeira tela (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: fundo do menu sem a grade, com a carta gravada de um arquipélago numa thread e deriva lenta; botões entrando; prévia do jogo novo com as mesmas alturas da partida, numa thread cancelável (~1,7 s); som de vitória e derrota; o diorama 3D e a pré-carga ficaram de fora; falta o dono aprovar a gravura e o som; plano em `docs/plano_fase44.md` |
-| 45 — Ilhas novas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
-| 46 — Calçamento e esquinas (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
-| 47 — QoL de interface (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
+| 35 — Costa viva (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 25/10/2026), feita sem tela: distância até a costa com sinal (por região e no arquipélago), plataforma rasa, espuma andando para a praia e ondas calmas na água; fundo raso pela distância, cáusticas, espraiado e detritos no terreno; as pastas sem tela passaram e o CI compilou os shaders (pasta `world`); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase35.md` |
+| 36 — Encostas de pedra (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 25/10/2026), feita sem tela: detalhe visual nos barrancos só na malha (5.277 cantos na semente 1840, zero em toda célula com algo em cima; estrada nova num barranco desfaz o da célula), pedras de rocha triplanar nos barrancos e no litoral rochoso; a suíte inteira passou no CI (com a Fase 35); faltam, quando o dono liberar a tela, as capturas e o benchmark; plano em `docs/plano_fase36.md` |
+| 37 — Luz e cor de época (nossa) | **concluída em 28/10/2026, aprovada pelo dono, com a cor de época desligada** (em andamento desde 25/10/2026), feita sem tela: opção "Cor de época" (LUT de 33³ gerado no código e AgX ajustado, desligada por padrão), SSR e sol com PCSS só no ultra, auditoria das luzes noturnas (todas sem sombra, longe dos 512); a suíte inteira passou no CI; faltam, com tela, a comparação pelo `tools/capture_phase37.tscn` (o dono escolhe se a cor de época fica ligada) e o benchmark do ultra; plano em `docs/plano_fase37.md` |
+| 38 — Estradas no chão (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 25/10/2026), feita sem tela: máscara das estradas por ilha (distância à linha do meio da terra, calçamento, chão batido das portas, poças), a terra pintada no terreno com borda de ruído, sulcos e poças, sem ladrilho na ilha com relevo; diagonal a 45° sem escada, cruzamento contínuo e L arredondado (provados em teste); a suíte inteira passou no CI; faltam, com tela, as capturas e o pior quadro ao construir estrada; plano em `docs/plano_fase38.md` |
+| 39 — Prédios assentados (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: variação estável de telhado, beiral, chaminé, lucarnas e paletas (casas em fila nunca com o telhado na mesma altura), piso no canto alto do lote com plinto e degraus no barranco, entreposto em armazém, camponeses recuados das divisas, vidro e caixilho nas janelas, sombra de contato e musgo; benchmark e capturas na área de trabalho escondida (draw calls de 1.101 para 1.248, FPS igual, construir igual); a suíte inteira passou no CI; falta o dono aprovar as paletas e as regras; plano em `docs/plano_fase39.md` |
+| 40 — Campos em colcha (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: terra lavrada com contorno ondulado igual dos dois lados da divisa, sem a caixa; fileiras em x ou z (vizinhos sempre diferentes) com cabeceira; tom por campo; sebe (muro de pedra na encosta) em volta de cada fazenda com porteira, nada nas tropicais; pasto sem caixa, com trilhas no terreno; GPU igual no bairro rural medido; falta o dono escolher sebe ou muro por região e o tratamento das tropicais; plano em `docs/plano_fase40.md` |
+| 41 — Mata e recheio (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: copas fofas (normais da copa inteira, tufos, luz de trás) e histerese na troca de detalhe; recheio determinístico fora do save (arbustos, capim, flores, pedrinhas, barris, caixotes e lenha pela vizinhança), refeito só nos trechos atingidos; GPU de 11,1 para 11,4 ms no alto, jogo novo e carregar ~0,4 s a mais; folha recortada e impostor ficaram de fora; falta o dono aprovar a densidade e escolher a textura de folha; plano em `docs/plano_fase41.md` |
+| 42 — Quadro estável e carregamento real (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: o jogo novo gera uma ilha por thread (idêntico ao direto, teste em três sementes) com porcentagem, barra e dicas na cortina; geração de ~980 para ~430 ms com pior quadro de 15 ms; tick p95 1,5 ms, obra 18 ms, o 4× limitado por quadro; montar as vistas (~5 s) segue na thread principal (fica de fora, medido); falta o dono medir no PC e aprovar as metas de quadro; plano em `docs/plano_fase42.md` |
+| 43 — Interface enxuta (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: contraste WCAG provado em teste (estados e foco corrigidos), Playfair só nos títulos grandes e números tabulares, escala até 200% com aviso abaixo de 18 px, fonte legível e reduzir movimento, avisos com contador, categorias silenciáveis, pausa no alerta e duração, painel dos prédios do tamanho do conteúdo, sons de interface em toda tela, créditos dos ícones por autor; DPITexture e a barra de cima reorganizada ficaram de fora; falta o teste com uma pessoa de fora e o dono aprovar as fontes; plano em `docs/plano_fase43.md` |
+| 44 — Primeira tela (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: fundo do menu sem a grade, com a carta gravada de um arquipélago numa thread e deriva lenta; botões entrando; prévia do jogo novo com as mesmas alturas da partida, numa thread cancelável (~1,7 s); som de vitória e derrota; o diorama 3D e a pré-carga ficaram de fora; falta o dono aprovar a gravura e o som; plano em `docs/plano_fase44.md` |
+| 45 — Ilhas novas (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: gerador v2 (elipses unidas, warp, costa fractal, ilhotas, bancos de areia, patamares por região com divisas curvas) convivendo com o v1, que segue congelado e padrão; escolha no jogo novo com a prévia; saves na versão que gravaram, versão desconhecida recusada; a terra enche 63–80% do retângulo (v1 81–90%), área construível 45–98% da do v1; assinaturas do v2 gravadas (provisórias); falta o dono aprovar a forma, a faixa de balanceamento e quando o v2 vira padrão; plano em `docs/plano_fase45.md` |
+| 46 — Calçamento e esquinas (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: paralelepípedo em grade dual (16 casos, 6 peças girando), esquinas arredondadas, cantos de dentro com concordância, meio-fio e sarjeta contínuos dentro das peças, diagonal como faixa reta (sela pela conectividade da simulação, chanfro nos cantos ao lado), refeito só em volta da rua nova; uma rua de pedra nova 70 → 40 ms, calçar a cidade inteira de uma vez 75 → 437 ms, quadro igual; falta o dono aprovar as peças e a escolha da grade dual pelas capturas; plano em `docs/plano_fase46.md` |
+| 47 — QoL de interface (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: copiar prédio com rotação e configuração, busca no menu de construção (pt_BR e en, sem acento), quantos existem e "Próximo igual", do prédio para a estatística e da estatística para os produtores, dicas que decompõem bens e dinheiro por fonte (fecham com a tela, montadas só no hover), rotas com duplicar, vaga cheia com Shift, destaque no mapa e filtro guardado, modo foto (sem interface, pausa, hora e inclinação); atalhos novos sem tecla padrão; tick e quadro iguais; nome e grupo da rota foram para a Fase 49; falta o dono priorizar, testar com alguém de fora e escolher teclas; plano em `docs/plano_fase47.md` |
 | 48 — Godot 4.8 (nossa) | **ensaio feito em 26/10/2026, à espera da 4.8 estável**, sem nada na tela do dono: a estável não saiu; a 4.8-beta1 roda o projeto no ramo `godot-4.8` (378 scripts sem erro, suíte sem janela verde, testes dourados iguais, benchmark com GPU +0,4 ms com sombras de contato e AO de vários quiques ligados no alto e no ultra); nomes reais das opções novas registrados; dois consertos achados medindo vieram para o main (pan pela borda sem mouse e filtro de nós liberados); falta a estável, o dono decidir quando subir e medir na 3060; plano em `docs/plano_fase48.md` |
-| 49 — Desfazer e planta (nossa) | **em andamento desde 26/10/2026**, sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
+| 49 — Desfazer e planta (nossa) | **concluída em 28/10/2026, aprovada pelo dono** (em andamento desde 26/10/2026), sem nada na tela do dono: desfazer e refazer de obra, estrada, demolição, substituição e plantas (Ctrl+Z, Ctrl+Shift+Z), idêntico no mesmo tick e com reembolso integral depois, janela de 120 s, fora do save; plantas sem custo no save (versão 16, com migração), construídas pelas regras de sempre, com fantasma; substituir em área com Ctrl+arrastar; nome e grupo das rotas; obra pelo histórico 14,6 ms e desfazer 15,3 ms com a ilha cheia; falta o dono aprovar as regras (janela, reembolso, reserva de célula) e a subida do save; plano em `docs/plano_fase49.md` |
 | 50 — Kit de época (nossa) | **caminho pronto em 26/10/2026, à espera da arte**, sem nada na tela do dono: regras de importação com teste (orçamento de triângulos por categoria, uma malha, frente em −Z, pivô e tamanho no lote, LOD, nome, crédito), validação no CI, o BuildingKit pondo a peça no lugar da forma procedural sem quebrar a montagem por célula (sem peça, nada muda; benchmark igual), lista do que falta no `assets/TODO_ASSETS.md`; falta a arte (modelar, gerar ou comprar as peças) e as aprovações do dono; plano em `docs/plano_fase50.md` |
+| 51 — Fotos e retratos nos menus (nossa) | **feita em 26/10/2026, a pedido do dono**, sem nada na tela dele: ideias do Anno 1800 (cartões ilustrados, painel com a imagem do prédio, retratos pintados), nenhum arquivo dele; 64 fotos dos nossos próprios modelos com acabamento de pintura nos cartões do menu de construção e no painel; retratos de pinturas do século XIX em domínio público (Pissarro, Renoir, Manet e outros, Art Institute of Chicago, CC0) nas classes, no conselheiro e no comerciante; quadro igual; plano em `docs/plano_fase51.md` |
+| 52 — Ilhas no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**, olhando o Anno 1800 dele (só capturas, nenhum arquivo): gerador v3, padrão dos jogos novos, com ilhas alongadas sobre uma espinha curva, 2–3 enseadas com praia larga e água rasa, falésias no resto da costa com a planície mais alta, rochedos soltos junto aos cabos, interior quase plano e a plataforma turquesa pela costa de verdade; cerca de metade dos lotes de casa do v1 (faixa provisória); a cor, a água e a rocha ficam para a Fase 53; plano em `docs/plano_fase52.md` |
+| 53 — Cor no jeito do Anno (nossa) | **feita em 26/10/2026, a pedido do dono**: grama verde e saturada, areia clara, rocha escura, folhas mais vivas, água turquesa mais viva e larga junto à costa, névoa mais leve de longe; falésia do v3 descendo em 1,6 célula e sem praia em cima (assinaturas do v3 regravadas); o serrilhado da linha d'água (grade de 2 m) fica de fora; plano em `docs/plano_fase53.md` |
+| 54 — Costa lisa (nossa) | **feita em 26/10/2026, a pedido do dono**: a distância até a costa parte de onde a altura cruza o zero (espuma, areia molhada e plataforma sem a escada da grade), cada quadrado do terreno pela diagonal que segue o relevo, a praia pela distância até a linha d'água e sem areia na falésia e na rocha; só apresentação (terreno e assinaturas iguais); plano em `docs/plano_fase54.md` |
+| 55 — Malha fina na linha d'água (nossa) | **feita em 27/10/2026, a pedido do dono**: os quadrados da malha que a costa atravessa viram subgrade de 3 × 3 com alturas curvas (Catmull-Rom, até 0,8 m da reta), a linha d'água sai curva de perto em vez de reta de 2 em 2 m; cantos da grade iguais aos da simulação, sem fresta; só apresentação; plano em `docs/plano_fase55.md` |
+| 56 — Rocha nos rochedos e nas falésias (nossa) | **feita em 27/10/2026, a pedido do dono**: rocha gerada no código (sem asset novo); cada rochedo solto no mar vira bloco de rocha com pilar e pedras em volta, e a face das falésias ganha rochas encaixadas, abaixo da borda e fora de onde se constrói; só apresentação; o rochedo segue construível na simulação (proposta à espera do dono); plano em `docs/plano_fase56.md` |
+| 57 — Pedras soltas com a rocha gerada (nossa) | **feita em 27/10/2026, a pedido do dono**: as pedras dos barrancos e do litoral rochoso trocam as lajes do Kenney pela rocha facetada da Fase 56, nos mesmos lugares; só apresentação; plano em `docs/plano_fase57.md` |
+| 58 — Coqueiro gerado no código (nossa) | **feita em 27/10/2026, a pedido do dono**: as ilhas tropicais trocam as palmeiras do Kenney por um coqueiro gerado no código, com malha de longe; sai o último modelo do Nature Kit; só apresentação; a mata tropical de folhosas fica como proposta; plano em `docs/plano_fase58.md` |
+| 59 — Mata tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: folhosa tropical gerada no código (tronco com sapopemas, copa em guarda-chuva) misturada aos coqueiros, mais coqueiro na costa baixa e mais folhosa no alto; só apresentação; plano em `docs/plano_fase59.md` |
+| 60 — Sub-bosque tropical (nossa) | **feita em 27/10/2026, a pedido do dono**: bananeira e samambaia geradas no código no lugar do arbusto temperado nas ilhas tropicais; temperadas iguais; só apresentação; plano em `docs/plano_fase60.md` |
+| 61 — Helicônias (nossa) | **feita em 27/10/2026, a pedido do dono**: helicônia gerada no código no lugar das flores do campo nas ilhas tropicais; só apresentação; plano em `docs/plano_fase61.md` |
+| 62 — Malha fina na face da falésia (nossa) | **feita em 27/10/2026, a pedido do dono**: a face da falésia vira subgrade como a costa da Fase 55, com aspereza de rocha e normais pela subgrade, sem tocar célula construível nem a linha d'água; só apresentação; plano em `docs/plano_fase62.md` |
+| 63 — Jornal (nossa) | **feita em 27/10/2026, a pedido do dono**: edição periódica com manchete sorteada que mexe na felicidade de todas as ilhas, e propaganda paga que troca a manchete; só com os eventos ligados (assinaturas iguais); números provisórios, à espera do dono; plano em `docs/plano_fase63.md` |
+| 64 — Baleias e golfinhos (nossa) | **feita em 27/10/2026, a pedido do dono**: baleias que sobem, sopram e mergulham no mar aberto e golfinhos saltando em águas médias, gerados no código; só apresentação; a proposta de fábricas com estado visível já estava feita; plano em `docs/plano_fase64.md` |
+| 65 — Festa na cidade (nossa) | **feita em 27/10/2026, a pedido do dono**: com a festa numa ilha, bandeirolas por cima das ruas das praças e fogos de artifício à noite; só apresentação; plano em `docs/plano_fase65.md` |
+| 66 — Prefeitura e políticas (nossa) | **feita em 27/10/2026, a pedido do dono**: prefeitura com uma política por vez (jornada longa, vigia de incêndio, feriados, coletoria) que vale nos prédios em volta, com manutenção; no save; números provisórios, à espera do dono; plano em `docs/plano_fase66.md` |
+| 67 — Zoológico e museu (nossa) | **feita em 28/10/2026, a pedido do dono**: zoológico e museu com seis vagas cada para peças compradas uma vez (animais e objetos), que somam beleza às casas em volta; no save; números provisórios; plano em `docs/plano_fase67.md` |
+| 68 — Atratividade e turistas (nossa) | **feita em 28/10/2026, a pedido do dono**: atratividade por ilha (beleza menos poluição) e turistas que pagam por ela, mais na festa, com os eventos ligados; parcela no detalhamento e linha no entreposto; números provisórios; plano em `docs/plano_fase68.md` |
+| 69 — Expedições (nossa) | **feita em 28/10/2026, a pedido do dono**: navio parado mandado a um de quatro destinos, que volta sorteado (peça de coleção, moedas, mãos vazias ou naufrágio); no save; números provisórios; plano em `docs/plano_fase69.md` |
+| 70 — Ferrovia e petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: campos de petróleo pela semente (assinatura igual), poço, usina a petróleo e trilho que leva o petróleo do poço à usina (sem carroça); trilho no save; números provisórios; plano em `docs/plano_fase70.md` |
+| 71 — O trem no trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: locomotiva com vagão-tanque gerados no código indo e voltando pelo caminho mais curto do trilho entre o poço e a usina; só apresentação (a simulação e as assinaturas não mudam); plano em `docs/plano_fase71.md` |
+| 72 — Desfazer o trilho (nossa) | **feita em 28/10/2026, a pedido do dono**: o trilho entra no histórico do Ctrl+Z (posto ou demolido, com o reembolso, e o refazer); só o histórico, fora do save; plano em `docs/plano_fase72.md` |
+| 73 — O cavalo-de-pau (nossa) | **feita em 28/10/2026, a pedido do dono**: o poço de petróleo troca a torre de mina por um cavalo-de-pau gerado com as peças do kit, com o balancim balançando enquanto produz; só apresentação; plano em `docs/plano_fase73.md` |
+| 74 — Recintos e vitrines (nossa) | **feita em 28/10/2026, a pedido do dono**: o zoológico ganha seis cercados e o museu seis pedestais, e cada peça posta aparece na sua vaga (bichos e peças gerados no código); só apresentação; plano em `docs/plano_fase74.md` |
+| 75 — Bichos no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: os bichos do zoológico andam e viram dentro do cercado sem atravessar a cerca (o elefante fica menor para caber); as araras e as peças do museu ficam paradas; só apresentação; plano em `docs/plano_fase75.md` |
+| 76 — Fumaça do trem (nossa) | **feita em 28/10/2026, a pedido do dono**: a locomotiva solta fumaça pela chaminé, cheia andando e fraca esperando nas pontas, deitando no vento e pelo nível gráfico; só apresentação; plano em `docs/plano_fase76.md` |
+| 77 — Chão e bebedouro no cercado (nossa) | **feita em 28/10/2026, a pedido do dono**: cada cercado ocupado ganha o chão do bicho (areia ou capim) e um bebedouro, de que os bichos desviam; a ideia de pôr as partículas no rascunho da primeira vez foi medida e descartada; só apresentação; plano em `docs/plano_fase77.md` |
+| 78 — Tanques da usina a petróleo (nossa) | **feita em 28/10/2026, a pedido do dono**: a usina a petróleo deixa a forma da usina a carvão e ganha o pátio com dois tanques, dique, escada e tubo até o galpão; foto do menu refeita; só apresentação; plano em `docs/plano_fase78.md` |
+| 79 — O bicho vai beber (nossa) | **feita em 28/10/2026, a pedido do dono**: o leão e o tigre vão ao bebedouro, viram de frente e bebem inclinados, e saem de ré; os bichos maiores não cabem de frente para ele no cercado (medido); só apresentação; plano em `docs/plano_fase79.md` |
+| 80 — Turistas na rua (nossa) | **feita em 28/10/2026, a pedido do dono**: com os eventos ligados, turistas de roupa clara saem do entreposto, visitam as atrações da ilha e voltam, na quantidade da atratividade; só visual; números provisórios; plano em `docs/plano_fase80.md` |
+| 81 — Festa cheia (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa vêm mais turistas para a rua, na mesma proporção da renda do turismo; só visual; plano em `docs/plano_fase81.md` |
+| 82 — Ver os fogos (nossa) | **feita em 28/10/2026, a pedido do dono**: na festa, à noite, os turistas vão às praças e ficam em volta do mastro olhando os fogos; só visual; plano em `docs/plano_fase82.md` |
+| 83 — Moradores na festa (nossa) | **feita em 28/10/2026, a pedido do dono**: na noite de fogos os moradores também vão às praças e ficam em volta do mastro, e a festa põe metade da gente da ilha na rua (à noite saíam só ~18%); só visual; plano em `docs/plano_fase83.md` |
+| 84 — Palmas e cota da festa (nossa) | **feita em 28/10/2026, a pedido do dono**: quem vê os fogos olha para o céu batendo palmas (animação gerada no código a partir da parada, quinta do VAT), e a gente a mais na rua sai só da ilha da festa; só visual; plano em `docs/plano_fase84.md` |
+| 85 — Palmas nos estouros (nossa) | **feita em 28/10/2026, a pedido do dono**: o povo bate palmas a cada estouro e volta a olhar o mastro; som do estouro (atrasado pela distância) e das palmas gerados no código; vivas ficaram de fora; o som falta ser ouvido pelo dono; plano em `docs/plano_fase85.md` |
+| 86 — Foguete e assobio (nossa) | **feita em 28/10/2026, a pedido do dono**: o fogo sobe do mastro como foguete (brilho e rastro de faíscas) e só estoura lá em cima, com o assobio seguindo o voo e o eco do estrondo, tudo gerado no código; o som falta ser ouvido pelo dono; plano em `docs/plano_fase86.md` |
+| 87 — Formas e vivas (nossa) | **feita em 28/10/2026, a pedido do dono**: estouros em bola, crisântemo, salgueiro e anel; os fogos mais baixos (de 28–42 para 14–22 m: lá em cima ficavam fora da tela); rastro do foguete mais forte; vivas do povo numa gravação CC BY 4.0 (Gregor Quendel) que sobem com a gente reagindo; o som falta ser ouvido pelo dono; plano em `docs/plano_fase87.md` |
+| 88 — Duas etapas e vivas calmas (nossa) | **feita em 28/10/2026, a pedido do dono**: bomba de duas etapas (as estrelas estouram de novo, pelo sub-emissor) e a faixa calma das vivas para pouca gente, misturada com a forte pelo nível; cortar a gravação ficou de fora (pede `ffmpeg` no disco C); o som falta ser ouvido pelo dono; plano em `docs/plano_fase88.md` |
+| 89 — Grand finale (nossa) | **feita em 28/10/2026, a pedido do dono**: às 23h de cada noite de festa, uma salva de 24 foguetes que acaba na chuva dourada; todo foguete estoura (antes sumia com as bombas ocupadas); as vivas seguem quem ainda bate palmas (na salva quase não tocavam); plano em `docs/plano_fase89.md` |
+| 90 — Daltônico no Windows (nossa) | **feita em 28/10/2026**, primeira do roteiro `docs/plano_fases_90_94.md`: o teste do modo daltônico que falhava no Windows do dono já tinha sido corrigido em 26/10 (`2f735e3`: o painel repinta na hora em que a opção muda); a pendência saiu da lista e a suíte inteira foi conferida no PC do dono, 986 casos sem nenhum vermelho; plano em `docs/plano_fase90.md` |
+| 91 — Travadas do ultra (nossa) | **feita em 28/10/2026**: três rodadas do ultra na RTX 5060 (62 a 64 FPS, pior quadro de 85, 32 e 28 ms), nenhuma travada de ~2 s; o benchmark grava por quadro a hora e as pipelines compiladas, e as compilações do anoitecer não coincidem com nenhum quadro lento (o Godot as faz por fora); nada mudou no jogo; plano em `docs/plano_fase91.md` |
+| 92 — Medidas que faltam (nossa) | **feita em 28/10/2026**: alto em 1080p com VSync desligado 86 FPS, o 3D nos pixels do 4K 46,5 FPS (GPU 21 ms), o executável exportado 89 FPS; o shader baker não muda as compilações (fica registrado); o executável caía no benchmark porque um `assert` some na exportação, e por trás disso as ilhas 3 e 4 da semente 1840 no terreno v3 não têm lugar de entreposto (virou a Fase 93); plano em `docs/plano_fase92.md` |
+| 93 — Porto em toda ilha (nossa) | **feita em 28/10/2026**: terreno v4, o padrão do jogo novo: o v3 com um porto aplainado na ilha que não tinha lugar de entreposto (12 de 31 sementes tinham ilha sem como colonizar); as outras ilhas saem iguais às do v3; o v1, o v2 e o v3 seguem para os saves; o `SiteFinder` deixou de pular lotes encostados no mar pelo canto; plano em `docs/plano_fase93.md` |
+| 94 — Som e câmera do grand finale (nossa) | **feita em 28/10/2026**, a última do roteiro: rufar de caixa gerado no código antes da salva, com o primeiro foguete esperando ele acabar; opção "Câmera no grand finale" (desligada por padrão) que leva a câmera à praça às 23h; o som falta ser ouvido pelo dono; plano em `docs/plano_fase94.md` |
+| 95 — Telhado de telhas (nossa) | **feita em 29/10/2026**, primeira do roteiro das formas mais redondas (Fases 95 a 99, olhando o Anno do dono): telhas em fileiras desencontradas com a borda redonda nas águas (no shader), capa redonda na cumeeira e nos espigões e beiral redondo; GPU igual no A/B; plano em `docs/plano_fase95.md` |
+| 96 — Casa em mais de um volume (nossa) | **feita em 29/10/2026**: metade das casas dos operários para cima ganha uma ala de um andar a menos com telhado próprio cruzado com o do corpo (o telhado em L); as janelas acesas, o caixilho e a cornija acompanham; quadro igual no A/B, o carregar sobe com as formas em dobro; plano em `docs/plano_fase96.md` |
+| 97 — Cúpulas e torreões (nossa) | **feita em 29/10/2026**: cúpula de cobre com tambor e lanternim no teatro, na universidade, na prefeitura e no museu; torreão redondo com telhado cônico no canto das casas altas dos investidores; plano em `docs/plano_fase97.md` |
+| 98 — Abóbadas e tonéis (nossa) | **feita em 29/10/2026**: telhado em abóbada no mercado e nas fábricas de nave comprida; tonéis com arcos de ferro no pátio da cervejaria, das destilarias e da adega; chaminé de tijolo redonda e afunilada; plano em `docs/plano_fase98.md` |
+| 99 — Arcos (nossa) | **feita em 29/10/2026**, a última do roteiro das formas mais redondas: janelas com a cabeça em arco (tímpano de vidro e arquivolta de pedra) nos serviços de pedra e nas casas dos investidores; arcada com pilares, arcos e água de telhas na frente do mercado; plano em `docs/plano_fase99.md` |
+| 100 — Fumaça das casas (nossa) | **feita em 29/10/2026**, primeira do roteiro da rua habitada (Fases 100 a 104): baforadas saindo das chaminés das casas com morador, mais de manhã e à noite, deitando com o vento; plano em `docs/plano_fase100.md` |
+| 101 — Toldos listrados (nossa) | **feita em 29/10/2026**: toldo de lona listrada sobre a porta e as janelas do térreo da padaria, do açougue, da taverna e de um terço das casas dos artesãos e engenheiros; plano em `docs/plano_fase101.md` |
+| 102 — Enxaimel saliente (nossa) | **feita em 29/10/2026**: nas casas dos operários e artesãos com a cumeeira ao longo da frente, os andares de cima avançam sobre a rua numa viga com mãos-francesas, com o enxaimel (esteios e escoras) à mostra; plano em `docs/plano_fase102.md` |
+| 103 — Claraboias (nossa) | **feita em 29/10/2026**: uma fileira de vidraças com caixilho de ferro em cada água (ou na abóbada) das fábricas grandes sem silhueta própria, acesas à noite com a fábrica produzindo; plano em `docs/plano_fase103.md` |
+| 104 — Lampião, grade e chaminé de tijolo (nossa) | **feita em 29/10/2026**, a última do roteiro da rua habitada: chaminé de tijolo com capitel e potes no lugar do bloco do kit; lampião de ferro ao lado da porta dos serviços e das casas dos artesãos para cima, aceso à noite; grade de ferro com portão no pátio do museu; plano em `docs/plano_fase104.md` |
+| 105 — Árvores de quintal (nossa) | **feita em 29/10/2026**, primeira do roteiro cidade e porto (Fases 105 a 109): macieiras pequenas com fruta nas células livres junto das casas, pelo recheio; bananeira nas tropicais; plano em `docs/plano_fase105.md` |
+| 106 — Cais de pedra (nossa) | **feita em 29/10/2026**: cais reto de cantaria dos dois lados do entreposto, no nível do cais de tábuas, com paredão para o mar, capeamento e cabeços, parando onde a terra sobe; plano em `docs/plano_fase106.md` |
+| 107 — Barcos de pesca (nossa) | **feita em 30/10/2026**: um barco a vela por cabana de pesca, que sai para o pesqueiro, pesca dando uma volta e retorna enquanto a cabana produz, e fica amarrado com ela parada; plano em `docs/plano_fase107.md` |
+| 108 — Farol (nossa) | **feita em 30/10/2026**: farol caiado com faixas vermelhas na ponta de terra mais exposta ao mar perto de cada entreposto, com a lanterna acesa e dois fachos girando à noite; plano em `docs/plano_fase108.md` |
+| 109 — Largo calçado (nossa) | **feita em 30/10/2026**, a última do roteiro cidade e porto: lajes de pedra em tons nas células livres em volta da igreja, do teatro, da universidade, da prefeitura, do museu e da escola, sem recheio em cima; plano em `docs/plano_fase109.md` |
+| 110 — Brilho do sol no mar (nossa) | **feita em 30/10/2026**, primeira do roteiro sol, trópico e avenida (Fases 110 a 114): pontos de brilho cintilando no mar aberto onde o reflexo do sol cai, de dia; plano em `docs/plano_fase110.md` |
+| 111 — Terreiro tropical (nossa) | **feita em 30/10/2026**: chão de terra batida em volta das casas das ilhas tropicais, pela máscara das estradas; plano em `docs/plano_fase111.md` |
+| 112 — Coqueiros na rua tropical (nossa) | **feita em 30/10/2026**: coqueiros pequenos na beira das ruas das ilhas tropicais, pelo recheio; plano em `docs/plano_fase112.md` |
+| 113 — Alameda (nossa) | **feita em 30/10/2026**: árvores plantadas a cada três células dos dois lados das ruas calçadas, onde a célula é livre; plano em `docs/plano_fase113.md` |
+| 114 — Gradil das casas ricas (nossa) | **feita em 30/10/2026**, a última do roteiro sol, trópico e avenida: gradil baixo de ferro com lanças e o vão da porta na frente das casas dos engenheiros; plano em `docs/plano_fase114.md` |
+| 115 — Carreira do estaleiro (nossa) | **feita em 30/10/2026**, primeira do roteiro fazenda, taverna e estaleiro (Fases 115 a 119): rampa de madeira do estaleiro até a água, com o casco em obra crescendo pelo progresso da encomenda (quilha, cavername, costado, borda, andaime) e sumindo quando o navio fica pronto; plano em `docs/plano_fase115.md` |
+| 116 — Mesas da taverna (nossa) | **feita em 30/10/2026**: mesas redondas com bancos e guarda-sóis listrados na cor da taverna nas células livres em volta dela, fechados à noite; plano em `docs/plano_fase116.md` |
+| 117 — Silos das fazendas (nossa) | **feita em 30/10/2026**: silo de aduelas com telhado cônico ou caixa d'água sobre pés numa célula livre atrás de cada fazenda; plano em `docs/plano_fase117.md` |
+| 118 — Chão gasto no pasto (nossa) | **feita em 30/10/2026**: manchas de terra pisada na porteira, no cocho e soltas dentro de cada pasto, e um cocho de madeira com água junto da cerca de trás; plano em `docs/plano_fase118.md` |
+| 119 — Poças de luz à noite (nossa) | **feita em 30/10/2026**, a última do roteiro fazenda, taverna e estaleiro: disco de luz quente no chão debaixo de cada poste e fogueira e diante da porta das casas com morador, só à noite e sem luz de verdade; plano em `docs/plano_fase119.md` |
+| 120 — Postes e fios (nossa) | **feita em 30/10/2026**, primeira do roteiro fios, riacho e mansarda (Fases 120 a 124): postes de madeira com travessa e isoladores pelas ruas em volta de cada usina, com dois fios caindo em curva de um poste ao outro, sem passar por cima dos prédios; plano em `docs/plano_fase120.md` |
+| 121 — Gavião sobre a cidade (nossa) | **feita em 30/10/2026**: um gavião (mais nas cidades grandes) planando em círculos largos e altos sobre cada cidade, batendo a asa de vez em quando, de dia; plano em `docs/plano_fase121.md` |
+| 122 — Pedras no rio (nossa) | **feita em 30/10/2026**: matacões de rocha no leito raso dos rios, saindo da água com a espuma em volta, e seixos na margem baixa; plano em `docs/plano_fase122.md` |
+| 123 — Borrifo nas falésias (nossa) | **feita em 30/10/2026**: jatos de espuma subindo de tempos em tempos onde o mar bate nos rochedos e nas falésias perto da câmera, do lado do mar; plano em `docs/plano_fase123.md` |
+| 124 — Mansarda dos investidores (nossa) | **feita em 30/10/2026**, a última do roteiro fios, riacho e mansarda: telhado de mansarda (água de baixo íngreme com lucarnas, a de cima quase plana) nas casas dos investidores sem ala; plano em `docs/plano_fase124.md` |
+| 125 — Recife de coral (nossa) | **feita em 30/10/2026**, primeira do roteiro recife, alpendre e nuvens (Fases 125 a 129): manchas escuras de coral no mar raso das ilhas tropicais; plano em `docs/plano_fase125.md` |
+| 126 — Alpendre tropical (nossa) | **feita em 30/10/2026**: as casas dos operários e artesãos das ilhas tropicais recuam uma fileira e ganham alpendre de tábuas com esteios, guarda-corpo e telhado de uma água; plano em `docs/plano_fase126.md` |
+| 127 — Cisternas no cais (nossa) | **feita em 30/10/2026**: duas cisternas redondas de aduelas sobre soco de pedra no cais de pedra de cada entreposto, uma de cada lado; plano em `docs/plano_fase127.md` |
+| 128 — Jazidas à vista (nossa) | **feita em 30/10/2026**: um afloramento de rocha e pedras na cor do minério (carvão, ferro, ouro) sobre cada jazida ainda sem mina; plano em `docs/plano_fase128.md` |
+| 129 — Sombra das nuvens (nossa) | **feita em 30/10/2026**, a última do roteiro recife, alpendre e nuvens: manchas de sombra das nuvens correndo pelo chão e pelo mar na direção do vento, mais com o céu nublado; plano em `docs/plano_fase129.md` |
+| 130 — Telhado de sapê (nossa) | **feita em 31/10/2026**, primeira do roteiro sapê, bueiro e ardósia (Fases 130 a 134): as casas dos camponeses trocam as tábuas do telhado por sapê, com fiadas grossas, fios de palha e o tom de palha velha; plano em `docs/plano_fase130.md` |
+| 131 — Bueiros na rua calçada (nossa) | **feita em 31/10/2026**: tampas redondas de ferro fundido no meio das ruas retas de paralelepípedo, pelo desenho da grade; plano em `docs/plano_fase131.md` |
+| 132 — Bomba d'água (nossa) | **feita em 31/10/2026**: bomba de ferro fundido com alavanca, bica, laje e baldes numa célula livre junto de uma casa a cada seis, virada para a rua; plano em `docs/plano_fase132.md` |
+| 133 — Bandeirolas da feira (nossa) | **feita em 31/10/2026**: quatro postes e duas cordas de bandeirolas em xis sobre o pátio das bancas de cada mercado, o ano todo; plano em `docs/plano_fase133.md` |
+| 134 — Ardósia nos prédios de pedra (nossa) | **feita em 31/10/2026**, a última do roteiro sapê, bueiro e ardósia: a igreja, a escola, o mercado, a prefeitura, o teatro, a universidade e o museu trocam as telhas por ardósia cinza-azulada; plano em `docs/plano_fase134.md` |
+| 135 — Galinhas no quintal (nossa) | **feita em 31/10/2026**, primeira do roteiro galinha, forno e mina (Fases 135 a 139): galinhas e um galo de vez em quando ciscando e andando no quintal cercado das casas dos camponeses, de dia; plano em `docs/plano_fase135.md` |
+| 136 — Vagoneta e rejeito (nossa) | **feita em 31/10/2026**: em cada mina, um trilho curto sobre cavaletes sai da parede até um monte de rejeito na cor do minério, com a vagoneta saindo cheia, virando na ponta e voltando enquanto a mina produz; plano em `docs/plano_fase136.md` |
+| 137 — Boca do forno acesa (nossa) | **feita em 31/10/2026**: a padaria, a olaria, a vidraria, a fundição e a de vigas de aço ganham uma boca de forno em arco de tijolo numa fachada do lado, com o fogo tremulando enquanto produzem e a luz laranja no chão à noite; plano em `docs/plano_fase137.md` |
+| 138 — Telhado de chapa ondulada (nossa) | **feita em 31/10/2026**: a olaria, a fundição, a vidraria, as usinas, a de vigas de aço, as conservas, as máquinas de costura e a de lâmpadas trocam as telhas por chapa de ferro ondulada, cinza com a ferrugem escorrendo das juntas; plano em `docs/plano_fase138.md` |
+| 139 — Redes de pesca (nossa) | **feita em 31/10/2026**, a última do roteiro galinha, forno e mina: ao lado de cada cabana de pesca, dois cavaletes com a rede estendida secando, as boias de cortiça, as caixas de peixe e o cesto; plano em `docs/plano_fase139.md` |
+| 140 — Clareira do lenhador (nossa) | **feita em 31/10/2026**, primeira do roteiro toco, bote e boia (Fases 140 a 144): em volta de cada lenhador a mata recua no desenho, mais perto da cabana, e as células cortadas ficam com os tocos e umas toras caídas; plano em `docs/plano_fase140.md` |
+| 141 — Árvore seca (nossa) | **feita em 31/10/2026**: árvores secas e nuas, de galhos tortos e madeira cinzenta, de vez em quando na beira da mata e na costa das ilhas temperadas; plano em `docs/plano_fase141.md` |
+| 142 — Botes no porto (nossa) | **feita em 31/10/2026**: dois botes a remo por entreposto dando voltas na água funda diante dele, um em cada sentido, com o remador inclinando a cada remada e os remos varrendo; somem à noite; plano em `docs/plano_fase142.md` |
+| 143 — Cerca de estacas (nossa) | **feita em 31/10/2026**: cerquinha de estacas caiadas com a ponta em pirâmide e o vão da porta na frente das casas dos operários; plano em `docs/plano_fase143.md` |
+| 144 — Boias no porto (nossa) | **feita em 31/10/2026**, a última do roteiro toco, bote e boia: boias pintadas em pares marcando a entrada diante de cada entreposto, a vermelha de um lado e a verde do outro, balançando nas ondas; plano em `docs/plano_fase144.md` |
+| 145 — Relógio da igreja (nossa) | **feita em 31/10/2026**, primeira do roteiro relógio, cais e cata-vento (Fases 145 a 149): dois mostradores na torre da igreja com os ponteiros marcando a hora do jogo, acesos à noite; plano em `docs/plano_fase145.md` |
+| 146 — Grade e lampiões no cais (nossa) | **feita em 31/10/2026**: grade de ferro na beira do cais de pedra, aberta nos cabeços e diante do entreposto, e lampiões a gás acesos à noite; plano em `docs/plano_fase146.md` |
+| 147 — Mastros no cais (nossa) | **feita em 31/10/2026**: um mastro caiado com a bola dourada e uma flâmula de rabo de andorinha na ponta de cada lado do cais de pedra, tremulando para o lado do vento; plano em `docs/plano_fase147.md` |
+| 148 — Cavalete do lenhador (nossa) | **feita em 31/10/2026**: junto de cada lenhador, o cavalete de serrar com uma tora, o cepo com o machado cravado, a pilha de lenha rachada e as lascas no chão; plano em `docs/plano_fase148.md` |
+| 149 — Cata-vento no pasto (nossa) | **feita em 31/10/2026**, a última do roteiro relógio, cais e cata-vento: torre de vigas junto do cocho de cada pasto com a roda de lâminas e o leme, virando para o vento e girando pela força dele; plano em `docs/plano_fase149.md` |
+| 150 — Coluna de anúncios (nossa) | **feita em 31/10/2026**, primeira do roteiro coluna, placa e velocípede (Fases 150 a 154): colunas redondas de cartazes coloridos com o chapéu de ferro no canto de dentro das esquinas calçadas; plano em `docs/plano_fase150.md` |
+| 151 — Placas das lojas (nossa) | **feita em 31/10/2026**: placa pendurada num braço de ferro ao lado da porta da padaria, do açougue, da taverna, do ourives, do relojoeiro, do óptico, da torrefação e da charutaria, com a figura do ofício pintada (sem texto); plano em `docs/plano_fase151.md` |
+| 152 — Balizas com corrente (nossa) | **feita em 31/10/2026**: balizas de ferro com correntes caindo em curva na beira do largo calçado dos serviços, de frente para a rua, com aberturas para entrar; plano em `docs/plano_fase152.md` |
+| 153 — Flores nas sacadas (nossa) | **feita em 31/10/2026**: floreiras de madeira com folhagem e flores vermelhas, rosas e amarelas penduradas por fora do guarda-corpo das sacadas dos engenheiros e investidores; plano em `docs/plano_fase153.md` |
+| 154 — Velocípede encostado (nossa) | **feita em 31/10/2026**, a última do roteiro coluna, placa e velocípede: um velocípede de roda grande encostado na parede da frente, ao lado da porta, de uma casa dos artesãos a cada quatro; plano em `docs/plano_fase154.md` |
+| 155 — Carneirinhos no mar (nossa) | **feita em 31/10/2026**, primeira do roteiro carneirinho, papoula e colheita (Fases 155 a 159): manchas de espuma que nascem, andam com o vento e se desfazem em renda no mar aberto, mais com o vento forte; plano em `docs/plano_fase155.md` |
+| 156 — Papoulas no prado (nossa) | **feita em 31/10/2026**: canteiros de papoulas vermelhas no capim aberto e na beira das estradas das ilhas temperadas, juntos em manchas e fora da areia da praia; plano em `docs/plano_fase156.md` |
+| 157 — Caixas da colheita (nossa) | **feita em 31/10/2026**: perto da colheita, pares de caixotes e sacos de juta vão aparecendo entre as fileiras dos campos, e somem quando o campo é colhido; plano em `docs/plano_fase157.md` |
+| 158 — Carroça de lona (nossa) | **feita em 31/10/2026**: metade das carroças que levam saco ou caixote anda com os arcos de madeira e a lona sobre a caçamba, com a carga escondida debaixo dela; plano em `docs/plano_fase158.md` |
+| 159 — Tijolos secando (nossa) | **feita em 31/10/2026**, a última do roteiro carneirinho, papoula e colheita: ao lado de cada olaria, duas fileiras de tijolos crus secando em grade com as tábuas na cumeeira e o monte de barro escavado; plano em `docs/plano_fase159.md` |
+| 160 — Cunhais de pedra (nossa) | **feita em 31/10/2026**, primeira do roteiro cunhal, deriva e horta (Fases 160 a 164): blocos de pedra clara alternados nas quatro quinas das casas dos artesãos e engenheiros, da soleira à cornija; plano em `docs/plano_fase160.md` |
+| 161 — Madeira à deriva (nossa) | **feita em 31/10/2026**: troncos velhos, cinzentos de sal, com as raízes quebradas, largados na praia e nas pedras baixas da costa; plano em `docs/plano_fase161.md` |
+| 162 — Cascalho nas encostas (nossa) | **feita em 31/10/2026**: montinhos de pedrinhas soltas deitados nas encostas íngremes e acumulados no pé delas; plano em `docs/plano_fase162.md` |
+| 163 — Horta no quintal (nossa) | **feita em 31/10/2026**: canteiro com couves, alfaces e a tenda de feijão atrás de uma casa de camponeses ou operários a cada três, ao lado do varal e da fogueira das vizinhas; plano em `docs/plano_fase163.md` |
+| 164 — Caldeira das árvores (nossa) | **feita em 31/10/2026**, a última do roteiro cunhal, deriva e horta: anel de pedra com a terra e a grade de ferro no pé de cada árvore da alameda; plano em `docs/plano_fase164.md` |
+| 165 — Chão batido das fábricas (nossa) | **feita em 31/10/2026**, primeira do roteiro chão batido, feno e gaivota (Fases 165 a 169): terra batida de borda recortada em volta de todo prédio de produção; plano em `docs/plano_fase165.md` |
+| 166 — Medas de feno (nossa) | **feita em 31/10/2026**: duas medas de feno redondas com a vara no alto ao lado das fazendas de ovelhas, porcos e trigo; plano em `docs/plano_fase166.md` |
+| 167 — Capim alto nos terrenos vazios (nossa) | **feita em 31/10/2026**: manchas de capim alto e espigado, verde no pé e cor de palha nas pontas, no campo aberto das ilhas temperadas, fora dos canteiros de papoulas; plano em `docs/plano_fase167.md` |
+| 168 — Gaivotas no cais (nossa) | **feita em 31/10/2026**: gaivotas de pé em parte dos cabeços dos píeres e do cais, virando a cabeça de tempos em tempos; plano em `docs/plano_fase168.md` |
+| 169 — Barril de chuva (nossa) | **feita em 31/10/2026**, a última do roteiro chão batido, feno e gaivota: o barril de aduelas com a calha descendo do beiral, na quina de trás de metade das casas dos camponeses e operários; plano em `docs/plano_fase169.md` |
+| 170 — Barranco de terra vermelha (nossa) | **feita em 31/10/2026**, primeira do roteiro laterita, lenha e carrinho (Fases 170 a 174): a margem dos rios das ilhas tropicais em laterita vermelha, no lugar da lama escura; plano em `docs/plano_fase170.md` |
+| 171 — Lenha na parede (nossa) | **feita em 31/10/2026**: a pilha de lenha rachada com a cobertura de tábuas encostada na parede do lado de parte das casas dos camponeses e operários; plano em `docs/plano_fase171.md` |
+| 172 — Carrinho de mão (nossa) | **feita em 31/10/2026**: o carrinho de mão de madeira parado no pátio de chão batido atrás de metade das oficinas; plano em `docs/plano_fase172.md` |
+| 173 — Tina de lavar (nossa) | **feita em 31/10/2026**: a tina de aduelas com a água ensaboada e a tábua de esfregar ao lado de cada varal; plano em `docs/plano_fase173.md` |
+| 174 — Banco na porta (nossa) | **feita em 31/10/2026**, a última do roteiro laterita, lenha e carrinho: o banco de tábua encostado na parede da frente, no quintal cercado de parte das casas dos camponeses; plano em `docs/plano_fase174.md` |
+| 175 — Espantalho no campo (nossa) | **feita em 31/10/2026**, primeira do roteiro espantalho, cegonha e vaga-lume (Fases 175 a 179): um espantalho de pau com casaco, chapéu e palha saindo das mangas no vão do meio de um a cada três campos de trigo e de batata; plano em `docs/plano_fase175.md` |
+| 176 — Cegonha na chaminé (nossa) | **feita em 31/10/2026**: o ninho de gravetos com a cegonha de pé, virando de tempos em tempos, no alto da chaminé de uma a cada quatro casas dos camponeses e operários das ilhas temperadas; a chaminé com ninho não fumega; plano em `docs/plano_fase176.md` |
+| 177 — Postigos nas janelas (nossa) | **feita em 31/10/2026**: as duas folhas de madeira abertas dos lados de cada janela das casas dos camponeses, operários e artesãos, pintadas de verde, azul, vermelho ou ocre pelo prédio, com as réguas da veneziana; plano em `docs/plano_fase177.md` |
+| 178 — Vaga-lumes no prado (nossa) | **feita em 31/10/2026**: enxames de pontinhos de luz verde-amarela vagando baixo e piscando na beira da mata e no capim aberto, longe das casas e das estradas, ao anoitecer e à noite; plano em `docs/plano_fase178.md` |
+| 179 — Juncos na margem (nossa) | **feita em 31/10/2026**, a última do roteiro espantalho, cegonha e vaga-lume: touceiras de junco alto com as espigas marrons da taboa na margem baixa dos rios, balançando com o vento; plano em `docs/plano_fase179.md` |
+| 180 — Borboletas nos canteiros (nossa) | **feita em 31/10/2026**, primeira do roteiro borboleta, correio e galo (Fases 180 a 184): borboletas brancas, amarelas, laranja e azuis esvoaçando e batendo as asas sobre os canteiros de papoulas das ilhas temperadas e no capim aberto das tropicais, de dia; plano em `docs/plano_fase180.md` |
+| 181 — Caixa de correio (nossa) | **feita em 31/10/2026**: a caixa de correio de ferro fundido, redonda e vermelha, com a boca e a plaquinha, encostada na calçada de parte das células das ruas calçadas, virada para a rua; plano em `docs/plano_fase181.md` |
+| 182 — Galo do cata-vento (nossa) | **feita em 31/10/2026**: a haste de ferro com a rosa dos ventos e o galo de bronze recortado no alto da cumeeira das fazendas das ilhas temperadas, virando a cabeça para o lado de onde vem o vento; plano em `docs/plano_fase182.md` |
+| 183 — Barco na areia (nossa) | **feita em 31/10/2026**: o bote de pesca virado de borco na praia, com uma ponta apoiada e os dois remos deitados na areia, ao lado de cada cabana de pesca; plano em `docs/plano_fase183.md` |
+| 184 — Limo na pedra (nossa) | **feita em 31/10/2026**, a última do roteiro borboleta, correio e galo: a faixa escura de limo e sargaço, a pedra molhada e a crosta clara da maré nos rochedos, nas rochas da falésia e nas pedras do rio, junto da linha d'água; plano em `docs/plano_fase184.md` |
+| 185 — Hera nas paredes (nossa) | **feita em 01/11/2026**, primeira do roteiro hera, estaca e arco-íris (Fases 185 a 189): a hera subindo em colunas pelas paredes da igreja e dos serviços de pedra e de parte das casas de alvenaria das ilhas temperadas; plano em `docs/plano_fase185.md` |
+| 186 — Estacas na água (nossa) | **feita em 01/11/2026**: feixes de cinco estacas de madeira amarradas com cabo e o limo junto da água, cravados diante de cada entreposto e na ponta dos píeres; plano em `docs/plano_fase186.md` |
+| 187 — Placa na encruzilhada (nossa) | **feita em 01/11/2026**: o poste de madeira com uma tábua em seta apontando cada estrada nos cruzamentos e entroncamentos das estradas de terra fora das vilas; plano em `docs/plano_fase187.md` |
+| 188 — Arco-íris (nossa) | **feita em 01/11/2026**: o arco-íris no céu do lado oposto ao sol logo depois da chuva, sumindo em pouco mais de uma hora; plano em `docs/plano_fase188.md` |
+| 189 — Focas nas pedras (nossa) | **feita em 01/11/2026**, a última do roteiro hera, estaca e arco-íris: grupos de focas malhadas deitadas na costa baixa das ilhas temperadas, longe das vilas, viradas para o mar, erguendo a cabeça de tempos em tempos; plano em `docs/plano_fase189.md` |
+| 190 — Colmeias de palha (nossa) | **feita em 01/11/2026**, primeira do roteiro colmeia, pombal e varal (Fases 190 a 194): o banco com três colmeias de palha trançada ao lado das fazendas de lúpulo, vinhedo e batata, com as abelhas zunindo em volta de dia; plano em `docs/plano_fase190.md` |
+| 191 — Pombal (nossa) | **feita em 01/11/2026**: o pombal de tábua no alto de um poste no canto da frente de metade das fazendas de gado, trigo e batata, com os pombos pousados no telhadinho e nos poleiros; plano em `docs/plano_fase191.md` |
+| 192 — Roupa sobre a rua (nossa) | **feita em 01/11/2026**: o varal com a roupa colorida atravessando no alto a rua de terra entre casas de operários frente a frente; plano em `docs/plano_fase192.md` |
+| 193 — Carroça de feno parada (nossa) | **feita em 01/11/2026**: a carroça carregada de feno, sem o cavalo, tombada para a frente com os varais no chão, ao lado das medas de metade das fazendas; plano em `docs/plano_fase193.md` |
+| 194 — Escada do cais (nossa) | **feita em 01/11/2026**, a última do roteiro colmeia, pombal e varal: o lance de degraus de pedra descendo do cais de pedra até dentro da água, encostado no paredão, com a argola de ferro, dos dois lados de cada entreposto; plano em `docs/plano_fase194.md` |
+| 195 — Cemitério da igreja (nossa) | **feita em 01/11/2026**, primeira do roteiro cemitério, pato e rede (Fases 195 a 199): lápides de topo redondo, cruzes e obeliscos em fileiras atrás da igreja, além do largo, umas tombando, dentro de um muro baixo de pedra com o portão virado para ela; plano em `docs/plano_fase195.md` |
+| 196 — Patos na água (nossa) | **feita em 01/11/2026**: bandos de patos nadando em roda na água calma da costa, longe da espuma e dos portos, a pata com os patinhos em fila ou patos e patas juntos, mergulhando a cabeça de vez em quando, de dia; plano em `docs/plano_fase196.md` |
+| 197 — Casinha do cão (nossa) | **feita em 01/11/2026**: a casinha de tábuas com telhado de duas águas, a porta em arco e a tigela de água ao lado das casas que têm cão na porta, virada para a rua; plano em `docs/plano_fase197.md` |
+| 198 — Bancos no cais (nossa) | **feita em 01/11/2026**: bancos de praça de pés de ferro e tábuas no cais de pedra dos entrepostos, entre os cabeços, de costas para a cidade e virados para o mar, longe dos lampiões, das cisternas, dos mastros e das escadas; plano em `docs/plano_fase198.md` |
+| 199 — Rede na varanda (nossa) | **feita em 01/11/2026**, a última do roteiro cemitério, pato e rede: a rede de dormir listrada pendurada entre dois esteios da varanda de parte das casas das ilhas tropicais, ao lado da porta, balançando de leve; plano em `docs/plano_fase199.md` |
+| 200 — Gato na porta (nossa) | **feita em 01/11/2026**, primeira do roteiro gato, poço e carrinho (Fases 200 a 204): um gato ruivo, preto, cinza, branco ou creme sentado ao lado da porta de parte das casas (as que não têm cão), virando a cabeça de vez em quando; plano em `docs/plano_fase200.md` |
+| 201 — Poço da vila (nossa) | **feita em 01/11/2026**: o poço de pedra em fiadas com o telhadinho de duas águas, o sarilho e o balde numa célula livre junto da rua, ao lado de parte das casas dos camponeses; plano em `docs/plano_fase201.md` |
+| 202 — Secadouro de peixe (nossa) | **feita em 01/11/2026**: as varas cruzadas com os peixes abertos pendurados secando, do lado da terra de cada cabana de pesca das ilhas temperadas; plano em `docs/plano_fase202.md` |
+| 203 — Carrinho de feira (nossa) | **feita em 01/11/2026**: o carrinho de mão de duas rodas com o tabuleiro de frutas e verduras e o guarda-sol listrado, numa célula junto da rua ao lado de cada mercado; plano em `docs/plano_fase203.md` |
+| 204 — Guarda-sol de palha (nossa) | **feita em 01/11/2026**, a última do roteiro gato, poço e carrinho: guarda-sóis de folha de palmeira com o banco de toras na areia em volta do entreposto e das cabanas de pesca das ilhas tropicais, além do cais de pedra; e as buscas junto da rua guardadas até a próxima obra (o carregar voltou de 6,4 para 6,0 s); plano em `docs/plano_fase204.md` |
+| 205 — Estandartes na fachada (nossa) | **feita em 01/11/2026**, primeira do roteiro estandarte, bebedouro e lanterna (Fases 205 a 209): estandartes de rabo de andorinha na cor do prédio, com o galão dourado, pendurados num braço de ferro de cada lado da porta da prefeitura, do teatro, da universidade, do museu e da escola, balançando com o vento; plano em `docs/plano_fase205.md` |
+| 206 — Bebedouro de cavalos (nossa) | **feita em 01/11/2026**: o cocho comprido de pedra com a água, a coluna da bica e a argola de amarrar, encostado na parede do lado de cada taverna, ao lado das mesas; plano em `docs/plano_fase206.md` |
+| 207 — Pinheiro-anão na encosta (nossa) | **feita em 01/11/2026**: pinheiros baixos e tortos, com as almofadas de agulhas achatadas pelo vento, agarrados nas encostas íngremes das ilhas temperadas; plano em `docs/plano_fase207.md` |
+| 208 — Rama de tecido (nossa) | **feita em 01/11/2026**: duas ramas de madeira com os panos tingidos de garança e anil esticados secando, numa fila de três células atrás de cada tecelagem; plano em `docs/plano_fase208.md` |
+| 209 — Lanterna nas carroças (nossa) | **feita em 01/11/2026**, a última do roteiro estandarte, bebedouro e lanterna: a lanterna de ferro pendurada num braço na frente de cada carroça, acesa à noite, na própria malha da carroça; plano em `docs/plano_fase209.md` |
+| 210 — Pombos na cumeeira (nossa) | **feita em 01/11/2026**, primeira do roteiro pombo, mó e buxo (Fases 210 a 214): uma fila de pombos cinza-azulados pousados na cumeeira de parte das casas de duas águas, longe da chaminé; plano em `docs/plano_fase210.md` |
+| 211 — Mós no moinho (nossa) | **feita em 01/11/2026**: duas mós de pedra de pé encostadas na parede do lado de cada moinho, com a pilha de sacos de farinha ao lado; plano em `docs/plano_fase211.md` |
+| 212 — Buxo na porta (nossa) | **feita em 01/11/2026**: dois vasos de pedra com o buxo podado em bola, um de cada lado da porta das casas dos investidores, por fora das colunas; plano em `docs/plano_fase212.md` |
+| 213 — Lenha da padaria (nossa) | **feita em 01/11/2026**: a pilha de lenha miúda sob uma tábua e a pá de forno de pé, encostadas na parede ao lado da boca do forno de cada padaria; plano em `docs/plano_fase213.md` |
+| 214 — Escada de mão (nossa) | **feita em 01/11/2026**, a última do roteiro pombo, mó e buxo: a escada de madeira encostada na parede do lado de parte das casas, do chão até o beiral, com o balde de lata no pé; plano em `docs/plano_fase214.md` |
+| 215 — Tábuas secando na serraria (nossa) | **feita em 01/11/2026**, primeira do roteiro tábua, cortina e andorinha (Fases 215 a 219): as pilhas de tábuas em camadas com os tabiques, sobre dormentes e cobertas por tábuas velhas, no lado de cada serraria oposto à roda d'água; plano em `docs/plano_fase215.md` |
+| 216 — Monte de carvão na usina (nossa) | **feita em 01/11/2026**: a baia de tábuas com o monte de carvão em pedras escorrendo para fora, as pedras soltas no pé e a pá cravada, no lado de cada usina a carvão; plano em `docs/plano_fase216.md` |
+| 217 — Cortinas nas janelas (nossa) | **feita em 01/11/2026**: os dois panos presos dos lados e a sanefa em cada janela das casas, em renda, creme, rosa ou verde-sálvia pela casa, com as pregas; plano em `docs/plano_fase217.md` |
+| 218 — Andorinhas no campanário (nossa) | **feita em 01/11/2026**: um bando de andorinhas de costas azul-escuras e cauda em forquilha dando voltas rápidas em volta da torre de cada igreja, batendo as asas em rajadas, de dia; plano em `docs/plano_fase218.md` |
+| 219 — Balanço e gangorra na escola (nossa) | **feita em 01/11/2026**, a última do roteiro tábua, cortina e andorinha: o balanço de madeira com dois assentos nas cordas e a gangorra pintada no lado de cada escola; a busca do lado livre virou o `SideYard`; plano em `docs/plano_fase219.md` |
+| 220 — Bomba de incêndio no quartel (nossa) | **feita em 01/11/2026**, primeira do roteiro bomba, barril e lençol (Fases 220 a 224): a bomba de mão vermelha sobre rodas com os cilindros de latão e os braços dos bombeadores, o carretel da mangueira, a escada e os baldes de couro no lado de cada quartel; plano em `docs/plano_fase220.md` |
+| 221 — Barris na cervejaria (nossa) | **feita em 01/11/2026**: a pirâmide de barris deitados sobre os calços e dois barris de pé com o funil no lado da cervejaria, das destilarias e da adega; plano em `docs/plano_fase221.md` |
+| 222 — Covos no cais (nossa) | **feita em 01/11/2026**: pilhas de covos de vime em meia-lua com o cabo enrolado e as boias de cortiça nos lanços livres do cais de pedra dos entrepostos; plano em `docs/plano_fase222.md` |
+| 223 — Lençóis no hospital (nossa) | **feita em 01/11/2026**: dois varais compridos com os lençóis brancos enfunados e o cesto de vime no lado de cada hospital; plano em `docs/plano_fase223.md` |
+| 224 — Relógio de sol no largo (nossa) | **feita em 01/11/2026**, a última do roteiro bomba, barril e lençol: a coluna de pedra torneada com o mostrador de bronze e o gnomon num canto do largo calçado da igreja, do teatro, da universidade, da prefeitura, do museu e da escola; plano em `docs/plano_fase224.md` |
+| 225 — Lanterna na popa (nossa) | **feita em 01/11/2026**, primeira do roteiro lanterna, lã e morcego (Fases 225 a 229): a lanterna de ferro num pau na ré de cada navio, acesa à noite; plano em `docs/plano_fase225.md` |
+| 226 — Fardos de lã (nossa) | **feita em 01/11/2026**: os fardos de juta amarrados com cordas, o cepo de tosquia com a tesoura e o velo solto no lado das fazendas de ovelhas; plano em `docs/plano_fase226.md` |
+| 227 — Lamaçal do chiqueiro (nossa) | **feita em 01/11/2026**: a poça de lama escura e molhada com a orla pisada e os torrões em cada pasto das fazendas de porcos, sem capim dentro; plano em `docs/plano_fase227.md` |
+| 228 — Barris de petróleo (nossa) | **feita em 01/11/2026**: os barris de madeira enegrecidos pelo óleo, em pé e deitados sobre os calços, e a mancha de óleo no chão no lado de cada poço de petróleo; plano em `docs/plano_fase228.md` |
+| 229 — Morcegos ao anoitecer (nossa) | **feita em 01/11/2026**, a última do roteiro lanterna, lã e morcego: os morcegos esvoaçando em zigue-zague em volta da torre de cada igreja, do anoitecer à madrugada; plano em `docs/plano_fase229.md` |
+| 230 — Sinal no trilho (nossa) | **feita em 01/11/2026**, primeira do roteiro sinal, cormorão e castanha (Fases 230 a 234): o poste de sinal de braço vermelho com a escada e a lanterna acesa à noite em cada ponta de linha do trilho; plano em `docs/plano_fase230.md` |
+| 231 — Cormorões nas estacas (nossa) | **feita em 01/11/2026**: o cormorão de pé com as asas abertas secando no alto das estacas de atracação diante dos entrepostos e dos píeres, de dia; plano em `docs/plano_fase231.md` |
+| 232 — Tapete na janela (nossa) | **feita em 01/11/2026**: o tapete listrado com a franja estendido no peitoril de uma janela de cima de parte das casas dos operários e artesãos; plano em `docs/plano_fase232.md` |
+| 233 — Cabines de banho (nossa) | **feita em 01/11/2026**: as cabines de banho de rodas, listradas de vermelho e branco, com a porta para o mar, na areia perto dos entrepostos das ilhas temperadas; plano em `docs/plano_fase233.md` |
+| 234 — Fogareiro de castanhas (nossa) | **feita em 01/11/2026**, a última do roteiro sinal, cormorão e castanha: o carrinho do vendedor de castanhas com o fogareiro de ferro e as brasas acesas à noite no canto de parte das esquinas calçadas; plano em `docs/plano_fase234.md` |
+| 235 — Cervos na beira da mata (nossa) | **feita em 01/11/2026**, primeira do roteiro cervo, âncora e marco (Fases 235 a 239): grupos de corças com um veado de galhada pastando na beira da mata das ilhas temperadas, longe das vilas, erguendo a cabeça de vez em quando; plano em `docs/plano_fase235.md` |
+| 236 — Âncora no cais (nossa) | **feita em 01/11/2026**: a âncora velha de ferro deitada com um braço erguido, o cepo de madeira e a amarra enrolada ao lado, no fundo do cais de pedra de cada entreposto; plano em `docs/plano_fase236.md` |
+| 237 — Marco de légua (nossa) | **feita em 01/11/2026**: o marco de pedra de topo redondo com a inscrição e o musgo no pé na beira das estradas de terra retas e compridas fora das vilas, um a cada 23 células; plano em `docs/plano_fase237.md` |
+| 238 — Bandeira na prefeitura (nossa) | **feita em 01/11/2026**: o mastro de ferro com a bandeira da cidade (vermelha com o losango dourado) no alto da cúpula de cada prefeitura, virando e tremulando com o vento; plano em `docs/plano_fase238.md` |
+| 239 — Algas na praia (nossa) | **feita em 01/11/2026**, a última do roteiro cervo, âncora e marco: a faixa torta de sargaço escuro com as fitas soltas, deixada pela maré na areia baixa e plana junto do mar; plano em `docs/plano_fase239.md` |
+| 240 — Lagar no vinhedo (nossa) | **feita em 01/11/2026**, primeira do roteiro lagar, terreiro e estacas (Fases 240 a 244): a tina de pisar uvas com o mosto, a prensa de fuso e os cestos de uva no lado de cada vinhedo; plano em `docs/plano_fase240.md` |
+| 241 — Terreiro de café (nossa) | **feita em 01/11/2026**: o terreiro caiado com o café espalhado secando ao sol, vermelho de um lado e seco do outro, com os sulcos do rodo, o montinho e os sacos, no lado de cada cafezal; plano em `docs/plano_fase241.md` |
+| 242 — Tabaco secando (nossa) | **feita em 01/11/2026**: o varal de varas com as réstias de folhas de tabaco penduradas, verdes, douradas e curadas, e o cesto de folhas no lado de cada plantação de tabaco; plano em `docs/plano_fase242.md` |
+| 243 — Vigas de aço empilhadas (nossa) | **feita em 01/11/2026**: a pilha de vigas de ferro em I em camadas sobre os dormentes, com uma viga solta no chão, no lado de cada fábrica de vigas de aço; plano em `docs/plano_fase243.md` |
+| 244 — Estacas de lúpulo (nossa) | **feita em 01/11/2026**, a última do roteiro lagar, terreiro e estacas: as estacas compridas deitadas nos cavaletes e o feixe amarrado encostado na parede, no lado de cada fazenda de lúpulo; plano em `docs/plano_fase244.md` |
+| 245 — Coelhos no prado (nossa) | **feita em 01/11/2026**, primeira do roteiro coelho, cogumelo e pedra (Fases 245 a 249): tocas de coelhos pardos de rabo branco pastando no capim aberto das ilhas temperadas, longe das vilas, sentando de vez em quando; plano em `docs/plano_fase245.md` |
+| 246 — Tronco caído com cogumelos (nossa) | **feita em 01/11/2026**: troncos velhos caídos na beira da mata das ilhas temperadas, cobertos de musgo, com as orelhas-de-pau de lado e os cogumelos vermelhos no chão; plano em `docs/plano_fase246.md` |
+| 247 — Madeira curvada no estaleiro (nossa) | **feita em 01/11/2026**: a pilha de tábuas e as cavernas curvas em U esperando a vez de entrar no casco, no lado de cada estaleiro, longe da carreira; plano em `docs/plano_fase247.md` |
+| 248 — Caixotes de vidro (nossa) | **feita em 01/11/2026**: o cavalete com as chapas de vidro de pé e os caixotes de ripas com palha e vidraças no lado de cada vidraria e janelaria; plano em `docs/plano_fase248.md` |
+| 249 — Montes de pedra nos campos (nossa) | **feita em 01/11/2026**, a última do roteiro coelho, cogumelo e pedra: os montes baixos de pedras tiradas da terra arada num canto da cabeceira de parte dos campos das ilhas temperadas; plano em `docs/plano_fase249.md` |
+| 250 — Balança de carga no armazém (nossa) | **feita em 01/11/2026**, primeira do roteiro balança, cabra e canoa (Fases 250 a 254): a balança decimal de plataforma com os pesos, um saco em cima e os sacos amarrados esperando no lado de cada armazém; plano em `docs/plano_fase250.md` |
+| 251 — Cabras nas encostas (nossa) | **feita em 01/11/2026**: grupos de cabras malhadas de chifres para trás pastando nas encostas íngremes das ilhas temperadas, longe das vilas, uma de pé numa pedra; plano em `docs/plano_fase251.md` |
+| 252 — Carruagem à porta do teatro (nossa) | **feita em 01/11/2026**: a carruagem fechada laqueada de vinho, sem os cavalos, parada na rua diante da entrada de cada teatro; plano em `docs/plano_fase252.md` |
+| 253 — Cestos de batata (nossa) | **feita em 01/11/2026**: os cestos de vime cheios de batata, um tombado com as batatas rolando, os sacos e o forcado no lado de cada fazenda de batata; plano em `docs/plano_fase253.md` |
+| 254 — Canoas na margem do rio (nossa) | **feita em 01/11/2026**, a última do roteiro balança, cabra e canoa: a canoa escavada com o remo e o banco dentro, puxada para a margem baixa dos rios, de comprido ao longo dela, longe das vilas; plano em `docs/plano_fase254.md` |
+| 255 — Ar limpo e tom vivo (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva (Fases 255 a 259), a pedido do dono: a névoa cinza-azulada de longe quase some, a cena ganha contraste, saturação e exposição e o sol fica quente; plano em `docs/plano_fase255.md` |
+| 256 — Copas verdes (nossa) | **feita em 01/11/2026**: as matas deixam de ser blocos quase pretos: folhas mais claras, o alto das copas amarelado de sol e uma luz própria das folhas de dia; plano em `docs/plano_fase256.md` |
+| 257 — Grama viva (nossa) | **feita em 01/11/2026**: a grama deixa o oliva-amarronzado e fica verde-amarelada e viva, de perto e de longe, guardando o claro e o escuro da textura; plano em `docs/plano_fase257.md` |
+| 258 — Telhado e parede com cor (nossa) | **feita em 01/11/2026**: todo telhado em terracota viva ou tábua marrom quente (antes rosa-acinzentado), a tinta das paredes pesando mais que a textura cinza e o reboco quente nas classes de cima; plano em `docs/plano_fase258.md` |
+| 259 — Praia dourada (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva: a areia da praia deixa o cinza-taupe e fica dourada e clara; o mar já tinha ficado vivo na Fase 255; plano em `docs/plano_fase259.md` |
+| 260 — Hora dourada (nossa) | **feita em 01/11/2026**, primeira do roteiro cor viva II (Fases 260 a 264): o fim da tarde e a manhã saem do vermelho-tijolo escuro para um dourado claro, a exposição sobe com o sol baixo e a mata para de brilhar sobre o chão escuro; plano em `docs/plano_fase260.md` |
+| 261 — Rocha cinza (nossa) | **feita em 01/11/2026**: as falésias, os rochedos, as pedras e as encostas saem do marrom-oliva para um cinza claro, com o contraste do verde; plano em `docs/plano_fase261.md` |
+| 262 — Campos coloridos (nossa) | **feita em 01/11/2026**: as leiras dos campos ganham a cor da plantação conforme ela cresce, o trigo do verde ao dourado e as outras no verde delas: de longe cada campo vira um retalho colorido; plano em `docs/plano_fase262.md` |
+| 263 — Noite azul (nossa) | **feita em 01/11/2026**: a noite deixa de ser quase preta fora das janelas: as ruas, os telhados e a mata se leem no azul da lua, com as luzes por cima; plano em `docs/plano_fase263.md` |
+| 264 — Sombra aberta (nossa) | **feita em 01/11/2026**, a última do roteiro cor viva II: a oclusão de ambiente mais leve, e o vão entre as copas e o pé das matas deixam de ficar quase pretos; plano em `docs/plano_fase264.md` |
+| 265 — Garças no rio (nossa) | **feita em 02/11/2026**, primeira do roteiro garça, ruína e cruzeiro (Fases 265 a 269): a garça-real cinza de pé junto da água na margem baixa dos rios, longe das vilas, virando de um lado para o outro; plano em `docs/plano_fase265.md` |
+| 266 — Ruínas de muro (nossa) | **feita em 02/11/2026**: pedaços de muro de pedra seca quebrados em degraus, com as pedras caídas e o musgo, de vez em quando no campo aberto das ilhas temperadas; plano em `docs/plano_fase266.md` |
+| 267 — Espinheiro florido (nossa) | **feita em 02/11/2026**: o arbusto de espinheiro de copa torta coberto de flor branca e rosada na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase267.md` |
+| 268 — Casco naufragado (nossa) | **feita em 02/11/2026**: o esqueleto de um navio velho (a quilha, a roda de proa e as cavernas curvas, umas quebradas, e o mastro partido) encalhado na areia da costa baixa das ilhas temperadas, longe das vilas; plano em `docs/plano_fase268.md` |
+| 269 — Cruzeiro no morro (nossa) | **feita em 02/11/2026**, a última do roteiro garça, ruína e cruzeiro: a cruz de pedra clara sobre o degrau e o pedestal, com o musgo no pé, no ponto mais alto e livre de cada ilha temperada, virada para o meio dela; plano em `docs/plano_fase269.md` |
+| 270 — Corvos no campo (nossa) | **feita em 02/11/2026**, primeira do roteiro corvo, dedaleira e girassol (Fases 270 a 274): corvos pretos bicando a terra nos vãos entre as fileiras dos campos recém-plantados, indo embora quando a plantação cresce; plano em `docs/plano_fase270.md` |
+| 271 — Dedaleiras (nossa) | **feita em 02/11/2026**: touceiras de dedaleira com as hastes altas de sinos roxos e rosados na beira da mata das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase271.md` |
+| 272 — Anel de cogumelos (nossa) | **feita em 02/11/2026**: uma roda de cogumelos claros de chapéu redondo no capim aberto das ilhas temperadas, de vez em quando; plano em `docs/plano_fase272.md` |
+| 273 — Andorinhas no fio (nossa) | **feita em 02/11/2026**: filas de andorinhas de costas azuis e garganta ferrugem pousadas no meio dos fios dos postes das usinas, olhando para um lado e para o outro, de dia; plano em `docs/plano_fase273.md` |
+| 274 — Girassóis (nossa) | **feita em 02/11/2026**, a última do roteiro corvo, dedaleira e girassol: touceiras de girassóis altos de flor amarela encostadas nas casas das ilhas temperadas, balançando com o vento; plano em `docs/plano_fase274.md` |
+| 275 — Abeto em camadas (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata no jeito do Anno (Fases 275 a 279): o abeto-vermelho, um cone escuro de camadas de galhos até perto do chão, vira a conífera da mata (o pinheiro fica em parte, mais no alto), e a beira da mata deixa de ser uma cerca de troncos; plano em `docs/plano_fase275.md` |
+| 276 — Copas na medida (nossa) | **feita em 02/11/2026**: copas ~35% mais estreitas e uma árvore por célula em parte das células da mata temperada (mais no miolo, menos na beira): cada árvore se lê, com o chão e a sombra entre elas; 17.249 árvores desenhadas em vez de 28.830 e a GPU 0,5 ms mais leve; plano em `docs/plano_fase276.md` |
+| 277 — Bétula (nossa) | **feita em 02/11/2026**: a bétula de tronco branco com manchas pretas e copa leve de massas soltas entre as folhosas, mais na beira da mata e na terra baixa das ilhas temperadas; plano em `docs/plano_fase277.md` |
+| 278 — Orla da mata (nossa) | **feita em 02/11/2026**: abetos novos e arbustos de folhosa na beira de cada mata das ilhas temperadas, do lado do campo: a mata desce em degrau e cobre o pé dos troncos; plano em `docs/plano_fase278.md` |
+| 279 — Folhas recortadas (nossa) | **feita em 02/11/2026**, a última do roteiro da mata: de perto, as copas viram cachos de folhas com volume e o contorno recortado, num shader só das árvores; de longe, iguais; plano em `docs/plano_fase279.md` |
+| 280 — Mar fundo (nossa) | **feita em 02/11/2026**, primeira do roteiro do mar e do rio (Fases 280 a 284): o mar das ilhas temperadas sai do azul-elétrico para um azul-petróleo profundo, com a faixa turquesa da costa mais estreita; o das tropicais segue turquesa; plano em `docs/plano_fase280.md` |
+| 281 — Rebentação fina (nossa) | **feita em 02/11/2026**: a faixa branca larga da praia vira a linha fina de espuma colada na areia e nas pedras, com as ondas chegando em linhas quebradas; plano em `docs/plano_fase281.md` |
+| 282 — Água de noite (nossa) | **feita em 02/11/2026**: de noite o mar fica azul-escuro e a faixa da costa só pega a lua; acabou o halo ciano aceso em volta das ilhas; plano em `docs/plano_fase282.md` |
+| 283 — Rio escuro (nossa) | **feita em 02/11/2026**: os rios deixam de ser espuma branca de margem a margem e viram água calma e escura; a margem baixa dos rios das ilhas temperadas vira cascalho cinza; plano em `docs/plano_fase283.md` |
+| 284 — Marulho (nossa) | **feita em 02/11/2026**, a última do roteiro do mar e do rio: o mar aberto ganha a ondulação larga que se lê de longe, com o reflexo do céu ondulando, andando com o vento; plano em `docs/plano_fase284.md` |
+| 285 — Manchas do prado (nossa) | **feita em 02/11/2026**, primeira do roteiro do prado (Fases 285 a 289): o capim deixa de ser de um verde só e ganha manchas de capim alto escuro e de capim baixo claro, de alguns metros; plano em `docs/plano_fase285.md` |
+| 286 — Tapete de capim (nossa) | **feita em 02/11/2026**: perto da câmera o prado vira um tapete de folhas de capim, mais altas e escuras nas manchas de capim alto, balançando com o vento e sumindo aos poucos com a distância; plano em `docs/plano_fase286.md` |
+| 287 — Flores miúdas (nossa) | **feita em 02/11/2026**: pontinhos de flor brancos e amarelos no capim, mais nos prados de flor e no capim baixo, no chão e nos tufos do tapete; plano em `docs/plano_fase287.md` |
+| 288 — Papoulas soltas (nossa) | **feita em 02/11/2026**: os canteiros de papoulas deixam de parecer plantados em grade: touceiras soltas, de tamanhos diferentes, mais juntas no meio do canteiro e menores na borda; plano em `docs/plano_fase288.md` |
+| 289 — Beira do barranco (nossa) | **feita em 02/11/2026**, a última do roteiro do prado: na beira de cima dos barrancos o capim acaba em trechos de terra escura com pedras e raízes, em vez de virar rocha de uma vez; plano em `docs/plano_fase289.md` |
+| 290 — Estratos na rocha (nossa) | **feita em 02/11/2026**, primeira do roteiro da rocha e da costa (Fases 290 a 294): as falésias, os barrancos e as pedras ganham camadas de rocha onduladas com o ressalto claro e a sombra embaixo, e sulcos descendo; plano em `docs/plano_fase290.md` |
+| 291 — Musgo nas saliências (nossa) | **feita em 02/11/2026**: manchas de musgo e capim nas partes planas e nos ressaltos da rocha, mais no lado da sombra, e nada na pedra molhada da maré; plano em `docs/plano_fase291.md` |
+| 292 — Praia de seixos (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, trechos da praia junto das pedras viram seixos cinzentos e redondos, escuros e brilhantes na beira da água; plano em `docs/plano_fase292.md` |
+| 293 — Espuma nas pedras (nossa) | **feita em 02/11/2026**: volta a linha fina de espuma em volta do que entra na água longe da costa (pedras, estacas, boias, degraus do cais), sem reabrir a faixa branca da praia; plano em `docs/plano_fase293.md` |
+| 294 — Abetos na rocha (nossa) | **feita em 02/11/2026**, a última do roteiro da rocha e da costa: abetos pequenos em camadas presos nas encostas íngremes e nas falésias das ilhas temperadas; plano em `docs/plano_fase294.md` |
+| 295 — Espuma em trechos (nossa) | **feita em 02/11/2026**, primeira do roteiro mar e costa II (Fases 295 a 299): a linha branca contínua que corria solta no mar, paralela à praia, vira trechos curtos de espuma que mudam a cada onda; junto da areia a espuma segue inteira; plano em `docs/plano_fase295.md` |
+| 296 — Água picada de perto (nossa) | **feita em 02/11/2026**: de perto, a água ganha a ondulação miúda e cruzada que quebra o reflexo do céu, mais forte com o vento; de longe nada muda; plano em `docs/plano_fase296.md` |
+| 297 — Fiapos de espuma nas pedras (nossa) | **feita em 02/11/2026**: a espuma que bate nas pedras e nas falésias sai levada pelo vento em fiapos compridos e rendados, do lado de baixo do vento; plano em `docs/plano_fase297.md` |
+| 298 — Mar escuro de longe (nossa) | **feita em 02/11/2026**: o mar aberto escurece para o azul-marinho com a distância e reflete menos o céu, mais visível de cima; plano em `docs/plano_fase298.md` |
+| 299 — Fundo à vista no raso (nossa) | **feita em 02/11/2026**, a última do roteiro mar e costa II: nas ilhas temperadas, a água rasa fica mais clara e o fundo aparece, com manchas de alga, pedrinhas e a areia ondulada; plano em `docs/plano_fase299.md` |
+| 300 — Telhas gastas (nossa) | **feita em 02/11/2026**, primeira do roteiro telhado gasto e chão de vila (Fases 300 a 304): cada telhado de telha com o seu tom, umas telhas trocadas mais claras, manchas de musgo e a sujeira escorrida; plano em `docs/plano_fase300.md` |
+| 301 — Chão de vila (nossa) | **feita em 02/11/2026**: nas ilhas temperadas, o chão em volta das casas vira terra pisada de borda recortada, e o capim alto deixa de crescer colado nos prédios; plano em `docs/plano_fase301.md` |
+| 302 — Sujeira nas paredes (nossa) | **feita em 02/11/2026**: o pé das paredes ganha o respingo de terra de borda irregular e as paredes, os escorridos de chuva; plano em `docs/plano_fase302.md` |
+| 303 — Telhado de tábuas (nossa) | **feita em 02/11/2026**: metade das casas dos operários das ilhas temperadas troca a telha por tábuas cinzentas de madeira velha; plano em `docs/plano_fase303.md` |
+| 304 — Muro dos quintais (nossa) | **feita em 02/11/2026**, a última do roteiro telhado gasto e chão de vila: mureta de pedra seca ou cerca de tábuas fechando o quintal de trás das casas dos camponeses, operários e artesãos das ilhas temperadas, quando o fundo é livre; plano em `docs/plano_fase304.md` |
+| 305 — Tom por árvore (nossa) | **feita em 02/11/2026**, primeira do roteiro da mata funda (Fases 305 a 309): cada árvore da mata com o seu tom, umas mais escuras, umas oliva, umas amareladas, em vez do mesmo verde-limão; leve nas coníferas; plano em `docs/plano_fase305.md` |
+| 306 — Chão da mata (nossa) | **feita em 02/11/2026**: o chão debaixo das árvores fica escuro, de folhas e agulhas, com manchas de musgo, e a beira da mata em transição; plano em `docs/plano_fase306.md` |
+| 307 — Sub-bosque (nossa) | **feita em 02/11/2026**: samambaias e arbustos baixos debaixo das árvores da mata das ilhas temperadas; plano em `docs/plano_fase307.md` |
+| 308 — Abetos de longe (nossa) | **feita em 02/11/2026**: os pinheiros e os abetos escurecem e ficam azulados com a distância, como a mata de coníferas vista de longe; plano em `docs/plano_fase308.md` |
+| 309 — Névoa nos vales (nossa) | **feita em 02/11/2026**, a última do roteiro da mata funda: de madrugada até o fim da manhã, lençóis de névoa baixa e mole presos nos vales perto da mata das ilhas temperadas, mais nos dias de neblina; plano em `docs/plano_fase309.md` |
+| 310 — Blocos na face (nossa) | **feita em 02/11/2026**, primeira do roteiro da falésia de verdade (Fases 310 a 314): a rocha das falésias e das pedras se parte em blocos grandes, cada um com o seu tom e o seu plano, com as juntas escuras entre eles; plano em `docs/plano_fase310.md` |
+| 311 — Blocos caídos (nossa) | **feita em 02/11/2026**: um amontoado de blocos de rocha caídos no pé das falésias, meio dentro da água, com a espuma em volta; plano em `docs/plano_fase311.md` |
+| 312 — Capim na borda (nossa) | **feita em 02/11/2026**: uma franja de capim comprido passa da borda de cima das falésias e pende sobre a rocha; plano em `docs/plano_fase312.md` |
+| 313 — Fendas com mato (nossa) | **feita em 02/11/2026**: moitas com capim agarradas nas encostas de rocha e nas faces das falésias, deitadas para fora; plano em `docs/plano_fase313.md` |
+| 314 — Sombra da falésia na água (nossa) | **feita em 02/11/2026**, a última do roteiro da falésia de verdade: a água junto das falésias e dos promontórios escurece do lado da sombra, pela direção e a altura do sol; plano em `docs/plano_fase314.md` |
+| 315 — Capim no alto da garganta (nossa) | **feita em 04/11/2026**, primeira do roteiro da garganta do rio (Fases 315 a 319): nas ilhas temperadas, a faixa de lama marrom no alto das gargantas dos rios e as manchas de lama no planalto viram capim; a margem baixa segue de cascalho; plano em `docs/plano_fase315.md` |
+| 316 — Capim pendendo na garganta (nossa) | **feita em 04/11/2026**: a franja de capim comprido das falésias também na borda de cima das gargantas dos rios, pendendo sobre a rocha; plano em `docs/plano_fase316.md` |
+| 317 — Blocos no pé da garganta (nossa) | **feita em 04/11/2026**: blocos de rocha caídos no leito dos rios, encostados nas paredes altas da garganta e meio dentro da água; plano em `docs/plano_fase317.md` |
+| 318 — Espuma nas pedras do rio (nossa) | **feita em 04/11/2026**: a água do rio faz espuma branca em volta dos matacões e dos blocos caídos, sem virar faixa branca na margem rasa; plano em `docs/plano_fase318.md` |
+| 319 — Correnteza (nossa) | **feita em 04/11/2026**, a última do roteiro da garganta do rio: riscos claros e finos andando ao longo dos rios, as duas margens no mesmo sentido; plano em `docs/plano_fase319.md` |
+| 320 — Franja em tufos (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_320_324.md` (garganta de perto): a franja de capim das falésias e das gargantas em tufos soltos em leque, no lugar do pente de folhas paralelas; plano em `docs/plano_fase320.md` |
+| 321 — Crista sem risco (nossa) | **feita em 05/11/2026**: nas temperadas, a beira do barranco no alto das gargantas de capim rente e pedra, no lugar da linha de terra alaranjada; plano em `docs/plano_fase321.md` |
+| 322 — Parede sem esticado (nossa) | **feita em 05/11/2026**: a rocha das paredes estreitas (a garganta) projetada pela normal da face, sem os riscos esticados, com os estratos e os blocos; plano em `docs/plano_fase322.md` |
+| 323 — Parede que avança (nossa) | **tentada e deixada de fora em 05/11/2026**: a beira e o pé da parede da garganta são presos pela simulação, e empurrar o meio da face não aparece; quebrar as quinas pede mudar o traçado do rio no gerador; registro em `docs/plano_fase323.md` |
+| 324 — Fundo na sombra (nossa) | **feita em 05/11/2026**, a última do roteiro da garganta de perto: a água no fundo das gargantas escura, fosca e sem o reflexo do céu, pelo tanto de céu que as paredes tapam; plano em `docs/plano_fase324.md` |
+| 325 — Prado sem xadrez (nossa) | **feita em 05/11/2026**, a primeira do roteiro `docs/plano_fases_325_329.md` (prado e mata): as manchas do prado sem os quadrados claros e escuros, por um ruído de gradiente girado e torcido, igual no chão e no capim; plano em `docs/plano_fase325.md` |
+| 326 — Mata no tom (nossa) | **feita em 05/11/2026**, a segunda do roteiro `docs/plano_fases_325_329.md` (prado e mata): as folhosas num verde mais fundo e menos saturado, o alto da copa e os tons por árvore sem cortar o azul; plano em `docs/plano_fase326.md` |
+| 327 — Copa sem bolhas (nossa) | **feita em 06/11/2026**, a terceira do roteiro `docs/plano_fases_325_329.md` (prado e mata): a luz das copas das folhosas pela copa inteira, clara no alto e escura na base, com a sombra por dentro entre as massas, no lugar de cada massa clara em cima e escura embaixo; plano em `docs/plano_fase327.md` |
+| 328 — Capim rente (nossa) | **feita em 06/11/2026**, a quarta do roteiro `docs/plano_fases_325_329.md` (prado e mata): o tapete de capim de perto com metade da altura, mais cerrado e no tom do chão, no lugar dos fios verde-limão espetados; plano em `docs/plano_fase328.md` |
+| 329 — Praia em curva (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_325_329.md` (prado e mata): a beira da praia desce em rampa até a água, sem o degrau de 1,2 m nem a escadinha das células, só no desenho e com a linha d'água no mesmo lugar; plano em `docs/plano_fase329.md` |
+| 330 — Sombra funda (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_330_334.md` (luz e sombra): o sol do dia passa para a frente da câmera padrão (estava às costas, e as sombras se escondiam atrás de cada casa e árvore), a luz ambiente fica mais fraca de dia e o mar de longe fica áspero; plano em `docs/plano_fase330.md` |
+| 331 — Abeto sem ciano (nossa) | **feita em 07/11/2026**: os pinheiros e os abetos em verde-escuro oliva, de perto e de longe, no lugar do verde-azulado quase ciano; plano em `docs/plano_fase331.md` |
+| 332 — Casca sem laranja (nossa) | **feita em 07/11/2026**, no lugar do "pé das árvores" (com a sombra do sol à vista, a árvore já assenta): o alto do tronco do pinheiro castanho-avermelhado, sem o laranja vivo; plano em `docs/plano_fase332.md` |
+| 333 — Ar de longe (nossa) | **feita em 07/11/2026**: a neblina do céu só no longe e mais densa, e as ilhas do fundo e o horizonte clareiam e azulam (rosados no fim da tarde), sem mexer no perto; plano em `docs/plano_fase333.md` |
+| 334 — Prado fundo (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_330_334.md` (luz e sombra): as manchas de capim alto mais escuras, que se leem de longe, sem as facetas de borda reta; plano em `docs/plano_fase334.md` |
+| 335 — Estrada clara (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): a terra batida das estradas cinza-bege e mais clara, uma faixa que se lê de longe, no lugar do laranja-tijolo; plano em `docs/plano_fase335.md` |
+| 336 — Cascalho na estrada (nossa) | **feita em 07/11/2026**: pedrinhas cinza-claras na terra das estradas, mais no meio e menos nos sulcos, só de perto; plano em `docs/plano_fase336.md` |
+| 337 — Rua larga na vila (nossa) | **feita em 07/11/2026**: a estrada de terra mais larga onde passa entre as casas e as fábricas e mais estreita no campo, pelo chão de vila da máscara das estradas; plano em `docs/plano_fase337.md` |
+| 338 — Capim na beira (nossa) | **feita em 07/11/2026**: touceiras de capim alto e escuro junto das estradas de terra fora da vila, nas ilhas temperadas; plano em `docs/plano_fase338.md` |
+| 339 — Mourões na estrada (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): lanços de cerca de mourões e travessas em trechos das estradas de terra fora das vilas; plano em `docs/plano_fase339.md` |
+| 340 — Leiras marcadas (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa): o sulco escuro entre as leiras dos campos, que se leem listrados de cima; plano em `docs/plano_fase340.md` |
+| 341 — Cabeceira de capim (nossa) | **feita em 07/11/2026**: a faixa de capim entre os campos mais larga e marcada, com as plantas dentro da terra lavrada; plano em `docs/plano_fase341.md` |
+| 342 — Cor de cultura (nossa) | **feita em 07/11/2026**: cada plantação num verde próprio que se distingue de longe (a batata funda, o lúpulo vivo, a uva oliva, a cana lima, o café escuro, o tabaco palha); plano em `docs/plano_fase342.md` |
+| 343 — Restolho e fardos (nossa) | **feita em 07/11/2026**: depois da colheita do cereal, o campo de restolho claro com os sacos sendo levados, até a plantação voltar; plano em `docs/plano_fase343.md` |
+| 344 — Sebe alta (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_340_344.md` (campos em faixa): a sebe entre as fazendas mais alta e irregular, com moitas altas de vez em quando; plano em `docs/plano_fase344.md` |
+| 345 — Granito no alto (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_345_349.md` (pedra grande): grupos de rocha cinza nos topos e cristas dos morros, fora de onde se constrói; plano em `docs/plano_fase345.md` |
+| 346 — Estratos de longe (nossa) | **feita em 07/11/2026**: bancadas largas e mais marcadas na rocha vista de longe, onde os estratos de perto já sumiam; plano em `docs/plano_fase346.md` |
+| 347 — Leque de cascalho (nossa) | **feita em 07/11/2026**: manchas de cascalho cinza no pé das encostas de rocha e dos barrancos; plano em `docs/plano_fase347.md` |
+| 348 — Fendas escuras (nossa) | **feita em 07/11/2026**: fendas verticais escuras nas faces da rocha e das pedras; plano em `docs/plano_fase348.md` |
+| 349 — Matacões no capim (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_345_349.md` (pedra grande): pedras grandes soltas no capim junto das encostas e dos barrancos das ilhas temperadas; o roteiro custa ~0,3–0,5 ms de GPU; plano em `docs/plano_fase349.md` |
+| 350 — Telhado de madeira (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a maioria das casas dos operários e um terço das dos artesãos com telhado de tábuas, cinza ou marrom; plano em `docs/plano_fase350.md` |
+| 351 — Reboco sujo (nossa) | **feita em 07/11/2026**: o reboco das casas dos engenheiros e investidores num tom por casa (creme, ocre, cinza, rosa-velho), menos branco; plano em `docs/plano_fase351.md` |
+| 352 — Beiral saliente (nossa) | **feita em 07/11/2026**: a faixa de sombra do beiral no alto das fachadas, no shader (o beiral mais largo quebrava a geometria das alas e da igreja); plano em `docs/plano_fase352.md` |
+| 353 — Miolo da quadra (nossa) | **feita em 07/11/2026**: o chão de terra pisada das casas mais largo, cobrindo o miolo entre casas próximas; plano em `docs/plano_fase353.md` |
+| 354 — Fumaça cheia (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_350_354.md` (cidade gasta): a fumaça das chaminés das casas mais cheia, em mais casas e vista de mais longe; plano em `docs/plano_fase354.md` |
+| 355 — Marinho (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_355_359.md` (mar aberto): o mar aberto das temperadas mais escuro, azul-petróleo, visto de cima; plano em `docs/plano_fase355.md` |
+| 356 — Onda de perto (nossa) | **feita em 07/11/2026**: a onda média de perto, com cristas compridas e irregulares e a crista mais clara, e a cintilação do sol mais fraca; plano em `docs/plano_fase356.md` |
+| 357 — Esteira em V (nossa) | **feita em 07/11/2026**: o rastro dos navios abre em V, mais comprido e mais cheio; plano em `docs/plano_fase357.md` |
+| 358 — Onda quebrando (nossa) | **feita em 07/11/2026**: uma onda em quatro chega à praia mais grossa e mais inteira, correndo junto pela costa; plano em `docs/plano_fase358.md` |
+| 359 — Raso verde (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto): o raso das ilhas temperadas verde-escuro sobre o fundo, sem o turquesa; plano em `docs/plano_fase359.md` |
 
 Pendências já vistas para fases futuras:
 
 - Balanceamento: ver `docs/balanceamento.md`. Medido na Fase 27 e folgado na Fase 28 (24/10/2026): o robô joga 4 h
   numa ilha plana de 350×350, o pior saldo fica em −745 e ele chega aos engenheiros aos ~120 min e aos investidores
   aos ~225. Falta medir com gente de verdade jogando: o robô não sente a partida.
-- Desempenho gráfico (medido na RTX 5060 em 25/10/2026, `docs/benchmark.md`): o alto fica em ~48 FPS em 1080p, com
-  a GPU em ~20 ms por quadro, e o ultra tem travadas de até ~2 s (pior tick de até 122 ms no mesmo dia). Falta medir
-  4K, VSync desligado e o build com o shader baker, e conferir no olho as nuvens volumétricas e o rastro do FSR no
-  ultra; o detalhe que falta nos modelos segue no `assets/TODO_ASSETS.md`.
+- Desempenho gráfico (RTX 5060, 1080p, `docs/benchmark.md`): em 25/10/2026 o alto dava ~48 FPS e o ultra travava até
+  ~2 s; em 28/10/2026, na área de trabalho escondida, o alto dá ~86 FPS e o ultra 62 a 64 FPS, com o pior quadro entre 28
+  e 85 ms em três rodadas e nenhuma travada longa (Fase 91: as compilações de shader do anoitecer não param o quadro). A
+  máquina oscila entre um estado lento e um rápido (ver as entradas do benchmark). Medidos 4K, VSync desligado e o
+  build com o shader baker (Fase 92: alto com VSync desligado 86 FPS, 4K 46,5 FPS, executável 89 FPS; o baker não
+  mudou as compilações), e conferir no olho as nuvens volumétricas e o rastro do FSR no ultra; o detalhe que
+  falta nos modelos segue no `assets/TODO_ASSETS.md`.
 - Fase 10 em outro PC: o `Society.exe` abre, toca a música e salva/carrega (critério "abre em outro
   PC" só se confere fora desta VM).
-- No Windows do dono (25/10/2026), `tests/ui/test_menus.gd` → `test_colorblind_option_repaints_the_house_needs` falha
-  (linha 154, a cor do marcador não muda), também no commit de antes da Fase 33; no CI passava. Não investigado.

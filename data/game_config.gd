@@ -41,9 +41,34 @@ static var _default: GameConfig
 @export var sky_ambient_share_day: float = 0.6
 @export var sky_ambient_share_night: float = 0.25
 @export var moon_light_energy: float = 0.7
-## Neblina da atmosfera do Sky3D: densidade e distância onde começa.
-@export var sky_fog_density: float = 0.00035
-@export var sky_fog_start_m: float = 60.0
+## Fase 255: a cor do sol no alto do dia (o Sky3D a mistura com a do horizonte pela altura dele) e a força dele: um branco
+## quente, como o sol do meio da manhã, no lugar do branco puro.
+@export var sun_light_color: Color = Color(1.0, 0.95, 0.86)
+@export var sun_light_energy: float = 1.15
+## Fase 260: a cor do sol perto do horizonte: ouro claro (a do Sky3D, laranja-avermelhada, deixava o chão do fim da tarde e da
+## manhã cor de tijolo escuro).
+@export var sun_horizon_color: Color = Color(1.0, 0.8, 0.55)
+## Fase 260: com o sol baixo a exposição sobe até (1 + dusk_exposure_boost) vezes a do dia, como o olho se acostumando; volta
+## à do dia com o sol a dusk_sun_high de altura (seno da elevação) e à da noite com ele abaixo do horizonte.
+@export var dusk_exposure_boost: float = 0.95
+@export var dusk_sun_high: float = 0.45
+## Fase 263: com o sol abaixo do horizonte (noite), a exposição fica em (1 + night_exposure_boost) vezes a do dia: a noite
+## legível, azulada, com as janelas e os lampiões acesos por cima (antes ficava quase preta fora deles).
+@export var night_exposure_boost: float = 0.45
+## Fase 330: de dia a luz ambiente (o céu e o enchimento) cai para ambient_day_energy vezes a de noite e do fim da tarde: a
+## sombra do sol aparece no chão e no pé da mata. Cheia com o sol a ambient_day_sun_high de altura (seno da elevação); com ele
+## baixo, volta à ambient_fill_energy.
+@export var ambient_day_energy: float = 0.75
+@export var ambient_day_sun_high: float = 0.35
+## Fase 330: o giro (graus) do sol e da lua em volta do eixo vertical, para o sol do dia ficar na frente e de lado da câmera
+## padrão (que olha para −z) e as sombras se verem.
+@export var sun_azimuth_offset_deg: float = 180.0
+## Neblina da atmosfera do Sky3D: densidade, distância onde começa e onde fica cheia. Fase 255: 0,0001 desde 60 m (de longe a ilha
+## ficava limpa, mas sem ar). Fase 333: só depois de sky_fog_start_m, mais densa até sky_fog_end_m: perto nada muda, e o longe
+## clareia e azula (a perspectiva aérea; a cor sai do céu do Sky3D, quente no fim da tarde).
+@export var sky_fog_density: float = 0.0012
+@export var sky_fog_start_m: float = 250.0
+@export var sky_fog_end_m: float = 3000.0
 
 @export_group("Economia")
 @export var starting_money: int = 50000
@@ -166,6 +191,28 @@ static var _default: GameConfig
 @export var max_open_missions: int = 2
 ## Eventos e encomendas são conferidos a cada tantos ticks.
 @export var events_check_ticks: int = 5
+## Jornal (Fase 63): a primeira edição sai depois de newspaper_first_after_s de jogo e as seguintes a cada
+## newspaper_interval_s; a propaganda que troca a manchete da edição custa newspaper_propaganda_cost moedas.
+@export var newspaper_first_after_s: float = 300.0
+@export var newspaper_interval_s: float = 600.0
+@export var newspaper_propaganda_cost: int = 2500
+## Turismo (Fase 68, com os eventos ligados): a atratividade da ilha com entreposto e casas soma a beleza que ela
+## espalha (decorações, zoológico e museu com as peças) vezes attractiveness_per_beauty e desconta a poluição dos prédios
+## vezes attractiveness_per_pollution; os turistas pagam tourism_coins_per_point moedas por minuto por ponto, e mais
+## tourism_festival_bonus (fração) com a festa na ilha.
+@export var attractiveness_per_beauty: float = 100.0
+@export var attractiveness_per_pollution: float = 60.0
+@export var tourism_coins_per_point: float = 0.5
+@export var tourism_festival_bonus: float = 0.5
+## Fase 80: turistas na rua (só visual, como os pedestres): um por tantos pontos de atratividade da ilha, até o teto
+## por ilha (vezes a fração de pedestres do nível gráfico). Números provisórios, à espera do dono.
+@export var tourists_per_point: float = 0.05
+@export var max_tourists_per_island: int = 30
+## Ferrovia (Fase 70): o custo de cada célula de trilho (moedas e tábuas) e quanto petróleo a usina guarda no máximo
+## (toneladas): o trilho leva do poço até encher.
+@export var rail_cost_per_cell: int = 15
+@export var rail_planks_per_cell: float = 0.5
+@export var rail_input_buffer_t: float = 6.0
 
 @export_group("Estaleiro")
 ## O navio encomendado ao estaleiro custa esta fração do preço do entreposto (moedas e materiais,
@@ -266,9 +313,10 @@ static var _default: GameConfig
 @export var archipelago_island_counts: PackedInt32Array = PackedInt32Array([5, 7, 9])
 ## Tamanho usado quando ninguém escolhe (testes, ferramentas, `-- --novo-jogo`).
 @export var default_archipelago_size: int = 0
-## Fase 45: o gerador dos jogos novos (1, o de sempre, até o dono aprovar o v2 pela prévia; 2, as ilhas orgânicas).
-## Os saves refazem o terreno na versão que gravaram.
-@export var new_game_terrain_version: int = 1
+## Fase 45: o gerador dos jogos novos (1, o de sempre; 2, as ilhas orgânicas; desde a Fase 52, a pedido do dono, 3: as
+## ilhas alongadas com enseadas e falésias; desde a Fase 93, 4: o v3 com porto garantido em toda ilha). Os saves refazem o
+## terreno na versão que gravaram.
+@export var new_game_terrain_version: int = 4
 @export var main_island_profile: StringName = &"main_island"
 ## Perfis sorteados (pela semente) para as outras ilhas.
 @export var other_island_profiles: Array[StringName] = [&"farmland", &"highlands", &"woodland", &"reef"]
@@ -487,6 +535,14 @@ static var _default: GameConfig
 @export var terrain_hex_distance_m: float = 220.0
 ## Fase 35: até onde (m) o campo de distância da costa mede, para cada lado da linha d'água.
 @export var coast_field_max_m: float = 64.0
+## Fase 55: em quantas partes de lado se divide o quadrado da malha que a linha d'água atravessa (1 desliga), e quanto
+## (m) a altura curva pode sair da reta entre os cantos.
+@export var terrain_coast_subdivisions: int = 3
+@export var terrain_coast_refine_max_m: float = 0.8
+## Fase 62: o quadrado seco com pelo menos este desnível (m) entre os cantos também se divide (0 desliga); fica acima de
+## max_road_relief_m, então nenhuma célula onde se constrói muda. E a aspereza de rocha (m) dos pontos novos da falésia.
+@export var terrain_cliff_refine_relief_m: float = 2.4
+@export var terrain_cliff_rough_m: float = 0.35
 ## Fase 38: a estrada de terra pintada no terreno (desligada, volta o ladrilho), os pixels da máscara por célula e até
 ## onde (m da linha do meio) ela mede a distância.
 @export var road_paint: bool = true
@@ -495,16 +551,24 @@ static var _default: GameConfig
 ## Até onde a fumaça das chaminés aparece no nível alto, e a força da fuligem no chão.
 @export var smoke_visibility_range_m: float = 450.0
 @export var soot_decal_alpha: float = 0.55
-## Força dos efeitos do ambiente quando o nível os liga.
-@export var ssao_intensity: float = 1.6
+## Força dos efeitos do ambiente quando o nível os liga. Fase 264: o SSAO de 1,6 para 0,9 (com 1,6 o vão entre as copas e o pé
+## das matas ficavam quase pretos).
+@export var ssao_intensity: float = 0.9
 @export var glow_intensity: float = 0.5
 @export var glow_bloom: float = 0.03
 @export var glow_hdr_threshold: float = 1.1
-@export var volumetric_fog_density: float = 0.004
+## Fase 255: a névoa volumétrica (alto e ultra) caiu de 0,0018 para 0,0004: com ela a vista de longe ficava atrás de um
+## véu cinza-azulado. A neblina e a chuva do clima somam a delas por cima.
+@export var volumetric_fog_density: float = 0.0004
 @export var volumetric_fog_length_m: float = 220.0
 ## Fase 37: com a "Cor de época" ligada, o branco e o contraste do AgX (6 a 8 é a faixa das cenas realistas).
 @export var period_agx_white: float = 7.0
 @export var period_agx_contrast: float = 1.1
+## Fase 255: a cor viva, o padrão com a "Cor de época" desligada: a exposição, o contraste do AgX e a saturação depois dele
+## (o AgX sozinho achatava e dessaturava a cena).
+@export var vivid_exposure: float = 1.12
+@export var vivid_agx_contrast: float = 1.4
+@export var vivid_saturation: float = 1.25
 ## Efeito miniatura (tilt-shift): só com a câmera até esta distância; o desfoque longe começa em
 ## distância × far_factor e o de perto termina em distância × near_factor.
 @export var tilt_shift_max_distance_m: float = 90.0
@@ -555,11 +619,18 @@ func day_length_game_seconds() -> float:
 ## Lista os valores inválidos. Vazia quando a configuração está boa.
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()
-	if new_game_terrain_version not in [1, 2]:
-		problems.append("new_game_terrain_version deve ser 1 ou 2")
+	if new_game_terrain_version not in ArchipelagoGenerator.VERSIONS:
+		problems.append("new_game_terrain_version deve ser 1, 2, 3 ou 4")
 	problems.append_array(TerrainV2Params.get_default().validate())
+	problems.append_array(TerrainV3Params.get_v3().validate())
 	if ticks_per_second <= 0:
 		problems.append("ticks_per_second deve ser maior que zero")
+	if vivid_exposure <= 0.0 or vivid_agx_contrast <= 0.0 or vivid_saturation <= 0.0 or sun_light_energy <= 0.0:
+		problems.append("a cor viva (exposição, contraste, saturação) e a força do sol devem ser maiores que zero")
+	if ambient_day_energy <= 0.0 or ambient_day_sun_high <= 0.05:
+		problems.append("ambient_day_energy deve ser maior que zero e ambient_day_sun_high passar de 0,05")
+	if dusk_exposure_boost < 0.0 or night_exposure_boost < 0.0 or dusk_sun_high <= 0.05:
+		problems.append("dusk_exposure_boost e night_exposure_boost não podem ser negativos e dusk_sun_high deve passar de 0,05")
 	if max_ticks_per_frame <= 0:
 		problems.append("max_ticks_per_frame deve ser maior que zero")
 	if game_speeds.is_empty():
@@ -608,6 +679,11 @@ func validate() -> PackedStringArray:
 		problems.append("encomendas: tempos positivos")
 	if max_active_events < 1 or max_open_missions < 1 or events_check_ticks < 1:
 		problems.append("max_active_events, max_open_missions e events_check_ticks pelo menos 1")
+	if newspaper_first_after_s <= 0.0 or newspaper_interval_s <= 0.0 or newspaper_propaganda_cost < 0:
+		problems.append("jornal: tempos positivos e propaganda não negativa")
+	if attractiveness_per_beauty < 0.0 or attractiveness_per_pollution < 0.0 or tourism_coins_per_point < 0.0 \
+			or tourism_festival_bonus < 0.0:
+		problems.append("turismo: os pesos não podem ser negativos")
 	if rival_base_relation.size() != 3 or rival_island_share < 0.0 or rival_island_share > 1.0 or rival_residents_per_cell <= 0.0 \
 			or rival_residents_per_house <= 0.0 or rival_max_houses < 2:
 		problems.append("rivais: três relações de base, fração entre 0 e 1, teto e casas positivos")
@@ -645,6 +721,10 @@ func validate() -> PackedStringArray:
 		problems.append("build_grid_radius_m deve ser maior que zero")
 	if terrain_water_distance_m <= 0.0 or terrain_hex_distance_m <= 0.0 or coast_field_max_m <= 0.0:
 		problems.append("terrain_water_distance_m, terrain_hex_distance_m e coast_field_max_m devem ser maiores que zero")
+	if terrain_coast_subdivisions < 1 or terrain_coast_subdivisions > 8 or terrain_coast_refine_max_m < 0.0:
+		problems.append("terrain_coast_subdivisions deve ficar entre 1 e 8 e terrain_coast_refine_max_m não pode ser negativo")
+	if terrain_cliff_rough_m < 0.0 or (terrain_cliff_refine_relief_m > 0.0 and terrain_cliff_refine_relief_m <= max_road_relief_m):
+		problems.append("terrain_cliff_rough_m não pode ser negativo e terrain_cliff_refine_relief_m (se ligado) deve passar de max_road_relief_m")
 	if road_mask_px_per_cell < 1 or road_mask_max_m <= 0.0:
 		problems.append("road_mask_px_per_cell deve ser pelo menos 1 e road_mask_max_m maior que zero")
 	if status_icon_full_m <= 0.0 or status_icon_fade_end_m <= status_icon_full_m or status_icon_cluster_m <= 0.0 \
