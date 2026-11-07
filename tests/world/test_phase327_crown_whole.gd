@@ -64,7 +64,9 @@ func test_the_pine_keeps_its_masses() -> void:
 	var now := leaf_light(TreeModel.Species.SCOTS_PINE)
 	var before: Vector2 = BEFORE[TreeModel.Species.SCOTS_PINE]
 	assert_float(now.x).is_equal_approx(before.x, 0.002)
-	assert_float(now.y).is_equal_approx(before.y, 0.002)
+	# (Fase 331: as agulhas mudaram de cor, de (0,24; 0,45; 0,21) para a de agora; o brilho segue na mesma proporção)
+	var needle := TreeModel.PINE_NEEDLE
+	assert_float(now.y).is_equal_approx(before.y * (needle.r + needle.g + needle.b) / 0.9, 0.004)
 
 
 func test_the_crown_constants() -> void:
