@@ -3828,6 +3828,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase358.md`. No `shaders/water.gdshader`, uma crista em `breaker_every` é série: mais grossa e com menos falhas,
   no mesmo alcance. **Espuma inteira ou mais longe da praia vira a fita branca solta no mar** (o defeito da Fase 295).
 
+### Raso verde (Fase 359, nossa)
+
+- **Plano** em `docs/plano_fase359.md`, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto). `cold_shelf` no
+  `shaders/water.gdshader` em (0,22; 0,44; 0,38): o raso das temperadas verde-escuro sobre o fundo, sem o turquesa.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4197,6 +4202,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 356 — Onda de perto (nossa) | **feita em 07/11/2026**: a onda média de perto, com cristas compridas e irregulares e a crista mais clara, e a cintilação do sol mais fraca; plano em `docs/plano_fase356.md` |
 | 357 — Esteira em V (nossa) | **feita em 07/11/2026**: o rastro dos navios abre em V, mais comprido e mais cheio; plano em `docs/plano_fase357.md` |
 | 358 — Onda quebrando (nossa) | **feita em 07/11/2026**: uma onda em quatro chega à praia mais grossa e mais inteira, correndo junto pela costa; plano em `docs/plano_fase358.md` |
+| 359 — Raso verde (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto): o raso das ilhas temperadas verde-escuro sobre o fundo, sem o turquesa; plano em `docs/plano_fase359.md` |
 
 Pendências já vistas para fases futuras:
 

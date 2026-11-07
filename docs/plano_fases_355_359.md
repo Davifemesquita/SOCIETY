@@ -36,3 +36,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
 - **357 feita em 07/11/2026** (`docs/plano_fase357.md`): o rastro em V; a captura ficou inconclusiva (o navio mal saíra).
 - **358 feita em 07/11/2026** (`docs/plano_fase358.md`): a série de ondas mais grossas, junto da praia; capturas em
   `F:\ferramentas\capturas\fase358\`.
+- **359 feita em 07/11/2026** (`docs/plano_fase359.md`): o raso das temperadas verde-escuro; capturas em
+  `F:erramentas\capturasase359\`. **Roteiro concluído.**
