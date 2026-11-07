@@ -55,13 +55,15 @@ const COVER_MAX := 0.7
 static var cover_max := COVER_MAX
 const CEREAL_GREEN := Color(0.42, 0.6, 0.2)
 const CEREAL_GOLD := Color(0.86, 0.68, 0.28)
+## Fase 342: cada cultura num verde que se distingue de longe (eram quase iguais): a batata verde-escuro fundo, o lúpulo verde-
+## amarelado vivo, a uva oliva fosca, a cana lima clara, o café verde-escuro e o tabaco verde-palha.
 const CROP_COVER := {
-	BuildingDef.Crop.TUBER: Color(0.3, 0.52, 0.18),
-	BuildingDef.Crop.HOPS: Color(0.34, 0.54, 0.2),
-	BuildingDef.Crop.VINE: Color(0.36, 0.5, 0.2),
-	BuildingDef.Crop.CANE: Color(0.46, 0.62, 0.24),
-	BuildingDef.Crop.BUSH: Color(0.26, 0.48, 0.18),
-	BuildingDef.Crop.BROADLEAF: Color(0.4, 0.56, 0.22),
+	BuildingDef.Crop.TUBER: Color(0.2, 0.4, 0.14),
+	BuildingDef.Crop.HOPS: Color(0.48, 0.62, 0.2),
+	BuildingDef.Crop.VINE: Color(0.36, 0.44, 0.2),
+	BuildingDef.Crop.CANE: Color(0.52, 0.72, 0.26),
+	BuildingDef.Crop.BUSH: Color(0.13, 0.29, 0.13),
+	BuildingDef.Crop.BROADLEAF: Color(0.64, 0.67, 0.3),
 }
 
 ## Pasto: lanço de cerca (m), folga da cerca até a borda e touceiras de capim por célula.

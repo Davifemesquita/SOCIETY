@@ -3737,6 +3737,11 @@ Regras que já custaram investigação:
   (`MARGIN_M` 0,8) e a cabeceira (`HEADLAND_M` 1,1): a faixa de capim entre os campos fica de 0,76 a 1,48 m. **A margem e a cabeceira
   passam sempre do recuo máximo do contorno** (senão as plantas caem no capim).
 
+### Cor de cultura (Fase 342, nossa)
+
+- **Plano** em `docs/plano_fase342.md`. `CropView.CROP_COVER` espalhado pelo brilho e pelo matiz (cada cultura se lê de longe), sempre
+  verde pela regra da Fase 262.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4089,6 +4094,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 339 — Mourões na estrada (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): lanços de cerca de mourões e travessas em trechos das estradas de terra fora das vilas; plano em `docs/plano_fase339.md` |
 | 340 — Leiras marcadas (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_340_344.md` (campos em faixa): o sulco escuro entre as leiras dos campos, que se leem listrados de cima; plano em `docs/plano_fase340.md` |
 | 341 — Cabeceira de capim (nossa) | **feita em 07/11/2026**: a faixa de capim entre os campos mais larga e marcada, com as plantas dentro da terra lavrada; plano em `docs/plano_fase341.md` |
+| 342 — Cor de cultura (nossa) | **feita em 07/11/2026**: cada plantação num verde próprio que se distingue de longe (a batata funda, o lúpulo vivo, a uva oliva, a cana lima, o café escuro, o tabaco palha); plano em `docs/plano_fase342.md` |
 
 Pendências já vistas para fases futuras:
 

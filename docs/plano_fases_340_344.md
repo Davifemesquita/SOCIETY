@@ -31,3 +31,4 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase340\`.
 - **341 feita em 07/11/2026** (`docs/plano_fase341.md`): a faixa de capim entre os campos de 0,76 a 1,48 m; capturas em
   `F:\ferramentas\capturas\fase341\`.
+- **342 feita em 07/11/2026** (`docs/plano_fase342.md`): as coberturas das culturas espalhadas pelo brilho e pelo matiz.
