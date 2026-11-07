@@ -32,6 +32,10 @@ const GREEN_TINT := Color(0.55, 1.0, 0.45)
 const HARVEST_SPOTS := 5
 const HARVEST_FROM := 12
 const HARVEST_SCALE := 0.62
+## Fase 343: depois da colheita do cereal, nos STUBBLE_STEPS primeiros degraus, as leiras são de restolho (STUBBLE, a palha cortada
+## clara) que vai sumindo na terra, e os sacos da colheita ficam no campo e vão sendo levados (`left_after_harvest`).
+const STUBBLE_STEPS := 4
+const STUBBLE := Color(0.74, 0.64, 0.4)
 ## A juta dos sacos da colheita (mais escura que a dos sacos do estoque: no meio da planta clara eles sumiam), puxada de leve
 ## para a cor do bem.
 const HARVEST_SACK := Color(0.42, 0.32, 0.2)
@@ -508,13 +512,16 @@ func _draw_field(field_id: int) -> void:
 	var furrow_total: int = field[6]
 	for index: int in furrow_total:
 		_furrows.multimesh.set_instance_color(first_furrow + index, soil)
-	_draw_harvest(field_id, step)
+	_draw_harvest(field_id, step, crop)
 
 
 ## Fase 157: mostra os caixotes e sacos da colheita que o degrau do campo pede; os outros ficam encolhidos a zero.
-func _draw_harvest(field_id: int, step: int) -> void:
+func _draw_harvest(field_id: int, step: int, crop: int) -> void:
 	var pieces: Array = _harvest.get(field_id, [])
 	var shown := harvest_shown_at(step) if not pieces.is_empty() else 0
+	if crop == BuildingDef.Crop.GRAIN and not pieces.is_empty():
+		# Fase 343: os sacos ficam no restolho até serem levados
+		shown = maxi(shown, left_after_harvest(step))
 	_harvest_shown[field_id] = shown
 	for piece: Array in pieces:
 		var place: Transform3D = piece[0]
@@ -533,7 +540,18 @@ static func furrow_color_at(crop: int, step: int) -> Color:
 	var cover: Color = CROP_COVER.get(crop, CEREAL_GREEN)
 	if crop == BuildingDef.Crop.GRAIN:
 		cover = CEREAL_GREEN.lerp(CEREAL_GOLD, smoothstep(0.45, 0.95, t))
-	return soil.lerp(cover, cover_max * smoothstep(0.0, 0.6, t))
+	var grown := soil.lerp(cover, cover_max * smoothstep(0.0, 0.6, t))
+	if crop == BuildingDef.Crop.GRAIN and step < STUBBLE_STEPS:
+		# Fase 343: o restolho do cereal, sumindo na terra
+		return STUBBLE.lerp(grown, float(step) / STUBBLE_STEPS)
+	return grown
+
+
+## Fase 343: quantos lugares da colheita do cereal seguem no campo logo depois dela: todos no degrau 0, nenhum no STUBBLE_STEPS.
+static func left_after_harvest(step: int) -> int:
+	if step >= STUBBLE_STEPS:
+		return 0
+	return ceili(HARVEST_SPOTS * float(STUBBLE_STEPS - step) / STUBBLE_STEPS)
 
 
 ## Quantos lugares da colheita aparecem no degrau do crescimento: nenhum antes de HARVEST_FROM, todos no degrau cheio.
