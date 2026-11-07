@@ -63,9 +63,12 @@ static var _default: GameConfig
 ## Fase 330: o giro (graus) do sol e da lua em volta do eixo vertical, para o sol do dia ficar na frente e de lado da câmera
 ## padrão (que olha para −z) e as sombras se verem.
 @export var sun_azimuth_offset_deg: float = 180.0
-## Neblina da atmosfera do Sky3D: densidade e distância onde começa (Fase 255: a metade da Fase 53, de longe a ilha fica limpa).
-@export var sky_fog_density: float = 0.0001
-@export var sky_fog_start_m: float = 60.0
+## Neblina da atmosfera do Sky3D: densidade, distância onde começa e onde fica cheia. Fase 255: 0,0001 desde 60 m (de longe a ilha
+## ficava limpa, mas sem ar). Fase 333: só depois de sky_fog_start_m, mais densa até sky_fog_end_m: perto nada muda, e o longe
+## clareia e azula (a perspectiva aérea; a cor sai do céu do Sky3D, quente no fim da tarde).
+@export var sky_fog_density: float = 0.0012
+@export var sky_fog_start_m: float = 250.0
+@export var sky_fog_end_m: float = 3000.0
 
 @export_group("Economia")
 @export var starting_money: int = 50000

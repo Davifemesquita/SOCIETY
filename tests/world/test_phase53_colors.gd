@@ -23,7 +23,8 @@ func test_leaves_are_greener_than_before() -> void:
 
 func test_the_haze_is_lighter() -> void:
 	var config := GameConfig.get_default()
-	assert_float(config.sky_fog_density).is_less_equal(0.0002)
+	# (Fase 333: mais densa, só no longe)
+	assert_bool(config.sky_fog_density <= 0.0002 or config.sky_fog_start_m >= 200.0).is_true()
 	assert_float(config.volumetric_fog_density).is_less_equal(0.0018)
 
 

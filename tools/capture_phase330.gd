@@ -13,6 +13,20 @@ func _run() -> void:
 	var grid := game.simulation.world.island(Simulation.MAIN_ISLAND)
 	var high := grid.cell_world(_forest(grid, points[0], true))
 	var low := grid.cell_world(_forest(grid, points[0], false))
+	# CAPTURA_AR ("começo/fim/densidade|...") tira a vila de longe e o horizonte com cada neblina atmosférica do Sky3D (Fase 333)
+	var air_lab := OS.get_environment("CAPTURA_AR")
+	if air_lab != "":
+		var dome: Node = game.sky.get_child(0).get(&"sky")
+		for variant: String in air_lab.split("|"):
+			var parts := variant.split("/")
+			dome.set(&"fog_start", parts[0].to_float())
+			dome.set(&"fog_end", parts[1].to_float())
+			dome.set(&"fog_density", parts[2].to_float())
+			var prefix := "ar%s_%s_%s" % [parts[0], parts[1], parts[2]]
+			await _shot(game, prefix + "_vila_de_longe.png", points[0], 420.0, 0.6)
+			await _horizon(game, prefix + "_horizonte.png", points[0])
+		get_tree().quit()
+		return
 	# CAPTURA_AGUA ("nome=valor;nome=valor|...") tira a vila de longe com cada troca de uniformes da água, uma por variante
 	var water_lab := OS.get_environment("CAPTURA_AGUA")
 	if water_lab != "":
@@ -48,13 +62,34 @@ func _run() -> void:
 			await _shot(game, prefix + "_mata_alta_de_perto.png", high, 70.0, 0.0)
 		get_tree().quit()
 		return
+	# CAPTURA_AR_ANTIGO=1: a neblina de antes da Fase 333, para o antes e depois
+	if OS.get_environment("CAPTURA_AR_ANTIGO") == "1":
+		var old_dome: Node = game.sky.get_child(0).get(&"sky")
+		old_dome.set(&"fog_start", 60.0)
+		old_dome.set(&"fog_end", 1000.0)
+		old_dome.set(&"fog_density", 0.0001)
 	await _shot(game, "01_vila_de_cima.png", points[0], 110.0, 0.6)
 	await _shot(game, "02_vila_de_perto.png", points[0], 45.0, 0.6)
 	await _shot(game, "03_mata_alta_de_perto.png", high, 70.0, 0.6)
 	await _shot(game, "04_mata_alta.png", high, 160.0, 0.6)
 	await _shot(game, "05_mata_baixa_de_perto.png", low, 70.0, 0.6)
 	await _shot(game, "06_vila_de_longe.png", points[0], 420.0, 0.6)
+	# Fase 333: o horizonte, com a câmera deitada (as ilhas do fundo)
+	await _horizon(game, "07_horizonte.png", points[0])
+	# o horizonte no fim da tarde e à noite (a cor do ar sai do céu; o Sky3D passa a luz ambiente em 3 s)
+	_set_hour(18.2)
+	await get_tree().create_timer(3.5).timeout
+	await _horizon(game, "08_horizonte_fim_de_tarde.png", points[0])
+	_set_hour(22.0)
+	await get_tree().create_timer(3.5).timeout
+	await _horizon(game, "09_horizonte_noite.png", points[0])
 	get_tree().quit()
+
+
+func _horizon(game: GameScreen, file_name: String, focus: Vector3) -> void:
+	game.camera.rig.pitch_offset_deg = -24.0
+	await _shot(game, file_name, focus, 220.0, 0.6)
+	game.camera.rig.pitch_offset_deg = 0.0
 
 
 ## Troca uniformes do material ("nome=valor;nome=valor").

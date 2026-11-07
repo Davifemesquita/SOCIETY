@@ -7,7 +7,8 @@ func test_the_haze_is_thin() -> void:
 	var config := GameConfig.get_default()
 	# antes: 0,0018 na volumétrica e 0,0002 no domo do Sky3D
 	assert_float(config.volumetric_fog_density).is_less_equal(0.0005)
-	assert_float(config.sky_fog_density).is_less_equal(0.0001)
+	# (Fase 333: a do domo é mais densa, mas só depois de 200 m: perto, o ar segue limpo)
+	assert_bool(config.sky_fog_density <= 0.0001 or config.sky_fog_start_m >= 200.0).is_true()
 	assert_array(Array(config.validate())).is_empty()
 
 
