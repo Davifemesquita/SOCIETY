@@ -3714,6 +3714,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase337.md`. A meia largura da estrada de terra (`road_half_width_m`, 0,72 no campo) cresce
   `road_town_widen_m` onde o canal b da máscara (o chão de vila) passa de 0,25: a rua quase enche a célula entre as casas.
 
+### Capim na beira (Fase 338, nossa)
+
+- **Plano** em `docs/plano_fase338.md`. `ScatterView.Kind.VERGE_GRASS` (no fim do enum, das `PLANTS` e da lista `NEAR_ROAD`): a touceira
+  de capim alto sem a mancha, mais escura, junto das estradas de campo das temperadas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4062,6 +4067,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 335 — Estrada clara (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_335_339.md` (estrada no jeito do Anno): a terra batida das estradas cinza-bege e mais clara, uma faixa que se lê de longe, no lugar do laranja-tijolo; plano em `docs/plano_fase335.md` |
 | 336 — Cascalho na estrada (nossa) | **feita em 07/11/2026**: pedrinhas cinza-claras na terra das estradas, mais no meio e menos nos sulcos, só de perto; plano em `docs/plano_fase336.md` |
 | 337 — Rua larga na vila (nossa) | **feita em 07/11/2026**: a estrada de terra mais larga onde passa entre as casas e as fábricas e mais estreita no campo, pelo chão de vila da máscara das estradas; plano em `docs/plano_fase337.md` |
+| 338 — Capim na beira (nossa) | **feita em 07/11/2026**: touceiras de capim alto e escuro junto das estradas de terra fora da vila, nas ilhas temperadas; plano em `docs/plano_fase338.md` |
 
 Pendências já vistas para fases futuras:
 

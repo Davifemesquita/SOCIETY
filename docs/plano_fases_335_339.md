@@ -33,3 +33,5 @@ Cada fase segue a regra de sempre: plano curto, testes, captura e benchmark, com
   `F:\ferramentas\capturas\fase336\`.
 - **337 feita em 07/11/2026** (`docs/plano_fase337.md`): a rua mais larga no chão de vila (o canal b da máscara), mais estreita no
   campo; capturas em `F:\ferramentas\capturas\fase337\`.
+- **338 feita em 07/11/2026** (`docs/plano_fase338.md`): o capim alto e escuro do recheio na beira das estradas de campo; capturas em
+  `F:\ferramentas\capturas\fase338\`.

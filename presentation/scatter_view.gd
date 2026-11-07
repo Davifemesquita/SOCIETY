@@ -35,7 +35,7 @@ extends Node3D
 
 enum Kind { BUSH, TUFT, FLOWERS, PEBBLE, BARREL, CRATE, WOODPILE, BANANA, FERN, HELICONIA, YARD_TREE, STREET_PALM, SNAG,
 		POPPIES, DRIFTWOOD, SCREE, TALL_GRASS, REEDS, ROCK_PINE, SEAWEED, MOSSY_LOG, RUIN, HAWTHORN, FOXGLOVE, FAIRY_RING,
-		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH, CLIFF_SHRUB }
+		SUNFLOWER, CLIFF_SPRUCE, FOREST_FERN, UNDERBRUSH, CLIFF_SHRUB, VERGE_GRASS }
 
 const CHUNK_CELLS := 32
 ## Quanto em volta de um prédio novo o recheio se refaz: 2 células, mais nos prédios cujas peças ficam longe dele (o cemitério
@@ -49,7 +49,7 @@ const SHADOWED: Array[int] = [Kind.BUSH, Kind.BARREL, Kind.CRATE, Kind.WOODPILE,
 ## As plantas (material da folhagem, balançam).
 const PLANTS: Array[int] = [Kind.BUSH, Kind.TUFT, Kind.FLOWERS, Kind.BANANA, Kind.FERN, Kind.HELICONIA, Kind.YARD_TREE,
 		Kind.POPPIES, Kind.TALL_GRASS, Kind.REEDS, Kind.ROCK_PINE, Kind.HAWTHORN, Kind.FOXGLOVE, Kind.SUNFLOWER,
-		Kind.FOREST_FERN, Kind.UNDERBRUSH, Kind.CLIFF_SHRUB]
+		Kind.FOREST_FERN, Kind.UNDERBRUSH, Kind.CLIFF_SHRUB, Kind.VERGE_GRASS]
 const BANANA_SHARE := 0.4
 const BANANA_LEAF := Color(0.36, 0.58, 0.18)
 const BANANA_STEM := Color(0.42, 0.46, 0.2)
@@ -80,7 +80,12 @@ const NEAR_FOREST: Array[Array] = [[Kind.BUSH, 0.35], [Kind.TUFT, 0.4], [Kind.FL
 		[Kind.HAWTHORN, HAWTHORN_CHANCE], [Kind.FOXGLOVE, FOXGLOVE_CHANCE], [Kind.CLIFF_SPRUCE, CLIFF_SPRUCE_CHANCE],
 		[Kind.CLIFF_SHRUB, CLIFF_SHRUB_CHANCE]]
 const NEAR_ROAD: Array[Array] = [[Kind.TUFT, 0.45], [Kind.PEBBLE, 0.12], [Kind.FLOWERS, 0.12], [Kind.BUSH, 0.05],
-		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE]]
+		[Kind.STREET_PALM, STREET_PALM_CHANCE], [Kind.POPPIES, POPPY_CHANCE], [Kind.VERGE_GRASS, VERGE_GRASS_CHANCE]]
+## Fase 338: o capim da beira (VERGE_GRASS), a touceira de capim alto da Fase 167 sem a mancha dela, no fim da lista NEAR_ROAD (a
+## beira das estradas fora da vila: perto de casa e de fábrica valem outras listas), só nas temperadas, mais escura
+## (VERGE_GRASS_SHADE).
+const VERGE_GRASS_CHANCE := 0.55
+const VERGE_GRASS_SHADE := Vector2(0.62, 0.82)
 ## Fase 112: o coqueiro da rua tropical — a chance por célula na beira da rua e o tamanho dele (o coqueiro da mata reduzido).
 const STREET_PALM_CHANCE := 0.16
 const STREET_PALM_SCALE := 0.55
@@ -828,6 +833,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.SUNFLOWER and tropical:
 			# os girassóis só nos quintais das temperadas
 			continue
+		elif kind == Kind.VERGE_GRASS and tropical:
+			# o capim da beira só nas estradas das temperadas
+			continue
 		elif kind == Kind.CLIFF_SHRUB and cell_relief(grid, cell) < CLIFF_SHRUB_MIN_RELIEF_M:
 			# o mato das fendas só na face das falésias
 			continue
@@ -839,7 +847,7 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 		elif kind == Kind.POPPIES:
 			# Fase 288: o canteiro solto pela célula (antes quase no meio de todas: em fila, parecia plantado em grade)
 			offset *= POPPY_SPREAD
-		elif kind == Kind.TALL_GRASS:
+		elif kind == Kind.TALL_GRASS or kind == Kind.VERGE_GRASS:
 			# a touceira cobre a célula: quase no meio, para não entrar na rua do lado
 			offset *= 0.3
 		elif kind == Kind.CLIFF_SHRUB:
@@ -873,6 +881,9 @@ static func _cell_items(grid: IslandGrid, config: GameConfig, island_id: int, ce
 					Kind.HAWTHORN, Kind.FOXGLOVE, Kind.FAIRY_RING, Kind.SUNFLOWER, Kind.CLIFF_SHRUB:
 				var shade := rng.randf_range(0.82, 1.12)
 				color = Color(shade, shade, shade)
+			Kind.VERGE_GRASS:
+				var verge := rng.randf_range(VERGE_GRASS_SHADE.x, VERGE_GRASS_SHADE.y)
+				color = Color(verge, verge, verge)
 		if kind == Kind.DRIFTWOOD or kind == Kind.MOSSY_LOG:
 			# deitado no chão: o tronco (x da peça) inclina com o terreno entre as duas pontas
 			var length := DRIFTWOOD_LENGTH_M if kind == Kind.DRIFTWOOD else MOSSY_LOG_M
@@ -1196,7 +1207,7 @@ static func piece_mesh(kind: int) -> ArrayMesh:
 		return driftwood_mesh()
 	if kind == Kind.SCREE:
 		return scree_mesh()
-	if kind == Kind.TALL_GRASS:
+	if kind == Kind.TALL_GRASS or kind == Kind.VERGE_GRASS:
 		return tall_grass_mesh()
 	if kind == Kind.REEDS:
 		return reeds_mesh()
