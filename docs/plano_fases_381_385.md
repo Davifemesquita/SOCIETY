@@ -23,3 +23,4 @@ Cada fase olha a captura antes e depois; o que sai pior fica de fora, registrado
 - **382 tentada e deixada de fora em 08/11/2026** (`docs/plano_fase382.md`): na chaminé o tijolo do pacote vira vermelho liso.
 - **383 feita em 08/11/2026** (`docs/plano_fase383.md`).
 - **384 feita em 08/11/2026** (`docs/plano_fase384.md`).
+- **385 feita em 08/11/2026** (`docs/plano_fase385.md`). **Roteiro concluído.**

@@ -4369,6 +4369,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 382 — Tijolo do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: na chaminé o tijolo do pacote saía vermelho liso; registro em `docs/plano_fase382.md` |
 | 383 — Pedra clara em blocos (nossa) | **feita em 08/11/2026**: a cornija, o frontão, a balaustrada e os arcos com os blocos da cantaria do pacote; plano em `docs/plano_fase383.md` |
 | 384 — Cerca do pasto (nossa) | **feita em 08/11/2026**: a cerca dos pastos com a cerca de tábuas do pacote, a mesma dos quintais; plano em `docs/plano_fase384.md` |
+| 385 — Conferência (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_381_385.md` (texturas do MegaKit): fotos do menu refeitas, benchmark (66,1 FPS e GPU 14,3 ms no alto) e a pasta `presentation` com os dois kits, sem falha; plano em `docs/plano_fase385.md` |
 
 Pendências já vistas para fases futuras:
 
