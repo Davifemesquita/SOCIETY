@@ -22,3 +22,5 @@ Cada fase confere peso (triângulos) e custo antes de entrar; peça pesada demai
 ## Estado
 
 - **371 feita em 08/11/2026** (`docs/plano_fase371.md`).
+- **372 tentada e deixada de fora em 08/11/2026** (`docs/plano_fase372.md`): as tábuas do pacote quase não aparecem na folha.
+- **373 feita em 08/11/2026** (`docs/plano_fase373.md`).

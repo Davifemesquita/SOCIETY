@@ -3910,6 +3910,18 @@ Regras que já custaram investigação:
   `shaders/building_kit.gdshader` as projeta ao longo de cada água (`megakit_tile_m`, `megakit_tile_tint`) com o normal do pacote
   posto direto no `NORMAL`. Camada nova nas pilhas sem peça que a use não muda as malhas empacotadas.
 
+### Postigos do pacote (Fase 372, tentada)
+
+- **Registro** em `docs/plano_fase372.md`: as folhas prontas do pacote abrem em ângulo e não cabem na célula; as tábuas dele na folha,
+  com as réguas da veneziana por cima, saem iguais às da Fase 177. Nada entrou no código.
+
+### Sacada do pacote (Fase 373, nossa)
+
+- **Plano** em `docs/plano_fase373.md`. `tools/pack_megakit.gd` empacota também peças soltas em metros (`PROPS`, `_convert_prop`,
+  inteiras); a primeira é o guarda-corpo em xis (`balcony-cross`), que o `BuildingKit._cross_rails` põe na sacada dos engenheiros com
+  o MegaKit (um lanço por célula e as pontas). **Peça solta nova do pacote entra em `PROPS`** e chega pelo `_append_piece` com o nome
+  dela (sem `.glb` do Kenney, só existe com o MegaKit ligado).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4292,6 +4304,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 369 — Arco aceso (nossa) | **feita em 08/11/2026**: à noite, a luz das janelas de volta redonda do MegaKit segue o arco, sem os cantos acesos fora da moldura; plano em `docs/plano_fase369.md` |
 | 370 — Portas variadas (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_366_370.md` (acabamento do MegaKit): as portas de uma, quatro e oito tábuas do pacote, com as ferragens de metal, sorteadas pelo tipo do prédio (as casas ficam com a simples); fotos do menu refeitas; plano em `docs/plano_fase370.md` |
 | 371 — Telhas redondas (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): as águas de telha com as telhas redondas do pacote, com o relevo delas, no lugar da telha desenhada no shader; plano em `docs/plano_fase371.md` |
+| 372 — Postigos do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: as tábuas do pacote quase não aparecem na folha do postigo; registro em `docs/plano_fase372.md` |
+| 373 — Sacada do pacote (nossa) | **feita em 08/11/2026**: a sacada corrida dos engenheiros com o guarda-corpo de madeira em xis do MegaKit, no lugar da grade de ferro fina; plano em `docs/plano_fase373.md` |
 
 Pendências já vistas para fases futuras:
 

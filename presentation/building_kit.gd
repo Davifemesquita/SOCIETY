@@ -2287,9 +2287,13 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 				var out := Vector3(0.0, 0.0, -BALCONY_OUT_M)
 				# investidores: balaustrada de pedra (Fase 24); engenheiros: a grade de ferro
 				var fence := _balustrade if spec.trim == TierDef.HouseTrim.PORTICO else _railing
-				fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(right, 0.0, 0.0))
-				for end: float in [-half.x, right]:
-					fence.call(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
+				if spec.trim == TierDef.HouseTrim.BALCONIES and megakit_walls():
+					# Fase 373: com o MegaKit, o guarda-corpo de madeira em xis do pacote
+					_cross_rails(tool, wall, out, -half.x, right, cells_out)
+				else:
+					fence.call(extra, wall + out + Vector3(-half.x, 0.0, 0.0), wall + out + Vector3(right, 0.0, 0.0))
+					for end: float in [-half.x, right]:
+						fence.call(extra, wall + Vector3(end, 0.0, 0.0), wall + out + Vector3(end, 0.0, 0.0))
 				# consolos de pedra sob a sacada, em cada divisa de célula (os das pontas um pouco para dentro)
 				for k: int in cells_out + 1:
 					var x := clampf(-half.x + step_x * k, -half.x + CORBEL_WIDTH_M, right - CORBEL_WIDTH_M)
@@ -2312,6 +2316,25 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 		_ornament(extra, spec)
 	elif spec.arched:
 		_arches(extra, spec)
+
+
+## Fase 373: o guarda-corpo de madeira em xis do MegaKit (a peça "balcony-cross", 2 m ao longo de x) na sacada corrida — um lanço
+## por célula na frente, esticado até a largura dela, e um em cada ponta, girado e encolhido até o fundo da sacada; a altura
+## puxada para a do guarda-corpo de ferro (CROSS_RAIL_SCALE).
+const CROSS_RAIL := "balcony-cross"
+const CROSS_RAIL_LENGTH_M := 2.0
+const CROSS_RAIL_SCALE := 0.9
+
+
+static func _cross_rails(tool: SurfaceTool, wall: Vector3, out: Vector3, left: float, right: float, cells: int) -> void:
+	var step := (right - left) / cells
+	for index: int in cells:
+		var along := Basis.from_scale(Vector3(step / CROSS_RAIL_LENGTH_M, CROSS_RAIL_SCALE, 1.0))
+		_append_piece(tool, CROSS_RAIL, Transform3D(along, wall + out + Vector3(left + step * (index + 0.5), 0.0, 0.0)))
+	var depth := out.length()
+	for end: float in [left, right]:
+		var turned := Basis(Vector3.UP, PI * 0.5) * Basis.from_scale(Vector3(depth / CROSS_RAIL_LENGTH_M, CROSS_RAIL_SCALE, 1.0))
+		_append_piece(tool, CROSS_RAIL, Transform3D(turned, wall + out * 0.5 + Vector3(end, 0.0, 0.0)))
 
 
 ## Cornija, vergas das janelas e (engenheiros e investidores) a faixa entre os andares, em pedra clara.

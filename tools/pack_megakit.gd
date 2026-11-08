@@ -51,6 +51,12 @@ const PIECES := {
 	"wall-wood": ["Wall_Plaster_WoodGrid"],
 }
 
+## Fase 373: peças soltas do pacote, em metros (não no referencial da célula), cada uma com o deslocamento que a põe no lugar:
+## o guarda-corpo de madeira em xis da sacada, 2 m ao longo de x, centrado em z = 0, do piso para cima.
+const PROPS := {
+	"balcony-cross": ["Balcony_Cross_Straight", Vector3(0.0, 0.0, -1.0)],
+}
+
 var _folder: String
 
 
@@ -66,7 +72,41 @@ func _initialize() -> void:
 		var mesh := _convert(sources, face)
 		ResourceSaver.save(mesh, OUT + piece + ".res", ResourceSaver.FLAG_COMPRESS)
 		print("%s ← %s: %d vértices" % [piece, str(sources), mesh.surface_get_array_len(0)])
+	for prop: String in PROPS:
+		var spec: Array = PROPS[prop]
+		var source: String = spec[0]
+		var shift: Vector3 = spec[1]
+		var mesh := _convert_prop(source, shift)
+		ResourceSaver.save(mesh, OUT + prop + ".res", ResourceSaver.FLAG_COMPRESS)
+		print("%s ← %s: %d vértices" % [prop, source, mesh.surface_get_array_len(0)])
 	quit()
+
+
+## Fase 373: a peça solta inteira (sem simplificar), em metros, deslocada por "shift", com a camada na UV2.x.
+func _convert_prop(source: String, shift: Vector3) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var root := _scene(source)
+	for node: Node in root.find_children("*", "MeshInstance3D", true, false):
+		var instance := node as MeshInstance3D
+		var local := Transform3D(Basis.IDENTITY, shift) * _to_root(root, instance)
+		var turn := local.basis.inverse().transposed()
+		for surface: int in instance.mesh.get_surface_count():
+			var layer := _layer_of(instance.mesh.surface_get_material(surface))
+			var arrays := instance.mesh.surface_get_arrays(surface)
+			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+			var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+			var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			for v: int in indices:
+				tool.set_normal((turn * normals[v]).normalized())
+				tool.set_uv(uvs[v] if not uvs.is_empty() else Vector2.ZERO)
+				tool.set_uv2(Vector2(layer + 1, 0.0))
+				tool.add_vertex(local * vertices[v])
+	root.free()
+	tool.index()
+	tool.generate_tangents()
+	return tool.commit()
 
 
 func _pack_textures() -> void:
