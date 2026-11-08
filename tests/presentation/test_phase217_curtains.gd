@@ -7,6 +7,8 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	# Fase 363: as células da paleta são do kit do Kenney (as peças do MegaKit nem usam a paleta): com ele
+	BuildingKit.use_megakit(false)
 	_sim = SimFixture.simulation(Vector2i(40, 40))
 
 
@@ -94,3 +96,7 @@ func test_the_shader_paints_the_curtains() -> void:
 	var code := (load("res://shaders/building_kit.gdshader") as Shader).code
 	assert_str(code).contains("cell == ivec2(0, 0)")
 	assert_str(code).contains("curtain_pick")
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

@@ -46,7 +46,7 @@ func test_only_the_upper_front_moves_out() -> void:
 	for i: int in plain_windows.size():
 		var shift := moved_windows[i].origin - plain_windows[i].origin
 		var upper_front := plain_windows[i].origin.y > plain.floor_m() \
-				and plain_windows[i].origin.z < -plain.size_m().y * 0.5 + 0.3
+				and plain_windows[i].origin.z < -plain.size_m().y * 0.5 + 0.6
 		if upper_front:
 			# para a rua (−Z), JETTY_M
 			assert_float(shift.z).is_equal_approx(-BuildingKit.JETTY_M, 0.001)

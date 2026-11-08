@@ -9,6 +9,9 @@ func before_test() -> void:
 	_sim = SimFixture.simulation(Vector2i(80, 40))
 	_sim.free_build = true
 	_sim.ignore_terrain = true
+	# Fase 363: os enfeites conferidos aqui são do kit do Kenney; o MegaKit tem os testes dele (e o do lote e do orçamento abaixo
+	# confere os dois)
+	BuildingKit.use_megakit(false)
 
 
 func test_the_kit_is_in_the_project() -> void:
@@ -22,6 +25,12 @@ func test_the_kit_is_in_the_project() -> void:
 
 
 func test_every_building_but_fields_piers_and_decorations_gets_a_model_inside_its_area() -> void:
+	for megakit: bool in [false, true]:
+		BuildingKit.use_megakit(megakit)
+		_every_building_inside_its_area()
+
+
+func _every_building_inside_its_area() -> void:
 	for def: BuildingDef in _sim.data.buildings:
 		var record := BuildingRecord.new(1, def.id, 0, Vector2i(10, 10), 0)
 		if def.kind == BuildingDef.Kind.RESIDENCE:
@@ -37,7 +46,8 @@ func test_every_building_but_fields_piers_and_decorations_gets_a_model_inside_it
 		assert_float(absf(box.position.z)).override_failure_message(String(def.id)).is_less_equal(reach.z)
 		assert_float(box.end.y).override_failure_message(String(def.id)).is_greater_equal(spec.height_m)
 		assert_float(box.position.y).override_failure_message(String(def.id)).is_less(0.0)
-		assert_int(BuildingKit.triangles(spec)).override_failure_message(String(def.id)).is_between(100, 30000)
+		# (Fase 363: 40.000 — com o MegaKit a igreja e a universidade, com a janela em arco na frente, chegam a ~35 mil)
+		assert_int(BuildingKit.triangles(spec)).override_failure_message(String(def.id)).is_between(100, 40000)
 
 
 func test_houses_of_each_class_stay_within_the_polygon_budget_and_share_meshes() -> void:
@@ -503,3 +513,7 @@ func test_the_docked_warehouse_hoists_from_a_beam_over_the_loading_door() -> voi
 	var box := BuildingKit.mesh(spec).get_aabb()
 	assert_float(box.end.x).is_less_equal(size.x * 0.5 + spec.overhang_m + 0.01)
 	assert_float(box.position.z).is_less_equal(tip.z - BuildingKit.CRANE_CRATE_M * 0.5 + 0.01)
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

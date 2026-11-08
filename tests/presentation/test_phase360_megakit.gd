@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 
 
 func after_test() -> void:
-	BuildingKit.use_megakit(false)
+	BuildingKit.reset_megakit()
 
 
 func test_it_is_off_by_default() -> void:

@@ -631,6 +631,14 @@ static func use_megakit(on: bool) -> void:
 	_meshes.clear()
 
 
+## Fase 363: volta ao padrão (a variável SOCIETY_MEGAKIT, lida de novo) e esquece as malhas; os testes que mexem nisso chamam
+## no fim.
+static func reset_megakit() -> void:
+	_megakit = -1
+	_parts.clear()
+	_meshes.clear()
+
+
 static func available() -> bool:
 	if _available < 0:
 		_available = 1 if ResourceLoader.exists(DIR + "wall.glb") else 0

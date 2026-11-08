@@ -3856,6 +3856,12 @@ Regras que já custaram investigação:
   lados e nos fundos a larga reta, a mais leve; o `opening` também é por fachada. A moldura da janela fica inteira (os níveis de
   detalhe do Godot cortam metade dela no primeiro degrau).
 
+### Testes com os dois kits (Fase 363, nossa)
+
+- **Plano** em `docs/plano_fase363.md`. Teste que confere célula da paleta ou enfeite do Kenney roda com `BuildingKit.use_megakit(false)`
+  e chama `BuildingKit.reset_megakit()` no `after_test`; a suíte tem de passar com `SOCIETY_MEGAKIT=1` e sem ele. O teto de
+  triângulos por prédio é 40.000 (a igreja do MegaKit chega a ~35 mil).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4229,6 +4235,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 360 — Paredes do MegaKit (nossa, ensaio) | **ensaio feito em 07/11/2026, desligado por padrão**: as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0) no lugar das do Kenney, com o material dele no shader do kit; simplificadas, custam o mesmo; ficam desligadas até os enfeites das janelas seguirem o vão novo; plano em `docs/plano_fase360.md` |
 | 361 — Vão da janela (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_361_365.md` (ligar o MegaKit): com o MegaKit ligado, as janelas acesas, os postigos, as cortinas, as escoras, as floreiras e o tapete seguem o vão da janela do pacote, e as molduras de pedra saem dela; a janela fica inteira; segue desligado por padrão; plano em `docs/plano_fase361.md` |
 | 362 — Peso das janelas (nossa) | **feita em 07/11/2026**: com o MegaKit ligado, a janela da forma só na fachada da frente e a larga reta nos lados e nos fundos; as casas ficam no peso das do Kenney e a GPU sobe 0,2 ms; segue desligado por padrão; plano em `docs/plano_fase362.md` |
+| 363 — Testes da paleta (nossa) | **feita em 07/11/2026**: os testes do que é do Kenney rodam com ele, o do lote e do orçamento confere os dois kits (teto 40.000), e a suíte passa com o MegaKit ligado e desligado; plano em `docs/plano_fase363.md` |
 
 Pendências já vistas para fases futuras:
 

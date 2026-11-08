@@ -7,6 +7,8 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	# Fase 363: as células da paleta são do kit do Kenney (as peças do MegaKit nem usam a paleta): com ele
+	BuildingKit.use_megakit(false)
 	_sim = SimFixture.simulation(Vector2i(80, 40))
 	_sim.free_build = true
 	_sim.ignore_terrain = true
@@ -102,3 +104,7 @@ func test_the_museum_court_has_the_iron_fence_with_a_gate() -> void:
 			# o portão: nada de grade no caminho da porta
 			assert_float(absf(point.x - door_x)).is_greater(0.5)
 	assert_int(on_front).is_greater(0)
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

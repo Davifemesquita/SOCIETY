@@ -6,6 +6,8 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	# Fase 363: o que se confere aqui é do kit do Kenney (o vão, os arcos e as telhas dele); o MegaKit tem os testes dele
+	BuildingKit.use_megakit(false)
 	_sim = SimFixture.simulation(Vector2i(80, 40))
 	_sim.free_build = true
 	_sim.ignore_terrain = true
@@ -73,3 +75,7 @@ func test_the_gable_gets_a_round_ridge_and_eaves() -> void:
 func test_the_hip_gets_round_hips_and_the_flat_roof_nothing() -> void:
 	assert_int(_trim_points(BuildingKit.mesh(_spec(&"bakery", BuildingKit.Roof.HIP))).size()).is_greater(0)
 	assert_int(_trim_points(BuildingKit.mesh(_spec(&"bakery", BuildingKit.Roof.FLAT))).size()).is_equal(0)
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

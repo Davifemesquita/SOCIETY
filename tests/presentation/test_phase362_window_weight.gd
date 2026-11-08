@@ -10,7 +10,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
-	BuildingKit.use_megakit(false)
+	BuildingKit.reset_megakit()
 
 
 func _spec(def_id: StringName, tier: StringName = &"") -> BuildingKit.Spec:
@@ -30,6 +30,7 @@ func test_only_the_front_keeps_the_window_of_the_shape() -> void:
 
 
 func test_the_kenney_ignores_the_face() -> void:
+	BuildingKit.use_megakit(false)
 	var spec := _spec(&"house", &"artisans")
 	for face: int in 4:
 		assert_int(BuildingKit.window_index(spec, face)).is_equal(posmod(spec.window_style, 3))

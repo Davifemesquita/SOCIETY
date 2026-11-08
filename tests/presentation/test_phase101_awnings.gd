@@ -6,6 +6,8 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	# Fase 363: as células da paleta são do kit do Kenney (as peças do MegaKit nem usam a paleta): com ele
+	BuildingKit.use_megakit(false)
 	_sim = SimFixture.simulation(Vector2i(80, 40))
 	_sim.free_build = true
 	_sim.ignore_terrain = true
@@ -96,3 +98,7 @@ func test_the_kit_never_uses_the_canvas_cells() -> void:
 				var uvs: PackedVector2Array = mesh.surface_get_arrays(surface)[Mesh.ARRAY_TEX_UV]
 				for uv: Vector2 in uvs:
 					assert_bool(_cell(uv) in cells).override_failure_message(piece).is_false()
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

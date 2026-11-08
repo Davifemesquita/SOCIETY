@@ -9,7 +9,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
-	BuildingKit.use_megakit(false)
+	BuildingKit.reset_megakit()
 
 
 func _spec(tier: StringName) -> BuildingKit.Spec:
@@ -19,6 +19,7 @@ func _spec(tier: StringName) -> BuildingKit.Spec:
 
 
 func test_the_opening_is_the_kenney_one_when_off_and_the_piece_one_when_on() -> void:
+	BuildingKit.use_megakit(false)
 	var spec := _spec(&"workers")
 	var kenney := BuildingKit.opening(spec)
 	assert_float(kenney.x).is_equal_approx(BuildingKit.WINDOW_WIDTH, 0.0001)
@@ -38,6 +39,7 @@ func test_arched_houses_take_the_round_window() -> void:
 
 
 func test_the_lit_windows_take_the_size_and_depth_of_the_opening() -> void:
+	BuildingKit.use_megakit(false)
 	var spec := _spec(&"workers")
 	var kenney := BuildingKit.windows(spec)
 	BuildingKit.use_megakit(true)
@@ -65,6 +67,7 @@ func test_the_lit_windows_take_the_size_and_depth_of_the_opening() -> void:
 
 
 func test_no_stone_lintel_goes_on_the_megakit_window() -> void:
+	BuildingKit.use_megakit(false)
 	var spec := _spec(&"artisans")
 	var kenney_stone := _light_stone(BuildingKit.mesh(spec))
 	BuildingKit.use_megakit(true)

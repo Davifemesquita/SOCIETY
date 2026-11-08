@@ -6,6 +6,8 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	# Fase 363: o que se confere aqui é do kit do Kenney (o vão, os arcos e as telhas dele); o MegaKit tem os testes dele
+	BuildingKit.use_megakit(false)
 	_sim = SimFixture.simulation(Vector2i(80, 40))
 	_sim.free_build = true
 	_sim.ignore_terrain = true
@@ -89,3 +91,7 @@ func test_the_market_gets_the_arcade_with_stalls_in_front() -> void:
 				assert_float(point.z).is_greater(-size.y * 0.5)
 				assert_float(point.y).is_less(market.hall().height_m)
 	assert_int(in_front).is_greater(0)
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

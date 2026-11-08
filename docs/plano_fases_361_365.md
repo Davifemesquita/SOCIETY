@@ -17,3 +17,4 @@
 
 - **361 feita em 07/11/2026** (`docs/plano_fase361.md`): capturas em `F:\ferramentas\capturas\fase361\`.
 - **362 feita em 07/11/2026** (`docs/plano_fase362.md`): a janela da forma só na frente; GPU +0,2 ms com o MegaKit ligado.
+- **363 feita em 07/11/2026** (`docs/plano_fase363.md`): a suíte passa com o MegaKit ligado e desligado.

@@ -6,6 +6,8 @@ var _sim: Simulation
 
 
 func before_test() -> void:
+	# Fase 363: o que se confere aqui é do kit do Kenney (o vão, os arcos e as telhas dele); o MegaKit tem os testes dele
+	BuildingKit.use_megakit(false)
 	_sim = SimFixture.simulation(Vector2i(60, 30))
 	SimFixture.road(_sim, Vector2i(2, 10), Vector2i(50, 10))
 
@@ -134,3 +136,7 @@ func test_the_upgraded_warehouse_trades_ground_floor_windows_for_loading_doors()
 	assert_bool(_sim.execute(UpgradeBuildingCommand.new(warehouse)).ok()).is_true()
 	assert_int(view.window_count()).is_less(before)
 	assert_int(view.window_count()).is_equal(WindowLightsView.building_windows(_sim, _sim.world.building(warehouse)).size())
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()

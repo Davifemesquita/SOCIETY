@@ -91,6 +91,8 @@ func test_the_overhang_reaches_the_mesh() -> void:
 
 
 func test_every_window_has_glass_and_a_cross_of_wood() -> void:
+	# Fase 363: o vidro e a cruz gerados são da janela do Kenney (a do MegaKit traz os dela)
+	BuildingKit.use_megakit(false)
 	for def_id: StringName in [&"house", &"bakery", &"hospital", &"trading_post"]:
 		var record := _record(5, def_id)
 		var spec := _spec(record)
@@ -278,3 +280,7 @@ func test_varied_houses_build_in_reasonable_time() -> void:
 	# a variação cabe em 3 telhados × 3 degraus × 2 janelas por classe, com e sem a ala (Fase 96), e com e sem a loja de
 	# toldo nos artesãos e engenheiros (Fase 101)
 	assert_int(made).is_less_equal(5 * 18 * 2 + 2 * 18 * 2)
+
+
+func after_test() -> void:
+	BuildingKit.reset_megakit()
