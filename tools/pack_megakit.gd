@@ -51,10 +51,13 @@ const PIECES := {
 	"wall-wood": ["Wall_Plaster_WoodGrid"],
 }
 
-## Fase 373: peças soltas do pacote, em metros (não no referencial da célula), cada uma com o deslocamento que a põe no lugar:
-## o guarda-corpo de madeira em xis da sacada, 2 m ao longo de x, centrado em z = 0, do piso para cima.
-const PROPS := {
-	"balcony-cross": ["Balcony_Cross_Straight", Vector3(0.0, 0.0, -1.0)],
+## Fase 373: peças soltas do pacote, inteiras, cada uma com a transformação que a põe no lugar: o guarda-corpo de madeira em xis
+## da sacada, em metros (2 m ao longo de x, centrado em z = 0, do piso para cima). Fase 375: a cerca de tábuas, no referencial da
+## peça "fence" do Kenney (a face em x = 0,5, de z −0,5 a 0,5, 0,38 de altura), que ela substitui com o MegaKit.
+var PROPS := {
+	"balcony-cross": ["Balcony_Cross_Straight", Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, -1.0))],
+	"fence": ["Prop_WoodenFence_Single", Transform3D(Basis(Vector3(0.0, 0.0, 1.0 / 2.06), Vector3(0.0, 0.38 / 0.81, 0.0),
+			Vector3(-0.08 / 0.12, 0.0, 0.0)), Vector3(0.46, 0.0, 0.0))],
 }
 
 var _folder: String
@@ -75,21 +78,21 @@ func _initialize() -> void:
 	for prop: String in PROPS:
 		var spec: Array = PROPS[prop]
 		var source: String = spec[0]
-		var shift: Vector3 = spec[1]
-		var mesh := _convert_prop(source, shift)
+		var place: Transform3D = spec[1]
+		var mesh := _convert_prop(source, place)
 		ResourceSaver.save(mesh, OUT + prop + ".res", ResourceSaver.FLAG_COMPRESS)
 		print("%s ← %s: %d vértices" % [prop, source, mesh.surface_get_array_len(0)])
 	quit()
 
 
-## Fase 373: a peça solta inteira (sem simplificar), em metros, deslocada por "shift", com a camada na UV2.x.
-func _convert_prop(source: String, shift: Vector3) -> ArrayMesh:
+## Fase 373: a peça solta inteira (sem simplificar), posta por "place", com a camada na UV2.x.
+func _convert_prop(source: String, place: Transform3D) -> ArrayMesh:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var root := _scene(source)
 	for node: Node in root.find_children("*", "MeshInstance3D", true, false):
 		var instance := node as MeshInstance3D
-		var local := Transform3D(Basis.IDENTITY, shift) * _to_root(root, instance)
+		var local := place * _to_root(root, instance)
 		var turn := local.basis.inverse().transposed()
 		for surface: int in instance.mesh.get_surface_count():
 			var layer := _layer_of(instance.mesh.surface_get_material(surface))

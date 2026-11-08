@@ -3922,6 +3922,17 @@ Regras que já custaram investigação:
   o MegaKit (um lanço por célula e as pontas). **Peça solta nova do pacote entra em `PROPS`** e chega pelo `_append_piece` com o nome
   dela (sem `.glb` do Kenney, só existe com o MegaKit ligado).
 
+### Chaminé do pacote (Fase 374, tentada)
+
+- **Registro** em `docs/plano_fase374.md`: a chaminé de tijolo irregular do pacote saiu cinza e escura sobre o telhado, e a de tijolo
+  vermelho sairia na cor da casa (o shader tinge o tijolo do pacote pela parede). Fica a da Fase 104.
+
+### Cerca do pacote (Fase 375, nossa)
+
+- **Plano** em `docs/plano_fase375.md`, a última do roteiro `docs/plano_fases_371_375.md`. As peças soltas do `pack_megakit` levam a
+  transformação inteira; a cerca de tábuas vai no referencial da `fence` do Kenney e a troca pelo nome com o MegaKit. **Peça do
+  pacote empacotada com o nome de uma do Kenney substitui a dele sem mexer na montagem.**
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4306,6 +4317,8 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 371 — Telhas redondas (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): as águas de telha com as telhas redondas do pacote, com o relevo delas, no lugar da telha desenhada no shader; plano em `docs/plano_fase371.md` |
 | 372 — Postigos do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: as tábuas do pacote quase não aparecem na folha do postigo; registro em `docs/plano_fase372.md` |
 | 373 — Sacada do pacote (nossa) | **feita em 08/11/2026**: a sacada corrida dos engenheiros com o guarda-corpo de madeira em xis do MegaKit, no lugar da grade de ferro fina; plano em `docs/plano_fase373.md` |
+| 374 — Chaminé do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: a chaminé do pacote saía cinza e escura no telhado; registro em `docs/plano_fase374.md` |
+| 375 — Cerca do pacote (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): a cerca do quintal dos camponeses com a cerca de tábuas rústica do MegaKit; fotos do menu refeitas; plano em `docs/plano_fase375.md` |
 
 Pendências já vistas para fases futuras:
 

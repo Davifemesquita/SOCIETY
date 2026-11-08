@@ -11,7 +11,8 @@ func test_tile_roofs_are_worn_per_house() -> void:
 	assert_str(code).contains("roof_pick = float((h >> 13u) % 1024u) / 1023.0;")
 	# só no ramo das telhas, depois da sombra delas
 	var tiles := code.find("color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;")
-	var wear := code.find("vec3 wear = roof_wear(world_position, world_normal, roof_pick);")
+	# (a Fase 371 pôs o gasto também no ramo das telhas redondas do MegaKit, antes deste: procura depois da sombra)
+	var wear := code.find("vec3 wear = roof_wear(world_position, world_normal, roof_pick);", tiles)
 	assert_int(wear).is_greater(tiles)
 	assert_int(wear).is_greater(code.find("} else if (corrugated > 0.5) {"))
 	var body := code.substr(tiles, 700)
