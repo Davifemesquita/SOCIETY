@@ -645,6 +645,13 @@ static var _available: int = -1
 ## material de cada vértice na UV2 (o shader do kit lê as texturas dele). Ligado por padrão desde a Fase 364 (SOCIETY_MEGAKIT=0
 ## desliga); `use_megakit` troca à mão (testes e capturas) e esquece as malhas feitas.
 const MEGAKIT_DIR := "res://assets/models/megakit/"
+## Fase 368: as janelas e as portas dos prédios de madeira saem das mesmas peças do pacote que as de reboco (a parede lisa
+## de madeira já é a de enxaimel, `wall-wood`); sem isso, a fábrica de madeira misturava o enxaimel com as tábuas do Kenney.
+const MEGAKIT_ALIASES: Dictionary[String, String] = {
+	"wall-wood-window-shutters": "wall-window-shutters", "wall-wood-window-glass": "wall-window-glass",
+	"wall-wood-window-small": "wall-window-small", "wall-wood-door": "wall-door",
+	"wall-wood-doorway-round": "wall-doorway-round",
+}
 static var _megakit: int = -1
 ## Fase 366: com o MegaKit, a empena vai com o reboco do pacote (UV2 = 1), num SurfaceTool à parte com a UV2, e o lugar do
 ## telhado em construção no referencial do prédio (o telhado do corpo e o da ala são feitos no deles).
@@ -1079,7 +1086,8 @@ static func _parts_of(piece: String) -> Array:
 		return _parts[piece]
 	var parts: Array = []
 	var path := DIR + piece + ".glb"
-	var megakit_path := MEGAKIT_DIR + piece + ".res"
+	var megakit_piece: String = MEGAKIT_ALIASES.get(piece, piece)
+	var megakit_path := MEGAKIT_DIR + megakit_piece + ".res"
 	if megakit_walls() and ResourceLoader.exists(megakit_path):
 		# Fase 360: a parede do MegaKit, já no referencial da peça do Kenney (tools/pack_megakit.gd)
 		parts.append([load(megakit_path) as Mesh, Transform3D.IDENTITY])

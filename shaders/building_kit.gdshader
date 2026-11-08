@@ -19,6 +19,7 @@ uniform sampler2DArray megakit_normals : hint_normal, filter_linear_mipmap_aniso
 // o tom do prédio no reboco (como a tinta das paredes do Kenney) e a madeira puxada para a do kit
 uniform float megakit_plaster_luma = 0.62;
 uniform float megakit_wood_mix = 0.45;
+uniform float megakit_wood_plaster_tint = 0.3;
 // Fase 367: com o MegaKit (megakit_stone 1, posto pelo BuildingMaterials), a pedra clara gerada no código (cornija, faixa,
 // frontão, balaustrada, arcos: a célula (2, 2)) no tom da cantaria do pacote, manchada; a do Kenney saía quase branca
 uniform float megakit_stone = 0.0;
@@ -348,10 +349,14 @@ vec4 triplanar(sampler2DArray stack, vec3 position, vec3 weights, float meters, 
 void fragment() {
 	// célula da paleta: 8 colunas × 4 linhas
 	int mega = int(round(UV2.x)) - 1;
+	// Fase 368: o prédio de madeira (camada 2) tem o reboco do pacote entre o enxaimel; o tom escuro da madeira, por
+	// inteiro nele, deixava o reboco roxo
+	float plaster_tint = tint_strength;
 	if (mega == 0) {
 		// o reboco do pacote segue o material da parede do prédio: tijolo, pedra (o tijolo irregular) ou reboco
 		int wall_kind = int(round(layer));
 		mega = wall_kind == 0 ? 2 : (wall_kind == 3 ? 3 : 0);
+		plaster_tint = wall_kind == 2 ? tint_strength * megakit_wood_plaster_tint : tint_strength;
 	}
 	ivec2 cell = mega >= 0 ? ivec2(-1, -1) : ivec2(floor(UV * vec2(8.0, 4.0)));
 	bool mega_wall = mega == 0 || mega == 2 || mega == 3;
@@ -371,7 +376,7 @@ void fragment() {
 		float mega_luma = dot(mega_surface.rgb, vec3(0.299, 0.587, 0.114));
 		color = mega_surface.rgb;
 		if (mega == 0) {
-			color = mix(color, mega_luma / megakit_plaster_luma * tint.rgb, tint_strength);
+			color = mix(color, mega_luma / megakit_plaster_luma * tint.rgb, plaster_tint);
 		} else if (mega == 2 || mega == 3) {
 			color = mix(color, mega_luma / 0.45 * tint.rgb, tint_strength * 0.45);
 		} else if (mega == 1) {
