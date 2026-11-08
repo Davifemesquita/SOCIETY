@@ -3940,6 +3940,11 @@ Regras que já custaram investigação:
   SurfaceTool é do referencial do prédio (`_frame_tools`: a principal e a extra). **Teste que conta o madeiramento pela célula da
   paleta roda com o Kenney ou soma a madeira do pacote (UV2.x = 2).**
 
+### Alicerce de cantaria (Fase 377, nossa)
+
+- **Plano** em `docs/plano_fase377.md`. Com o MegaKit, o alicerce, o plinto do barranco, o terraço do pátio e os degraus saem na
+  cantaria do pacote em escala de verdade (`_mega_ashlar_box`, em faixas de quatro fiadas; `_stone_block` no `plinth`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4327,6 +4332,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 374 — Chaminé do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: a chaminé do pacote saía cinza e escura no telhado; registro em `docs/plano_fase374.md` |
 | 375 — Cerca do pacote (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): a cerca do quintal dos camponeses com a cerca de tábuas rústica do MegaKit; fotos do menu refeitas; plano em `docs/plano_fase375.md` |
 | 376 — Madeiramento do pacote (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III): as vigas, os esteios e as escoras geradas na madeira do pacote, com o veio; a viga entre os andares deixa de sair cinza; plano em `docs/plano_fase376.md` |
+| 377 — Alicerce de cantaria (nossa) | **feita em 08/11/2026**: o alicerce no pé dos prédios, o plinto do barranco e os degraus da porta na cantaria do pacote, em blocos de verdade, no lugar da pedra lisa; plano em `docs/plano_fase377.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -14,7 +14,7 @@ aberto.
 | 377 — Alicerce de cantaria | o alicerce que aparece no pé dos prédios e o plinto do barranco na cantaria do pacote |
 | 378 — Lucarna do pacote | as lucarnas do telhado com a lucarna de telhas redondas do pacote (`Roof_Dormer_RoundTile`), se o peso couber |
 | 379 — Caixote do pacote | os caixotes das pilhas de estoque, da carga e do cais com o caixote do pacote (`Prop_Crate`) |
-| 380 — Degraus de pedra | os degraus da porta no plinto do barranco com a escada de pedra do pacote (`Stairs_Exterior_Straight`) |
+| 380 — Fotos e conferência | os degraus já saíram na 377: a 380 refaz as fotos do menu e roda a suíte com os dois kits |
 
 Ficam de fora a carroça do pacote (`Prop_Wagon`, ~1.700 triângulos, e há centenas de carroças) e as escoras soltas
 (`Prop_Support`, que é uma barra só: a 376 já dá a madeira do pacote às geradas).
@@ -24,3 +24,4 @@ Cada fase confere o peso (triângulos) e olha a captura antes de entrar; peça q
 ## Estado
 
 - **376 feita em 08/11/2026** (`docs/plano_fase376.md`).
+- **377 feita em 08/11/2026** (`docs/plano_fase377.md`), com os degraus da porta: a 380 muda (ver abaixo).

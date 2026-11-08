@@ -682,6 +682,7 @@ static func use_megakit(on: bool) -> void:
 	_megakit = 1 if on else 0
 	_parts.clear()
 	_meshes.clear()
+	_plinths.clear()
 	BuildingMaterials.sync_megakit()
 
 
@@ -691,6 +692,7 @@ static func reset_megakit() -> void:
 	_megakit = -1
 	_parts.clear()
 	_meshes.clear()
+	_plinths.clear()
 	BuildingMaterials.sync_megakit()
 
 
@@ -1206,8 +1208,13 @@ static func _build(spec: Spec) -> ArrayMesh:
 	# o quintal fica no chão: o alicerce é só o do corpo
 	var base := hall.size_m() if spec.trim == TierDef.HouseTrim.YARD else size
 	var base_center := spec.hall_offset() if spec.trim == TierDef.HouseTrim.YARD else Vector3.ZERO
-	_box(extra, base_center + Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0),
-			Vector3(base.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, base.y + 0.1), UV_STONE)
+	var footing_center := base_center + Vector3(0.0, (FOUNDATION_UP_M - FOUNDATION_DOWN_M) * 0.5, 0.0)
+	var footing_size := Vector3(base.x + 0.1, FOUNDATION_UP_M + FOUNDATION_DOWN_M, base.y + 0.1)
+	if _mega_extra != null:
+		# Fase 377: o alicerce na cantaria do pacote
+		_mega_ashlar_box(_mega_extra, footing_center, footing_size)
+	else:
+		_box(extra, footing_center, footing_size, UV_STONE)
 	if hall.wing != 0 and hall.floors() >= 2:
 		# Fase 96: o telhado do corpo, uma coluna mais estreito, e o da ala, mais baixo e cruzado com ele
 		for part: Array in [[hall.main_part(), hall.main_offset()], [hall.wing_part(), hall.wing_offset()]]:
@@ -3255,17 +3262,19 @@ static func plinth(spec: Spec, depth: float, drop: float) -> ArrayMesh:
 		return _plinths[key]
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# Fase 377: com o MegaKit, as pedras na cantaria do pacote (a malha toda com a UV2)
+	var masonry := megakit_walls()
 	var size := spec.size_m() + Vector2(PLINTH_OUT_M, PLINTH_OUT_M) * 2.0
 	var hall := spec.hall()
 	var hall_size := hall.size_m() + Vector2(PLINTH_OUT_M, PLINTH_OUT_M) * 2.0
 	var hall_center := spec.hall_offset()
 	var lip := FOUNDATION_UP_M + 0.01
-	_box(tool, hall_center + Vector3(0.0, (lip - depth_q) * 0.5, 0.0), Vector3(hall_size.x, lip + depth_q, hall_size.y), UV_STONE)
+	_stone_block(tool, masonry, hall_center + Vector3(0.0, (lip - depth_q) * 0.5, 0.0), Vector3(hall_size.x, lip + depth_q, hall_size.y))
 	var front := -size.y * 0.5
 	if spec.court_rows > 0:
 		# o pátio é terraço de pedra no nível do piso, com o muro de arrimo em volta
 		var court_back := hall_center.z - hall_size.y * 0.5
-		_box(tool, Vector3(0.0, -depth_q * 0.5, (front + court_back) * 0.5), Vector3(size.x, depth_q, court_back - front), UV_STONE)
+		_stone_block(tool, masonry, Vector3(0.0, -depth_q * 0.5, (front + court_back) * 0.5), Vector3(size.x, depth_q, court_back - front))
 	if steps > 0:
 		var door_x := door_position(spec).x
 		var face := front if spec.court_rows > 0 else hall_center.z - hall_size.y * 0.5
@@ -3275,13 +3284,21 @@ static func plinth(spec: Spec, depth: float, drop: float) -> ArrayMesh:
 		for k: int in range(1, steps + 1):
 			var step_top := top - rise * k
 			var bottom := -drop_q - 0.25
-			_box(tool, Vector3(door_x, (step_top + bottom) * 0.5, face - STEP_TREAD_M * (k - 0.5)),
-					Vector3(width, step_top - bottom, STEP_TREAD_M), UV_STONE)
+			_stone_block(tool, masonry, Vector3(door_x, (step_top + bottom) * 0.5, face - STEP_TREAD_M * (k - 0.5)),
+					Vector3(width, step_top - bottom, STEP_TREAD_M))
 	tool.index()
 	tool.generate_tangents()
 	var mesh := tool.commit()
 	_plinths[key] = mesh
 	return mesh
+
+
+## Fase 377: um bloco do plinto na pedra lisa da paleta ou, com o MegaKit, na cantaria do pacote.
+static func _stone_block(tool: SurfaceTool, masonry: bool, center: Vector3, size: Vector3) -> void:
+	if masonry:
+		_mega_ashlar_box(tool, center, size)
+	else:
+		_box(tool, center, size, UV_STONE)
 
 
 ## Quantos degraus pede a porta "drop" acima do chão da frente (até MAX_STEPS; o resto o chão engole).
@@ -3421,6 +3438,45 @@ static func _mega_wood_box(place: Transform3D, size: Vector3) -> void:
 			var outward := (place.basis * normal).normalized()
 			_mega_face(_mega_extra, [points[0], points[1], points[2]], [uvs[0], uvs[1], uvs[2]], outward, 1)
 			_mega_face(_mega_extra, [points[0], points[2], points[3]], [uvs[0], uvs[2], uvs[3]], outward, 1)
+
+
+## Fase 377: as fiadas aparelhadas da cantaria do MegaKit (as quatro de baixo da textura: v de cima a baixo delas), e quanto u e
+## v dá um metro (um bloco de ~0,5 m, uma fiada de ~0,27 m).
+const MEGAKIT_ASHLAR_V := Vector2(0.586, 1.0)
+const MEGAKIT_ASHLAR_PER_M := 0.38
+
+
+## Fase 377: caixa de cantaria do MegaKit em escala de verdade: cada face em faixas de quatro fiadas, de cima para baixo (a fiada
+## de cima segue igual pela borda), o u pelo comprimento a partir de um ponto sorteado pelo lugar.
+static func _mega_ashlar_box(tool: SurfaceTool, center: Vector3, size: Vector3) -> void:
+	var h := size * 0.5
+	var start := fposmod(center.x * 3.7 + center.y * 5.3 + center.z * 2.9, 1.0)
+	var strip := (MEGAKIT_ASHLAR_V.y - MEGAKIT_ASHLAR_V.x) / MEGAKIT_ASHLAR_PER_M
+	for axis: int in 3:
+		for sign_value: float in [-1.0, 1.0]:
+			var normal := Vector3.ZERO
+			normal[axis] = sign_value
+			# a "vertical" da face (y, ou z no tampo e no fundo) e a horizontal
+			var down := Vector3.DOWN if axis != 1 else Vector3.BACK
+			var along := normal.cross(down).abs()
+			var length := (h * along).length() * 2.0
+			var tall := (h * down.abs()).length() * 2.0
+			var top_edge := center + normal * h[axis] - down * (tall * 0.5)
+			var left := top_edge - along * (length * 0.5)
+			var u0 := start
+			var u1 := start + length * MEGAKIT_ASHLAR_PER_M
+			var y := 0.0
+			while y < tall - 1e-4:
+				var y1 := minf(y + strip, tall)
+				var v0 := MEGAKIT_ASHLAR_V.x
+				var v1 := MEGAKIT_ASHLAR_V.x + (y1 - y) * MEGAKIT_ASHLAR_PER_M
+				var a := left + down * y
+				var b := left + along * length + down * y
+				var c := left + along * length + down * y1
+				var d := left + down * y1
+				_mega_face(tool, [a, b, c], [Vector2(u0, v0), Vector2(u1, v0), Vector2(u1, v1)], normal, 4)
+				_mega_face(tool, [a, c, d], [Vector2(u0, v0), Vector2(u1, v1), Vector2(u0, v1)], normal, 4)
+				y = y1
 
 
 ## Fase 95: haste redonda de from até to (raio radius, sides faces) com a normal de cada vértice para fora do eixo (o
