@@ -25,6 +25,15 @@ uniform float megakit_wood_plaster_tint = 0.3;
 uniform float megakit_stone = 0.0;
 uniform vec4 megakit_stone_color : source_color = vec4(0.66, 0.62, 0.55, 1.0);
 uniform float megakit_stone_mottle = 0.3;
+// Fase 381: com o MegaKit, cada tábua do telhado de tábuas tira o veio da faixa clara da madeira do pacote (v de
+// megakit_shingle_v.x a .y; a escura é quase lisa), com o brilho linear dela em volta de megakit_shingle_luma
+uniform vec2 megakit_shingle_v = vec2(0.02, 0.28);
+uniform float megakit_shingle_luma = 0.166;
+// Fase 383: com o MegaKit, a pedra clara gerada (célula (2, 2): cornija, faixa, frontão, balaustrada, arcos) tira os blocos aparelhados da
+// cantaria do pacote (as quatro fiadas de baixo da textura, v de megakit_ashlar_v.x a .y), megakit_ashlar_per_m por metro
+uniform vec2 megakit_ashlar_v = vec2(0.586, 1.0);
+uniform float megakit_ashlar_per_m = 0.38;
+uniform float megakit_ashlar_luma = 0.24;
 // Fase 371: com o MegaKit, as águas de telha (o telhado de telhas, roof_layer 0) levam as telhas redondas do pacote (a camada 7
 // da pilha), projetadas ao longo da água: megakit_tile_m de telhado por repetição da textura (6 telhas e 4 fileiras), puxadas
 // megakit_tile_tint para o tom do telhado da casa
@@ -264,8 +273,17 @@ vec3 shingle_shade(vec3 p, vec3 n, float near, vec3 base) {
 	float cf = fract(c);
 	float tone = fract(sin(dot(vec2(row, board), vec2(12.9898, 78.233))) * 43758.5453);
 	vec3 wood = base * (0.78 + 0.4 * tone);
-	float grain = moss_noise(vec2(c * 3.0, s * 9.0));
-	wood *= 0.92 + 0.12 * grain;
+	if (megakit_stone > 0.5) {
+		// o veio descendo a água; cada tábua num trecho da faixa
+		float band = megakit_shingle_v.y - megakit_shingle_v.x;
+		vec2 grain_uv = vec2(f * shingle_row_m * 0.5 + fract(row * 0.37 + board * 0.61),
+				megakit_shingle_v.x + fract(tone * 3.1) * band * 0.6 + cf * min(width * 0.5, band * 0.4));
+		float luma = dot(texture(megakit_albedo_rough, vec3(grain_uv, 1.0)).rgb, vec3(0.299, 0.587, 0.114));
+		wood *= clamp(luma / megakit_shingle_luma, 0.55, 1.5);
+	} else {
+		float grain = moss_noise(vec2(c * 3.0, s * 9.0));
+		wood *= 0.92 + 0.12 * grain;
+	}
 	float gap = smoothstep(0.06, 0.0, cf) + smoothstep(0.94, 1.0, cf);
 	float under = smoothstep(0.82, 1.0, f);
 	vec3 drawn = wood * (1.0 - clamp(gap, 0.0, 1.0) * 0.45) * (1.0 - under * 0.4);
@@ -454,6 +472,17 @@ void fragment() {
 	if (mega >= 0 && !glass) {
 		roughness = mega_surface.a;
 		NORMAL_MAP = texture(megakit_normals, vec3(UV, float(mega))).rgb;
+	}
+	if (megakit_stone > 0.5 && cell == ivec2(2, 2)) {
+		// Fase 383: os blocos da cantaria do pacote projetados pela face (a cor segue a da Fase 367)
+		vec2 face = abs(world_normal.y) > 0.7 ? world_position.xz
+				: (abs(world_normal.x) > abs(world_normal.z) ? world_position.zy : world_position.xy);
+		float band = megakit_ashlar_v.y - megakit_ashlar_v.x;
+		vec2 ashlar_uv = vec2(face.x * megakit_ashlar_per_m,
+				megakit_ashlar_v.x + fract(-face.y * megakit_ashlar_per_m / band) * band);
+		vec4 stone = texture(megakit_albedo_rough, vec3(ashlar_uv, 4.0));
+		color *= dot(stone.rgb, vec3(0.299, 0.587, 0.114)) / megakit_ashlar_luma;
+		roughness = stone.a;
 	}
 	if (wall || roof) {
 		vec4 surface = wall

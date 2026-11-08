@@ -3962,6 +3962,13 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase380.md`, a última do roteiro `docs/plano_fases_376_380.md`. **Teste que procura uma célula da paleta
   pela UV pula os vértices do pacote (UV2.x > 0)**: a UV deles é da textura do MegaKit e cai em qualquer célula.
 
+### Tábuas com veio e pedra clara em blocos (Fases 381 a 383, nossas)
+
+- **Planos** em `docs/plano_fase381.md`, `382` e `383` (roteiro `docs/plano_fases_381_385.md`). Com o MegaKit, o `shingle_shade`
+  tira o brilho das tábuas da faixa clara da madeira do pacote (`megakit_shingle_v`) e a pedra clara (célula (2, 2)), dos blocos da
+  cantaria (`megakit_ashlar_v`, os números do `BuildingKit.MEGAKIT_ASHLAR_*`). **Brilho de textura no shader é linear**: meça a
+  média da faixa em linear antes de dividir por ela. A chaminé com o tijolo do pacote (382) ficou de fora.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4353,6 +4360,9 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 378 — Lucarna do pacote (nossa) | **feita em 08/11/2026**: as lucarnas das casas dos engenheiros e investidores com a lucarna de telhas redondas do pacote, de frente de madeira e vidraças em losango; plano em `docs/plano_fase378.md` |
 | 379 — Caixote do pacote (nossa) | **feita em 08/11/2026**: os caixotes das pilhas de estoque, das carroças, do cais, dos navios e da colheita com o caixote de tábuas do pacote, no lugar do rosado do Kenney; plano em `docs/plano_fase379.md` |
 | 380 — Fotos e conferência (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III): os degraus de pedra já saíram na 377; fotos do menu refeitas e a pasta `presentation` com os dois kits (o teste do gradil corrigido); plano em `docs/plano_fase380.md` |
+| 381 — Tábuas com veio (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_381_385.md` (texturas do MegaKit): as tábuas dos telhados de madeira com o veio da madeira do pacote; plano em `docs/plano_fase381.md` |
+| 382 — Tijolo do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: na chaminé o tijolo do pacote saía vermelho liso; registro em `docs/plano_fase382.md` |
+| 383 — Pedra clara em blocos (nossa) | **feita em 08/11/2026**: a cornija, o frontão, a balaustrada e os arcos com os blocos da cantaria do pacote; plano em `docs/plano_fase383.md` |
 
 Pendências já vistas para fases futuras:
 
