@@ -664,6 +664,7 @@ static func use_megakit(on: bool) -> void:
 	_megakit = 1 if on else 0
 	_parts.clear()
 	_meshes.clear()
+	BuildingMaterials.sync_megakit()
 
 
 ## Fase 363: volta ao padrão (a variável SOCIETY_MEGAKIT, lida de novo) e esquece as malhas; os testes que mexem nisso chamam
@@ -672,6 +673,7 @@ static func reset_megakit() -> void:
 	_megakit = -1
 	_parts.clear()
 	_meshes.clear()
+	BuildingMaterials.sync_megakit()
 
 
 static func available() -> bool:

@@ -3879,6 +3879,12 @@ Regras que já custaram investigação:
   (`_mega_triangle`, no reboco) e os cunhais (`_mega_stone_box`, na cantaria). **Peça gerada nova com a textura do pacote vai nele**
   (pelo `_mega_face`); a camada é a UV2.x − 1. Os postigos cabem na célula (`shutter_leaf`).
 
+### Pedra clara no tom do pacote (Fase 367, nossa)
+
+- **Plano** em `docs/plano_fase367.md`. Com o MegaKit, a pedra clara gerada (célula (2, 2): cornija, faixa, frontão, balaustrada,
+  arcos) sai em `megakit_stone_color` no `shaders/building_kit.gdshader`, ligado pelo `BuildingMaterials.sync_megakit()` (chamado
+  também no `use_megakit` e no `reset_megakit`).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4256,6 +4262,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 364 — MegaKit por padrão (nossa) | **feita em 07/11/2026**: as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0) viram o padrão dos prédios, com as fotos do menu refeitas; a suíte inteira passa (1.882 casos); 63,5 FPS e GPU 14,8 ms no benchmark (~0,2 ms sobre o Kenney); plano em `docs/plano_fase364.md` |
 | 365 — Viga entre os andares (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_361_365.md` (ligar o MegaKit), no lugar do telhado e das quinas: uma viga de madeira em volta do corpo a cada piso cobre a fresta escura da emenda das paredes do pacote; plano em `docs/plano_fase365.md` |
 | 366 — Empena e cunhais (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_366_370.md` (acabamento do MegaKit): a empena no reboco (ou na pedra e no tijolo) do pacote, os cunhais em blocos da cantaria dele e os postigos cabendo na célula, sem se sobrepor; plano em `docs/plano_fase366.md` |
+| 367 — Pedra clara no tom (nossa) | **feita em 08/11/2026**: a cornija, a faixa, o frontão, a balaustrada e os arcos de pedra, que saíam quase brancos ao lado das paredes do MegaKit, no tom da cantaria dele; plano em `docs/plano_fase367.md` |
 
 Pendências já vistas para fases futuras:
 

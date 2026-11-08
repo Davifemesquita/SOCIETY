@@ -19,6 +19,11 @@ uniform sampler2DArray megakit_normals : hint_normal, filter_linear_mipmap_aniso
 // o tom do prédio no reboco (como a tinta das paredes do Kenney) e a madeira puxada para a do kit
 uniform float megakit_plaster_luma = 0.62;
 uniform float megakit_wood_mix = 0.45;
+// Fase 367: com o MegaKit (megakit_stone 1, posto pelo BuildingMaterials), a pedra clara gerada no código (cornija, faixa,
+// frontão, balaustrada, arcos: a célula (2, 2)) no tom da cantaria do pacote, manchada; a do Kenney saía quase branca
+uniform float megakit_stone = 0.0;
+uniform vec4 megakit_stone_color : source_color = vec4(0.66, 0.62, 0.55, 1.0);
+uniform float megakit_stone_mottle = 0.3;
 uniform float wall_meters = 3.0;
 uniform float roof_meters = 2.5;
 // Fase 258: a tinta da instância pesa mais que a textura cinza (antes 0,55: o reboco saía cinza-frio)
@@ -412,6 +417,9 @@ void fragment() {
 		float louver = 0.78 + 0.22 * smoothstep(0.0, 0.4, slat) - 0.18 * smoothstep(0.82, 1.0, slat);
 		float wear = moss_noise(world_position.xz * 9.0 + vec2(world_position.y * 6.0));
 		color = mix(paint, trim_wood.rgb, smoothstep(0.72, 0.95, wear) * 0.55) * louver;
+	} else if (cell == ivec2(2, 2) && megakit_stone > 0.5) {
+		float mottle = moss_noise(world_position.xz * 1.7 + vec2(world_position.y * 2.3));
+		color = megakit_stone_color.rgb * (1.0 - megakit_stone_mottle * 0.5 + megakit_stone_mottle * mottle);
 	} else if (cell == ivec2(4, 3)) {
 		color = kit_luma / 0.55 * mix(mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), trim_paint_color.rgb, trim_paint);
 	} else if (cell == ivec2(3, 3)) {

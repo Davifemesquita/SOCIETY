@@ -34,6 +34,6 @@ Nas capturas da Fase 365, três defeitos destoavam das paredes do pacote:
 
 ## Fica para depois
 
-- O forro do beiral e as tábuas da ponta da água saem quase brancos (Fase 367).
+- A cornija de pedra clara sai quase branca (Fase 367).
 - O reboco ao sol estoura de branco (Fase 368).
 - Nas casas dos artesãos com cunhais, as janelas da quina ficam sem postigos.

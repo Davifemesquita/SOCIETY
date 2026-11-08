@@ -42,7 +42,14 @@ static func kit() -> ShaderMaterial:
 	# Fase 360: as texturas do MegaKit (as camadas de tools/pack_megakit.gd)
 	_kit.set_shader_parameter(&"megakit_albedo_rough", load("res://assets/models/megakit/megakit_albedo_rough.png"))
 	_kit.set_shader_parameter(&"megakit_normals", load("res://assets/models/megakit/megakit_normal.png"))
+	sync_megakit()
 	return _kit
+
+
+## Fase 367: a pedra clara no tom do pacote só com o MegaKit; o BuildingKit chama de novo quando ele troca.
+static func sync_megakit() -> void:
+	if _kit != null:
+		_kit.set_shader_parameter(&"megakit_stone", 1.0 if BuildingKit.megakit_walls() else 0.0)
 
 
 ## Dados da instância do prédio de modelo: parede e telhado (camada e tom), base e fuligem.
