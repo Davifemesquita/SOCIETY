@@ -613,15 +613,16 @@ static var _available: int = -1
 
 
 ## Fase 360: as paredes, as janelas e as portas do Medieval Village MegaKit (Quaternius, CC0) no lugar das do Kenney, com o
-## material de cada vértice na UV2 (o shader do kit lê as texturas dele). Ligado pela variável SOCIETY_MEGAKIT=1 enquanto
-## se compara; `use_megakit` troca à mão (testes e capturas) e esquece as malhas feitas.
+## material de cada vértice na UV2 (o shader do kit lê as texturas dele). Ligado por padrão desde a Fase 364 (SOCIETY_MEGAKIT=0
+## desliga); `use_megakit` troca à mão (testes e capturas) e esquece as malhas feitas.
 const MEGAKIT_DIR := "res://assets/models/megakit/"
 static var _megakit: int = -1
 
 
 static func megakit_walls() -> bool:
 	if _megakit < 0:
-		_megakit = 1 if OS.get_environment("SOCIETY_MEGAKIT") == "1" else 0
+		# Fase 364: ligado por padrão; SOCIETY_MEGAKIT=0 volta ao kit do Kenney (comparar, medir)
+		_megakit = 0 if OS.get_environment("SOCIETY_MEGAKIT") == "0" else 1
 	return _megakit == 1
 
 

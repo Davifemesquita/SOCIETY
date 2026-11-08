@@ -1,16 +1,16 @@
 extends GdUnitTestSuite
-## Fase 360 (ensaio): as paredes do MegaKit no lugar das do Kenney, desligadas por padrão.
+## Fase 360: as paredes do MegaKit no lugar das do Kenney; ligadas por padrão desde a Fase 364 (SOCIETY_MEGAKIT=0 desliga).
 
 
 func after_test() -> void:
 	BuildingKit.reset_megakit()
 
 
-func test_it_is_off_by_default() -> void:
-	if OS.get_environment("SOCIETY_MEGAKIT") == "1":
+func test_it_is_on_by_default() -> void:
+	if OS.get_environment("SOCIETY_MEGAKIT") == "0":
 		return
 	BuildingKit._megakit = -1
-	assert_bool(BuildingKit.megakit_walls()).is_false()
+	assert_bool(BuildingKit.megakit_walls()).is_true()
 
 
 func test_every_wall_piece_has_a_converted_mesh_inside_the_kenney_box() -> void:

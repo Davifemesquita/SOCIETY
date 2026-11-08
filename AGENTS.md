@@ -3833,15 +3833,14 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase359.md`, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto). `cold_shelf` no
   `shaders/water.gdshader` em (0,22; 0,44; 0,38): o raso das temperadas verde-escuro sobre o fundo, sem o turquesa.
 
-### Paredes do MegaKit (Fase 360, ensaio)
+### Paredes do MegaKit (Fase 360; o padrão desde a 364)
 
 - **Plano** em `docs/plano_fase360.md`, a pedido do dono (arte de verdade, o caminho da Fase 50). `tools/pack_megakit.gd` converte
   as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0; o pacote fica fora do repositório, em
   `F:\ferramentas\arte\megakit`) para o referencial das peças do Kenney, em `assets/models/megakit/*.res`, com a camada do
-  material na **UV2.x** e as texturas em pilha; `BuildingKit.megakit_walls()` troca as peças (**desligado**: `SOCIETY_MEGAKIT=1`
-  ou `use_megakit`) e o `shaders/building_kit.gdshader` lê a textura do pacote nesses vértices. Simplificado a 55% dos triângulos,
-  custa o mesmo que o Kenney. **Fica desligado** porque vergas, peitoris, arcos, guarnições, postigos, cortinas e janelas acesas
-  foram medidos no vão do Kenney e cruzam a janela do pacote.
+  material na **UV2.x** e as texturas em pilha; `BuildingKit.megakit_walls()` troca as peças (**ligado por padrão desde a Fase 364**;
+  `SOCIETY_MEGAKIT=0` volta ao Kenney, `use_megakit` troca à mão) e o `shaders/building_kit.gdshader` lê a textura do pacote nesses vértices. Simplificado a 55% dos triângulos,
+  custa o mesmo que o Kenney. Ficou desligado até as Fases 361 a 363 (vão da janela, peso, testes).
 
 ### Vão da janela do MegaKit (Fase 361, nossa)
 
@@ -3861,6 +3860,11 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase363.md`. Teste que confere célula da paleta ou enfeite do Kenney roda com `BuildingKit.use_megakit(false)`
   e chama `BuildingKit.reset_megakit()` no `after_test`; a suíte tem de passar com `SOCIETY_MEGAKIT=1` e sem ele. O teto de
   triângulos por prédio é 40.000 (a igreja do MegaKit chega a ~35 mil).
+
+### MegaKit por padrão (Fase 364, nossa)
+
+- **Plano** em `docs/plano_fase364.md`. Os prédios saem com as paredes do MegaKit; `SOCIETY_MEGAKIT=0` volta ao Kenney. Mudou as peças
+  ou o shader do kit, refaça as fotos do menu (`tools/bake_building_photos.tscn`, em 1920x1080).
 
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
@@ -4236,6 +4240,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 361 — Vão da janela (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_361_365.md` (ligar o MegaKit): com o MegaKit ligado, as janelas acesas, os postigos, as cortinas, as escoras, as floreiras e o tapete seguem o vão da janela do pacote, e as molduras de pedra saem dela; a janela fica inteira; segue desligado por padrão; plano em `docs/plano_fase361.md` |
 | 362 — Peso das janelas (nossa) | **feita em 07/11/2026**: com o MegaKit ligado, a janela da forma só na fachada da frente e a larga reta nos lados e nos fundos; as casas ficam no peso das do Kenney e a GPU sobe 0,2 ms; segue desligado por padrão; plano em `docs/plano_fase362.md` |
 | 363 — Testes da paleta (nossa) | **feita em 07/11/2026**: os testes do que é do Kenney rodam com ele, o do lote e do orçamento confere os dois kits (teto 40.000), e a suíte passa com o MegaKit ligado e desligado; plano em `docs/plano_fase363.md` |
+| 364 — MegaKit por padrão (nossa) | **feita em 07/11/2026**: as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0) viram o padrão dos prédios, com as fotos do menu refeitas; a suíte inteira passa (1.882 casos); 63,5 FPS e GPU 14,8 ms no benchmark (~0,2 ms sobre o Kenney); plano em `docs/plano_fase364.md` |
 
 Pendências já vistas para fases futuras:
 
