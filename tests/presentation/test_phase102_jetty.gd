@@ -12,6 +12,10 @@ func before_test() -> void:
 	_sim.ignore_terrain = true
 
 
+func after_test() -> void:
+	BuildingKit.reset_megakit()
+
+
 func _house(tier: StringName, jetty: bool) -> BuildingKit.Spec:
 	var record := BuildingRecord.new(5, &"house", 0, Vector2i(10, 10), 0)
 	record.tier = tier
@@ -75,6 +79,8 @@ func test_the_jetty_stays_under_the_eave() -> void:
 
 
 func test_the_timber_frame_shows_on_the_upper_front() -> void:
+	# a madeira da paleta é a do Kenney: com o MegaKit ela vai para a do pacote (Fase 376)
+	BuildingKit.use_megakit(false)
 	var plain := _house(&"workers", false)
 	var jettied := _house(&"workers", true)
 	var timber := Vector2i(floori(BuildingKit.UV_TIMBER.x * 8.0), floori(BuildingKit.UV_TIMBER.y * 4.0))

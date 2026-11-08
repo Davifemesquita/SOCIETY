@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+﻿extends GdUnitTestSuite
 ## Fase 373: com o MegaKit, a sacada dos engenheiros leva o guarda-corpo de madeira em xis do pacote (a peça empacotada, um lanço
 ## por célula e as pontas); a dos investidores segue com a balaustrada de pedra, e sem o MegaKit a grade de ferro volta.
 
@@ -62,6 +62,8 @@ func test_the_investors_and_the_kenney_keep_theirs() -> void:
 	assert_int(investors.trim).is_equal(TierDef.HouseTrim.PORTICO)
 	var bare := _spec(&"investors")
 	bare.trim = TierDef.HouseTrim.NONE
-	assert_int(_wood(investors)).is_equal(_wood(bare))
+	# desde a Fase 376 o madeiramento gerado do pórtico também é da madeira do pacote: o que não pode é um lanço do guarda-corpo
+	var rail := load(BuildingKit.MEGAKIT_DIR + BuildingKit.CROSS_RAIL + ".res") as ArrayMesh
+	assert_int(_wood(investors) - _wood(bare)).is_less(rail.surface_get_array_len(0))
 	BuildingKit.use_megakit(false)
 	assert_int(_wood(_spec(&"engineers"))).is_equal(0)

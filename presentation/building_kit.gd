@@ -665,6 +665,10 @@ static var _megakit: int = -1
 static var _mega_extra: SurfaceTool = null
 static var _roof_place := Transform3D.IDENTITY
 static var _mega_extra_used := false
+## Fase 376: as SurfaceTools no referencial do prédio (a principal e a extra), só com o MegaKit: o madeiramento gerado
+## (UV_TIMBER) que cai nelas vai para a madeira do pacote. As que se juntam com outra transformação (telhado da ala, janela
+## girada) ficam de fora e seguem na paleta.
+static var _frame_tools: Array[SurfaceTool] = []
 
 
 static func megakit_walls() -> bool:
@@ -1198,6 +1202,7 @@ static func _build(spec: Spec) -> ArrayMesh:
 	if megakit_walls():
 		_mega_extra = SurfaceTool.new()
 		_mega_extra.begin(Mesh.PRIMITIVE_TRIANGLES)
+		_frame_tools = [tool, extra]
 	# o quintal fica no chão: o alicerce é só o do corpo
 	var base := hall.size_m() if spec.trim == TierDef.HouseTrim.YARD else size
 	var base_center := spec.hall_offset() if spec.trim == TierDef.HouseTrim.YARD else Vector3.ZERO
@@ -1271,6 +1276,7 @@ static func _build(spec: Spec) -> ArrayMesh:
 		tool.append_from(_mega_extra.commit(), 0, Transform3D.IDENTITY)
 	_mega_extra = null
 	_mega_extra_used = false
+	_frame_tools = []
 	var arrays := tool.commit_to_arrays()
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -2232,6 +2238,9 @@ static func _gate(tool: SurfaceTool, extra: SurfaceTool, hall: Spec, offset: Tra
 
 ## Caixa girada: a caixa do _box no referencial "place" (x, y e z da base são largura, altura e fundo).
 static func _box_at(tool: SurfaceTool, place: Transform3D, size: Vector3, uv: Vector2) -> void:
+	if uv == UV_TIMBER and _mega_extra != null and tool in _frame_tools:
+		_mega_wood_box(place, size)
+		return
 	var local := SurfaceTool.new()
 	local.begin(Mesh.PRIMITIVE_TRIANGLES)
 	_box(local, Vector3.ZERO, size, uv)
@@ -3372,6 +3381,48 @@ static func _mega_stone_box(tool: SurfaceTool, center: Vector3, size: Vector3) -
 			_mega_face(tool, [corners[0], corners[2], corners[3]], [uvs[0], uvs[2], uvs[3]], normal, 4)
 
 
+## Fase 376: a faixa das tábuas escuras na textura de madeira do MegaKit (v de cima a baixo dela), quanto u dá um metro ao
+## longo do veio e o mais que uma face pega da faixa no través (as vigas finas pegam uma tábua só).
+const MEGAKIT_WOOD_V := Vector2(0.34, 0.57)
+const MEGAKIT_WOOD_U_PER_M := 0.5
+const MEGAKIT_WOOD_MAX_V := 0.12
+
+
+## Fase 376: caixa (posta por place) na madeira do MegaKit: em cada face o veio ao longo do lado mais comprido dela, numa
+## tábua da faixa escura sorteada pelo lugar.
+static func _mega_wood_box(place: Transform3D, size: Vector3) -> void:
+	var h := size * 0.5
+	var spot := place.origin
+	var start := fposmod(spot.x * 3.7 + spot.y * 5.3 + spot.z * 2.9, 1.0)
+	for axis: int in 3:
+		for sign_value: float in [-1.0, 1.0]:
+			var normal := Vector3.ZERO
+			normal[axis] = sign_value
+			var a := (axis + 1) % 3
+			var b := (axis + 2) % 3
+			# o veio ao longo do lado mais comprido da face
+			var grain := a if size[a] >= size[b] else b
+			var cross_axis := b if grain == a else a
+			var along := Vector3.ZERO
+			along[grain] = h[grain]
+			var across := Vector3.ZERO
+			across[cross_axis] = h[cross_axis]
+			var face := normal * h[axis]
+			var corners: Array[Vector3] = [face - along - across, face + along - across, face + along + across,
+					face - along + across]
+			var length := size[grain] * MEGAKIT_WOOD_U_PER_M
+			var height := minf(size[cross_axis] * MEGAKIT_WOOD_U_PER_M, MEGAKIT_WOOD_MAX_V)
+			var v0 := MEGAKIT_WOOD_V.x + fposmod(start * 7.0 + axis * 0.31, 1.0) * (MEGAKIT_WOOD_V.y - MEGAKIT_WOOD_V.x - height)
+			var uvs: Array[Vector2] = [Vector2(start, v0), Vector2(start + length, v0), Vector2(start + length, v0 + height),
+					Vector2(start, v0 + height)]
+			var points: Array[Vector3] = []
+			for corner: Vector3 in corners:
+				points.append(place * corner)
+			var outward := (place.basis * normal).normalized()
+			_mega_face(_mega_extra, [points[0], points[1], points[2]], [uvs[0], uvs[1], uvs[2]], outward, 1)
+			_mega_face(_mega_extra, [points[0], points[2], points[3]], [uvs[0], uvs[2], uvs[3]], outward, 1)
+
+
 ## Fase 95: haste redonda de from até to (raio radius, sides faces) com a normal de cada vértice para fora do eixo (o
 ## sombreado sai liso, redondo). Com half, só a metade de cima (a capa da cumeeira, que assenta nas duas águas).
 static func _rod(tool: SurfaceTool, from: Vector3, to: Vector3, radius: float, sides: int, uv: Vector2, half: bool = false) -> void:
@@ -3541,6 +3592,9 @@ static func _turret(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
 
 
 static func _box(tool: SurfaceTool, center: Vector3, size: Vector3, uv: Vector2) -> void:
+	if uv == UV_TIMBER and _mega_extra != null and tool in _frame_tools:
+		_mega_wood_box(Transform3D(Basis.IDENTITY, center), size)
+		return
 	var h := size * 0.5
 	for axis: int in 3:
 		for sign_value: float in [-1.0, 1.0]:

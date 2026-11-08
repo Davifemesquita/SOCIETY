@@ -3933,6 +3933,13 @@ Regras que já custaram investigação:
   transformação inteira; a cerca de tábuas vai no referencial da `fence` do Kenney e a troca pelo nome com o MegaKit. **Peça do
   pacote empacotada com o nome de uma do Kenney substitui a dele sem mexer na montagem.**
 
+### Madeiramento do pacote (Fase 376, nossa)
+
+- **Plano** em `docs/plano_fase376.md`, primeira do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III). Com o MegaKit, a
+  caixa `UV_TIMBER` (no `_box`, no `_box_at` e no `_bar`) vai para a madeira do pacote (`_mega_wood_box`, camada 1) quando a
+  SurfaceTool é do referencial do prédio (`_frame_tools`: a principal e a extra). **Teste que conta o madeiramento pela célula da
+  paleta roda com o Kenney ou soma a madeira do pacote (UV2.x = 2).**
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4319,6 +4326,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 373 — Sacada do pacote (nossa) | **feita em 08/11/2026**: a sacada corrida dos engenheiros com o guarda-corpo de madeira em xis do MegaKit, no lugar da grade de ferro fina; plano em `docs/plano_fase373.md` |
 | 374 — Chaminé do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: a chaminé do pacote saía cinza e escura no telhado; registro em `docs/plano_fase374.md` |
 | 375 — Cerca do pacote (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): a cerca do quintal dos camponeses com a cerca de tábuas rústica do MegaKit; fotos do menu refeitas; plano em `docs/plano_fase375.md` |
+| 376 — Madeiramento do pacote (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III): as vigas, os esteios e as escoras geradas na madeira do pacote, com o veio; a viga entre os andares deixa de sair cinza; plano em `docs/plano_fase376.md` |
 
 Pendências já vistas para fases futuras:
 

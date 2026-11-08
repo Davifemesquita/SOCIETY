@@ -18,7 +18,8 @@ func _spec(tier: StringName) -> BuildingKit.Spec:
 	return BuildingKit.spec_for(_sim, record, 2.0)
 
 
-## Vértices de madeira escura (UV_TIMBER, fora do pacote) perto da altura y, a até "reach" fora do corpo.
+## Vértices de madeira perto da altura y, a até "reach" fora do corpo: a escura da paleta (UV_TIMBER) ou, desde a Fase 376,
+## a do pacote (UV2.x = 2).
 func _timber_at(mesh: Mesh, y: float, half: Vector2, reach: float) -> int:
 	var cell := Vector2i(floori(BuildingKit.UV_TIMBER.x * 8.0), floori(BuildingKit.UV_TIMBER.y * 4.0))
 	var count := 0
@@ -30,9 +31,10 @@ func _timber_at(mesh: Mesh, y: float, half: Vector2, reach: float) -> int:
 		if arrays[Mesh.ARRAY_TEX_UV2] is PackedVector2Array:
 			uv2 = arrays[Mesh.ARRAY_TEX_UV2]
 		for i: int in vertices.size():
-			if not uv2.is_empty() and uv2[i].x > 0.5:
+			var packed := not uv2.is_empty() and uv2[i].x > 0.5
+			if packed and not is_equal_approx(uv2[i].x, 2.0):
 				continue
-			if Vector2i(floori(uvs[i].x * 8.0), floori(uvs[i].y * 4.0)) != cell:
+			if not packed and Vector2i(floori(uvs[i].x * 8.0), floori(uvs[i].y * 4.0)) != cell:
 				continue
 			var point := vertices[i]
 			if absf(point.y - y) < BuildingKit.FLOOR_BEAM_M and absf(point.x) <= half.x + reach and absf(point.z) <= half.y + reach:
