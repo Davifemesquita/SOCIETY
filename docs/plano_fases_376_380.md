@@ -25,3 +25,4 @@ Cada fase confere o peso (triângulos) e olha a captura antes de entrar; peça q
 
 - **376 feita em 08/11/2026** (`docs/plano_fase376.md`).
 - **377 feita em 08/11/2026** (`docs/plano_fase377.md`), com os degraus da porta: a 380 muda (ver abaixo).
+- **378 feita em 08/11/2026** (`docs/plano_fase378.md`).

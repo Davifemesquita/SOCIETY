@@ -35,7 +35,7 @@ const GLASS_LAYER := 5
 ## O material do glTF (pelo começo do nome) → a camada.
 const MATERIALS := {
 	"MI_Plaster": 0, "MI_WoodTrim": 1, "MI_RedBrick": 2, "MI_Brick": 2, "MI_UnevenBrick": 3, "MI_RockTrim": 4,
-	"MI_WindowGlass": 5, "MI_MetalOrnaments": 6,
+	"MI_WindowGlass": 5, "MI_MetalOrnaments": 6, "MI_RoundTiles": 7,
 }
 ## A peça do BuildingKit → as peças do pacote que a compõem (no mesmo lugar, como foram desenhadas para encaixar).
 const PIECES := {
@@ -58,6 +58,9 @@ var PROPS := {
 	"balcony-cross": ["Balcony_Cross_Straight", Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, -1.0))],
 	"fence": ["Prop_WoodenFence_Single", Transform3D(Basis(Vector3(0.0, 0.0, 1.0 / 2.06), Vector3(0.0, 0.38 / 0.81, 0.0),
 			Vector3(-0.08 / 0.12, 0.0, 0.0)), Vector3(0.46, 0.0, 0.0))],
+	# Fase 378: a lucarna de telhas redondas, em metros do pacote (a janela para +x, o fundo em x ≈ 0, o pé em y ≈ 0); o
+	# BuildingKit a encolhe e estica até a água do telhado
+	"dormer": ["Roof_Dormer_RoundTile", Transform3D.IDENTITY],
 }
 
 var _folder: String

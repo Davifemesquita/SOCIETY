@@ -3945,6 +3945,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase377.md`. Com o MegaKit, o alicerce, o plinto do barranco, o terraço do pátio e os degraus saem na
   cantaria do pacote em escala de verdade (`_mega_ashlar_box`, em faixas de quatro fiadas; `_stone_block` no `plinth`).
 
+### Lucarna do pacote (Fase 378, nossa)
+
+- **Plano** em `docs/plano_fase378.md`. Com o MegaKit, as lucarnas dos engenheiros e investidores (`MEGAKIT_DORMER_TRIMS`) são a
+  `dormer` do pacote (`_mega_dormer`), esticada para trás até o fundo entrar na água (`mega_dormer_depth`); as telhas dela (camada
+  7) no tom do telhado pelo shader. Captura: `lucarna_do_pacote.png` no `tools/capture_phase95.tscn`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4333,6 +4339,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 375 — Cerca do pacote (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): a cerca do quintal dos camponeses com a cerca de tábuas rústica do MegaKit; fotos do menu refeitas; plano em `docs/plano_fase375.md` |
 | 376 — Madeiramento do pacote (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III): as vigas, os esteios e as escoras geradas na madeira do pacote, com o veio; a viga entre os andares deixa de sair cinza; plano em `docs/plano_fase376.md` |
 | 377 — Alicerce de cantaria (nossa) | **feita em 08/11/2026**: o alicerce no pé dos prédios, o plinto do barranco e os degraus da porta na cantaria do pacote, em blocos de verdade, no lugar da pedra lisa; plano em `docs/plano_fase377.md` |
+| 378 — Lucarna do pacote (nossa) | **feita em 08/11/2026**: as lucarnas das casas dos engenheiros e investidores com a lucarna de telhas redondas do pacote, de frente de madeira e vidraças em losango; plano em `docs/plano_fase378.md` |
 
 Pendências já vistas para fases futuras:
 

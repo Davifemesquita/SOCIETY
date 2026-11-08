@@ -160,6 +160,30 @@ func _run() -> void:
 		var ladder := _game.ladder_view.places[0]
 		var out := ladder.basis.z.normalized()
 		await _aimed("escada_de_mao.png", ladder.origin + Vector3(0.0, 1.6, 0.0), 8.0, atan2(out.x, out.z) + 0.6)
+	# Fase 378: a lucarna do pacote no telhado de uma casa dos engenheiros ou dos investidores, de perto
+	for record: BuildingRecord in _sim.world.buildings.values():
+		if record.tier not in [&"engineers", &"investors"]:
+			continue
+		var spec := BuildingKit.spec_for(_sim, record, grid.cell_size)
+		if spec.lucarnes <= 0 or spec.mansard:
+			continue
+		# a frente da primeira lucarna pela conta do BuildingKit._lucarnes, no lugar do modelo
+		var size := spec.size_m()
+		var along_x := spec.roof == BuildingKit.Roof.GABLE_X
+		var hu := (size.x if along_x else size.y) * 0.5
+		var hv := (size.y if along_x else size.x) * 0.5
+		var front := hv * BuildingKit.LUCARNE_AT
+		var base := spec.height_m + spec.roof_m - spec.roof_m / hv * front
+		var u := (0.5 / spec.lucarnes * 2.0 - 1.0) * hu * 0.5
+		var side := -1.0 if along_x else 1.0
+		var local := Vector3(u, base + 0.4, side * front) if along_x else Vector3(side * front, base + 0.4, u)
+		var model := BuildingView.model_place(grid, record, Footprint.rect(record.origin, _sim.data.building(record.def_id).size,
+				record.rotation))
+		var roof: Vector3 = model * local
+		var out: Vector3 = model.basis * (Vector3(0.0, 0.0, side) if along_x else Vector3(side, 0.0, 0.0))
+		await _aimed("lucarna_do_pacote.png", roof, 6.0, atan2(out.x, out.z) + 0.4)
+		await _aimed("lucarna_de_longe.png", roof, 16.0, atan2(out.x, out.z) - 0.5)
+		break
 	# Fase 169: os barris de chuva na quina de trás das casas, de perto
 	await _shot("barris_de_chuva.png", grid.cell_world(Vector2i(ORIGIN.x + 4, ORIGIN.y + STREET_STEP - 1)), 8.0, PI + 0.7)
 	# Fase 160: os cunhais nas quinas das casas dos artesãos, de quina

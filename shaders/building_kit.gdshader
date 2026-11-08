@@ -387,6 +387,10 @@ void fragment() {
 			color = mix(color, mega_luma / 0.45 * tint.rgb, tint_strength * 0.45);
 		} else if (mega == 1) {
 			color = mix(color, mega_luma / 0.4 * mix(trim_wood.rgb, tint.rgb * 0.6, 0.35), megakit_wood_mix);
+		} else if (mega == 7) {
+			// Fase 378: as telhas da lucarna do pacote no tom das águas da casa (a mesma conta das telhas redondas da Fase 371)
+			color = mix(color, mega_luma / megakit_tile_luma * roof_tint.rgb, megakit_tile_tint);
+			color *= mix(roof_tone_dark, roof_tone_light, roof_pick);
 		}
 	} else if (cell == ivec2(2, 1)) {
 		// Fase 97: cobre velho (célula (2, 1), que o kit não usa): o verde-azulado da pátina, com escorrimentos mais

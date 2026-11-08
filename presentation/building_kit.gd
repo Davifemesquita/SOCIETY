@@ -414,6 +414,14 @@ const LUCARNE_W := 0.9
 const LUCARNE_H := 0.75
 const LUCARNE_AT := 0.62
 const LUCARNE_PEAK_M := 0.32
+## Fase 378: com o MegaKit, as casas dos engenheiros e dos investidores (telhado sempre de telha) levam a lucarna de telhas
+## redondas do pacote: a peça (em metros do pacote, a frente das paredes em x = MEGAKIT_DORMER_DEPTH_M, o alto em
+## MEGAKIT_DORMER_TOP_M) encolhida a MEGAKIT_DORMER_SCALE e esticada para trás até o fundo ficar dentro da água.
+const MEGAKIT_DORMER := "dormer"
+const MEGAKIT_DORMER_TRIMS := [TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO]
+const MEGAKIT_DORMER_DEPTH_M := 1.8
+const MEGAKIT_DORMER_TOP_M := 2.7
+const MEGAKIT_DORMER_SCALE := 0.42
 ## Fase 124: a mansarda das casas dos investidores. A água de baixo, íngreme, sobe MANSARD_LOWER da altura do telhado do
 ## beiral (MANSARD_EAVE_M para fora da parede) até o rebordo (MANSARD_INSET_M para dentro dela); a de cima, quase plana,
 ## fecha em quatro águas. Na água de baixo da frente e de trás, lucarnas de DORMER_W de largura e DORMER_H de altura,
@@ -3160,8 +3168,12 @@ static func _lucarnes(tool: SurfaceTool, spec: Spec) -> void:
 	var back := (ridge - crown) / slope
 	var half := LUCARNE_W * 0.5
 	var out := _uv_point(along_x, 0.0, 0.0, side)
+	var packed := _mega_extra != null and spec.trim in MEGAKIT_DORMER_TRIMS and mega_dormer_depth(slope) <= front
 	for k: int in spec.lucarnes:
 		var u := ((k + 0.5) / spec.lucarnes * 2.0 - 1.0) * hu * 0.5
+		if packed:
+			_mega_dormer(out, _uv_point(along_x, u, base - 0.02, side * front), slope)
+			continue
 		var bottom := base - 0.4
 		_box(tool, _uv_point(along_x, u, (crown + bottom) * 0.5, side * (front + back) * 0.5),
 				_uv_point(along_x, LUCARNE_W, crown - bottom, front - back).abs(), UV_WALL)
@@ -3184,6 +3196,23 @@ static func _lucarnes(tool: SurfaceTool, spec: Spec) -> void:
 		_quad(tool, _uv_point(along_x, u - MULLION_M * 0.5, low, bar_v), _uv_point(along_x, u + MULLION_M * 0.5, low, bar_v),
 				_uv_point(along_x, u + MULLION_M * 0.5, high, bar_v), _uv_point(along_x, u - MULLION_M * 0.5, high, bar_v), out,
 				UV_TIMBER)
+
+
+## Fase 378: a profundidade da lucarna do pacote na água de inclinação "slope": a da peça encolhida ou, se o fundo dela (o
+## alto, MEGAKIT_DORMER_TOP_M) passasse da água, o bastante para ele ficar 5 cm dentro.
+static func mega_dormer_depth(slope: float) -> float:
+	var top := MEGAKIT_DORMER_TOP_M * MEGAKIT_DORMER_SCALE
+	return maxf(MEGAKIT_DORMER_DEPTH_M * MEGAKIT_DORMER_SCALE, (top + 0.05) / maxf(slope, 0.05))
+
+
+## Fase 378: a lucarna do pacote com o pé da frente em "foot" (no referencial do telhado), virada para "out" (horizontal), na
+## SurfaceTool principal (a peça é indexada e leva a UV2).
+static func _mega_dormer(out: Vector3, foot: Vector3, slope: float) -> void:
+	var shrink := MEGAKIT_DORMER_SCALE
+	var stretch := mega_dormer_depth(slope) / MEGAKIT_DORMER_DEPTH_M
+	var basis := Basis(out * stretch, Vector3.UP * shrink, out.cross(Vector3.UP).normalized() * shrink)
+	var place := Transform3D(basis, foot - basis * Vector3(MEGAKIT_DORMER_DEPTH_M, 0.0, 0.0))
+	_append_piece(_frame_tools[0], MEGAKIT_DORMER, _roof_place * place)
 
 
 ## Vidro e caixilho em cada janela (Fase 39): o kit só tem o vão, que de dia lia como buraco preto. O vidro fica na
