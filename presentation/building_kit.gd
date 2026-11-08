@@ -138,6 +138,29 @@ const WINDOW_WIDTH := 0.36
 const WINDOW_CENTER := 0.52
 const WINDOW_HEIGHT := 0.4
 const WINDOW_GAP_M := 0.06
+## Fase 361: o vão de cada janela do MegaKit (Fase 360), na ordem das peças de janela (window_style), medido pelo vidro dela
+## na peça convertida: largura em fração da célula, centro e altura em fração do andar, e o x do vidro (fundo, na parede
+## grossa do pacote). A moldura do pacote sai MEGAKIT_FRAME_M além do vão (os postigos ficam fora dela).
+const MEGAKIT_OPENINGS: Array[Vector4] = [
+	Vector4(0.54, 0.59, 0.5, 0.312), Vector4(0.505, 0.553, 0.403, 0.312), Vector4(0.278, 0.571, 0.446, 0.312),
+]
+const MEGAKIT_FRAME_M := 0.1
+
+
+## Fase 361: qual das três peças de janela a forma usa; no MegaKit, a de arco nos prédios de janela em arco (Fase 99), que
+## perdem a cabeça de pedra.
+static func window_index(spec: Spec) -> int:
+	if megakit_walls() and spec.arched:
+		return 0
+	return posmod(spec.window_style, 3)
+
+
+## Fase 361: o vão da janela da forma — x a largura (fração da célula), y o centro e z a altura (fração do andar), w o x do vidro
+## na peça. O do Kenney são as constantes de sempre; o do MegaKit, o da peça que a forma usa.
+static func opening(spec: Spec) -> Vector4:
+	if megakit_walls():
+		return MEGAKIT_OPENINGS[window_index(spec)]
+	return Vector4(WINDOW_WIDTH, WINDOW_CENTER, WINDOW_HEIGHT, GLASS_X)
 
 ## UV de cada tipo de superfície na paleta do kit (colormap.png, 8 colunas × 4 linhas de cor). O
 ## shader usa a mesma divisão: parede = (1, 2) e (5, 3); telhado = (0, 3) e (1, 3).
@@ -929,6 +952,8 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 	var result: Array[Transform3D] = []
 	var size := spec.size_m()
 	var floor_m := spec.floor_m()
+	var gap := opening(spec)
+	var megakit := megakit_walls()
 	for face: int in 4:
 		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
 		var step := (size.x if face % 2 == 0 else size.y) / count
@@ -939,9 +964,11 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 				var place := _cell_transform(spec, face, index, level)
 				var normal := _face_normal(face)
 				# o meio da peça fica meia célula para dentro (o x da base é a profundidade): o vidro vai à parede
-				var origin := place.origin + normal * (place.basis.x.length() * 0.5 + WINDOW_GAP_M) \
-						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
-				var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(step * WINDOW_WIDTH, floor_m * WINDOW_HEIGHT, 1.0))
+				# (o MegaKit tem o vidro no fundo da parede grossa: o vidro aceso vai logo à frente dele, atrás da moldura)
+				var depth := place.basis.x.length() * gap.w + 0.02 if megakit \
+						else place.basis.x.length() * 0.5 + WINDOW_GAP_M
+				var origin := place.origin + normal * depth + Vector3(0.0, floor_m * gap.y, 0.0)
+				var basis := Basis.looking_at(-normal, Vector3.UP).scaled_local(Vector3(step * gap.x, floor_m * gap.z, 1.0))
 				result.append(Transform3D(basis, origin))
 	# Fase 103: as claraboias também são vidro que acende; e, desde a Fase 104, o lampião de parede
 	result.append_array(skylight_panes(spec))
@@ -1040,7 +1067,7 @@ static func _build(spec: Spec) -> ArrayMesh:
 					continue
 				var piece: String = pieces[&"plain"]
 				if kind == &"window":
-					piece = choices[spec.window_style % choices.size()]
+					piece = choices[window_index(hall)]
 				elif kind != &"plain":
 					piece = pieces[kind]
 				_append_piece(tool, piece, offset * _cell_transform(hall, face, index, level))
@@ -1187,6 +1214,7 @@ static func _jetty(tool: SurfaceTool, spec: Spec) -> void:
 	var front := -size.y * 0.5
 	var out := front - JETTY_M
 	var timber_z := out - 0.03
+	var gap := opening(hall)
 	_box(tool, shift + Vector3(0.0, floor_m - 0.07, (front + out) * 0.5), Vector3(size.x, 0.14, JETTY_M), UV_TIMBER)
 	for k: int in hall.cells.x + 1:
 		var x := clampf(-size.x * 0.5 + step * k, -size.x * 0.5 + 0.06, size.x * 0.5 - 0.06)
@@ -1208,8 +1236,8 @@ static func _jetty(tool: SurfaceTool, spec: Spec) -> void:
 				_box(tool, shift + Vector3(x, (y0 + y1) * 0.5, timber_z), Vector3(TIMBER_M, floor_m, 0.06), UV_TIMBER)
 			if kind == &"window":
 				# uma escora de cada lado da janela, do pé do esteio até o alto do vão
-				var beside := step * WINDOW_WIDTH * 0.5 + 0.14
-				var top := y0 + floor_m * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5)
+				var beside := step * gap.x * 0.5 + 0.14
+				var top := y0 + floor_m * (gap.y + gap.z * 0.5)
 				_bar(tool, shift + Vector3(x0 + 0.08, y0 + 0.12, timber_z), shift + Vector3(middle - beside, top, timber_z), 0.08,
 						UV_TIMBER)
 				_bar(tool, shift + Vector3(x1 - 0.08, y0 + 0.12, timber_z), shift + Vector3(middle + beside, top, timber_z), 0.08,
@@ -2104,7 +2132,8 @@ static func _trim(tool: SurfaceTool, extra: SurfaceTool, spec: Spec) -> void:
 			for level: int in range(1, hall.floors()):
 				for index: int in hall.cells.x:
 					if slot(hall, 0, index, level) == &"window":
-						var under := hall.floor_m() * (WINDOW_CENTER - WINDOW_HEIGHT * 0.5) - 0.18
+						var gap := opening(hall)
+						var under := hall.floor_m() * (gap.y - gap.z * 0.5) - 0.18
 						_append_piece(tool, HEDGE, offset * _face_place(hall, 0, index, level,
 								Vector3(0.64, 0.9, 0.5), FLOWER_BOX_OUT_M, under))
 		TierDef.HouseTrim.BALCONIES, TierDef.HouseTrim.PORTICO:
@@ -2185,12 +2214,14 @@ static func _ornament(tool: SurfaceTool, spec: Spec) -> void:
 		for level: int in range(1, hall.floors()):
 			_box(tool, center + Vector3(0.0, level * hall.floor_m(), 0.0),
 					Vector3(size.x + 0.12, BAND_M, size.y + 0.12), UV_LIGHT_STONE)
+	# Fase 361: a janela do MegaKit já tem a moldura (verga, peitoril e arco dela): as de pedra ficam só no Kenney
+	var window_trims := not megakit_walls()
 	for face: int in 4:
 		var count := hall.cells.x if face % 2 == 0 else hall.cells.y
 		var step := (size.x if face % 2 == 0 else size.y) / count
 		for level: int in hall.floors():
 			for index: int in count:
-				if slot(hall, face, index, level) != &"window":
+				if not window_trims or slot(hall, face, index, level) != &"window":
 					continue
 				var top := hall.floor_m() * (WINDOW_CENTER + WINDOW_HEIGHT * 0.5) + LINTEL_M
 				var at := center + _wall_point(hall, face, index, level) + Vector3(0.0, top, 0.0) \
@@ -2222,23 +2253,26 @@ static func _shutters(tool: SurfaceTool, spec: Spec) -> void:
 	var center := spec.hall_offset()
 	var size := hall.size_m()
 	var floor_m := hall.floor_m()
-	var height := floor_m * WINDOW_HEIGHT
+	var gap := opening(hall)
+	var height := floor_m * gap.z
+	# Fase 361: na janela do MegaKit a folha fica fora da moldura dele
+	var clear := SHUTTER_GAP_M + (MEGAKIT_FRAME_M if megakit_walls() else 0.0)
 	for face: int in 4:
 		var along_x := face % 2 == 0
 		var lateral := Vector3.RIGHT if along_x else Vector3.BACK
 		var count := hall.cells.x if along_x else hall.cells.y
 		var step := (size.x if along_x else size.y) / count
-		var opening := step * WINDOW_WIDTH
-		var leaf := opening * 0.5
+		var span := step * gap.x
+		var leaf := span * 0.5
 		var box := Vector3(leaf, height, SHUTTER_THICK_M) if along_x else Vector3(SHUTTER_THICK_M, height, leaf)
 		for level: int in hall.floors():
 			for index: int in count:
 				if slot(hall, face, index, level) != &"window":
 					continue
 				var middle := center + _wall_point(hall, face, index, level) + _face_normal(face) * SHUTTER_OUT_M \
-						+ Vector3(0.0, floor_m * WINDOW_CENTER, 0.0)
+						+ Vector3(0.0, floor_m * gap.y, 0.0)
 				for side: float in [-1.0, 1.0]:
-					_box(tool, middle + lateral * side * (opening * 0.5 + SHUTTER_GAP_M + leaf * 0.5), box, UV_SHUTTER)
+					_box(tool, middle + lateral * side * (span * 0.5 + clear + leaf * 0.5), box, UV_SHUTTER)
 
 
 ## Fase 160: os cunhais — nas quatro quinas do corpo, da soleira até a cornija, blocos de pedra clara em fiadas de
@@ -2985,11 +3019,14 @@ static func _glazing(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void
 ## e as rotações acompanham), logo à frente dele: os dois panos presos dos lados do vão, cada um de CURTAIN_MIN a CURTAIN_MAX
 ## dele no alto (pela janela, sem sorteio) e franzidos até CURTAIN_TIE disso embaixo, e a sanefa de VALANCE do vão em cima.
 static func _curtains(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
-	var half_w := WINDOW_WIDTH * 0.5
-	var half_h := WINDOW_HEIGHT * 0.5
-	var top := WINDOW_CENTER + half_h
-	var bottom := WINDOW_CENTER - half_h
-	var valance := top - WINDOW_HEIGHT * VALANCE
+	var gap := opening(spec)
+	var half_w := gap.x * 0.5
+	var half_h := gap.z * 0.5
+	var top := gap.y + half_h
+	var bottom := gap.y - half_h
+	var valance := top - gap.z * VALANCE
+	# Fase 361: logo à frente do vidro (no MegaKit ele fica no fundo da parede)
+	var curtain_x := gap.w + 0.007 if megakit_walls() else CURTAIN_X
 	for face: int in 4:
 		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
 		for level: int in spec.floors():
@@ -3002,13 +3039,13 @@ static func _curtains(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> voi
 					var share := CURTAIN_MIN + (CURTAIN_MAX - CURTAIN_MIN) * float(posmod(face * 7 + index * 5 + level * 3
 							+ int(side) * 2, 5)) / 4.0
 					var edge := side * half_w
-					var inner := edge - side * share * WINDOW_WIDTH
-					var tied := edge - side * share * WINDOW_WIDTH * CURTAIN_TIE
-					_quad(tool, place * Vector3(CURTAIN_X, bottom, edge), place * Vector3(CURTAIN_X, bottom, tied),
-							place * Vector3(CURTAIN_X, valance, inner), place * Vector3(CURTAIN_X, valance, edge), out,
+					var inner := edge - side * share * gap.x
+					var tied := edge - side * share * gap.x * CURTAIN_TIE
+					_quad(tool, place * Vector3(curtain_x, bottom, edge), place * Vector3(curtain_x, bottom, tied),
+							place * Vector3(curtain_x, valance, inner), place * Vector3(curtain_x, valance, edge), out,
 							UV_CURTAIN)
-				_quad(tool, place * Vector3(CURTAIN_X, valance, -half_w), place * Vector3(CURTAIN_X, valance, half_w),
-						place * Vector3(CURTAIN_X, top, half_w), place * Vector3(CURTAIN_X, top, -half_w), out, UV_CURTAIN)
+				_quad(tool, place * Vector3(curtain_x, valance, -half_w), place * Vector3(curtain_x, valance, half_w),
+						place * Vector3(curtain_x, top, half_w), place * Vector3(curtain_x, top, -half_w), out, UV_CURTAIN)
 
 
 ## Plinto e degraus do prédio no barranco (Fase 39), no referencial canônico: a pedra desce do piso até "depth" abaixo

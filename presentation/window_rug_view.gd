@@ -98,7 +98,9 @@ static func spot(simulation: Simulation, record: BuildingRecord) -> Variant:
 		var def := simulation.def_of(record)
 		var model := BuildingView.model_place(grid, record, Footprint.rect(record.origin, def.size, record.rotation))
 		var cell := model * Transform3D(Basis.IDENTITY, spec.hall_offset()) * BuildingKit._cell_transform(hall, 0, index, 1)
-		var sill := cell * Vector3(0.5, BuildingKit.WINDOW_CENTER - BuildingKit.WINDOW_HEIGHT * 0.5, 0.0)
+		# Fase 361: o vão da peça (o do MegaKit é outro)
+		var gap := BuildingKit.opening(hall)
+		var sill := cell * Vector3(0.5, gap.y - gap.z * 0.5, 0.0)
 		var out := cell.basis.x.normalized()
 		var along := cell.basis.z.normalized()
 		# base de mão direita: x ao longo, y para cima, z para fora

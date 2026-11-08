@@ -4350,3 +4350,6 @@ FPS, GPU 14,6 ms, tick 1,25 ms e carregar 6,4 s, contra 64,6/64,8 FPS, 14,5 ms, 
 **Simulação (o tick, pedido de 07/11/2026).** Com os 10.000 moradores, 200 prédios de produção e 10 navios do benchmark, o tick
 médio é 1,3 ms (95%: 1,5; pior 2,7) para um orçamento de 4,0 ms, e a obra com a ilha cheia ~18 ms para 50: há folga de cerca de 3
 vezes. Passar a simulação para C# ou C++ (GDExtension) não se paga agora; volta à mesa se uma cidade de verdade passar de ~3 ms.
+
+**Fase 361 (vão da janela do MegaKit, desligado por padrão).** Alternando, duas rodadas cada: Kenney 64,6/64,7 FPS e GPU 14,5 ms
+(19,9 M primitivas); MegaKit com a janela inteira (só a parede simplificada) 62,3/62,1 FPS e GPU 15,2 ms (22,8 M).
