@@ -20,3 +20,4 @@ O Anno não foi aberto.
 - **367 feita em 08/11/2026** (`docs/plano_fase367.md`): o "beiral branco" das capturas era a cornija de pedra clara.
 - **368 feita em 08/11/2026** (`docs/plano_fase368.md`): o reboco ao sol estava bem; o que destoava era o prédio de madeira, metade
   pacote e metade Kenney.
+- **369 feita em 08/11/2026** (`docs/plano_fase369.md`).

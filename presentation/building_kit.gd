@@ -1035,6 +1035,37 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 	return result
 
 
+## Fase 369: quanto do alto de cada vidro aceso é arco (fração da altura dele; 0 no retangular), na ordem de windows(). As janelas
+## de volta redonda do MegaKit (a larga e a estreita de arco) têm a cabeça em meio círculo da largura do vão; as do Kenney, as
+## claraboias e o lampião são retos.
+static func window_rises(spec: Spec) -> PackedFloat32Array:
+	if spec.court_rows > 0:
+		return window_rises(spec.hall())
+	var result := PackedFloat32Array()
+	var size := spec.size_m()
+	var floor_m := spec.floor_m()
+	var megakit := megakit_walls()
+	for face: int in 4:
+		var gap := opening(spec, face)
+		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
+		var step := (size.x if face % 2 == 0 else size.y) / count
+		var rise := 0.0
+		if megakit and window_index(spec, face) in MEGAKIT_ROUND_WINDOWS:
+			rise = minf(step * gap.x * 0.5 / (floor_m * gap.z), 0.5)
+		for level: int in spec.floors():
+			for index: int in count:
+				if slot(spec, face, index, level) == &"window":
+					result.append(rise)
+	var straight := skylight_panes(spec).size() + (1 if lantern_pane(spec) != null else 0)
+	for i: int in straight:
+		result.append(0.0)
+	return result
+
+
+## Fase 369: as janelas do MegaKit de cabeça redonda (índices de MEGAKIT_OPENINGS): a larga e a estreita de arco.
+const MEGAKIT_ROUND_WINDOWS: Array[int] = [0, 2]
+
+
 const FACE_NORMALS: Array[Vector3] = [Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(-1, 0, 0)]
 ## Giro que leva o +X da peça à normal de cada fachada.
 const FACE_YAWS: Array[float] = [PI * 0.5, 0.0, -PI * 0.5, PI]

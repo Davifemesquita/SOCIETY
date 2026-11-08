@@ -31,6 +31,8 @@ var _lit: Dictionary[int, bool] = {}
 var _free := PackedInt32Array()
 var _transforms: Array[Transform3D] = []
 var _thresholds := PackedFloat32Array()
+## Fase 369: quanto do alto de cada vidro é arco (dado z da instância; o shader corta os cantos).
+var _rises := PackedFloat32Array()
 var _slot_lit := PackedByteArray()
 var _area_lights: Array[AreaLight3D] = []
 ## Luzes de área em uso (o nível gráfico escolhe; as outras ficam apagadas).
@@ -126,6 +128,15 @@ static func building_windows(simulation: Simulation, record: BuildingRecord) -> 
 	return result
 
 
+## Fase 369: o arco de cada vidro de building_windows, na mesma ordem (0 sem arco ou sem o kit).
+static func building_window_rises(simulation: Simulation, record: BuildingRecord) -> PackedFloat32Array:
+	var grid := simulation.world.island(record.island_id)
+	var spec := BuildingKit.spec_for(simulation, record, grid.cell_size)
+	if spec == null:
+		return PackedFloat32Array()
+	return BuildingKit.window_rises(spec)
+
+
 ## Vidros de um prédio (caixa): em cada fachada, colunas a cada ~2,4 m e um andar a cada 2,8 m; no térreo
 ## da frente, nada no lugar da porta.
 static func windows_of(grid: IslandGrid, record: BuildingRecord, def: BuildingDef, height: float) -> Array[Transform3D]:
@@ -194,12 +205,14 @@ func _add(building_id: int) -> void:
 	if def.kind in [BuildingDef.Kind.MODULE, BuildingDef.Kind.PIER, BuildingDef.Kind.DECORATION]:
 		return
 	var windows := building_windows(_simulation, record)
+	var rises := building_window_rises(_simulation, record)
 	var slots := PackedInt32Array()
 	var lit := is_lit(_simulation, record)
-	for window: Transform3D in windows:
+	for i: int in windows.size():
 		var slot := _take_slot()
-		_transforms[slot] = window
+		_transforms[slot] = windows[i]
 		_thresholds[slot] = _rng.randf()
+		_rises[slot] = rises[i] if i < rises.size() else 0.0
 		slots.append(slot)
 		_write(slot, lit)
 	_slots[building_id] = slots
@@ -224,6 +237,7 @@ func _take_slot() -> int:
 		var capacity := maxi(256, old * 2)
 		_transforms.resize(capacity)
 		_thresholds.resize(capacity)
+		_rises.resize(capacity)
 		_slot_lit.resize(capacity)
 		for slot: int in range(capacity - 1, old - 1, -1):
 			_transforms[slot] = HIDDEN
@@ -242,7 +256,7 @@ func _take_slot() -> int:
 func _write(slot: int, lit: bool) -> void:
 	_slot_lit[slot] = 1 if lit else 0
 	_instance.multimesh.set_instance_transform(slot, _transforms[slot])
-	_instance.multimesh.set_instance_custom_data(slot, Color(_thresholds[slot], 1.0 if lit else 0.0, 0.0, 0.0))
+	_instance.multimesh.set_instance_custom_data(slot, Color(_thresholds[slot], 1.0 if lit else 0.0, _rises[slot], 0.0))
 
 
 func refresh_lit() -> void:
