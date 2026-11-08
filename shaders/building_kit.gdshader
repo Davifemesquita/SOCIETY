@@ -25,6 +25,12 @@ uniform float megakit_wood_plaster_tint = 0.3;
 uniform float megakit_stone = 0.0;
 uniform vec4 megakit_stone_color : source_color = vec4(0.66, 0.62, 0.55, 1.0);
 uniform float megakit_stone_mottle = 0.3;
+// Fase 371: com o MegaKit, as águas de telha (o telhado de telhas, roof_layer 0) levam as telhas redondas do pacote (a camada 7
+// da pilha), projetadas ao longo da água: megakit_tile_m de telhado por repetição da textura (6 telhas e 4 fileiras), puxadas
+// megakit_tile_tint para o tom do telhado da casa
+uniform float megakit_tile_m = 1.3;
+uniform float megakit_tile_tint = 0.45;
+uniform float megakit_tile_luma = 0.42;
 uniform float wall_meters = 3.0;
 uniform float roof_meters = 2.5;
 // Fase 258: a tinta da instância pesa mais que a textura cinza (antes 0,55: o reboco saía cinza-frio)
@@ -481,6 +487,26 @@ void fragment() {
 				color = sheet.rgb;
 				roughness = mix(0.42, 0.85, sheet.a);
 				// a chapa é lisa: sem o relevo das telhas do mapa de normais
+				NORMAL_MAP = vec3(0.5, 0.5, 1.0);
+			} else if (megakit_stone > 0.5 && roof_layer < 0.5) {
+				// Fase 371: as telhas redondas do MegaKit, ao longo da água (u de través, v descendo), com o relevo do pacote
+				vec2 down = normalize(world_normal.xz);
+				vec2 across = vec2(-down.y, down.x);
+				vec2 tile_uv = vec2(dot(world_position.xz, across), dot(world_position.xz, down) / max(world_normal.y, 0.2))
+						/ megakit_tile_m;
+				vec4 tiles = texture(megakit_albedo_rough, vec3(tile_uv, 7.0));
+				float tiles_luma = dot(tiles.rgb, vec3(0.299, 0.587, 0.114));
+				color = mix(tiles.rgb, tiles_luma / megakit_tile_luma * roof_tint.rgb, megakit_tile_tint);
+				color *= mix(roof_tone_dark, roof_tone_light, roof_pick);
+				vec3 wear = roof_wear(world_position, world_normal, roof_pick);
+				color = mix(color, roof_moss.rgb * (0.7 + 0.5 * dot(color, vec3(0.33))), wear.y * roof_moss_strength);
+				color *= 1.0 - wear.z * roof_streak_strength;
+				roughness = tiles.a;
+				// o mapa de normais do pacote no referencial da água: +x de través, +y subindo a água
+				vec3 bump = texture(megakit_normals, vec3(tile_uv, 7.0)).rgb * 2.0 - 1.0;
+				vec3 slope_up = normalize(vec3(0.0, 1.0, 0.0) - world_normal * world_normal.y);
+				vec3 bent = normalize(vec3(across.x, 0.0, across.y) * bump.x + slope_up * bump.y + world_normal * bump.z);
+				NORMAL = normalize((VIEW_MATRIX * vec4(bent, 0.0)).xyz);
 				NORMAL_MAP = vec3(0.5, 0.5, 1.0);
 			} else {
 				color *= 1.0 - roof_tile_shade(world_position, world_normal) * tile_strength * near;

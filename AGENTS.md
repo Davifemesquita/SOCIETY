@@ -3903,6 +3903,13 @@ Regras que já custaram investigação:
   prédio; as casas ficam na 0, pelo peso). A pilha de texturas do MegaKit tem 7 fatias (a 6 é o metal das ferragens): **camada nova
   na pilha muda o `slices/vertical` dos dois `.import`**.
 
+### Telhas redondas (Fase 371, nossa)
+
+- **Plano** em `docs/plano_fase371.md`, primeira do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II). A camada 7 das pilhas
+  do MegaKit são as telhas redondas do pacote (8 fatias nos `.import`); com o MegaKit e o telhado de telhas (`roof_layer` 0), o
+  `shaders/building_kit.gdshader` as projeta ao longo de cada água (`megakit_tile_m`, `megakit_tile_tint`) com o normal do pacote
+  posto direto no `NORMAL`. Camada nova nas pilhas sem peça que a use não muda as malhas empacotadas.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4284,6 +4291,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 368 — Madeira do pacote (nossa) | **feita em 08/11/2026**: as janelas e as portas dos prédios de madeira também do MegaKit (antes eram metade pacote, metade Kenney), com o reboco creme; as casas dos camponeses viram enxaimel; plano em `docs/plano_fase368.md` |
 | 369 — Arco aceso (nossa) | **feita em 08/11/2026**: à noite, a luz das janelas de volta redonda do MegaKit segue o arco, sem os cantos acesos fora da moldura; plano em `docs/plano_fase369.md` |
 | 370 — Portas variadas (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_366_370.md` (acabamento do MegaKit): as portas de uma, quatro e oito tábuas do pacote, com as ferragens de metal, sorteadas pelo tipo do prédio (as casas ficam com a simples); fotos do menu refeitas; plano em `docs/plano_fase370.md` |
+| 371 — Telhas redondas (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_371_375.md` (peças do MegaKit II): as águas de telha com as telhas redondas do pacote, com o relevo delas, no lugar da telha desenhada no shader; plano em `docs/plano_fase371.md` |
 
 Pendências já vistas para fases futuras:
 

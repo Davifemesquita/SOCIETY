@@ -28,6 +28,8 @@ const LAYERS := [
 	["glass", "T_WindowGradient", "", ""],
 	# Fase 370: as ferragens das portas (só há essa textura na pasta glTF)
 	["metal", "../glTF/T_MetalOrnaments_BaseColor", "../glTF/T_MetalOrnaments_Roughness:r", ""],
+	# Fase 371: as telhas redondas, que o shader do kit projeta nas águas de telha (nenhuma peça empacotada usa)
+	["round_tiles", "T_RoundTiles_BaseColor", "T_RoundTiles_Roughness:r", "T_RoundTiles_Normal"],
 ]
 const GLASS_LAYER := 5
 ## O material do glTF (pelo começo do nome) → a camada.
