@@ -19,3 +19,5 @@
 - **362 feita em 07/11/2026** (`docs/plano_fase362.md`): a janela da forma só na frente; GPU +0,2 ms com o MegaKit ligado.
 - **363 feita em 07/11/2026** (`docs/plano_fase363.md`): a suíte passa com o MegaKit ligado e desligado.
 - **364 feita em 07/11/2026** (`docs/plano_fase364.md`): o MegaKit ligado por padrão; suíte inteira verde.
+- **365 feita em 07/11/2026** (`docs/plano_fase365.md`), no lugar do telhado e das quinas: a viga entre os andares cobre a fresta
+  da emenda. **Roteiro concluído.**

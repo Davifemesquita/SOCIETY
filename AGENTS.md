@@ -3866,6 +3866,12 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase364.md`. Os prédios saem com as paredes do MegaKit; `SOCIETY_MEGAKIT=0` volta ao Kenney. Mudou as peças
   ou o shader do kit, refaça as fotos do menu (`tools/bake_building_photos.tscn`, em 1920x1080).
 
+### Viga entre os andares (Fase 365, nossa)
+
+- **Plano** em `docs/plano_fase365.md`, a última do roteiro `docs/plano_fases_361_365.md`. `BuildingKit._floor_beams`: com o MegaKit,
+  uma viga de madeira em volta do corpo em cada piso de cima (a peça do pacote espera o piso por cima; sem a viga a emenda era uma
+  fresta escura).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4241,6 +4247,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 362 — Peso das janelas (nossa) | **feita em 07/11/2026**: com o MegaKit ligado, a janela da forma só na fachada da frente e a larga reta nos lados e nos fundos; as casas ficam no peso das do Kenney e a GPU sobe 0,2 ms; segue desligado por padrão; plano em `docs/plano_fase362.md` |
 | 363 — Testes da paleta (nossa) | **feita em 07/11/2026**: os testes do que é do Kenney rodam com ele, o do lote e do orçamento confere os dois kits (teto 40.000), e a suíte passa com o MegaKit ligado e desligado; plano em `docs/plano_fase363.md` |
 | 364 — MegaKit por padrão (nossa) | **feita em 07/11/2026**: as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0) viram o padrão dos prédios, com as fotos do menu refeitas; a suíte inteira passa (1.882 casos); 63,5 FPS e GPU 14,8 ms no benchmark (~0,2 ms sobre o Kenney); plano em `docs/plano_fase364.md` |
+| 365 — Viga entre os andares (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_361_365.md` (ligar o MegaKit), no lugar do telhado e das quinas: uma viga de madeira em volta do corpo a cada piso cobre a fresta escura da emenda das paredes do pacote; plano em `docs/plano_fase365.md` |
 
 Pendências já vistas para fases futuras:
 

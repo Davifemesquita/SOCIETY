@@ -147,6 +147,32 @@ const MEGAKIT_OPENINGS: Array[Vector4] = [
 const MEGAKIT_FRAME_M := 0.1
 
 
+## Fase 365: a viga de madeira entre os andares nas paredes do MegaKit — a peça dele foi desenhada para ter o piso por cima, e
+## sem ela a emenda dos andares aparecia como uma fresta escura. Uma faixa em volta do corpo em cada piso de cima (no último, só
+## o corpo, se houver ala), saindo FLOOR_BEAM_OUT_M da parede.
+const FLOOR_BEAM_M := 0.16
+const FLOOR_BEAM_OUT_M := 0.05
+
+
+static func _floor_beams(tool: SurfaceTool, hall: Spec, offset: Transform3D) -> void:
+	var size := hall.size_m()
+	var winged := hall.wing != 0 and hall.floors() >= 2
+	for level: int in range(1, hall.floors()):
+		var width := size.x
+		var x := 0.0
+		if winged and level == hall.floors() - 1:
+			width = size.x - hall.column_m()
+			x = hall.main_offset().x
+		var depth := size.y
+		var z := 0.0
+		if hall.jetty:
+			# Fase 102: a frente dos andares de cima avançou; a viga acompanha (a de baixo dela é a do balanço)
+			depth += JETTY_M
+			z = -JETTY_M * 0.5
+		_box(tool, offset * Vector3(x, level * hall.floor_m(), z),
+				Vector3(width + FLOOR_BEAM_OUT_M * 2.0, FLOOR_BEAM_M, depth + FLOOR_BEAM_OUT_M * 2.0), UV_TIMBER)
+
+
 ## Fase 361: qual das três peças de janela a forma usa; no MegaKit, a de arco nos prédios de janela em arco (Fase 99), que
 ## perdem a cabeça de pedra.
 static func window_index(spec: Spec, face: int = 0) -> int:
@@ -1131,6 +1157,8 @@ static func _build(spec: Spec) -> ArrayMesh:
 	# a janela do MegaKit (Fase 360) já tem o vidro e o caixilho
 	if not megakit_walls():
 		_glazing(extra, hall, offset)
+	else:
+		_floor_beams(extra, hall, offset)
 	if hall.curtains:
 		_curtains(extra, hall, offset)
 	_silhouette(tool, extra, spec)
