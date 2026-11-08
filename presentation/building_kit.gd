@@ -149,17 +149,22 @@ const MEGAKIT_FRAME_M := 0.1
 
 ## Fase 361: qual das três peças de janela a forma usa; no MegaKit, a de arco nos prédios de janela em arco (Fase 99), que
 ## perdem a cabeça de pedra.
-static func window_index(spec: Spec) -> int:
-	if megakit_walls() and spec.arched:
-		return 0
+static func window_index(spec: Spec, face: int = 0) -> int:
+	if megakit_walls():
+		# Fase 362: nos lados e nos fundos, a janela larga reta, a mais leve do pacote (a de arco tem 276 triângulos de moldura,
+		# e a igreja passava de 55 mil); a da forma fica na frente
+		if face != 0:
+			return 1
+		if spec.arched:
+			return 0
 	return posmod(spec.window_style, 3)
 
 
 ## Fase 361: o vão da janela da forma — x a largura (fração da célula), y o centro e z a altura (fração do andar), w o x do vidro
 ## na peça. O do Kenney são as constantes de sempre; o do MegaKit, o da peça que a forma usa.
-static func opening(spec: Spec) -> Vector4:
+static func opening(spec: Spec, face: int = 0) -> Vector4:
 	if megakit_walls():
-		return MEGAKIT_OPENINGS[window_index(spec)]
+		return MEGAKIT_OPENINGS[window_index(spec, face)]
 	return Vector4(WINDOW_WIDTH, WINDOW_CENTER, WINDOW_HEIGHT, GLASS_X)
 
 ## UV de cada tipo de superfície na paleta do kit (colormap.png, 8 colunas × 4 linhas de cor). O
@@ -952,9 +957,9 @@ static func windows(spec: Spec) -> Array[Transform3D]:
 	var result: Array[Transform3D] = []
 	var size := spec.size_m()
 	var floor_m := spec.floor_m()
-	var gap := opening(spec)
 	var megakit := megakit_walls()
 	for face: int in 4:
+		var gap := opening(spec, face)
 		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
 		var step := (size.x if face % 2 == 0 else size.y) / count
 		for level: int in spec.floors():
@@ -1067,7 +1072,7 @@ static func _build(spec: Spec) -> ArrayMesh:
 					continue
 				var piece: String = pieces[&"plain"]
 				if kind == &"window":
-					piece = choices[window_index(hall)]
+					piece = choices[window_index(hall, face)]
 				elif kind != &"plain":
 					piece = pieces[kind]
 				_append_piece(tool, piece, offset * _cell_transform(hall, face, index, level))
@@ -2253,11 +2258,11 @@ static func _shutters(tool: SurfaceTool, spec: Spec) -> void:
 	var center := spec.hall_offset()
 	var size := hall.size_m()
 	var floor_m := hall.floor_m()
-	var gap := opening(hall)
-	var height := floor_m * gap.z
 	# Fase 361: na janela do MegaKit a folha fica fora da moldura dele
 	var clear := SHUTTER_GAP_M + (MEGAKIT_FRAME_M if megakit_walls() else 0.0)
 	for face: int in 4:
+		var gap := opening(hall, face)
+		var height := floor_m * gap.z
 		var along_x := face % 2 == 0
 		var lateral := Vector3.RIGHT if along_x else Vector3.BACK
 		var count := hall.cells.x if along_x else hall.cells.y
@@ -3019,15 +3024,15 @@ static func _glazing(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void
 ## e as rotações acompanham), logo à frente dele: os dois panos presos dos lados do vão, cada um de CURTAIN_MIN a CURTAIN_MAX
 ## dele no alto (pela janela, sem sorteio) e franzidos até CURTAIN_TIE disso embaixo, e a sanefa de VALANCE do vão em cima.
 static func _curtains(tool: SurfaceTool, spec: Spec, offset: Transform3D) -> void:
-	var gap := opening(spec)
-	var half_w := gap.x * 0.5
-	var half_h := gap.z * 0.5
-	var top := gap.y + half_h
-	var bottom := gap.y - half_h
-	var valance := top - gap.z * VALANCE
-	# Fase 361: logo à frente do vidro (no MegaKit ele fica no fundo da parede)
-	var curtain_x := gap.w + 0.007 if megakit_walls() else CURTAIN_X
 	for face: int in 4:
+		var gap := opening(spec, face)
+		var half_w := gap.x * 0.5
+		var half_h := gap.z * 0.5
+		var top := gap.y + half_h
+		var bottom := gap.y - half_h
+		var valance := top - gap.z * VALANCE
+		# Fase 361: logo à frente do vidro (no MegaKit ele fica no fundo da parede)
+		var curtain_x := gap.w + 0.007 if megakit_walls() else CURTAIN_X
 		var count := spec.cells.x if face % 2 == 0 else spec.cells.y
 		for level: int in spec.floors():
 			for index: int in count:

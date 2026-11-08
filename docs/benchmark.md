@@ -4353,3 +4353,6 @@ vezes. Passar a simulação para C# ou C++ (GDExtension) não se paga agora; vol
 
 **Fase 361 (vão da janela do MegaKit, desligado por padrão).** Alternando, duas rodadas cada: Kenney 64,6/64,7 FPS e GPU 14,5 ms
 (19,9 M primitivas); MegaKit com a janela inteira (só a parede simplificada) 62,3/62,1 FPS e GPU 15,2 ms (22,8 M).
+
+**Fase 362 (peso das janelas do MegaKit, desligado por padrão).** Alternando, duas rodadas cada: Kenney 64,8/64,9 FPS e GPU 14,5 ms
+(19,9 M primitivas); MegaKit com a janela da forma só na frente 63,9/63,9 FPS e GPU 14,7 ms (20,2 M).

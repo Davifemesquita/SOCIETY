@@ -15,6 +15,9 @@ const DEPTH_REF_M := 1.7
 ## Godot mais perto dela, sem passar).
 const OUTER_M := 0.315
 const KEEP_SHARE := 0.55
+## Fase 362: a moldura da janela e da porta fica inteira (1,0): o primeiro nível de detalhe do Godot já corta metade dela ou
+## mais, e ela virava cacos.
+const TRIM_KEEP_SHARE := 1.0
 ## As camadas das pilhas, na ordem: [nome, cor, aspereza (arquivo, canal), normal]. A aspereza "" é o valor fixo.
 const LAYERS := [
 	["plaster", "T_Plaster_BaseColor", "T_Plaster_ORM:g", "T_Plaster_Normal"],
@@ -145,6 +148,9 @@ func _convert(sources: Array, face: float) -> ArrayMesh:
 	var glass := SurfaceTool.new()
 	glass.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var glass_vertices := 0
+	var trim := SurfaceTool.new()
+	trim.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var trim_vertices := 0
 	# x' = 0,5 + (−z − face)/DEPTH_REF; y' = y/andar; z' = x/largura (girar −90° em y mantém a mão)
 	var basis := Basis(Vector3(0.0, 0.0, 1.0 / MK_WIDTH_M), Vector3(0.0, 1.0 / MK_FLOOR_M, 0.0),
 			Vector3(-1.0 / DEPTH_REF_M, 0.0, 0.0))
@@ -169,10 +175,12 @@ func _convert(sources: Array, face: float) -> ArrayMesh:
 				if layer == GLASS_LAYER:
 					sides.append([0, 2, 1])
 				# só a parede se simplifica: a janela e a porta (a moldura fina) ficam inteiras, como o vidro
-				var keep := layer == GLASS_LAYER or not source.begins_with("Wall_")
-				var target := glass if keep else tool
-				if keep:
+				var is_trim := layer != GLASS_LAYER and not source.begins_with("Wall_")
+				var target := glass if layer == GLASS_LAYER else (trim if is_trim else tool)
+				if layer == GLASS_LAYER:
 					glass_vertices += indices.size()
+				elif is_trim:
+					trim_vertices += indices.size()
 				for i: int in range(0, indices.size(), 3):
 					for order: Array in sides:
 						for k: int in order:
@@ -185,10 +193,14 @@ func _convert(sources: Array, face: float) -> ArrayMesh:
 		root.free()
 	tool.index()
 	tool.generate_tangents()
-	var simplified := _simplified(tool.commit_to_arrays())
+	var simplified := _simplified(tool.commit_to_arrays(), KEEP_SHARE)
 	var merged := SurfaceTool.new()
 	merged.begin(Mesh.PRIMITIVE_TRIANGLES)
 	merged.append_from(simplified, 0, Transform3D.IDENTITY)
+	if trim_vertices > 0:
+		trim.index()
+		trim.generate_tangents()
+		merged.append_from(_simplified(trim.commit_to_arrays(), TRIM_KEEP_SHARE), 0, Transform3D.IDENTITY)
 	if glass_vertices > 0:
 		glass.index()
 		glass.generate_tangents()
@@ -207,15 +219,19 @@ func _to_root(root: Node3D, node: Node3D) -> Transform3D:
 
 ## A peça simplificada: o primeiro nível de detalhe gerado com até KEEP_SHARE dos triângulos (as peças do pacote são 2 a 3
 ## vezes mais pesadas que as do Kenney).
-func _simplified(arrays: Array) -> ArrayMesh:
+func _simplified(arrays: Array, share: float) -> ArrayMesh:
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	importer.generate_lods(25.0, 60.0, [])
 	var full: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
 	var chosen := full
+	if share >= 1.0:
+		var whole := ArrayMesh.new()
+		whole.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		return whole
 	for lod: int in importer.get_surface_lod_count(0):
 		var indices := importer.get_surface_lod_indices(0, lod)
-		if indices.size() <= full.size() * KEEP_SHARE:
+		if indices.size() <= full.size() * share:
 			chosen = indices
 			break
 	arrays[Mesh.ARRAY_INDEX] = chosen

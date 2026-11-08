@@ -3850,6 +3850,12 @@ Regras que já custaram investigação:
   no MegaKit). **Código novo que desenhe em volta da janela usa o `opening`**, não as constantes `WINDOW_*` (que são só do Kenney).
   Na janela do pacote não vão vergas, peitoris, arcos nem guarnições de pedra; o `pack_megakit` só simplifica a parede.
 
+### Peso das janelas (Fase 362, nossa)
+
+- **Plano** em `docs/plano_fase362.md`. No MegaKit, `window_index(spec, face)` dá a janela da forma só na fachada da frente (0); nos
+  lados e nos fundos a larga reta, a mais leve; o `opening` também é por fachada. A moldura da janela fica inteira (os níveis de
+  detalhe do Godot cortam metade dela no primeiro degrau).
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4222,6 +4228,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 359 — Raso verde (nossa) | **feita em 07/11/2026**, a última do roteiro `docs/plano_fases_355_359.md` (mar aberto): o raso das ilhas temperadas verde-escuro sobre o fundo, sem o turquesa; plano em `docs/plano_fase359.md` |
 | 360 — Paredes do MegaKit (nossa, ensaio) | **ensaio feito em 07/11/2026, desligado por padrão**: as paredes, janelas e portas do Medieval Village MegaKit (Quaternius, CC0) no lugar das do Kenney, com o material dele no shader do kit; simplificadas, custam o mesmo; ficam desligadas até os enfeites das janelas seguirem o vão novo; plano em `docs/plano_fase360.md` |
 | 361 — Vão da janela (nossa) | **feita em 07/11/2026**, primeira do roteiro `docs/plano_fases_361_365.md` (ligar o MegaKit): com o MegaKit ligado, as janelas acesas, os postigos, as cortinas, as escoras, as floreiras e o tapete seguem o vão da janela do pacote, e as molduras de pedra saem dela; a janela fica inteira; segue desligado por padrão; plano em `docs/plano_fase361.md` |
+| 362 — Peso das janelas (nossa) | **feita em 07/11/2026**: com o MegaKit ligado, a janela da forma só na fachada da frente e a larga reta nos lados e nos fundos; as casas ficam no peso das do Kenney e a GPU sobe 0,2 ms; segue desligado por padrão; plano em `docs/plano_fase362.md` |
 
 Pendências já vistas para fases futuras:
 
