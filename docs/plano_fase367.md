@@ -21,4 +21,4 @@ A pedra clara gerada no código (cornija, faixa entre os andares, frontão, bala
 - `tests/presentation/test_phase367_light_stone.gd` confere duas coisas:
   - o parâmetro segue a troca do kit;
   - os uniformes estão no shader compilado (com tela).
-- Capturas: `tools/capture_phase95.tscn` (`F:erramentas\capturasase367\dia\`; antes em `fase366\dia\`).
+- Capturas: `tools/capture_phase95.tscn` (`F:\ferramentas\capturas\fase367\dia\`; antes em `fase366\dia\`).
