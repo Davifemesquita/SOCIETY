@@ -258,6 +258,9 @@ const SHUTTER_TRIMS: Array[int] = [TierDef.HouseTrim.YARD, TierDef.HouseTrim.NON
 const SHUTTER_GAP_M := 0.03
 const SHUTTER_OUT_M := 0.05
 const SHUTTER_THICK_M := 0.035
+## Fase 366: na janela do MegaKit, a folha deixa SHUTTER_MARGIN_M até a divisa da célula; mais estreita que SHUTTER_MIN_M, sai.
+const SHUTTER_MARGIN_M := 0.04
+const SHUTTER_MIN_M := 0.2
 ## Fase 217: as cortinas — nas janelas do corpo das casas, os dois panos presos dos lados do vidro (franzidos embaixo, na
 ## abraçadeira) e a sanefa em cima, logo à frente do vidro (CURTAIN_X, entre ele e o caixilho); cada pano cobre de
 ## CURTAIN_MIN a CURTAIN_MAX do vão, pela janela. A célula UV_CURTAIN da paleta, que o kit não usa, pintada pelo shader numa
@@ -643,6 +646,11 @@ static var _available: int = -1
 ## desliga); `use_megakit` troca à mão (testes e capturas) e esquece as malhas feitas.
 const MEGAKIT_DIR := "res://assets/models/megakit/"
 static var _megakit: int = -1
+## Fase 366: com o MegaKit, a empena vai com o reboco do pacote (UV2 = 1), num SurfaceTool à parte com a UV2, e o lugar do
+## telhado em construção no referencial do prédio (o telhado do corpo e o da ala são feitos no deles).
+static var _mega_extra: SurfaceTool = null
+static var _roof_place := Transform3D.IDENTITY
+static var _mega_extra_used := false
 
 
 static func megakit_walls() -> bool:
@@ -1124,6 +1132,10 @@ static func _build(spec: Spec) -> ArrayMesh:
 	# ficaria fora do índice
 	var extra := SurfaceTool.new()
 	extra.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_mega_extra = null
+	if megakit_walls():
+		_mega_extra = SurfaceTool.new()
+		_mega_extra.begin(Mesh.PRIMITIVE_TRIANGLES)
 	# o quintal fica no chão: o alicerce é só o do corpo
 	var base := hall.size_m() if spec.trim == TierDef.HouseTrim.YARD else size
 	var base_center := spec.hall_offset() if spec.trim == TierDef.HouseTrim.YARD else Vector3.ZERO
@@ -1136,6 +1148,7 @@ static func _build(spec: Spec) -> ArrayMesh:
 			var shift: Vector3 = part[1]
 			var roof := SurfaceTool.new()
 			roof.begin(Mesh.PRIMITIVE_TRIANGLES)
+			_roof_place = offset.translated(shift)
 			_roof(roof, piece_spec)
 			_lucarnes(roof, piece_spec)
 			extra.append_from(roof.commit(), 0, offset.translated(shift))
@@ -1143,12 +1156,15 @@ static func _build(spec: Spec) -> ArrayMesh:
 		# o telhado do corpo é feito no referencial dele e trazido para o do prédio
 		var roof := SurfaceTool.new()
 		roof.begin(Mesh.PRIMITIVE_TRIANGLES)
+		_roof_place = offset
 		_roof(roof, hall)
 		_lucarnes(roof, hall)
 		extra.append_from(roof.commit(), 0, offset)
 	else:
+		_roof_place = Transform3D.IDENTITY
 		_roof(extra, spec)
 		_lucarnes(extra, spec)
+	_roof_place = Transform3D.IDENTITY
 	# Fase 97: a cúpula de cobre e o torreão de canto
 	if spec.dome:
 		_dome(extra, spec)
@@ -1186,6 +1202,13 @@ static func _build(spec: Spec) -> ArrayMesh:
 	extra.index()
 	extra.generate_tangents()
 	tool.append_from(extra.commit(), 0, Transform3D.IDENTITY)
+	if _mega_extra != null and _mega_extra_used:
+		# indexada como as peças do kit: vértice solto depois delas ficaria fora do índice
+		_mega_extra.index()
+		_mega_extra.generate_tangents()
+		tool.append_from(_mega_extra.commit(), 0, Transform3D.IDENTITY)
+	_mega_extra = null
+	_mega_extra_used = false
 	var arrays := tool.commit_to_arrays()
 	var importer := ImporterMesh.new()
 	importer.add_surface(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -2306,15 +2329,38 @@ static func _shutters(tool: SurfaceTool, spec: Spec) -> void:
 		var step := (size.x if along_x else size.y) / count
 		var span := step * gap.x
 		var leaf := span * 0.5
-		var box := Vector3(leaf, height, SHUTTER_THICK_M) if along_x else Vector3(SHUTTER_THICK_M, height, leaf)
 		for level: int in hall.floors():
 			for index: int in count:
 				if slot(hall, face, index, level) != &"window":
 					continue
 				var middle := center + _wall_point(hall, face, index, level) + _face_normal(face) * SHUTTER_OUT_M \
 						+ Vector3(0.0, floor_m * gap.y, 0.0)
+				# as duas folhas iguais: a janela sem lugar para uma fica sem as duas
+				var width := minf(shutter_leaf(hall, face, index, -1.0), shutter_leaf(hall, face, index, 1.0)) \
+						if megakit_walls() else leaf
+				if width <= 0.0:
+					continue
 				for side: float in [-1.0, 1.0]:
-					_box(tool, middle + lateral * side * (span * 0.5 + clear + leaf * 0.5), box, UV_SHUTTER)
+					var box := Vector3(width, height, SHUTTER_THICK_M) if along_x else Vector3(SHUTTER_THICK_M, height, width)
+					_box(tool, middle + lateral * side * (span * 0.5 + clear + width * 0.5), box, UV_SHUTTER)
+
+
+## Fase 366: a largura da folha do postigo na janela do MegaKit — a metade do vão, mas cabendo na célula (a janela larga do
+## pacote deixava as folhas de duas janelas vizinhas uma sobre a outra) e fora do cunhal na célula da quina; estreita
+## demais, nenhuma (0). "side" é o lado da folha ao longo da fachada (−1 ou 1, no sentido de x ou z).
+static func shutter_leaf(hall: Spec, face: int, index: int, side: float) -> float:
+	var gap := opening(hall, face)
+	var along_x := face % 2 == 0
+	var size := hall.size_m()
+	var count := hall.cells.x if along_x else hall.cells.y
+	var step := (size.x if along_x else size.y) / count
+	var span := step * gap.x
+	var free := step * 0.5 - span * 0.5 - SHUTTER_GAP_M - MEGAKIT_FRAME_M - SHUTTER_MARGIN_M
+	var at_end := (side < 0.0 and index == 0) or (side > 0.0 and index == count - 1)
+	if hall.quoins and at_end:
+		free -= QUOIN_LONG_M
+	var width := minf(span * 0.5, free)
+	return width if width >= SHUTTER_MIN_M else 0.0
 
 
 ## Fase 160: os cunhais — nas quatro quinas do corpo, da soleira até a cornija, blocos de pedra clara em fiadas de
@@ -2344,7 +2390,11 @@ static func _quoins(tool: SurfaceTool, spec: Spec) -> void:
 				var low := Vector3(corner.x - sx * reach.x, y, corner.z - sz * reach.y)
 				var high := Vector3(corner.x + sx * QUOIN_OUT_M, y + QUOIN_COURSE_M - QUOIN_JOINT_M,
 						corner.z + sz * QUOIN_OUT_M)
-				_box(tool, center + (low + high) * 0.5, (high - low).abs(), UV_LIGHT_STONE)
+				if _mega_extra != null:
+					# Fase 366: com o MegaKit, a cantaria do pacote (a pedra clara do Kenney saía branca ao lado dele)
+					_mega_stone_box(_mega_extra, center + (low + high) * 0.5, (high - low).abs())
+				else:
+					_box(tool, center + (low + high) * 0.5, (high - low).abs(), UV_LIGHT_STONE)
 				y += QUOIN_COURSE_M
 				course += 1
 
@@ -2759,7 +2809,12 @@ static func _roof(tool: SurfaceTool, spec: Spec) -> void:
 				var left := _uv_point(along_x, end * hu, top, -hv)
 				var right := _uv_point(along_x, end * hu, top, hv)
 				var apex := _uv_point(along_x, end * hu, ridge, 0.0)
-				_triangle(tool, left, right, apex, _uv_point(along_x, end, 0.0, 0.0), UV_WALL)
+				if _mega_extra != null:
+					# Fase 366: a empena no reboco do MegaKit, como as paredes debaixo dela
+					_mega_triangle(_mega_extra, _roof_place * left, _roof_place * right, _roof_place * apex,
+							_uv_point(along_x, end, 0.0, 0.0), _uv_point(along_x, 0.0, 0.0, 1.0))
+				else:
+					_triangle(tool, left, right, apex, _uv_point(along_x, end, 0.0, 0.0), UV_WALL)
 				# a ponta da água por fora da empena
 				var side_a := _uv_point(along_x, end * (hu + o), eave, -(hv + o))
 				var side_b := _uv_point(along_x, end * (hu + o), eave, hv + o)
@@ -3169,6 +3224,67 @@ static func _triangle(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, out
 		tool.set_normal(normal)
 		tool.set_uv(uv)
 		tool.add_vertex(point)
+
+
+## Fase 366: a escala do reboco do MegaKit na peça de parede (2 m de largura dão 1 em u; 3 m de altura, 1 em v, descendo).
+const MEGAKIT_PLASTER_UV := Vector2(0.5, -1.0 / 3.0)
+
+
+## Fase 366: triângulo no reboco do MegaKit (UV2.x = 1, a camada que o shader troca pela da parede do prédio), com a UV da
+## textura dele pelo lugar no plano da parede ("along" é a horizontal da parede).
+static func _mega_triangle(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, outward: Vector3, along: Vector3) -> void:
+	var uvs: Array[Vector2] = []
+	for point: Vector3 in [a, b, c]:
+		uvs.append(Vector2(point.dot(along) * MEGAKIT_PLASTER_UV.x, point.y * MEGAKIT_PLASTER_UV.y))
+	_mega_face(tool, [a, b, c], uvs, outward, 0)
+
+
+## Fase 366: triângulo de pontos e UVs dados na camada "layer" do MegaKit (0 reboco, 4 cantaria; UV2.x = camada + 1).
+static func _mega_face(tool: SurfaceTool, points: Array[Vector3], uvs: Array[Vector2], outward: Vector3, layer: int) -> void:
+	var cross := (points[1] - points[0]).cross(points[2] - points[0])
+	if cross.length_squared() < 1e-8:
+		return
+	var normal := cross.normalized()
+	var order: Array[int] = [0, 1, 2]
+	if normal.dot(outward) > 0.0:
+		order = [0, 2, 1]
+	else:
+		normal = -normal
+	_mega_extra_used = true
+	for i: int in order:
+		tool.set_normal(normal)
+		tool.set_uv(uvs[i])
+		tool.set_uv2(Vector2(layer + 1.0, 0.0))
+		tool.add_vertex(points[i])
+
+
+## Fase 366: a primeira fiada da cantaria na textura do MegaKit (os blocos aparelhados embaixo dela: v de 0,59 a 0,685) e
+## quanto u dá um metro (um bloco da textura tem ~0,2 de u, o comprimento do bloco comprido do cunhal).
+const MEGAKIT_STONE_V := Vector2(0.59, 0.685)
+const MEGAKIT_STONE_U_PER_M := 0.38
+
+
+## Fase 366: bloco de pedra na cantaria do MegaKit — em cada face, a faixa da pedra de cima a baixo do bloco e o u pelo
+## comprimento, começando num ponto sorteado pelo lugar (os blocos não repetem o mesmo pedaço).
+static func _mega_stone_box(tool: SurfaceTool, center: Vector3, size: Vector3) -> void:
+	var h := size * 0.5
+	var start := fposmod(center.x * 3.7 + center.y * 5.3 + center.z * 2.9, 1.0)
+	for axis: int in 3:
+		for sign_value: float in [-1.0, 1.0]:
+			var normal := Vector3.ZERO
+			normal[axis] = sign_value
+			# a horizontal da face (x ou z) e a "vertical" dela (y, ou z no tampo e no fundo)
+			var across := Vector3.UP if axis != 1 else Vector3.BACK
+			var along := normal.cross(across).abs()
+			var face := center + normal * h[axis]
+			var du := along * (h * along).length()
+			var dv := across * (h * across).length()
+			var corners: Array[Vector3] = [face - du - dv, face + du - dv, face + du + dv, face - du + dv]
+			var length := du.length() * 2.0 * MEGAKIT_STONE_U_PER_M
+			var uvs: Array[Vector2] = [Vector2(start, MEGAKIT_STONE_V.y), Vector2(start + length, MEGAKIT_STONE_V.y),
+					Vector2(start + length, MEGAKIT_STONE_V.x), Vector2(start, MEGAKIT_STONE_V.x)]
+			_mega_face(tool, [corners[0], corners[1], corners[2]], [uvs[0], uvs[1], uvs[2]], normal, 4)
+			_mega_face(tool, [corners[0], corners[2], corners[3]], [uvs[0], uvs[2], uvs[3]], normal, 4)
 
 
 ## Fase 95: haste redonda de from até to (raio radius, sides faces) com a normal de cada vértice para fora do eixo (o
