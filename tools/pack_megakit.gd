@@ -26,12 +26,14 @@ const LAYERS := [
 	["uneven_brick", "T_UnevenBrick_BaseColor", "T_UnevenBrick_Roughness:r", "T_UnevenBrick_Normal"],
 	["rock", "T_RockTrim_BaseColor", "T_RockTrim_ORM:g", "T_RockTrim_Normal"],
 	["glass", "T_WindowGradient", "", ""],
+	# Fase 370: as ferragens das portas (só há essa textura na pasta glTF)
+	["metal", "../glTF/T_MetalOrnaments_BaseColor", "../glTF/T_MetalOrnaments_Roughness:r", ""],
 ]
 const GLASS_LAYER := 5
 ## O material do glTF (pelo começo do nome) → a camada.
 const MATERIALS := {
 	"MI_Plaster": 0, "MI_WoodTrim": 1, "MI_RedBrick": 2, "MI_Brick": 2, "MI_UnevenBrick": 3, "MI_RockTrim": 4,
-	"MI_WindowGlass": 5,
+	"MI_WindowGlass": 5, "MI_MetalOrnaments": 6,
 }
 ## A peça do BuildingKit → as peças do pacote que a compõem (no mesmo lugar, como foram desenhadas para encaixar).
 const PIECES := {
@@ -40,6 +42,9 @@ const PIECES := {
 	"wall-window-glass": ["Wall_Plaster_Window_Wide_Flat", "Window_Wide_Flat1"],
 	"wall-window-small": ["Wall_Plaster_Window_Thin_Round", "Window_Thin_Round1"],
 	"wall-door": ["Wall_Plaster_Door_Flat", "Door_1_Flat"],
+	# Fase 370: as outras portas do pacote, no mesmo vão (a Door_2 tem 4 mil vértices: fica de fora)
+	"wall-door-4": ["Wall_Plaster_Door_Flat", "Door_4_Flat"],
+	"wall-door-8": ["Wall_Plaster_Door_Flat", "Door_8_Flat"],
 	"wall-doorway-round": ["Wall_Plaster_Door_Round"],
 	"wall-wood": ["Wall_Plaster_WoodGrid"],
 }

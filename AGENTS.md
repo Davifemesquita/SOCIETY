@@ -3897,6 +3897,12 @@ Regras que já custaram investigação:
   em `windows()` ganha a entrada dele aqui**) vai no z do dado da instância da `WindowLightsView`, e o `shaders/window_light.gdshader`
   corta os cantos fora do arco.
 
+### Portas variadas (Fase 370, nossa)
+
+- **Plano** em `docs/plano_fase370.md`. `BuildingKit.MEGAKIT_DOORS` e `Spec.door_style` (na chave, pelo `door_style_of` do tipo do
+  prédio; as casas ficam na 0, pelo peso). A pilha de texturas do MegaKit tem 7 fatias (a 6 é o metal das ferragens): **camada nova
+  na pilha muda o `slices/vertical` dos dois `.import`**.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4277,6 +4283,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 367 — Pedra clara no tom (nossa) | **feita em 08/11/2026**: a cornija, a faixa, o frontão, a balaustrada e os arcos de pedra, que saíam quase brancos ao lado das paredes do MegaKit, no tom da cantaria dele; plano em `docs/plano_fase367.md` |
 | 368 — Madeira do pacote (nossa) | **feita em 08/11/2026**: as janelas e as portas dos prédios de madeira também do MegaKit (antes eram metade pacote, metade Kenney), com o reboco creme; as casas dos camponeses viram enxaimel; plano em `docs/plano_fase368.md` |
 | 369 — Arco aceso (nossa) | **feita em 08/11/2026**: à noite, a luz das janelas de volta redonda do MegaKit segue o arco, sem os cantos acesos fora da moldura; plano em `docs/plano_fase369.md` |
+| 370 — Portas variadas (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_366_370.md` (acabamento do MegaKit): as portas de uma, quatro e oito tábuas do pacote, com as ferragens de metal, sorteadas pelo tipo do prédio (as casas ficam com a simples); fotos do menu refeitas; plano em `docs/plano_fase370.md` |
 
 Pendências já vistas para fases futuras:
 

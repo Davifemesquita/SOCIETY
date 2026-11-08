@@ -12,7 +12,7 @@ O Anno não foi aberto.
 | 367 — Pedra clara no tom | a pedra clara gerada no código (cornija, faixa, frontão, balaustrada, arcos), que saía quase branca, no tom da cantaria do pacote |
 | 368 — Madeira do pacote | as janelas e as portas dos prédios de madeira (fábricas e casas dos camponeses) também do pacote; no lugar do "reboco ao sol", que não estourava |
 | 369 — Arco aceso | à noite, a luz da janela em arco segue o arco, não um retângulo atrás dele |
-| 370 — Portas variadas | as portas do pacote (uma, duas, quatro e oito tábuas) sorteadas por prédio, no lugar da mesma porta em todos |
+| 370 — Portas variadas | as portas do pacote (uma, quatro e oito tábuas) sorteadas pelo tipo do prédio, no lugar da mesma porta em todos |
 
 ## Estado
 
@@ -21,3 +21,4 @@ O Anno não foi aberto.
 - **368 feita em 08/11/2026** (`docs/plano_fase368.md`): o reboco ao sol estava bem; o que destoava era o prédio de madeira, metade
   pacote e metade Kenney.
 - **369 feita em 08/11/2026** (`docs/plano_fase369.md`).
+- **370 feita em 08/11/2026** (`docs/plano_fase370.md`), com as fotos do menu refeitas. **Roteiro concluído.**

@@ -505,11 +505,13 @@ class Spec:
 	var shutters: bool = false
 	## Fase 217: as cortinas nas janelas do corpo (todas as casas).
 	var curtains: bool = false
+	## Fase 370: qual das portas do MegaKit (MEGAKIT_DOORS), pelo tipo do prédio (as casas ficam na 0).
+	var door_style: int = 0
 
 	func key() -> String:
 		return "%d,%d|%.2f|%.2f|%d|%d|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%.2f|%.2f|%.2f|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d" % [cells.x, cells.y, cell_m,
 				height_m, walls, roof, roof_m, door, door_index, window_style, int(sparse_windows), int(chimney), silhouette,
-				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins), int(shutters), int(curtains)]
+				court_rows, trim, int(dock), level, overhang_m, side_gap_m, hall_side_gap_m, lucarnes, int(storehouse), wing, int(dome), int(turret), int(vault), int(arched), awning, int(jetty), int(skylights), int(lantern), int(mansard), int(picket), shop_sign, int(balcony_flowers), int(quoins), int(shutters), int(curtains)] + "|%d" % door_style
 
 	## O corpo do prédio (sem o pátio), no referencial dele; hall_offset() o leva ao do prédio.
 	func hall() -> Spec:
@@ -551,6 +553,7 @@ class Spec:
 		copy.quoins = quoins
 		copy.shutters = shutters
 		copy.curtains = curtains
+		copy.door_style = door_style
 		return copy
 
 	func hall_offset() -> Vector3:
@@ -647,6 +650,10 @@ static var _available: int = -1
 const MEGAKIT_DIR := "res://assets/models/megakit/"
 ## Fase 368: as janelas e as portas dos prédios de madeira saem das mesmas peças do pacote que as de reboco (a parede lisa
 ## de madeira já é a de enxaimel, `wall-wood`); sem isso, a fábrica de madeira misturava o enxaimel com as tábuas do Kenney.
+## Fase 370: as portas do pacote (a de uma, a de quatro e a de oito tábuas no mesmo vão; a de duas tem 4 mil vértices e
+## passava as casas do peso), sorteadas pelo tipo do prédio (por prédio, cada um teria até três malhas a mais). As casas ficam
+## com a de uma tábua: as outras passavam a casa dos operários de 1,2 vez o peso da do Kenney.
+const MEGAKIT_DOORS: Array[String] = ["wall-door", "wall-door-4", "wall-door-8"]
 const MEGAKIT_ALIASES: Dictionary[String, String] = {
 	"wall-wood-window-shutters": "wall-window-shutters", "wall-wood-window-glass": "wall-window-glass",
 	"wall-wood-window-small": "wall-window-small", "wall-wood-door": "wall-door",
@@ -757,7 +764,9 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 		spec.shutters = spec.trim in SHUTTER_TRIMS
 		# Fase 217: as cortinas em todas as casas
 		spec.curtains = true
+		# Fase 370: a casa fica com a porta simples (as outras passam a casa dos operários do peso da do Kenney)
 		return spec
+	spec.door_style = door_style_of(def.id)
 	spec.height_m = def.height_m
 	spec.walls = Walls.WOOD if def.wall_material == BuildingMaterials.Wall.WOOD else Walls.PLASTER
 	var short := minf(def.size.x, def.size.y) * cell_size
@@ -861,6 +870,15 @@ static func spec_for(simulation: Simulation, record: BuildingRecord, cell_size: 
 	spec.skylights = def.kind == BuildingDef.Kind.PRODUCTION and def.silhouette == BuildingDef.Silhouette.NONE \
 			and spec.roof in [Roof.GABLE_X, Roof.GABLE_Z] and mini(def.size.x, def.size.y) >= SKYLIGHT_MIN_CELLS
 	return spec
+
+
+## Fase 370: a porta do MegaKit pelo tipo do prédio (estável: um hash aritmético do nome, não o hash() do
+## motor, que pode mudar de versão).
+static func door_style_of(name: StringName) -> int:
+	var total := 0
+	for code: int in String(name).to_utf8_buffer():
+		total = (total * 31 + code) % 1000003
+	return total % MEGAKIT_DOORS.size()
 
 
 ## Fase 39: número estável da variação visual do prédio. O mesmo id, tipo e rotação dão sempre a mesma; ela nunca
@@ -1157,6 +1175,9 @@ static func _build(spec: Spec) -> ArrayMesh:
 				var piece: String = pieces[&"plain"]
 				if kind == &"window":
 					piece = choices[window_index(hall, face)]
+				elif kind == &"door" and megakit_walls():
+					# Fase 370: a porta do pacote da forma
+					piece = MEGAKIT_DOORS[spec.door_style]
 				elif kind != &"plain":
 					piece = pieces[kind]
 				_append_piece(tool, piece, offset * _cell_transform(hall, face, index, level))
