@@ -3951,6 +3951,12 @@ Regras que já custaram investigação:
   `dormer` do pacote (`_mega_dormer`), esticada para trás até o fundo entrar na água (`mega_dormer_depth`); as telhas dela (camada
   7) no tom do telhado pelo shader. Captura: `lucarna_do_pacote.png` no `tools/capture_phase95.tscn`.
 
+### Caixote do pacote (Fase 379, nossa)
+
+- **Plano** em `docs/plano_fase379.md`. Com o MegaKit, o `CargoKit.mesh(CRATE)` é o caixote do pacote (`_pack_crate`, com o
+  `BuildingMaterials.kit()`); a troca do kit chama `CargoKit.forget`. **Peça solta do pacote fora dos prédios usa o material do
+  kit**, que lê a camada pela UV2.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4340,6 +4346,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 376 — Madeiramento do pacote (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III): as vigas, os esteios e as escoras geradas na madeira do pacote, com o veio; a viga entre os andares deixa de sair cinza; plano em `docs/plano_fase376.md` |
 | 377 — Alicerce de cantaria (nossa) | **feita em 08/11/2026**: o alicerce no pé dos prédios, o plinto do barranco e os degraus da porta na cantaria do pacote, em blocos de verdade, no lugar da pedra lisa; plano em `docs/plano_fase377.md` |
 | 378 — Lucarna do pacote (nossa) | **feita em 08/11/2026**: as lucarnas das casas dos engenheiros e investidores com a lucarna de telhas redondas do pacote, de frente de madeira e vidraças em losango; plano em `docs/plano_fase378.md` |
+| 379 — Caixote do pacote (nossa) | **feita em 08/11/2026**: os caixotes das pilhas de estoque, das carroças, do cais, dos navios e da colheita com o caixote de tábuas do pacote, no lugar do rosado do Kenney; plano em `docs/plano_fase379.md` |
 
 Pendências já vistas para fases futuras:
 

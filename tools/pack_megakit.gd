@@ -61,6 +61,8 @@ var PROPS := {
 	# Fase 378: a lucarna de telhas redondas, em metros do pacote (a janela para +x, o fundo em x ≈ 0, o pé em y ≈ 0); o
 	# BuildingKit a encolhe e estica até a água do telhado
 	"dormer": ["Roof_Dormer_RoundTile", Transform3D.IDENTITY],
+	# Fase 379: o caixote de tábuas, em metros do pacote (o CargoKit o encolhe ao lado da peça de carga)
+	"crate": ["Prop_Crate", Transform3D.IDENTITY],
 }
 
 var _folder: String

@@ -27,13 +27,21 @@ static func mesh(pile: int) -> Mesh:
 		GoodDef.Pile.BARREL:
 			result = _model("barrel")
 		GoodDef.Pile.CRATE:
-			result = _model("crate")
+			# Fase 379: com o MegaKit, o caixote de tábuas do pacote
+			result = _pack_crate() if BuildingKit.megakit_walls() else null
+			if result == null:
+				result = _model("crate")
 		GoodDef.Pile.LOGS:
 			result = _logs()
 		GoodDef.Pile.HEAP:
 			result = _heap()
 	_meshes[pile] = result
 	return result
+
+
+## Fase 379: esquece as peças (a troca do kit dos prédios muda o caixote).
+static func forget() -> void:
+	_meshes.clear()
 
 
 ## A peça leva a cor da instância (saco, tora e monte) ou fica com a textura do kit.
@@ -141,6 +149,25 @@ static func _model(piece: String) -> Mesh:
 	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	material.roughness = 0.9
 	mesh.surface_set_material(0, material)
+	return mesh
+
+
+## Fase 379: o caixote do MegaKit (tools/pack_megakit.gd, em metros do pacote) no lado de ITEM_M, com a base em y = 0 e o
+## material do kit dos prédios, que lê a madeira dele pela UV2; null sem a peça.
+static func _pack_crate() -> Mesh:
+	var path := BuildingKit.MEGAKIT_DIR + "crate.res"
+	if not ResourceLoader.exists(path):
+		return null
+	var source := load(path) as Mesh
+	var box := source.get_aabb()
+	var scale := ITEM_M / maxf(maxf(box.size.x, box.size.z), 0.001)
+	var bottom := Vector3(box.get_center().x, box.position.y, box.get_center().z)
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for surface: int in source.get_surface_count():
+		tool.append_from(source, surface, Transform3D(Basis.from_scale(Vector3.ONE * scale), -bottom * scale))
+	var mesh := tool.commit()
+	mesh.surface_set_material(0, BuildingMaterials.kit())
 	return mesh
 
 

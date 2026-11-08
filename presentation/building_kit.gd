@@ -691,6 +691,7 @@ static func use_megakit(on: bool) -> void:
 	_parts.clear()
 	_meshes.clear()
 	_plinths.clear()
+	CargoKit.forget()
 	BuildingMaterials.sync_megakit()
 
 
@@ -701,6 +702,7 @@ static func reset_megakit() -> void:
 	_parts.clear()
 	_meshes.clear()
 	_plinths.clear()
+	CargoKit.forget()
 	BuildingMaterials.sync_megakit()
 
 
