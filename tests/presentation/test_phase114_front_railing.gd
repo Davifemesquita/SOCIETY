@@ -26,7 +26,14 @@ func _iron_in_front(spec: BuildingKit.Spec) -> PackedVector3Array:
 		var arrays := mesh.surface_get_arrays(surface)
 		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 		var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+		# a UV das peças do MegaKit (UV2.x > 0) é da textura dele, não da paleta: o alicerce de cantaria (Fase 377) caía na
+		# célula do ferro
+		var uv2 := PackedVector2Array()
+		if arrays[Mesh.ARRAY_TEX_UV2] is PackedVector2Array:
+			uv2 = arrays[Mesh.ARRAY_TEX_UV2]
 		for i: int in vertices.size():
+			if not uv2.is_empty() and uv2[i].x > 0.5:
+				continue
 			var point := vertices[i]
 			if Vector2i(floori(uvs[i].x * 8.0), floori(uvs[i].y * 4.0)) == iron and point.z < wall \
 					and point.y < BuildingKit.FRONT_RAIL_M + 0.2:

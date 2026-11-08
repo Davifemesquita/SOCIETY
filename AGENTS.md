@@ -3957,6 +3957,11 @@ Regras que já custaram investigação:
   `BuildingMaterials.kit()`); a troca do kit chama `CargoKit.forget`. **Peça solta do pacote fora dos prédios usa o material do
   kit**, que lê a camada pela UV2.
 
+### Fotos e conferência (Fase 380, nossa)
+
+- **Plano** em `docs/plano_fase380.md`, a última do roteiro `docs/plano_fases_376_380.md`. **Teste que procura uma célula da paleta
+  pela UV pula os vértices do pacote (UV2.x > 0)**: a UV deles é da textura do MegaKit e cai em qualquer célula.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4347,6 +4352,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 377 — Alicerce de cantaria (nossa) | **feita em 08/11/2026**: o alicerce no pé dos prédios, o plinto do barranco e os degraus da porta na cantaria do pacote, em blocos de verdade, no lugar da pedra lisa; plano em `docs/plano_fase377.md` |
 | 378 — Lucarna do pacote (nossa) | **feita em 08/11/2026**: as lucarnas das casas dos engenheiros e investidores com a lucarna de telhas redondas do pacote, de frente de madeira e vidraças em losango; plano em `docs/plano_fase378.md` |
 | 379 — Caixote do pacote (nossa) | **feita em 08/11/2026**: os caixotes das pilhas de estoque, das carroças, do cais, dos navios e da colheita com o caixote de tábuas do pacote, no lugar do rosado do Kenney; plano em `docs/plano_fase379.md` |
+| 380 — Fotos e conferência (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_376_380.md` (peças do MegaKit III): os degraus de pedra já saíram na 377; fotos do menu refeitas e a pasta `presentation` com os dois kits (o teste do gradil corrigido); plano em `docs/plano_fase380.md` |
 
 Pendências já vistas para fases futuras:
 
