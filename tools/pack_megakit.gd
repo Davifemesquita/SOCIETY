@@ -63,6 +63,9 @@ var PROPS := {
 	"dormer": ["Roof_Dormer_RoundTile", Transform3D.IDENTITY],
 	# Fase 379: o caixote de tábuas, em metros do pacote (o CargoKit o encolhe ao lado da peça de carga)
 	"crate": ["Prop_Crate", Transform3D.IDENTITY],
+	# Fase 384: a cerca de tábuas no lanço da cerca do pasto da CropView (1 m em +x a partir do mourão, 0,95 m de alto)
+	"pasture-fence": ["Prop_WoodenFence_Single", Transform3D(Basis(Vector3(1.0 / 2.06, 0.0, 0.0), Vector3(0.0, 0.95 / 0.81, 0.0),
+			Vector3(0.0, 0.0, 1.0)), Vector3(0.5, 0.0, 0.0))],
 }
 
 var _folder: String

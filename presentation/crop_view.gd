@@ -164,7 +164,8 @@ func setup(simulation: Simulation) -> void:
 	_soil.name = "Soil"
 	_soil.material_override = material
 	add_child(_soil)
-	for pair: Array in [[_fence, "Fence", fence_mesh()], [_grass, "Grass", tuft_mesh()], [_furrows, "Furrows", furrow_mesh()],
+	var pack_fence := pasture_fence_pack()
+	for pair: Array in [[_fence, "Fence", pack_fence if pack_fence != null else fence_mesh()], [_grass, "Grass", tuft_mesh()], [_furrows, "Furrows", furrow_mesh()],
 			[_hedges, "Hedges", hedge_mesh()], [_walls, "Walls", wall_mesh()]]:
 		var layer: MultiMeshInstance3D = pair[0]
 		var name_text: String = pair[1]
@@ -178,6 +179,9 @@ func setup(simulation: Simulation) -> void:
 		layer.multimesh = multimesh
 		# o capim balança ao vento; a cerca e as leiras, não
 		layer.material_override = plant_material(mesh, GRASS_SWAY) if layer == _grass else material
+		if layer == _fence and pack_fence != null:
+			# Fase 384: a cerca do MegaKit lê a madeira dele pela UV2, no material do kit dos prédios
+			layer.material_override = BuildingMaterials.kit()
 		if layer in [_hedges, _walls]:
 			# milhares de peças: sem sombra
 			layer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -975,6 +979,15 @@ static func furrow_mesh() -> ArrayMesh:
 	_part(tool, prism, Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(0.0, FURROW_HEIGHT_M * 0.5 - 0.02, 0.0)), Color.WHITE)
 	tool.index()
 	return tool.commit()
+
+
+## Fase 384: com o MegaKit, o lanço da cerca do pasto é a cerca de tábuas do pacote (tools/pack_megakit.gd, no mesmo lanço de
+## 1 m em +x); null sem ele ou sem a peça.
+static func pasture_fence_pack() -> ArrayMesh:
+	var path := BuildingKit.MEGAKIT_DIR + "pasture-fence.res"
+	if not BuildingKit.megakit_walls() or not ResourceLoader.exists(path):
+		return null
+	return load(path) as ArrayMesh
 
 
 ## Um lanço de cerca de 1 m em +x: o mourão no começo e duas travessas (a escala em x estica o lanço).

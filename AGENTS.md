@@ -3969,6 +3969,11 @@ Regras que já custaram investigação:
   cantaria (`megakit_ashlar_v`, os números do `BuildingKit.MEGAKIT_ASHLAR_*`). **Brilho de textura no shader é linear**: meça a
   média da faixa em linear antes de dividir por ela. A chaminé com o tijolo do pacote (382) ficou de fora.
 
+### Cerca do pasto (Fase 384, nossa)
+
+- **Plano** em `docs/plano_fase384.md`. Com o MegaKit, a camada `Fence` da `CropView` usa a `pasture-fence` do pacote
+  (`CropView.pasture_fence_pack`, no lanço de 1 m) com o `BuildingMaterials.kit()`.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4363,6 +4368,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 381 — Tábuas com veio (nossa) | **feita em 08/11/2026**, primeira do roteiro `docs/plano_fases_381_385.md` (texturas do MegaKit): as tábuas dos telhados de madeira com o veio da madeira do pacote; plano em `docs/plano_fase381.md` |
 | 382 — Tijolo do pacote (nossa) | **tentada e deixada de fora em 08/11/2026**: na chaminé o tijolo do pacote saía vermelho liso; registro em `docs/plano_fase382.md` |
 | 383 — Pedra clara em blocos (nossa) | **feita em 08/11/2026**: a cornija, o frontão, a balaustrada e os arcos com os blocos da cantaria do pacote; plano em `docs/plano_fase383.md` |
+| 384 — Cerca do pasto (nossa) | **feita em 08/11/2026**: a cerca dos pastos com a cerca de tábuas do pacote, a mesma dos quintais; plano em `docs/plano_fase384.md` |
 
 Pendências já vistas para fases futuras:
 
