@@ -117,3 +117,6 @@ passivos, sem escolha. As rivais são um número de moradores numa ilha. No comb
 
 - Roteiro escrito em 09/11/2026.
 - **386 feita em 09/11/2026** (`docs/plano_fase386.md`); os presos ao longo do tempo passaram para a 387.
+- **387 feita em 10/11/2026** (`docs/plano_fase387.md`, `docs/jogo_real.md`): o terreno não ilha a vila; os achados
+  vão para a 392 (necessidade sem cadeia liberada), a 394 (dívida), a 397 (lenhador sem mata, armazém fora do alcance pela
+  estrada) e a 399.

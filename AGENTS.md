@@ -3982,6 +3982,15 @@ Regras que já custaram investigação:
   rival); o critério das 3 horas confere a cada meia hora. **Estado novo no mundo que aponte para um prédio ou navio ganha a
   conferência dele aqui.**
 
+### Robô no jogo de verdade (Fase 387, nossa)
+
+- **Plano** em `docs/plano_fase387.md`. `TerrainAutoPlayer` (`tools/terrain_auto_player.gd`, filho do `AutoPlayer`) joga o
+  arquipélago do jogo novo com eventos, rivais e riscos ligados: lote em anéis, estrada até a rede pelo mapa de distâncias da
+  rede inteira (`_ensure_field`), armazém num lote a até 30 células do prédio **pela estrada** (`_warehouse_on_road`) e
+  lenhador só com mata no raio. Guarda o que não coube, o que ficou preso (marcando o que segue preso no fim) e os
+  invariantes. `tools/real_game_report.tscn` grava `docs/jogo_real.md`. **O alcance de armazém e a distância entre lotes
+  contam pela estrada**: no relevo do v4, o lote perto em linha reta costuma ficar longe pela rede.
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4379,6 +4388,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 384 — Cerca do pasto (nossa) | **feita em 08/11/2026**: a cerca dos pastos com a cerca de tábuas do pacote, a mesma dos quintais; plano em `docs/plano_fase384.md` |
 | 385 — Conferência (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_381_385.md` (texturas do MegaKit): fotos do menu refeitas, benchmark (66,1 FPS e GPU 14,3 ms no alto) e a pasta `presentation` com os dois kits, sem falha; plano em `docs/plano_fase385.md` |
 | 386 — Invariantes (nossa) | **feita em 09/11/2026**, primeira do roteiro `docs/plano_fases_386_405.md` (de bonito a jogável): a conferência do mundo que acusa estado impossível (números, ocupação, referências penduradas), no critério das 3 horas; plano em `docs/plano_fase386.md` |
+| 387 — Robô no jogo de verdade (nossa) | **feita em 10/11/2026**: o jogador-robô joga o arquipélago do jogo novo com tudo ligado; as três sementes passam de 1.000 camponeses e 1.200 operários e chegam aos artesãos em 2 h, sem invariante quebrado nem erro; achados (estrada longa pelo relevo, armazém fora do alcance pela estrada, lenhador sem mata, trava do sabão, dívida sem aviso) vão para as Fases 392 a 399; plano em `docs/plano_fase387.md` |
 
 Pendências já vistas para fases futuras:
 
