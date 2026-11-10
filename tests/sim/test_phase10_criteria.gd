@@ -41,6 +41,7 @@ func test_a_three_hour_match_runs_without_errors() -> void:
 
 func _assert_sane(sim: Simulation, when: String) -> void:
 	var world := sim.world
+	assert_array(Array(WorldInvariants.check(world, sim.data))).override_failure_message("invariantes %s" % when).is_empty()
 	assert_bool(is_finite(world.money)).override_failure_message("dinheiro %s" % when).is_true()
 	var capacity := sim.storage_capacity(0)
 	for good: StringName in world.economy(0).stock:

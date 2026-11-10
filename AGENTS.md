@@ -3974,6 +3974,14 @@ Regras que já custaram investigação:
 - **Plano** em `docs/plano_fase384.md`. Com o MegaKit, a camada `Fence` da `CropView` usa a `pasture-fence` do pacote
   (`CropView.pasture_fence_pack`, no lanço de 1 m) com o `BuildingMaterials.kit()`.
 
+### Invariantes (Fase 386, nossa)
+
+- **Plano** em `docs/plano_fase386.md`, primeira do roteiro `docs/plano_fases_386_405.md` (de bonito a jogável: bugs, travas e
+  estado explicável, a pedido do dono). `WorldInvariants.check(world, data)` (`sim/world_invariants.gd`) devolve o que está errado
+  no mundo (números, ocupação contra prédios, ids pendurados de carroça, navio, rota, especialista, risco, estaleiro, expedição e
+  rival); o critério das 3 horas confere a cada meia hora. **Estado novo no mundo que aponte para um prédio ou navio ganha a
+  conferência dele aqui.**
+
 Todo asset ou addon novo entra em `CREDITS.md` (autor, link, licença, arquivos). O que
 faltar vira placeholder e entra em `assets/TODO_ASSETS.md`. Addon só na fase que o usa,
 atrás de um script adaptador próprio, depois de confirmar a versão compatível com o 4.7.
@@ -4370,6 +4378,7 @@ atrás de um script adaptador próprio, depois de confirmar a versão compatíve
 | 383 — Pedra clara em blocos (nossa) | **feita em 08/11/2026**: a cornija, o frontão, a balaustrada e os arcos com os blocos da cantaria do pacote; plano em `docs/plano_fase383.md` |
 | 384 — Cerca do pasto (nossa) | **feita em 08/11/2026**: a cerca dos pastos com a cerca de tábuas do pacote, a mesma dos quintais; plano em `docs/plano_fase384.md` |
 | 385 — Conferência (nossa) | **feita em 08/11/2026**, a última do roteiro `docs/plano_fases_381_385.md` (texturas do MegaKit): fotos do menu refeitas, benchmark (66,1 FPS e GPU 14,3 ms no alto) e a pasta `presentation` com os dois kits, sem falha; plano em `docs/plano_fase385.md` |
+| 386 — Invariantes (nossa) | **feita em 09/11/2026**, primeira do roteiro `docs/plano_fases_386_405.md` (de bonito a jogável): a conferência do mundo que acusa estado impossível (números, ocupação, referências penduradas), no critério das 3 horas; plano em `docs/plano_fase386.md` |
 
 Pendências já vistas para fases futuras:
 

@@ -116,3 +116,4 @@ passivos, sem escolha. As rivais são um número de moradores numa ilha. No comb
 ## Estado
 
 - Roteiro escrito em 09/11/2026.
+- **386 feita em 09/11/2026** (`docs/plano_fase386.md`); os presos ao longo do tempo passaram para a 387.
